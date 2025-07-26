@@ -50,7 +50,7 @@
     "zustand": "^5.0.6"
   },
   "simple-git-hooks": {
-    "pre-commit": "npm run format && npm run lint:fix && npm run type-check",
+    "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check",
     "commit-msg": "npx commitlint --edit $1"
   },
   "devDependencies": {
