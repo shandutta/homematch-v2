@@ -1726,36 +1726,42 @@ The migration from the original HomeMatch app to V2 involves porting key feature
 ### Key Components to Migrate
 
 #### 1. Dashboard & Statistics
+
 **V1 Implementation:**
+
 - SwipeContainer with gesture handling
 - Real-time statistics updates
 - NextAuth authentication
 - Zustand state management
 
 **V2 Migration:**
+
 - Port to TanStack Query for data fetching
 - Replace NextAuth with Supabase Auth
 - Implement optimistic updates for better UX
 - Add proper TypeScript typing throughout
 
 #### 2. Property Interaction Pages
+
 **V1 Features:**
+
 - `/dashboard/liked` - Shows liked properties
-- `/dashboard/viewed` - Shows all viewed properties  
+- `/dashboard/viewed` - Shows all viewed properties
 - `/dashboard/passed` - Shows passed properties
 - Toggle functionality to change property status
 - "Start Fresh" option to clear history
 
 **V2 Implementation:**
+
 ```typescript
 // app/dashboard/[interaction]/page.tsx
-export default async function InteractionPage({ 
-  params 
-}: { 
-  params: { interaction: 'liked' | 'viewed' | 'passed' } 
+export default async function InteractionPage({
+  params
+}: {
+  params: { interaction: 'liked' | 'viewed' | 'passed' }
 }) {
   return (
-    <PropertyInteractionGrid 
+    <PropertyInteractionGrid
       type={params.interaction}
       showSoldToggle={true}
       allowStatusChange={true}
@@ -1765,7 +1771,9 @@ export default async function InteractionPage({
 ```
 
 #### 3. Settings with Hierarchical Geography
+
 **V1 Features:**
+
 - MetroRegionNeighborhoodSelector component
 - 3-level hierarchy: Metro → Region → City → Neighborhood
 - Persistent selections when toggling parents
@@ -1773,12 +1781,13 @@ export default async function InteractionPage({
 - POI management
 
 **V2 Enhancement:**
+
 ```typescript
 // components/features/settings/GeographySelector.tsx
 export function EnhancedGeographySelector() {
   // Database-driven geography data
   const { data: geographies } = useGeographies()
-  
+
   // Multi-level selection state
   const [selection, setSelection] = useState<GeographySelection>({
     metro: null,
@@ -1786,12 +1795,12 @@ export function EnhancedGeographySelector() {
     cities: [],
     neighborhoods: []
   })
-  
+
   // Real-time search with debouncing
   const searchResults = useGeographySearch(searchQuery, {
     debounce: 300
   })
-  
+
   return (
     <HierarchicalSelector
       data={geographies}
@@ -1804,7 +1813,9 @@ export function EnhancedGeographySelector() {
 ```
 
 #### 4. Property Ingestion System
+
 **V1 Features:**
+
 - `ultimate-property-ingest.cjs` script
 - Database-driven neighborhood polygons
 - Multi-image fetching from Zillow API
@@ -1812,6 +1823,7 @@ export function EnhancedGeographySelector() {
 - Comprehensive error handling
 
 **V2 Migration:**
+
 - Convert to TypeScript service class
 - Integrate with Inngest for scheduled jobs
 - Add Zod validation for API responses
@@ -1821,12 +1833,13 @@ export function EnhancedGeographySelector() {
 ### Data Migration Strategy
 
 #### Geographic Data Import
+
 ```typescript
 // scripts/migration/neighborhoods.ts
 interface NeighborhoodImport {
   csv: 'migrated_data/neighborhoods_authoritative_rows.csv'
   // Note: Contains 3,400+ geographic entities (neighborhoods, cities, regions, metro areas)
-  
+
   process: () => {
     // 1. Import hierarchical geographic data from CSV
     // 2. Transform to simplified V2 schema structure
@@ -1837,12 +1850,13 @@ interface NeighborhoodImport {
 ```
 
 #### Property Data Import
+
 ```typescript
 // scripts/migration/properties.ts
 interface PropertyImport {
   source: 'migrated_data/properties_rows.csv'
   // Note: Contains 1,100 verified properties with complete data
-  
+
   transform: (row: CSVRow) => {
     // 1. Parse image arrays (up to 20 images per property)
     // 2. Convert coordinates to POINT for PostGIS
@@ -1855,16 +1869,17 @@ interface PropertyImport {
 
 ### API Migration Mapping
 
-| V1 Endpoint | V2 Endpoint | Changes |
-|------------|-------------|---------|
-| `/api/swipes` | `/api/interactions` | Added Zod validation |
+| V1 Endpoint         | V2 Endpoint                        | Changes               |
+| ------------------- | ---------------------------------- | --------------------- |
+| `/api/swipes`       | `/api/interactions`                | Added Zod validation  |
 | `/api/swipes/liked` | `/api/properties?interaction=like` | Query-based filtering |
-| `/api/users/me` | `/api/users/profile` | Supabase RLS |
-| `/api/settings` | `/api/users/preferences` | JSONB storage |
+| `/api/users/me`     | `/api/users/profile`               | Supabase RLS          |
+| `/api/settings`     | `/api/users/preferences`           | JSONB storage         |
 
 ### State Management Migration
 
 **V1 Stores → V2 Architecture:**
+
 - `authStore` → Supabase Auth Context
 - `propertyStore` → TanStack Query cache
 - `settingsStore` → User preferences in DB
@@ -1892,6 +1907,7 @@ export const propertyIngestion = inngest.createFunction(
 ### Testing Migration
 
 **V1 Tests → V2 Tests:**
+
 - Convert Mocha/Chai → Vitest for integration tests
 - Add E2E tests with Playwright
 - Implement visual regression testing
@@ -1917,6 +1933,7 @@ export const propertyIngestion = inngest.createFunction(
 ### Deployment Migration
 
 **V1 → V2 Changes:**
+
 - Environment variables mapping
 - Database migration scripts
 - Background job setup
