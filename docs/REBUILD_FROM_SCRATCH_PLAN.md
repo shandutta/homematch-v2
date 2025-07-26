@@ -44,7 +44,7 @@ pnpm install -D jest jest-environment-jsdom
 pnpm install -D @playwright/test
 pnpm install -D eslint-config-next eslint-plugin-react-hooks eslint-plugin-react-refresh
 pnpm install -D prettier prettier-plugin-tailwindcss
-pnpm install -D husky lint-staged @commitlint/cli @commitlint/config-conventional
+pnpm install -D simple-git-hooks lint-staged @commitlint/cli @commitlint/config-conventional
 ```
 
 #### 1.2 Configure shadcn/ui
@@ -62,12 +62,10 @@ pnpm dlx shadcn@latest add alert alert-dialog
 pnpm dlx playwright install
 pnpm dlx playwright install-deps
 
-# Initialize git hooks
-pnpm add --save-dev husky
-pnpm exec husky init
-# Update the default pre-commit hook and add commit-msg hook
-echo "pnpm dlx lint-staged" > .husky/pre-commit
-echo "pnpm dlx commitlint --edit \$1" > .husky/commit-msg
+# Initialize git hooks with simple-git-hooks (better Windows Git Bash compatibility)
+pnpm add --save-dev simple-git-hooks
+# Configure hooks in package.json, then initialize
+npx simple-git-hooks
 ```
 
 #### 1.3 Development Tooling Setup
@@ -121,6 +119,10 @@ module.exports = {
 ```json
 // package.json - lint-staged configuration
 {
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx commitlint --edit $1"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
@@ -2623,7 +2625,7 @@ NEXTAUTH_SECRET=your-production-secret
     "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e",
     "test:coverage": "vitest --coverage",
     "db:types": "npx supabase gen types typescript --project-id your-project-ref > src/types/database.ts",
-    "prepare": "husky"
+    "prepare": "simple-git-hooks"
   }
 }
 ```

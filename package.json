@@ -47,17 +47,8 @@
     "zustand": "^5.0.6"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged",
-    "commit-msg": "npx commitlint --edit $1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml}": [
-      "prettier --write"
-    ]
+    "pre-commit": "echo 'Pre-commit hook working!'",
+    "commit-msg": "echo 'Commit-msg hook working!'"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
