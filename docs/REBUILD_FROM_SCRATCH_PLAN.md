@@ -2095,7 +2095,7 @@ export default async function LikedPropertiesPage() {
         <h1 className="text-2xl font-bold">❤️ Liked Properties</h1>
         <ShowSoldToggle />
       </div>
-      <PropertyInteractionGrid 
+      <PropertyInteractionGrid
         interactionType="liked"
         endpoint="/api/properties/liked"
       />
@@ -2110,7 +2110,7 @@ export default async function ViewedPropertiesPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">👁️ Viewed Properties</h1>
-      <PropertyInteractionGrid 
+      <PropertyInteractionGrid
         interactionType="viewed"
         endpoint="/api/properties/viewed"
       />
@@ -2125,7 +2125,7 @@ export default async function PassedPropertiesPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">❌ Passed Properties</h1>
-      <PropertyInteractionGrid 
+      <PropertyInteractionGrid
         interactionType="passed"
         endpoint="/api/properties/passed"
       />
@@ -2148,7 +2148,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold">Settings</h1>
-      
+
       {/* Location Selection */}
       <Card>
         <CardHeader>
@@ -2219,7 +2219,7 @@ export class UltimatePropertyIngestionService {
   private supabase: SupabaseClient
   private rapidApiKey: string
   private batchSize = 100
-  
+
   constructor() {
     this.supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -2229,7 +2229,7 @@ export class UltimatePropertyIngestionService {
   }
 
   async ingestPropertiesForMetroArea(
-    metroArea: string, 
+    metroArea: string,
     polygon: string,
     options: {
       priceMin?: number
@@ -2239,7 +2239,7 @@ export class UltimatePropertyIngestionService {
     } = {}
   ) {
     console.log(`🏘️ Starting ingestion for ${metroArea}`)
-    
+
     const startTime = Date.now()
     const stats = {
       total: 0,
@@ -2258,7 +2258,7 @@ export class UltimatePropertyIngestionService {
       for (let i = 0; i < properties.length; i += this.batchSize) {
         const batch = properties.slice(i, i + this.batchSize)
         await this.processBatch(batch, stats)
-        
+
         // Send progress to Inngest for monitoring
         await inngest.send({
           name: 'property.ingestion.progress',
@@ -2291,14 +2291,17 @@ export class UltimatePropertyIngestionService {
       livingArea: property.livingArea,
       description: property.description,
     }
-    
+
     return crypto
       .createHash('sha256')
       .update(JSON.stringify(hashData))
       .digest('hex')
   }
 
-  private async checkDuplication(zpid: string, hash: string): Promise<{
+  private async checkDuplication(
+    zpid: string,
+    hash: string
+  ): Promise<{
     exists: boolean
     needsUpdate: boolean
   }> {
@@ -3133,7 +3136,10 @@ interface NeighborhoodCSVRow {
 }
 
 async function importNeighborhoodsFromCSV() {
-  const csvPath = path.join(process.cwd(), 'migrated_data/neighborhoods_authoritative_rows.csv')
+  const csvPath = path.join(
+    process.cwd(),
+    'migrated_data/neighborhoods_authoritative_rows.csv'
+  )
   const neighborhoods: any[] = []
 
   return new Promise((resolve, reject) => {
@@ -3141,20 +3147,25 @@ async function importNeighborhoodsFromCSV() {
       .pipe(csv())
       .on('data', (row: NeighborhoodCSVRow) => {
         // Transform polygon format from lat,lon pairs to POLYGON
-        const coords = row.polygon.split(',').map(coord => parseFloat(coord.trim()))
+        const coords = row.polygon
+          .split(',')
+          .map((coord) => parseFloat(coord.trim()))
         const polygonPairs: string[] = []
-        
+
         for (let i = 0; i < coords.length; i += 2) {
           if (i + 1 < coords.length) {
             polygonPairs.push(`${coords[i + 1]} ${coords[i]}`) // lon lat format
           }
         }
-        
+
         // Ensure polygon is closed
-        if (polygonPairs.length > 0 && polygonPairs[0] !== polygonPairs[polygonPairs.length - 1]) {
+        if (
+          polygonPairs.length > 0 &&
+          polygonPairs[0] !== polygonPairs[polygonPairs.length - 1]
+        ) {
           polygonPairs.push(polygonPairs[0])
         }
-        
+
         const postgisPolygon = `POLYGON((${polygonPairs.join(', ')}))`
 
         neighborhoods.push({
@@ -3169,12 +3180,12 @@ async function importNeighborhoodsFromCSV() {
       })
       .on('end', async () => {
         console.log(`📊 Loaded ${neighborhoods.length} neighborhoods from CSV`)
-        
+
         // Batch insert neighborhoods
         const { error } = await supabase
           .from('neighborhoods')
           .upsert(neighborhoods, { onConflict: 'id' })
-        
+
         if (error) {
           console.error('❌ Error importing neighborhoods:', error)
           reject(error)
@@ -3188,28 +3199,31 @@ async function importNeighborhoodsFromCSV() {
 }
 
 async function enrichNeighborhoodsFromJSON() {
-  const jsonPath = path.join(process.cwd(), 'migrated_data/all-neighborhoods-combined.json')
+  const jsonPath = path.join(
+    process.cwd(),
+    'migrated_data/all-neighborhoods-combined.json'
+  )
   const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
-  
+
   console.log(`📊 Enriching ${jsonData.length} neighborhoods from JSON`)
-  
+
   // Create a map for quick lookup
   const neighborhoodMap = new Map()
   jsonData.forEach((item: any) => {
     const key = `${item.name.toLowerCase()}-${item.city.toLowerCase()}`
     neighborhoodMap.set(key, item)
   })
-  
+
   // Update neighborhoods with city, region, and metro area
   const { data: neighborhoods } = await supabase
     .from('neighborhoods')
     .select('*')
-  
+
   if (neighborhoods) {
     for (const neighborhood of neighborhoods) {
       const key = `${neighborhood.name.toLowerCase()}-unknown`
       const enrichData = neighborhoodMap.get(key)
-      
+
       if (enrichData) {
         await supabase
           .from('neighborhoods')
@@ -3221,7 +3235,7 @@ async function enrichNeighborhoodsFromJSON() {
       }
     }
   }
-  
+
   console.log('✅ Neighborhood enrichment complete')
 }
 
@@ -3296,14 +3310,15 @@ async function importPropertiesFromCSV() {
             try {
               images = JSON.parse(row.images.replace(/'/g, '"'))
             } catch {
-              images = row.images.split(',').map(img => img.trim())
+              images = row.images.split(',').map((img) => img.trim())
             }
           }
 
           // Create POINT for coordinates
-          const coordinates = row.latitude && row.longitude 
-            ? `POINT(${row.longitude} ${row.latitude})` 
-            : null
+          const coordinates =
+            row.latitude && row.longitude
+              ? `POINT(${row.longitude} ${row.latitude})`
+              : null
 
           const property = {
             id: row.id,
@@ -3343,23 +3358,28 @@ async function importPropertiesFromCSV() {
       .on('end', async () => {
         console.log(`📊 Total properties processed: ${processedCount}`)
         console.log(`❌ Total errors: ${errorCount}`)
-        
+
         // Batch insert properties in chunks of 1000
         const chunkSize = 1000
         for (let i = 0; i < properties.length; i += chunkSize) {
           const chunk = properties.slice(i, i + chunkSize)
-          
+
           const { error } = await supabase
             .from('properties')
             .upsert(chunk, { onConflict: 'id' })
-          
+
           if (error) {
-            console.error(`❌ Error inserting chunk ${i / chunkSize + 1}:`, error)
+            console.error(
+              `❌ Error inserting chunk ${i / chunkSize + 1}:`,
+              error
+            )
           } else {
-            console.log(`✅ Inserted chunk ${i / chunkSize + 1} (${chunk.length} properties)`)
+            console.log(
+              `✅ Inserted chunk ${i / chunkSize + 1} (${chunk.length} properties)`
+            )
           }
         }
-        
+
         console.log('✅ Property import complete')
         resolve(properties)
       })
@@ -3435,7 +3455,7 @@ export class PropertyIngestionService {
     } = {}
   ) {
     console.log(`🏘️ Starting ingestion for neighborhood ${neighborhoodId}`)
-    
+
     const stats = {
       totalProcessed: 0,
       totalImagesDownloaded: 0,
@@ -3453,18 +3473,24 @@ export class PropertyIngestionService {
       }
 
       // Fetch properties from Zillow API
-      const properties = await this.fetchPropertiesFromZillow(apiPolygon, options)
+      const properties = await this.fetchPropertiesFromZillow(
+        apiPolygon,
+        options
+      )
       console.log(`📊 Fetched ${properties.length} properties`)
 
       // Process in batches
       for (let i = 0; i < properties.length; i += this.batchSize) {
         const batch = properties.slice(i, i + this.batchSize)
-        
+
         for (const property of batch) {
           try {
             await this.processProperty(property, neighborhoodId, stats)
           } catch (error) {
-            console.error(`❌ Error processing property ${property.zpid}:`, error)
+            console.error(
+              `❌ Error processing property ${property.zpid}:`,
+              error
+            )
             stats.totalErrors++
           }
         }
@@ -3496,7 +3522,9 @@ export class PropertyIngestionService {
       )
 
       if (!response.ok) {
-        console.warn(`⚠️ Failed to fetch images for zpid ${zpid}: ${response.status}`)
+        console.warn(
+          `⚠️ Failed to fetch images for zpid ${zpid}: ${response.status}`
+        )
         return []
       }
 
@@ -3520,7 +3548,7 @@ export class PropertyIngestionService {
       livingArea: property.livingArea,
       listingStatus: property.listingStatus,
     }
-    
+
     return crypto
       .createHash('sha256')
       .update(JSON.stringify(hashData))
@@ -3581,9 +3609,10 @@ export class PropertyIngestionService {
       listing_status: validatedProperty.listingStatus || 'active',
       images: images,
       description: validatedProperty.description,
-      coordinates: validatedProperty.latitude && validatedProperty.longitude
-        ? `POINT(${validatedProperty.longitude} ${validatedProperty.latitude})`
-        : null,
+      coordinates:
+        validatedProperty.latitude && validatedProperty.longitude
+          ? `POINT(${validatedProperty.longitude} ${validatedProperty.latitude})`
+          : null,
       neighborhood_id: neighborhoodId,
       property_hash: propertyHash,
       is_active: true,
@@ -3595,7 +3624,10 @@ export class PropertyIngestionService {
       .upsert(propertyData, { onConflict: 'zpid' })
 
     if (error) {
-      console.error(`❌ Error upserting property ${validatedProperty.zpid}:`, error)
+      console.error(
+        `❌ Error upserting property ${validatedProperty.zpid}:`,
+        error
+      )
       stats.totalErrors++
     } else {
       if (existing) {
@@ -3608,11 +3640,11 @@ export class PropertyIngestionService {
 
   private mapPropertyType(type: string): string {
     const typeMap: Record<string, string> = {
-      'SINGLE_FAMILY': 'house',
-      'TOWNHOUSE': 'townhouse',
-      'CONDO': 'condo',
-      'APARTMENT': 'apartment',
-      'MULTI_FAMILY': 'multi_family',
+      SINGLE_FAMILY: 'house',
+      TOWNHOUSE: 'townhouse',
+      CONDO: 'condo',
+      APARTMENT: 'apartment',
+      MULTI_FAMILY: 'multi_family',
     }
     return typeMap[type] || 'house'
   }
@@ -3624,7 +3656,7 @@ export class PropertyIngestionService {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   private async fetchPropertiesFromZillow(
@@ -3652,14 +3684,14 @@ export const scheduledPropertyIngestion = inngest.createFunction(
   { cron: '0 */6 * * *' }, // Every 6 hours
   async ({ step }) => {
     const ingestionService = new PropertyIngestionService()
-    
+
     // Get active neighborhoods
     const neighborhoods = await step.run('get-neighborhoods', async () => {
       const { data } = await supabase
         .from('neighborhoods')
         .select('id, name, bounds')
         .limit(10) // Process 10 neighborhoods at a time
-      
+
       return data || []
     })
 
@@ -3671,7 +3703,7 @@ export const scheduledPropertyIngestion = inngest.createFunction(
           neighborhood.bounds,
           { maxProperties: 200 }
         )
-        
+
         return {
           neighborhoodId: neighborhood.id,
           neighborhoodName: neighborhood.name,
@@ -3699,14 +3731,14 @@ export const manualPropertyIngestion = inngest.createFunction(
   async ({ event, step }) => {
     const { neighborhoodId, options } = event.data
     const ingestionService = new PropertyIngestionService()
-    
+
     const neighborhood = await step.run('get-neighborhood', async () => {
       const { data } = await supabase
         .from('neighborhoods')
         .select('*')
         .eq('id', neighborhoodId)
         .single()
-      
+
       return data
     })
 
@@ -3734,29 +3766,34 @@ export const manualPropertyIngestion = inngest.createFunction(
 ## Migration Timeline Summary
 
 ### Phase 1: Data Migration (Week 5)
+
 - Day 29-30: Import neighborhood data with hierarchical structure
 - Day 31-32: Import property data with images and metadata
 - Day 33-34: Convert and integrate property ingestion scripts
 - Day 35: Set up background jobs for continuous updates
 
 ### Phase 2: Feature Migration (Already covered in Week 2.5)
+
 - Dashboard pages (liked/viewed/passed)
 - Settings page with hierarchical selectors
 - Property browsing with swipe functionality
 - User preference management
 
 ### Phase 3: Testing & Validation
+
 - Verify all imported data integrity
 - Test hierarchical neighborhood selection
 - Validate property ingestion pipeline
 - Ensure user interactions are preserved
 
 ### Success Metrics
+
 - ✅ All production properties imported (target: 100%)
 - ✅ Neighborhood hierarchy working correctly
 - ✅ Property ingestion running on schedule
 - ✅ User can browse, like, and filter properties
 - ✅ Settings preferences persist correctly
+
 3. **Property Ingestion** - Ultimate-property-ingest script
 4. **Data Files** - Properties, neighborhoods, and hierarchical mappings
 
@@ -3808,7 +3845,10 @@ export async function loadHierarchicalData() {
   )
 
   // Load the JSON file
-  const jsonData = readFileSync('./migrated_data/all-neighborhoods-combined.json', 'utf-8')
+  const jsonData = readFileSync(
+    './migrated_data/all-neighborhoods-combined.json',
+    'utf-8'
+  )
   const neighborhoods: NeighborhoodHierarchy[] = JSON.parse(jsonData)
 
   console.log(`📊 Found ${neighborhoods.length} neighborhoods in JSON`)
@@ -3818,7 +3858,7 @@ export async function loadHierarchicalData() {
   const regions = new Map<string, string>() // region -> metro_area
   const cities = new Map<string, { region: string; metro: string }>()
 
-  neighborhoods.forEach(n => {
+  neighborhoods.forEach((n) => {
     metroAreas.add(n.metro_area)
     regions.set(n.region, n.metro_area)
     cities.set(n.city, { region: n.region, metro: n.metro_area })
@@ -3862,20 +3902,20 @@ export async function loadNeighborhoodsCSV() {
   )
 
   const neighborhoods: NeighborhoodRow[] = []
-  
+
   return new Promise((resolve, reject) => {
     createReadStream('./migrated_data/neighborhoods_authoritative_rows.csv')
       .pipe(csv())
       .on('data', (data) => neighborhoods.push(data))
       .on('end', async () => {
         console.log(`📍 Loaded ${neighborhoods.length} neighborhoods from CSV`)
-        
+
         // Transform and insert neighborhoods
         const batchSize = 100
         for (let i = 0; i < neighborhoods.length; i += batchSize) {
           const batch = neighborhoods.slice(i, i + batchSize)
-          
-          const transformed = batch.map(n => ({
+
+          const transformed = batch.map((n) => ({
             id: n.id,
             name: n.name,
             // We'll need to map city_id to actual city name from hierarchical data
@@ -3886,19 +3926,19 @@ export async function loadNeighborhoodsCSV() {
             created_at: n.created_at,
             updated_at: n.updated_at,
           }))
-          
+
           const { error } = await supabase
             .from('neighborhoods')
             .upsert(transformed, { onConflict: 'id' })
-            
+
           if (error) {
             console.error('Error inserting neighborhoods:', error)
             reject(error)
           }
-          
+
           console.log(`✅ Inserted batch ${i / batchSize + 1}`)
         }
-        
+
         resolve(neighborhoods)
       })
       .on('error', reject)
@@ -3909,16 +3949,16 @@ function convertPolygonToPostGIS(polygon: string): string {
   // Convert simple polygon format to PostGIS POLYGON format
   const coords = polygon.split(',').map(Number)
   const points: string[] = []
-  
+
   for (let i = 0; i < coords.length; i += 2) {
     points.push(`${coords[i + 1]} ${coords[i]}`) // lon lat format
   }
-  
+
   // Close the polygon by adding the first point at the end
   if (points.length > 0) {
     points.push(points[0])
   }
-  
+
   return `POLYGON((${points.join(', ')}))`
 }
 ```

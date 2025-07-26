@@ -47,3 +47,6 @@ homematch-v2.code-workspace
 # Local environment variables
 .env*
 .env*.local
+
+# Old Code
+homematch-original-analysis/*
