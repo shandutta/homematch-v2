@@ -12,5 +12,5 @@
     "prefer-const": "error",
     "no-var": "error"
   },
-  "ignorePatterns": ["*.js", "*.jsx"]
+  "ignorePatterns": ["*.js", "*.jsx", ".next/**/*", "out/**/*", "dist/**/*"]
 }

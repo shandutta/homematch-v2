@@ -22,7 +22,7 @@ pnpm dlx create-next-app@latest homematch-v2 --typescript --tailwind --app --src
 cd homematch-v2
 
 # Install core dependencies
-pnpm install @supabase/supabase-js @supabase/auth-helpers-nextjs @supabase/auth-helpers-react
+pnpm install @supabase/supabase-js @supabase/ssr
 pnpm install @tanstack/react-query @tanstack/react-query-devtools
 pnpm install zustand
 pnpm install zod react-hook-form @hookform/resolvers
@@ -176,7 +176,7 @@ touch commitlint.config.js
 
 ```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_URL=https://[project-ref].supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
@@ -314,20 +314,47 @@ CREATE POLICY "users_household_access" ON households
 
 ```typescript
 // src/lib/supabase/client.ts
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { Database } from '@/types/database'
 
-export const createClient = () => createClientComponentClient<Database>()
+export function createClient() {
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 ```
 
 ```typescript
 // src/lib/supabase/server.ts
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
-export const createServerClient = () =>
-  createServerComponentClient<Database>({ cookies })
+export async function createClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Server Component - handled by middleware
+          }
+        },
+      },
+    }
+  )
+}
 ```
 
 #### 3.2 Generate TypeScript Types
@@ -1441,29 +1468,58 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 // src/app/auth/callback/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/helloworld_notes'
 
   if (code) {
-    const supabase = createRouteHandlerClient({ cookies })
-    await supabase.auth.exchangeCodeForSession(code)
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
 
-    // Create user profile if it doesn't exist
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('user_profiles').upsert({ id: user.id }).select()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      // Create user profile if it doesn't exist
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('user_profiles').upsert({ id: user.id }).select()
+      }
+
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
   }
 
-  // Redirect to dashboard or onboarding
-  return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Redirect to error page with instructions
+  return NextResponse.redirect(new URL('/auth/auth-code-error', request.url))
 }
 ```
 
@@ -1509,7 +1565,7 @@ export function LoginForm() {
     if (error) {
       setError(error.message)
     } else {
-      router.push('/dashboard')
+      router.push('/helloworld_notes')
     }
 
     setLoading(false)

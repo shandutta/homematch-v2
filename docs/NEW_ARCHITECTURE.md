@@ -195,13 +195,43 @@ CREATE POLICY "neighborhoods_public_read" ON neighborhoods
 
 ```typescript
 // lib/supabase/client.ts
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-export const createClient = () => createClientComponentClient()
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 // lib/supabase/server.ts
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-export const createServerClient = () => createServerComponentClient({ cookies })
+
+export async function createClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Server Component - can be ignored with middleware
+          }
+        },
+      },
+    }
+  )
+}
 ```
 
 ### Authentication Flow
@@ -217,55 +247,73 @@ export const createServerClient = () => createServerComponentClient({ cookies })
 
 ```typescript
 // middleware.ts - Runs on Vercel Edge Runtime globally
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { withSentryEdge } from '@sentry/nextjs'
 
 async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            req.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
 
   const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession()
-
-  // Log auth errors to Sentry
-  if (error) {
-    console.error('Auth middleware error:', error)
-    // Sentry will automatically capture this in Edge Runtime
-  }
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const isAuthPage = req.nextUrl.pathname.startsWith('/auth')
   const isProtectedPage =
     req.nextUrl.pathname.startsWith('/dashboard') ||
-    req.nextUrl.pathname.startsWith('/onboarding')
+    req.nextUrl.pathname.startsWith('/onboarding') ||
+    req.nextUrl.pathname.startsWith('/helloworld_notes')
   const isApiRoute = req.nextUrl.pathname.startsWith('/api')
 
   // Protect API routes
-  if (isApiRoute && req.nextUrl.pathname !== '/api/auth/callback' && !session) {
+  if (isApiRoute && req.nextUrl.pathname !== '/api/auth/callback' && !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Redirect authenticated users away from auth pages
-  if (session && isAuthPage) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
+  if (user && isAuthPage) {
+    return NextResponse.redirect(new URL('/helloworld_notes', req.url))
   }
 
   // Redirect unauthenticated users to login
-  if (!session && isProtectedPage) {
-    const loginUrl = new URL('/auth/login', req.url)
+  if (!user && isProtectedPage) {
+    const loginUrl = new URL('/login', req.url)
     loginUrl.searchParams.set('redirectTo', req.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
 
   // Check onboarding completion for dashboard access
-  if (session && req.nextUrl.pathname.startsWith('/dashboard')) {
+  if (user && req.nextUrl.pathname.startsWith('/dashboard')) {
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('onboarding_completed')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     if (!profile?.onboarding_completed) {
@@ -274,11 +322,14 @@ async function middleware(req: NextRequest) {
   }
 
   // Add security headers
-  res.headers.set('X-Frame-Options', 'DENY')
-  res.headers.set('X-Content-Type-Options', 'nosniff')
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set(
+    'Referrer-Policy',
+    'strict-origin-when-cross-origin'
+  )
 
-  return res
+  return supabaseResponse
 }
 
 export default withSentryEdge(middleware)

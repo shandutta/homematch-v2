@@ -27,17 +27,3 @@ export async function createClient() {
     }
   )
 }
-
-// Alternative server client with service role for administrative operations
-export function createServiceClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll: () => [],
-        setAll: () => {},
-      },
-    }
-  )
-}

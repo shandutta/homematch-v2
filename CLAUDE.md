@@ -18,6 +18,15 @@ This file provides guidance to Claude Code when working with this repository.
 - You should update the plan as you work.
 - After you complete tasks in the plan, you should update and append detailed descriptions of the changes you made, so following tasks can be easily hand over to other engineers.
 
+## Code Quality Standards
+
+**ALL code must follow these standards:**
+
+- **TypeScript**: Strict mode, ES2017+ syntax, proper typing, don't use any types
+- **ESLint**: Next.js core-web-vitals + TypeScript rules (runs on pre-commit)
+- **Prettier**: No semicolons, single quotes, 2-space indentation, Tailwind CSS plugin
+- **Always run `pnpm run lint` and `pnpm run type-check` after code changes**
+
 ## Essential Commands
 
 ```bash
@@ -25,6 +34,8 @@ This file provides guidance to Claude Code when working with this repository.
 pnpm run dev              # Start dev server
 pnpm run type-check       # TypeScript check
 pnpm run lint             # ESLint
+pnpm run format           # Prettier formatting
+pnpm run lint:fix         # Auto-fix ESLint issues
 
 # Testing
 pnpm run test             # Full test suite

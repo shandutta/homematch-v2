@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.*
+.next*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -42,3 +43,7 @@ next-env.d.ts
 
 #VS Code Workspace
 homematch-v2.code-workspace
+
+# Local environment variables
+.env*
+.env*.local

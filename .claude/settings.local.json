@@ -21,7 +21,13 @@
       "Bash(pnpm run:*)",
       "Bash(npx husky:*)",
       "Bash(pnpm exec:*)",
-      "Bash(npx simple-git-hooks:*)"
+      "Bash(npx simple-git-hooks:*)",
+      "WebFetch(domain:vercel.com)",
+      "Bash(echo $PATH)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:console.cloud.google.com)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "prepare": "simple-git-hooks",
     "format": "prettier --write .",
     "lint:fix": "eslint --fix ."
@@ -49,7 +50,7 @@
     "zustand": "^5.0.6"
   },
   "simple-git-hooks": {
-    "pre-commit": "npm run format && npm run lint:fix",
+    "pre-commit": "npm run format && npm run lint:fix && npm run type-check",
     "commit-msg": "npx commitlint --edit $1"
   },
   "devDependencies": {
