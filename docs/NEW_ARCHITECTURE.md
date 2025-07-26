@@ -1716,3 +1716,244 @@ scripts/
 ```
 
 This architecture provides a solid foundation for building a modern, scalable, and maintainable property browsing application with excellent user experience and developer productivity, while preserving your valuable production data assets.
+
+## Migration from V1 to V2
+
+### Overview
+
+The migration from the original HomeMatch app to V2 involves porting key features while upgrading the technology stack. The focus is on preserving user functionality and data while modernizing the architecture.
+
+### Key Components to Migrate
+
+#### 1. Dashboard & Statistics
+**V1 Implementation:**
+- SwipeContainer with gesture handling
+- Real-time statistics updates
+- NextAuth authentication
+- Zustand state management
+
+**V2 Migration:**
+- Port to TanStack Query for data fetching
+- Replace NextAuth with Supabase Auth
+- Implement optimistic updates for better UX
+- Add proper TypeScript typing throughout
+
+#### 2. Property Interaction Pages
+**V1 Features:**
+- `/dashboard/liked` - Shows liked properties
+- `/dashboard/viewed` - Shows all viewed properties  
+- `/dashboard/passed` - Shows passed properties
+- Toggle functionality to change property status
+- "Start Fresh" option to clear history
+
+**V2 Implementation:**
+```typescript
+// app/dashboard/[interaction]/page.tsx
+export default async function InteractionPage({ 
+  params 
+}: { 
+  params: { interaction: 'liked' | 'viewed' | 'passed' } 
+}) {
+  return (
+    <PropertyInteractionGrid 
+      type={params.interaction}
+      showSoldToggle={true}
+      allowStatusChange={true}
+    />
+  )
+}
+```
+
+#### 3. Settings with Hierarchical Geography
+**V1 Features:**
+- MetroRegionNeighborhoodSelector component
+- 3-level hierarchy: Metro → Region → City → Neighborhood
+- Persistent selections when toggling parents
+- Search across all neighborhoods
+- POI management
+
+**V2 Enhancement:**
+```typescript
+// components/features/settings/GeographySelector.tsx
+export function EnhancedGeographySelector() {
+  // Database-driven geography data
+  const { data: geographies } = useGeographies()
+  
+  // Multi-level selection state
+  const [selection, setSelection] = useState<GeographySelection>({
+    metro: null,
+    regions: [],
+    cities: [],
+    neighborhoods: []
+  })
+  
+  // Real-time search with debouncing
+  const searchResults = useGeographySearch(searchQuery, {
+    debounce: 300
+  })
+  
+  return (
+    <HierarchicalSelector
+      data={geographies}
+      selection={selection}
+      onChange={setSelection}
+      searchResults={searchResults}
+    />
+  )
+}
+```
+
+#### 4. Property Ingestion System
+**V1 Features:**
+- `ultimate-property-ingest.cjs` script
+- Database-driven neighborhood polygons
+- Multi-image fetching from Zillow API
+- Hash-based change detection
+- Comprehensive error handling
+
+**V2 Migration:**
+- Convert to TypeScript service class
+- Integrate with Inngest for scheduled jobs
+- Add Zod validation for API responses
+- Implement proper rate limiting
+- Store ingestion logs in database
+
+### Data Migration Strategy
+
+#### Geographic Data Import
+```typescript
+// scripts/migration/neighborhoods.ts
+interface NeighborhoodImport {
+  csv: 'migrated_data/neighborhoods_authoritative_rows.csv'
+  // Note: Contains 3,400+ geographic entities (neighborhoods, cities, regions, metro areas)
+  
+  process: () => {
+    // 1. Import hierarchical geographic data from CSV
+    // 2. Transform to simplified V2 schema structure
+    // 3. Convert polygons to PostGIS format
+    // 4. Create spatial indexes for performance
+  }
+}
+```
+
+#### Property Data Import
+```typescript
+// scripts/migration/properties.ts
+interface PropertyImport {
+  source: 'migrated_data/properties_rows.csv'
+  // Note: Contains 1,100 verified properties with complete data
+  
+  transform: (row: CSVRow) => {
+    // 1. Parse image arrays (up to 20 images per property)
+    // 2. Convert coordinates to POINT for PostGIS
+    // 3. Map property types to V2 schema enums
+    // 4. Validate with PropertySchema using Zod
+    // 5. Batch insert with conflict resolution
+  }
+}
+```
+
+### API Migration Mapping
+
+| V1 Endpoint | V2 Endpoint | Changes |
+|------------|-------------|---------|
+| `/api/swipes` | `/api/interactions` | Added Zod validation |
+| `/api/swipes/liked` | `/api/properties?interaction=like` | Query-based filtering |
+| `/api/users/me` | `/api/users/profile` | Supabase RLS |
+| `/api/settings` | `/api/users/preferences` | JSONB storage |
+
+### State Management Migration
+
+**V1 Stores → V2 Architecture:**
+- `authStore` → Supabase Auth Context
+- `propertyStore` → TanStack Query cache
+- `settingsStore` → User preferences in DB
+- `swipeStore` → Interaction history in DB
+
+### Background Jobs Architecture
+
+```typescript
+// lib/inngest/functions/property-ingestion.ts
+export const propertyIngestion = inngest.createFunction(
+  { id: 'property-ingestion' },
+  { cron: '0 */6 * * *' }, // Every 6 hours
+  async ({ step }) => {
+    // 1. Get active neighborhoods
+    // 2. For each neighborhood:
+    //    - Fetch properties from Zillow
+    //    - Validate and transform data
+    //    - Update database
+    //    - Calculate ML scores
+    // 3. Send notifications for new matches
+  }
+)
+```
+
+### Testing Migration
+
+**V1 Tests → V2 Tests:**
+- Convert Mocha/Chai → Vitest for integration tests
+- Add E2E tests with Playwright
+- Implement visual regression testing
+- Add API contract testing with Zod
+
+### Performance Improvements
+
+1. **Image Loading:**
+   - Use Next.js Image component
+   - Implement progressive loading
+   - Add blur placeholders
+
+2. **Data Fetching:**
+   - Implement cursor-based pagination
+   - Add query result prefetching
+   - Use optimistic updates
+
+3. **Geographic Data:**
+   - Cache neighborhood polygons
+   - Use spatial indexes
+   - Implement viewport-based loading
+
+### Deployment Migration
+
+**V1 → V2 Changes:**
+- Environment variables mapping
+- Database migration scripts
+- Background job setup
+- Monitoring configuration
+
+### Migration Checklist
+
+- [ ] Set up V2 project structure
+- [ ] Configure Supabase with RLS
+- [ ] Implement core UI components
+- [ ] Port authentication flow
+- [ ] Migrate dashboard pages
+- [ ] Implement settings with selectors
+- [ ] Import geographic data
+- [ ] Import property data
+- [ ] Set up ingestion pipeline
+- [ ] Configure background jobs
+- [ ] Implement ML scoring
+- [ ] Add monitoring
+- [ ] Run E2E tests
+- [ ] Deploy to production
+
+### Post-Migration Enhancements
+
+1. **User Experience:**
+   - Add property recommendations
+   - Implement smart filters
+   - Add map-based search
+
+2. **Performance:**
+   - Implement Redis caching
+   - Add CDN for images
+   - Optimize bundle size
+
+3. **Features:**
+   - Multi-user households
+   - Property alerts
+   - Market insights
+
+This migration plan ensures a smooth transition from V1 to V2 while maintaining all critical functionality and improving the overall architecture.
