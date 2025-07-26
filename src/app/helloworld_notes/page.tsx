@@ -19,7 +19,7 @@ export default async function HelloWorldNotes() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  
+
   let notes = null
   let error = null
   let count = null
@@ -27,7 +27,9 @@ export default async function HelloWorldNotes() {
   let countError = null
 
   try {
-    const notesResult = await supabase.from('notes').select('*', { count: 'exact' })
+    const notesResult = await supabase
+      .from('notes')
+      .select('*', { count: 'exact' })
     notes = notesResult.data
     error = notesResult.error
     count = notesResult.count
@@ -39,7 +41,7 @@ export default async function HelloWorldNotes() {
     const countResult = await supabase
       .from('notes')
       .select('*', { count: 'exact', head: true })
-    
+
     totalCount = countResult.count
     countError = countResult.error
 
