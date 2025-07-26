@@ -12,7 +12,7 @@ export default async function HelloWorldNotes() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const { data: notes } = await supabase.from('notes').select()
+  const { data: notes, error } = await supabase.from('notes').select()
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -57,7 +57,7 @@ export default async function HelloWorldNotes() {
             </p>
             <p>
               <strong>✅ Database query:</strong>{' '}
-              {notes ? 'Success' : 'No data'}
+              {error ? `Error: ${error.message}` : notes ? 'Success' : 'No data'}
             </p>
             <p>
               <strong>✅ Route protection:</strong> Active
@@ -78,7 +78,13 @@ export default async function HelloWorldNotes() {
             </p>
           </div>
           <div className="p-6">
-            {notes && notes.length > 0 ? (
+            {error ? (
+              <div className="py-8 text-center">
+                <div className="mb-2 text-lg text-red-400">❌</div>
+                <p className="text-red-500">Database Error</p>
+                <p className="mt-1 text-xs text-red-400">{error.message}</p>
+              </div>
+            ) : notes && notes.length > 0 ? (
               <div className="space-y-4">
                 {notes.map((note: Note) => (
                   <div
