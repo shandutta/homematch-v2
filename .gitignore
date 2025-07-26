@@ -49,4 +49,4 @@ homematch-v2.code-workspace
 .env*.local
 
 # Old Code
-homematch-original-analysis/*
+homematch-v2/homematch-original-analysis*
