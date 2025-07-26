@@ -12,7 +12,14 @@ export default async function HelloWorldNotes() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const { data: notes, error } = await supabase.from('notes').select()
+  const { data: notes, error, count } = await supabase
+    .from('notes')
+    .select('*', { count: 'exact' })
+  
+  // Also try a simple count query to test table access
+  const { count: totalCount, error: countError } = await supabase
+    .from('notes')
+    .select('*', { count: 'exact', head: true })
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -60,8 +67,14 @@ export default async function HelloWorldNotes() {
               {error
                 ? `Error: ${error.message}`
                 : notes
-                  ? 'Success'
+                  ? `Success (${count || 0} rows)`
                   : 'No data'}
+            </p>
+            <p>
+              <strong>📊 Count query:</strong>{' '}
+              {countError
+                ? `Error: ${countError.message}`
+                : `Total rows: ${totalCount || 0}`}
             </p>
             <p>
               <strong>✅ Route protection:</strong> Active
