@@ -48,7 +48,9 @@ export default async function HelloWorldNotes() {
     console.log('Count query result:', { totalCount, countError })
   } catch (e) {
     console.error('Database query failed:', e)
-    error = { message: `Query failed: ${e.message}` }
+    error = {
+      message: `Query failed: ${e instanceof Error ? e.message : String(e)}`,
+    }
   }
 
   return (

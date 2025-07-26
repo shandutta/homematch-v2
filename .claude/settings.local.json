@@ -27,7 +27,9 @@
       "WebFetch(domain:supabase.com)",
       "WebFetch(domain:console.cloud.google.com)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }
