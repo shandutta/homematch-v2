@@ -8,18 +8,46 @@ interface Note {
 }
 
 export default async function HelloWorldNotes() {
+  // Log environment variables (be careful not to expose sensitive keys in production)
+  console.log('Environment check:', {
+    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+  })
+
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  const { data: notes, error, count } = await supabase
-    .from('notes')
-    .select('*', { count: 'exact' })
   
-  // Also try a simple count query to test table access
-  const { count: totalCount, error: countError } = await supabase
-    .from('notes')
-    .select('*', { count: 'exact', head: true })
+  let notes = null
+  let error = null
+  let count = null
+  let totalCount = null
+  let countError = null
+
+  try {
+    const notesResult = await supabase.from('notes').select('*', { count: 'exact' })
+    notes = notesResult.data
+    error = notesResult.error
+    count = notesResult.count
+
+    // Log to server console for debugging
+    console.log('Notes query result:', { notes, error, count })
+
+    // Also try a simple count query to test table access
+    const countResult = await supabase
+      .from('notes')
+      .select('*', { count: 'exact', head: true })
+    
+    totalCount = countResult.count
+    countError = countResult.error
+
+    console.log('Count query result:', { totalCount, countError })
+  } catch (e) {
+    console.error('Database query failed:', e)
+    error = { message: `Query failed: ${e.message}` }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
