@@ -57,7 +57,11 @@ export default async function HelloWorldNotes() {
             </p>
             <p>
               <strong>✅ Database query:</strong>{' '}
-              {error ? `Error: ${error.message}` : notes ? 'Success' : 'No data'}
+              {error
+                ? `Error: ${error.message}`
+                : notes
+                  ? 'Success'
+                  : 'No data'}
             </p>
             <p>
               <strong>✅ Route protection:</strong> Active
