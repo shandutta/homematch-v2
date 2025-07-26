@@ -10,7 +10,9 @@
     "type-check": "tsc --noEmit",
     "prepare": "simple-git-hooks",
     "format": "prettier --write .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "install:approve": "pnpm install && pnpm approve-builds",
+    "postinstall": "pnpm approve-builds"  
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
