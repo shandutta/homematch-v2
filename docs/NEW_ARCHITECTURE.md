@@ -3,45 +3,53 @@
 ## Technology Stack
 
 ### Core Framework
+
 - **Next.js 15** - App Router with React 19 and Server Components
 - **TypeScript 5.x** - Full type safety throughout the application
 - **Tailwind CSS 3.4+** - Utility-first styling with custom design tokens
 - **shadcn/ui** - Modern, accessible component library built on Radix
 
 ### Backend Services
+
 - **Supabase** - PostgreSQL database with built-in authentication and real-time features
 - **Supabase Auth** - Handles user authentication, sessions, and Google OAuth
 - **Row-Level Security** - Database-level authorization and data protection
 - **Edge Functions** - Serverless functions for complex business logic
 
 ### State Management
+
 - **TanStack Query v5** - Server state management with caching, background updates, and optimistic mutations
 - **Zustand** - Lightweight client state for UI interactions and temporary data
 - **React Hook Form** - Form state management with validation
 
 ### Validation & Type Safety
+
 - **Zod** - Runtime type validation for all API inputs, forms, and data transformations
 - **TypeScript 5.x** - Compile-time type checking with strict configuration
 - **Generated Types** - Supabase auto-generated database types
 
 ### Testing Strategy
+
 - **Jest** - Unit tests for components, functions, and utilities with React Testing Library
 - **Vitest** - Fast integration tests for API routes, services, and database operations
 - **Playwright** - End-to-end testing with cross-browser support
 - **React Testing Library** - Component testing utilities with Jest
 
 ### Code Quality & Development
+
 - **ESLint** - Linting with Next.js, TypeScript, and React rules
 - **Prettier** - Code formatting with consistent style
 - **Husky** - Git hooks for pre-commit quality checks
 - **TypeScript Strict Mode** - Maximum type safety
 
 ### Background Jobs & Workflows
+
 - **Inngest** - Type-safe background jobs, cron jobs, and workflows
 - **Edge Functions** - Serverless functions with global distribution
 - **Webhooks** - Real-time event processing from Supabase
 
 ### Monitoring & Analytics
+
 - **Sentry** - Error tracking, performance monitoring, and alerting
 - **PostHog** - Product analytics, feature flags, and user behavior tracking
 - **Vercel Analytics** - Web vitals and performance metrics
@@ -49,12 +57,14 @@
 - **ML Model Performance** - Track scoring accuracy, user engagement, and model drift
 
 ### AI & ML Integration
+
 - **Natural Language Search** - Convert user queries to search criteria ("$2.5M homes in San Jose AND $1.5-2M in Oakland Hills")
 - **3-Phase ML Scoring System** - Preserve existing cold-start → online-LR → LightGBM progression
 - **Chinese LLM Models** - Cost-effective alternatives (Qwen, DeepSeek, ChatGLM) for NL processing
 - **Scoring Migration** - Preserve your sophisticated ML property matching system
 
 ### Development & Deployment
+
 - **Vercel** - Hosting with Edge Runtime and global CDN
 - **GitHub Actions** - CI/CD pipeline with automated testing and deployment
 - **Next.js Middleware** - Edge-enforced route protection and authentication
@@ -188,7 +198,7 @@ CREATE POLICY "neighborhoods_public_read" ON neighborhoods
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 export const createClient = () => createClientComponentClient()
 
-// lib/supabase/server.ts  
+// lib/supabase/server.ts
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 export const createServerClient = () => createServerComponentClient({ cookies })
@@ -198,7 +208,7 @@ export const createServerClient = () => createServerComponentClient({ cookies })
 
 1. **Sign Up**: Email/password with automatic email verification
 2. **Sign In**: Password-based or Google OAuth
-3. **Session Management**: Automatic token refresh and persistence  
+3. **Session Management**: Automatic token refresh and persistence
 4. **Edge Route Protection**: Next.js Middleware with global enforcement
 5. **Profile Creation**: Automatic user_profiles record on first sign-in
 6. **Security Monitoring**: Sentry integration for auth failures and security events
@@ -215,37 +225,41 @@ import { withSentryEdge } from '@sentry/nextjs'
 async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
-  
-  const { data: { session }, error } = await supabase.auth.getSession()
-  
+
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession()
+
   // Log auth errors to Sentry
   if (error) {
     console.error('Auth middleware error:', error)
     // Sentry will automatically capture this in Edge Runtime
   }
-  
+
   const isAuthPage = req.nextUrl.pathname.startsWith('/auth')
-  const isProtectedPage = req.nextUrl.pathname.startsWith('/dashboard') || 
-                          req.nextUrl.pathname.startsWith('/onboarding')
+  const isProtectedPage =
+    req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/onboarding')
   const isApiRoute = req.nextUrl.pathname.startsWith('/api')
-  
+
   // Protect API routes
   if (isApiRoute && req.nextUrl.pathname !== '/api/auth/callback' && !session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  
+
   // Redirect authenticated users away from auth pages
   if (session && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
-  
+
   // Redirect unauthenticated users to login
   if (!session && isProtectedPage) {
     const loginUrl = new URL('/auth/login', req.url)
     loginUrl.searchParams.set('redirectTo', req.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
-  
+
   // Check onboarding completion for dashboard access
   if (session && req.nextUrl.pathname.startsWith('/dashboard')) {
     const { data: profile } = await supabase
@@ -253,17 +267,17 @@ async function middleware(req: NextRequest) {
       .select('onboarding_completed')
       .eq('id', session.user.id)
       .single()
-      
+
     if (!profile?.onboarding_completed) {
       return NextResponse.redirect(new URL('/onboarding', req.url))
     }
   }
-  
+
   // Add security headers
   res.headers.set('X-Frame-Options', 'DENY')
   res.headers.set('X-Content-Type-Options', 'nosniff')
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  
+
   return res
 }
 
@@ -284,7 +298,11 @@ export const config = {
 
 ```typescript
 // hooks/useProperties.ts
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 
 export function useProperties(filters: PropertyFilters) {
   return useInfiniteQuery({
@@ -298,10 +316,15 @@ export function useProperties(filters: PropertyFilters) {
 
 export function usePropertyInteraction() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ propertyId, type }: { propertyId: string; type: InteractionType }) =>
-      recordInteraction(propertyId, type),
+    mutationFn: ({
+      propertyId,
+      type,
+    }: {
+      propertyId: string
+      type: InteractionType
+    }) => recordInteraction(propertyId, type),
     onMutate: async ({ propertyId, type }) => {
       // Optimistic update
       await queryClient.cancelQueries(['properties'])
@@ -310,7 +333,7 @@ export function usePropertyInteraction() {
     onError: (err, variables, context) => {
       // Rollback on error
       queryClient.setQueryData(['properties'], context?.previousData)
-    }
+    },
   })
 }
 ```
@@ -328,11 +351,11 @@ interface AppState {
   isFilterModalOpen: boolean
   isPropertyDetailOpen: boolean
   selectedPropertyId: string | null
-  
+
   // Temporary data
   tempSearchFilters: PropertyFilters
   swipeHistory: string[]
-  
+
   // Actions
   actions: {
     nextProperty: () => void
@@ -356,24 +379,27 @@ export const useAppStore = create<AppState>()(
       selectedPropertyId: null,
       tempSearchFilters: {},
       swipeHistory: [],
-      
+
       // Actions
       actions: {
-        nextProperty: () => set(state => ({ 
-          currentPropertyIndex: state.currentPropertyIndex + 1 
-        })),
-        
+        nextProperty: () =>
+          set((state) => ({
+            currentPropertyIndex: state.currentPropertyIndex + 1,
+          })),
+
         setTempFilters: (filters) => set({ tempSearchFilters: filters }),
-        
-        openPropertyDetail: (id) => set({ 
-          isPropertyDetailOpen: true, 
-          selectedPropertyId: id 
-        }),
-        
-        recordSwipe: (propertyId) => set(state => ({
-          swipeHistory: [...state.swipeHistory, propertyId]
-        }))
-      }
+
+        openPropertyDetail: (id) =>
+          set({
+            isPropertyDetailOpen: true,
+            selectedPropertyId: id,
+          }),
+
+        recordSwipe: (propertyId) =>
+          set((state) => ({
+            swipeHistory: [...state.swipeHistory, propertyId],
+          })),
+      },
     }),
     { name: 'app-store' }
   )
@@ -432,28 +458,28 @@ components/
 ```typescript
 // tailwind.config.js
 module.exports = {
-  darkMode: ["class"],
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  darkMode: ['class'],
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: 'hsl(var(--border))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         // ... more design tokens
       },
       animation: {
-        "swipe-left": "swipeLeft 0.3s ease-out",
-        "swipe-right": "swipeRight 0.3s ease-out",
-        "fade-in": "fadeIn 0.2s ease-in",
-      }
+        'swipe-left': 'swipeLeft 0.3s ease-out',
+        'swipe-right': 'swipeRight 0.3s ease-out',
+        'fade-in': 'fadeIn 0.2s ease-in',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require('tailwindcss-animate')],
 }
 ```
 
@@ -479,7 +505,12 @@ export const PropertySchema = z.object({
   images: z.array(z.string().url()).default([]),
   description: z.string().max(5000).optional(),
   amenities: z.array(z.string()).default([]),
-  year_built: z.number().int().min(1800).max(new Date().getFullYear()).optional(),
+  year_built: z
+    .number()
+    .int()
+    .min(1800)
+    .max(new Date().getFullYear())
+    .optional(),
   lot_size_sqft: z.number().int().positive().optional(),
   parking_spots: z.number().int().min(0).default(0),
   is_active: z.boolean().default(true),
@@ -487,33 +518,42 @@ export const PropertySchema = z.object({
   updated_at: z.string().datetime(),
 })
 
-export const PropertyFiltersSchema = z.object({
-  priceMin: z.number().int().positive().optional(),
-  priceMax: z.number().int().positive().optional(),
-  bedrooms: z.number().int().min(0).max(20).optional(),
-  bathrooms: z.number().min(0).max(20).optional(),
-  propertyType: z.enum(['house', 'condo', 'townhouse', 'apartment']).optional(),
-  city: z.string().min(1).optional(),
-  neighborhoods: z.array(z.string().uuid()).optional(),
-  squareFeetMin: z.number().int().positive().optional(),
-  squareFeetMax: z.number().int().positive().optional(),
-  yearBuiltMin: z.number().int().min(1800).optional(),
-  yearBuiltMax: z.number().int().max(new Date().getFullYear()).optional(),
-}).refine(data => {
-  if (data.priceMin && data.priceMax) {
-    return data.priceMin <= data.priceMax
-  }
-  return true
-}, {
-  message: 'Minimum price must be less than maximum price',
-  path: ['priceMax']
-})
+export const PropertyFiltersSchema = z
+  .object({
+    priceMin: z.number().int().positive().optional(),
+    priceMax: z.number().int().positive().optional(),
+    bedrooms: z.number().int().min(0).max(20).optional(),
+    bathrooms: z.number().min(0).max(20).optional(),
+    propertyType: z
+      .enum(['house', 'condo', 'townhouse', 'apartment'])
+      .optional(),
+    city: z.string().min(1).optional(),
+    neighborhoods: z.array(z.string().uuid()).optional(),
+    squareFeetMin: z.number().int().positive().optional(),
+    squareFeetMax: z.number().int().positive().optional(),
+    yearBuiltMin: z.number().int().min(1800).optional(),
+    yearBuiltMax: z.number().int().max(new Date().getFullYear()).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.priceMin && data.priceMax) {
+        return data.priceMin <= data.priceMax
+      }
+      return true
+    },
+    {
+      message: 'Minimum price must be less than maximum price',
+      path: ['priceMax'],
+    }
+  )
 
 export const PropertySearchSchema = z.object({
   filters: PropertyFiltersSchema.optional(),
   limit: z.number().int().min(1).max(100).default(20),
   offset: z.number().int().min(0).default(0),
-  orderBy: z.enum(['price', 'created_at', 'bedrooms', 'square_feet']).default('created_at'),
+  orderBy: z
+    .enum(['price', 'created_at', 'bedrooms', 'square_feet'])
+    .default('created_at'),
   orderDirection: z.enum(['asc', 'desc']).default('desc'),
 })
 
@@ -528,13 +568,17 @@ export type PropertySearch = z.infer<typeof PropertySearchSchema>
 import { z } from 'zod'
 
 export const UserPreferencesSchema = z.object({
-  priceRange: z.object({
-    min: z.number().int().positive(),
-    max: z.number().int().positive(),
-  }).refine(data => data.min <= data.max, {
-    message: 'Min price must be less than max price'
-  }),
-  preferredPropertyTypes: z.array(z.enum(['house', 'condo', 'townhouse', 'apartment'])).min(1),
+  priceRange: z
+    .object({
+      min: z.number().int().positive(),
+      max: z.number().int().positive(),
+    })
+    .refine((data) => data.min <= data.max, {
+      message: 'Min price must be less than max price',
+    }),
+  preferredPropertyTypes: z
+    .array(z.enum(['house', 'condo', 'townhouse', 'apartment']))
+    .min(1),
   minBedrooms: z.number().int().min(0).max(20),
   minBathrooms: z.number().min(0).max(20),
   maxCommute: z.number().int().min(0).max(120).optional(), // minutes
@@ -568,7 +612,9 @@ import { z } from 'zod'
 export const InteractionSchema = z.object({
   propertyId: z.string().uuid('Invalid property ID'),
   type: z.enum(['like', 'dislike', 'skip', 'view'], {
-    errorMap: () => ({ message: 'Interaction type must be like, dislike, skip, or view' })
+    errorMap: () => ({
+      message: 'Interaction type must be like, dislike, skip, or view',
+    }),
   }),
   metadata: z.record(z.unknown()).optional(), // For additional data like swipe direction, time spent
 })
@@ -615,16 +661,20 @@ import { z, ZodError } from 'zod'
 export function validateSearchParams<T extends z.ZodType>(
   request: NextRequest,
   schema: T
-): { success: true; data: z.infer<T> } | { success: false; error: NextResponse } {
+):
+  | { success: true; data: z.infer<T> }
+  | { success: false; error: NextResponse } {
   try {
     const searchParams = request.nextUrl.searchParams
     const params: Record<string, any> = {}
-    
+
     // Convert URL search params to object with type coercion
     searchParams.forEach((value, key) => {
       // Handle arrays (e.g., ?neighborhoods=id1&neighborhoods=id2)
       if (params[key]) {
-        params[key] = Array.isArray(params[key]) ? [...params[key], value] : [params[key], value]
+        params[key] = Array.isArray(params[key])
+          ? [...params[key], value]
+          : [params[key], value]
       } else {
         // Try to parse numbers and booleans
         if (value === 'true') params[key] = true
@@ -634,7 +684,7 @@ export function validateSearchParams<T extends z.ZodType>(
         else params[key] = value
       }
     })
-    
+
     const data = schema.parse(params)
     return { success: true, data }
   } catch (error) {
@@ -642,15 +692,15 @@ export function validateSearchParams<T extends z.ZodType>(
       return {
         success: false,
         error: NextResponse.json(
-          { 
+          {
             error: 'Validation failed',
-            details: error.errors.map(err => ({
+            details: error.errors.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
+              message: err.message,
+            })),
           },
           { status: 400 }
-        )
+        ),
       }
     }
     return {
@@ -658,7 +708,7 @@ export function validateSearchParams<T extends z.ZodType>(
       error: NextResponse.json(
         { error: 'Invalid parameters' },
         { status: 400 }
-      )
+      ),
     }
   }
 }
@@ -666,7 +716,9 @@ export function validateSearchParams<T extends z.ZodType>(
 export async function validateRequestBody<T extends z.ZodType>(
   request: NextRequest,
   schema: T
-): Promise<{ success: true; data: z.infer<T> } | { success: false; error: NextResponse }> {
+): Promise<
+  { success: true; data: z.infer<T> } | { success: false; error: NextResponse }
+> {
   try {
     const body = await request.json()
     const data = schema.parse(body)
@@ -678,13 +730,13 @@ export async function validateRequestBody<T extends z.ZodType>(
         error: NextResponse.json(
           {
             error: 'Validation failed',
-            details: error.errors.map(err => ({
+            details: error.errors.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
+              message: err.message,
+            })),
           },
           { status: 400 }
-        )
+        ),
       }
     }
     return {
@@ -692,7 +744,7 @@ export async function validateRequestBody<T extends z.ZodType>(
       error: NextResponse.json(
         { error: 'Invalid request body' },
         { status: 400 }
-      )
+      ),
     }
   }
 }
@@ -708,25 +760,29 @@ import { validateSearchParams } from '@/lib/api/validation'
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    
+
     // Verify authentication
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession()
     if (authError || !session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     // Validate query parameters with comprehensive Zod schema
     const validation = validateSearchParams(request, PropertySearchSchema)
     if (!validation.success) {
       return validation.error
     }
-    
+
     const { filters, limit, offset, orderBy, orderDirection } = validation.data
-    
+
     // Build type-safe query
     let query = supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         *,
         neighborhoods (
           name,
@@ -735,41 +791,47 @@ export async function GET(request: NextRequest) {
           walk_score,
           transit_score
         )
-      `)
+      `
+      )
       .eq('is_active', true)
-    
+
     // Apply validated filters
     if (filters?.priceMin) query = query.gte('price', filters.priceMin)
     if (filters?.priceMax) query = query.lte('price', filters.priceMax)
     if (filters?.bedrooms) query = query.gte('bedrooms', filters.bedrooms)
     if (filters?.bathrooms) query = query.gte('bathrooms', filters.bathrooms)
-    if (filters?.propertyType) query = query.eq('property_type', filters.propertyType)
+    if (filters?.propertyType)
+      query = query.eq('property_type', filters.propertyType)
     if (filters?.city) query = query.ilike('city', `%${filters.city}%`)
-    if (filters?.neighborhoods?.length) query = query.in('neighborhood_id', filters.neighborhoods)
-    if (filters?.squareFeetMin) query = query.gte('square_feet', filters.squareFeetMin)
-    if (filters?.squareFeetMax) query = query.lte('square_feet', filters.squareFeetMax)
-    if (filters?.yearBuiltMin) query = query.gte('year_built', filters.yearBuiltMin)
-    if (filters?.yearBuiltMax) query = query.lte('year_built', filters.yearBuiltMax)
-    
+    if (filters?.neighborhoods?.length)
+      query = query.in('neighborhood_id', filters.neighborhoods)
+    if (filters?.squareFeetMin)
+      query = query.gte('square_feet', filters.squareFeetMin)
+    if (filters?.squareFeetMax)
+      query = query.lte('square_feet', filters.squareFeetMax)
+    if (filters?.yearBuiltMin)
+      query = query.gte('year_built', filters.yearBuiltMin)
+    if (filters?.yearBuiltMax)
+      query = query.lte('year_built', filters.yearBuiltMax)
+
     // Apply pagination and ordering
     const { data: properties, error } = await query
       .range(offset, offset + limit - 1)
       .order(orderBy, { ascending: orderDirection === 'asc' })
-    
+
     if (error) throw error
-    
+
     // Return type-safe response
     return NextResponse.json({
       properties: properties || [],
       pagination: {
         offset,
         limit,
-        hasMore: (properties?.length || 0) === limit
+        hasMore: (properties?.length || 0) === limit,
       },
       filters: filters || {},
-      total: properties?.length || 0
+      total: properties?.length || 0,
     })
-    
   } catch (error) {
     console.error('Properties API error:', error)
     return NextResponse.json(
@@ -790,39 +852,39 @@ import { validateRequestBody } from '@/lib/api/validation'
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    
+
     // Verify authentication
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession()
     if (authError || !session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     // Validate request body
     const validation = await validateRequestBody(request, InteractionSchema)
     if (!validation.success) {
       return validation.error
     }
-    
+
     const { propertyId, type, metadata } = validation.data
-    
+
     // Record interaction with validated data
-    const { error } = await supabase
-      .from('user_property_interactions')
-      .upsert({
-        property_id: propertyId,
-        interaction_type: type,
-        user_id: session.user.id,
-        metadata: metadata || null,
-        created_at: new Date().toISOString()
-      })
-    
-    if (error) throw error
-    
-    return NextResponse.json({ 
-      success: true,
-      interaction: { propertyId, type, timestamp: new Date().toISOString() }
+    const { error } = await supabase.from('user_property_interactions').upsert({
+      property_id: propertyId,
+      interaction_type: type,
+      user_id: session.user.id,
+      metadata: metadata || null,
+      created_at: new Date().toISOString(),
     })
-    
+
+    if (error) throw error
+
+    return NextResponse.json({
+      success: true,
+      interaction: { propertyId, type, timestamp: new Date().toISOString() },
+    })
   } catch (error) {
     console.error('Interaction API error:', error)
     return NextResponse.json(
@@ -872,7 +934,7 @@ interface PropertyFiltersFormProps {
 
 export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFiltersFormProps) {
   const form = useValidatedForm(PropertyFiltersSchema, initialValues)
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -884,8 +946,8 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
               <FormItem>
                 <FormLabel>Min Price</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="100000"
                     {...field}
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
@@ -895,7 +957,7 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="priceMax"
@@ -903,8 +965,8 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
               <FormItem>
                 <FormLabel>Max Price</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     placeholder="1000000"
                     {...field}
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
@@ -915,7 +977,7 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
             )}
           />
         </div>
-        
+
         <FormField
           control={form.control}
           name="propertyType"
@@ -939,9 +1001,9 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
             </FormItem>
           )}
         />
-        
-        <Button 
-          type="submit" 
+
+        <Button
+          type="submit"
           className="w-full"
           disabled={!form.formState.isValid || form.formState.isSubmitting}
         >
@@ -962,15 +1024,19 @@ export function PropertyFiltersForm({ onSubmit, initialValues }: PropertyFilters
 import { Inngest } from 'inngest'
 import { serve } from 'inngest/next'
 
-export const inngest = new Inngest({ 
+export const inngest = new Inngest({
   id: 'homematch',
-  name: 'HomeMatch'
+  name: 'HomeMatch',
 })
 
 // app/api/inngest/route.ts
 import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
-import { sendPropertyNotification, processPropertyImages, updateMarketData } from '@/lib/inngest/functions'
+import {
+  sendPropertyNotification,
+  processPropertyImages,
+  updateMarketData,
+} from '@/lib/inngest/functions'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -994,19 +1060,23 @@ export const sendPropertyNotification = inngest.createFunction(
   { event: 'property/new-match' },
   async ({ event, step }) => {
     const { userId, propertyId } = event.data
-    
+
     // Step 1: Get user preferences
     const userPrefs = await step.run('get-user-preferences', async () => {
       const supabase = createClient()
-      return supabase.from('user_profiles').select('preferences').eq('id', userId).single()
+      return supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', userId)
+        .single()
     })
-    
+
     // Step 2: Calculate match score
     const matchScore = await step.run('calculate-match-score', async () => {
       // AI-powered property matching logic
       return calculatePropertyMatch(propertyId, userPrefs.data.preferences)
     })
-    
+
     // Step 3: Send notification if good match
     if (matchScore > 0.8) {
       await step.run('send-notification', async () => {
@@ -1014,11 +1084,11 @@ export const sendPropertyNotification = inngest.createFunction(
         return sendPushNotification(userId, {
           title: 'New Property Match!',
           body: `We found a ${Math.round(matchScore * 100)}% match for you`,
-          data: { propertyId }
+          data: { propertyId },
         })
       })
     }
-    
+
     return { matchScore, notificationSent: matchScore > 0.8 }
   }
 )
@@ -1033,12 +1103,12 @@ export const updateMarketData = inngest.createFunction(
       // Fetch external market data APIs
       return updateNeighborhoodPrices()
     })
-    
+
     // Update walk scores
     await step.run('update-walk-scores', async () => {
       return updateWalkScores()
     })
-    
+
     return { status: 'completed' }
   }
 )
@@ -1054,14 +1124,14 @@ import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  
+
   // Performance monitoring
   tracesSampleRate: 1.0,
-  
+
   // Session replay for debugging
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  
+
   // Custom error filtering
   beforeSend(event) {
     // Filter out known non-issues
@@ -1073,13 +1143,13 @@ Sentry.init({
     }
     return event
   },
-  
+
   // Custom tags
   initialScope: {
     tags: {
-      component: 'homematch-frontend'
-    }
-  }
+      component: 'homematch-frontend',
+    },
+  },
 })
 ```
 
@@ -1090,32 +1160,40 @@ Sentry.init({
 import { PostHog } from 'posthog-node'
 
 const posthog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-  host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com'
+  host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
 })
 
 // Track property interactions
-export function trackPropertyInteraction(userId: string, propertyId: string, action: string) {
+export function trackPropertyInteraction(
+  userId: string,
+  propertyId: string,
+  action: string
+) {
   posthog.capture({
     distinctId: userId,
     event: 'property_interaction',
     properties: {
       propertyId,
       action,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   })
 }
 
 // Track user journey
-export function trackUserJourney(userId: string, step: string, metadata?: Record<string, any>) {
+export function trackUserJourney(
+  userId: string,
+  step: string,
+  metadata?: Record<string, any>
+) {
   posthog.capture({
     distinctId: userId,
     event: 'user_journey',
     properties: {
       step,
       ...metadata,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   })
 }
 ```
@@ -1144,10 +1222,13 @@ interface PropertyFilter {
   value: any
 }
 
-export async function parseNaturalLanguageQuery(query: string): Promise<SearchQuery> {
+export async function parseNaturalLanguageQuery(
+  query: string
+): Promise<SearchQuery> {
   // Use cost-effective Chinese models or Anthropic
-  const model = process.env.AI_PROVIDER === 'chinese' ? 'qwen' : 'claude-3-haiku'
-  
+  const model =
+    process.env.AI_PROVIDER === 'chinese' ? 'qwen' : 'claude-3-haiku'
+
   const systemPrompt = `You are a real estate search query parser. Convert natural language into structured search criteria.
 
 Examples:
@@ -1178,7 +1259,11 @@ Return only valid JSON.`
   return JSON.parse(response)
 }
 
-function callLLM(model: string, system: string, query: string): Promise<string> {
+function callLLM(
+  model: string,
+  system: string,
+  query: string
+): Promise<string> {
   switch (process.env.AI_PROVIDER) {
     case 'chinese':
       return callQwenAPI(system, query)
@@ -1195,35 +1280,35 @@ function callLLM(model: string, system: string, query: string): Promise<string> 
 ```typescript
 // lib/ml/property-scoring.ts - Preserve your 3-phase ML system
 export class PropertyScoringService {
-  
-  selectModelPhase(userSwipeCount: number): 'cold-start' | 'online-lr' | 'lightgbm' {
-    if (userSwipeCount >= 100) return 'lightgbm'      // Advanced ML
-    if (userSwipeCount >= 10) return 'online-lr'      // Learning from swipes  
-    return 'cold-start'                               // Preference-based
+  selectModelPhase(
+    userSwipeCount: number
+  ): 'cold-start' | 'online-lr' | 'lightgbm' {
+    if (userSwipeCount >= 100) return 'lightgbm' // Advanced ML
+    if (userSwipeCount >= 10) return 'online-lr' // Learning from swipes
+    return 'cold-start' // Preference-based
   }
 
   async scoreProperty(
-    property: Property, 
-    userPreferences: UserPreferences, 
+    property: Property,
+    userPreferences: UserPreferences,
     userSwipes: UserSwipe[]
   ): Promise<PropertyScore> {
-    
     // Hard constraints filtering (preserve from your existing system)
     const constraintCheck = this.checkHardConstraints(userPreferences, property)
     if (!constraintCheck.passes) {
       return {
         total_score: 0,
         constraint_violation: constraintCheck.reason,
-        model_phase: 'constraints'
+        model_phase: 'constraints',
       }
     }
 
     // Feature engineering (preserve your existing features)
     const features = this.extractFeatures(property, userPreferences)
     const modelPhase = this.selectModelPhase(userSwipes.length)
-    
+
     let score: number
-    
+
     switch (modelPhase) {
       case 'cold-start':
         score = this.calculateColdStartScore(features, userPreferences)
@@ -1242,33 +1327,51 @@ export class PropertyScoringService {
       location_score: features.location_alignment,
       features_score: features.amenity_alignment,
       model_phase: modelPhase,
-      features_used: Object.keys(features)
+      features_used: Object.keys(features),
     }
   }
 
-  private checkHardConstraints(preferences: UserPreferences, property: Property) {
+  private checkHardConstraints(
+    preferences: UserPreferences,
+    property: Property
+  ) {
     // Preserve your existing constraint logic
-    if (preferences.priceRange?.min && property.price < preferences.priceRange.min) {
-      return { passes: false, reason: `Price $${property.price.toLocaleString()} below minimum` }
+    if (
+      preferences.priceRange?.min &&
+      property.price < preferences.priceRange.min
+    ) {
+      return {
+        passes: false,
+        reason: `Price $${property.price.toLocaleString()} below minimum`,
+      }
     }
-    if (preferences.priceRange?.max && property.price > preferences.priceRange.max) {
-      return { passes: false, reason: `Price $${property.price.toLocaleString()} above maximum` }
+    if (
+      preferences.priceRange?.max &&
+      property.price > preferences.priceRange.max
+    ) {
+      return {
+        passes: false,
+        reason: `Price $${property.price.toLocaleString()} above maximum`,
+      }
     }
     return { passes: true }
   }
 
-  private calculateColdStartScore(features: PropertyFeatures, preferences: UserPreferences): number {
+  private calculateColdStartScore(
+    features: PropertyFeatures,
+    preferences: UserPreferences
+  ): number {
     // Preserve your existing cold-start algorithm
     let score = features.overall_preference_alignment * 0.6
-    
+
     // Property quality bonuses
     if (features.has_images) score += 0.1
     if (features.has_description) score += 0.05
     if (features.price_per_sqft > 0) {
-      const priceEfficiency = Math.max(0, 1 - (features.price_per_sqft / 1000))
+      const priceEfficiency = Math.max(0, 1 - features.price_per_sqft / 1000)
       score += priceEfficiency * 0.1
     }
-    
+
     return Math.min(1, score)
   }
 }
@@ -1277,6 +1380,7 @@ export class PropertyScoringService {
 ## Performance & Optimization
 
 ### Bundle Optimization
+
 - **Code Splitting**: Automatic route-based splitting with Next.js 15
 - **Tree Shaking**: Import only used shadcn/ui components
 - **Zod Tree Shaking**: Import specific validators to reduce bundle size
@@ -1284,12 +1388,14 @@ export class PropertyScoringService {
 - **Font Optimization**: Local font hosting with font-display: swap
 
 ### Validation Performance
+
 - **Schema Memoization**: Cache Zod schemas to avoid re-parsing
 - **Lazy Validation**: Validate forms on change/blur, not on every keystroke
 - **Transform vs Parse**: Use `.transform()` for data cleaning, `.parse()` for validation
 - **Custom Error Messages**: Provide user-friendly validation feedback
 
 ### Caching Strategy
+
 - **TanStack Query**: 5-minute stale time, 10-minute cache time for properties
 - **Supabase**: Built-in query caching and connection pooling
 - **Vercel**: Edge caching for static assets and API responses
@@ -1297,12 +1403,14 @@ export class PropertyScoringService {
 - **Schema Caching**: Memoize complex Zod schemas for better performance
 
 ### Monitoring Performance
+
 - **Sentry Performance**: Track API response times and database queries
 - **PostHog**: User interaction analytics and conversion funnels
 - **Vercel Analytics**: Core Web Vitals and real user metrics
 - **Inngest Monitoring**: Background job success rates and execution times
 
 ### Database Performance
+
 - **Indexes**: Composite indexes on frequently queried columns
 - **Connection Pooling**: Supabase built-in pooling
 - **Query Optimization**: Select only required fields, use joins efficiently
@@ -1311,18 +1419,21 @@ export class PropertyScoringService {
 ## Security & Compliance
 
 ### Authentication Security
+
 - **Row-Level Security**: Database enforced data isolation
 - **JWT Tokens**: Automatic rotation and secure storage
 - **OAuth Integration**: Google OAuth with proper scope management
 - **Session Management**: Secure httpOnly cookies
 
 ### Data Protection
+
 - **Input Validation**: Zod schemas for all API endpoints
 - **SQL Injection**: Parameterized queries via Supabase client
 - **XSS Protection**: React's built-in sanitization + CSP headers
 - **CSRF Protection**: SameSite cookies and origin validation
 
 ### Privacy Compliance
+
 - **Data Minimization**: Store only necessary user information
 - **Consent Management**: Clear opt-ins for data collection
 - **Data Deletion**: User-initiated account and data deletion
@@ -1335,6 +1446,7 @@ export class PropertyScoringService {
 Your existing production database contains valuable assets that should be preserved:
 
 #### **Property Data Migration**
+
 ```typescript
 // scripts/migrate-properties.ts
 import { createClient } from '@supabase/supabase-js'
@@ -1367,15 +1479,15 @@ interface LegacyProperty {
 export async function migrateProperties() {
   const legacySupabase = createClient(LEGACY_SUPABASE_URL, LEGACY_SERVICE_KEY)
   const newSupabase = createClient(NEW_SUPABASE_URL, NEW_SERVICE_KEY)
-  
+
   // Extract from production DB
   const { data: legacyProperties } = await legacySupabase
     .from('properties')
     .select('*')
     .eq('is_active', true)
-  
+
   // Transform and load into new schema
-  const transformedProperties = legacyProperties?.map(prop => ({
+  const transformedProperties = legacyProperties?.map((prop) => ({
     id: prop.id,
     zpid: prop.zpid,
     address: prop.address,
@@ -1389,8 +1501,10 @@ export async function migrateProperties() {
     property_type: prop.property_type,
     images: prop.images || [],
     description: prop.description,
-    coordinates: prop.latitude && prop.longitude ? 
-      `POINT(${prop.longitude} ${prop.latitude})` : null,
+    coordinates:
+      prop.latitude && prop.longitude
+        ? `POINT(${prop.longitude} ${prop.latitude})`
+        : null,
     amenities: prop.amenities || [],
     year_built: prop.year_built,
     lot_size_sqft: prop.lot_size,
@@ -1399,9 +1513,9 @@ export async function migrateProperties() {
     property_hash: prop.property_hash,
     is_active: true,
     created_at: prop.created_at,
-    updated_at: prop.updated_at
+    updated_at: prop.updated_at,
   }))
-  
+
   // Batch insert with conflict resolution
   await newSupabase
     .from('properties')
@@ -1410,6 +1524,7 @@ export async function migrateProperties() {
 ```
 
 #### **Neighborhood Mapping Migration**
+
 ```typescript
 // scripts/migrate-neighborhoods.ts
 interface AuthoritativeNeighborhood {
@@ -1427,11 +1542,11 @@ interface AuthoritativeNeighborhood {
 export async function migrateNeighborhoodMappings() {
   const legacySupabase = createClient(LEGACY_SUPABASE_URL, LEGACY_SERVICE_KEY)
   const newSupabase = createClient(NEW_SUPABASE_URL, NEW_SERVICE_KEY)
-  
+
   // Extract authoritative neighborhood data
-  const { data: neighborhoods } = await legacySupabase
-    .from('neighborhoods_authoritative')
-    .select(`
+  const { data: neighborhoods } = await legacySupabase.from(
+    'neighborhoods_authoritative'
+  ).select(`
       *,
       cities (
         name,
@@ -1441,9 +1556,9 @@ export async function migrateNeighborhoodMappings() {
         )
       )
     `)
-  
+
   // Transform complex hierarchy into simplified structure
-  const transformedNeighborhoods = neighborhoods?.map(n => ({
+  const transformedNeighborhoods = neighborhoods?.map((n) => ({
     id: n.id,
     name: n.name,
     city: n.cities.name,
@@ -1453,13 +1568,13 @@ export async function migrateNeighborhoodMappings() {
     median_price: n.median_price,
     walk_score: n.walk_score,
     transit_score: n.transit_score,
-    created_at: n.created_at
+    created_at: n.created_at,
   }))
-  
+
   await newSupabase
     .from('neighborhoods')
     .upsert(transformedNeighborhoods, { onConflict: 'id' })
-  
+
   // Update property neighborhood references
   await updatePropertyNeighborhoodMappings()
 }
@@ -1470,13 +1585,15 @@ async function updatePropertyNeighborhoodMappings() {
     .from('properties')
     .select('id, coordinates')
     .not('coordinates', 'is', null)
-  
+
   for (const property of properties || []) {
-    const { data: neighborhood } = await newSupabase
-      .rpc('find_neighborhood_for_property', {
-        property_coordinates: property.coordinates
-      })
-    
+    const { data: neighborhood } = await newSupabase.rpc(
+      'find_neighborhood_for_property',
+      {
+        property_coordinates: property.coordinates,
+      }
+    )
+
     if (neighborhood?.id) {
       await newSupabase
         .from('properties')
@@ -1488,6 +1605,7 @@ async function updatePropertyNeighborhoodMappings() {
 ```
 
 #### **PostGIS Function for Neighborhood Mapping**
+
 ```sql
 -- Create function to find neighborhood by coordinates
 CREATE OR REPLACE FUNCTION find_neighborhood_for_property(
@@ -1506,28 +1624,33 @@ $$ LANGUAGE plpgsql;
 ### Migration Timing Strategy
 
 #### **Phase 1: Schema Setup** (Week 1)
+
 - Deploy new schema to staging
 - Test with sample data
 - Validate all relationships
 
 #### **Phase 2: Data Migration** (Week 2-3)
+
 - Export production neighborhoods and mappings
 - Transform to new schema format
 - Import to staging environment
 - Validate polygon containment logic
 
 #### **Phase 3: Property Migration** (Week 3-4)
+
 - Export active properties from production
 - Map to neighborhood IDs using polygons
 - Import with proper deduplication
 - Validate data integrity
 
 #### **Phase 4: User Data Migration** (Week 4)
+
 - Export user preferences and interactions
 - Map to new household structure
 - Preserve user history and liked properties
 
 ### Migration Scripts Organization
+
 ```bash
 scripts/
 ├── migrate/

@@ -14,6 +14,7 @@ This guide provides detailed, actionable steps to build HomeMatch V2 from scratc
 ### Day 1: Project Initialization
 
 #### 1.1 Create Next.js Project
+
 ```bash
 # Create new project with TypeScript and Tailwind
 pnpm dlx create-next-app@latest homematch-v2 --typescript --tailwind --app --src-dir --import-alias "@/*"
@@ -48,6 +49,7 @@ pnpm install -D simple-git-hooks lint-staged @commitlint/cli @commitlint/config-
 ```
 
 #### 1.2 Configure shadcn/ui
+
 ```bash
 # Initialize shadcn/ui
 pnpm dlx shadcn@latest init
@@ -110,9 +112,9 @@ module.exports = {
     'type-enum': [
       2,
       'always',
-      ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore']
-    ]
-  }
+      ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore'],
+    ],
+  },
 }
 ```
 
@@ -124,18 +126,14 @@ module.exports = {
     "commit-msg": "npx commitlint --edit $1"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml}": [
-      "prettier --write"
-    ]
+    "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,yml}": ["prettier --write"]
   }
 }
 ```
 
 #### 1.4 Project Structure Setup
+
 ```bash
 # Create comprehensive directory structure
 mkdir -p src/components/features/{auth,properties,dashboard,onboarding}
@@ -171,6 +169,7 @@ touch commitlint.config.js
 ### Day 2: Supabase Setup
 
 #### 2.1 Create Supabase Project
+
 1. Go to [supabase.com](https://supabase.com) and create new project
 2. Note down Project URL and API keys
 3. Create `.env.local` file:
@@ -187,6 +186,7 @@ NEXTAUTH_SECRET=your-secret-key
 ```
 
 #### 2.2 Database Schema Migration
+
 Create and run the following SQL in Supabase SQL Editor:
 
 ```sql
@@ -302,6 +302,7 @@ CREATE POLICY "users_household_access" ON households
 ```
 
 #### 2.3 Configure Supabase Auth
+
 1. In Supabase Dashboard → Authentication → Settings:
    - Set Site URL: `http://localhost:3000`
    - Add redirect URLs: `http://localhost:3000/auth/callback`
@@ -310,6 +311,7 @@ CREATE POLICY "users_household_access" ON households
 ### Day 3: Core Infrastructure
 
 #### 3.1 Supabase Client Setup
+
 ```typescript
 // src/lib/supabase/client.ts
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -324,16 +326,19 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
-export const createServerClient = () => createServerComponentClient<Database>({ cookies })
+export const createServerClient = () =>
+  createServerComponentClient<Database>({ cookies })
 ```
 
 #### 3.2 Generate TypeScript Types
+
 ```bash
 # Generate types from Supabase schema
 npx supabase gen types typescript --project-id your-project-ref > src/types/database.ts
 ```
 
 #### 3.3 Zod Schemas & Type-Safe Validation
+
 ```typescript
 // src/lib/schemas/property.ts
 import { z } from 'zod'
@@ -352,29 +357,41 @@ export const PropertySchema = z.object({
   images: z.array(z.string().url()).default([]),
   description: z.string().max(5000).optional(),
   amenities: z.array(z.string()).default([]),
-  year_built: z.number().int().min(1800).max(new Date().getFullYear()).optional(),
+  year_built: z
+    .number()
+    .int()
+    .min(1800)
+    .max(new Date().getFullYear())
+    .optional(),
   parking_spots: z.number().int().min(0).default(0),
   is_active: z.boolean().default(true),
   created_at: z.string().datetime(),
 })
 
-export const PropertyFiltersSchema = z.object({
-  priceMin: z.number().int().positive().optional(),
-  priceMax: z.number().int().positive().optional(),
-  bedrooms: z.number().int().min(0).max(20).optional(),
-  bathrooms: z.number().min(0).max(20).optional(),
-  propertyType: z.enum(['house', 'condo', 'townhouse', 'apartment']).optional(),
-  city: z.string().min(1).optional(),
-  neighborhoods: z.array(z.string().uuid()).optional(),
-}).refine(data => {
-  if (data.priceMin && data.priceMax) {
-    return data.priceMin <= data.priceMax
-  }
-  return true
-}, {
-  message: 'Minimum price must be less than maximum price',
-  path: ['priceMax']
-})
+export const PropertyFiltersSchema = z
+  .object({
+    priceMin: z.number().int().positive().optional(),
+    priceMax: z.number().int().positive().optional(),
+    bedrooms: z.number().int().min(0).max(20).optional(),
+    bathrooms: z.number().min(0).max(20).optional(),
+    propertyType: z
+      .enum(['house', 'condo', 'townhouse', 'apartment'])
+      .optional(),
+    city: z.string().min(1).optional(),
+    neighborhoods: z.array(z.string().uuid()).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.priceMin && data.priceMax) {
+        return data.priceMin <= data.priceMax
+      }
+      return true
+    },
+    {
+      message: 'Minimum price must be less than maximum price',
+      path: ['priceMax'],
+    }
+  )
 
 // Type inference from schemas
 export type Property = z.infer<typeof PropertySchema>
@@ -386,13 +403,17 @@ export type PropertyFilters = z.infer<typeof PropertyFiltersSchema>
 import { z } from 'zod'
 
 export const UserPreferencesSchema = z.object({
-  priceRange: z.object({
-    min: z.number().int().positive(),
-    max: z.number().int().positive(),
-  }).refine(data => data.min <= data.max, {
-    message: 'Min price must be less than max price'
-  }),
-  preferredPropertyTypes: z.array(z.enum(['house', 'condo', 'townhouse', 'apartment'])).min(1),
+  priceRange: z
+    .object({
+      min: z.number().int().positive(),
+      max: z.number().int().positive(),
+    })
+    .refine((data) => data.min <= data.max, {
+      message: 'Min price must be less than max price',
+    }),
+  preferredPropertyTypes: z
+    .array(z.enum(['house', 'condo', 'townhouse', 'apartment']))
+    .min(1),
   minBedrooms: z.number().int().min(0).max(20),
   minBathrooms: z.number().min(0).max(20),
   amenities: z.array(z.string()).default([]),
@@ -431,14 +452,18 @@ import { z } from 'zod'
 export const HouseholdSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, 'Household name is required'),
-  collaboration_mode: z.enum(['independent', 'shared', 'weighted']).default('independent'),
+  collaboration_mode: z
+    .enum(['independent', 'shared', 'weighted'])
+    .default('independent'),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
 })
 
 export const CreateHouseholdSchema = z.object({
   name: z.string().min(1, 'Household name is required'),
-  collaboration_mode: z.enum(['independent', 'shared', 'weighted']).default('independent'),
+  collaboration_mode: z
+    .enum(['independent', 'shared', 'weighted'])
+    .default('independent'),
 })
 
 export type Household = z.infer<typeof HouseholdSchema>
@@ -454,16 +479,22 @@ export const LoginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
-export const SignupSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number'),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const SignupSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain uppercase, lowercase, and number'
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 export type LoginData = z.infer<typeof LoginSchema>
 export type SignupData = z.infer<typeof SignupSchema>
@@ -472,6 +503,7 @@ export type SignupData = z.infer<typeof SignupSchema>
 ### Day 4: Testing Configuration Setup
 
 #### 4.1 Jest Configuration (Unit Tests)
+
 ```javascript
 // jest.config.js
 const nextJest = require('next/jest')
@@ -487,9 +519,7 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testEnvironment: 'jsdom', // For React component testing
-  testMatch: [
-    '**/__tests__/unit/**/*.test.{js,jsx,ts,tsx}'
-  ],
+  testMatch: ['**/__tests__/unit/**/*.test.{js,jsx,ts,tsx}'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
@@ -512,7 +542,7 @@ jest.mock('next/navigation', () => ({
     prefetch: jest.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/'
+  usePathname: () => '/',
 }))
 
 // Mock Supabase client for component tests
@@ -528,11 +558,11 @@ jest.mock('@/lib/supabase/client', () => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
-        }))
-      }))
-    }))
-  })
+          single: jest.fn(),
+        })),
+      })),
+    })),
+  }),
 }))
 
 // Mock PostHog for component tests
@@ -543,6 +573,7 @@ jest.mock('@/lib/analytics/posthog', () => ({
 ```
 
 #### 4.2 Vitest Configuration (Integration Tests)
+
 ```typescript
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
@@ -576,17 +607,18 @@ beforeAll(() => {
 
 // Mock external services for integration tests
 vi.mock('@/lib/ai/property-descriptions', () => ({
-  generatePropertyDescription: vi.fn().mockResolvedValue('Mock AI description')
+  generatePropertyDescription: vi.fn().mockResolvedValue('Mock AI description'),
 }))
 
 vi.mock('@/lib/inngest/client', () => ({
   inngest: {
-    send: vi.fn().mockResolvedValue({ ids: ['test-event-id'] })
-  }
+    send: vi.fn().mockResolvedValue({ ids: ['test-event-id'] }),
+  },
 }))
 ```
 
 #### 4.3 Playwright Configuration
+
 ```typescript
 // playwright.config.ts
 import { defineConfig, devices } from '@playwright/test'
@@ -639,20 +671,20 @@ import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  
+
   // Performance monitoring
   tracesSampleRate: 1.0,
-  
+
   // Session replay for debugging
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  
+
   integrations: [
     new Sentry.BrowserTracing({
       tracePropagationTargets: ['localhost', /^https:\/\/yourapp\.vercel\.app/],
     }),
   ],
-  
+
   beforeSend(event) {
     if (event.exception) {
       const error = event.exception.values?.[0]
@@ -693,7 +725,7 @@ import posthog from 'posthog-js'
 
 // Server-side PostHog
 export const serverPostHog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-  host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com'
+  host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
 })
 
 // Client-side initialization
@@ -702,30 +734,35 @@ if (typeof window !== 'undefined') {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
     loaded: (posthog) => {
       if (process.env.NODE_ENV === 'development') posthog.debug()
-    }
+    },
   })
 }
 
 export { posthog }
 
 // Custom tracking functions
-export function trackPropertyInteraction(userId: string, propertyId: string, action: string) {
+export function trackPropertyInteraction(
+  userId: string,
+  propertyId: string,
+  action: string
+) {
   posthog.capture('property_interaction', {
     propertyId,
     action,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }
 
 export function trackUserJourney(step: string, metadata?: Record<string, any>) {
   posthog.capture('user_journey', {
     step,
-    ...metadata
+    ...metadata,
   })
 }
 ```
 
 #### 5.2 TanStack Query Provider
+
 ```typescript
 // src/components/providers/query-provider.tsx
 'use client'
@@ -756,6 +793,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 ```
 
 #### 4.2 Zustand Store
+
 ```typescript
 // src/lib/stores/app-store.ts
 import { create } from 'zustand'
@@ -768,11 +806,11 @@ interface AppState {
   isFilterModalOpen: boolean
   isPropertyDetailOpen: boolean
   selectedPropertyId: string | null
-  
+
   // Temporary data
   tempSearchFilters: PropertyFilters
   swipeHistory: string[]
-  
+
   // Actions
   actions: {
     nextProperty: () => void
@@ -798,43 +836,49 @@ export const useAppStore = create<AppState>()(
       selectedPropertyId: null,
       tempSearchFilters: {},
       swipeHistory: [],
-      
+
       // Actions
       actions: {
-        nextProperty: () => set(state => ({ 
-          currentPropertyIndex: state.currentPropertyIndex + 1 
-        })),
-        
-        previousProperty: () => set(state => ({ 
-          currentPropertyIndex: Math.max(0, state.currentPropertyIndex - 1) 
-        })),
-        
+        nextProperty: () =>
+          set((state) => ({
+            currentPropertyIndex: state.currentPropertyIndex + 1,
+          })),
+
+        previousProperty: () =>
+          set((state) => ({
+            currentPropertyIndex: Math.max(0, state.currentPropertyIndex - 1),
+          })),
+
         openFilterModal: () => set({ isFilterModalOpen: true }),
         closeFilterModal: () => set({ isFilterModalOpen: false }),
-        
+
         setTempFilters: (filters) => set({ tempSearchFilters: filters }),
         clearTempFilters: () => set({ tempSearchFilters: {} }),
-        
-        openPropertyDetail: (id) => set({ 
-          isPropertyDetailOpen: true, 
-          selectedPropertyId: id 
-        }),
-        
-        closePropertyDetail: () => set({ 
-          isPropertyDetailOpen: false, 
-          selectedPropertyId: null 
-        }),
-        
-        recordSwipe: (propertyId) => set(state => ({
-          swipeHistory: [...state.swipeHistory, propertyId],
-          currentPropertyIndex: state.currentPropertyIndex + 1
-        })),
-        
-        resetSwipeHistory: () => set({ 
-          swipeHistory: [], 
-          currentPropertyIndex: 0 
-        })
-      }
+
+        openPropertyDetail: (id) =>
+          set({
+            isPropertyDetailOpen: true,
+            selectedPropertyId: id,
+          }),
+
+        closePropertyDetail: () =>
+          set({
+            isPropertyDetailOpen: false,
+            selectedPropertyId: null,
+          }),
+
+        recordSwipe: (propertyId) =>
+          set((state) => ({
+            swipeHistory: [...state.swipeHistory, propertyId],
+            currentPropertyIndex: state.currentPropertyIndex + 1,
+          })),
+
+        resetSwipeHistory: () =>
+          set({
+            swipeHistory: [],
+            currentPropertyIndex: 0,
+          }),
+      },
     }),
     { name: 'app-store' }
   )
@@ -844,14 +888,15 @@ export const useAppStore = create<AppState>()(
 ### Day 6: Inngest Background Jobs Setup
 
 #### 6.1 Inngest Configuration
+
 ```typescript
 // src/lib/inngest/client.ts
 import { Inngest } from 'inngest'
 
-export const inngest = new Inngest({ 
+export const inngest = new Inngest({
   id: 'homematch',
   name: 'HomeMatch',
-  eventKey: process.env.INNGEST_EVENT_KEY
+  eventKey: process.env.INNGEST_EVENT_KEY,
 })
 ```
 
@@ -867,30 +912,34 @@ export const sendPropertyNotification = inngest.createFunction(
   { event: 'property/new-match' },
   async ({ event, step }) => {
     const { userId, propertyId } = event.data
-    
+
     const userPrefs = await step.run('get-user-preferences', async () => {
       const supabase = createClient()
-      return supabase.from('user_profiles').select('preferences').eq('id', userId).single()
+      return supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', userId)
+        .single()
     })
-    
+
     const matchScore = await step.run('calculate-match-score', async () => {
       // AI-powered property matching
       return calculatePropertyMatch(propertyId, userPrefs.data.preferences)
     })
-    
+
     if (matchScore > 0.8) {
       await step.run('send-notification', async () => {
         return sendPushNotification(userId, {
           title: 'New Property Match!',
           body: `We found a ${Math.round(matchScore * 100)}% match for you`,
-          data: { propertyId }
+          data: { propertyId },
         })
       })
-      
+
       // Track in PostHog
       trackPropertyInteraction(userId, propertyId, 'notification_sent')
     }
-    
+
     return { matchScore, notificationSent: matchScore > 0.8 }
   }
 )
@@ -904,11 +953,11 @@ export const updateMarketData = inngest.createFunction(
       // Fetch external market data
       return updateNeighborhoodPrices()
     })
-    
+
     await step.run('update-walk-scores', async () => {
       return updateWalkScores()
     })
-    
+
     return { status: 'completed' }
   }
 )
@@ -918,20 +967,21 @@ export const updateMarketData = inngest.createFunction(
 // app/api/inngest/route.ts
 import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
-import { sendPropertyNotification, updateMarketData } from '@/lib/inngest/functions'
+import {
+  sendPropertyNotification,
+  updateMarketData,
+} from '@/lib/inngest/functions'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [
-    sendPropertyNotification,
-    updateMarketData,
-  ],
+  functions: [sendPropertyNotification, updateMarketData],
 })
 ```
 
 ### Day 7: API Validation Utilities
 
 #### 5.1 Validation Helper Functions
+
 ```typescript
 // src/lib/api/validation.ts
 import { NextRequest, NextResponse } from 'next/server'
@@ -940,15 +990,19 @@ import { z, ZodError } from 'zod'
 export function validateSearchParams<T extends z.ZodType>(
   request: NextRequest,
   schema: T
-): { success: true; data: z.infer<T> } | { success: false; error: NextResponse } {
+):
+  | { success: true; data: z.infer<T> }
+  | { success: false; error: NextResponse } {
   try {
     const searchParams = request.nextUrl.searchParams
     const params: Record<string, any> = {}
-    
+
     // Convert URL search params to object with proper type coercion
     searchParams.forEach((value, key) => {
       if (params[key]) {
-        params[key] = Array.isArray(params[key]) ? [...params[key], value] : [params[key], value]
+        params[key] = Array.isArray(params[key])
+          ? [...params[key], value]
+          : [params[key], value]
       } else {
         // Try to parse numbers and booleans
         if (value === 'true') params[key] = true
@@ -958,7 +1012,7 @@ export function validateSearchParams<T extends z.ZodType>(
         else params[key] = value
       }
     })
-    
+
     const data = schema.parse(params)
     return { success: true, data }
   } catch (error) {
@@ -966,20 +1020,23 @@ export function validateSearchParams<T extends z.ZodType>(
       return {
         success: false,
         error: NextResponse.json(
-          { 
+          {
             error: 'Validation failed',
-            details: error.errors.map(err => ({
+            details: error.errors.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
+              message: err.message,
+            })),
           },
           { status: 400 }
-        )
+        ),
       }
     }
     return {
       success: false,
-      error: NextResponse.json({ error: 'Invalid parameters' }, { status: 400 })
+      error: NextResponse.json(
+        { error: 'Invalid parameters' },
+        { status: 400 }
+      ),
     }
   }
 }
@@ -987,7 +1044,9 @@ export function validateSearchParams<T extends z.ZodType>(
 export async function validateRequestBody<T extends z.ZodType>(
   request: NextRequest,
   schema: T
-): Promise<{ success: true; data: z.infer<T> } | { success: false; error: NextResponse }> {
+): Promise<
+  { success: true; data: z.infer<T> } | { success: false; error: NextResponse }
+> {
   try {
     const body = await request.json()
     const data = schema.parse(body)
@@ -999,18 +1058,21 @@ export async function validateRequestBody<T extends z.ZodType>(
         error: NextResponse.json(
           {
             error: 'Validation failed',
-            details: error.errors.map(err => ({
+            details: error.errors.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
+              message: err.message,
+            })),
           },
           { status: 400 }
-        )
+        ),
       }
     }
     return {
       success: false,
-      error: NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+      error: NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      ),
     }
   }
 }
@@ -1021,6 +1083,7 @@ export function createApiResponse<T>(data: T, status: number = 200) {
 ```
 
 #### 5.2 Validated Form Hook
+
 ```typescript
 // src/hooks/useValidatedForm.ts
 import { useForm } from 'react-hook-form'
@@ -1042,6 +1105,7 @@ export function useValidatedForm<T extends z.ZodType>(
 ### Day 8-9: AI Integration Setup
 
 #### 8.1 Vercel AI SDK Configuration
+
 ```typescript
 // src/lib/ai/config.ts
 import { openai } from '@ai-sdk/openai'
@@ -1073,7 +1137,7 @@ export async function generatePropertyDescription(property: Property) {
       Keep it under 200 words.`,
       maxTokens: 250,
     })
-    
+
     return text
   } catch (error) {
     console.error('Failed to generate property description:', error)
@@ -1090,7 +1154,7 @@ import type { Property } from '@/lib/schemas/property'
 import type { UserPreferences } from '@/lib/schemas/user'
 
 export async function calculatePropertyMatch(
-  property: Property, 
+  property: Property,
   userPreferences: UserPreferences
 ): Promise<number> {
   try {
@@ -1098,18 +1162,21 @@ export async function calculatePropertyMatch(
     const propertyText = `${property.description || ''} ${property.amenities?.join(' ') || ''} ${property.neighborhoods?.name || ''}`
     const propertyVector = await embed({
       model: embeddingModel,
-      value: propertyText
+      value: propertyText,
     })
-    
+
     // Generate embeddings for user preferences
     const preferencesText = `Preferred types: ${userPreferences.preferredPropertyTypes.join(' ')} Amenities: ${userPreferences.amenities.join(' ')}`
     const preferencesVector = await embed({
       model: embeddingModel,
-      value: preferencesText
+      value: preferencesText,
     })
-    
+
     // Calculate cosine similarity
-    return cosineSimilarity(propertyVector.embedding, preferencesVector.embedding)
+    return cosineSimilarity(
+      propertyVector.embedding,
+      preferencesVector.embedding
+    )
   } catch (error) {
     console.error('Failed to calculate property match:', error)
     return 0
@@ -1127,6 +1194,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
 ### Day 10-11: Service Layer & API Routes
 
 #### 6.1 Property Service
+
 ```typescript
 // src/lib/services/properties.ts
 import { createClient } from '@/lib/supabase/client'
@@ -1139,10 +1207,11 @@ export async function getProperties(
   limit: number = 20
 ) {
   const supabase = createClient()
-  
+
   let query = supabase
     .from('properties')
-    .select(`
+    .select(
+      `
       *,
       neighborhoods (
         name,
@@ -1151,31 +1220,34 @@ export async function getProperties(
         walk_score,
         transit_score
       )
-    `)
+    `
+    )
     .eq('is_active', true)
-  
+
   // Apply filters
   if (filters.priceMin) query = query.gte('price', filters.priceMin)
   if (filters.priceMax) query = query.lte('price', filters.priceMax)
   if (filters.bedrooms) query = query.gte('bedrooms', filters.bedrooms)
   if (filters.bathrooms) query = query.gte('bathrooms', filters.bathrooms)
-  if (filters.propertyType) query = query.eq('property_type', filters.propertyType)
+  if (filters.propertyType)
+    query = query.eq('property_type', filters.propertyType)
   if (filters.city) query = query.ilike('city', `%${filters.city}%`)
-  
+
   const { data, error } = await query
     .range(offset, offset + limit - 1)
     .order('created_at', { ascending: false })
-  
+
   if (error) throw error
   return data
 }
 
 export async function getPropertyById(id: string) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('properties')
-    .select(`
+    .select(
+      `
       *,
       neighborhoods (
         name,
@@ -1184,33 +1256,33 @@ export async function getPropertyById(id: string) {
         walk_score,
         transit_score
       )
-    `)
+    `
+    )
     .eq('id', id)
     .single()
-  
+
   if (error) throw error
   return data
 }
 
 export async function recordInteraction(
-  propertyId: string, 
+  propertyId: string,
   type: 'like' | 'dislike' | 'skip' | 'view'
 ) {
   const supabase = createClient()
-  
-  const { error } = await supabase
-    .from('user_property_interactions')
-    .upsert({
-      property_id: propertyId,
-      interaction_type: type,
-      user_id: (await supabase.auth.getUser()).data.user?.id
-    })
-  
+
+  const { error } = await supabase.from('user_property_interactions').upsert({
+    property_id: propertyId,
+    interaction_type: type,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
+  })
+
   if (error) throw error
 }
 ```
 
 #### 5.2 API Routes
+
 ```typescript
 // src/app/api/properties/route.ts
 import { createServerClient } from '@/lib/supabase/server'
@@ -1229,25 +1301,41 @@ const PropertySearchSchema = PropertyFiltersSchema.extend({
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    
+
     // Verify authentication
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession()
     if (authError || !session) {
       return createApiResponse({ error: 'Unauthorized' }, 401)
     }
-    
+
     // Validate query parameters with Zod
     const validation = validateSearchParams(request, PropertySearchSchema)
     if (!validation.success) {
       return validation.error
     }
-    
-    const { priceMin, priceMax, bedrooms, bathrooms, propertyType, city, neighborhoods, limit, offset, orderBy, orderDirection } = validation.data
-    
+
+    const {
+      priceMin,
+      priceMax,
+      bedrooms,
+      bathrooms,
+      propertyType,
+      city,
+      neighborhoods,
+      limit,
+      offset,
+      orderBy,
+      orderDirection,
+    } = validation.data
+
     // Build type-safe query
     let query = supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         *,
         neighborhoods (
           name,
@@ -1256,9 +1344,10 @@ export async function GET(request: NextRequest) {
           walk_score,
           transit_score
         )
-      `)
+      `
+      )
       .eq('is_active', true)
-    
+
     // Apply validated filters
     if (priceMin) query = query.gte('price', priceMin)
     if (priceMax) query = query.lte('price', priceMax)
@@ -1266,25 +1355,25 @@ export async function GET(request: NextRequest) {
     if (bathrooms) query = query.gte('bathrooms', bathrooms)
     if (propertyType) query = query.eq('property_type', propertyType)
     if (city) query = query.ilike('city', `%${city}%`)
-    if (neighborhoods?.length) query = query.in('neighborhood_id', neighborhoods)
-    
+    if (neighborhoods?.length)
+      query = query.in('neighborhood_id', neighborhoods)
+
     const { data: properties, error } = await query
       .range(offset, offset + limit - 1)
       .order(orderBy, { ascending: orderDirection === 'asc' })
-    
+
     if (error) throw error
-    
+
     return createApiResponse({
       properties: properties || [],
       pagination: {
         offset,
         limit,
-        hasMore: (properties?.length || 0) === limit
+        hasMore: (properties?.length || 0) === limit,
       },
       filters: { priceMin, priceMax, bedrooms, bathrooms, propertyType, city },
-      total: properties?.length || 0
+      total: properties?.length || 0,
     })
-    
   } catch (error) {
     console.error('Properties API error:', error)
     return createApiResponse({ error: 'Internal server error' }, 500)
@@ -1302,39 +1391,39 @@ import { validateRequestBody, createApiResponse } from '@/lib/api/validation'
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    
+
     // Verify authentication
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.getSession()
     if (authError || !session) {
       return createApiResponse({ error: 'Unauthorized' }, 401)
     }
-    
+
     // Validate request body with Zod
     const validation = await validateRequestBody(request, InteractionSchema)
     if (!validation.success) {
       return validation.error
     }
-    
+
     const { propertyId, type, metadata } = validation.data
-    
+
     // Record interaction with validated data
-    const { error } = await supabase
-      .from('user_property_interactions')
-      .upsert({
-        property_id: propertyId,
-        interaction_type: type,
-        user_id: session.user.id,
-        metadata: metadata || null,
-        created_at: new Date().toISOString()
-      })
-    
-    if (error) throw error
-    
-    return createApiResponse({ 
-      success: true,
-      interaction: { propertyId, type, timestamp: new Date().toISOString() }
+    const { error } = await supabase.from('user_property_interactions').upsert({
+      property_id: propertyId,
+      interaction_type: type,
+      user_id: session.user.id,
+      metadata: metadata || null,
+      created_at: new Date().toISOString(),
     })
-    
+
+    if (error) throw error
+
+    return createApiResponse({
+      success: true,
+      interaction: { propertyId, type, timestamp: new Date().toISOString() },
+    })
   } catch (error) {
     console.error('Interaction API error:', error)
     return createApiResponse({ error: 'Failed to record interaction' }, 500)
@@ -1349,6 +1438,7 @@ export async function POST(request: NextRequest) {
 ### Day 8-9: Authentication Components
 
 #### 8.1 Auth Callback Route
+
 ```typescript
 // src/app/auth/callback/route.ts
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
@@ -1362,14 +1452,13 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = createRouteHandlerClient({ cookies })
     await supabase.auth.exchangeCodeForSession(code)
-    
+
     // Create user profile if it doesn't exist
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (user) {
-      await supabase
-        .from('user_profiles')
-        .upsert({ id: user.id })
-        .select()
+      await supabase.from('user_profiles').upsert({ id: user.id }).select()
     }
   }
 
@@ -1379,6 +1468,7 @@ export async function GET(request: NextRequest) {
 ```
 
 #### 8.2 Type-Safe Login Form Component
+
 ```typescript
 // src/components/features/auth/LoginForm.tsx
 'use client'
@@ -1400,7 +1490,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
-  
+
   // Use validated form with Zod schema
   const form = useValidatedForm(LoginSchema, {
     email: '',
@@ -1421,13 +1511,13 @@ export function LoginForm() {
     } else {
       router.push('/dashboard')
     }
-    
+
     setLoading(false)
   }
 
   const handleGoogleLogin = async () => {
     setLoading(true)
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -1452,7 +1542,7 @@ export function LoginForm() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-4">
             <FormField
@@ -1473,7 +1563,7 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -1492,10 +1582,10 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
+
+            <Button
+              type="submit"
+              className="w-full"
               disabled={loading || !form.formState.isValid}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -1503,7 +1593,7 @@ export function LoginForm() {
             </Button>
           </form>
         </Form>
-        
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -1512,7 +1602,7 @@ export function LoginForm() {
             <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
-        
+
         <Button
           variant="outline"
           onClick={handleGoogleLogin}
@@ -1529,6 +1619,7 @@ export function LoginForm() {
 ```
 
 #### 8.3 Signup Form Component
+
 ```typescript
 // src/components/features/auth/SignupForm.tsx
 'use client'
@@ -1575,7 +1666,7 @@ export function SignupForm() {
     } else {
       setSuccess(true)
     }
-    
+
     setLoading(false)
   }
 
@@ -1604,7 +1695,7 @@ export function SignupForm() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
@@ -1617,7 +1708,7 @@ export function SignupForm() {
               disabled={loading}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="password">Password</Label>
             <Input
@@ -1630,7 +1721,7 @@ export function SignupForm() {
               minLength={6}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
@@ -1643,7 +1734,7 @@ export function SignupForm() {
               minLength={6}
             />
           </div>
-          
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
@@ -1658,9 +1749,14 @@ export function SignupForm() {
 ### Day 10-11: Property Components
 
 #### 10.1 React Query Hooks
+
 ```typescript
 // src/hooks/useProperties.ts
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { getProperties, recordInteraction } from '@/lib/services/properties'
 import { PropertyFilters, InteractionType } from '@/types/app'
 
@@ -1678,10 +1774,15 @@ export function useProperties(filters: PropertyFilters = {}) {
 
 export function usePropertyInteraction() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ propertyId, type }: { propertyId: string; type: InteractionType }) =>
-      recordInteraction(propertyId, type),
+    mutationFn: ({
+      propertyId,
+      type,
+    }: {
+      propertyId: string
+      type: InteractionType
+    }) => recordInteraction(propertyId, type),
     onMutate: async ({ propertyId, type }) => {
       // Optimistic update logic here
       await queryClient.cancelQueries({ queryKey: ['properties'] })
@@ -1691,12 +1792,13 @@ export function usePropertyInteraction() {
     },
     onSuccess: () => {
       // Invalidate related queries if needed
-    }
+    },
   })
 }
 ```
 
 #### 10.2 Property Card Component
+
 ```typescript
 // src/components/features/properties/PropertyCard.tsx
 import { Property } from '@/types/app'
@@ -1713,19 +1815,19 @@ interface PropertyCardProps {
   onViewDetails: () => void
 }
 
-export function PropertyCard({ 
-  property, 
-  onLike, 
-  onDislike, 
-  onSkip, 
-  onViewDetails 
+export function PropertyCard({
+  property,
+  onLike,
+  onDislike,
+  onSkip,
+  onViewDetails
 }: PropertyCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer max-w-sm mx-auto">
       <CardHeader className="p-0">
         <div className="relative h-64">
-          <img 
-            src={property.images[0] || '/placeholder-property.jpg'} 
+          <img
+            src={property.images[0] || '/placeholder-property.jpg'}
             alt={property.address}
             className="w-full h-full object-cover"
             onClick={onViewDetails}
@@ -1741,13 +1843,13 @@ export function PropertyCard({
         <div className="flex items-center gap-2 text-muted-foreground mb-3">
           <MapPin className="h-4 w-4" />
           <span className="text-sm">
-            {property.neighborhoods?.name ? 
+            {property.neighborhoods?.name ?
               `${property.neighborhoods.name}, ${property.neighborhoods.city}` :
               `${property.city}, ${property.state}`
             }
           </span>
         </div>
-        
+
         <div className="flex gap-6 mb-4">
           <div className="flex items-center gap-2">
             <Bed className="h-4 w-4 text-muted-foreground" />
@@ -1764,26 +1866,26 @@ export function PropertyCard({
             </div>
           )}
         </div>
-        
+
         <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onDislike}
             className="flex-1"
           >
             <X className="h-4 w-4 mr-2" />
             Pass
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onSkip}
             className="flex-1"
           >
             Skip
           </Button>
-          <Button 
+          <Button
             onClick={onLike}
             className="flex-1"
           >
@@ -1800,6 +1902,7 @@ export function PropertyCard({
 ### Day 12-14: Middleware & Layouts
 
 #### 12.1 Authentication Middleware
+
 ```typescript
 // src/middleware.ts
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
@@ -1815,8 +1918,9 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   const isAuthPage = req.nextUrl.pathname.startsWith('/auth')
-  const isProtectedPage = req.nextUrl.pathname.startsWith('/dashboard') || 
-                          req.nextUrl.pathname.startsWith('/onboarding')
+  const isProtectedPage =
+    req.nextUrl.pathname.startsWith('/dashboard') ||
+    req.nextUrl.pathname.startsWith('/onboarding')
 
   // Redirect authenticated users away from auth pages
   if (session && isAuthPage) {
@@ -1852,6 +1956,7 @@ export const config = {
 ```
 
 #### 12.2 App Layout
+
 ```typescript
 // src/components/layouts/AppLayout.tsx
 'use client'
@@ -1892,7 +1997,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold">HomeMatch</h1>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
@@ -1920,6 +2025,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 ### Day 15-17: Property Browsing
 
 #### 15.1 Property Swiper Component
+
 ```typescript
 // src/components/features/properties/PropertySwiper.tsx
 'use client'
@@ -1946,10 +2052,10 @@ export function PropertySwiper({ filters = {} }: PropertySwiperProps) {
 
   const handleInteraction = useCallback((type: 'like' | 'dislike' | 'skip') => {
     if (!currentProperty) return
-    
+
     recordInteraction({ propertyId: currentProperty.id, type })
     actions.recordSwipe(currentProperty.id)
-    
+
     // Load more properties if we're near the end
     if (currentPropertyIndex >= properties.length - 5 && hasNextPage) {
       fetchNextPage()
@@ -1999,7 +2105,7 @@ export function PropertySwiper({ filters = {} }: PropertySwiperProps) {
           Property {currentPropertyIndex + 1} of {properties.length}
         </p>
       </div>
-      
+
       <PropertyCard
         property={currentProperty}
         onLike={() => handleInteraction('like')}
@@ -2015,6 +2121,7 @@ export function PropertySwiper({ filters = {} }: PropertySwiperProps) {
 ### Day 18-19: Search & Filters
 
 #### 18.1 Type-Safe Property Filters Component
+
 ```typescript
 // src/components/features/properties/PropertyFilters.tsx
 'use client'
@@ -2035,10 +2142,10 @@ interface PropertyFiltersProps {
   onClose?: () => void
 }
 
-export function PropertyFilters({ 
-  initialFilters = {}, 
-  onFiltersChange, 
-  onClose 
+export function PropertyFilters({
+  initialFilters = {},
+  onFiltersChange,
+  onClose
 }: PropertyFiltersProps) {
   // Use validated form with Zod schema
   const form = useValidatedForm(PropertyFiltersSchema, initialFilters)
@@ -2070,8 +2177,8 @@ export function PropertyFilters({
                   <FormItem>
                     <FormLabel>Min Price</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         placeholder="100000"
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
@@ -2081,7 +2188,7 @@ export function PropertyFilters({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="priceMax"
@@ -2089,8 +2196,8 @@ export function PropertyFilters({
                   <FormItem>
                     <FormLabel>Max Price</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         placeholder="1000000"
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
@@ -2115,7 +2222,7 @@ export function PropertyFilters({
                 </FormItem>
               )}
             />
-        
+
         <div>
           <Label className="text-sm font-medium mb-2 block">Bedrooms</Label>
           <Select value={bedrooms} onValueChange={setBedrooms}>
@@ -2132,7 +2239,7 @@ export function PropertyFilters({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div>
           <Label className="text-sm font-medium mb-2 block">Bathrooms</Label>
           <Select value={bathrooms} onValueChange={setBathrooms}>
@@ -2149,7 +2256,7 @@ export function PropertyFilters({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div>
           <Label className="text-sm font-medium mb-2 block">Property Type</Label>
           <Select value={propertyType} onValueChange={setPropertyType}>
@@ -2165,7 +2272,7 @@ export function PropertyFilters({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex gap-3">
           <Button onClick={handleClearFilters} variant="outline" className="flex-1">
             Clear All
@@ -2183,6 +2290,7 @@ export function PropertyFilters({
 ### Day 20-21: Dashboard & User Profile
 
 #### 20.1 Dashboard Page
+
 ```typescript
 // src/app/dashboard/page.tsx
 'use client'
@@ -2212,8 +2320,8 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Discover Properties</h2>
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={actions.openFilterModal}
             >
@@ -2281,6 +2389,7 @@ export default function DashboardPage() {
 ### Day 22-24: Comprehensive Testing Implementation
 
 #### 22.1 Unit Tests with Jest
+
 ```typescript
 // __tests__/unit/PropertyCard.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
@@ -2316,7 +2425,7 @@ describe('PropertyCard', () => {
 
   it('renders property information correctly', () => {
     render(<PropertyCard property={mockProperty} {...mockHandlers} />)
-    
+
     expect(screen.getByText('$500,000')).toBeInTheDocument()
     expect(screen.getByText('San Francisco, CA')).toBeInTheDocument()
     expect(screen.getByText('2 bed')).toBeInTheDocument()
@@ -2325,27 +2434,28 @@ describe('PropertyCard', () => {
 
   it('calls onLike when like button is clicked', () => {
     render(<PropertyCard property={mockProperty} {...mockHandlers} />)
-    
+
     const likeButton = screen.getByRole('button', { name: /like/i })
     fireEvent.click(likeButton)
-    
+
     expect(mockHandlers.onLike).toHaveBeenCalledTimes(1)
   })
 
   it('tracks analytics on interaction', () => {
     const trackSpy = jest.spyOn(require('@/lib/analytics/posthog'), 'trackPropertyInteraction')
-    
+
     render(<PropertyCard property={mockProperty} {...mockHandlers} />)
-    
+
     const likeButton = screen.getByRole('button', { name: /like/i })
     fireEvent.click(likeButton)
-    
+
     expect(trackSpy).toHaveBeenCalledWith('1', 'like')
   })
 })
 ```
 
 #### 22.2 Integration Tests with Vitest
+
 ```typescript
 // __tests__/integration/properties-api.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -2356,18 +2466,18 @@ import { NextRequest } from 'next/server'
 vi.mock('@/lib/supabase/server', () => ({
   createServerClient: () => ({
     auth: {
-      getSession: vi.fn()
+      getSession: vi.fn(),
     },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           range: vi.fn(() => ({
-            order: vi.fn()
-          }))
-        }))
-      }))
-    }))
-  })
+            order: vi.fn(),
+          })),
+        })),
+      })),
+    })),
+  }),
 }))
 
 const mockProperty = {
@@ -2378,7 +2488,7 @@ const mockProperty = {
   price: 500000,
   bedrooms: 2,
   bathrooms: 1,
-  property_type: 'condo'
+  property_type: 'condo',
 }
 
 describe('/api/properties', () => {
@@ -2389,21 +2499,23 @@ describe('/api/properties', () => {
   it('should return properties with valid session', async () => {
     const { createServerClient } = await import('@/lib/supabase/server')
     const mockSupabase = createServerClient()
-    
+
     // Mock authenticated session
     mockSupabase.auth.getSession.mockResolvedValue({
       data: { session: { user: { id: 'user-123' } } },
-      error: null
+      error: null,
     })
-    
+
     // Mock database query
     const mockQuery = mockSupabase.from().select().eq().range().order
     mockQuery.mockResolvedValue({
       data: [mockProperty],
-      error: null
+      error: null,
     })
 
-    const request = new NextRequest('http://localhost:3000/api/properties?priceMin=100000&priceMax=500000')
+    const request = new NextRequest(
+      'http://localhost:3000/api/properties?priceMin=100000&priceMax=500000'
+    )
     const response = await GET(request)
     const data = await response.json()
 
@@ -2415,11 +2527,11 @@ describe('/api/properties', () => {
   it('should return 401 for unauthenticated requests', async () => {
     const { createServerClient } = await import('@/lib/supabase/server')
     const mockSupabase = createServerClient()
-    
+
     // Mock no session
     mockSupabase.auth.getSession.mockResolvedValue({
       data: { session: null },
-      error: null
+      error: null,
     })
 
     const request = new NextRequest('http://localhost:3000/api/properties')
@@ -2429,7 +2541,9 @@ describe('/api/properties', () => {
   })
 
   it('should validate query parameters with Zod', async () => {
-    const request = new NextRequest('http://localhost:3000/api/properties?priceMin=invalid')
+    const request = new NextRequest(
+      'http://localhost:3000/api/properties?priceMin=invalid'
+    )
     const response = await GET(request)
     const data = await response.json()
 
@@ -2441,6 +2555,7 @@ describe('/api/properties', () => {
 ```
 
 #### 22.3 E2E Tests with Playwright
+
 ```typescript
 // __tests__/e2e/property-browsing.test.ts
 import { test, expect } from '@playwright/test'
@@ -2463,7 +2578,7 @@ test.describe('Property Browsing', () => {
   test('should like a property', async ({ page }) => {
     const likeButton = page.locator('button:has-text("Like")')
     await likeButton.click()
-    
+
     // Should advance to next property
     await page.waitForTimeout(500)
     await expect(page.locator('[data-testid="property-card"]')).toBeVisible()
@@ -2472,13 +2587,13 @@ test.describe('Property Browsing', () => {
   test('should open property filters', async ({ page }) => {
     await page.click('button:has-text("Filters")')
     await expect(page.locator('text=Filter Properties')).toBeVisible()
-    
+
     // Set price range
     await page.fill('[name="priceMin"]', '200000')
     await page.fill('[name="priceMax"]', '800000')
-    
+
     await page.click('button:has-text("Apply Filters")')
-    
+
     // Should show filtered results
     await expect(page.locator('text=Active Filters')).toBeVisible()
   })
@@ -2494,7 +2609,7 @@ test.describe('Property Browsing', () => {
         break
       }
     }
-    
+
     // Should show no more properties message
     await expect(page.locator('text=No more properties')).toBeVisible()
     await expect(page.locator('button:has-text("Start Over")')).toBeVisible()
@@ -2503,6 +2618,7 @@ test.describe('Property Browsing', () => {
 ```
 
 #### 22.4 Test Scripts Configuration
+
 ```json
 // package.json scripts
 {
@@ -2519,10 +2635,10 @@ test.describe('Property Browsing', () => {
 }
 ```
 
-
 ### Day 25-26: Performance Optimization
 
 #### 25.1 Image Optimization
+
 ```typescript
 // src/components/ui/optimized-image.tsx
 'use client'
@@ -2540,13 +2656,13 @@ interface OptimizedImageProps {
   priority?: boolean
 }
 
-export function OptimizedImage({ 
-  src, 
-  alt, 
-  className, 
-  width = 400, 
-  height = 300, 
-  priority = false 
+export function OptimizedImage({
+  src,
+  alt,
+  className,
+  width = 400,
+  height = 300,
+  priority = false
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -2572,7 +2688,7 @@ export function OptimizedImage({
           <span className="text-muted-foreground">Failed to load image</span>
         </div>
       )}
-      
+
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -2586,6 +2702,7 @@ export function OptimizedImage({
 ### Day 27-28: Deployment
 
 #### 27.1 Environment Variables Setup
+
 ```env
 # .env.production
 NEXT_PUBLIC_SUPABASE_URL=your-production-supabase-url
@@ -2596,6 +2713,7 @@ NEXTAUTH_SECRET=your-production-secret
 ```
 
 #### 27.2 Vercel Deployment
+
 ```json
 {
   "buildCommand": "pnpm build",
@@ -2607,6 +2725,7 @@ NEXTAUTH_SECRET=your-production-secret
 ```
 
 #### 27.3 Production Scripts
+
 ```json
 // package.json scripts section
 {
@@ -2676,6 +2795,7 @@ NEXTAUTH_SECRET=your-production-secret
 After your core app is built and tested, import your valuable production data:
 
 #### Day 29: Neighborhood Data Migration
+
 ```bash
 # Create migration directory structure
 mkdir -p scripts/migrate/{helpers,validation}
@@ -2691,21 +2811,21 @@ import { readFileSync } from 'fs'
 
 export async function migrateNeighborhoods() {
   console.log('🏘️ Migrating neighborhood mappings...')
-  
+
   const legacySupabase = createClient(
     process.env.LEGACY_SUPABASE_URL!,
     process.env.LEGACY_SERVICE_KEY!
   )
-  
+
   const newSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   // Extract your authoritative neighborhood data
-  const { data: neighborhoods, error } = await legacySupabase
-    .from('neighborhoods_authoritative')
-    .select(`
+  const { data: neighborhoods, error } = await legacySupabase.from(
+    'neighborhoods_authoritative'
+  ).select(`
       id,
       name,
       polygon,
@@ -2720,13 +2840,13 @@ export async function migrateNeighborhoods() {
         )
       )
     `)
-  
+
   if (error) throw error
-  
+
   console.log(`📍 Found ${neighborhoods?.length} neighborhoods to migrate`)
-  
+
   // Transform to simplified schema
-  const transformedNeighborhoods = neighborhoods?.map(n => ({
+  const transformedNeighborhoods = neighborhoods?.map((n) => ({
     id: n.id,
     name: n.name,
     city: n.cities?.name || 'Unknown',
@@ -2736,26 +2856,28 @@ export async function migrateNeighborhoods() {
     median_price: n.median_price,
     walk_score: n.walk_score,
     transit_score: n.transit_score,
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   }))
-  
+
   // Batch insert with progress tracking
   const batchSize = 100
   let imported = 0
-  
+
   for (let i = 0; i < transformedNeighborhoods.length; i += batchSize) {
     const batch = transformedNeighborhoods.slice(i, i + batchSize)
-    
+
     const { error: insertError } = await newSupabase
       .from('neighborhoods')
       .upsert(batch, { onConflict: 'id' })
-    
+
     if (insertError) throw insertError
-    
+
     imported += batch.length
-    console.log(`✅ Imported ${imported}/${transformedNeighborhoods.length} neighborhoods`)
+    console.log(
+      `✅ Imported ${imported}/${transformedNeighborhoods.length} neighborhoods`
+    )
   }
-  
+
   console.log('🎉 Neighborhood migration complete!')
 }
 
@@ -2772,32 +2894,33 @@ function extractStateFromRegion(region?: string): string {
 ```
 
 #### Day 30: Property Data Migration
+
 ```typescript
 // scripts/migrate/02-properties.ts
 export async function migrateProperties() {
   console.log('🏠 Migrating property data...')
-  
+
   const legacySupabase = createClient(
     process.env.LEGACY_SUPABASE_URL!,
     process.env.LEGACY_SERVICE_KEY!
   )
-  
+
   const newSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   // Get total count first
   const { count } = await legacySupabase
     .from('properties')
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true)
-  
+
   console.log(`📊 Found ${count} active properties to migrate`)
-  
+
   const batchSize = 500
   let processed = 0
-  
+
   // Process in batches to handle large datasets
   for (let offset = 0; offset < count!; offset += batchSize) {
     const { data: properties } = await legacySupabase
@@ -2805,11 +2928,11 @@ export async function migrateProperties() {
       .select('*')
       .eq('is_active', true)
       .range(offset, offset + batchSize - 1)
-    
+
     if (!properties?.length) break
-    
+
     // Transform to new schema
-    const transformedProperties = properties.map(prop => ({
+    const transformedProperties = properties.map((prop) => ({
       id: prop.id,
       zpid: prop.zpid,
       address: prop.address,
@@ -2823,8 +2946,10 @@ export async function migrateProperties() {
       property_type: prop.property_type,
       images: prop.images || [],
       description: prop.description,
-      coordinates: prop.latitude && prop.longitude ? 
-        `POINT(${prop.longitude} ${prop.latitude})` : null,
+      coordinates:
+        prop.latitude && prop.longitude
+          ? `POINT(${prop.longitude} ${prop.latitude})`
+          : null,
       amenities: prop.amenities || [],
       year_built: prop.year_built,
       lot_size_sqft: prop.lot_size,
@@ -2833,110 +2958,132 @@ export async function migrateProperties() {
       property_hash: prop.property_hash,
       is_active: true,
       created_at: prop.created_at,
-      updated_at: prop.updated_at
+      updated_at: prop.updated_at,
     }))
-    
+
     // Insert batch
     const { error } = await newSupabase
       .from('properties')
       .upsert(transformedProperties, { onConflict: 'id' })
-    
+
     if (error) {
       console.error('❌ Batch error:', error)
       continue
     }
-    
+
     processed += properties.length
-    console.log(`✅ Migrated ${processed}/${count} properties (${Math.round(processed/count! * 100)}%)`)
+    console.log(
+      `✅ Migrated ${processed}/${count} properties (${Math.round((processed / count!) * 100)}%)`
+    )
   }
-  
+
   console.log('🎉 Property migration complete!')
 }
 ```
 
 #### Day 31: Property-Neighborhood Mapping
+
 ```typescript
 // scripts/migrate/03-map-neighborhoods.ts
 export async function mapPropertiesToNeighborhoods() {
   console.log('🗺️ Mapping properties to neighborhoods using polygons...')
-  
+
   const newSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   // Get properties with coordinates but no neighborhood
   const { data: unmappedProperties } = await newSupabase
     .from('properties')
     .select('id, coordinates')
     .not('coordinates', 'is', null)
     .is('neighborhood_id', null)
-  
+
   console.log(`📍 Found ${unmappedProperties?.length} properties to map`)
-  
+
   let mapped = 0
-  
+
   for (const property of unmappedProperties || []) {
     // Use your polygon containment logic
-    const { data: neighborhood } = await newSupabase
-      .rpc('find_neighborhood_for_property', {
-        property_coordinates: property.coordinates
-      })
-    
+    const { data: neighborhood } = await newSupabase.rpc(
+      'find_neighborhood_for_property',
+      {
+        property_coordinates: property.coordinates,
+      }
+    )
+
     if (neighborhood?.length > 0) {
       await newSupabase
         .from('properties')
         .update({ neighborhood_id: neighborhood[0].id })
         .eq('id', property.id)
-      
+
       mapped++
-      
+
       if (mapped % 100 === 0) {
-        console.log(`✅ Mapped ${mapped}/${unmappedProperties.length} properties`)
+        console.log(
+          `✅ Mapped ${mapped}/${unmappedProperties.length} properties`
+        )
       }
     }
   }
-  
+
   console.log(`🎉 Mapped ${mapped} properties to neighborhoods!`)
 }
 ```
 
 #### Day 32: Migration Validation & Cleanup
+
 ```typescript
 // scripts/migrate/04-validate.ts
 export async function validateMigration() {
   console.log('🔍 Validating migration...')
-  
+
   const newSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   // Validation checks
   const validations = [
     {
       name: 'Neighborhoods imported',
-      query: () => newSupabase.from('neighborhoods').select('id', { count: 'exact', head: true })
+      query: () =>
+        newSupabase
+          .from('neighborhoods')
+          .select('id', { count: 'exact', head: true }),
     },
     {
       name: 'Properties imported',
-      query: () => newSupabase.from('properties').select('id', { count: 'exact', head: true })
+      query: () =>
+        newSupabase
+          .from('properties')
+          .select('id', { count: 'exact', head: true }),
     },
     {
       name: 'Properties with neighborhoods',
-      query: () => newSupabase.from('properties').select('id', { count: 'exact', head: true }).not('neighborhood_id', 'is', null)
+      query: () =>
+        newSupabase
+          .from('properties')
+          .select('id', { count: 'exact', head: true })
+          .not('neighborhood_id', 'is', null),
     },
     {
       name: 'Properties with coordinates',
-      query: () => newSupabase.from('properties').select('id', { count: 'exact', head: true }).not('coordinates', 'is', null)
-    }
+      query: () =>
+        newSupabase
+          .from('properties')
+          .select('id', { count: 'exact', head: true })
+          .not('coordinates', 'is', null),
+    },
   ]
-  
+
   for (const validation of validations) {
     const { count } = await validation.query()
     console.log(`✅ ${validation.name}: ${count}`)
   }
-  
+
   // Data integrity checks
   const { data: orphanedProperties } = await newSupabase
     .from('properties')
@@ -2944,17 +3091,20 @@ export async function validateMigration() {
     .not('coordinates', 'is', null)
     .is('neighborhood_id', null)
     .limit(10)
-  
+
   if (orphanedProperties?.length) {
-    console.log(`⚠️ Found ${orphanedProperties.length} properties with coordinates but no neighborhood`)
-    orphanedProperties.forEach(p => console.log(`  - ${p.address}`))
+    console.log(
+      `⚠️ Found ${orphanedProperties.length} properties with coordinates but no neighborhood`
+    )
+    orphanedProperties.forEach((p) => console.log(`  - ${p.address}`))
   }
-  
+
   console.log('🎉 Migration validation complete!')
 }
 ```
 
 #### Migration Runner Script
+
 ```typescript
 // scripts/run-migration.ts
 import { migrateNeighborhoods } from './migrate/01-neighborhoods'
@@ -2965,21 +3115,20 @@ import { validateMigration } from './migrate/04-validate'
 async function runFullMigration() {
   try {
     console.log('🚀 Starting HomeMatch data migration...')
-    
+
     // Step 1: Import neighborhood mappings (your valuable work!)
     await migrateNeighborhoods()
-    
+
     // Step 2: Import property data
     await migrateProperties()
-    
+
     // Step 3: Map properties to neighborhoods using polygons
     await mapPropertiesToNeighborhoods()
-    
+
     // Step 4: Validate everything worked
     await validateMigration()
-    
+
     console.log('🎉 Migration complete! Your production data is preserved.')
-    
   } catch (error) {
     console.error('❌ Migration failed:', error)
     process.exit(1)
@@ -2993,6 +3142,7 @@ if (require.main === module) {
 ```
 
 ### Environment Setup for Migration
+
 ```env
 # .env.migration
 # Legacy production database
@@ -3005,6 +3155,7 @@ SUPABASE_SERVICE_KEY=your-new-service-key
 ```
 
 ### Migration Scripts in package.json
+
 ```json
 {
   "scripts": {
@@ -3024,18 +3175,21 @@ SUPABASE_SERVICE_KEY=your-new-service-key
 ### Zillow RapidAPI Integration (zillow-com1.p.rapidapi.com)
 
 Your production app uses an excellent RapidAPI service that provides:
+
 - **Property search by polygon** for neighborhood-based ingestion
 - **Multiple high-quality images** per property (up to 20)
 - **Zillow Property IDs (zpid)** for unique identification
 - **Rich property data** (price, beds, baths, sqft, amenities, coordinates)
 
 #### Environment Setup
+
 ```env
 # .env.local
 RAPIDAPI_KEY=your-rapidapi-key
 ```
 
 #### API Configuration
+
 ```typescript
 // lib/services/zillow-api.ts
 interface ZillowAPIConfig {
@@ -3051,11 +3205,12 @@ export const ZILLOW_API_CONFIG: ZillowAPIConfig = {
   baseURL: 'https://zillow-com1.p.rapidapi.com',
   rateLimitDelay: 2000, // 2 seconds between calls
   maxImagesPerProperty: 20,
-  timeout: 10000
+  timeout: 10000,
 }
 ```
 
 #### Zillow API Client
+
 ```typescript
 // lib/services/zillow-api-client.ts
 export class ZillowAPIClient {
@@ -3072,19 +3227,22 @@ export class ZillowAPIClient {
   // Search properties by neighborhood polygon
   async searchByPolygon(polygon: string, page = 1): Promise<ZillowProperty[]> {
     await this.delay(this.requestDelay)
-    
+
     const params = new URLSearchParams({
       polygon,
       status_type: 'ForSale',
-      page: page.toString()
+      page: page.toString(),
     })
 
-    const response = await fetch(`${this.baseURL}/propertyByPolygon?${params}`, {
-      headers: {
-        'X-RapidAPI-Key': this.apiKey,
-        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
+    const response = await fetch(
+      `${this.baseURL}/propertyByPolygon?${params}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': this.apiKey,
+          'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+        },
       }
-    })
+    )
 
     if (!response.ok) {
       throw new Error(`Zillow API error: ${response.status}`)
@@ -3097,12 +3255,12 @@ export class ZillowAPIClient {
   // Get multiple images for a property
   async getPropertyImages(zpid: string): Promise<string[]> {
     await this.delay(this.requestDelay * 1.5) // Longer delay for images
-    
+
     const response = await fetch(`${this.baseURL}/images?zpid=${zpid}`, {
       headers: {
         'X-RapidAPI-Key': this.apiKey,
-        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
-      }
+        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+      },
     })
 
     if (!response.ok) {
@@ -3112,21 +3270,23 @@ export class ZillowAPIClient {
 
     const data = await response.json()
     const images = data.images || []
-    
-    return Array.isArray(images) 
+
+    return Array.isArray(images)
       ? images.filter(Boolean).slice(0, ZILLOW_API_CONFIG.maxImagesPerProperty)
       : []
   }
 
   // Get detailed property information
-  async getPropertyDetails(zpid: string): Promise<ZillowPropertyDetails | null> {
+  async getPropertyDetails(
+    zpid: string
+  ): Promise<ZillowPropertyDetails | null> {
     await this.delay(this.requestDelay)
-    
+
     const response = await fetch(`${this.baseURL}/property?zpid=${zpid}`, {
       headers: {
         'X-RapidAPI-Key': this.apiKey,
-        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
-      }
+        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+      },
     })
 
     if (!response.ok) {
@@ -3137,12 +3297,13 @@ export class ZillowAPIClient {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
 ```
 
 #### Property Ingestion Service
+
 ```typescript
 // lib/services/property-ingestion.ts
 import { ZillowAPIClient } from './zillow-api-client'
@@ -3176,7 +3337,7 @@ export class PropertyIngestionService {
       try {
         // Fetch properties from Zillow API
         const properties = await this.zillowClient.searchByPolygon(
-          neighborhood.bounds.toString(), 
+          neighborhood.bounds.toString(),
           page
         )
 
@@ -3190,9 +3351,10 @@ export class PropertyIngestionService {
           await this.processProperty(zillowProperty, neighborhoodId)
         }
 
-        console.log(`✅ Processed page ${page} (${properties.length} properties)`)
+        console.log(
+          `✅ Processed page ${page} (${properties.length} properties)`
+        )
         page++
-
       } catch (error) {
         console.error(`❌ Error ingesting page ${page}:`, error)
         hasMorePages = false
@@ -3200,10 +3362,13 @@ export class PropertyIngestionService {
     }
   }
 
-  private async processProperty(zillowProperty: any, neighborhoodId: string): Promise<void> {
+  private async processProperty(
+    zillowProperty: any,
+    neighborhoodId: string
+  ): Promise<void> {
     try {
       // Get additional images
-      const images = zillowProperty.zpid 
+      const images = zillowProperty.zpid
         ? await this.zillowClient.getPropertyImages(zillowProperty.zpid)
         : []
 
@@ -3219,11 +3384,13 @@ export class PropertyIngestionService {
         bathrooms: zillowProperty.bathrooms || 0,
         square_feet: zillowProperty.livingArea,
         property_type: this.mapPropertyType(zillowProperty.homeType),
-        images: images.length > 0 ? images : [zillowProperty.imgSrc].filter(Boolean),
+        images:
+          images.length > 0 ? images : [zillowProperty.imgSrc].filter(Boolean),
         description: zillowProperty.description,
-        coordinates: zillowProperty.latitude && zillowProperty.longitude 
-          ? `POINT(${zillowProperty.longitude} ${zillowProperty.latitude})`
-          : null,
+        coordinates:
+          zillowProperty.latitude && zillowProperty.longitude
+            ? `POINT(${zillowProperty.longitude} ${zillowProperty.latitude})`
+            : null,
         neighborhood_id: neighborhoodId,
         amenities: zillowProperty.amenities || [],
         year_built: zillowProperty.yearBuilt,
@@ -3231,29 +3398,29 @@ export class PropertyIngestionService {
         parking_spots: zillowProperty.parkingFeatures?.length || 0,
         listing_status: 'active',
         property_hash: this.generatePropertyHash(zillowProperty),
-        is_active: true
+        is_active: true,
       }
 
       // Upsert to database
-      await this.supabase
-        .from('properties')
-        .upsert(property, { 
-          onConflict: 'zpid',
-          ignoreDuplicates: false 
-        })
-
+      await this.supabase.from('properties').upsert(property, {
+        onConflict: 'zpid',
+        ignoreDuplicates: false,
+      })
     } catch (error) {
-      console.error(`❌ Error processing property ${zillowProperty.zpid}:`, error)
+      console.error(
+        `❌ Error processing property ${zillowProperty.zpid}:`,
+        error
+      )
     }
   }
 
   private mapPropertyType(homeType: string): string {
     const typeMap: Record<string, string> = {
-      'SINGLE_FAMILY': 'house',
-      'TOWNHOUSE': 'townhouse', 
-      'CONDO': 'condo',
-      'APARTMENT': 'apartment',
-      'MULTI_FAMILY': 'house'
+      SINGLE_FAMILY: 'house',
+      TOWNHOUSE: 'townhouse',
+      CONDO: 'condo',
+      APARTMENT: 'apartment',
+      MULTI_FAMILY: 'house',
     }
     return typeMap[homeType] || 'house'
   }
@@ -3266,6 +3433,7 @@ export class PropertyIngestionService {
 ```
 
 #### API Route for Manual Ingestion
+
 ```typescript
 // app/api/admin/ingest/route.ts
 import { PropertyIngestionService } from '@/lib/services/property-ingestion'
@@ -3274,10 +3442,10 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const { neighborhoodId } = await request.json()
-    
+
     if (!neighborhoodId) {
       return NextResponse.json(
-        { error: 'Neighborhood ID required' }, 
+        { error: 'Neighborhood ID required' },
         { status: 400 }
       )
     }
@@ -3285,22 +3453,19 @@ export async function POST(request: NextRequest) {
     const ingestionService = new PropertyIngestionService()
     await ingestionService.ingestPropertiesForNeighborhood(neighborhoodId)
 
-    return NextResponse.json({ 
-      success: true, 
-      message: `Properties ingested for neighborhood ${neighborhoodId}` 
+    return NextResponse.json({
+      success: true,
+      message: `Properties ingested for neighborhood ${neighborhoodId}`,
     })
-
   } catch (error) {
     console.error('Ingestion error:', error)
-    return NextResponse.json(
-      { error: 'Ingestion failed' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Ingestion failed' }, { status: 500 })
   }
 }
 ```
 
 #### Scheduled Ingestion with Inngest
+
 ```typescript
 // lib/inngest/functions/property-ingestion.ts
 import { inngest } from '../client'
@@ -3311,7 +3476,7 @@ export const schedulePropertyIngestion = inngest.createFunction(
   { cron: '0 2 * * *' }, // Daily at 2 AM
   async ({ step }) => {
     const ingestionService = new PropertyIngestionService()
-    
+
     // Get active neighborhoods
     const neighborhoods = await step.run('get-neighborhoods', async () => {
       const { data } = await supabase
@@ -3319,55 +3484,56 @@ export const schedulePropertyIngestion = inngest.createFunction(
         .select('id, name')
         .not('bounds', 'is', null)
         .limit(10) // Process 10 neighborhoods per day
-      
+
       return data || []
     })
-    
+
     // Ingest properties for each neighborhood
     for (const neighborhood of neighborhoods) {
       await step.run(`ingest-${neighborhood.id}`, async () => {
         await ingestionService.ingestPropertiesForNeighborhood(neighborhood.id)
         return { neighborhoodId: neighborhood.id, name: neighborhood.name }
       })
-      
+
       // Add delay between neighborhoods to respect rate limits
       await step.sleep('rate-limit-delay', '30s')
     }
-    
-    return { 
+
+    return {
       processedNeighborhoods: neighborhoods.length,
-      message: 'Property ingestion completed successfully'
+      message: 'Property ingestion completed successfully',
     }
   }
 )
 ```
 
 #### Day 33: ML Scoring System Migration
+
 ```typescript
 // scripts/migrate/05-ml-scoring-system.ts
 export async function migrateMLScoringSystem() {
   console.log('🧠 Migrating ML scoring system...')
-  
+
   const legacySupabase = createClient(
     process.env.LEGACY_SUPABASE_URL!,
     process.env.LEGACY_SERVICE_KEY!
   )
-  
+
   const newSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   // 1. Migrate existing property scores
   const { data: existingScores } = await legacySupabase
     .from('property_scores')
     .select('*')
-  
+
   if (existingScores?.length) {
     console.log(`📊 Found ${existingScores.length} existing property scores`)
-    
+
     // Transform to new schema (storing in score_data JSONB)
-    const transformedScores = existingScores.map(score => ({
+    const transformedScores = existingScores.map((score) => ({
       user_id: score.user_id,
       property_id: score.property_id,
       interaction_type: 'view', // Retroactive scoring
@@ -3377,55 +3543,58 @@ export async function migrateMLScoringSystem() {
         location_score: score.location_score,
         features_score: score.features_score,
         model_phase: score.model_phase || 'cold-start',
-        legacy_migration: true
+        legacy_migration: true,
       },
-      created_at: score.created_at
+      created_at: score.created_at,
     }))
-    
+
     // Insert as interactions with score data
     await newSupabase
       .from('user_property_interactions')
-      .upsert(transformedScores, { onConflict: 'user_id,property_id,interaction_type' })
-    
+      .upsert(transformedScores, {
+        onConflict: 'user_id,property_id,interaction_type',
+      })
+
     console.log('✅ Migrated property scores to interaction score_data')
   }
-  
+
   // 2. Copy ML model weights/parameters if stored in DB
   try {
     const { data: modelWeights } = await legacySupabase
       .from('user_preference_weights')
       .select('*')
-    
+
     if (modelWeights?.length) {
       console.log(`🎯 Found ${modelWeights.length} user preference weights`)
-      
+
       // Store in user_profiles preferences JSONB
       for (const weight of modelWeights) {
-        await newSupabase
-          .from('user_profiles')
-          .upsert({
+        await newSupabase.from('user_profiles').upsert(
+          {
             id: weight.user_id,
             preferences: {
               ml_weights: {
                 price_weight: weight.price_weight,
                 location_weight: weight.location_weight,
                 size_weight: weight.size_weight,
-                features_weight: weight.features_weight
+                features_weight: weight.features_weight,
               },
-              migrated_from_ml_system: true
-            }
-          }, { onConflict: 'id' })
+              migrated_from_ml_system: true,
+            },
+          },
+          { onConflict: 'id' }
+        )
       }
-      
+
       console.log('✅ Migrated ML preference weights')
     }
   } catch (error) {
     console.log('ℹ️ No ML preference weights found (this is normal)')
   }
-  
+
   // 3. Deploy scoring Edge Function
   console.log('🚀 Deploying ML scoring Edge Function...')
-  
+
   // Copy your existing scoring function
   const scoringFunction = `
     // Preserve your 3-phase ML scoring system
@@ -3444,15 +3613,16 @@ export async function migrateMLScoringSystem() {
       return Math.min(1, score)
     }
   `
-  
+
   // Write to new Edge Function
   await writeFile('supabase/functions/score-v2/index.ts', scoringFunction)
-  
+
   console.log('🎉 ML scoring system migration complete!')
 }
 ```
 
 #### AI Configuration (Optional - Add When Ready)
+
 ```env
 # .env.local - AI configuration
 # Choose your preferred provider for cost efficiency
@@ -3468,11 +3638,12 @@ OPENAI_API_KEY=your-openai-key
 ```
 
 #### Natural Language Search Implementation
+
 ```typescript
 // lib/ai/search-parser.ts - Add when ready for NL search
 export async function parseSearchQuery(query: string): Promise<SearchCriteria> {
   // Example: "$2.5M homes in San Jose AND $1.5-2M in Oakland Hills"
-  
+
   if (process.env.AI_PROVIDER === 'chinese') {
     return await parseWithQwen(query)
   } else if (process.env.AI_PROVIDER === 'anthropic') {
@@ -3485,32 +3656,40 @@ export async function parseSearchQuery(query: string): Promise<SearchCriteria> {
 
 // Cost-effective Chinese model integration
 async function parseWithQwen(query: string) {
-  const response = await fetch(process.env.QWEN_API_BASE + '/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.QWEN_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'qwen-turbo',
-      messages: [{
-        role: 'system',
-        content: 'Convert real estate queries to structured search criteria...'
-      }, {
-        role: 'user', 
-        content: query
-      }]
-    })
-  })
-  
+  const response = await fetch(
+    process.env.QWEN_API_BASE + '/chat/completions',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.QWEN_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'qwen-turbo',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Convert real estate queries to structured search criteria...',
+          },
+          {
+            role: 'user',
+            content: query,
+          },
+        ],
+      }),
+    }
+  )
+
   const data = await response.json()
   return JSON.parse(data.choices[0].message.content)
 }
 ```
 
-This implementation guide provides a comprehensive, step-by-step approach to building HomeMatch V2. Each section includes practical code examples and can be followed sequentially to create a fully functional property browsing application. 
+This implementation guide provides a comprehensive, step-by-step approach to building HomeMatch V2. Each section includes practical code examples and can be followed sequentially to create a fully functional property browsing application.
 
 **Key Benefits:**
+
 - **Preserves your valuable production data** - properties and neighborhood polygons
 - **Maintains your sophisticated ML scoring system** - 3-phase cold-start → online-LR → LightGBM
 - **Excellent Zillow API integration** - continues using `zillow-com1.p.rapidapi.com`

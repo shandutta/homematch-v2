@@ -35,12 +35,14 @@ Next.js 15 app with clean architecture principles.
 **🚀 See [`REBUILD_FROM_SCRATCH_PLAN.md`](./REBUILD_FROM_SCRATCH_PLAN.md) for implementation plan**
 
 ### Key Directories
+
 - `/app` - Next.js App Router (pages, API routes)
 - `/lib` - Business logic (auth, services, ML, API clients)
 - `/components` - React components by feature
 - `/types` - TypeScript definitions
 
 ### Environment Variables
+
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
@@ -59,18 +61,21 @@ INTERNAL_API_KEY=
 ```
 
 ### Authentication
+
 - **Supabase Auth** with Google OAuth
 - Server-side sessions with RLS policies
 - Key files: `lib/auth/supabase.ts`, `middleware.ts`
 
 ### Key Features
+
 1. **ML Scoring**: 3-phase system (cold-start → online-LR → LightGBM)
 2. **Households**: Multi-user property sharing
-3. **Geographic**: PostGIS polygon neighborhoods  
+3. **Geographic**: PostGIS polygon neighborhoods
 4. **NL Search**: AI-powered complex queries
 5. **Real Estate**: Zillow API integration
 
 ### Common Patterns
+
 - Start with API route in `/app/api`
 - Business logic in `/lib/services`
 - Validation schemas in `/lib/schemas`
@@ -79,6 +84,7 @@ INTERNAL_API_KEY=
 - Test with auth helpers
 
 ## Migration Notes
+
 - **Status**: V2 rebuild on `v2-clean` branch
 - **Preserve**: Property data, neighborhood polygons, ML models
 - **Reference**: Production code on `origin/main`
