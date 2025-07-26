@@ -1,0 +1,1 @@
+{"name":"test","badly":"formatted","nested":{"object":{"with":"bad spacing"}},"array":[1,2,3,4,5]}
