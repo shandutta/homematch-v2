@@ -11,8 +11,8 @@
     "prepare": "simple-git-hooks",
     "format": "prettier --write .",
     "lint:fix": "eslint --fix .",
-    "install:approve": "pnpm install && pnpm approve-builds",
-    "postinstall": "pnpm approve-builds"
+    "install:approve": "pnpm install",
+    "postinstall": "pnpm approve-builds --yes --all"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
