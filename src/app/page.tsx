@@ -70,7 +70,7 @@ export default async function Home() {
         {user && (
           <div className="mt-8 text-center">
             <a
-              href="/notes"
+              href="/helloworld_notes"
               className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
             >
               View Notes (Test Supabase)
