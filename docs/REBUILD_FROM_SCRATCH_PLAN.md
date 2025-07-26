@@ -63,9 +63,11 @@ pnpm dlx playwright install
 pnpm dlx playwright install-deps
 
 # Initialize git hooks
-pnpm dlx husky install
-pnpm dlx husky add .husky/pre-commit "pnpm dlx lint-staged"
-pnpm dlx husky add .husky/commit-msg "pnpm dlx commitlint --edit $1"
+pnpm add --save-dev husky
+pnpm exec husky init
+# Update the default pre-commit hook and add commit-msg hook
+echo "pnpm dlx lint-staged" > .husky/pre-commit
+echo "pnpm dlx commitlint --edit \$1" > .husky/commit-msg
 ```
 
 #### 1.3 Development Tooling Setup
@@ -137,7 +139,7 @@ module.exports = {
 mkdir -p src/components/features/{auth,properties,dashboard,onboarding}
 mkdir -p src/components/layouts
 mkdir -p src/components/providers
-mkdir -p src/lib/{supabase,services,stores,utils,ai,analytics,inngest}
+mkdir -p src/lib/{supabase,services,stores,schemas,utils,ai,api,analytics,inngest}
 mkdir -p src/hooks
 mkdir -p src/types
 mkdir -p __tests__/{unit,integration,e2e}
@@ -2621,7 +2623,7 @@ NEXTAUTH_SECRET=your-production-secret
     "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e",
     "test:coverage": "vitest --coverage",
     "db:types": "npx supabase gen types typescript --project-id your-project-ref > src/types/database.ts",
-    "prepare": "husky install"
+    "prepare": "husky"
   }
 }
 ```

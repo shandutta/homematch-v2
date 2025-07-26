@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git config:*)",
+      "Bash(pnpm store prune:*)",
+      "Bash(pnpm dlx:*)",
+      "Bash(echo $SHELL)",
+      "Bash(env)",
+      "Bash(HUSKY_DEBUG=1 pnpm dlx husky add .husky/test-hook \"echo test\")",
+      "Bash(export HUSKY_DEBUG=1)",
+      "Bash(pnpm remove:*)",
+      "WebFetch(domain:typicode.github.io)",
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "Bash(mv:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(chmod:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm run:*)",
+      "Bash(npx husky:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(npx simple-git-hooks:*)"
+    ],
+    "deny": []
+  }
+}
