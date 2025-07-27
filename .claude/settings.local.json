@@ -31,7 +31,8 @@
       "Bash(npx prettier:*)",
       "Bash(npx eslint:*)",
       "Bash(claude doctor)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__fetch__imageFetch"
     ],
     "deny": []
   }
