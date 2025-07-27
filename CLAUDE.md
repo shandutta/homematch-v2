@@ -117,3 +117,7 @@ INTERNAL_API_KEY=
 - **Reference**: Production code on `origin/main`
 
 See architecture docs above for comprehensive details.
+
+## Supabase MCP Integration
+
+Supabase MCP server configured for AI-assisted database operations (schema analysis, migration generation, queries). Read-only mode enabled. Config: `.mcp.json` + `SUPABASE_MCP_TOKEN` in `.env.local`.
