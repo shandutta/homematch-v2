@@ -29,7 +29,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(npx tsc:*)",
       "Bash(npx prettier:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(claude doctor)",
+      "mcp__sequential-thinking__sequentialthinking"
     ],
     "deny": []
   }
