@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
+## Development Environment
+
+- Claude will most likely always start in the homematch-v2 directory when using Git Bash shell
+- Can run pnpm, npm, and other bash commands directly without changing directory
+
 ## Plan & Review
 
 ### Before starting work
@@ -9,7 +14,7 @@ This file provides guidance to Claude Code when working with this repository.
 - Always in plan mode to make a plan
 - After get the plan, make sure you Write the plan to .claude/tasks/TASK_NAME.md.
 - The plan should be a detailed implementation plan and the reasoning behind them, as well as tasks broken down.
-- If the task require external knowledge or certain package, also research to get latest knowledge (Use Task tool for research)
+- If the task require external knowledge or certain package, also research to get latest knowledge (Use relevant MCPs and Task tool for research)
 - Don't over plan it, always think MVP.
 - Once you write the plan, firstly ask me to review it. Do not continue until I approve the plan.
 
@@ -56,10 +61,17 @@ pnpm run build            # Production build
 
 ## Architecture
 
-Next.js 15 app with clean architecture principles.
+Next.js 15 app with clean architecture principles. Technology stack fully audited and verified.
 
-**📋 See [`NEW_ARCHITECTURE.md`](./NEW_ARCHITECTURE.md) for detailed system design**  
-**🚀 See [`REBUILD_FROM_SCRATCH_PLAN.md`](./REBUILD_FROM_SCRATCH_PLAN.md) for implementation plan**
+**📋 See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for detailed system design**  
+**🚀 See [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) for implementation plan**
+
+### Project Status
+
+- ✅ **Day 1 Technology Stack**: Complete - All dependencies verified and installed with enhancements
+- ✅ **Authentication System**: Complete - Supabase Auth with Google OAuth, advanced validation, route protection
+- 📋 **Database**: Schema designed, migration ready for deployment
+- 📋 **Frontend**: Component structure established, auth components implemented
 
 ### Key Directories
 
@@ -87,11 +99,13 @@ CRON_SECRET=
 INTERNAL_API_KEY=
 ```
 
-### Authentication
+### Authentication ✅ **IMPLEMENTED**
 
-- **Supabase Auth** with Google OAuth
-- Server-side sessions with RLS policies
-- Key files: `lib/auth/supabase.ts`, `middleware.ts`
+- **Supabase Auth** with Google OAuth and email/password
+- Server-side sessions with RLS policies and route protection
+- Advanced forms with React Hook Form + Zod validation (password regex, confirmation)
+- OAuth callback handling and error management
+- Key files: `src/lib/supabase/`, `src/utils/supabase/`, `src/components/features/auth/`, `src/lib/schemas/auth.ts`, `middleware.ts`
 
 ### Key Features
 
