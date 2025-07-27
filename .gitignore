@@ -30,6 +30,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+helper_scripts
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -49,5 +50,10 @@ homematch-v2.code-workspace
 .env*.local
 
 # Old Code
-homematch-original-analysis/*
-homematch-original-analysis/homematch
+homematch-original-analysis/
+
+# Browser logs & screenshots
+__tests__/browser_screenshots
+
+# Claude AI local settings and tasks
+.claude/

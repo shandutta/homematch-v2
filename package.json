@@ -11,6 +11,7 @@
     "prepare": "simple-git-hooks",
     "format": "prettier --write .",
     "lint:fix": "eslint --fix .",
+    "kill-node": "node helper_scripts/kill-port.js",
     "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check"
   },
   "dependencies": {
