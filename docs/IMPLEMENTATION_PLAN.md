@@ -70,23 +70,39 @@ npx simple-git-hooks
 #### 1.3 Development Tooling Setup
 
 ```javascript
-// .eslintrc.json
-{
-  "extends": [
-    "next/core-web-vitals",
-    "@typescript-eslint/recommended",
-    "prettier"
-  ],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "prefer-const": "error",
-    "no-var": "error"
+// eslint.config.mjs
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { FlatCompat } from '@eslint/eslintrc'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+})
+
+const eslintConfig = [
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  {
+    ignores: [
+      '.next/**/*',
+      'out/**/*',
+      'dist/**/*',
+    ],
   },
-  "ignorePatterns": ["*.js", "*.jsx"]
-}
+  {
+    rules: {
+      '@next/next/no-html-link-for-pages': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'prefer-const': 'error',
+      'no-var': 'error'
+    },
+  },
+]
+
+export default eslintConfig
 ```
 
 ```json
@@ -131,7 +147,7 @@ touch src/lib/inngest/{client.ts,functions.ts}
 
 # Testing configuration files
 touch vitest.config.ts jest.config.js playwright.config.ts
-touch .eslintrc.json .prettierrc.json
+touch eslint.config.mjs .prettierrc.json
 touch commitlint.config.js
 ```
 
