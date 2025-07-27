@@ -85,11 +85,7 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    ignores: [
-      '.next/**/*',
-      'out/**/*',
-      'dist/**/*',
-    ],
+    ignores: ['.next/**/*', 'out/**/*', 'dist/**/*'],
   },
   {
     rules: {
@@ -97,7 +93,7 @@ const eslintConfig = [
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
-      'no-var': 'error'
+      'no-var': 'error',
     },
   },
 ]
