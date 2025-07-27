@@ -5,30 +5,34 @@ This style guide outlines visual and interaction guidelines for the HomeMatch re
 ## 1. Design principles
 
 ### Focus on clarity and purpose
+
 - **Minimalism with intent** – Use clean layouts with generous white space so content stands out. Keep components simple and avoid clutter.
 - **Human‑centred storytelling** – Highlight aspirational lifestyle imagery (beautiful homes, happy couples) rather than only transactional data. Use narrative copy and visuals to connect emotionally with millennials.
 - **Single goal per page** – Each page should support a primary user task (swipe properties, adjust filters, save favourites). Use concise copy and a clear call‑to‑action.
 
 ### Build trust
+
 - **Transparency and social proof** – Include testimonials, partner badges and statistics that reinforce credibility.
 - **Consistency** – Use consistent colours, typography, component sizes and interaction patterns. Consistency reduces cognitive load and builds user confidence.
 - **Accessibility first** – Adhere to WCAG 2.1 AA. Use high contrast, clear labeling, keyboard navigation and ARIA attributes.
 
 ### Delight through subtle motion
+
 - **Micro‑interactions** – Provide feedback when users interact with cards, buttons and sliders. Hover effects, like/unlike animations and swipe confirmations can make the experience feel alive.
 - **Progressive disclosure** – Reveal advanced options (filters, scoring breakdown) only when the user needs them.
 
 ## 2. Colour, typography and icons
 
 ### Colour palette
+
 Select a palette that conveys trust and modernity:
 
-| Role              | Example colours | Notes |
-|------------------|----------------|------|
-| **Primary brand** | Deep indigo or dark blue (#0E1E40) | A sophisticated base colour for headers, navigation and accent elements. |
-| **Secondary**      | Warm teal or aqua (#00C2B3) | Use for buttons, highlights and interactive elements. Bright accents on a dark or neutral base provide contrast and catch the eye. |
-| **Tertiary**       | Soft neutrals (#F5F5F5, #E5E7EB) | Background sections, cards and modals. Light neutrals soften dark themes and support white space. |
-| **Error/Warning**  | Coral red (#FF6B6B) and Amber (#F59E0B) | Feedback colours for errors, warnings and alerts. |
+| Role              | Example colours                         | Notes                                                                                                                              |
+| ----------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Primary brand** | Deep indigo or dark blue (#0E1E40)      | A sophisticated base colour for headers, navigation and accent elements.                                                           |
+| **Secondary**     | Warm teal or aqua (#00C2B3)             | Use for buttons, highlights and interactive elements. Bright accents on a dark or neutral base provide contrast and catch the eye. |
+| **Tertiary**      | Soft neutrals (#F5F5F5, #E5E7EB)        | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                                  |
+| **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B) | Feedback colours for errors, warnings and alerts.                                                                                  |
 
 Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for text and interactive elements.
 
@@ -83,4 +87,3 @@ Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for t
 ---
 
 This guide establishes a modern, accessible, and consumer‑grade design system for HomeMatch, ensuring consistency and delight across the app experience.
-
