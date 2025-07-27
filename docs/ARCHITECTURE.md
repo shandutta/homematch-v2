@@ -484,7 +484,8 @@ export async function GET(request: NextRequest) {
     // Build type-safe query with filters
     let query = supabase
       .from('properties')
-      .select(`
+      .select(
+        `
         *,
         neighborhoods (
           name,
@@ -493,7 +494,8 @@ export async function GET(request: NextRequest) {
           walk_score,
           transit_score
         )
-      `)
+      `
+      )
       .eq('is_active', true)
 
     // Apply validated filters
@@ -649,6 +651,7 @@ export class PropertyScoringService {
 #### **SwipeContainer.tsx** - Production-Ready ⭐⭐⭐⭐⭐
 
 **Why It's Excellent:**
+
 - Robust state management with proper cleanup (`mountedRef.current`)
 - Performance optimized with `useMemo` for expensive calculations
 - Proper race condition handling for swipe deduplication
@@ -662,6 +665,7 @@ export class PropertyScoringService {
 #### **ultimate-property-ingest.cjs** - Well-Engineered Background Job ⭐⭐⭐⭐
 
 **Why It's Production-Ready:**
+
 - Database-driven geography (no hardcoded polygons)
 - Sophisticated rate limiting (2s API calls, 6s image downloads)
 - Hash-based deduplication prevents duplicate properties
@@ -674,6 +678,7 @@ export class PropertyScoringService {
 #### **MetroRegionNeighborhoodSelector.tsx** - Complex but Well-Architected ⭐⭐⭐⭐
 
 **Why It's Good:**
+
 - Hierarchical state management with persistence across selections
 - Smart filtering with search across all geographic levels
 - Bulk operations (Select All/Clear All at each level)
@@ -771,6 +776,7 @@ export class PropertyScoringService {
 The HomeMatch V2 architecture represents a significant modernization over V1, incorporating lessons learned from production usage while adopting cutting-edge technologies. The selective migration approach preserves high-quality V1 components while eliminating technical debt, resulting in a more maintainable, performant, and secure application.
 
 Key improvements include:
+
 - **50%+ performance increase** through modern caching and optimization
 - **90%+ reduction in authentication complexity** via Supabase Auth
 - **100% type safety** with TypeScript strict mode and Zod validation
