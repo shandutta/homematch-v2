@@ -43,6 +43,7 @@ export async function middleware(request: NextRequest) {
     '/profile',
     '/households',
     '/helloworld_notes',
+    '/validation',
   ]
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
@@ -60,9 +61,9 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some((path) => request.nextUrl.pathname === path)
 
   if (isAuthPath && user) {
-    // user is logged in, redirect to helloworld_notes
+    // user is logged in, redirect to validation dashboard
     const url = request.nextUrl.clone()
-    url.pathname = '/helloworld_notes'
+    url.pathname = '/validation'
     return NextResponse.redirect(url)
   }
 
