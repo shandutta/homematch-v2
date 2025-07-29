@@ -1,113 +1,48 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+Project context and guidelines for Claude Code when working with this repository.
 
 ## Development Environment
 
-- Claude will most likely always start in the homematch-v2 directory when using Git Bash shell
-- Can run pnpm, npm, and other bash commands directly without changing directory
+- Start directory: `homematch-v2` (Git Bash shell)
+- Commands: Use `pnpm` for package management
 
-## Plan & Review
+## Workflow Guidelines
 
-### Before starting work
+- **Plan first**: Write plans to `.claude/tasks/TASK_NAME.md`, get approval before implementing
+- **Update plans**: Document changes, mark tasks as completed, and handoff details as you work
+- **Think MVP**: Avoid over-planning, focus on essential functionality
+- **Research**: Use MCPs and Task tool for external knowledge/packages
 
-- Always in plan mode to make a plan
-- After get the plan, make sure you Write the plan to .claude/tasks/TASK_NAME.md.
-- The plan should be a detailed implementation plan and the reasoning behind them, as well as tasks broken down.
-- If the task require external knowledge or certain package, also research to get latest knowledge (Use relevant MCPs and Task tool for research)
-- Don't over plan it, always think MVP.
-- Once you write the plan, firstly ask me to review it. Do not continue until I approve the plan.
+## Code Standards
 
-### While implementing
-
-- You should update the plan as you work.
-- After you complete tasks in the plan, you should update and append detailed descriptions of the changes you made, so following tasks can be easily hand over to other engineers.
-
-## Code Quality Standards
-
-**ALL code must follow these standards:**
-
-- **TypeScript**: Strict mode, ES2017+ syntax, proper typing, don't use any types
-- **ESLint**: Next.js core-web-vitals + TypeScript rules (runs on pre-commit)
-- **Prettier**: No semicolons, single quotes, 2-space indentation, Tailwind CSS plugin
-- **Always run `pnpm run lint` and `pnpm run type-check` after code changes**
+- **TypeScript**: Strict mode, proper typing, no `any` types
+- **Quality**: Always run `pnpm run lint` and `pnpm run type-check` after changes
+- **Style**: Prettier (no semicolons, single quotes, 2-space indent)
 
 ## Essential Commands
 
 ```bash
-# Development
-pnpm run dev              # Start dev server
-pnpm run type-check       # TypeScript check
-pnpm run lint             # ESLint
-pnpm run format           # Prettier formatting
-pnpm run lint:fix         # Auto-fix ESLint issues
-
-# Testing
-pnpm run test             # Full test suite
-pnpm run test:fast        # Quick tests (type-check, lint, jest)
-pnpm run test:unit        # Unit tests only
-pnpm run test:integration # Integration tests
-pnpm run test:e2e         # E2E Playwright tests
-
-# Database & Data
-pnpm run db:migrate       # Supabase migrations
-pnpm run db:seed          # Seed test data
-pnpm run ingest:properties # Ingest Zillow data
-pnpm run scoring:update   # Update ML scores
-
-# Build
-pnpm run build            # Production build
+pnpm run dev           # Start development server
+pnpm run lint          # Lint and type-check
+pnpm run test          # Run test suite
+pnpm run db:migrate    # Apply database migrations
+pnpm run build         # Production build
 ```
 
-## Architecture
+## Project Structure
 
-Next.js 15 app with clean architecture principles. Technology stack fully audited and verified.
-
-**📋 See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for detailed system design**  
-**🚀 See [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) for implementation plan**
-
-### Project Status
-
-- ✅ **Day 1 Technology Stack**: Complete - All dependencies verified and installed with enhancements
-- ✅ **Authentication System**: Complete - Supabase Auth with Google OAuth, advanced validation, route protection
-- 📋 **Database**: Schema designed, migration ready for deployment
-- 📋 **Frontend**: Component structure established, auth components implemented
-
-### Key Directories
-
-- `/app` - Next.js App Router (pages, API routes)
-- `/lib` - Business logic (auth, services, ML, API clients)
-- `/components` - React components by feature
-- `/types` - TypeScript definitions
-
-### Environment Variables
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# External APIs
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
-RAPIDAPI_KEY=                    # Zillow API
-QWEN_API_KEY=                    # Natural language search
-
-# Deployment
-VERCEL_URL=
-CRON_SECRET=
-INTERNAL_API_KEY=
+```
+/app                   # Next.js App Router (pages, API routes)
+/lib                   # Business logic (auth, services, ML, API clients)
+  /supabase           # Database clients
+  /services           # Business logic
+  /schemas            # Validation schemas
+/components            # React components by feature
+/types                # TypeScript definitions
 ```
 
-### Authentication ✅ **IMPLEMENTED**
-
-- **Supabase Auth** with Google OAuth and email/password
-- Server-side sessions with RLS policies and route protection
-- Advanced forms with React Hook Form + Zod validation (password regex, confirmation)
-- OAuth callback handling and error management
-- Key files: `src/lib/supabase/`, `src/utils/supabase/`, `src/components/features/auth/`, `src/lib/schemas/auth.ts`, `middleware.ts`
-
-### Key Features
+## Key Features
 
 1. **ML Scoring**: 3-phase system (cold-start → online-LR → LightGBM)
 2. **Households**: Multi-user property sharing
@@ -115,23 +50,26 @@ INTERNAL_API_KEY=
 4. **NL Search**: AI-powered complex queries
 5. **Real Estate**: Zillow API integration
 
-### Common Patterns
+## Common Patterns
 
-- Start with API route in `/app/api`
-- Business logic in `/lib/services`
-- Validation schemas in `/lib/schemas`
-- Use Supabase RLS for auth
-- Store ML scores in JSONB
-- Test with auth helpers
+- API routes: `/app/api` → business logic in `/lib/services`
+- Validation: Zod schemas in `/lib/schemas`
+- Auth: Supabase RLS policies for data access
+- Data: Store ML scores in JSONB fields
+- Testing: Use auth helpers for protected routes
 
-## Migration Notes
+## Environment Setup
 
-- **Status**: V2 rebuild on `v2-clean` branch
-- **Preserve**: Property data, neighborhood polygons, ML models
-- **Reference**: Production code on `origin/main`
+See [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) Step 2.1 for complete environment variable setup.
 
-See architecture docs above for comprehensive details.
+**Quick start**: Set Supabase variables first, add external APIs as needed.
 
-## Supabase MCP Integration
+## Documentation
 
-Supabase MCP server configured for AI-assisted database operations (schema analysis, migration generation, queries). Read-only mode enabled. Config: `.mcp.json` + `SUPABASE_MCP_TOKEN` in `.env.local`.
+- **📋 Architecture**: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) - System design
+- **🚀 Implementation**: [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) - Setup guide
+- **🔧 API Reference**: [`docs/RAPIDAPI_ZILLOW.md`](./docs/RAPIDAPI_ZILLOW.md) - Zillow integration
+
+## Tech Stack
+
+Next.js 15, Supabase, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Inngest (background jobs)

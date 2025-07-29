@@ -34,6 +34,7 @@ helper_scripts
 
 # env files (can opt-in for committing if needed)
 .env*
+.env*.local
 
 # vercel
 .vercel
@@ -58,3 +59,9 @@ __tests__/browser_screenshots
 # Claude AI local settings and tasks
 .claude/
 .mcp*
+
+# Server logs
+dev-server.log
+
+# Migration reports
+migration-report-*.md
