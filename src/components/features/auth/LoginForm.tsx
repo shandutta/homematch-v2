@@ -43,7 +43,7 @@ export function LoginForm() {
     if (error) {
       setError(error.message)
     } else {
-      router.push('/helloworld_notes')
+      router.push('/validation')
     }
 
     setLoading(false)

@@ -14,11 +14,14 @@ import {
 } from '@/types/database'
 
 export class UserService {
-  private supabase = createClient()
+  private async getSupabase() {
+    return createClient()
+  }
 
   // User Profile Operations
   async getUserProfile(userId: string): Promise<UserProfile | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
@@ -35,7 +38,8 @@ export class UserService {
   async createUserProfile(
     profile: UserProfileInsert
   ): Promise<UserProfile | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_profiles')
       .insert(profile)
       .select()
@@ -53,7 +57,8 @@ export class UserService {
     userId: string,
     updates: UserProfileUpdate
   ): Promise<UserProfile | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_profiles')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', userId)
@@ -71,7 +76,8 @@ export class UserService {
   async getUserProfileWithHousehold(
     userId: string
   ): Promise<(UserProfile & { household?: Household }) | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_profiles')
       .select(
         `
@@ -92,7 +98,8 @@ export class UserService {
 
   // Household Operations
   async createHousehold(household: HouseholdInsert): Promise<Household | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('households')
       .insert(household)
       .select()
@@ -107,7 +114,8 @@ export class UserService {
   }
 
   async getHousehold(householdId: string): Promise<Household | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('households')
       .select('*')
       .eq('id', householdId)
@@ -125,7 +133,8 @@ export class UserService {
     householdId: string,
     updates: HouseholdUpdate
   ): Promise<Household | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('households')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', householdId)
@@ -141,7 +150,8 @@ export class UserService {
   }
 
   async getHouseholdMembers(householdId: string): Promise<UserProfile[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('household_id', householdId)
@@ -169,7 +179,8 @@ export class UserService {
   async recordInteraction(
     interaction: UserPropertyInteractionInsert
   ): Promise<UserPropertyInteraction | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_property_interactions')
       .upsert(interaction, {
         onConflict: 'user_id,property_id,interaction_type',
@@ -189,7 +200,8 @@ export class UserService {
     userId: string,
     limit = 50
   ): Promise<UserPropertyInteraction[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_property_interactions')
       .select('*')
       .eq('user_id', userId)
@@ -207,7 +219,8 @@ export class UserService {
   async getPropertyInteractions(
     propertyId: string
   ): Promise<UserPropertyInteraction[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_property_interactions')
       .select('*')
       .eq('property_id', propertyId)
@@ -225,7 +238,8 @@ export class UserService {
     userId: string,
     type: 'like' | 'dislike' | 'skip' | 'view'
   ): Promise<UserPropertyInteraction[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('user_property_interactions')
       .select('*')
       .eq('user_id', userId)
@@ -244,7 +258,8 @@ export class UserService {
   async createSavedSearch(
     search: SavedSearchInsert
   ): Promise<SavedSearch | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('saved_searches')
       .insert(search)
       .select()
@@ -259,7 +274,8 @@ export class UserService {
   }
 
   async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('saved_searches')
       .select('*')
       .eq('user_id', userId)
@@ -278,7 +294,8 @@ export class UserService {
     searchId: string,
     updates: SavedSearchUpdate
   ): Promise<SavedSearch | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('saved_searches')
       .update(updates)
       .eq('id', searchId)
@@ -294,7 +311,8 @@ export class UserService {
   }
 
   async deleteSavedSearch(searchId: string): Promise<boolean> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('saved_searches')
       .update({ is_active: false })
       .eq('id', searchId)

@@ -140,10 +140,14 @@ export class RelaxedPropertyTransformer {
         bedrooms: bedrooms.value || this.DEFAULT_BEDROOMS,
         bathrooms: bathrooms.value || this.DEFAULT_BATHROOMS,
         square_feet: squareFeet.value,
-        property_type: (propertyType as any) || 'house',
+        property_type: propertyType as
+          | 'house'
+          | 'condo'
+          | 'townhouse'
+          | 'apartment',
         images: images.length > 0 ? images : null,
         description: null,
-        coordinates: coordinates as any,
+        coordinates: coordinates as string | null,
         neighborhood_id: null, // Set to null to avoid foreign key issues
         amenities: null,
         year_built: yearBuilt.value,
@@ -215,7 +219,15 @@ export class RelaxedPropertyTransformer {
     state: string | null
     zipCode: string | null
   } {
-    const result = { city: null, state: null, zipCode: null }
+    const result: {
+      city: string | null
+      state: string | null
+      zipCode: string | null
+    } = {
+      city: null,
+      state: null,
+      zipCode: null,
+    }
 
     if (!address) return result
 
@@ -224,9 +236,9 @@ export class RelaxedPropertyTransformer {
     const match = address.match(addressPattern)
 
     if (match) {
-      result.city = match[1].trim()
-      result.state = match[2].trim()
-      result.zipCode = match[3].trim()
+      result.city = match[1]?.trim() || null
+      result.state = match[2]?.trim() || null
+      result.zipCode = match[3]?.trim() || null
     }
 
     return result

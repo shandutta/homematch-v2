@@ -358,7 +358,7 @@ export class ZillowAPIClient {
 
         if (attempt >= this.maxRetries) {
           throw new ZillowAPIError(
-            `Request failed after ${this.maxRetries} attempts: ${error.message}`
+            `Request failed after ${this.maxRetries} attempts: ${error instanceof Error ? error.message : String(error)}`
           )
         }
 

@@ -7,7 +7,7 @@ interface DatabaseStats {
   tableName: string
   count: number
   error?: string
-  schema?: any[]
+  schema?: unknown[]
 }
 
 export default async function ValidationPage() {
@@ -33,7 +33,7 @@ export default async function ValidationPage() {
 
   for (const table of tables) {
     try {
-      const { data, error, count } = await supabase
+      const { error, count } = await supabase
         .from(table)
         .select('*', { count: 'exact', head: true })
 
@@ -42,11 +42,11 @@ export default async function ValidationPage() {
         count: count || 0,
         error: error?.message,
       })
-    } catch (e) {
+    } catch (error) {
       tableStats.push({
         tableName: table,
         count: 0,
-        error: e instanceof Error ? e.message : String(e),
+        error: error instanceof Error ? error.message : String(error),
       })
     }
   }
@@ -87,7 +87,7 @@ export default async function ValidationPage() {
       .in('extname', ['postgis', 'uuid-ossp'])
 
     postgisStatus = extensions
-  } catch (e) {
+  } catch {
     // Extensions table might not be accessible, that's OK
     postgisStatus = null
   }
@@ -298,7 +298,7 @@ export default async function ValidationPage() {
                               key={type}
                               className="rounded bg-green-100 px-2 py-1 text-xs text-green-800"
                             >
-                              {type}: {count}
+                              {type}: {count as number}
                             </span>
                           ))}
                         </div>
@@ -460,7 +460,9 @@ export default async function ValidationPage() {
                       </p>
                       <p>
                         <strong>Created:</strong>{' '}
-                        {new Date(userProfile.created_at).toLocaleString()}
+                        {userProfile.created_at
+                          ? new Date(userProfile.created_at).toLocaleString()
+                          : 'N/A'}
                       </p>
                     </div>
                   </div>
