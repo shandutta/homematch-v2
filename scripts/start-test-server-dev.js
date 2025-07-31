@@ -23,7 +23,7 @@ try {
 const dotenv = require('dotenv')
 
 // First, load the .env.test.local file
-const testEnvConfig = dotenv.config({
+dotenv.config({
   path: path.join(__dirname, '..', '.env.test.local'),
 })
 

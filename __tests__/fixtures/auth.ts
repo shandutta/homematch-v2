@@ -74,20 +74,27 @@ export const authFixtures = {
           // Wait for Supabase to set auth cookies
           await page.waitForTimeout(1000)
 
-          // WebKit/Safari specific: Ensure cookies are properly set
-          // WebKit requires additional time for cookie propagation
+          // WebKit/Safari and Firefox specific: Ensure cookies are properly set
+          // These browsers require additional time for cookie propagation in test environments
           const browserName = page.context().browser()?.browserType().name()
-          if (browserName === 'webkit') {
-            // WebKit needs extra time for cookies to propagate
+          if (browserName === 'webkit' || browserName === 'firefox') {
+            // Both WebKit and Firefox need enhanced cookie handling
+            console.log(`🔍 ${browserName} detected - applying enhanced cookie handling`)
+            
+            // Extra time for cookies to propagate
+            await page.waitForTimeout(3000)
+            
+            // Force cookie propagation through navigation
+            await page.goto('/', { waitUntil: 'networkidle' })
             await page.waitForTimeout(2000)
             
-            // Navigate to a neutral page and back to ensure cookies are loaded
-            await page.goto('/login')
-            await page.waitForLoadState('networkidle')
-            await page.goto('/validation')
-            await page.waitForLoadState('networkidle')
+            // Return to validation page
+            await page.goto('/validation', { waitUntil: 'networkidle' })
+            
+            // Hard reload to ensure server reads cookies
+            await page.reload({ waitUntil: 'networkidle' })
           } else {
-            // For other browsers, a simple reload suffices
+            // Chromium continues with simple reload
             await page.reload({ waitUntil: 'networkidle' })
           }
           
@@ -155,7 +162,7 @@ export const authFixtures = {
               const urlStr = url.toString()
               return urlStr.endsWith('/') || urlStr.includes('/login')
             }, { timeout: config.timeouts.AUTH_LOGOUT })
-          } catch (error) {
+          } catch {
             // If we're still not on expected page, force navigation
             await page.goto('/login')
           }
@@ -203,10 +210,20 @@ export const authFixtures = {
           )
         }
 
+        // Browser-specific wait for auth state to be ready
+        const browserName = page.context().browser()?.browserType().name()
+        if (browserName === 'webkit' || browserName === 'firefox') {
+          // WebKit and Firefox need extra time for auth state to propagate
+          console.log(`🔍 ${browserName} - waiting for auth state propagation`)
+          await page.waitForTimeout(2000)
+        }
+
         // Wait for user data to load - check for either the email or the "No Authenticated User" message
         attempts = 0
         let userDataLoaded = false
-        while (attempts < maxAttempts) {
+        const extendedMaxAttempts = (browserName === 'webkit' || browserName === 'firefox') ? maxAttempts * 2 : maxAttempts
+        
+        while (attempts < extendedMaxAttempts) {
           // Check if email is visible in the header
           const emailVisible = await page
             .locator('header')
@@ -260,6 +277,13 @@ export const authFixtures = {
       },
 
       async verifyNotAuthenticated() {
+        // Browser-specific wait for logout to complete
+        const browserName = page.context().browser()?.browserType().name()
+        if (browserName === 'webkit' || browserName === 'firefox') {
+          console.log(`🔍 ${browserName} - waiting for logout to complete`)
+          await page.waitForTimeout(1000)
+        }
+        
         const finalUrl = page.url()
 
         if (finalUrl.includes('/login')) {
