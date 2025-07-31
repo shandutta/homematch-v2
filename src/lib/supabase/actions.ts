@@ -59,11 +59,14 @@ export async function signOut() {
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
+  
+  // Use NEXT_PUBLIC_APP_URL which should be set in Vercel env variables
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: `${siteUrl}/auth/callback`,
     },
   })
 
