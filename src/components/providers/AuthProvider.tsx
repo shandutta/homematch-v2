@@ -13,10 +13,12 @@ interface AuthProviderProps {
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
-    // Initialize auth on client-side mount
-    initializeClientAuth().catch((error) => {
-      console.error('[AuthProvider] Initialization failed:', error)
-    })
+    // Only run on client-side to avoid SSG/SSR issues
+    if (typeof window !== 'undefined') {
+      initializeClientAuth().catch((error) => {
+        console.error('[AuthProvider] Initialization failed:', error)
+      })
+    }
   }, [])
 
   return <>{children}</>
