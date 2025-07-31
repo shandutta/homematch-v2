@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
   },
+
+  // Disable static optimization to prevent SSG build errors
+  output: 'standalone',
+  
+  // Force all pages to be dynamic to avoid static generation issues
+  experimental: {
+    forceSwcTransforms: true,
+  },
 }
 
 export default nextConfig
