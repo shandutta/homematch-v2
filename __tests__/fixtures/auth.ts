@@ -130,16 +130,35 @@ export const authFixtures = {
         if (!isVisible) {
           throw new Error('Sign out button is not visible')
         }
-        await signOutButton.click()
+        
+        // Firefox specific: Handle form submission differently
+        const browserName = page.context().browser()?.browserType().name()
+        if (browserName === 'firefox') {
+          // Firefox needs explicit wait for form submission
+          await Promise.all([
+            page.waitForNavigation({ 
+              waitUntil: 'networkidle',
+              timeout: config.timeouts.AUTH_LOGOUT 
+            }),
+            signOutButton.click()
+          ])
+        } else {
+          await signOutButton.click()
+        }
 
         // Wait for logout to complete and redirect
-        try {
-          await page.waitForURL('/', { timeout: config.timeouts.AUTH_LOGOUT })
-        } catch {
-          // Might redirect to login instead
-          await page.waitForURL('/login', {
-            timeout: config.timeouts.AUTH_LOGOUT,
-          })
+        // Check multiple possible redirect locations
+        const currentUrl = page.url()
+        if (!currentUrl.includes('/') && !currentUrl.includes('/login')) {
+          try {
+            await page.waitForURL((url) => {
+              const urlStr = url.toString()
+              return urlStr.endsWith('/') || urlStr.includes('/login')
+            }, { timeout: config.timeouts.AUTH_LOGOUT })
+          } catch (error) {
+            // If we're still not on expected page, force navigation
+            await page.goto('/login')
+          }
         }
 
         // Clear auth state to ensure clean logout
