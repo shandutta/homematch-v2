@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
             supabaseResponse.cookies.set(name, value, {
               ...options,
               // Enhanced cookie configuration for cross-browser compatibility
-              httpOnly: false, // Allow client-side access for auth tokens
+              httpOnly: true, // SECURITY: Prevent XSS
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax', // Better cross-browser compatibility than 'strict'
               maxAge: 60 * 60 * 24 * 7, // 7 days

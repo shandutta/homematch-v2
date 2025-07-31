@@ -6,32 +6,11 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        // Enhanced session persistence settings for cross-browser compatibility
         persistSession: true,
-        detectSessionInUrl: true,
         autoRefreshToken: true,
-        
-        // Improved flow type for better auth handling
+        detectSessionInUrl: true,
         flowType: 'pkce',
-        
-        // Add debug mode for development
-        debug: process.env.NODE_ENV === 'development',
       },
     }
   )
-}
-
-// Singleton client instance to prevent multiple initializations
-let clientInstance: ReturnType<typeof createBrowserClient> | null = null
-
-export function getClient() {
-  if (!clientInstance) {
-    clientInstance = createClient()
-  }
-  return clientInstance
-}
-
-// Helper function to check if we're in a browser environment
-export function isBrowser() {
-  return typeof window !== 'undefined'
 }

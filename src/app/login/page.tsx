@@ -1,16 +1,8 @@
-'use client'
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
 
-import dynamic from 'next/dynamic'
+import { LoginForm } from '@/components/features/auth/LoginForm'
 import Link from 'next/link'
-
-// Dynamically import LoginForm to prevent SSR issues with React hooks
-const LoginForm = dynamic(
-  () => import('@/components/features/auth/LoginForm').then(mod => ({ default: mod.LoginForm })),
-  { 
-    ssr: false,
-    loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg"></div>
-  }
-)
 
 export default function LoginPage() {
   return (
