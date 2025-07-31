@@ -9,7 +9,6 @@ import { utilsFixtures } from './utils'
 import { loggerFixtures } from './logger'
 import { retryFixtures } from './retry'
 import { authFixtures } from './auth'
-import { HomematchFixtures } from '../types/fixtures'
 
 // Combine all fixtures into a single test object
 export const test = base

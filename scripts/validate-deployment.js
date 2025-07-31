@@ -8,7 +8,6 @@
  */
 
 const fs = require('fs')
-const path = require('path')
 
 console.log('🚀 HomeMatch V2 - Deployment Validation')
 console.log('=====================================\n')
@@ -98,7 +97,7 @@ testDirs.forEach((dir) => {
       fileCount = files.filter(
         (f) => f.endsWith('.test.ts') || f.endsWith('.spec.ts')
       ).length
-    } catch (e) {
+    } catch {
       fileCount = 0
     }
   }

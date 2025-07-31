@@ -50,7 +50,7 @@ describe('Database Schema Validation - Integration Tests', () => {
           expect(data.length).toBeGreaterThan(0)
         } else {
           // Fallback: test that spatial queries work
-          const { data: spatialTest, error: spatialError } = await supabase
+          const { error: spatialError } = await supabase
             .from('neighborhoods')
             .select('bounds')
             .not('bounds', 'is', null)
@@ -146,7 +146,7 @@ describe('Database Schema Validation - Integration Tests', () => {
 
   describe('Migration data validation', () => {
     test('should confirm test neighborhoods are accessible', async () => {
-      const { data, error, count } = await supabase
+      const { error, count } = await supabase
         .from('neighborhoods')
         .select('*', { count: 'exact' })
         .limit(1)
@@ -163,7 +163,7 @@ describe('Database Schema Validation - Integration Tests', () => {
     })
 
     test('should confirm test properties are accessible', async () => {
-      const { data, error, count } = await supabase
+      const { error, count } = await supabase
         .from('properties')
         .select('*', { count: 'exact' })
         .eq('is_active', true)

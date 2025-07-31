@@ -62,8 +62,8 @@ export const makeMockClient = (): jest.Mocked<SupabaseClient<Database>> => {
         typeof mockQueryBuilder[key] === 'function' &&
         !['single', 'maybeSingle', 'then'].includes(key)
       ) {
-        mockQueryBuilder[key].mockImplementation((...args: any[]) => {
-          // Store the call for verification while returning the builder for chaining
+        mockQueryBuilder[key].mockImplementation(() => {
+          // Return the builder for chaining
           return mockQueryBuilder
         })
       }

@@ -12,14 +12,14 @@ function runIsolated(command, args = []) {
     const child = spawn('node', [command, ...args], {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env, ISOLATED_PROCESS: 'true' }
+      env: { ...process.env, ISOLATED_PROCESS: 'true' },
     })
-    
+
     child.on('close', (code) => {
       if (code === 0) resolve()
       else reject(new Error(`Command failed with code ${code}`))
     })
-    
+
     child.on('error', reject)
   })
 }
@@ -41,7 +41,7 @@ async function globalSetup() {
     try {
       await runIsolated('scripts/infrastructure-working.js', ['reset-db'])
       console.log('✅ Database reset completed with CASCADE constraints')
-    } catch (error) {
+    } catch {
       console.log('⚠️  Database reset failed, continuing anyway...')
     }
 
@@ -58,7 +58,6 @@ async function globalSetup() {
     // Final stability wait
     console.log('\n⏳ Final stability wait...')
     await new Promise((resolve) => setTimeout(resolve, 2000))
-    
   } catch (error) {
     console.error('\n❌ Failed to setup E2E tests:', error)
     throw error

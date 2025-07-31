@@ -18,7 +18,7 @@ export class RelaxedPropertyTransformer {
    */
   transformProperty(
     raw: RawPropertyData,
-    index: number = 0
+    _index: number = 0
   ): TransformationResult<PropertyInsert> {
     const errors: string[] = []
     const warnings: string[] = []
@@ -250,9 +250,6 @@ export class RelaxedPropertyTransformer {
    */
   private generateHash(property: RawPropertyData): string {
     const key = `${property.address}_${property.city}_${property.state}_${property.zip_code}_${property.price}`
-    return crypto
-      .createHash('md5')
-      .update(key.toLowerCase())
-      .digest('hex')
+    return crypto.createHash('md5').update(key.toLowerCase()).digest('hex')
   }
 }

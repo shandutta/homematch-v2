@@ -2,7 +2,6 @@ import {
   makeMockClient,
   configureMockResponse,
 } from '../__mocks__/supabaseClient'
-import type { Database } from '@/types/database'
 
 describe('Typed Mock Factory', () => {
   let mockClient: ReturnType<typeof makeMockClient>

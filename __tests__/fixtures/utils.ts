@@ -28,11 +28,19 @@ export const utilsFixtures = {
   utils: async ({ page }, use) => {
     const utils: UtilsFixture = {
       async clearAuthState() {
+        // Clear all cookies including Supabase auth cookies
         await page.context().clearCookies()
 
         // Clear localStorage
         const url = page.url()
         if (url && !url.includes('about:blank')) {
+          // Clear the custom storage key used by our Supabase client
+          await page.evaluate(() => {
+            localStorage.removeItem('homematch-auth-token')
+            sessionStorage.removeItem('homematch-auth-token')
+          })
+
+          // Also clear legacy storage keys if they exist
           await page.evaluate((storageKey) => {
             localStorage.removeItem(storageKey)
           }, STORAGE_KEYS.SUPABASE_AUTH_TOKEN)
@@ -84,11 +92,23 @@ export const utilsFixtures = {
       },
 
       async isAuthenticated() {
-        const hasAuthToken = await page.evaluate((storageKey) => {
-          return localStorage.getItem(storageKey) !== null
-        }, STORAGE_KEYS.SUPABASE_AUTH_TOKEN)
+        // Check localStorage for auth token
+        const hasLocalStorageToken = await page.evaluate(() => {
+          const customKey =
+            localStorage.getItem('homematch-auth-token') ||
+            sessionStorage.getItem('homematch-auth-token')
+          return customKey !== null
+        })
 
-        return hasAuthToken
+        if (hasLocalStorageToken) return true
+
+        // Also check for Supabase auth cookies
+        const cookies = await page.context().cookies()
+        const hasAuthCookie = cookies.some(
+          (c) => c.name.includes('sb-') && c.name.includes('auth-token')
+        )
+
+        return hasAuthCookie
       },
 
       async waitForAuthRedirect(

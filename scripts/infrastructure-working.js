@@ -142,7 +142,7 @@ class WorkingInfrastructure {
         await this.log('No Supabase containers running', 'warn')
         return false
       }
-    } catch (error) {
+    } catch {
       await this.log('Cannot check Supabase containers', 'warn')
       return false
     }

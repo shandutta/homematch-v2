@@ -98,7 +98,7 @@ async function setupTestUsers() {
     console.log(
       `✅ Connected to Supabase (${data.users.length} existing users)`
     )
-  } catch (error) {
+  } catch {
     console.error('❌ Cannot connect to Supabase. Is it running?')
     console.error('   Run: ./supabase.exe start')
     process.exit(1)

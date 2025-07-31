@@ -367,10 +367,7 @@ export class DataTransformer {
    */
   generatePropertyHash(property: RawPropertyData): string {
     const key = `${property.address}_${property.city}_${property.state}_${property.zip_code}_${property.price}`
-    return crypto
-      .createHash('md5')
-      .update(key.toLowerCase())
-      .digest('hex')
+    return crypto.createHash('md5').update(key.toLowerCase()).digest('hex')
   }
 
   /**

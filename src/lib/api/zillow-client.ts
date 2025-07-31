@@ -79,7 +79,6 @@ interface ZillowTrendsApiResponse {
   trends?: MarketTrends
 }
 
-
 export interface PropertyDetails extends ZillowProperty {
   amenities?: string[]
   schools?: Array<{
@@ -187,7 +186,9 @@ export class ZillowAPIClient {
       }
     })
 
-    const response = await this.makeRequest<ZillowSearchApiResponse>(`${endpoint}?${queryParams}`)
+    const response = await this.makeRequest<ZillowSearchApiResponse>(
+      `${endpoint}?${queryParams}`
+    )
 
     return {
       properties: response.properties || [],
@@ -205,7 +206,9 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ zpid })
 
     try {
-      const response = await this.makeRequest<ZillowPropertyApiResponse>(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowPropertyApiResponse>(
+        `${endpoint}?${params}`
+      )
       return response.property || null
     } catch (error) {
       if (error instanceof Error && this.isNotFoundError(error)) {
@@ -223,7 +226,9 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ zpid })
 
     try {
-      const response = await this.makeRequest<ZillowHistoryApiResponse>(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowHistoryApiResponse>(
+        `${endpoint}?${params}`
+      )
       return response.history || null
     } catch (error) {
       if (error instanceof Error && this.isNotFoundError(error)) {
@@ -247,7 +252,9 @@ export class ZillowAPIClient {
     })
 
     try {
-      const response = await this.makeRequest<ZillowComparablesApiResponse>(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowComparablesApiResponse>(
+        `${endpoint}?${params}`
+      )
       return response.comparables || []
     } catch (error) {
       if (error instanceof Error && this.isNotFoundError(error)) {
@@ -268,7 +275,9 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ city, state })
 
     try {
-      const response = await this.makeRequest<ZillowNeighborhoodApiResponse>(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowNeighborhoodApiResponse>(
+        `${endpoint}?${params}`
+      )
       return response.neighborhood || null
     } catch (error) {
       if (error instanceof Error && this.isNotFoundError(error)) {
@@ -292,7 +301,9 @@ export class ZillowAPIClient {
     })
 
     try {
-      const response = await this.makeRequest<ZillowTrendsApiResponse>(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowTrendsApiResponse>(
+        `${endpoint}?${params}`
+      )
       return response.trends || null
     } catch (error) {
       if (error instanceof Error && this.isNotFoundError(error)) {
@@ -403,7 +414,9 @@ export class ZillowAPIClient {
   /**
    * Check if error is a 404 Not Found
    */
-  private isNotFoundError(error: Error | ZillowAPIError): error is ZillowAPIError {
+  private isNotFoundError(
+    error: Error | ZillowAPIError
+  ): error is ZillowAPIError {
     return error instanceof ZillowAPIError && error.status === 404
   }
 

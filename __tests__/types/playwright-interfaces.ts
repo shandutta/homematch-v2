@@ -40,7 +40,7 @@ export interface PlaywrightPage {
   on(event: 'pageerror', handler: (error: Error) => void): void
   on(event: 'load', handler: () => void): void
   on(event: 'crash', handler: () => void): void
-  on(event: string, handler: Function): void
+  on(event: string, handler: (...args: unknown[]) => void): void
 
   // Navigation and info
   url(): string
@@ -59,7 +59,10 @@ export interface PlaywrightPage {
   }
 
   // Script evaluation
-  evaluate<T = any>(pageFunction: string | Function, arg?: any): Promise<T>
+  evaluate<T = any>(
+    pageFunction: string | ((...args: unknown[]) => unknown),
+    arg?: any
+  ): Promise<T>
 
   // Waiting and timeouts
   waitForLoadState(
