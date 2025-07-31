@@ -26,9 +26,11 @@ dotenv.config({ path: testEnvPath })
 // Force test environment variables
 process.env.NODE_ENV = 'production' // Build in production mode for realistic testing
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'REDACTED_SUPABASE_ANON_KEY'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
+  'REDACTED_SUPABASE_ANON_KEY'
 process.env.SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.SUPABASE_ANON_KEY = 'REDACTED_SUPABASE_ANON_KEY'
+process.env.SUPABASE_ANON_KEY =
+  'REDACTED_SUPABASE_ANON_KEY'
 
 // Clean previous test build
 const testBuildDir = path.join(__dirname, '..', '.next-test')
@@ -40,8 +42,10 @@ if (fs.existsSync(testBuildDir)) {
 async function buildForTests() {
   try {
     console.log('📦 Building with test environment variables...')
-    console.log(`   NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`)
-    
+    console.log(
+      `   NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`
+    )
+
     // Build Next.js
     // Unfortunately Next.js doesn't support custom output directory via env var,
     // so we'll build normally and then move it
@@ -52,26 +56,25 @@ async function buildForTests() {
         SKIP_LINTING: 'true',
         SKIP_TYPE_CHECK: 'true',
       },
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
     })
-    
+
     // Move build to test directory
     console.log('📁 Moving build to .next-test directory...')
-    
+
     // Handle potential file locks on Windows
     let retries = 3
     while (retries > 0) {
       try {
-        fs.renameSync(
-          path.join(__dirname, '..', '.next'),
-          testBuildDir
-        )
+        fs.renameSync(path.join(__dirname, '..', '.next'), testBuildDir)
         break
       } catch (error) {
         if (retries > 1 && error.code === 'EBUSY') {
-          console.log(`⚠️  Build directory busy, retrying... (${retries} attempts left)`)
+          console.log(
+            `⚠️  Build directory busy, retrying... (${retries} attempts left)`
+          )
           // Wait a bit and try again (cross-platform)
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise((resolve) => setTimeout(resolve, 2000))
           retries--
         } else {
           // If rename fails, try copying instead
@@ -79,11 +82,11 @@ async function buildForTests() {
           const copyRecursive = (src, dest) => {
             fs.mkdirSync(dest, { recursive: true })
             const entries = fs.readdirSync(src, { withFileTypes: true })
-            
+
             for (const entry of entries) {
               const srcPath = path.join(src, entry.name)
               const destPath = path.join(dest, entry.name)
-              
+
               if (entry.isDirectory()) {
                 copyRecursive(srcPath, destPath)
               } else {
@@ -91,19 +94,21 @@ async function buildForTests() {
               }
             }
           }
-          
+
           copyRecursive(path.join(__dirname, '..', '.next'), testBuildDir)
-          
+
           // Clean up original after successful copy
-          fs.rmSync(path.join(__dirname, '..', '.next'), { recursive: true, force: true })
+          fs.rmSync(path.join(__dirname, '..', '.next'), {
+            recursive: true,
+            force: true,
+          })
           break
         }
       }
     }
-    
+
     console.log('✅ Test build completed successfully!')
     console.log(`📍 Build location: ${testBuildDir}`)
-    
   } catch (error) {
     console.error('❌ Build failed:', error.message)
     process.exit(1)
@@ -111,7 +116,7 @@ async function buildForTests() {
 }
 
 // Run the build
-buildForTests().catch(error => {
+buildForTests().catch((error) => {
   console.error('❌ Build failed:', error)
   process.exit(1)
 })

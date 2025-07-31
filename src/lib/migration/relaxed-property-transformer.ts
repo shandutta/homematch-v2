@@ -6,6 +6,7 @@
 import { PropertyInsert } from '@/types/database'
 import { propertyInsertSchema } from '@/lib/schemas/property'
 import { RawPropertyData, TransformationResult } from './data-transformer'
+import crypto from 'node:crypto'
 
 export class RelaxedPropertyTransformer {
   private readonly DEFAULT_STATE = 'CA'
@@ -94,7 +95,7 @@ export class RelaxedPropertyTransformer {
           if (!isNaN(lat) && !isNaN(lng)) {
             coordinates = `(${lng},${lat})` // PostgreSQL point format: (lng,lat)
           }
-        } catch (error) {
+        } catch (_error) {
           warnings.push('Invalid coordinate format')
         }
       }
@@ -109,7 +110,7 @@ export class RelaxedPropertyTransformer {
           } else if (Array.isArray(raw.images)) {
             images = raw.images
           }
-        } catch (error) {
+        } catch (_error) {
           warnings.push('Invalid images format')
         }
       }
@@ -191,7 +192,7 @@ export class RelaxedPropertyTransformer {
     value: string | number | undefined | null,
     defaultValue: number | null,
     fieldName: string,
-    optional: boolean = false
+    _optional: boolean = false
   ): { value: number | null; errors: string[] } {
     if (value === undefined || value === null || value === '') {
       return { value: defaultValue, errors: [] }
@@ -249,7 +250,7 @@ export class RelaxedPropertyTransformer {
    */
   private generateHash(property: RawPropertyData): string {
     const key = `${property.address}_${property.city}_${property.state}_${property.zip_code}_${property.price}`
-    return require('crypto')
+    return crypto
       .createHash('md5')
       .update(key.toLowerCase())
       .digest('hex')

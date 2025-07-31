@@ -9,7 +9,6 @@ import { RetryFixture } from '../types/fixtures'
 export const retryFixtures = {
   retry: async ({ page }, use) => {
     const retryFixture: RetryFixture = {
-      
       async retry<T>(
         operation: () => Promise<T>,
         options: {
@@ -25,31 +24,32 @@ export const retryFixtures = {
           delay = 1000,
           backoff = 'exponential',
           onRetry = () => {},
-          shouldRetry = () => true
+          shouldRetry = () => true,
         } = options
-        
+
         let lastError: Error
-        
+
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
             return await operation()
           } catch (error) {
             lastError = error as Error
-            
+
             if (attempt === maxAttempts || !shouldRetry(lastError)) {
               throw lastError
             }
-            
+
             onRetry(lastError, attempt)
-            
-            const waitTime = backoff === 'exponential' 
-              ? delay * Math.pow(2, attempt - 1)
-              : delay
-              
-            await new Promise(resolve => setTimeout(resolve, waitTime))
+
+            const waitTime =
+              backoff === 'exponential'
+                ? delay * Math.pow(2, attempt - 1)
+                : delay
+
+            await new Promise((resolve) => setTimeout(resolve, waitTime))
           }
         }
-        
+
         throw lastError!
       },
 
@@ -61,16 +61,18 @@ export const retryFixtures = {
             const message = error.message || error.toString()
             return [
               'ERR_CONNECTION_REFUSED',
-              'ECONNREFUSED', 
+              'ECONNREFUSED',
               'ETIMEDOUT',
               'ERR_NETWORK',
               'Failed to fetch',
-              'net::ERR_INTERNET_DISCONNECTED'
-            ].some(msg => message.includes(msg))
+              'net::ERR_INTERNET_DISCONNECTED',
+            ].some((msg) => message.includes(msg))
           },
           onRetry: (error, attempt) => {
-            console.log(`⚠️  Network error (attempt ${attempt}): ${error.message}`)
-          }
+            console.log(
+              `⚠️  Network error (attempt ${attempt}): ${error.message}`
+            )
+          },
         })
       },
 
@@ -85,12 +87,14 @@ export const retryFixtures = {
               'Element not found',
               'Timeout',
               'element is not attached',
-              'Element is not enabled'
-            ].some(msg => message.includes(msg))
+              'Element is not enabled',
+            ].some((msg) => message.includes(msg))
           },
           onRetry: (error, attempt) => {
-            console.log(`⚠️  Element not ready (attempt ${attempt}): ${error.message}`)
-          }
+            console.log(
+              `⚠️  Element not ready (attempt ${attempt}): ${error.message}`
+            )
+          },
         })
       },
 
@@ -106,18 +110,18 @@ export const retryFixtures = {
               'User not found',
               'Session expired',
               'Auth session missing',
-              'Authentication failed'
-            ].some(msg => message.includes(msg))
+              'Authentication failed',
+            ].some((msg) => message.includes(msg))
           },
           onRetry: (error, attempt) => {
             console.log(`⚠️  Auth error (attempt ${attempt}): ${error.message}`)
-          }
+          },
         })
-      }
+      },
     }
 
     await use(retryFixture)
-  }
+  },
 }
 
-export { expect } from '@playwright/test'
+// expect is exported from index.ts

@@ -4,7 +4,7 @@ import {
   propertyInsertSchema,
 } from '@/lib/schemas/property'
 import { getStateForMetroArea } from './metro-state-mapping'
-import { z } from 'zod'
+import crypto from 'node:crypto'
 
 // Raw data types from CSV/JSON files
 export interface RawNeighborhoodData {
@@ -56,7 +56,7 @@ export interface MigrationStats {
   skipped: number
   errors: Array<{
     index: number
-    data: any
+    data: RawNeighborhoodData | RawPropertyData | Record<string, unknown> | null
     errors: string[]
   }>
 }
@@ -69,7 +69,7 @@ export class DataTransformer {
    */
   transformNeighborhood(
     raw: RawNeighborhoodData,
-    index: number = 0
+    _index: number = 0
   ): TransformationResult<NeighborhoodInsert> {
     const errors: string[] = []
     const warnings: string[] = []
@@ -141,7 +141,7 @@ export class DataTransformer {
    */
   transformProperty(
     raw: RawPropertyData,
-    index: number = 0
+    _index: number = 0
   ): TransformationResult<PropertyInsert> {
     const errors: string[] = []
     const warnings: string[] = []
@@ -190,7 +190,7 @@ export class DataTransformer {
           if (!isNaN(lat) && !isNaN(lng)) {
             coordinates = `(${lng},${lat})` // PostgreSQL point format: (lng,lat)
           }
-        } catch (error) {
+        } catch (_error) {
           warnings.push('Invalid coordinate format')
         }
       }
@@ -206,7 +206,7 @@ export class DataTransformer {
           } else if (Array.isArray(raw.images)) {
             images = raw.images
           }
-        } catch (error) {
+        } catch (_error) {
           warnings.push('Invalid images format')
         }
       }
@@ -235,10 +235,10 @@ export class DataTransformer {
         bedrooms: bedrooms.value || 0,
         bathrooms: bathrooms.value || 0,
         square_feet: squareFeet.value,
-        property_type: (propertyType as any) || null,
+        property_type: propertyType || null,
         images: images.length > 0 ? images : null,
         description: null,
-        coordinates: coordinates as any,
+        coordinates: coordinates,
         neighborhood_id: null, // Set to null to avoid foreign key issues
         amenities: null,
         year_built: yearBuilt.value,
@@ -367,7 +367,7 @@ export class DataTransformer {
    */
   generatePropertyHash(property: RawPropertyData): string {
     const key = `${property.address}_${property.city}_${property.state}_${property.zip_code}_${property.price}`
-    return require('crypto')
+    return crypto
       .createHash('md5')
       .update(key.toLowerCase())
       .digest('hex')

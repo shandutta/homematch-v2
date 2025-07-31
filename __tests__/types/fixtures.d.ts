@@ -16,8 +16,16 @@ export interface TestLogger {
   info: (category: string, message: string, data?: any) => void
   warn: (category: string, message: string, data?: any) => void
   error: (category: string, message: string, data?: any) => void
-  navigation: (url: string, status: 'start' | 'complete' | 'error', data?: any) => void
-  auth: (action: string, status: 'start' | 'success' | 'failure', data?: any) => void
+  navigation: (
+    url: string,
+    status: 'start' | 'complete' | 'error',
+    data?: any
+  ) => void
+  auth: (
+    action: string,
+    status: 'start' | 'success' | 'failure',
+    data?: any
+  ) => void
   getSummary: () => string
   saveToFile: (filePath?: string) => void
 }
@@ -27,9 +35,15 @@ export interface UtilsFixture {
   clearAuthState: () => Promise<void>
   waitForReactToSettle: () => Promise<void>
   waitForFormValidation: () => Promise<void>
-  navigateWithRetry: (url: string, options?: { retries?: number }) => Promise<void>
+  navigateWithRetry: (
+    url: string,
+    options?: { retries?: number }
+  ) => Promise<void>
   isAuthenticated: () => Promise<boolean>
-  waitForAuthRedirect: (expectedUrl: string | RegExp, options?: { timeout?: number, errorMessage?: string }) => Promise<void>
+  waitForAuthRedirect: (
+    expectedUrl: string | RegExp,
+    options?: { timeout?: number; errorMessage?: string }
+  ) => Promise<void>
 }
 
 // Auth fixture interface
@@ -37,20 +51,23 @@ export interface AuthFixture {
   login: (user?: TestUser) => Promise<void>
   logout: () => Promise<void>
   fillLoginForm: (user?: TestUser) => Promise<void>
-  verifyAuthenticated: (user?: TestUser) => Promise<void> 
+  verifyAuthenticated: (user?: TestUser) => Promise<void>
   verifyNotAuthenticated: () => Promise<void>
   clearAuthState: () => Promise<void>
 }
 
 // Retry fixture interface
 export interface RetryFixture {
-  retry: <T>(operation: () => Promise<T>, options?: {
-    maxAttempts?: number
-    delay?: number
-    backoff?: 'linear' | 'exponential'
-    onRetry?: (error: Error, attempt: number) => void
-    shouldRetry?: (error: Error) => boolean
-  }) => Promise<T>
+  retry: <T>(
+    operation: () => Promise<T>,
+    options?: {
+      maxAttempts?: number
+      delay?: number
+      backoff?: 'linear' | 'exponential'
+      onRetry?: (error: Error, attempt: number) => void
+      shouldRetry?: (error: Error) => boolean
+    }
+  ) => Promise<T>
   network: <T>(operation: () => Promise<T>) => Promise<T>
   element: <T>(operation: () => Promise<T>) => Promise<T>
   auth: <T>(operation: () => Promise<T>) => Promise<T>
@@ -79,10 +96,10 @@ export interface ConfigFixture {
 }
 
 // Combined fixtures interface
-export interface HomematchFixtures extends 
-  UtilsFixture, 
-  AuthFixture, 
-  RetryFixture, 
-  ConfigFixture {
+export interface HomematchFixtures
+  extends UtilsFixture,
+    AuthFixture,
+    RetryFixture,
+    ConfigFixture {
   logger: TestLogger
 }

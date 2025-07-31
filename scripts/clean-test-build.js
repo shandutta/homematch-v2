@@ -9,12 +9,9 @@ const path = require('path')
 
 console.log('🧹 Cleaning up test build artifacts...')
 
-const dirs = [
-  '.next-test',
-  '.next-dev-backup'
-]
+const dirs = ['.next-test', '.next-dev-backup']
 
-dirs.forEach(dir => {
+dirs.forEach((dir) => {
   const dirPath = path.join(__dirname, '..', dir)
   if (fs.existsSync(dirPath)) {
     console.log(`📁 Removing ${dir}...`)

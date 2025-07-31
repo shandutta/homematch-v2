@@ -1,144 +1,144 @@
-  /* eslint-disable @typescript-eslint/no-require-imports */
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const net = require('net');
-const execPromise = promisify(exec);
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { exec } = require('child_process')
+const { promisify } = require('util')
+const net = require('net')
+const execPromise = promisify(exec)
 
 // Delay helper for retry logic
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Check if a port is available
 async function isPortAvailable(port) {
   return new Promise((resolve) => {
-    const server = net.createServer();
-    
+    const server = net.createServer()
+
     server.once('error', (err) => {
       if (err.code === 'EADDRINUSE') {
-        resolve(false);
+        resolve(false)
       } else {
-        resolve(true);
+        resolve(true)
       }
-    });
-    
+    })
+
     server.once('listening', () => {
-      server.close();
-      resolve(true);
-    });
-    
-    server.listen(port);
-  });
+      server.close()
+      resolve(true)
+    })
+
+    server.listen(port)
+  })
 }
 
 async function killProcessOnPort(port, options = {}) {
-  const { maxRetries = 3, retryDelay = 1000 } = options;
-  
+  const { maxRetries = 3, retryDelay = 1000 } = options
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔍 Searching for process on port ${port}... (attempt ${attempt}/${maxRetries})`);
+      console.log(
+        `🔍 Searching for process on port ${port}... (attempt ${attempt}/${maxRetries})`
+      )
 
       if (process.platform === 'win32') {
         // Windows - use netstat and parse output
-        const { stdout } = await execPromise('netstat -ano');
-        const lines = stdout.trim().split('\n');
-        
+        const { stdout } = await execPromise('netstat -ano')
+        const lines = stdout.trim().split('\n')
+
         // Find the line that contains our port and is LISTENING
-        const processLine = lines.find(line => {
-          const trimmed = line.trim();
-          return trimmed.includes(`:${port}`) && trimmed.includes('LISTENING');
-        });
+        const processLine = lines.find((line) => {
+          const trimmed = line.trim()
+          return trimmed.includes(`:${port}`) && trimmed.includes('LISTENING')
+        })
 
         if (!processLine) {
-          console.log(`✅ No process found on port ${port}.`);
-          return true;
+          console.log(`✅ No process found on port ${port}.`)
+          return true
         }
 
         // Extract PID from the last column
-        const pid = processLine.trim().split(/\s+/).pop();
-        
+        const pid = processLine.trim().split(/\s+/).pop()
+
         if (!pid || isNaN(pid)) {
-          console.error(`❌ Could not extract PID from netstat output.`);
+          console.error(`❌ Could not extract PID from netstat output.`)
           if (attempt < maxRetries) {
-            await delay(retryDelay);
-            continue;
+            await delay(retryDelay)
+            continue
           }
-          return false;
+          return false
         }
 
-        console.log(`🎯 Found process with PID ${pid}. Killing...`);
-        await execPromise(`taskkill /PID ${pid} /F`);
-        console.log(`✅ Process ${pid} killed successfully.`);
-
+        console.log(`🎯 Found process with PID ${pid}. Killing...`)
+        await execPromise(`taskkill /PID ${pid} /F`)
+        console.log(`✅ Process ${pid} killed successfully.`)
       } else {
         // macOS & Linux - use lsof
-        const { stdout } = await execPromise(`lsof -ti:${port}`);
-        const pids = stdout.trim().split('\n').filter(Boolean);
-        
+        const { stdout } = await execPromise(`lsof -ti:${port}`)
+        const pids = stdout.trim().split('\n').filter(Boolean)
+
         if (pids.length === 0) {
-          console.log(`✅ No process found on port ${port}.`);
-          return true;
+          console.log(`✅ No process found on port ${port}.`)
+          return true
         }
 
         for (const pid of pids) {
-          console.log(`🎯 Found process with PID ${pid}. Killing...`);
-          await execPromise(`kill -9 ${pid}`);
-          console.log(`✅ Process ${pid} killed successfully.`);
+          console.log(`🎯 Found process with PID ${pid}. Killing...`)
+          await execPromise(`kill -9 ${pid}`)
+          console.log(`✅ Process ${pid} killed successfully.`)
         }
       }
-      
+
       // Wait a bit for the port to be released
-      await delay(500);
-      
+      await delay(500)
+
       // Verify the port is actually available
-      const available = await isPortAvailable(port);
+      const available = await isPortAvailable(port)
       if (available) {
-        console.log(`✅ Port ${port} is now available.`);
-        return true;
+        console.log(`✅ Port ${port} is now available.`)
+        return true
       } else {
-        console.log(`⚠️  Port ${port} still in use, retrying...`);
+        console.log(`⚠️  Port ${port} still in use, retrying...`)
         if (attempt < maxRetries) {
-          await delay(retryDelay);
-          continue;
+          await delay(retryDelay)
+          continue
         }
-        return false;
+        return false
       }
-      
     } catch (error) {
       // Handle the case where lsof returns empty (no process found)
       if (error.code === 1 && error.stdout === '') {
-        console.log(`✅ No process found on port ${port}.`);
-        return true;
+        console.log(`✅ No process found on port ${port}.`)
+        return true
       } else {
-        console.error(`❌ An error occurred:`, error.stderr || error.message);
+        console.error(`❌ An error occurred:`, error.stderr || error.message)
         if (attempt < maxRetries) {
-          console.log(`🔄 Retrying in ${retryDelay}ms...`);
-          await delay(retryDelay);
-          continue;
+          console.log(`🔄 Retrying in ${retryDelay}ms...`)
+          await delay(retryDelay)
+          continue
         }
-        return false;
+        return false
       }
     }
   }
-  
-  return false;
+
+  return false
 }
 
 // Export functions for use in other scripts
-module.exports = { killProcessOnPort, isPortAvailable };
+module.exports = { killProcessOnPort, isPortAvailable }
 
 // Run if called directly
 if (require.main === module) {
   // Get port from command line argument or use 3000 as default
-  const port = parseInt(process.argv[2], 10) || 3000;
+  const port = parseInt(process.argv[2], 10) || 3000
 
   if (isNaN(port) || port < 1 || port > 65535) {
-    console.error('❌ Please provide a valid port number between 1 and 65535.');
-    process.exit(1);
+    console.error('❌ Please provide a valid port number between 1 and 65535.')
+    process.exit(1)
   }
 
-  killProcessOnPort(port).then(success => {
+  killProcessOnPort(port).then((success) => {
     if (!success) {
-      console.error(`❌ Failed to free port ${port} after all retries.`);
-      process.exit(1);
+      console.error(`❌ Failed to free port ${port} after all retries.`)
+      process.exit(1)
     }
-  });
+  })
 }

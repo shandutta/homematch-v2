@@ -27,12 +27,12 @@ This style guide outlines visual and interaction guidelines for the HomeMatch re
 
 Select a palette that conveys trust and modernity:
 
-| Role              | Example colours                         | Notes                                                                                                                              |
-| ----------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Primary brand** | Deep blue gradient (#0E1E40 → #1D4ED8)  | A sophisticated gradient for headers, navigation and accent elements.                                                              |
-| **Secondary**     | Vibrant purple (#8B5CF6)                | Modern accent for buttons, highlights and interactive elements. Creates a vibrant contrast with the blue gradient.                 |
-| **Tertiary**      | Soft neutrals (#F5F5F5, #E5E7EB)        | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                                  |
-| **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B) | Feedback colours for errors, warnings and alerts.                                                                                  |
+| Role              | Example colours                         | Notes                                                                                                              |
+| ----------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Primary brand** | Deep blue gradient (#0E1E40 → #1D4ED8)  | A sophisticated gradient for headers, navigation and accent elements.                                              |
+| **Secondary**     | Vibrant purple (#8B5CF6)                | Modern accent for buttons, highlights and interactive elements. Creates a vibrant contrast with the blue gradient. |
+| **Tertiary**      | Soft neutrals (#F5F5F5, #E5E7EB)        | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                  |
+| **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B) | Feedback colours for errors, warnings and alerts.                                                                  |
 
 Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for text and interactive elements.
 

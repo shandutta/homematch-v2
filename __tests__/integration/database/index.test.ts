@@ -5,29 +5,37 @@ function generateTestUUID(prefix: string): string {
   // Generate a UUID v4 format string for testing
   const timestamp = Date.now().toString(16)
   const random = Math.random().toString(16).substring(2, 10)
-  return `${prefix}-${timestamp}-${random}-${random}-${timestamp}`.substring(0, 36)
+  return `${prefix}-${timestamp}-${random}-${random}-${timestamp}`.substring(
+    0,
+    36
+  )
 }
 
 // Helper to get test users dynamically
 async function getTestUsers(supabase: any) {
   // Get auth users first
   const testEmails = ['test1@example.com', 'test2@example.com']
-  
+
   // Since we can't query auth.users directly from client, we'll get profiles by hardcoded IDs
   // These are the IDs from our test user setup
   const { data: profiles, error } = await supabase
     .from('user_profiles')
     .select('id')
     .order('created_at')
-  
+
   if (error || !profiles || profiles.length === 0) {
-    throw new Error('Test user profiles not found. Run scripts/setup-test-users-admin.js first.')
+    throw new Error(
+      'Test user profiles not found. Run scripts/setup-test-users-admin.js first.'
+    )
   }
-  
+
   // Return the first two profiles (our test users)
   return {
     user1: { id: profiles[0].id, email: testEmails[0] },
-    user2: { id: profiles.length > 1 ? profiles[1].id : profiles[0].id, email: testEmails[1] }
+    user2: {
+      id: profiles.length > 1 ? profiles[1].id : profiles[0].id,
+      email: testEmails[1],
+    },
   }
 }
 
@@ -39,46 +47,46 @@ async function getTestProperty(supabase: any) {
     .eq('is_active', true)
     .limit(1)
     .single()
-  
+
   if (error || !properties) {
     throw new Error('No test properties found in database.')
   }
-  
+
   return properties.id
 }
 
-// Helper to get test household  
+// Helper to get test household
 async function getTestHousehold(supabase: any, userId: string) {
   const { data: user, error } = await supabase
     .from('user_profiles')
     .select('household_id')
     .eq('id', userId)
     .single()
-  
+
   if (error || !user || !user.household_id) {
     // Create a test household if none exists
     const { data: household, error: createError } = await supabase
       .from('households')
       .insert({
         name: 'Test Family',
-        collaboration_mode: 'shared'
+        collaboration_mode: 'shared',
       })
       .select()
       .single()
-    
+
     if (createError || !household) {
       throw new Error('Could not create test household')
     }
-    
+
     // Update user with household
     await supabase
       .from('user_profiles')
       .update({ household_id: household.id })
       .eq('id', userId)
-    
+
     return household.id
   }
-  
+
   return user.household_id
 }
 
@@ -90,12 +98,12 @@ describe('Database Integration Tests', () => {
 
   beforeAll(async () => {
     supabase = createClient()
-    
+
     // Get test users and data
     testUsers = await getTestUsers(supabase)
     testPropertyId = await getTestProperty(supabase)
     testHouseholdId = await getTestHousehold(supabase, testUsers.user1.id)
-    
+
     // Ensure both test users are in the same household
     await supabase
       .from('user_profiles')
@@ -264,9 +272,9 @@ describe('Database Integration Tests', () => {
             feature_importance: {
               price: 0.3,
               location: 0.4,
-              size: 0.3
-            }
-          }
+              size: 0.3,
+            },
+          },
         })
         .select()
         .single()
@@ -278,7 +286,7 @@ describe('Database Integration Tests', () => {
       expect(newInteraction.score_data.ml_score).toBe(0.85)
       expect(newInteraction.score_data.cold_start_score).toBe(0.7)
       expect(newInteraction.score_data.feature_importance).toBeDefined()
-      
+
       // Clean up
       await supabase
         .from('user_property_interactions')
@@ -313,7 +321,7 @@ describe('Database Integration Tests', () => {
     test('should validate JSONB score_data field operations', async () => {
       // Create test interaction with complex JSONB data
       const testUserId = testUsers.user1.id
-      
+
       const { data: interaction, error: createError } = await supabase
         .from('user_property_interactions')
         .insert({
@@ -327,11 +335,11 @@ describe('Database Integration Tests', () => {
             feature_importance: {
               price: 0.2,
               location: 0.5,
-              size: 0.3
+              size: 0.3,
             },
             model_version: 'v2.1.0',
-            computed_at: new Date().toISOString()
-          }
+            computed_at: new Date().toISOString(),
+          },
         })
         .select()
         .single()
@@ -339,14 +347,14 @@ describe('Database Integration Tests', () => {
       expect(createError).toBeNull()
       expect(interaction).toBeDefined()
       expect(interaction.score_data).toBeDefined()
-      
+
       // Verify complex JSONB structure
       expect(interaction.score_data.ml_score).toBe(0.92)
       expect(interaction.score_data.lightgbm_score).toBe(0.95)
       expect(interaction.score_data.feature_importance).toBeDefined()
       expect(interaction.score_data.feature_importance.price).toBe(0.2)
       expect(interaction.score_data.feature_importance.location).toBe(0.5)
-      
+
       // Test JSONB querying capabilities
       const { data: jsonbFiltered, error: filterError } = await supabase
         .from('user_property_interactions')
@@ -356,7 +364,7 @@ describe('Database Integration Tests', () => {
       expect(filterError).toBeNull()
       expect(jsonbFiltered).toBeDefined()
       expect(jsonbFiltered.length).toBeGreaterThan(0)
-      
+
       // Clean up
       await supabase
         .from('user_property_interactions')

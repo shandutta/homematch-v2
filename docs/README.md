@@ -6,14 +6,14 @@ This directory contains all project documentation organized by topic and purpose
 
 ## Quick Navigation
 
-| Category | Document | Purpose |
-|----------|----------|---------|
-| **Architecture** | [ARCHITECTURE.md](./ARCHITECTURE.md) | System design, tech stack, and database schema |
-| **Implementation** | [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) | Complete development roadmap and setup guide |
-| **Testing** | [TESTING.md](./TESTING.md) | Complete testing guide (unit, integration, E2E, debugging) |
-| **Style Guide** | [STYLE_GUIDE.md](./STYLE_GUIDE.md) | UI/UX design guidelines and component standards |
-| **API Integration** | [RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md) | Zillow API integration documentation |
-| **Development** | [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) | Git workflows, code coverage, and development processes |
+| Category            | Document                                               | Purpose                                                    |
+| ------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| **Architecture**    | [ARCHITECTURE.md](./ARCHITECTURE.md)                   | System design, tech stack, and database schema             |
+| **Implementation**  | [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)     | Complete development roadmap and setup guide               |
+| **Testing**         | [TESTING.md](./TESTING.md)                             | Complete testing guide (unit, integration, E2E, debugging) |
+| **Style Guide**     | [STYLE_GUIDE.md](./STYLE_GUIDE.md)                     | UI/UX design guidelines and component standards            |
+| **API Integration** | [RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)             | Zillow API integration documentation                       |
+| **Development**     | [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) | Git workflows, code coverage, and development processes    |
 
 ## Documentation Categories
 
@@ -111,11 +111,12 @@ This directory contains all project documentation organized by topic and purpose
 
 ### Test-Specific Documentation
 
-- **[../__tests__/fixtures/README.md](../__tests__/fixtures/README.md)** - Playwright fixtures architecture
+- **[../**tests**/fixtures/README.md](../__tests__/fixtures/README.md)** - Playwright fixtures architecture
 
 ### Legacy Documentation
 
 For historical reference, the original V1 migration analysis is preserved in:
+
 - `homematch-original-analysis/` - V1 codebase analysis and migration documentation
 
 ## Cross-References

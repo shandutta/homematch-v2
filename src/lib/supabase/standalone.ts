@@ -22,3 +22,6 @@ export function createClient() {
     },
   })
 }
+
+// Export alias for migration script compatibility
+export { createClient as createStandaloneClient }

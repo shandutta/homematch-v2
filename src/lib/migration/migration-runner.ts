@@ -11,7 +11,6 @@ import { parse } from 'csv-parse/sync'
 import path from 'path'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import type { NeighborhoodInsert, PropertyInsert } from '@/types/database'
 
 export interface MigrationRunnerOptions {
   batchSize?: number

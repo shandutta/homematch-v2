@@ -152,7 +152,7 @@ describe('Database Schema Validation - Integration Tests', () => {
         .limit(1)
 
       expect(error).toBeNull()
-      
+
       // In test environment, we have minimal data
       if (process.env.NODE_ENV === 'test') {
         expect(count).toBe(3) // 3 test neighborhoods
@@ -170,7 +170,7 @@ describe('Database Schema Validation - Integration Tests', () => {
         .limit(1)
 
       expect(error).toBeNull()
-      
+
       // In test environment, we have minimal data
       if (process.env.NODE_ENV === 'test') {
         expect(count).toBe(5) // 5 test properties

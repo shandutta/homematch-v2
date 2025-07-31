@@ -31,7 +31,7 @@ HomeMatch V2 implements a comprehensive 4-tier testing strategy:
 ### Test Results Summary
 
 - **Unit Tests**: 82/82 passing (100% success rate)
-- **Integration Tests**: 36/36 passing (100% success rate) 
+- **Integration Tests**: 36/36 passing (100% success rate)
 - **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
 - **PostGIS Migration**: Safe conversion preserving 2,176 spatial data points
 
@@ -45,7 +45,7 @@ pnpm test
 
 # Individual test suites
 pnpm test:unit        # Jest unit tests
-pnpm test:integration # Vitest integration tests  
+pnpm test:integration # Vitest integration tests
 pnpm test:e2e        # Playwright E2E tests
 
 # Coverage and analysis
@@ -171,6 +171,7 @@ Comprehensive mock setup with chainable query builder support for unit tests.
 ### Database Integration Tests
 
 **Key Implementations**:
+
 - Created `scripts/infrastructure-working.js` for Docker/Supabase automation
 - Implemented dynamic user ID fetching instead of hardcoded values
 - Fixed interaction_type from 'favorite' to 'like' per schema constraints
@@ -246,21 +247,25 @@ describe('Database Relationships', () => {
 Our E2E tests use Playwright to test the full application stack with a real Supabase database. Tests run against a production build with test environment variables to ensure realistic testing conditions.
 
 1. **Start Supabase** (if not already running):
+
    ```bash
    pnpm dlx supabase@latest start
    ```
 
 2. **Apply migrations**:
+
    ```bash
    pnpm dlx supabase@latest db push
    ```
 
 3. **Build for tests**:
+
    ```bash
    node scripts/build-for-tests.js
    ```
 
 4. **Create test users**:
+
    ```bash
    node scripts/setup-test-users-admin.js
    ```
@@ -317,9 +322,9 @@ TEST_USER_2_PASSWORD=testpassword456
    - Creates `.next-test/` directory
    - Skips linting/type checking for speed
 
-2. **`scripts/start-test-server-simple.js`**
-   - Starts Next.js production server
-   - Uses test build from `.next-test/`
+2. **`scripts/start-test-server-dev.js`**
+   - Starts Next.js development server for E2E tests
+   - Sets test environment variables
    - Ensures port 3000 is available
 
 3. **`scripts/setup-test-users-admin.js`**
@@ -357,38 +362,39 @@ __tests__/
 #### Best Practices
 
 1. **Use standardized timeouts**:
+
    ```typescript
    import { TEST_TIMEOUTS } from '../helpers/constants'
-   
+
    await page.waitForSelector('.property-card', {
-     timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE
+     timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE,
    })
    ```
 
 2. **Clean up auth state between tests**:
+
    ```typescript
    import { clearAuthState } from '../helpers/test-utils'
-   
+
    test.beforeEach(async ({ page }) => {
      await clearAuthState(page)
    })
    ```
 
 3. **Use proper wait conditions**:
+
    ```typescript
    // Good: Wait for specific conditions
    await page.waitForLoadState('networkidle')
    await page.waitForSelector('[data-testid="dashboard-loaded"]')
-   
+
    // Bad: Arbitrary timeouts
    await page.waitForTimeout(5000)
    ```
 
 4. **Add data-testid attributes**:
    ```tsx
-   <button data-testid="submit-property-search">
-     Search
-   </button>
+   <button data-testid="submit-property-search">Search</button>
    ```
 
 #### Example E2E Test
@@ -405,21 +411,23 @@ test.describe('Property Search', () => {
 
   test('should search properties by price range', async ({ page }) => {
     await page.goto('/search')
-    
+
     // Fill search form
     await page.fill('[data-testid="min-price"]', '500000')
     await page.fill('[data-testid="max-price"]', '1000000')
-    
+
     // Submit search
     await page.click('[data-testid="search-button"]')
-    
+
     // Wait for results
     await page.waitForSelector('[data-testid="property-card"]', {
-      timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE
+      timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE,
     })
-    
+
     // Verify results
-    const propertyCards = await page.locator('[data-testid="property-card"]').count()
+    const propertyCards = await page
+      .locator('[data-testid="property-card"]')
+      .count()
     expect(propertyCards).toBeGreaterThan(0)
   })
 })
@@ -465,7 +473,7 @@ HomeMatch V2 uses a comprehensive fixtures system that eliminates circular depen
 ### Fixtures Structure
 
 - **`config.ts`** - Test constants, timeouts, and user data
-- **`utils.ts`** - Page utilities and common wait functions  
+- **`utils.ts`** - Page utilities and common wait functions
 - **`logger.ts`** - Debug logging and test visibility
 - **`retry.ts`** - Retry logic and error handling
 - **`auth.ts`** - Authentication flows and user management
@@ -478,10 +486,10 @@ import { test, expect } from '../fixtures'
 
 test('should authenticate user', async ({ page, auth, logger }) => {
   logger.step('Starting authentication test')
-  
+
   await auth.login()
   await auth.verifyAuthenticated()
-  
+
   logger.step('Authentication test completed')
 })
 ```
@@ -489,6 +497,7 @@ test('should authenticate user', async ({ page, auth, logger }) => {
 ### Available Fixtures
 
 #### Config Fixture
+
 ```typescript
 config: {
   timeouts: { PAGE_LOAD: 30000, ... }
@@ -498,6 +507,7 @@ config: {
 ```
 
 #### Utils Fixture
+
 ```typescript
 utils: {
   clearAuthState(): Promise<void>
@@ -510,6 +520,7 @@ utils: {
 ```
 
 #### Auth Fixture
+
 ```typescript
 auth: {
   login(user?: TestUser): Promise<void>
@@ -522,6 +533,7 @@ auth: {
 ```
 
 #### Logger Fixture
+
 ```typescript
 logger: {
   step(description: string, data?: any): void
@@ -532,6 +544,7 @@ logger: {
 ```
 
 #### Retry Fixture
+
 ```typescript
 retry: {
   retry<T>(operation: () => Promise<T>, options?: RetryOptions): Promise<T>
@@ -550,7 +563,7 @@ retry: {
 PostGIS safe migration implemented preserving all spatial data:
 
 - Created `20250730114410_fix_postgis_geometry_type.sql` for neighborhoods
-- Created `20250730114539_fix_point_geometry_type.sql` for properties  
+- Created `20250730114539_fix_point_geometry_type.sql` for properties
 - Used backup column strategy to prevent data loss
 - Preserved 1,123 neighborhood boundaries and 1,053 property coordinates
 
@@ -705,10 +718,12 @@ With the migrated dataset of 1,091 properties and 1,123 neighborhoods:
 ### GitHub Actions Workflow
 
 E2E tests run automatically on:
+
 - Push to `main` branch
 - Pull requests to `main` branch
 
 The workflow includes:
+
 - Dependency caching for speed
 - Supabase local setup
 - Test user creation
@@ -726,19 +741,21 @@ The workflow includes:
 ### Common Issues
 
 1. **Port 3000 in use**
+
    ```bash
    # Kill process on port 3000
    node scripts/kill-port.js 3000
-   
+
    # Or manually (Windows)
    netstat -ano | findstr :3000
    taskkill /PID <PID> /F
-   
+
    # Or manually (Mac/Linux)
    lsof -ti:3000 | xargs kill -9
    ```
 
 2. **Test users already exist**
+
    ```bash
    # The setup script handles this automatically with retries
    # But you can manually reset the database:
@@ -746,10 +763,11 @@ The workflow includes:
    ```
 
 3. **Build directory issues**
+
    ```bash
    # Clean test build
    rm -rf .next-test/
-   
+
    # Rebuild
    node scripts/build-for-tests.js
    ```
@@ -762,6 +780,7 @@ The workflow includes:
 ### Debug Mode
 
 Run tests with debug output:
+
 ```bash
 # Playwright debug mode
 pnpm test:e2e -- --debug
@@ -776,6 +795,7 @@ pnpm test:e2e -- --slow-mo=1000
 ### Viewing Test Reports
 
 After test runs, view the HTML report:
+
 ```bash
 # Local
 npx playwright show-report
@@ -855,4 +875,4 @@ __tests__/
 
 ---
 
-*This guide covers all testing strategies, tools, and procedures for HomeMatch V2 development.*
+_This guide covers all testing strategies, tools, and procedures for HomeMatch V2 development._

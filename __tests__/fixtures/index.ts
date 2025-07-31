@@ -14,7 +14,7 @@ import { HomematchFixtures } from '../types/fixtures'
 // Combine all fixtures into a single test object
 export const test = base
   .extend(configFixtures)
-  .extend(utilsFixtures) 
+  .extend(utilsFixtures)
   .extend(loggerFixtures)
   .extend(retryFixtures)
   .extend(authFixtures)
@@ -30,12 +30,12 @@ export { retryFixtures } from './retry'
 export { authFixtures } from './auth'
 
 // Export types
-export type { 
-  TestUser, 
-  TestLogger, 
-  UtilsFixture, 
-  AuthFixture, 
-  RetryFixture, 
-  ConfigFixture, 
-  HomematchFixtures 
+export type {
+  TestUser,
+  TestLogger,
+  UtilsFixture,
+  AuthFixture,
+  RetryFixture,
+  ConfigFixture,
+  HomematchFixtures,
 } from '../types/fixtures'

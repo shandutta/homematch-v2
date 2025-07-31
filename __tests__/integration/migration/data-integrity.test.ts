@@ -19,7 +19,7 @@ describe('Migration Data Integrity', () => {
         .limit(1)
 
       expect(error).toBeNull()
-      
+
       // In test environment, we have minimal data
       if (process.env.NODE_ENV === 'test') {
         expect(count).toBe(3) // 3 test neighborhoods
@@ -63,7 +63,7 @@ describe('Migration Data Integrity', () => {
         .limit(1)
 
       expect(error).toBeNull()
-      
+
       // In test environment, we have minimal data
       if (process.env.NODE_ENV === 'test') {
         expect(count).toBe(5) // 5 test properties
@@ -385,7 +385,7 @@ describe('Migration Data Integrity', () => {
         .limit(1)
 
       expect(neighError).toBeNull()
-      
+
       // Count total active properties
       const { count: totalProperties, error: propError } = await supabase
         .from('properties')
@@ -394,12 +394,12 @@ describe('Migration Data Integrity', () => {
         .limit(1)
 
       expect(propError).toBeNull()
-      
+
       // In test environment, verify minimal test data
       if (process.env.NODE_ENV === 'test') {
         expect(totalNeighborhoods).toBe(3) // 3 test neighborhoods
         expect(totalProperties).toBe(5) // 5 test properties
-        
+
         // All test data should be present
         const totalExpected = 8 // 3 neighborhoods + 5 properties
         const totalPresent = (totalNeighborhoods || 0) + (totalProperties || 0)
@@ -408,12 +408,13 @@ describe('Migration Data Integrity', () => {
         // Production validation
         expect(totalNeighborhoods).toBeGreaterThan(1100)
         expect(totalProperties).toBeGreaterThan(1000)
-        
+
         // Total migrated records should be around 2,214
-        const totalMigratedRecords = (totalNeighborhoods || 0) + (totalProperties || 0)
+        const totalMigratedRecords =
+          (totalNeighborhoods || 0) + (totalProperties || 0)
         expect(totalMigratedRecords).toBeGreaterThan(2100)
         expect(totalMigratedRecords).toBeLessThan(2300)
-        
+
         const expectedTotal = 2214
         const successRate = totalMigratedRecords / expectedTotal
         expect(successRate).toBeGreaterThan(0.98)

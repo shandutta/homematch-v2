@@ -11,9 +11,9 @@ const path = require('path')
 // First, kill any process on port 3000
 console.log('🔪 Killing any process on port 3000...')
 try {
-  execSync('node scripts/kill-port.js 3000', { 
+  execSync('node scripts/kill-port.js 3000', {
     stdio: 'inherit',
-    cwd: path.join(__dirname, '..')
+    cwd: path.join(__dirname, '..'),
   })
 } catch (error) {
   // Ignore errors - port might already be free
@@ -21,16 +21,20 @@ try {
 
 // Load test environment variables BEFORE starting Next.js
 const dotenv = require('dotenv')
-const testEnv = dotenv.config({ path: path.join(__dirname, '..', '.env.test.local') })
+const testEnv = dotenv.config({
+  path: path.join(__dirname, '..', '.env.test.local'),
+})
 
 // Ensure we're in test mode
 process.env.NODE_ENV = 'test'
 
 // Force test environment variables to override any existing ones
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'REDACTED_SUPABASE_ANON_KEY'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
+  'REDACTED_SUPABASE_ANON_KEY'
 process.env.SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.SUPABASE_ANON_KEY = 'REDACTED_SUPABASE_ANON_KEY'
+process.env.SUPABASE_ANON_KEY =
+  'REDACTED_SUPABASE_ANON_KEY'
 
 // Clear any cached modules to ensure fresh environment
 delete require.cache[require.resolve('dotenv')]
@@ -44,7 +48,7 @@ const nextProcess = spawn('pnpm', ['run', 'dev'], {
   stdio: 'inherit',
   env: process.env,
   shell: true,
-  cwd: path.join(__dirname, '..')
+  cwd: path.join(__dirname, '..'),
 })
 
 nextProcess.on('error', (err) => {

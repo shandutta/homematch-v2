@@ -8,9 +8,7 @@ import {
   NeighborhoodInsert,
   NeighborhoodUpdate,
 } from '@/types/database'
-import {
-  PropertySearch,
-} from '@/lib/schemas/property'
+import { PropertySearch } from '@/lib/schemas/property'
 
 export class PropertyService {
   private async getSupabase() {
@@ -121,7 +119,11 @@ export class PropertyService {
       page = 1,
       limit = 20,
       sort,
-    } = pagination as { page?: number; limit?: number; sort?: { field: string; direction: 'asc' | 'desc' } }
+    } = pagination as {
+      page?: number
+      limit?: number
+      sort?: { field: string; direction: 'asc' | 'desc' }
+    }
 
     const supabase = await this.getSupabase()
     let query = supabase

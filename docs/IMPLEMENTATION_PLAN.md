@@ -1680,8 +1680,9 @@ async function sendAdminNotification(notification: any) {
 > **Completed**: E2E test infrastructure created with test database isolation and CI/CD integration.
 >
 > **Key Implementations**:
-> - Created `scripts/start-test-server.js` for test environment server
-> - Created `scripts/setup-e2e-tests.js` for test preparation  
+>
+> - Created `scripts/start-test-server-dev.js` for test environment server
+> - Created `scripts/global-setup.js` for E2E test preparation (isolated process)
 > - Updated `playwright.config.ts` to use test server
 > - Fixed selector ambiguity issues with `.first()` for multiple matches
 > - Implemented authentication flow tests with realistic typing delays
@@ -1760,6 +1761,7 @@ test.describe('Property Browsing Flow', () => {
 > **Achievement**: All integration tests passing with real Supabase Docker integration.
 >
 > **Key Implementations**:
+>
 > - Created `scripts/infrastructure-working.js` for Docker and Supabase management
 > - Implemented dynamic user ID fetching instead of hardcoded values
 > - Fixed interaction_type from 'favorite' to 'like' per schema constraints
@@ -1808,13 +1810,14 @@ describe('/api/properties', () => {
 > **Achievement**: Complete test infrastructure with performance validation through comprehensive testing.
 >
 > **Test Infrastructure Results**:
+>
 > - **Unit Tests**: 82/82 passing (100%) - All mock patterns fixed with async handling
 > - **Integration Tests**: 36/36 passing (100%) - Real Supabase Docker stack operational
 > - **E2E Tests**: 18/30 passing (60%) - Test database isolation implemented
 > - **CI/CD Pipeline**: GitHub Actions workflow configured and ready
 > - **Test Scripts Created**:
 >   - `scripts/infrastructure-working.js` - Docker/Supabase automation
->   - `scripts/health-check.js` - Infrastructure health monitoring
+>   - `scripts/global-setup.js` - E2E test setup with process isolation
 >   - `scripts/setup-test-users-admin.js` - Test user creation
 
 #### 26.1 Bundle Analysis and Optimization 📋 **TOOLING CONFIGURED**
