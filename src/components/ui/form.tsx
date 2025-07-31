@@ -46,13 +46,26 @@ const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState } = useFormContext()
-  const formState = useFormState({ name: fieldContext.name })
-  const fieldState = getFieldState(fieldContext.name, formState)
-
-  if (!fieldContext) {
-    throw new Error('useFormField should be used within <FormField>')
+  
+  // Always call useFormState with a default value to avoid conditional hook calls
+  const formState = useFormState({ name: fieldContext?.name || '' })
+  
+  // Add null checks for SSG compatibility
+  if (!fieldContext || !fieldContext.name || !itemContext) {
+    return {
+      id: 'fallback-id',
+      name: '',
+      formItemId: 'fallback-form-item',
+      formDescriptionId: 'fallback-form-item-description', 
+      formMessageId: 'fallback-form-item-message',
+      invalid: false,
+      isDirty: false,
+      isTouched: false,
+      error: undefined,
+    }
   }
-
+  
+  const fieldState = getFieldState(fieldContext.name, formState)
   const { id } = itemContext
 
   return {
