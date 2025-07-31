@@ -14,6 +14,7 @@ For commits that involve multiple modified files:
 4. **Push commits** to origin
 
 **Semantic Commit Format:**
+
 - `feat:` - New features
 - `fix:` - Bug fixes
 - `docs:` - Documentation changes
@@ -33,6 +34,7 @@ To improve test coverage:
 5. **Re-run coverage analysis** and repeat as necessary
 
 **Coverage Commands:**
+
 ```bash
 pnpm test:coverage        # Generate coverage report
 pnpm test:watch          # Watch mode with coverage
@@ -51,6 +53,7 @@ For creating design variations and UI iterations:
 5. **Review and decide** which variation works best
 
 **UI Iteration Goals:**
+
 - Create multiple design options for user review
 - Maintain consistency with established style guide
 - Enable rapid prototyping and comparison
@@ -60,8 +63,9 @@ For creating design variations and UI iterations:
 ### Code Quality Checklist
 
 Before committing code:
+
 - [ ] Run `pnpm run lint` - ESLint validation
-- [ ] Run `pnpm run type-check` - TypeScript validation  
+- [ ] Run `pnpm run type-check` - TypeScript validation
 - [ ] Run `pnpm test` - All test suites pass
 - [ ] Check test coverage meets standards
 - [ ] Verify no `any` types introduced
@@ -88,7 +92,7 @@ Before committing code:
 # Start local test infrastructure
 pnpm run test:infra:start
 
-# Setup test users and data  
+# Setup test users and data
 node scripts/setup-test-users-admin.js
 
 # Clean test environment
@@ -137,7 +141,7 @@ Using Browser-tools MCP and Playwright:
 ```bash
 # E2E debugging modes
 pnpm test:e2e -- --headed    # See browser
-pnpm test:e2e -- --ui        # Interactive mode  
+pnpm test:e2e -- --ui        # Interactive mode
 pnpm test:e2e -- --debug     # Debug mode
 
 # Unit test debugging
@@ -219,4 +223,4 @@ pnpm test:unit -- --verbose  # Detailed output
 
 ---
 
-*This document consolidates development workflows from various utility scripts and provides a comprehensive reference for HomeMatch V2 development processes.*
+_This document consolidates development workflows from various utility scripts and provides a comprehensive reference for HomeMatch V2 development processes._

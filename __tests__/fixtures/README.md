@@ -5,14 +5,16 @@ This directory contains Playwright fixtures that provide reusable test utilities
 ## 🎯 **Architecture Overview**
 
 ### **Fixtures Structure**
+
 - **`config.ts`** - Test constants, timeouts, and user data
-- **`utils.ts`** - Page utilities and common wait functions  
+- **`utils.ts`** - Page utilities and common wait functions
 - **`logger.ts`** - Debug logging and test visibility
 - **`retry.ts`** - Retry logic and error handling
 - **`auth.ts`** - Authentication flows and user management
 - **`index.ts`** - Combined fixtures export
 
 ### **Benefits Over Helper Files**
+
 - ✅ **Zero circular dependencies** - Fixtures are dependency-injected by Playwright
 - ✅ **Better organization** - Logical grouping of related functionality
 - ✅ **TypeScript integration** - Full type safety with fixture interfaces
@@ -22,35 +24,37 @@ This directory contains Playwright fixtures that provide reusable test utilities
 ## 🚀 **Usage Examples**
 
 ### **Basic Usage**
+
 ```typescript
 import { test, expect } from '../fixtures'
 
 test('should authenticate user', async ({ page, auth, logger }) => {
   logger.step('Starting authentication test')
-  
+
   await auth.login()
   await auth.verifyAuthenticated()
-  
+
   logger.step('Authentication test completed')
 })
 ```
 
 ### **Using Specific Fixtures**
+
 ```typescript
 import { test, expect } from '../fixtures'
 
-test('should handle form validation', async ({ 
-  page, 
-  utils, 
-  config, 
-  logger 
+test('should handle form validation', async ({
+  page,
+  utils,
+  config,
+  logger,
 }) => {
   await page.goto('/login')
   await utils.waitForReactToSettle()
-  
+
   // Use config for test data
   const user = config.users.user1
-  
+
   // Form interactions with logging
   logger.step(`Filling form for ${user.email}`)
   // ... test implementation
@@ -58,19 +62,16 @@ test('should handle form validation', async ({
 ```
 
 ### **Error Handling with Retry**
+
 ```typescript
 import { test, expect } from '../fixtures'
 
-test('should handle network issues', async ({ 
-  page, 
-  retry, 
-  logger 
-}) => {
+test('should handle network issues', async ({ page, retry, logger }) => {
   // Network operations with automatic retry
   await retry.network(async () => {
     await page.goto('/dashboard')
   })
-  
+
   // Element interactions with retry
   await retry.element(async () => {
     await expect(page.locator('button')).toBeEnabled()
@@ -81,6 +82,7 @@ test('should handle network issues', async ({
 ## 📚 **Available Fixtures**
 
 ### **Config Fixture**
+
 ```typescript
 config: {
   timeouts: { PAGE_LOAD: 30000, ... }
@@ -89,7 +91,8 @@ config: {
 }
 ```
 
-### **Utils Fixture** 
+### **Utils Fixture**
+
 ```typescript
 utils: {
   clearAuthState(): Promise<void>
@@ -102,6 +105,7 @@ utils: {
 ```
 
 ### **Auth Fixture**
+
 ```typescript
 auth: {
   login(user?: TestUser): Promise<void>
@@ -114,6 +118,7 @@ auth: {
 ```
 
 ### **Logger Fixture**
+
 ```typescript
 logger: {
   step(description: string, data?: any): void
@@ -128,6 +133,7 @@ logger: {
 ```
 
 ### **Retry Fixture**
+
 ```typescript
 retry: {
   retry<T>(operation: () => Promise<T>, options?: RetryOptions): Promise<T>
@@ -140,12 +146,14 @@ retry: {
 ## 🔧 **Development Guidelines**
 
 ### **Test Structure**
+
 - Import fixtures from `../fixtures`
 - Use descriptive test names with fixture prefix
 - Leverage logger for step-by-step visibility
 - Use retry fixtures for flaky operations
 
 ### **Best Practices**
+
 - Always use `logger.step()` to mark test phases
 - Use `config` for test data instead of hardcoding
 - Wrap network operations in `retry.network()`
@@ -153,6 +161,7 @@ retry: {
 - Use `auth.login()` instead of manual authentication
 
 ### **Error Handling**
+
 - Fixtures throw descriptive errors with context
 - Logger automatically captures page errors and console messages
 - Retry fixtures handle common failure scenarios
@@ -161,6 +170,7 @@ retry: {
 ## 🚀 **Migration from Helper Files**
 
 Old helper-based approach:
+
 ```typescript
 // ❌ Old way - caused circular dependencies
 import { authenticateUser } from '../helpers/auth'
@@ -173,6 +183,7 @@ test('should login', async ({ page }) => {
 ```
 
 New fixtures approach:
+
 ```typescript
 // ✅ New way - no circular dependencies
 import { test, expect } from '../fixtures'
@@ -195,18 +206,21 @@ test('should login', async ({ page, auth, utils, logger }) => {
 ## 🧹 **Maintenance**
 
 ### **Adding New Fixtures**
+
 1. Create fixture file in `fixtures/` directory
 2. Add interface to `types/fixtures.d.ts`
 3. Export from `fixtures/index.ts`
 4. Update this README with usage examples
 
 ### **Modifying Existing Fixtures**
+
 1. Update fixture implementation
 2. Update TypeScript interfaces if needed
 3. Test changes with fixture test files
 4. Update documentation
 
 ### **Debugging Fixture Issues**
+
 1. Enable debug logging: `DEBUG=true pnpm test:e2e`
 2. Check fixture setup/teardown in logs
 3. Use logger fixture for detailed test step tracking

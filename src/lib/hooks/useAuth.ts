@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '../supabase/client'
-import { initializeAuthState, getCurrentUser, ensureAuthSession } from '../auth/session'
+import {
+  initializeAuthState,
+  getCurrentUser,
+  ensureAuthSession,
+} from '../auth/session'
 import type { User } from '@supabase/supabase-js'
 
 export interface UseAuthResult {
@@ -30,10 +34,10 @@ export function useAuth(): UseAuthResult {
     const getInitialSession = async () => {
       try {
         setLoading(true)
-        
+
         // Ensure session is valid
         const hasValidSession = await ensureAuthSession()
-        
+
         if (hasValidSession) {
           const currentUser = await getCurrentUser()
           setUser(currentUser)
@@ -55,7 +59,7 @@ export function useAuth(): UseAuthResult {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.debug('[useAuth] Auth state change:', event)
-      
+
       if (event === 'SIGNED_IN' && session) {
         setUser(session.user)
         setLoading(false)
@@ -75,7 +79,7 @@ export function useAuth(): UseAuthResult {
   const signOut = async () => {
     const supabase = createClient()
     setLoading(true)
-    
+
     try {
       const { error } = await supabase.auth.signOut()
       if (error) {

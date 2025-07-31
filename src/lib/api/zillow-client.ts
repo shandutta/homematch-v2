@@ -5,6 +5,8 @@
  * See docs/RAPIDAPI_ZILLOW.md for complete API documentation
  */
 
+import crypto from 'node:crypto'
+
 export interface ZillowProperty {
   zpid: string
   address: string
@@ -50,6 +52,33 @@ export interface PropertySearchResponse {
   page: number
   hasNextPage: boolean
 }
+
+interface ZillowSearchApiResponse {
+  properties?: ZillowProperty[]
+  totalCount?: number
+  hasNextPage?: boolean
+}
+
+interface ZillowPropertyApiResponse {
+  property?: PropertyDetails
+}
+
+interface ZillowHistoryApiResponse {
+  history?: PropertyHistory
+}
+
+interface ZillowComparablesApiResponse {
+  comparables?: ComparableProperty[]
+}
+
+interface ZillowNeighborhoodApiResponse {
+  neighborhood?: NeighborhoodInfo
+}
+
+interface ZillowTrendsApiResponse {
+  trends?: MarketTrends
+}
+
 
 export interface PropertyDetails extends ZillowProperty {
   amenities?: string[]
@@ -158,7 +187,7 @@ export class ZillowAPIClient {
       }
     })
 
-    const response = await this.makeRequest(`${endpoint}?${queryParams}`)
+    const response = await this.makeRequest<ZillowSearchApiResponse>(`${endpoint}?${queryParams}`)
 
     return {
       properties: response.properties || [],
@@ -176,10 +205,10 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ zpid })
 
     try {
-      const response = await this.makeRequest(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowPropertyApiResponse>(`${endpoint}?${params}`)
       return response.property || null
     } catch (error) {
-      if (this.isNotFoundError(error)) {
+      if (error instanceof Error && this.isNotFoundError(error)) {
         return null
       }
       throw error
@@ -194,10 +223,10 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ zpid })
 
     try {
-      const response = await this.makeRequest(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowHistoryApiResponse>(`${endpoint}?${params}`)
       return response.history || null
     } catch (error) {
-      if (this.isNotFoundError(error)) {
+      if (error instanceof Error && this.isNotFoundError(error)) {
         return null
       }
       throw error
@@ -218,10 +247,10 @@ export class ZillowAPIClient {
     })
 
     try {
-      const response = await this.makeRequest(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowComparablesApiResponse>(`${endpoint}?${params}`)
       return response.comparables || []
     } catch (error) {
-      if (this.isNotFoundError(error)) {
+      if (error instanceof Error && this.isNotFoundError(error)) {
         return []
       }
       throw error
@@ -239,10 +268,10 @@ export class ZillowAPIClient {
     const params = new URLSearchParams({ city, state })
 
     try {
-      const response = await this.makeRequest(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowNeighborhoodApiResponse>(`${endpoint}?${params}`)
       return response.neighborhood || null
     } catch (error) {
-      if (this.isNotFoundError(error)) {
+      if (error instanceof Error && this.isNotFoundError(error)) {
         return null
       }
       throw error
@@ -263,10 +292,10 @@ export class ZillowAPIClient {
     })
 
     try {
-      const response = await this.makeRequest(`${endpoint}?${params}`)
+      const response = await this.makeRequest<ZillowTrendsApiResponse>(`${endpoint}?${params}`)
       return response.trends || null
     } catch (error) {
-      if (this.isNotFoundError(error)) {
+      if (error instanceof Error && this.isNotFoundError(error)) {
         return null
       }
       throw error
@@ -307,7 +336,7 @@ export class ZillowAPIClient {
   /**
    * Make HTTP request to Zillow API with error handling and retries
    */
-  private async makeRequest(url: string): Promise<any> {
+  private async makeRequest<T>(url: string): Promise<T> {
     let attempt = 0
 
     while (attempt < this.maxRetries) {
@@ -374,7 +403,7 @@ export class ZillowAPIClient {
   /**
    * Check if error is a 404 Not Found
    */
-  private isNotFoundError(error: any): boolean {
+  private isNotFoundError(error: Error | ZillowAPIError): error is ZillowAPIError {
     return error instanceof ZillowAPIError && error.status === 404
   }
 
@@ -438,7 +467,6 @@ export const ZillowUtils = {
    * Generate property hash for deduplication
    */
   generatePropertyHash(property: ZillowProperty): string {
-    const crypto = require('crypto')
     const hashInput = `${property.address}-${property.bedrooms}-${property.bathrooms}-${property.price}`
     return crypto.createHash('md5').update(hashInput).digest('hex')
   },
@@ -459,7 +487,7 @@ export const ZillowUtils = {
         if (response.ok) {
           validUrls.push(url)
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn(`Invalid image URL: ${url}`)
       }
     }

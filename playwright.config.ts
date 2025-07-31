@@ -5,6 +5,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './__tests__/e2e',
+  testMatch: undefined,
+  globalSetup: './scripts/global-setup.js',
   /* Run tests in files in parallel */
   fullyParallel: false, // Disabled to prevent auth race conditions with shared test users
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -66,7 +68,7 @@ export default defineConfig({
   webServer: {
     command: 'node scripts/start-test-server-dev.js',
     url: 'http://localhost:3000',
-    reuseExistingServer: true, // Allow reusing existing server to avoid bash issues
+    reuseExistingServer: true,
     timeout: 120 * 1000,
     env: {
       NODE_ENV: 'development',

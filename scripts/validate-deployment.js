@@ -2,7 +2,7 @@
 
 /**
  * Deployment Validation Script
- * 
+ *
  * Validates that all deployment-critical components are properly configured
  * and ready for production deployment.
  */
@@ -58,13 +58,24 @@ console.log('------------------')
 try {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
   const requiredScripts = [
-    'dev', 'build', 'start', 'lint', 'type-check', 
-    'test', 'test:unit', 'test:integration', 'test:e2e'
+    'dev',
+    'build',
+    'start',
+    'lint',
+    'type-check',
+    'test',
+    'test:unit',
+    'test:integration',
+    'test:e2e',
   ]
-  
-  requiredScripts.forEach(script => {
+
+  requiredScripts.forEach((script) => {
     const exists = packageJson.scripts && packageJson.scripts[script]
-    check(`Script: ${script}`, exists, exists ? packageJson.scripts[script] : 'Missing')
+    check(
+      `Script: ${script}`,
+      exists,
+      exists ? packageJson.scripts[script] : 'Missing'
+    )
   })
 } catch (error) {
   check('Package.json parsing', false, error.message)
@@ -76,19 +87,17 @@ console.log()
 console.log('🧪 Test Structure')
 console.log('-----------------')
 
-const testDirs = [
-  '__tests__/unit',
-  '__tests__/integration', 
-  '__tests__/e2e'
-]
+const testDirs = ['__tests__/unit', '__tests__/integration', '__tests__/e2e']
 
-testDirs.forEach(dir => {
+testDirs.forEach((dir) => {
   const exists = fs.existsSync(dir)
   let fileCount = 0
   if (exists) {
     try {
       const files = fs.readdirSync(dir, { recursive: true })
-      fileCount = files.filter(f => f.endsWith('.test.ts') || f.endsWith('.spec.ts')).length
+      fileCount = files.filter(
+        (f) => f.endsWith('.test.ts') || f.endsWith('.spec.ts')
+      ).length
     } catch (e) {
       fileCount = 0
     }
@@ -104,19 +113,24 @@ console.log('----------------------')
 
 try {
   const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'))
-  
-  check('Environment variables configured', 
+
+  check(
+    'Environment variables configured',
     vercelConfig.env && vercelConfig.env.NEXT_PUBLIC_SUPABASE_URL,
-    'Supabase environment variables present')
-  
-  check('Security headers configured',
+    'Supabase environment variables present'
+  )
+
+  check(
+    'Security headers configured',
     vercelConfig.headers && vercelConfig.headers.length > 0,
-    `${vercelConfig.headers?.[0]?.headers?.length || 0} security headers`)
-  
-  check('Function timeouts configured',
+    `${vercelConfig.headers?.[0]?.headers?.length || 0} security headers`
+  )
+
+  check(
+    'Function timeouts configured',
     vercelConfig.functions,
-    'API and app function timeouts set')
-    
+    'API and app function timeouts set'
+  )
 } catch (error) {
   check('Vercel config parsing', false, error.message)
 }
@@ -129,19 +143,24 @@ console.log('---------------------------')
 
 try {
   const middlewareContent = fs.readFileSync('middleware.ts', 'utf8')
-  
-  check('Protected routes defined',
+
+  check(
+    'Protected routes defined',
     middlewareContent.includes('protectedPaths'),
-    'Protected paths array found')
-  
-  check('Auth redirect to validation',
+    'Protected paths array found'
+  )
+
+  check(
+    'Auth redirect to validation',
     middlewareContent.includes('/validation'),
-    'Redirect to validation dashboard configured')
-  
-  check('Supabase auth integration',
+    'Redirect to validation dashboard configured'
+  )
+
+  check(
+    'Supabase auth integration',
     middlewareContent.includes('supabase.auth.getUser'),
-    'Supabase authentication check present')
-    
+    'Supabase authentication check present'
+  )
 } catch (error) {
   check('Middleware parsing', false, error.message)
 }
@@ -153,23 +172,25 @@ console.log('🎭 E2E Test Coverage')
 console.log('--------------------')
 
 try {
-  const e2eContent = fs.readFileSync('__tests__/e2e/validation-dashboard.spec.ts', 'utf8')
-  
+  const e2eContent = fs.readFileSync(
+    '__tests__/e2e/validation-dashboard.spec.ts',
+    'utf8'
+  )
+
   const testCases = [
     'home page for unauthenticated users',
-    'redirect to login when accessing protected route', 
+    'redirect to login when accessing protected route',
     'complete full authentication and validation dashboard flow',
     'handle authentication errors gracefully',
     'redirect authenticated users from auth pages',
     'display validation dashboard data correctly',
-    'responsive on mobile devices'
+    'responsive on mobile devices',
   ]
-  
-  testCases.forEach(testCase => {
+
+  testCases.forEach((testCase) => {
     const exists = e2eContent.includes(testCase)
     check(`Test: ${testCase}`, exists)
   })
-  
 } catch (error) {
   check('E2E test parsing', false, error.message)
 }
@@ -181,7 +202,9 @@ console.log('📊 Validation Summary')
 console.log('=====================')
 console.log(`✅ Passed: ${passed}`)
 console.log(`❌ Failed: ${failed}`)
-console.log(`📈 Success Rate: ${Math.round((passed / (passed + failed)) * 100)}%`)
+console.log(
+  `📈 Success Rate: ${Math.round((passed / (passed + failed)) * 100)}%`
+)
 
 if (failed === 0) {
   console.log('\n🎉 All checks passed! Ready for deployment.')

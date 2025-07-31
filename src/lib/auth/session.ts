@@ -26,31 +26,31 @@ export function initializeAuthState() {
   }
 
   // Set up new auth state listener
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      console.debug('[Auth] State change:', event, session?.user?.email)
-      
-      // Handle different auth events
-      switch (event) {
-        case 'SIGNED_IN':
-          // Ensure session is properly stored
-          if (session) {
-            await refreshSession()
-          }
-          break
-        case 'SIGNED_OUT':
-          // Clear any cached data
-          clearAuthCache()
-          break
-        case 'TOKEN_REFRESHED':
-          console.debug('[Auth] Token refreshed successfully')
-          break
-        case 'PASSWORD_RECOVERY':
-          console.debug('[Auth] Password recovery initiated')
-          break
-      }
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange(async (event, session) => {
+    console.debug('[Auth] State change:', event, session?.user?.email)
+
+    // Handle different auth events
+    switch (event) {
+      case 'SIGNED_IN':
+        // Ensure session is properly stored
+        if (session) {
+          await refreshSession()
+        }
+        break
+      case 'SIGNED_OUT':
+        // Clear any cached data
+        clearAuthCache()
+        break
+      case 'TOKEN_REFRESHED':
+        console.debug('[Auth] Token refreshed successfully')
+        break
+      case 'PASSWORD_RECOVERY':
+        console.debug('[Auth] Password recovery initiated')
+        break
     }
-  )
+  })
 
   authStateListener = () => subscription.unsubscribe()
 }
@@ -62,15 +62,18 @@ export async function refreshSession() {
   if (typeof window === 'undefined') return null
 
   const supabase = createClient()
-  
+
   try {
-    const { data: { session }, error } = await supabase.auth.refreshSession()
-    
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.refreshSession()
+
     if (error) {
       console.warn('[Auth] Session refresh failed:', error.message)
       return null
     }
-    
+
     console.debug('[Auth] Session refreshed successfully')
     return session
   } catch (error) {
@@ -86,17 +89,20 @@ export async function getCurrentUser() {
   if (typeof window === 'undefined') return null
 
   const supabase = createClient()
-  
+
   try {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
+
     if (error) {
       console.warn('[Auth] Get user failed:', error.message)
       // Try to refresh session if user fetch fails
       await refreshSession()
       return null
     }
-    
+
     return user
   } catch (error) {
     console.error('[Auth] Get user error:', error)
@@ -114,10 +120,12 @@ export function clearAuthCache() {
     // Clear auth-related items from both storage types
     const authKeys = [
       'homematch-auth-token',
-      'sb-' + process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0] + '-auth-token',
+      'sb-' +
+        process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0] +
+        '-auth-token',
     ]
 
-    authKeys.forEach(key => {
+    authKeys.forEach((key) => {
       localStorage?.removeItem(key)
       sessionStorage?.removeItem(key)
     })
@@ -135,20 +143,21 @@ export async function ensureAuthSession(): Promise<boolean> {
   if (typeof window === 'undefined') return false
 
   const supabase = createClient()
-  
+
   try {
     // First try to get current session
-    const { data: { session } } = await supabase.auth.getSession()
-    
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
     if (session) {
       console.debug('[Auth] Session validated')
       return true
     }
-    
+
     // If no session, try to refresh
     const refreshedSession = await refreshSession()
     return refreshedSession !== null
-    
   } catch (error) {
     console.error('[Auth] Session validation error:', error)
     return false
@@ -162,20 +171,19 @@ export async function signOut() {
   if (typeof window === 'undefined') return
 
   const supabase = createClient()
-  
+
   try {
     // Clear cache first
     clearAuthCache()
-    
+
     // Then sign out
     const { error } = await supabase.auth.signOut()
-    
+
     if (error) {
       console.warn('[Auth] Sign out error:', error.message)
     } else {
       console.debug('[Auth] Signed out successfully')
     }
-    
   } catch (error) {
     console.error('[Auth] Sign out error:', error)
   }

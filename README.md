@@ -16,38 +16,44 @@ A TypeScript-first property browsing application built with Next.js 15, Supabase
 ## Tech Stack
 
 ### Core Framework
+
 - **Next.js 15.4.4** with App Router and React 19
 - **TypeScript 5.x** with strict mode for maximum type safety
 - **Tailwind CSS** with shadcn/ui component library
 - **Supabase** for database, authentication, and real-time features
 
 ### State Management & Validation
+
 - **TanStack Query v5** for server state management
 - **Zustand** for lightweight client state
 - **Zod** for runtime type validation
 - **React Hook Form** for form management
 
 ### Testing & Quality
+
 - **Jest** for unit tests (82/82 passing ✅)
-- **Vitest** for integration tests (36/36 passing ✅)  
+- **Vitest** for integration tests (36/36 passing ✅)
 - **Playwright** for E2E tests (18/30 passing, 12 skipped)
 - **ESLint + Prettier** for code quality
 
 ## Project Status
 
 ### Database & Migration ✅
+
 - **Production Ready**: 6 core tables deployed with RLS policies
 - **Data Migrated**: 1,123 neighborhoods + 1,091 properties (99.1% success)
 - **PostGIS Integration**: Spatial queries and geographic boundaries
 - **Zero Data Loss**: Safe PostGIS migration preserving 2,176 spatial points
 
 ### Test Infrastructure ✅
+
 - **100% Unit Tests**: Complete service layer coverage
 - **100% Integration Tests**: Real Supabase Docker integration
 - **E2E Framework**: Playwright with test database isolation
 - **CI/CD Pipeline**: GitHub Actions with automated testing
 
 ### Service Layer ✅
+
 - **PropertyService**: Complete CRUD with spatial queries
 - **UserService**: Profile management and interactions
 - **Type Safety**: Auto-generated database types
@@ -76,6 +82,7 @@ A TypeScript-first property browsing application built with Next.js 15, Supabase
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js 20+
 - pnpm (package manager)
 - Docker (for local Supabase)
@@ -83,6 +90,7 @@ A TypeScript-first property browsing application built with Next.js 15, Supabase
 ### Quick Start
 
 1. **Clone and Install**
+
    ```bash
    git clone <repository-url>
    cd homematch-v2
@@ -90,12 +98,14 @@ A TypeScript-first property browsing application built with Next.js 15, Supabase
    ```
 
 2. **Environment Setup**
+
    ```bash
    cp .env.example .env.local
    # Add your Supabase credentials
    ```
 
 3. **Start Local Database**
+
    ```bash
    pnpm run test:infra:start  # Starts Docker + Supabase
    ```
@@ -115,7 +125,7 @@ pnpm test
 
 # Individual test suites
 pnpm test:unit        # Jest unit tests
-pnpm test:integration # Vitest integration tests  
+pnpm test:integration # Vitest integration tests
 pnpm test:e2e        # Playwright E2E tests
 
 # E2E test development
