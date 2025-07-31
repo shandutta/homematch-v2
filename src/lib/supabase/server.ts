@@ -18,7 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, {
                 ...options,
                 // Enhanced cookie configuration for session persistence
-                httpOnly: false, // Allow client-side access for auth tokens
+                httpOnly: true, // SECURITY: Prevent XSS
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax', // Better cross-browser compatibility
                 maxAge: 60 * 60 * 24 * 7, // 7 days

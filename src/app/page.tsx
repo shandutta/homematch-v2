@@ -1,5 +1,7 @@
-import { createClient } from '@/utils/supabase/server'
-import { signOut } from '@/utils/supabase/actions'
+import { createClient } from '@/lib/supabase/server'
+import { signOut } from '@/lib/supabase/actions'
+
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -67,16 +69,6 @@ export default async function Home() {
           </div>
         </div>
 
-        {user && (
-          <div className="mt-8 text-center">
-            <a
-              href="/helloworld_notes"
-              className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-            >
-              View Notes (Test Supabase)
-            </a>
-          </div>
-        )}
       </main>
     </div>
   )

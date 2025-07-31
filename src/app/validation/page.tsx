@@ -1,7 +1,9 @@
-import { createClient } from '@/utils/supabase/server'
-import { signOut } from '@/utils/supabase/actions'
+import { createClient } from '@/lib/supabase/server'
+import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
+
+export const dynamic = 'force-dynamic'
 
 interface DatabaseStats {
   tableName: string
