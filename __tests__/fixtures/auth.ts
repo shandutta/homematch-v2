@@ -74,8 +74,23 @@ export const authFixtures = {
           // Wait for Supabase to set auth cookies
           await page.waitForTimeout(1000)
 
-          // Force a page reload to ensure server-side auth state is synchronized
-          await page.reload({ waitUntil: 'networkidle' })
+          // WebKit/Safari specific: Ensure cookies are properly set
+          // WebKit requires additional time for cookie propagation
+          const browserName = page.context().browser()?.browserType().name()
+          if (browserName === 'webkit') {
+            // WebKit needs extra time for cookies to propagate
+            await page.waitForTimeout(2000)
+            
+            // Navigate to a neutral page and back to ensure cookies are loaded
+            await page.goto('/login')
+            await page.waitForLoadState('networkidle')
+            await page.goto('/validation')
+            await page.waitForLoadState('networkidle')
+          } else {
+            // For other browsers, a simple reload suffices
+            await page.reload({ waitUntil: 'networkidle' })
+          }
+          
           await utils.waitForReactToSettle()
         } catch (error) {
           // If redirect fails, check current URL and page state
