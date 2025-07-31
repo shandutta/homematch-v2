@@ -11,38 +11,6 @@ export function createClient() {
         detectSessionInUrl: true,
         autoRefreshToken: true,
         
-        // Use a consistent storage key across all browsers
-        storageKey: 'homematch-auth-token',
-        
-        // Explicit storage configuration for reliability
-        storage: {
-          getItem: (key: string) => {
-            try {
-              // Try localStorage first, fallback to sessionStorage
-              return window.localStorage?.getItem(key) || window.sessionStorage?.getItem(key) || null
-            } catch {
-              return null
-            }
-          },
-          setItem: (key: string, value: string) => {
-            try {
-              // Store in both localStorage and sessionStorage for redundancy
-              window.localStorage?.setItem(key, value)
-              window.sessionStorage?.setItem(key, value)
-            } catch {
-              // Silently fail if storage is not available
-            }
-          },
-          removeItem: (key: string) => {
-            try {
-              window.localStorage?.removeItem(key)
-              window.sessionStorage?.removeItem(key)
-            } catch {
-              // Silently fail if storage is not available
-            }
-          },
-        },
-        
         // Improved flow type for better auth handling
         flowType: 'pkce',
         

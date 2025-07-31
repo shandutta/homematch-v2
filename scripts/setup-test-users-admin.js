@@ -187,7 +187,7 @@ async function setupTestUsers() {
   console.log('\n📝 Test credentials for E2E tests:')
   console.log(`   Email: ${testUsers[0].email}`)
   console.log(`   Password: ${testUsers[0].password}`)
-  console.log('\n   Email: ${testUsers[1].email}')
+  console.log(`\n   Email: ${testUsers[1].email}`)
   console.log(`   Password: ${testUsers[1].password}`)
 }
 
