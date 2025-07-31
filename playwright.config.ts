@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './__tests__/e2e',
-  testMatch: undefined,
+  testMatch: '**/*.spec.ts',
   globalSetup: './scripts/global-setup.js',
   /* Run tests in files in parallel */
   fullyParallel: false, // Disabled to prevent auth race conditions with shared test users

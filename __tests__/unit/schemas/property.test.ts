@@ -3,8 +3,6 @@ import {
   propertyInsertSchema,
   propertyUpdateSchema,
   neighborhoodSchema,
-  neighborhoodInsertSchema,
-  neighborhoodUpdateSchema,
   propertyFiltersSchema,
   propertySearchSchema,
   coordinatesSchema,

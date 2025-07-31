@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const { exec } = require('child_process')
 const { promisify } = require('util')
 const net = require('net')

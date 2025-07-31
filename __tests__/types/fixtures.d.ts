@@ -2,8 +2,6 @@
  * TypeScript definitions for HomeMatch V2 Playwright fixtures
  */
 
-import { Page, TestInfo } from '@playwright/test'
-
 // Test user interface
 export interface TestUser {
   email: string

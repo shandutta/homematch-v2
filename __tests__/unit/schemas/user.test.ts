@@ -4,16 +4,10 @@ import {
   userProfileInsertSchema,
   userProfileUpdateSchema,
   householdSchema,
-  householdInsertSchema,
-  householdUpdateSchema,
   scoreDataSchema,
   userPropertyInteractionSchema,
-  userPropertyInteractionInsertSchema,
-  userPropertyInteractionUpdateSchema,
   searchFiltersSchema,
   savedSearchSchema,
-  savedSearchInsertSchema,
-  savedSearchUpdateSchema,
 } from '@/lib/schemas/user'
 
 describe('User Schema Validation', () => {

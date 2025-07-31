@@ -1,5 +1,4 @@
 import { PropertyService } from '@/lib/services/properties'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   Database,
   Property,

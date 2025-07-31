@@ -1,0 +1,71 @@
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\__mocks__\supabaseClient-simple.ts
+  264:3  error  'client' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\__mocks__\supabaseClient.ts
+  65:54  error  'args' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\fixtures\config.ts
+  10:18  error  Unexpected empty object pattern  no-empty-pattern
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\fixtures\index.ts
+  12:10  error  'HomematchFixtures' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\fixtures\retry.ts
+  10:19  error  'page' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\integration\database\index.test.ts
+  4:10  error  'generateTestUUID' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\integration\database\schema.test.ts
+   53:25  error  'spatialTest' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  149:15  error  'data' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  166:15  error  'data' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\integration\migration\data-integrity.test.ts
+  13:15  error  'neighborhoods' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  56:15  error  'properties' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\types\fixtures.d.ts
+  5:10  error  'Page' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  5:16  error  'TestInfo' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\types\playwright-interfaces.ts
+  43:30  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+  62:44  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\unit\mock-factory.test.ts
+  5:15  error  'Database' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\unit\schemas\user.test.ts
+   7:3  error  'householdInsertSchema' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   8:3  error  'householdUpdateSchema' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  11:3  error  'userPropertyInteractionInsertSchema' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  12:3  error  'userPropertyInteractionUpdateSchema' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  15:3  error  'savedSearchInsertSchema' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  16:3  error  'savedSearchUpdateSchema' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\unit\services\properties.test.ts
+  2:15  error  'SupabaseClient' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\__tests__\unit\services\users.test.ts
+   8:3   error  'HouseholdUpdate' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  13:3   error  'SavedSearchUpdate' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  15:15  error  'SupabaseClient' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  16:15  error  'Database' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  30:26  error  A `require()` style import is forbidden                                              @typescript-eslint/no-require-imports
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\scripts\setup-test-users-admin.js
+  101:12  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\scripts\validate-deployment.js
+   11:7   error  'path' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  101:14  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u     @typescript-eslint/no-unused-vars
+
+C:\Coding\HomeMatch_VSCode\homematch-v2\src\lib\migration\relaxed-property-transformer.ts
+  21:5  error  'index' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 32 problems (32 errors, 0 warnings)
+

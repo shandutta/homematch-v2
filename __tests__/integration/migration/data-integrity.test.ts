@@ -9,11 +9,7 @@ describe('Migration Data Integrity', () => {
 
   describe('Data Integrity Validation', () => {
     test('should validate test neighborhoods are present', async () => {
-      const {
-        data: neighborhoods,
-        error,
-        count,
-      } = await supabase
+      const { error, count } = await supabase
         .from('neighborhoods')
         .select('*', { count: 'exact' })
         .limit(1)
@@ -52,11 +48,7 @@ describe('Migration Data Integrity', () => {
     }, 10000) // 10 second timeout for database queries
 
     test('should validate test properties have required fields', async () => {
-      const {
-        data: properties,
-        error,
-        count,
-      } = await supabase
+      const { error, count } = await supabase
         .from('properties')
         .select('*', { count: 'exact' })
         .eq('is_active', true)

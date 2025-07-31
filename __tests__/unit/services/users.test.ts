@@ -5,15 +5,11 @@ import {
   UserProfileUpdate,
   Household,
   HouseholdInsert,
-  HouseholdUpdate,
   UserPropertyInteraction,
   UserPropertyInteractionInsert,
   SavedSearch,
   SavedSearchInsert,
-  SavedSearchUpdate,
 } from '@/types/database'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
 
 // Mock the server client module
 jest.mock('@/lib/supabase/server')
@@ -27,6 +23,7 @@ describe('UserService Unit Tests', () => {
     jest.clearAllMocks()
 
     // Get the mocked createClient function
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const serverModule = require('@/lib/supabase/server')
     mockCreateClient = serverModule.createClient
 

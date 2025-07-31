@@ -15,13 +15,13 @@ try {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
   })
-} catch (error) {
+} catch {
   // Ignore errors - port might already be free
 }
 
 // Load test environment variables BEFORE starting Next.js
 const dotenv = require('dotenv')
-const testEnv = dotenv.config({
+dotenv.config({
   path: path.join(__dirname, '..', '.env.test.local'),
 })
 

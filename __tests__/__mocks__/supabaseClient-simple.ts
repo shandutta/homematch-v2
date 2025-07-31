@@ -260,9 +260,7 @@ export const mockSupabaseClient = makeMockClient()
 /**
  * Helper to reset all mocks
  */
-export const resetMockClient = (
-  client: jest.Mocked<SupabaseClient<Database>> = mockSupabaseClient
-) => {
+export const resetMockClient = () => {
   jest.clearAllMocks()
 }
 

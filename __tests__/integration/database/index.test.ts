@@ -1,16 +1,5 @@
 import { createClient } from '@/lib/supabase/standalone'
 
-// Helper to generate test UUIDs
-function generateTestUUID(prefix: string): string {
-  // Generate a UUID v4 format string for testing
-  const timestamp = Date.now().toString(16)
-  const random = Math.random().toString(16).substring(2, 10)
-  return `${prefix}-${timestamp}-${random}-${random}-${timestamp}`.substring(
-    0,
-    36
-  )
-}
-
 // Helper to get test users dynamically
 async function getTestUsers(supabase: any) {
   // Get auth users first

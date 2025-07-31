@@ -111,7 +111,7 @@ This directory contains all project documentation organized by topic and purpose
 
 ### Test-Specific Documentation
 
-- **[../**tests**/fixtures/README.md](../__tests__/fixtures/README.md)** - Playwright fixtures architecture
+- **[../**tests**/fixtures/README.md](../**tests**/fixtures/README.md)** - Playwright fixtures architecture
 
 ### Legacy Documentation
 
