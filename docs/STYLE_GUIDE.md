@@ -1,6 +1,6 @@
 # HomeMatch UX/UI Style Guide
 
-This style guide outlines visual and interaction guidelines for the HomeMatch real‑estate platform. It reflects best practices from leading consumer apps such as Stripe, Figma, Notion, Slack and Linear and is tailored to millennial homebuyers. Use this guide to ensure a cohesive, accessible and delightful user experience across the web application.
+This style guide outlines visual and interaction guidelines for the HomeMatch real‑estate platform. It reflects best practices from leading consumer apps such as Stripe, Figma, Notion, Slack and Linear and is tailored to millennial homebuyers. Use this guide to ensure a cohesive and accessible user experience across the web application.
 
 ## 1. Design principles
 
@@ -16,9 +16,9 @@ This style guide outlines visual and interaction guidelines for the HomeMatch re
 - **Consistency** – Use consistent colours, typography, component sizes and interaction patterns. Consistency reduces cognitive load and builds user confidence.
 - **Accessibility first** – Adhere to WCAG 2.1 AA. Use high contrast, clear labeling, keyboard navigation and ARIA attributes.
 
-### Delight through subtle motion
+### Subtle motion
 
-- **Micro‑interactions** – Provide feedback when users interact with cards, buttons and sliders. Hover effects, like/unlike animations and swipe confirmations can make the experience feel alive.
+- **Micro‑interactions** – Provide feedback when users interact with cards, buttons and sliders. Hover effects, like/unlike animations and swipe confirmations provide interactive feedback.
 - **Progressive disclosure** – Reveal advanced options (filters, scoring breakdown) only when the user needs them.
 
 ## 2. Colour, typography and icons
@@ -29,8 +29,8 @@ Select a palette that conveys trust and modernity:
 
 | Role              | Example colours                         | Notes                                                                                                                              |
 | ----------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Primary brand** | Deep indigo or dark blue (#0E1E40)      | A sophisticated base colour for headers, navigation and accent elements.                                                           |
-| **Secondary**     | Warm teal or aqua (#00C2B3)             | Use for buttons, highlights and interactive elements. Bright accents on a dark or neutral base provide contrast and catch the eye. |
+| **Primary brand** | Deep blue gradient (#0E1E40 → #1D4ED8)  | A sophisticated gradient for headers, navigation and accent elements.                                                              |
+| **Secondary**     | Vibrant purple (#8B5CF6)                | Modern accent for buttons, highlights and interactive elements. Creates a vibrant contrast with the blue gradient.                 |
 | **Tertiary**      | Soft neutrals (#F5F5F5, #E5E7EB)        | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                                  |
 | **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B) | Feedback colours for errors, warnings and alerts.                                                                                  |
 
@@ -86,4 +86,4 @@ Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for t
 
 ---
 
-This guide establishes a modern, accessible, and consumer‑grade design system for HomeMatch, ensuring consistency and delight across the app experience.
+This guide establishes a modern, accessible design system for HomeMatch, ensuring consistency across the app experience.

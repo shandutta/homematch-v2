@@ -22,9 +22,24 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              // Enhanced cookie configuration for cross-browser compatibility
+              httpOnly: false, // Allow client-side access for auth tokens
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax', // Better cross-browser compatibility than 'strict'
+              maxAge: 60 * 60 * 24 * 7, // 7 days
+              path: '/',
+            })
           )
         },
+      },
+      auth: {
+        // Enable automatic token refresh
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
       },
     }
   )

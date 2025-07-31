@@ -1,10 +1,25 @@
-# Testing and Quality Assurance Guide for HomeMatch V2 ✅
+# Testing Guide for HomeMatch V2
 
-> **🏆 Current Status**: Migration foundation complete with 99.1% success rate (2,214 records migrated). Comprehensive test framework ready for implementation.
+> **Current Status**: Complete test infrastructure implemented with 100% unit/integration test pass rates and E2E testing. Migration foundation complete with 99.1% success rate (2,214 records migrated).
 
-This guide outlines the complete testing strategy for HomeMatch V2, including unit tests, integration tests, end-to-end testing, and debugging approaches.
+This guide covers all testing approaches for HomeMatch V2, including unit tests, integration tests, end-to-end testing, fixtures, and debugging tools.
 
-## Overview
+## Table of Contents
+
+1. [Testing Overview](#testing-overview)
+2. [Quick Start](#quick-start)
+3. [Test Infrastructure](#test-infrastructure)
+4. [Unit Testing](#unit-testing)
+5. [Integration Testing](#integration-testing)
+6. [End-to-End Testing](#end-to-end-testing)
+7. [Playwright Fixtures](#playwright-fixtures)
+8. [Database Testing](#database-testing)
+9. [Development Debugging](#development-debugging)
+10. [Test Coverage](#test-coverage)
+11. [CI/CD Integration](#cicd-integration)
+12. [Troubleshooting](#troubleshooting)
+
+## Testing Overview
 
 HomeMatch V2 implements a comprehensive 4-tier testing strategy:
 
@@ -13,29 +28,51 @@ HomeMatch V2 implements a comprehensive 4-tier testing strategy:
 3. **End-to-End Tests**: Playwright for complete user workflows
 4. **Debug Tools**: Puppeteer MCP and Browser-tools MCP for development debugging
 
-### ✅ **Migration Foundation Validated**
+### Test Results Summary
 
-The testing strategy leverages the successfully migrated production data:
+- **Unit Tests**: 82/82 passing (100% success rate)
+- **Integration Tests**: 36/36 passing (100% success rate) 
+- **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
+- **PostGIS Migration**: Safe conversion preserving 2,176 spatial data points
 
-- **1,123 neighborhoods** with PostGIS spatial data
-- **1,091 properties** with complete property information
-- **Complete service layer** (PropertyService + UserService) ready for testing
-- **Live validation dashboard** at `/validation` route for real-time verification
+## Quick Start
 
-## Table of Contents
+### Running All Tests
 
-1. [Testing Framework Overview](#testing-framework-overview)
-2. [Unit Testing Strategy](#unit-testing-strategy)
-3. [Integration Testing](#integration-testing)
-4. [End-to-End Testing](#end-to-end-testing)
-5. [Database Testing](#database-testing)
-6. [Development Debugging Tools](#development-debugging-tools)
-7. [Performance Testing](#performance-testing)
-8. [Migration Data Validation](#migration-data-validation)
+```bash
+# Run complete test suite
+pnpm test
 
----
+# Individual test suites
+pnpm test:unit        # Jest unit tests
+pnpm test:integration # Vitest integration tests  
+pnpm test:e2e        # Playwright E2E tests
 
-## Testing Framework Overview ✅ **CONFIGURED**
+# Coverage and analysis
+pnpm test:coverage   # Generate coverage reports
+pnpm test:watch      # Watch mode for development
+```
+
+### E2E Testing Quick Setup
+
+```bash
+# 1. Start Supabase (if not already running)
+pnpm dlx supabase@latest start
+
+# 2. Apply migrations
+pnpm dlx supabase@latest db push
+
+# 3. Build for tests
+node scripts/build-for-tests.js
+
+# 4. Create test users
+node scripts/setup-test-users-admin.js
+
+# 5. Run E2E tests
+pnpm test:e2e
+```
+
+## Test Infrastructure
 
 ### Framework Stack
 
@@ -53,29 +90,32 @@ Playwright 1.54.1 (Chrome, Firefox, Safari support)
 Lighthouse CI + Web Vitals + PostHog analytics
 ```
 
-### Test Environment Configuration
+### Project Configuration
 
-```bash
-# Test Scripts (from package.json)
-npm run test              # Run all tests
-npm run test:unit         # Jest unit tests
-npm run test:integration  # Vitest integration tests
-npm run test:e2e          # Playwright E2E tests
-npm run test:watch        # Watch mode for development
-npm run test:coverage     # Generate coverage reports
+HomeMatch is configured to run on **port 3000** by default. E2E tests include automatic port management and cleanup.
+
+```json
+// package.json
+"scripts": {
+  "dev": "next dev --turbopack",  // Defaults to port 3000
+  "test": "npm run test:unit && npm run test:integration",
+  "test:unit": "jest",
+  "test:integration": "vitest run",
+  "test:e2e": "playwright test",
+  "test:coverage": "jest --coverage",
+  "test:watch": "jest --watch"
+}
 ```
 
----
+## Unit Testing
 
-## Unit Testing Strategy
+### Service Layer Testing
 
-### Service Layer Testing ✅ **READY FOR IMPLEMENTATION**
+**Location**: `__tests__/unit/services/`
 
 The service layer provides the foundation for all unit tests with real migrated data:
 
 #### PropertyService Tests
-
-**Location**: `__tests__/unit/services/properties.test.ts`
 
 ```typescript
 describe('PropertyService', () => {
@@ -100,8 +140,6 @@ describe('PropertyService', () => {
 
 #### UserService Tests
 
-**Location**: `__tests__/unit/services/users.test.ts`
-
 ```typescript
 describe('UserService', () => {
   test('should record property interactions with ML scores', async () => {
@@ -120,17 +158,25 @@ describe('UserService', () => {
 
 **Location**: `__tests__/unit/components/`
 
-Test React components with real service integration and proper mocking.
+Test React components with real service integration and proper mocking patterns.
 
----
+### Mock Configuration
+
+**Location**: `__tests__/__mocks__/supabaseClient.ts`
+
+Comprehensive mock setup with chainable query builder support for unit tests.
 
 ## Integration Testing
 
-### Database Integration Tests ✅ **DATA READY**
+### Database Integration Tests
+
+**Key Implementations**:
+- Created `scripts/infrastructure-working.js` for Docker/Supabase automation
+- Implemented dynamic user ID fetching instead of hardcoded values
+- Fixed interaction_type from 'favorite' to 'like' per schema constraints
+- Created comprehensive test user setup scripts
 
 #### Migration Data Validation
-
-**Location**: `__tests__/integration/migration/`
 
 ```typescript
 describe('Migration Data Integrity', () => {
@@ -155,12 +201,9 @@ describe('Migration Data Integrity', () => {
 
 #### Relationship Testing
 
-**Location**: `__tests__/integration/database/relationships.test.ts`
-
 ```typescript
 describe('Database Relationships', () => {
   test('should maintain property-neighborhood referential integrity', async () => {
-    // Test foreign key constraints and spatial relationships
     const propertiesWithNeighborhoods = await propertyService.searchProperties({
       includeNeighborhood: true,
     })
@@ -174,15 +217,215 @@ describe('Database Relationships', () => {
 })
 ```
 
----
-
 ## End-to-End Testing
 
-### User Workflow Testing ✅ **FRAMEWORK READY**
+### Architecture
 
-#### Property Discovery Flow
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Playwright    │────▶│  Next.js Server  │────▶│ Supabase Local  │
+│     Tests       │     │  (Port 3000)     │     │  (Port 54321)   │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+        │                        │                         │
+        │                        ▼                         │
+        │                 ┌──────────────┐                │
+        └────────────────▶│ .next-test/  │◀───────────────┘
+                          │ (Test Build) │
+                          └──────────────┘
+```
 
-**Location**: `__tests__/e2e/property-discovery.spec.ts`
+### Prerequisites
+
+- Node.js 20+
+- pnpm 8+
+- Supabase CLI
+- Git Bash (Windows) or Terminal (Mac/Linux)
+
+### Local Development Setup
+
+Our E2E tests use Playwright to test the full application stack with a real Supabase database. Tests run against a production build with test environment variables to ensure realistic testing conditions.
+
+1. **Start Supabase** (if not already running):
+   ```bash
+   pnpm dlx supabase@latest start
+   ```
+
+2. **Apply migrations**:
+   ```bash
+   pnpm dlx supabase@latest db push
+   ```
+
+3. **Build for tests**:
+   ```bash
+   node scripts/build-for-tests.js
+   ```
+
+4. **Create test users**:
+   ```bash
+   node scripts/setup-test-users-admin.js
+   ```
+
+5. **Run E2E tests**:
+   ```bash
+   pnpm test:e2e
+   ```
+
+### E2E Commands
+
+```bash
+# Run all E2E tests
+pnpm test:e2e
+
+# Run E2E tests in headed mode (see browser)
+pnpm test:e2e -- --headed
+
+# Run E2E tests in UI mode (interactive)
+pnpm test:e2e -- --ui
+
+# Run E2E tests in debug mode
+pnpm test:e2e -- --debug
+
+# Run specific test file
+pnpm test:e2e auth.spec.ts
+```
+
+### Test Environment Configuration
+
+E2E tests use `.env.test.local` for configuration:
+
+```env
+# Supabase Configuration (Local)
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Client-side environment variables (required for Next.js)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Test User Credentials
+TEST_USER_1_EMAIL=test1@example.com
+TEST_USER_1_PASSWORD=testpassword123
+TEST_USER_2_EMAIL=test2@example.com
+TEST_USER_2_PASSWORD=testpassword456
+```
+
+### Test Infrastructure Scripts
+
+1. **`scripts/build-for-tests.js`**
+   - Builds Next.js with test environment variables
+   - Creates `.next-test/` directory
+   - Skips linting/type checking for speed
+
+2. **`scripts/start-test-server-simple.js`**
+   - Starts Next.js production server
+   - Uses test build from `.next-test/`
+   - Ensures port 3000 is available
+
+3. **`scripts/setup-test-users-admin.js`**
+   - Creates test users via Supabase Admin API
+   - Includes retry logic for reliability
+   - Verifies user profile creation
+
+4. **`scripts/kill-port.js`**
+   - Cross-platform port management
+   - Retry logic with exponential backoff
+   - Port availability verification
+
+### Test Organization
+
+```
+__tests__/
+├── e2e/
+│   ├── auth/
+│   │   ├── login.spec.ts
+│   │   ├── logout.spec.ts
+│   │   └── session-persistence.spec.ts
+│   ├── properties/
+│   │   ├── property-search.spec.ts
+│   │   └── property-details.spec.ts
+│   └── setup/
+│       └── global-setup.ts
+└── helpers/
+    ├── auth-helpers.ts
+    ├── constants.ts
+    └── test-utils.ts
+```
+
+### Writing E2E Tests
+
+#### Best Practices
+
+1. **Use standardized timeouts**:
+   ```typescript
+   import { TEST_TIMEOUTS } from '../helpers/constants'
+   
+   await page.waitForSelector('.property-card', {
+     timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE
+   })
+   ```
+
+2. **Clean up auth state between tests**:
+   ```typescript
+   import { clearAuthState } from '../helpers/test-utils'
+   
+   test.beforeEach(async ({ page }) => {
+     await clearAuthState(page)
+   })
+   ```
+
+3. **Use proper wait conditions**:
+   ```typescript
+   // Good: Wait for specific conditions
+   await page.waitForLoadState('networkidle')
+   await page.waitForSelector('[data-testid="dashboard-loaded"]')
+   
+   // Bad: Arbitrary timeouts
+   await page.waitForTimeout(5000)
+   ```
+
+4. **Add data-testid attributes**:
+   ```tsx
+   <button data-testid="submit-property-search">
+     Search
+   </button>
+   ```
+
+#### Example E2E Test
+
+```typescript
+import { test, expect } from '@playwright/test'
+import { login } from '../helpers/auth-helpers'
+import { TEST_TIMEOUTS } from '../helpers/constants'
+
+test.describe('Property Search', () => {
+  test.beforeEach(async ({ page }) => {
+    await login(page, 'test1@example.com', 'testpassword123')
+  })
+
+  test('should search properties by price range', async ({ page }) => {
+    await page.goto('/search')
+    
+    // Fill search form
+    await page.fill('[data-testid="min-price"]', '500000')
+    await page.fill('[data-testid="max-price"]', '1000000')
+    
+    // Submit search
+    await page.click('[data-testid="search-button"]')
+    
+    // Wait for results
+    await page.waitForSelector('[data-testid="property-card"]', {
+      timeout: TEST_TIMEOUTS.ELEMENT_VISIBLE
+    })
+    
+    // Verify results
+    const propertyCards = await page.locator('[data-testid="property-card"]').count()
+    expect(propertyCards).toBeGreaterThan(0)
+  })
+})
+```
+
+### Live Data Validation
 
 ```typescript
 test('should complete property browsing workflow', async ({ page }) => {
@@ -205,40 +448,117 @@ test('should complete property browsing workflow', async ({ page }) => {
 })
 ```
 
-#### Performance Testing
+## Playwright Fixtures
 
-**Location**: `__tests__/e2e/performance/`
+### Fixtures Architecture
+
+HomeMatch V2 uses a comprehensive fixtures system that eliminates circular dependency issues while maintaining full functionality.
+
+### Benefits Over Helper Files
+
+- ✅ **Zero circular dependencies** - Fixtures are dependency-injected by Playwright
+- ✅ **Better organization** - Logical grouping of related functionality
+- ✅ **TypeScript integration** - Full type safety with fixture interfaces
+- ✅ **Automatic cleanup** - Fixtures handle their own teardown
+- ✅ **Better debugging** - Integrated logging with test lifecycle
+
+### Fixtures Structure
+
+- **`config.ts`** - Test constants, timeouts, and user data
+- **`utils.ts`** - Page utilities and common wait functions  
+- **`logger.ts`** - Debug logging and test visibility
+- **`retry.ts`** - Retry logic and error handling
+- **`auth.ts`** - Authentication flows and user management
+- **`index.ts`** - Combined fixtures export
+
+### Usage Example
 
 ```typescript
-test('should load property search results under 2 seconds', async ({
-  page,
-}) => {
-  const startTime = Date.now()
+import { test, expect } from '../fixtures'
 
-  await page.goto('/properties?price_min=500000&bedrooms=3')
-  await expect(
-    page.locator('[data-testid="property-card"]').first()
-  ).toBeVisible()
-
-  const loadTime = Date.now() - startTime
-  expect(loadTime).toBeLessThan(2000)
+test('should authenticate user', async ({ page, auth, logger }) => {
+  logger.step('Starting authentication test')
+  
+  await auth.login()
+  await auth.verifyAuthenticated()
+  
+  logger.step('Authentication test completed')
 })
 ```
 
----
+### Available Fixtures
+
+#### Config Fixture
+```typescript
+config: {
+  timeouts: { PAGE_LOAD: 30000, ... }
+  users: { user1: { email: '...', password: '...' }, ... }
+  storageKeys: { SUPABASE_AUTH_TOKEN: '...', ... }
+}
+```
+
+#### Utils Fixture
+```typescript
+utils: {
+  clearAuthState(): Promise<void>
+  waitForReactToSettle(): Promise<void>
+  waitForFormValidation(): Promise<void>
+  navigateWithRetry(url: string): Promise<void>
+  isAuthenticated(): Promise<boolean>
+  waitForAuthRedirect(url: RegExp): Promise<void>
+}
+```
+
+#### Auth Fixture
+```typescript
+auth: {
+  login(user?: TestUser): Promise<void>
+  logout(): Promise<void>
+  fillLoginForm(user?: TestUser): Promise<void>
+  verifyAuthenticated(user?: TestUser): Promise<void>
+  verifyNotAuthenticated(): Promise<void>
+  clearAuthState(): Promise<void>
+}
+```
+
+#### Logger Fixture
+```typescript
+logger: {
+  step(description: string, data?: any): void
+  info(category: string, message: string, data?: any): void
+  warn(category: string, message: string, data?: any): void
+  error(category: string, message: string, data?: any): void
+}
+```
+
+#### Retry Fixture
+```typescript
+retry: {
+  retry<T>(operation: () => Promise<T>, options?: RetryOptions): Promise<T>
+  network<T>(operation: () => Promise<T>): Promise<T>
+  element<T>(operation: () => Promise<T>): Promise<T>
+  auth<T>(operation: () => Promise<T>): Promise<T>
+}
+```
 
 ## Database Testing
 
-### Schema Validation ✅ **PRODUCTION VERIFIED**
+### Schema Validation
+
+#### PostGIS Safe Migration
+
+PostGIS safe migration implemented preserving all spatial data:
+
+- Created `20250730114410_fix_postgis_geometry_type.sql` for neighborhoods
+- Created `20250730114539_fix_point_geometry_type.sql` for properties  
+- Used backup column strategy to prevent data loss
+- Preserved 1,123 neighborhood boundaries and 1,053 property coordinates
 
 #### RLS Policy Testing
-
-**Location**: `__tests__/unit/database/security.test.ts`
 
 ```typescript
 describe('Row Level Security', () => {
   test('should enforce user data isolation', async () => {
-    // Test that users can only access their own data
     const user1Data = await getUserData(user1.id)
     const user2Data = await getUserData(user2.id)
 
@@ -256,8 +576,6 @@ describe('Row Level Security', () => {
 
 #### PostGIS Spatial Testing
 
-**Location**: `__tests__/unit/database/spatial.test.ts`
-
 ```typescript
 describe('PostGIS Spatial Operations', () => {
   test('should perform radius queries correctly', async () => {
@@ -273,164 +591,13 @@ describe('PostGIS Spatial Operations', () => {
 })
 ```
 
----
+## Development Debugging
 
-## Migration Data Validation
+### Browser Automation & Debugging
 
-### Live Validation Testing ✅ **IMPLEMENTED**
-
-The `/validation` route provides real-time verification of migration success:
-
-#### Validation Dashboard Tests
-
-**Location**: `__tests__/e2e/validation.spec.ts`
-
-```typescript
-test('should display accurate migration statistics', async ({ page }) => {
-  await page.goto('/validation')
-
-  // Verify database table counts
-  await expect(
-    page.locator('[data-testid="table-neighborhoods"]')
-  ).toContainText('1,123')
-  await expect(page.locator('[data-testid="table-properties"]')).toContainText(
-    '1,091'
-  )
-
-  // Verify PostGIS extensions
-  await expect(page.locator('[data-testid="postgis-status"]')).toContainText(
-    'Active'
-  )
-
-  // Test PropertyService functionality
-  await expect(
-    page.locator('[data-testid="property-search-test"]')
-  ).toContainText('✅')
-})
-```
-
-## Development Debugging Tools
-
-### Browser Automation & Debugging ✅ **CONFIGURED**
-
-HomeMatch integrates with powerful browser automation and debugging tools for development:
+HomeMatch integrates with powerful browser automation and debugging tools:
 
 #### Puppeteer MCP Integration
-
-- **Browser automation**: Screenshot capture, script execution, and page interaction
-- **Performance analysis**: Load time measurement and resource monitoring
-- **E2E test development**: Rapid prototyping of user interaction flows
-
-#### Browser-tools MCP Integration
-
-- **Real-time monitoring**: Console logs, network requests, and error tracking
-- **Lighthouse audits**: Performance, accessibility, and SEO analysis
-- **Development debugging**: Live inspection of running application
-
----
-
-## Performance Testing
-
-### Core Web Vitals Monitoring ✅ **CONFIGURED**
-
-```typescript
-// Performance monitoring setup
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
-
-export function initPerformanceMonitoring() {
-  getCLS(sendToAnalytics)
-  getFID(sendToAnalytics)
-  getFCP(sendToAnalytics)
-  getLCP(sendToAnalytics)
-  getTTFB(sendToAnalytics)
-}
-```
-
-### Performance Benchmarks
-
-With the migrated dataset of 1,091 properties and 1,123 neighborhoods:
-
-- **Property Search**: <2s load time with filters applied
-- **Spatial Queries**: <500ms for radius-based property searches
-- **Database Operations**: <100ms for standard CRUD operations
-- **Image Loading**: Progressive loading with blur placeholders
-
----
-
-## Quick Setup
-
-### Development Environment Configuration
-
-HomeMatch is configured to run on **port 3000** by default:
-
-```json
-// package.json
-"scripts": {
-  "dev": "next dev --turbopack"  // Defaults to port 3000
-}
-```
-
-If port 3000 is in use, Next.js will automatically use the next available port (3001, 3002, etc.). To force port 3000:
-
-```bash
-# Stop any process using port 3000
-npm run kill-node  # Uses helper script to kill node processes
-
-# Or manually:
-# Windows: netstat -ano | findstr :3000 && taskkill /PID <PID> /F
-# Mac/Linux: lsof -ti:3000 | xargs kill -9
-
-# Then start dev server
-npm run dev
-```
-
-### Prerequisites
-
-- HomeMatch development server running (`npm run dev` on port 3000)
-- Claude Code with MCP support
-- Chrome browser
-- **Windows users**: Ensure MCP commands use `cmd /c` wrapper
-
-### Browser-tools Setup
-
-1. **Install Chrome Extension**
-
-   ```bash
-   # Download and install from:
-   # https://github.com/AgentDeskAI/browser-tools-mcp/releases/download/v1.2.0/BrowserTools-1.2.0-extension.zip
-   ```
-
-2. **Start Browser-tools Server**
-
-   **Linux/Mac:**
-
-   ```bash
-   npx @agentdeskai/browser-tools-server@latest
-   ```
-
-   **Windows:**
-
-   ```bash
-   cmd /c "npx @agentdeskai/browser-tools-server@latest"
-   ```
-
-   > **Note**: Windows users must use the `cmd /c` wrapper for MCP servers to run properly
-
-3. **Configure MCP Server** (already configured in `.mcp.json`)
-
-4. **Enable Extension**
-   - Navigate to `http://localhost:3000` (default dev server URL)
-   - Open Chrome DevTools (F12)
-   - Go to "BrowserToolsMCP" panel
-   - Ensure extension is connected
-
-### Puppeteer Setup
-
-Puppeteer MCP is pre-configured and works out-of-the-box with Claude Code.
-
-## Puppeteer MCP Usage
-
-### Basic Navigation and Screenshots
 
 ```javascript
 // Navigate to a page
@@ -442,19 +609,11 @@ mcp__puppeteer__puppeteer_screenshot({
   width: 1200,
   height: 800,
 })
-```
 
-### Console Log Injection and Monitoring
-
-```javascript
-// Inject console logs for debugging
+// Inject debug logs
 mcp__puppeteer__puppeteer_evaluate({
   script: `
     console.log("🔵 DEBUG: User action triggered");
-    console.error("🔴 ERROR: Authentication failed", { userId: 123 });
-    console.warn("🟡 WARN: Property data incomplete");
-    
-    // Log application state
     console.log("🏠 HomeMatch State:", {
       currentUser: window.user?.email || "anonymous",
       page: window.location.pathname,
@@ -464,332 +623,180 @@ mcp__puppeteer__puppeteer_evaluate({
 })
 ```
 
-### User Interaction Testing
-
-```javascript
-// Click elements
-mcp__puppeteer__puppeteer_click({ selector: '.sign-in-button' })
-
-// Fill forms
-mcp__puppeteer__puppeteer_fill({
-  selector: '#email-input',
-  value: 'test@example.com',
-})
-
-// Select dropdown options
-mcp__puppeteer__puppeteer_select({
-  selector: '#property-type',
-  value: 'house',
-})
-```
-
-### Advanced Debugging Scenarios
-
-```javascript
-// Test authentication flow
-mcp__puppeteer__puppeteer_evaluate({
-  script: `
-    // Check if user is authenticated
-    const isAuthenticated = !!window.supabase?.auth?.user;
-    console.log("🔐 Auth Status:", isAuthenticated);
-    
-    // Check Supabase connection
-    if (window.supabase) {
-      window.supabase.auth.getUser().then(({ data, error }) => {
-        console.log("👤 Current User:", data.user?.email || "None");
-        if (error) console.error("🚨 Auth Error:", error);
-      });
-    }
-    
-    return { authenticated: isAuthenticated };
-  `,
-})
-```
-
-## Browser-tools MCP Usage
-
-### Real-time Console Monitoring
+#### Browser-tools MCP Integration
 
 ```javascript
 // Get all console logs
 mcp__browser_tools__getConsoleLogs()
 
-// Get only errors
-mcp__browser_tools__getConsoleErrors()[
-  // Example output:
-  {
-    type: 'console-log',
-    level: 'error',
-    message: 'Supabase connection failed',
-    timestamp: 1753657550081,
-  }
-]
-```
-
-### Network Request Monitoring
-
-```javascript
-// Monitor all network requests
+// Monitor network requests
 mcp__browser_tools__getNetworkLogs()
 
-// Check for failed requests
-mcp__browser_tools__getNetworkErrors()[
-  // Example output:
-  {
-    type: 'network-error',
-    url: 'https://lpwlbbowavozpywnpamn.supabase.co/auth/v1/user',
-    status: 401,
-    error: 'Unauthorized',
-  }
-]
-```
-
-### Lighthouse Audits
-
-```javascript
-// Performance audit
+// Run performance audits
 mcp__browser_tools__runPerformanceAudit()
-
-// Accessibility audit
 mcp__browser_tools__runAccessibilityAudit()
-
-// SEO audit
 mcp__browser_tools__runSEOAudit()
-
-// Next.js specific audit
-mcp__browser_tools__runNextJSAudit()
-
-// Run all audits
-mcp__browser_tools__runAuditMode()
 ```
 
-### Screenshots and Visual Debugging
+### Common Debugging Scenarios
+
+#### 1. Authentication Issues
 
 ```javascript
-// Take screenshot via browser-tools
-mcp__browser_tools__takeScreenshot()
-```
-
-## Common Debugging Scenarios
-
-### 1. Authentication Issues
-
-**Problem**: Users can't sign in or sessions are not persisting
-
-**Debugging Steps**:
-
-1. **Check Console Logs**
-
-   ```javascript
-   mcp__browser_tools__getConsoleErrors()
-   ```
-
-2. **Monitor Network Requests**
-
-   ```javascript
-   mcp__browser_tools__getNetworkLogs()
-   ```
-
-3. **Test Authentication State**
-   ```javascript
-   mcp__puppeteer__puppeteer_evaluate({
-     script: `
-       // Check Supabase auth state
-       if (window.supabase) {
-         window.supabase.auth.getSession().then(({ data, error }) => {
-           console.log("🔑 Session:", data.session ? "Active" : "None");
-           console.log("👤 User:", data.session?.user?.email || "Anonymous");
-           if (error) console.error("❌ Session Error:", error);
-         });
-       }
-     `,
-   })
-   ```
-
-### 2. Property Search Performance
-
-**Problem**: Property search is slow or not returning results
-
-**Debugging Steps**:
-
-1. **Performance Audit**
-
-   ```javascript
-   mcp__browser_tools__runPerformanceAudit()
-   ```
-
-2. **Monitor Search API Calls**
-
-   ```javascript
-   // Navigate to search page
-   mcp__puppeteer__puppeteer_navigate({ url: 'http://localhost:3000/search' })
-
-   // Perform search
-   mcp__puppeteer__puppeteer_fill({
-     selector: '#search-input',
-     value: '2 bedroom apartment',
-   })
-   mcp__puppeteer__puppeteer_click({ selector: '#search-button' })
-
-   // Check network logs
-   mcp__browser_tools__getNetworkLogs()
-   ```
-
-3. **Check for JavaScript Errors**
-   ```javascript
-   mcp__browser_tools__getConsoleErrors()
-   ```
-
-### 3. Mobile Responsiveness Issues
-
-**Problem**: Layout breaks on mobile devices
-
-**Debugging Steps**:
-
-1. **Mobile Screenshot**
-
-   ```javascript
-   mcp__puppeteer__puppeteer_screenshot({
-     name: 'mobile-view',
-     width: 375,
-     height: 667,
-   })
-   ```
-
-2. **Accessibility Audit**
-   ```javascript
-   mcp__browser_tools__runAccessibilityAudit()
-   ```
-
-### 4. Database Connection Issues
-
-**Problem**: Data not loading from Supabase
-
-**Debugging Steps**:
-
-1. **Check Environment Variables**
-
-   ```javascript
-   mcp__puppeteer__puppeteer_evaluate({
-     script: `
-       console.log("🔧 Environment Check:", {
-         hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-         hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "..."
-       });
-     `,
-   })
-   ```
-
-2. **Test Database Connection**
-   ```javascript
-   mcp__puppeteer__puppeteer_evaluate({
-     script: `
-       if (window.supabase) {
-         window.supabase.from('properties').select('count', { count: 'exact' })
-           .then(({ data, error, count }) => {
-             console.log("📊 Database Test:", { count, error });
-           });
-       }
-     `,
-   })
-   ```
-
-## Best Practices
-
-### 1. Systematic Debugging Approach
-
-1. **Start with Visual Inspection**
-   - Take screenshots to see current state
-   - Use different viewport sizes
-
-2. **Check Console Logs**
-   - Monitor for JavaScript errors
-   - Look for warning messages
-
-3. **Analyze Network Activity**
-   - Check API response times
-   - Verify successful data loading
-
-4. **Run Comprehensive Audits**
-   - Performance, accessibility, SEO
-   - Next.js specific checks
-
-### 2. Error Logging Best Practices
-
-```javascript
-// Good: Structured error logging
-console.error('🔴 AUTH_ERROR:', {
-  action: 'login',
-  error: error.message,
-  userId: user?.id,
-  timestamp: Date.now(),
-})
-
-// Bad: Unclear error logging
-console.log('error')
-```
-
-### 3. Performance Monitoring
-
-```javascript
-// Monitor Core Web Vitals
+// Check authentication state
 mcp__puppeteer__puppeteer_evaluate({
   script: `
-    // Measure Largest Contentful Paint (LCP)
-    new PerformanceObserver((list) => {
-      const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      console.log("⚡ LCP:", lastEntry.startTime);
-    }).observe({ entryTypes: ['largest-contentful-paint'] });
-    
-    // Measure Cumulative Layout Shift (CLS)
-    let clsValue = 0;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (!entry.hadRecentInput) {
-          clsValue += entry.value;
-          console.log("📐 CLS:", clsValue);
-        }
-      }
-    }).observe({ entryTypes: ['layout-shift'] });
+    if (window.supabase) {
+      window.supabase.auth.getSession().then(({ data, error }) => {
+        console.log("🔑 Session:", data.session ? "Active" : "None");
+        console.log("👤 User:", data.session?.user?.email || "Anonymous");
+        if (error) console.error("❌ Session Error:", error);
+      });
+    }
   `,
 })
 ```
 
-## Platform-Specific Setup
+#### 2. Database Connection Issues
 
-### Windows Configuration
+```javascript
+// Test database connection
+mcp__puppeteer__puppeteer_evaluate({
+  script: `
+    if (window.supabase) {
+      window.supabase.from('properties').select('count', { count: 'exact' })
+        .then(({ data, error, count }) => {
+          console.log("📊 Database Test:", { count, error });
+        });
+    }
+  `,
+})
+```
 
-**MCP Server Commands**: Windows requires the `cmd /c` wrapper for MCP servers:
+## Test Coverage
+
+### Coverage Workflow
+
+1. **Analyze current coverage** percentages for each function and method
+2. **Add unit tests** to functions and methods without 100% coverage
+3. **Include edge cases** and negative test scenarios
+4. **Use mocks** for external functionality (web services, databases)
+5. **Re-run coverage analysis** and repeat as necessary
+
+### Coverage Commands
+
+```bash
+pnpm test:coverage        # Generate coverage report
+pnpm test:watch          # Watch mode with coverage
+npx jest --coverage      # Direct Jest coverage
+```
+
+### Performance Benchmarks
+
+With the migrated dataset of 1,091 properties and 1,123 neighborhoods:
+
+- **Property Search**: <2s load time with filters applied
+- **Spatial Queries**: <500ms for radius-based property searches
+- **Database Operations**: <100ms for standard CRUD operations
+- **Image Loading**: Progressive loading with blur placeholders
+
+## CI/CD Integration
+
+### GitHub Actions Workflow
+
+E2E tests run automatically on:
+- Push to `main` branch
+- Pull requests to `main` branch
+
+The workflow includes:
+- Dependency caching for speed
+- Supabase local setup
+- Test user creation
+- Artifact upload for test reports
+
+### Workflow Features
+
+1. **Parallel execution**: E2E tests run in a separate workflow
+2. **Caching**: Dependencies and Playwright browsers are cached
+3. **Test reports**: HTML reports uploaded as artifacts
+4. **Retry logic**: Tests retry on failure (2 retries in CI)
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port 3000 in use**
+   ```bash
+   # Kill process on port 3000
+   node scripts/kill-port.js 3000
+   
+   # Or manually (Windows)
+   netstat -ano | findstr :3000
+   taskkill /PID <PID> /F
+   
+   # Or manually (Mac/Linux)
+   lsof -ti:3000 | xargs kill -9
+   ```
+
+2. **Test users already exist**
+   ```bash
+   # The setup script handles this automatically with retries
+   # But you can manually reset the database:
+   pnpm dlx supabase@latest db reset
+   ```
+
+3. **Build directory issues**
+   ```bash
+   # Clean test build
+   rm -rf .next-test/
+   
+   # Rebuild
+   node scripts/build-for-tests.js
+   ```
+
+4. **Environment variable issues**
+   - Ensure `.env.test.local` exists
+   - Check `NEXT_PUBLIC_` prefixes for client-side vars
+   - Rebuild after changing environment variables
+
+### Debug Mode
+
+Run tests with debug output:
+```bash
+# Playwright debug mode
+pnpm test:e2e -- --debug
+
+# Show browser (headed mode)
+pnpm test:e2e -- --headed
+
+# Slow down execution
+pnpm test:e2e -- --slow-mo=1000
+```
+
+### Viewing Test Reports
+
+After test runs, view the HTML report:
+```bash
+# Local
+npx playwright show-report
+
+# CI: Download artifacts from GitHub Actions
+```
+
+### Platform-Specific Configuration
+
+#### Windows Configuration
 
 ```bash
 # Browser-tools server (Windows)
 cmd /c "npx @agentdeskai/browser-tools-server@latest"
 
-# If you need to install the MCP server separately:
-cmd /c "npx @agentdeskai/browser-tools-mcp@latest"
-```
-
-**Port Management**: Windows-specific commands for managing development ports:
-
-```bash
-# Check what's using port 3000
+# Port management (Windows)
 netstat -ano | findstr :3000
-
-# Kill process by PID (replace <PID> with actual PID)
 taskkill /PID <PID> /F
-
-# Alternative: Use the included helper script
-npm run kill-node
 ```
 
-**PowerShell vs Command Prompt**:
-
-- Use **Command Prompt** or **Git Bash** for MCP servers
-- PowerShell may have different escaping requirements
-
-### Linux/Mac Configuration
+#### Linux/Mac Configuration
 
 ```bash
 # Standard MCP commands work directly
@@ -799,156 +806,53 @@ npx @agentdeskai/browser-tools-server@latest
 lsof -ti:3000 | xargs kill -9
 ```
 
-## MCP Configuration Reference
+## Best Practices
 
-The project includes pre-configured MCP servers in `.mcp.json`:
+### Test Writing Guidelines
 
-```json
-{
-  "mcpServers": {
-    "browser-tools": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@agentdeskai/browser-tools-mcp@latest"],
-      "disabled": false
-    },
-    "puppeteer": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@puppeteer/mcp-server@latest"],
-      "disabled": false
-    }
-  }
-}
+1. **Use standardized timeouts** from fixtures
+2. **Clean auth state** between tests
+3. **Use proper wait conditions** instead of arbitrary timeouts
+4. **Add data-testid attributes** for reliable element selection
+5. **Leverage fixtures** for common operations
+
+### Test Organization
+
+```
+__tests__/
+├── unit/
+│   ├── services/
+│   ├── components/
+│   └── utils/
+├── integration/
+│   ├── database/
+│   ├── api/
+│   └── migration/
+├── e2e/
+│   ├── auth/
+│   ├── properties/
+│   ├── fixtures/
+│   └── helpers/
+└── helpers/
+    ├── test-utils.ts
+    ├── constants.ts
+    └── auth-helpers.ts
 ```
 
-**Note**: The `cmd /c` wrapper is essential for Windows compatibility.
+### Performance Considerations
 
-## Troubleshooting
+1. **Build caching**: Test builds are reused between runs
+2. **Parallel execution**: Tests run in parallel by default
+3. **Resource cleanup**: Proper cleanup prevents resource leaks
+4. **Retry logic**: Smart retries prevent flaky failures
 
-### Browser-tools Issues
+### Security
 
-**Problem**: "Failed to discover browser connector server"
-
-- **Solution**: Ensure `npx @agentdeskai/browser-tools-server@latest` is running
-- **Check**: Terminal should show "Server running on port..."
-
-**Problem**: "Chrome extension not connected"
-
-- **Solution**:
-  1. Navigate to your app in Chrome
-  2. Open DevTools (F12)
-  3. Go to "BrowserToolsMCP" panel
-  4. Ensure it shows "Connected"
-
-**Problem**: No console logs captured
-
-- **Solution**:
-  1. Refresh the page with DevTools open
-  2. Ensure you're on the correct tab
-  3. Check that extension has proper permissions
-
-### Puppeteer Issues
-
-**Problem**: "Maximum call stack size exceeded" during script execution
-
-- **Solution**: Simplify the injected script, avoid recursive functions
-
-**Problem**: Navigation timeouts
-
-- **Solution**: Ensure dev server is running and accessible
-
-### Windows-Specific Issues
-
-**Problem**: MCP servers not starting
-
-- **Solution**: Use `cmd /c` wrapper: `cmd /c "npx @agentdeskai/browser-tools-server@latest"`
-- **Alternative**: Use Git Bash instead of PowerShell
-
-**Problem**: Port 3000 always in use
-
-- **Solution**:
-
-  ```bash
-  # Check what's using the port
-  netstat -ano | findstr :3000
-
-  # Kill the process
-  taskkill /PID <PID> /F
-
-  # Or use the helper script
-  npm run kill-node
-  ```
-
-**Problem**: "Command not found" errors
-
-- **Solution**: Ensure Node.js and npm are in your PATH
-- **Check**: `node --version` and `npm --version` should work
-
-**Problem**: Permission errors
-
-- **Solution**: Run terminal as Administrator (if needed)
-- **Alternative**: Use Git Bash with regular user permissions
-
-### General Tips
-
-1. **Always check server logs** in `dev-server.log`
-2. **Use structured logging** with timestamps and context
-3. **Test in multiple browsers** and viewport sizes
-4. **Monitor network requests** for API failures
-5. **Run audits regularly** to catch performance regressions
-
-## Integration with HomeMatch
-
-### Next.js Specific Debugging
-
-```javascript
-// Check Fast Refresh status
-mcp__browser_tools__getConsoleLogs()
-// Look for "[Fast Refresh] rebuilding" messages
-
-// Test API routes
-mcp__puppeteer__puppeteer_evaluate({
-  script: `
-    fetch('/api/properties')
-      .then(response => {
-        console.log("🏠 Properties API:", response.status);
-        return response.json();
-      })
-      .then(data => console.log("📊 Properties Data:", data.length, "items"))
-      .catch(error => console.error("❌ API Error:", error));
-  `,
-})
-```
-
-### Supabase Integration Testing
-
-```javascript
-// Test RLS policies
-mcp__puppeteer__puppeteer_evaluate({
-  script: `
-    // Test authenticated access
-    window.supabase.from('user_preferences').select('*')
-      .then(({ data, error }) => {
-        console.log("🔐 RLS Test:", error ? "BLOCKED" : "ALLOWED");
-        console.log("📊 Data Count:", data?.length || 0);
-      });
-  `,
-})
-```
+- Test users are isolated to test environment
+- CASCADE delete ensures complete cleanup
+- Service role key only used in test environment
+- No production data in tests
 
 ---
 
-## Additional Resources
-
-- [Puppeteer Documentation](https://pptr.dev/)
-- [Browser-tools MCP GitHub](https://github.com/AgentDeskAI/browser-tools-mcp)
-- [Lighthouse Documentation](https://developers.google.com/web/tools/lighthouse)
-- [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)
-
-## Contributing
-
-When adding new debugging techniques to this guide:
-
-1. Test the technique with real HomeMatch scenarios
-2. Provide clear, copy-paste code examples
-3. Include expected output when possible
-4. Document any prerequisites or setup steps
+*This guide covers all testing strategies, tools, and procedures for HomeMatch V2 development.*

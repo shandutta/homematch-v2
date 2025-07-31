@@ -145,7 +145,7 @@ export class MigrationRunner {
         'all-neighborhoods-combined.json'
       )
       const jsonContent = readFileSync(jsonPath, 'utf-8')
-      const records = JSON.parse(jsonContent)
+      const records = JSON.parse(jsonContent) as unknown[]
 
       console.log(`📊 Found ${records.length} neighborhood records`)
       stats.total_processed = records.length
@@ -161,13 +161,16 @@ export class MigrationRunner {
           const globalIndex = i + index
 
           try {
+            // Type guard for record structure
+            const recordData = record as Record<string, unknown>
+
             // Convert JSON record to our format
             const rawNeighborhood: RawNeighborhoodData = {
-              metro_area: record.metro_area || 'Unknown',
-              name: record.name || '',
-              region: record.region || undefined,
-              polygon: record.polygon || '',
-              city: record.city || 'Unknown',
+              metro_area: (recordData.metro_area as string) || 'Unknown',
+              name: (recordData.name as string) || '',
+              region: recordData.region as string | undefined,
+              polygon: (recordData.polygon as string) || '',
+              city: (recordData.city as string) || 'Unknown',
               state: 'CA', // Default from data (all current data is CA)
             }
 
@@ -239,7 +242,7 @@ export class MigrationRunner {
             stats.failed++
             stats.errors.push({
               index: globalIndex,
-              data: record,
+              data: record as Record<string, unknown>,
               errors: [
                 `Processing error: ${
                   error instanceof Error ? error.message : 'Unknown error'
@@ -304,7 +307,7 @@ export class MigrationRunner {
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
-      })
+      }) as Record<string, string>[]
 
       console.log(`📊 Found ${records.length} property records`)
       stats.total_processed = records.length
@@ -438,7 +441,7 @@ export class MigrationRunner {
             stats.failed++
             stats.errors.push({
               index: globalIndex,
-              data: record,
+              data: record as Record<string, string>,
               errors: [
                 `Processing error: ${
                   error instanceof Error ? error.message : 'Unknown error'

@@ -9,17 +9,18 @@ import {
   NeighborhoodUpdate,
 } from '@/types/database'
 import {
-  PropertyFilters,
-  PropertyPagination,
   PropertySearch,
 } from '@/lib/schemas/property'
 
 export class PropertyService {
-  private supabase = createClient()
+  private async getSupabase() {
+    return await createClient()
+  }
 
   // Property Operations
   async getProperty(propertyId: string): Promise<Property | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select('*')
       .eq('id', propertyId)
@@ -37,7 +38,8 @@ export class PropertyService {
   async getPropertyWithNeighborhood(
     propertyId: string
   ): Promise<PropertyWithNeighborhood | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select(
         `
@@ -58,7 +60,8 @@ export class PropertyService {
   }
 
   async createProperty(property: PropertyInsert): Promise<Property | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .insert(property)
       .select()
@@ -76,7 +79,8 @@ export class PropertyService {
     propertyId: string,
     updates: PropertyUpdate
   ): Promise<Property | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', propertyId)
@@ -92,7 +96,8 @@ export class PropertyService {
   }
 
   async deleteProperty(propertyId: string): Promise<boolean> {
-    const { error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { error } = await supabase
       .from('properties')
       .update({ is_active: false })
       .eq('id', propertyId)
@@ -112,9 +117,14 @@ export class PropertyService {
     limit: number
   }> {
     const { filters = {}, pagination = {} } = searchParams
-    const { page = 1, limit = 20, sort } = pagination
+    const {
+      page = 1,
+      limit = 20,
+      sort,
+    } = pagination as { page?: number; limit?: number; sort?: { field: string; direction: 'asc' | 'desc' } }
 
-    let query = this.supabase
+    const supabase = await this.getSupabase()
+    let query = supabase
       .from('properties')
       .select(
         `
@@ -218,7 +228,8 @@ export class PropertyService {
     neighborhoodId: string,
     limit = 20
   ): Promise<Property[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select('*')
       .eq('neighborhood_id', neighborhoodId)
@@ -235,7 +246,8 @@ export class PropertyService {
   }
 
   async getPropertiesByZpid(zpid: string): Promise<Property | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select('*')
       .eq('zpid', zpid)
@@ -251,7 +263,8 @@ export class PropertyService {
   }
 
   async getPropertiesByHash(hash: string): Promise<Property | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select('*')
       .eq('property_hash', hash)
@@ -268,7 +281,8 @@ export class PropertyService {
 
   // Neighborhood Operations
   async getNeighborhood(neighborhoodId: string): Promise<Neighborhood | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .select('*')
       .eq('id', neighborhoodId)
@@ -285,7 +299,8 @@ export class PropertyService {
   async createNeighborhood(
     neighborhood: NeighborhoodInsert
   ): Promise<Neighborhood | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .insert(neighborhood)
       .select()
@@ -303,7 +318,8 @@ export class PropertyService {
     neighborhoodId: string,
     updates: NeighborhoodUpdate
   ): Promise<Neighborhood | null> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .update(updates)
       .eq('id', neighborhoodId)
@@ -322,7 +338,8 @@ export class PropertyService {
     city: string,
     state: string
   ): Promise<Neighborhood[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .select('*')
       .eq('city', city)
@@ -340,7 +357,8 @@ export class PropertyService {
   async getNeighborhoodsByMetroArea(
     metroArea: string
   ): Promise<Neighborhood[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .select('*')
       .eq('metro_area', metroArea)
@@ -355,7 +373,8 @@ export class PropertyService {
   }
 
   async searchNeighborhoods(searchTerm: string): Promise<Neighborhood[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('neighborhoods')
       .select('*')
       .or(
@@ -380,15 +399,13 @@ export class PropertyService {
     limit = 50
   ): Promise<PropertyWithNeighborhood[]> {
     // Use PostGIS ST_DWithin function for geographic queries
-    const { data, error } = await this.supabase.rpc(
-      'get_properties_within_radius',
-      {
-        center_lat: centerLat,
-        center_lng: centerLng,
-        radius_km: radiusKm,
-        limit_count: limit,
-      }
-    )
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase.rpc('get_properties_within_radius', {
+      center_lat: centerLat,
+      center_lng: centerLng,
+      radius_km: radiusKm,
+      limit_count: limit,
+    })
 
     if (error) {
       console.error('Error fetching properties within radius:', error)
@@ -401,7 +418,8 @@ export class PropertyService {
   async getPropertiesInNeighborhood(
     neighborhoodId: string
   ): Promise<PropertyWithNeighborhood[]> {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select(
         `
@@ -423,7 +441,8 @@ export class PropertyService {
 
   // Analytics
   async getPropertyStats() {
-    const { data, error } = await this.supabase
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
       .from('properties')
       .select('price, bedrooms, bathrooms, square_feet, property_type')
       .eq('is_active', true)
