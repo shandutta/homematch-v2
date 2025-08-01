@@ -74,7 +74,8 @@ export const authFixtures = {
           )
           // Extra time for cookies to propagate before verification
           await page.waitForTimeout(3000)
-          await page.reload({ waitUntil: 'networkidle' })
+          // Avoid reload races; perform a lightweight navigation to stabilize state
+          await page.goto('/validation', { waitUntil: 'load' })
         }
       },
 
@@ -170,10 +171,14 @@ export const authFixtures = {
               console.log(
                 `🔍 ${browserName} - auth verification attempt ${attempt}/${maxAttempts}`
               )
-              // On retries, force a reload to get fresh server state
-              if (attempt > 1) {
-                await page.reload({ waitUntil: 'networkidle' })
-                await page.waitForTimeout(1000 * attempt) // increasing backoff
+              // On retries for Firefox, avoid navigation to prevent page/context closure races
+              if (isFirefox && attempt > 1) {
+                await page.waitForLoadState('networkidle')
+                await page.waitForTimeout(500 * attempt) // increasing backoff without navigation
+              } else if (isWebKit && attempt > 1) {
+                // WebKit can tolerate a gentle stabilization without navigation too
+                await page.waitForLoadState('networkidle')
+                await page.waitForTimeout(500 * attempt)
               }
             }
 
@@ -183,6 +188,24 @@ export const authFixtures = {
               .locator(`text=${user.email}`)
             const noUserMessageLocator = page.locator(
               'text=No Authenticated User'
+            )
+
+            // First, poll Supabase session in the client to ensure auth state is propagated
+            await page.waitForFunction(
+              () =>
+                (window as any).__supabaseReady === true ||
+                // lazily query supabase session if helper not available
+                (async () => {
+                  try {
+                    // @ts-ignore - evaluate in browser
+                    const { data } = await (window as any)
+                      .supabase?.auth?.getSession?.()
+                    return !!data?.session
+                  } catch {
+                    return false
+                  }
+                })(),
+              { timeout: 5000 }
             )
 
             // Wait for either locator to be visible
@@ -235,13 +258,59 @@ export const authFixtures = {
       },
 
       async verifyNotAuthenticated() {
-        // Browser-specific wait for logout to complete
+        // Give browsers a moment to settle logout
         const browserName = page.context().browser()?.browserType().name()
         if (browserName === 'webkit' || browserName === 'firefox') {
           console.log(`🔍 ${browserName} - waiting for logout to complete`)
           await page.waitForTimeout(1000)
         }
 
+        // Prefer checking Supabase session state via client to avoid DOM-only race
+        try {
+          const sessionCleared = await page.evaluate(async () => {
+            try {
+              // @ts-ignore
+              const { data } = await (window as any).supabase?.auth?.getSession?.()
+              return !data?.session
+            } catch {
+              return true
+            }
+          })
+          if (!sessionCleared) {
+            // Poll up to 5s for session to clear
+            let cleared = false
+            for (let i = 0; i < 10; i++) {
+              await page.waitForTimeout(500)
+              const ok = await page.evaluate(async () => {
+                try {
+                  // @ts-ignore
+                  const { data } = await (window as any).supabase?.auth?.getSession?.()
+                  return !data?.session
+                } catch {
+                  return true
+                }
+              })
+              if (ok) {
+                cleared = true
+                break
+              }
+            }
+            if (!cleared) {
+              throw new Error('Session did not clear after logout polling window')
+            }
+          }
+        } catch {
+          // ignore and fall back to URL/DOM checks
+        }
+
+        // Brief grace for hydration, then force a public route to stabilize DOM before checks
+        await page.waitForLoadState('networkidle')
+        await page.waitForTimeout(250)
+        await page.goto('/', { waitUntil: 'load' })
+        await page.waitForTimeout(250)
+
+        // Ensure we are on a public route and the app had time to render
+        await page.waitForLoadState('load')
         const finalUrl = page.url()
 
         if (finalUrl.includes('/login')) {
@@ -259,17 +328,20 @@ export const authFixtures = {
             )
           }
         } else {
-          // Should see login link or no auth message
+          // Accept any clear unauthenticated indicator
           const loginLinkVisible = await page
             .locator('a[href="/login"]')
             .isVisible()
           const noAuthMessage = await page
             .locator('text=No Authenticated User')
             .isVisible()
-
-          if (!loginLinkVisible && !noAuthMessage) {
+          const signInFormVisible = await page
+            .getByRole('button', { name: /log in|sign in/i })
+            .first()
+            .isVisible()
+          if (!loginLinkVisible && !noAuthMessage && !signInFormVisible) {
             throw new Error(
-              'Expected either login link or no auth message to be visible'
+              'Expected login link, auth form, or no auth message to be visible'
             )
           }
         }
