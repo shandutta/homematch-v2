@@ -58,9 +58,43 @@ export default async function LandingPage() {
     <>
       <Header />
       <HeroSection />
-      <FeatureGrid />
-      <HowItWorks />
-      <SwipeDemo />
+
+      {/* Unified light pattern wrapper for FeatureGrid + HowItWorks + SwipeDemo */}
+      <section className="relative isolate">
+        {/* Single shared background across the three sections (continuous layers) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full">
+          <div
+            className="absolute inset-x-0 top-0 h-full"
+            style={{
+              background:
+                'radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.06) 0%, rgba(2,26,68,0.03) 35%, rgba(255,255,255,1) 65%)',
+            }}
+            aria-hidden
+          />
+          <div
+            className="absolute inset-x-0 top-0 h-full opacity-20"
+            style={{
+              backgroundImage:
+                'repeating-linear-gradient(0deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px)',
+              backgroundSize: '28px 28px',
+            }}
+            aria-hidden
+          />
+          <div
+            className="absolute inset-x-0 top-0 h-full opacity-[0.06]"
+            style={{
+              backgroundImage:
+                'radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%)',
+            }}
+            aria-hidden
+          />
+        </div>
+
+        <FeatureGrid />
+        <HowItWorks />
+        <SwipeDemo />
+      </section>
+
       <CtaBand />
       <Footer />
     </>

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Heart, X, Bed, Bath, Square } from 'lucide-react'
 import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
@@ -13,47 +13,59 @@ interface Property {
   address: string
   beds: number
   baths: number
-  sqft: string
+  sqft: number | string
 }
 
-const demoProperties: Property[] = [
-  {
-    id: 1,
-    image: '/images/properties/house-1.svg',
-    price: '$1,250,000',
-    address: '742 Evergreen Terrace',
-    beds: 4,
-    baths: 3,
-    sqft: '2,800',
-  },
-  {
-    id: 2,
-    image: '/images/properties/house-2.svg',
-    price: '$875,000',
-    address: '1428 Elm Street',
-    beds: 3,
-    baths: 2,
-    sqft: '1,950',
-  },
-  {
-    id: 3,
-    image: '/images/properties/house-3.svg',
-    price: '$2,100,000',
-    address: '90210 Beverly Hills',
-    beds: 2,
-    baths: 2,
-    sqft: '1,600',
-  },
-]
+const demoProperties: Property[] = []
 
 export function SwipeDemo() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [properties, setProperties] = useState<Property[]>([])
+
+  // Fetch real marketing properties like PhoneMockup
+  useEffect(() => {
+    let cancelled = false
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/properties/marketing', { cache: 'no-store' })
+        if (!res.ok) return
+        const data: any[] = await res.json()
+        if (!Array.isArray(data)) return
+        const mapped: Property[] = data
+          .filter((c) => c?.imageUrl && typeof c.imageUrl === 'string')
+          .slice(0, 6)
+          .map((c, idx) => ({
+            id: idx + 1,
+            image: c.imageUrl,
+            price: typeof c.price === 'number' ? `$${c.price.toLocaleString()}` : '$—',
+            address: typeof c.address === 'string' ? c.address : '—',
+            beds: typeof c.bedrooms === 'number' ? c.bedrooms : 0,
+            baths: typeof c.bathrooms === 'number' ? c.bathrooms : 0,
+            sqft: typeof c.sqft === 'number' ? c.sqft : (typeof c.livingArea === 'number' ? c.livingArea : '—'),
+          }))
+        if (!cancelled) setProperties(mapped)
+      } catch {
+        // silent fail; keep empty
+      }
+    }
+    void fetchData()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleSwipe = useCallback((swipeDirection: 'left' | 'right') => {
+    // Direction set drives exit animation; +1 => exit to right, -1 => exit to left
     setDirection(swipeDirection === 'right' ? 1 : -1)
-    setCurrentIndex((prev) => (prev + 1) % demoProperties.length)
-  }, [])
+    // Delay index increment slightly so the exit animation direction is respected visually
+    setTimeout(() => {
+      setCurrentIndex((prev) => {
+        const len = properties.length || 1
+        return (prev + 1) % len
+      })
+    }, 0)
+  }, [properties.length])
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
@@ -70,7 +82,7 @@ export function SwipeDemo() {
   )
 
   return (
-    <section className="bg-white py-12 sm:py-20">
+    <section className="relative bg-transparent py-8">
       <div className="container mx-auto px-4">
         <motion.div
           className="mx-auto max-w-3xl text-center"
@@ -88,41 +100,28 @@ export function SwipeDemo() {
             className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            Go ahead, give it a swipe. We promise it&apos;s addictive.
+            Go ahead, give it a swipe. We promise it's addictive.
           </p>
+
+          {/* Start Swiping button styled same as hero primary CTA (dark blue variant) */}
+          <div className="mt-6 flex justify-center">
+            <a
+              href="/signup"
+              aria-label="Start Swiping"
+              data-cta="dopamine-tryit"
+              className="relative inline-flex items-center justify-center rounded-full bg-[#0F172A] px-8 py-4 text-base font-medium text-white shadow-[0_8px_30px_rgba(2,6,23,0.45)] transition-colors hover:bg-[#0b1222] focus:outline-none focus:ring-2 focus:ring-[#29E3FF] focus:ring-offset-2"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+                Start Swiping
+              </span>
+              <span aria-hidden className="pointer-events-none absolute inset-0" id="tryit-particles-host" />
+            </a>
+          </div>
         </motion.div>
 
-        <div className="relative mx-auto mt-8 max-w-sm sm:mt-16 sm:max-w-md">
-          {/* Swipe Instructions */}
-          <div className="mb-6 flex justify-between px-4 sm:mb-8 sm:px-8">
-            <motion.div
-              className="flex items-center gap-2 text-red-500"
-              animate={{ x: [-5, 5, -5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <X className="h-5 w-5" />
-              <span
-                className="text-xs font-medium sm:text-sm"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Nah
-              </span>
-            </motion.div>
-
-            <motion.div
-              className="flex items-center gap-2 text-green-500"
-              animate={{ x: [5, -5, 5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span
-                className="text-xs font-medium sm:text-sm"
-                style={{ fontFamily: 'var(--font-body)' }}
-              >
-                Love it
-              </span>
-              <Heart className="h-5 w-5 fill-current" />
-            </motion.div>
-          </div>
+        <div className="relative mx-auto mt-4 max-w-sm sm:mt-6 sm:max-w-md">
+          {/* Removed "Love it / Nah" prompt to reduce confusion */}
 
           {/* Card Container */}
           <div
@@ -149,7 +148,7 @@ export function SwipeDemo() {
                   },
                   exit: (direction) => ({
                     zIndex: 0,
-                    x: direction < 0 ? 1000 : -1000,
+                    x: direction > 0 ? 1000 : -1000,
                     opacity: 0,
                   }),
                 }}
@@ -177,15 +176,15 @@ export function SwipeDemo() {
                   {/* Property Image */}
                   <div className="relative h-[280px] sm:h-[350px]">
                     <Image
-                      src={demoProperties[currentIndex].image}
-                      alt={demoProperties[currentIndex].address}
+                      src={(properties[currentIndex] || {}).image || '/images/properties/house-1.svg'}
+                      alt={(properties[currentIndex] || {}).address || 'Property'}
                       fill
                       className="pointer-events-none object-cover select-none"
                       sizes="400px"
                       priority
                       placeholder="blur"
                       blurDataURL={getPropertyBlurPlaceholder(
-                        demoProperties[currentIndex].image
+                        (properties[currentIndex] || {}).image || '/images/properties/house-1.svg'
                       )}
                       draggable={false}
                     />
@@ -196,7 +195,7 @@ export function SwipeDemo() {
                         className="text-lg font-bold text-gray-900 sm:text-2xl"
                         style={{ fontFamily: 'var(--font-heading)' }}
                       >
-                        {demoProperties[currentIndex].price}
+                        {(properties[currentIndex] || {}).price || '$—'}
                       </p>
                     </div>
                   </div>
@@ -207,7 +206,7 @@ export function SwipeDemo() {
                       className="text-lg font-semibold text-gray-900 sm:text-xl"
                       style={{ fontFamily: 'var(--font-heading)' }}
                     >
-                      {demoProperties[currentIndex].address}
+                      {(properties[currentIndex] || {}).address || '—'}
                     </h3>
 
                     <div className="mt-3 flex items-center gap-4 text-gray-600 sm:mt-4 sm:gap-6">
@@ -217,7 +216,7 @@ export function SwipeDemo() {
                           className="text-sm sm:text-base"
                           style={{ fontFamily: 'var(--font-body)' }}
                         >
-                          {demoProperties[currentIndex].beds} beds
+                          {(properties[currentIndex] || {}).beds ?? 0} beds
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -226,16 +225,7 @@ export function SwipeDemo() {
                           className="text-sm sm:text-base"
                           style={{ fontFamily: 'var(--font-body)' }}
                         >
-                          {demoProperties[currentIndex].baths} baths
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Square className="h-4 w-4" />
-                        <span
-                          className="text-sm sm:text-base"
-                          style={{ fontFamily: 'var(--font-body)' }}
-                        >
-                          {demoProperties[currentIndex].sqft} sqft
+                          {(properties[currentIndex] || {}).baths ?? 0} baths
                         </span>
                       </div>
                     </div>

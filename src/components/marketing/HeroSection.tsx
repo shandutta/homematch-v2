@@ -36,13 +36,13 @@ export function HeroSection() {
 
       {/* Content Container */}
       <div className="relative z-10 flex min-h-screen items-center">
-        <div className="container mx-auto px-4 py-20">
+        <div className="container mx-auto px-4 py-10 sm:py-14 md:py-16">
           <motion.div
             className="grid gap-12 lg:grid-cols-2 lg:items-center"
             style={{ opacity }}
           >
             {/* Text Content */}
-            <div className="max-w-2xl">
+            <div className="max-w-2xl pl-4 sm:pl-4">
               <motion.h1
                 className="text-4xl leading-tight font-black text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
                 style={{ fontFamily: 'var(--font-heading)' }}
@@ -58,7 +58,7 @@ export function HeroSection() {
               </motion.h1>
 
               <motion.p
-                className="mt-4 text-lg leading-relaxed text-white/80 sm:mt-6 sm:text-xl md:text-2xl"
+                className="mt-3 text-base leading-relaxed text-white/80 sm:mt-4 sm:text-lg md:text-xl"
                 style={{ fontFamily: 'var(--font-body)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -69,13 +69,13 @@ export function HeroSection() {
               </motion.p>
 
               <motion.div
-                className="mt-10 flex flex-col gap-4 sm:flex-row"
+                className="mt-6 flex flex-col gap-3 sm:mt-6 sm:flex-row"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
               >
                 {/* Primary CTA */}
-                <Button variant="prime" size="xl" asChild>
+                <Button variant="prime" size="lg" asChild className="px-8 py-4">
                   <Link
                     href="/signup"
                     aria-label="Start Swiping"
@@ -140,7 +140,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10"
+                  className="border-2 border-white/20 bg-white/5 px-8 py-4 text-base font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10"
                   asChild
                 >
                   <Link href="/login">Log in</Link>
@@ -150,9 +150,10 @@ export function HeroSection() {
 
             {/* Phone Mockup */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.8, x: -24 }}
+              animate={{ opacity: 1, scale: 1, x: -24 }}
               transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+              className="lg:justify-self-center"
             >
               <PhoneMockup />
             </motion.div>
