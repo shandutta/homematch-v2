@@ -177,7 +177,6 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
   )
 }
 
-
 export function PhoneMockup() {
   const [cards, setCards] = useState<Property[]>(placeholderProperties)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)

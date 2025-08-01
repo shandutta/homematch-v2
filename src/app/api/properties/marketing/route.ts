@@ -204,7 +204,8 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
       // Build absolute base URL for production if NEXT_PUBLIC_BASE_URL is not set
       // Using a dynamic base avoids relative URL issues in some serverless environments.
       const base =
-        process.env.NEXT_PUBLIC_BASE_URL && process.env.NEXT_PUBLIC_BASE_URL.length > 0
+        process.env.NEXT_PUBLIC_BASE_URL &&
+        process.env.NEXT_PUBLIC_BASE_URL.length > 0
           ? process.env.NEXT_PUBLIC_BASE_URL
           : 'http://localhost:3000'
 
