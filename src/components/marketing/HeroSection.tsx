@@ -4,8 +4,6 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PhoneMockup } from './PhoneMockup'
-import { ParallaxStars } from './ParallaxStars'
-import { DopamineCtaPreview } from './DopamineCtaPreview'
 import { ParallaxStarsCanvas } from './ParallaxStarsCanvas'
 
 export function HeroSection() {
