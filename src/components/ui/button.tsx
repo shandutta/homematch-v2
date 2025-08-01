@@ -26,9 +26,9 @@ const buttonVariants = cva(
           // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow
           'relative overflow-hidden rounded-full text-white px-9 py-7 text-base font-semibold ' +
           // base fill + depth (slightly bluer)
-          'before:content-[\"\"] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#0c1426_0%,#0a0f1d_100%)] before:[box-shadow:0_2px_8px_rgba(0,0,0,0.35)] ' +
+          'before:content-[""] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#0c1426_0%,#0a0f1d_100%)] before:[box-shadow:0_2px_8px_rgba(0,0,0,0.35)] ' +
           // gradient border ring (masked) — brand blue sweep
-          'after:content-[\"\"] after:absolute after:-inset-[2px] after:rounded-full after:[padding:2px] ' +
+          'after:content-[""] after:absolute after:-inset-[2px] after:rounded-full after:[padding:2px] ' +
           'after:[background:linear-gradient(135deg,rgba(59,130,246,0.8),rgba(30,64,175,0.7),rgba(56,189,248,0.7))] ' +
           'after:[background-size:200%_200%] after:opacity-85 ' +
           'after:[-webkit-mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] ' +
