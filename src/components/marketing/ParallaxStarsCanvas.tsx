@@ -52,15 +52,26 @@ export function ParallaxStarsCanvas({ className, starCount = 220 }: Props) {
         const layer = layers[Math.floor(Math.random() * layers.length)]
         // radius by layer: near bigger
         const r =
-          layer === 2 ? 1.6 + Math.random() * 1.2 : layer === 1 ? 1.1 + Math.random() * 0.9 : 0.6 + Math.random() * 0.6
-        const baseAlpha =
-          layer === 2 ? 0.9 : layer === 1 ? 0.75 : 0.55
+          layer === 2
+            ? 1.6 + Math.random() * 1.2
+            : layer === 1
+              ? 1.1 + Math.random() * 0.9
+              : 0.6 + Math.random() * 0.6
+        const baseAlpha = layer === 2 ? 0.9 : layer === 1 ? 0.75 : 0.55
         const twinklePhase = Math.random() * Math.PI * 2
         // gentle drift velocity per layer
         const vx =
-          layer === 2 ? (Math.random() * 0.06 - 0.03) : layer === 1 ? (Math.random() * 0.04 - 0.02) : (Math.random() * 0.02 - 0.01)
+          layer === 2
+            ? Math.random() * 0.06 - 0.03
+            : layer === 1
+              ? Math.random() * 0.04 - 0.02
+              : Math.random() * 0.02 - 0.01
         const vy =
-          layer === 2 ? (Math.random() * 0.06 - 0.03) : layer === 1 ? (Math.random() * 0.04 - 0.02) : (Math.random() * 0.02 - 0.01)
+          layer === 2
+            ? Math.random() * 0.06 - 0.03
+            : layer === 1
+              ? Math.random() * 0.04 - 0.02
+              : Math.random() * 0.02 - 0.01
         stars.push({
           x: Math.random(),
           y: Math.random(),
@@ -125,8 +136,14 @@ export function ParallaxStarsCanvas({ className, starCount = 220 }: Props) {
         const alpha = s.baseAlpha * tw * 0.9
 
         // Parallax offset based on pointer position and layer depth
-        const parX = mouseRef.current.x * parallaxStrength(s.layer) * motionScaleRef.current
-        const parY = mouseRef.current.y * parallaxStrength(s.layer) * motionScaleRef.current
+        const parX =
+          mouseRef.current.x *
+          parallaxStrength(s.layer) *
+          motionScaleRef.current
+        const parY =
+          mouseRef.current.y *
+          parallaxStrength(s.layer) *
+          motionScaleRef.current
 
         // Drift update
         s.x += s.vx * 0.0008 * motionScaleRef.current
@@ -178,10 +195,14 @@ export function ParallaxStarsCanvas({ className, starCount = 220 }: Props) {
   }, [starCount])
 
   return (
-    <div className={className} aria-hidden="true" style={{ pointerEvents: 'none' }}>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{ pointerEvents: 'none' }}
+    >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 h-full w-full"
         style={{
           // Ensure the canvas sits above base gradient but below content
           position: 'absolute',

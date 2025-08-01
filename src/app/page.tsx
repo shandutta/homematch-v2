@@ -37,16 +37,17 @@ export default async function LandingPage() {
   } = await supabase.auth.getUser()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
-  const [FeatureGrid, SwipeDemo, Footer, HowItWorks, CtaBand] = await Promise.all([
-    (async () =>
-      (await import('@/components/marketing/FeatureGrid')).FeatureGrid)(),
-    (async () =>
-      (await import('@/components/marketing/SwipeDemo')).SwipeDemo)(),
-    (async () => (await import('@/components/marketing/Footer')).Footer)(),
-    (async () =>
-      (await import('@/components/marketing/HowItWorks')).HowItWorks)(),
-    (async () => (await import('@/components/marketing/CtaBand')).CtaBand)(),
-  ])
+  const [FeatureGrid, SwipeDemo, Footer, HowItWorks, CtaBand] =
+    await Promise.all([
+      (async () =>
+        (await import('@/components/marketing/FeatureGrid')).FeatureGrid)(),
+      (async () =>
+        (await import('@/components/marketing/SwipeDemo')).SwipeDemo)(),
+      (async () => (await import('@/components/marketing/Footer')).Footer)(),
+      (async () =>
+        (await import('@/components/marketing/HowItWorks')).HowItWorks)(),
+      (async () => (await import('@/components/marketing/CtaBand')).CtaBand)(),
+    ])
 
   // If user is already authenticated, redirect to validation page
   if (user) {

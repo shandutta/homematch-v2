@@ -99,7 +99,10 @@ test.describe('Landing Page Navigation', () => {
     // If we land on /login, try a second submit once before asserting
     if (/\/login$/.test(page.url())) {
       const btn = page.getByRole('button', { name: /log in|sign in/i }).first()
-      const enabled = (await btn.count()) > 0 ? await btn.isEnabled().catch(() => false) : false
+      const enabled =
+        (await btn.count()) > 0
+          ? await btn.isEnabled().catch(() => false)
+          : false
       if (enabled) {
         await btn.click()
       } else {

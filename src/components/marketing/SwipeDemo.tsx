@@ -180,7 +180,7 @@ export function SwipeDemo() {
                       src={demoProperties[currentIndex].image}
                       alt={demoProperties[currentIndex].address}
                       fill
-                      className="object-cover select-none pointer-events-none"
+                      className="pointer-events-none object-cover select-none"
                       sizes="400px"
                       priority
                       placeholder="blur"

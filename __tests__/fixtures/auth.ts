@@ -196,15 +196,15 @@ export const authFixtures = {
                 (window as any).__supabaseReady === true ||
                 // lazily query supabase session if helper not available
                 (async () => {
-          try {
-            const supabase = (window as any)?.supabase
-            const getSession = supabase?.auth?.getSession
-            if (typeof getSession !== 'function') return false
-            const { data } = await getSession()
-            return !!(data && data.session)
-          } catch {
-            return false
-          }
+                  try {
+                    const supabase = (window as any)?.supabase
+                    const getSession = supabase?.auth?.getSession
+                    if (typeof getSession !== 'function') return false
+                    const { data } = await getSession()
+                    return !!(data && data.session)
+                  } catch {
+                    return false
+                  }
                 })(),
               { timeout: 5000 }
             )
@@ -301,7 +301,9 @@ export const authFixtures = {
               }
             }
             if (!cleared) {
-              throw new Error('Session did not clear after logout polling window')
+              throw new Error(
+                'Session did not clear after logout polling window'
+              )
             }
           }
         } catch {

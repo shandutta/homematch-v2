@@ -24,7 +24,7 @@ export function CtaBand() {
         aria-hidden="true"
       />
 
-      <div className="container relative z-10 mx-auto px-4">
+      <div className="relative z-10 container mx-auto px-4">
         <motion.div
           className="mx-auto max-w-4xl text-center"
           initial={{ opacity: 0, y: 14 }}
@@ -42,15 +42,21 @@ export function CtaBand() {
             className="mx-auto mt-3 max-w-2xl text-white/80 sm:text-lg"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            Tasteful swiping. Smart matches. Real progress. Join early access and
-            start finding places you both love.
+            Tasteful swiping. Smart matches. Real progress. Join early access
+            and start finding places you both love.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             {/* Bottom CTA uses the reusable prime variant (brand blue ring, dark fill) */}
             <Button variant="prime" size="xl" asChild>
-              <Link href="/signup" aria-label="Start Swiping" className="relative inline-flex items-center justify-center">
-                <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">Start Swiping</span>
+              <Link
+                href="/signup"
+                aria-label="Start Swiping"
+                className="relative inline-flex items-center justify-center"
+              >
+                <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+                  Start Swiping
+                </span>
               </Link>
             </Button>
 

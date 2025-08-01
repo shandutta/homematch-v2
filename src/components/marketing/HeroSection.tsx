@@ -81,11 +81,31 @@ export function HeroSection() {
               >
                 {/* Replace production CTA with reusable prime variant; enable click-burst only here */}
                 <Button variant="prime" size="xl" asChild>
+<<<<<<< HEAD
                   <Link href="/signup" aria-label="Start Swiping" data-cta="dopamine-hero" className="relative inline-flex items-center justify-center">
                     <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">Start Swiping</span>
                     <span aria-hidden="true" className="pointer-events-none absolute inset-0" id="particles-host" />
                     <script dangerouslySetInnerHTML={{
                       __html: `
+=======
+                  <Link
+                    href="/signup"
+                    aria-label="Start Swiping"
+                    data-cta="dopamine-hero"
+                    className="relative inline-flex items-center justify-center"
+                  >
+                    <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+                      Get started
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0"
+                      id="particles-host"
+                    />
+                    <script
+                      dangerouslySetInnerHTML={{
+                        __html: `
+>>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
                         (function(){
                           var root = document.querySelector('[data-cta="dopamine-hero"]');
                           if(!root) return;
@@ -122,8 +142,14 @@ export function HeroSection() {
                           root.addEventListener('mousedown', burst);
                           root.addEventListener('touchstart', burst, {passive:true});
                         })();
+<<<<<<< HEAD
                       `
                     }} />
+=======
+                      `,
+                      }}
+                    />
+>>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
                   </Link>
                 </Button>
 
@@ -133,7 +159,11 @@ export function HeroSection() {
                   className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10"
                   asChild
                 >
+<<<<<<< HEAD
                   <Link href="/login">Already a Member?</Link>
+=======
+                  <Link href="/login">Log in</Link>
+>>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
                 </Button>
               </motion.div>
 
