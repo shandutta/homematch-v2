@@ -164,7 +164,8 @@ export const authFixtures = {
         }
 
         // Retry loop for authentication verification, especially for WebKit/Firefox
-        const maxAttempts = isWebKit || isFirefox ? 5 : 3
+        // Reduce retries and avoid long backoffs to prevent 30s timeouts
+        const maxAttempts = isFirefox ? 3 : isWebKit ? 4 : 3
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
             if (isWebKit || isFirefox) {
@@ -174,11 +175,10 @@ export const authFixtures = {
               // On retries for Firefox, avoid navigation to prevent page/context closure races
               if (isFirefox && attempt > 1) {
                 await page.waitForLoadState('networkidle')
-                await page.waitForTimeout(500 * attempt) // increasing backoff without navigation
+                await page.waitForTimeout(400 * attempt) // shorter backoff without navigation
               } else if (isWebKit && attempt > 1) {
-                // WebKit can tolerate a gentle stabilization without navigation too
                 await page.waitForLoadState('networkidle')
-                await page.waitForTimeout(500 * attempt)
+                await page.waitForTimeout(400 * attempt)
               }
             }
 
@@ -328,17 +328,22 @@ export const authFixtures = {
             )
           }
         } else {
-          // Accept any clear unauthenticated indicator
-          const loginLinkVisible = await page
-            .locator('a[href="/login"]')
-            .isVisible()
+          // Accept any clear unauthenticated indicator (avoid strict mode violations)
+          const loginLinks = page.locator('a[href="/login"]')
+          const loginLinkCount = await loginLinks.count()
+          const loginLinkVisible =
+            loginLinkCount > 0 ? await loginLinks.first().isVisible() : false
+
           const noAuthMessage = await page
             .locator('text=No Authenticated User')
             .isVisible()
-          const signInFormVisible = await page
-            .getByRole('button', { name: /log in|sign in/i })
-            .first()
-            .isVisible()
+          const signInButtons = page.getByRole('button', {
+            name: /log in|sign in/i,
+          })
+          const signInBtnCount = await signInButtons.count()
+          const signInFormVisible =
+            signInBtnCount > 0 ? await signInButtons.first().isVisible() : false
+
           if (!loginLinkVisible && !noAuthMessage && !signInFormVisible) {
             throw new Error(
               'Expected login link, auth form, or no auth message to be visible'
