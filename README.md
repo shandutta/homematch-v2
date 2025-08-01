@@ -1,17 +1,22 @@
-# HomeMatch V2 🏠
+# HomeMatch V2
 
-> **Migration Complete**: Property browsing application with 99.1% data migration success (2,214 records migrated) and test infrastructure.
+**Status**: Foundation Complete, Core Features In Development
 
-A TypeScript-first property browsing application built with Next.js 15, Supabase, and modern tooling. HomeMatch V2 provides property discovery with ML scoring and household collaboration features.
+AI-powered property browsing application built with Next.js 15, Supabase, and modern tooling. Features ML-based recommendations and household collaboration.
 
 ## Features
 
-- **Property Discovery**: Swipe through properties with mobile-first interface
-- **ML Scoring**: 3-phase scoring system (cold-start → online-LR → LightGBM)
-- **Geographic Search**: PostGIS spatial queries with neighborhood boundaries
-- **Household Collaboration**: Multi-user property viewing and shared preferences
-- **Authentication**: Supabase Auth with Google OAuth integration
-- **Responsive Design**: UI built with shadcn/ui and Tailwind CSS
+### ✅ Implemented
+- **Authentication**: Supabase Auth with Google OAuth
+- **Database**: PostGIS-enabled PostgreSQL with RLS
+- **Testing**: Comprehensive test infrastructure
+- **Type Safety**: Full TypeScript with Zod validation
+
+### 🚧 In Development  
+- **Property Discovery**: Browse and search properties
+- **ML Scoring**: 3-phase recommendation system
+- **Household Collaboration**: Multi-user property sharing
+- **Geographic Search**: Neighborhood-based queries
 
 ## Tech Stack
 
@@ -38,26 +43,20 @@ A TypeScript-first property browsing application built with Next.js 15, Supabase
 
 ## Project Status
 
-### Database & Migration ✅
+### ✅ Completed
+- **Database**: 6 tables with RLS, 2,214 records migrated (99.1%)
+- **Authentication**: Email/password and Google OAuth
+- **Testing**: Jest (82/82), Vitest (36/36), Playwright infrastructure
+- **CI/CD**: GitHub Actions with automated testing
+- **Type Safety**: Strict TypeScript with Zod validation
 
-- **Production Ready**: 6 core tables deployed with RLS policies
-- **Data Migrated**: 1,123 neighborhoods + 1,091 properties (99.1% success)
-- **PostGIS Integration**: Spatial queries and geographic boundaries
-- **Zero Data Loss**: Safe PostGIS migration preserving 2,176 spatial points
+### 🚧 Next Steps
+- Landing page and marketing site
+- Property browsing UI
+- Search implementation
+- User dashboard
 
-### Test Infrastructure ✅
-
-- **100% Unit Tests**: Complete service layer coverage
-- **100% Integration Tests**: Real Supabase Docker integration
-- **E2E Framework**: Playwright with test database isolation
-- **CI/CD Pipeline**: GitHub Actions with automated testing
-
-### Service Layer ✅
-
-- **PropertyService**: Complete CRUD with spatial queries
-- **UserService**: Profile management and interactions
-- **Type Safety**: Auto-generated database types
-- **Validation**: Comprehensive Zod schemas
+See [Current Status](./docs/CURRENT_STATUS.md) for detailed roadmap.
 
 ## Architecture
 
@@ -155,12 +154,11 @@ pnpm run db:migrate    # Apply database migrations
 
 ### Quick Links
 
+- **[Current Status](./docs/CURRENT_STATUS.md)** - Real-time project status and roadmap
 - **[Architecture](./docs/ARCHITECTURE.md)** - System design and tech stack
 - **[Implementation Plan](./docs/IMPLEMENTATION_PLAN.md)** - Development roadmap
 - **[Testing Guide](./docs/TESTING.md)** - Complete testing strategy
-- **[Style Guide](./docs/STYLE_GUIDE.md)** - UI/UX guidelines
-- **[Development Workflows](./docs/DEVELOPMENT_WORKFLOWS.md)** - Git, coverage, and development processes
-- **[API Reference](./docs/RAPIDAPI_ZILLOW.md)** - Zillow integration
+- **[Development Workflows](./docs/DEVELOPMENT_WORKFLOWS.md)** - Git workflows and processes
 
 ## Key Achievements
 
