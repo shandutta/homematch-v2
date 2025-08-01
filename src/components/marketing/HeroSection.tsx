@@ -1,8 +1,8 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { PhoneMockup } from './PhoneMockup'
 import { ParallaxStarsCanvas } from './ParallaxStarsCanvas'
 
@@ -12,16 +12,12 @@ export function HeroSection() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
   return (
-    <section
-      className="relative min-h-screen overflow-hidden"
-      data-testid="hero"
-    >
+    <section className="relative min-h-screen overflow-hidden" data-testid="hero">
       {/* Deeper Navy Gradient Background */}
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'linear-gradient(135deg, #020b1f 0%, #03123b 48%, #041a52 100%)',
+          background: 'linear-gradient(135deg, #020b1f 0%, #03123b 48%, #041a52 100%)',
         }}
       />
 
@@ -68,9 +64,8 @@ export function HeroSection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
               >
-                House hunting just became your favorite couples activity. Find
-                your perfect home together with AI that learns what you both
-                love.
+                House hunting just became your favorite couples activity. Find your perfect
+                home together with AI that learns what you both love.
               </motion.p>
 
               <motion.div
@@ -79,15 +74,8 @@ export function HeroSection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
               >
-                {/* Replace production CTA with reusable prime variant; enable click-burst only here */}
+                {/* Primary CTA */}
                 <Button variant="prime" size="xl" asChild>
-<<<<<<< HEAD
-                  <Link href="/signup" aria-label="Start Swiping" data-cta="dopamine-hero" className="relative inline-flex items-center justify-center">
-                    <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">Start Swiping</span>
-                    <span aria-hidden="true" className="pointer-events-none absolute inset-0" id="particles-host" />
-                    <script dangerouslySetInnerHTML={{
-                      __html: `
-=======
                   <Link
                     href="/signup"
                     aria-label="Start Swiping"
@@ -98,76 +86,66 @@ export function HeroSection() {
                       Get started
                     </span>
                     <span
-                      aria-hidden="true"
+                      aria-hidden
                       className="pointer-events-none absolute inset-0"
                       id="particles-host"
                     />
+                    {/* click-burst only on hero CTA */}
                     <script
                       dangerouslySetInnerHTML={{
                         __html: `
->>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
-                        (function(){
-                          var root = document.querySelector('[data-cta="dopamine-hero"]');
-                          if(!root) return;
-                          var host = root.querySelector('#particles-host');
-                          function burst(){
-                            if(!host) return;
-                            var count = 12;
-                            for(var i=0;i<count;i++){
-                              var el = document.createElement('span');
-                              var angle = (Math.PI * 2) * (i / count);
-                              var radius = 18 + Math.random() * 12;
-                              var dx = Math.cos(angle) * radius;
-                              var dy = Math.sin(angle) * radius;
-                              el.style.position = 'absolute';
-                              el.style.left = '50%';
-                              el.style.top = '50%';
-                              el.style.width = '4px';
-                              el.style.height = '4px';
-                              el.style.borderRadius = '9999px';
-                              el.style.pointerEvents = 'none';
-                              el.style.background = 'white';
-                              el.style.opacity = '0.85';
-                              el.style.boxShadow = '0 0 8px rgba(255,255,255,0.65)';
-                              el.style.transform = 'translate(-50%, -50%)';
-                              el.style.transition = 'transform 320ms cubic-bezier(0.2,0.6,0.2,1), opacity 320ms ease-out';
-                              host.appendChild(el);
-                              requestAnimationFrame(function(){
-                                el.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
-                                el.style.opacity = '0';
-                              });
-                              setTimeout((function(node){ return function(){ node && node.remove(); };})(el), 360);
-                            }
-                          }
-                          root.addEventListener('mousedown', burst);
-                          root.addEventListener('touchstart', burst, {passive:true});
-                        })();
-<<<<<<< HEAD
-                      `
-                    }} />
-=======
-                      `,
+(function(){
+  var root = document.querySelector('[data-cta="dopamine-hero"]');
+  if(!root) return;
+  var host = root.querySelector('#particles-host');
+  function burst(){
+    if(!host) return;
+    var count = 12;
+    for(var i=0;i<count;i++){
+      var el = document.createElement('span');
+      var angle = (Math.PI * 2) * (i / count);
+      var radius = 18 + Math.random() * 12;
+      var dx = Math.cos(angle) * radius;
+      var dy = Math.sin(angle) * radius;
+      el.style.position = 'absolute';
+      el.style.left = '50%';
+      el.style.top = '50%';
+      el.style.width = '4px';
+      el.style.height = '4px';
+      el.style.borderRadius = '9999px';
+      el.style.pointerEvents = 'none';
+      el.style.background = 'white';
+      el.style.opacity = '0.85';
+      el.style.boxShadow = '0 0 8px rgba(255,255,255,0.65)';
+      el.style.transform = 'translate(-50%, -50%)';
+      el.style.transition = 'transform 320ms cubic-bezier(0.2,0.6,0.2,1), opacity 320ms ease-out';
+      host.appendChild(el);
+      requestAnimationFrame(function(){
+        el.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+        el.style.opacity = '0';
+      });
+      setTimeout((function(node){ return function(){ node && node.remove(); };})(el), 360);
+    }
+  }
+  root.addEventListener('mousedown', burst);
+  root.addEventListener('touchstart', burst, {passive:true});
+})();
+                        `,
                       }}
                     />
->>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
                   </Link>
                 </Button>
 
+                {/* Secondary CTA */}
                 <Button
                   size="lg"
                   variant="outline"
                   className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10"
                   asChild
                 >
-<<<<<<< HEAD
-                  <Link href="/login">Already a Member?</Link>
-=======
                   <Link href="/login">Log in</Link>
->>>>>>> 1c81761 (fix(landing): align hero CTAs with smoke tests)
                 </Button>
               </motion.div>
-
-              {/* Remove preview from hero now that production CTA uses the new style */}
             </div>
 
             {/* Phone Mockup */}
