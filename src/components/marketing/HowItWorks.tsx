@@ -2,9 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
-import Link from 'next/link'
 
 export function HowItWorks() {
   const steps = [

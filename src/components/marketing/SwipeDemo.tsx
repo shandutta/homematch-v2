@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useCallback, useEffect } from 'react'
-import { Heart, X, Bed, Bath, Square } from 'lucide-react'
+import { Heart, X, Bed, Bath } from 'lucide-react'
 import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
 
@@ -16,7 +16,15 @@ interface Property {
   sqft: number | string
 }
 
-const demoProperties: Property[] = []
+interface MarketingProperty {
+  imageUrl: string
+  price?: number
+  address?: string
+  bedrooms?: number
+  bathrooms?: number
+  sqft?: number
+  livingArea?: number
+}
 
 export function SwipeDemo() {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -30,10 +38,12 @@ export function SwipeDemo() {
       try {
         const res = await fetch('/api/properties/marketing', { cache: 'no-store' })
         if (!res.ok) return
-        const data: any[] = await res.json()
+        const data: unknown[] = await res.json()
         if (!Array.isArray(data)) return
         const mapped: Property[] = data
-          .filter((c) => c?.imageUrl && typeof c.imageUrl === 'string')
+          .filter((c): c is MarketingProperty => 
+            Boolean(c && typeof c === 'object' && 'imageUrl' in c && typeof (c as MarketingProperty).imageUrl === 'string')
+          )
           .slice(0, 6)
           .map((c, idx) => ({
             id: idx + 1,
@@ -45,8 +55,9 @@ export function SwipeDemo() {
             sqft: typeof c.sqft === 'number' ? c.sqft : (typeof c.livingArea === 'number' ? c.livingArea : '—'),
           }))
         if (!cancelled) setProperties(mapped)
-      } catch {
-        // silent fail; keep empty
+      } catch (error) {
+        // Silent fail; keep empty - this is expected for marketing demo
+        console.debug('Failed to fetch marketing properties:', error);
       }
     }
     void fetchData()
@@ -100,7 +111,7 @@ export function SwipeDemo() {
             className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            Go ahead, give it a swipe. We promise it's addictive.
+            Go ahead, give it a swipe. We promise its addictive.
           </p>
 
           {/* Start Swiping button styled same as hero primary CTA (dark blue variant) */}
