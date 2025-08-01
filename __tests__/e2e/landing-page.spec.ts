@@ -50,27 +50,20 @@ test.describe('Landing Page Navigation', () => {
     // authenticate via UI to avoid custom fixtures types
     await page.goto('/login')
     // Fill typical login form fields if present; otherwise rely on middleware redirect when already logged
-    const hasEmail = await page
-      .getByLabel(/email/i)
-      .count()
-      .then((c) => c > 0)
+    const hasEmail = (await page.getByLabel(/email/i).count()) > 0
     if (hasEmail) {
-      await page.getByLabel(/email/i).fill('user@example.com')
+      await page.getByLabel(/email/i).fill('test1@example.com')
     }
-    const hasPassword = await page
-      .getByLabel(/password/i)
-      .count()
-      .then((c) => c > 0)
+    const hasPassword = (await page.getByLabel(/password/i).count()) > 0
     if (hasPassword) {
-      await page.getByLabel(/password/i).fill('Password123!')
+      await page.getByLabel(/password/i).fill('testpassword123')
     }
-    const hasSubmit = await page
-      .getByRole('button', { name: /log in|sign in/i })
-      .count()
-      .then((c) => c > 0)
+    const submitBtn = page.getByRole('button', { name: /log in|sign in/i })
+    const hasSubmit = (await submitBtn.count()) > 0
     if (hasSubmit) {
-      await page.getByRole('button', { name: /log in|sign in/i }).click()
-      // wait a moment for auth to settle
+      await expect(submitBtn.first()).toBeEnabled({ timeout: 5000 })
+      await submitBtn.first().click()
+      // wait for navigation/redirect to start settling
       await page.waitForLoadState('load')
     }
 
@@ -78,27 +71,7 @@ test.describe('Landing Page Navigation', () => {
     await page.goto('/')
 
     // Should be redirected to validation page (allow for propagation)
-    // Some browsers (e.g., Firefox) may need additional polling + back/forward to trigger client redirect
-    const deadline = Date.now() + 30000
-    while (Date.now() < deadline) {
-      if (page.url().includes('/validation')) {
-        break
-      }
-      // Re-hit landing to let middleware/client-side check re-run
-      await page.goto('/', { waitUntil: 'load' })
-      // wait a bit and check again
-      await page.waitForTimeout(1000)
-      if (page.url().includes('/validation')) {
-        break
-      }
-      // Apply an additional back/forward nudge to trigger router changes on Firefox if needed
-      await page.goBack({ waitUntil: 'load' }).catch(() => {})
-      await page.goForward({ waitUntil: 'load' }).catch(() => {})
-      await page.waitForTimeout(500)
-    }
-
-    // Final assertion
-    await expect(page.url()).toMatch(/\/validation/)
+    await expect(page).toHaveURL(/\/validation/, { timeout: 45000 })
     await expect(page.getByText('HomeMatch')).toBeVisible()
   })
 })
