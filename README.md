@@ -7,12 +7,14 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 ## Features
 
 ### ✅ Implemented
+
 - **Authentication**: Supabase Auth with Google OAuth
 - **Database**: PostGIS-enabled PostgreSQL with RLS
 - **Testing**: Comprehensive test infrastructure
 - **Type Safety**: Full TypeScript with Zod validation
 
-### 🚧 In Development  
+### 🚧 In Development
+
 - **Property Discovery**: Browse and search properties
 - **ML Scoring**: 3-phase recommendation system
 - **Household Collaboration**: Multi-user property sharing
@@ -44,6 +46,7 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 ## Project Status
 
 ### ✅ Completed
+
 - **Database**: 6 tables with RLS, 2,214 records migrated (99.1%)
 - **Authentication**: Email/password and Google OAuth
 - **Testing**: Jest (82/82), Vitest (36/36), Playwright infrastructure
@@ -51,6 +54,7 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 - **Type Safety**: Strict TypeScript with Zod validation
 
 ### 🚧 Next Steps
+
 - Landing page and marketing site
 - Property browsing UI
 - Search implementation

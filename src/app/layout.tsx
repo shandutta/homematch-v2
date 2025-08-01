@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'HomeMatch - AI-Powered Home Search',
   description:
     'Find your perfect home with AI-powered matching and personalized recommendations',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  ),
 }
 
 export default function RootLayout({

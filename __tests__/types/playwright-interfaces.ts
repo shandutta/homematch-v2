@@ -59,9 +59,9 @@ export interface PlaywrightPage {
   }
 
   // Script evaluation
-  evaluate<T = any>(
+  evaluate<T = unknown>(
     pageFunction: string | ((...args: unknown[]) => unknown),
-    arg?: any
+    arg?: unknown
   ): Promise<T>
 
   // Waiting and timeouts
@@ -131,16 +131,18 @@ export interface PlaywrightTestInfo {
 /**
  * Type guard to ensure objects have the methods we need
  */
-export function isPlaywrightPage(obj: any): obj is PlaywrightPage {
+export function isPlaywrightPage(obj: unknown): obj is PlaywrightPage {
+  const o = obj as Record<string, unknown>
   return (
-    obj &&
-    typeof obj.on === 'function' &&
-    typeof obj.url === 'function' &&
-    typeof obj.title === 'function' &&
-    typeof obj.screenshot === 'function'
+    !!o &&
+    typeof o.on === 'function' &&
+    typeof o.url === 'function' &&
+    typeof o.title === 'function' &&
+    typeof o.screenshot === 'function'
   )
 }
 
-export function isPlaywrightTestInfo(obj: any): obj is PlaywrightTestInfo {
-  return obj && typeof obj.title === 'string' && typeof obj.testId === 'string'
+export function isPlaywrightTestInfo(obj: unknown): obj is PlaywrightTestInfo {
+  const o = obj as Record<string, unknown>
+  return !!o && typeof o.title === 'string' && typeof o.testId === 'string'
 }
