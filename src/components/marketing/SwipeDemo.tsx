@@ -180,13 +180,14 @@ export function SwipeDemo() {
                       src={demoProperties[currentIndex].image}
                       alt={demoProperties[currentIndex].address}
                       fill
-                      className="object-cover"
+                      className="object-cover select-none pointer-events-none"
                       sizes="400px"
                       priority
                       placeholder="blur"
                       blurDataURL={getPropertyBlurPlaceholder(
                         demoProperties[currentIndex].image
                       )}
+                      draggable={false}
                     />
 
                     {/* Price Tag */}
