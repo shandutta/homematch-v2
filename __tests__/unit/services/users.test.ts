@@ -26,7 +26,8 @@ describe('UserService Unit Tests', () => {
     jest.clearAllMocks()
 
     // Get the mocked createClient function (ESM import-friendly)
-    const serverModule = jest.requireActual('@/lib/supabase/server') as {
+    // Use the mocked module instead of requireActual so we can control return values
+    const serverModule = jest.requireMock('@/lib/supabase/server') as {
       createClient: jest.Mock
     }
     mockCreateClient = serverModule.createClient
@@ -74,7 +75,7 @@ describe('UserService Unit Tests', () => {
         const mockInsert = jest.fn().mockReturnValue({ select: mockSelect })
         const mockFrom = jest.fn().mockReturnValue({ insert: mockInsert })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.createUserProfile(profileInsert)
 
@@ -98,7 +99,7 @@ describe('UserService Unit Tests', () => {
         const mockInsert = jest.fn().mockReturnValue({ select: mockSelect })
         const mockFrom = jest.fn().mockReturnValue({ insert: mockInsert })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.createUserProfile(profileInsert)
 
@@ -141,7 +142,7 @@ describe('UserService Unit Tests', () => {
         const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ update: mockUpdate })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.updateUserProfile(
           'user-123',
@@ -191,7 +192,7 @@ describe('UserService Unit Tests', () => {
         const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ update: mockUpdate })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.updateUserProfile(
           'user-onboarding',
@@ -217,7 +218,7 @@ describe('UserService Unit Tests', () => {
         const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ update: mockUpdate })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.updateUserProfile(
           'user-123',
@@ -255,7 +256,7 @@ describe('UserService Unit Tests', () => {
         const mockSelect = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ select: mockSelect })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.getUserProfileWithHousehold(
           'user-with-household'
@@ -295,7 +296,7 @@ describe('UserService Unit Tests', () => {
         const mockInsert = jest.fn().mockReturnValue({ select: mockSelect })
         const mockFrom = jest.fn().mockReturnValue({ insert: mockInsert })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.createHousehold(householdInsert)
 
@@ -326,7 +327,7 @@ describe('UserService Unit Tests', () => {
         const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ update: mockUpdate })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.joinHousehold(
           'user-joining',
@@ -373,7 +374,7 @@ describe('UserService Unit Tests', () => {
         const mockSelect = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ select: mockSelect })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.getHouseholdMembers(
           'household-coordination'
@@ -410,7 +411,7 @@ describe('UserService Unit Tests', () => {
         const mockUpdate = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ update: mockUpdate })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.leaveHousehold('user-leaving')
 
@@ -459,7 +460,7 @@ describe('UserService Unit Tests', () => {
         const mockUpsert = jest.fn().mockReturnValue({ select: mockSelect })
         const mockFrom = jest.fn().mockReturnValue({ upsert: mockUpsert })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.recordInteraction(interactionInsert)
 
@@ -494,7 +495,7 @@ describe('UserService Unit Tests', () => {
         const mockUpsert = jest.fn().mockReturnValue({ select: mockSelect })
         const mockFrom = jest.fn().mockReturnValue({ upsert: mockUpsert })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.recordInteraction(duplicateInteraction)
 
@@ -538,7 +539,7 @@ describe('UserService Unit Tests', () => {
         const mockSelect = jest.fn().mockReturnValue({ eq: mockEq })
         const mockFrom = jest.fn().mockReturnValue({ select: mockSelect })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.getUserInteractions(
           'user-interactions',
@@ -586,7 +587,7 @@ describe('UserService Unit Tests', () => {
         const mockSelect = jest.fn().mockReturnValue({ eq: mockEq1 })
         const mockFrom = jest.fn().mockReturnValue({ select: mockSelect })
 
-        mockCreateClient.mockResolvedValue({ from: mockFrom })
+        mockCreateClient.mockReturnValue({ from: mockFrom })
 
         const result = await userService.getUserInteractionsByType(
           'user-ml-scores',

@@ -1,0 +1,97 @@
+[
+  {
+    "zpid": "dev-100001",
+    "address": "1200 Lakeview Dr",
+    "city": "Oakland",
+    "state": "CA",
+    "zip_code": "94610",
+    "price": 975000,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "square_feet": 1680,
+    "property_type": "house",
+    "images": [
+      "https://photos.zillowstatic.com/fp/e4ee7c7895b9186fd6295b264b2c8638-p_e.jpg"
+    ],
+    "description": "Classic craftsman near Lake Merritt with sunny backyard and updated kitchen.",
+    "listing_status": "active",
+    "latitude": 37.8124,
+    "longitude": -122.2476
+  },
+  {
+    "zpid": "dev-100002",
+    "address": "55 Dolores St #5A",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip_code": "94103",
+    "price": 1295000,
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "square_feet": 1120,
+    "property_type": "condo",
+    "images": [
+      "https://photos.zillowstatic.com/fp/ba7396bdad4cdfc6acfa9e9e2f437318-p_e.jpg"
+    ],
+    "description": "Modern condo with city views, in-unit laundry, and parking.",
+    "listing_status": "active",
+    "latitude": 37.7687,
+    "longitude": -122.4256
+  },
+  {
+    "zpid": "dev-100003",
+    "address": "4180 Claremont Ave",
+    "city": "Berkeley",
+    "state": "CA",
+    "zip_code": "94705",
+    "price": 1649000,
+    "bedrooms": 4,
+    "bathrooms": 2.5,
+    "square_feet": 2350,
+    "property_type": "house",
+    "images": [
+      "https://photos.zillowstatic.com/fp/85b9746f35970bb2ba359b69de313e27-p_e.jpg"
+    ],
+    "description": "Renovated hillside home with decks and bay views.",
+    "listing_status": "active",
+    "latitude": 37.8586,
+    "longitude": -122.2416
+  },
+  {
+    "zpid": "dev-100004",
+    "address": "902 Mission Bay Blvd N #1207",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip_code": "94158",
+    "price": 1490000,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "square_feet": 1405,
+    "property_type": "condo",
+    "images": [
+      "https://photos.zillowstatic.com/fp/e24bc744e0c629b87292cf371a23c312-p_e.jpg"
+    ],
+    "description": "Corner-unit high-rise with abundant light and amenities.",
+    "listing_status": "active",
+    "latitude": 37.7707,
+    "longitude": -122.3893
+  },
+  {
+    "zpid": "dev-100005",
+    "address": "6312 College Ave",
+    "city": "Oakland",
+    "state": "CA",
+    "zip_code": "94618",
+    "price": 1190000,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "square_feet": 1580,
+    "property_type": "townhouse",
+    "images": [
+      "https://photos.zillowstatic.com/fp/e7609b4875d668bffa9e1919e420b5ac-p_e.jpg"
+    ],
+    "description": "Walkable Rockridge townhouse near BART and shops.",
+    "listing_status": "active",
+    "latitude": 37.8465,
+    "longitude": -122.2524
+  }
+]

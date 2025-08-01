@@ -3,6 +3,19 @@
 import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
 import { useEffect, useState, useMemo } from 'react'
 
+/**
+ * Deterministic PRNG (Mulberry32) to ensure SSR/CSR parity for star field
+ * Given a fixed seed, server and client generate identical sequences.
+ */
+function mulberry32(seed: number) {
+  return function () {
+    let t = (seed += 0x6d2b79f5)
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 interface Star {
   id: number
   x: number
@@ -61,15 +74,19 @@ export function ParallaxStars() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const { scrollY } = useScroll()
 
-  // Memoize star generation to prevent re-calculation on every render
+  // Generate a deterministic star field so SSR and client match.
+  // Use a fixed seed for stable positions/sizes across renders.
   const stars = useMemo(() => {
-    return Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      duration: Math.random() * 20 + 10,
-    }))
+    const rand = mulberry32(1337)
+    const count = 50
+    const arr = new Array(count).fill(0).map((_, i) => {
+      const x = rand() * 100
+      const y = rand() * 100
+      const size = rand() * 3 + 1
+      const duration = rand() * 20 + 10
+      return { id: i, x, y, size, duration }
+    })
+    return arr
   }, [])
 
   useEffect(() => {
