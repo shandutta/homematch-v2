@@ -1,75 +1,56 @@
+import { HeroSection } from '@/components/marketing/HeroSection'
+import { FeatureGrid } from '@/components/marketing/FeatureGrid'
+import { SwipeDemo } from '@/components/marketing/SwipeDemo'
+import { Footer } from '@/components/marketing/Footer'
+import { Header } from '@/components/marketing/Header'
 import { createClient } from '@/lib/supabase/server'
-import { signOut } from '@/lib/supabase/actions'
+import { redirect } from 'next/navigation'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'HomeMatch - Swipe. Match. Move In.',
+  description:
+    'House hunting just became your favorite couples activity. Find your perfect home together with AI that learns what you both love.',
+  keywords:
+    'house hunting, real estate, couples, AI matching, property search, home finding',
+  openGraph: {
+    title: 'HomeMatch - Tinder for Houses',
+    description: 'The modern way for couples to find their dream home',
+    images: ['/og-image.jpg'],
+    type: 'website',
+    url: 'https://homematch.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HomeMatch - Swipe Right on Your Dream Home',
+    description: 'House hunting for the modern couple',
+    images: ['/twitter-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://homematch.app',
+  },
+}
 
 export const dynamic = 'force-dynamic'
 
-export default async function Home() {
+export default async function LandingPage() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // If user is already authenticated, redirect to validation page
+  if (user) {
+    redirect('/validation')
+  }
+
   return (
-    <div className="min-h-screen p-8">
-      <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">HomeMatch</h1>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {user.email}
-              </span>
-              <form action={signOut}>
-                <button
-                  type="submit"
-                  className="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
-                >
-                  Sign out
-                </button>
-              </form>
-            </div>
-          ) : (
-            <a
-              href="/login"
-              className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-            >
-              Sign in
-            </a>
-          )}
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl">
-        <div className="mb-8 text-center">
-          <h2 className="mb-4 text-3xl font-bold">Welcome to HomeMatch</h2>
-          <p className="mb-8 text-gray-600">
-            Find your perfect home with AI-powered matching
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border p-6">
-            <h3 className="mb-2 font-semibold">Smart Property Search</h3>
-            <p className="text-sm text-gray-600">
-              Use natural language to find properties that match your
-              preferences
-            </p>
-          </div>
-          <div className="rounded-lg border p-6">
-            <h3 className="mb-2 font-semibold">Household Management</h3>
-            <p className="text-sm text-gray-600">
-              Share and collaborate with family members on property searches
-            </p>
-          </div>
-          <div className="rounded-lg border p-6">
-            <h3 className="mb-2 font-semibold">ML-Powered Scoring</h3>
-            <p className="text-sm text-gray-600">
-              Get personalized property recommendations based on your behavior
-            </p>
-          </div>
-        </div>
-
-      </main>
-    </div>
+    <>
+      <Header />
+      <HeroSection />
+      <FeatureGrid />
+      <SwipeDemo />
+      <Footer />
+    </>
   )
 }

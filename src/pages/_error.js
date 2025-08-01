@@ -1,11 +1,13 @@
 function Error({ statusCode }) {
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      alignItems: 'center', 
-      justifyContent: 'center' 
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <div style={{ textAlign: 'center' }}>
         <h1>{statusCode ? `${statusCode} - Server Error` : 'Client Error'}</h1>
         <p>An error occurred</p>

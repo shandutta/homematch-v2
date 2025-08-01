@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === 'true',
   },
-  
+
   trailingSlash: false,
 }
 

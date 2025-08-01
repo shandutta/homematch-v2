@@ -39,7 +39,7 @@ async function setupIntegrationTests() {
     // Step 2: Reset database to apply migrations
     console.log('\n2️⃣  Applying database migrations...')
     await runCommand('scripts/infrastructure-working.js', ['reset-db'])
-    
+
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Step 3: Create test users
