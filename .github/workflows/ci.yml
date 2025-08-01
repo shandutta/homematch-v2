@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - chore/**
+      - feature/**
+      - fix/**
+      - refactor/**
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Lint, Type Check, Test, Build
+    runs-on: ubuntu-latest
+
+    env:
+      # Ensure we do NOT skip checks in CI
+      SKIP_LINTING: 'false'
+      SKIP_TYPE_CHECK: 'false'
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and Type Check
+        run: pnpm run check
+
+      - name: Unit Tests (Jest)
+        run: pnpm run test:unit
+
+      - name: Integration Tests (Vitest)
+        run: pnpm run test:integration
+
+      - name: E2E (Playwright)
+        run: pnpm run test:e2e
+        env:
+          # Playwright may require additional dependencies on ubuntu-latest runner
+          CI: 'true'
+
+      - name: Build
+        # Do not allow skipping lint or type-check during build; env set to false above.
+        run: pnpm run build
+
+      - name: Coverage (optional)
+        if: ${{ always() }}
+        run: pnpm run test:coverage
