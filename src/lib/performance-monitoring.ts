@@ -6,9 +6,9 @@
 declare global {
   interface Window {
     webVitals?: {
-      getCLS: (callback: (metric: any) => void) => void
-      getFID: (callback: (metric: any) => void) => void
-      getLCP: (callback: (metric: any) => void) => void
+      getCLS: (callback: (metric: WebVitalMetric) => void) => void
+      getFID: (callback: (metric: WebVitalMetric) => void) => void
+      getLCP: (callback: (metric: WebVitalMetric) => void) => void
     }
   }
 }
@@ -107,7 +107,7 @@ export async function measurePerformance(): Promise<PerformanceReport> {
 
     // Use web-vitals library if available
     if (window.webVitals) {
-      window.webVitals.getLCP((metric: WebVitalMetric) => {
+      window.webVitals.getLCP((metric) => {
         report.LCP = {
           value: metric.value,
           rating: getCWVRating('LCP', metric.value),
@@ -117,7 +117,7 @@ export async function measurePerformance(): Promise<PerformanceReport> {
         checkComplete()
       })
 
-      window.webVitals.getFID((metric: WebVitalMetric) => {
+      window.webVitals.getFID((metric) => {
         report.FID = {
           value: metric.value,
           rating: getCWVRating('FID', metric.value),
@@ -127,7 +127,7 @@ export async function measurePerformance(): Promise<PerformanceReport> {
         checkComplete()
       })
 
-      window.webVitals.getCLS((metric: WebVitalMetric) => {
+      window.webVitals.getCLS((metric) => {
         report.CLS = {
           value: metric.value,
           rating: getCWVRating('CLS', metric.value),

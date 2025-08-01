@@ -12,7 +12,10 @@ export function HeroSection() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
   return (
-    <section className="relative min-h-screen overflow-hidden">
+    <section
+      className="relative min-h-screen overflow-hidden"
+      data-testid="hero"
+    >
       {/* Deep Blue Gradient Background */}
       <div
         className="absolute inset-0"

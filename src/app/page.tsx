@@ -1,7 +1,4 @@
 import { HeroSection } from '@/components/marketing/HeroSection'
-import { FeatureGrid } from '@/components/marketing/FeatureGrid'
-import { SwipeDemo } from '@/components/marketing/SwipeDemo'
-import { Footer } from '@/components/marketing/Footer'
 import { Header } from '@/components/marketing/Header'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -38,6 +35,15 @@ export default async function LandingPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // Dynamically import below-the-fold components to reduce initial bundle/TTFB
+  const [FeatureGrid, SwipeDemo, Footer] = await Promise.all([
+    (async () =>
+      (await import('@/components/marketing/FeatureGrid')).FeatureGrid)(),
+    (async () =>
+      (await import('@/components/marketing/SwipeDemo')).SwipeDemo)(),
+    (async () => (await import('@/components/marketing/Footer')).Footer)(),
+  ])
 
   // If user is already authenticated, redirect to validation page
   if (user) {
