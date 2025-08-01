@@ -41,7 +41,8 @@ async function fetchMarketingCards(): Promise<MarketingCard[]> {
       return data.filter((c) => c?.zpid && typeof c?.imageUrl === 'string')
     }
     return []
-  } catch {
+  } catch (error) {
+    console.debug('Failed to fetch marketing cards:', error);
     return []
   }
 }
@@ -301,29 +302,31 @@ function PropertyCard({
               onClick={() => {
                 // subtle "pass" effect
                 try {
-                  // toast via global or event
-                  // @ts-ignore
-                  if (window?.toast) {
-                    // @ts-ignore
-                    window.toast({
-                      title: 'Passed',
-                      description: 'We\'ll show you more like this.',
-                      variant: 'destructive',
-                    })
-                  } else {
-                    const evt = new CustomEvent('landing-toast', {
-                      detail: {
-                        title: 'Passed',
-                        description: "We'll show you more like this.",
-                        variant: 'destructive',
-                      },
-                    })
-                    window.dispatchEvent(evt)
-                  }
-                } catch {}
-                onSwipe('left')
-              }}
-              aria-label="Pass on this property"
+            // toast via global or event
+            // @ts-expect-error window.toast might not exist
+            if (window?.toast) {
+              // @ts-expect-error window.toast might not exist
+              window.toast({
+                title: 'Passed',
+                description: 'We\'ll show you more like this.',
+                variant: 'destructive',
+              })
+            } else {
+              const evt = new CustomEvent('landing-toast', {
+                detail: {
+                  title: 'Passed',
+                  description: "We'll show you more like this.",
+                  variant: 'destructive',
+                },
+              })
+              window.dispatchEvent(evt)
+            }
+          } catch {
+            // ignore error
+          }
+          onSwipe('left')
+        }}
+        aria-label="Pass on this property"
             >
               <X className="h-4 w-4" />
               <span className="text-sm font-medium">Pass</span>
@@ -356,9 +359,9 @@ function PropertyCard({
 
                 try {
                   // toast via global or event
-                  // @ts-ignore
+                  // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
-                    // @ts-ignore
+                    // @ts-expect-error window.toast might not exist
                     window.toast({
                       title: "It's a Match!",
                       description: 'Saved to your likes.',
@@ -374,7 +377,9 @@ function PropertyCard({
                     })
                     window.dispatchEvent(evt)
                   }
-                } catch {}
+                } catch {
+                  // ignore error
+                }
                 onSwipe('right')
               }}
               aria-label="Love this property"
@@ -465,9 +470,9 @@ export function PhoneMockup() {
     try {
       // shadcn/ui toast usually via useToast, but on landing we might have a global
       // Fallback to a custom event if global isn't available.
-      // @ts-ignore
+      // @ts-expect-error window.toast might not exist
       if (window?.toast) {
-        // @ts-ignore
+        // @ts-expect-error window.toast might not exist
         window.toast({
           title: "It's a Match!",
           description: 'You and this home are a perfect fit.',
