@@ -3,26 +3,26 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { ParallaxStarsCanvas } from '@/components/marketing/ParallaxStarsCanvas'
 
 export function CtaBand() {
   return (
     <section className="relative overflow-hidden py-16 sm:py-20">
-      {/* Background */}
+      {/* Hero-style deep navy gradient + parallax stars */}
       <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-70"
+        className="pointer-events-none absolute inset-0 -z-20"
+        aria-hidden
         style={{
           background:
-            'radial-gradient(120% 120% at 80% -20%, rgba(56,189,248,0.12), transparent 60%), radial-gradient(120% 120% at 10% 120%, rgba(59,130,246,0.12), transparent 60%)',
+            'linear-gradient(180deg, #0B132B 0%, #0E1633 45%, #0B132B 100%)',
         }}
-        aria-hidden="true"
       />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        aria-hidden
+      >
+        <ParallaxStarsCanvas className="absolute inset-0 opacity-80" />
+      </div>
 
       <div className="relative z-10 container mx-auto px-4">
         <motion.div

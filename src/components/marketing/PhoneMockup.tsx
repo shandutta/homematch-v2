@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Heart, X } from 'lucide-react'
 import Image from 'next/image'
@@ -51,6 +51,7 @@ interface Property {
   image: string
   price: string
   beds: number
+  baths: number
   location: string
 }
 
@@ -60,6 +61,7 @@ const placeholderProperties: Property[] = [
     image: '/images/properties/house-1.svg',
     price: '$850,000',
     beds: 4,
+    baths: 3,
     location: 'Palo Alto',
   },
   {
@@ -67,6 +69,7 @@ const placeholderProperties: Property[] = [
     image: '/images/properties/house-2.svg',
     price: '$1,200,000',
     beds: 3,
+    baths: 2,
     location: 'Mountain View',
   },
   {
@@ -74,6 +77,7 @@ const placeholderProperties: Property[] = [
     image: '/images/properties/house-3.svg',
     price: '$950,000',
     beds: 3,
+    baths: 2,
     location: 'Sunnyvale',
   },
 ]
@@ -82,19 +86,105 @@ interface PropertyCardProps {
   property: Property
   index: number
   onSwipe: (direction: 'left' | 'right') => void
+  autoplayHint?: boolean
+  onAutoplayDone?: () => void
 }
 
-function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
+function PropertyCard({
+  property,
+  index,
+  onSwipe,
+  autoplayHint,
+  onAutoplayDone,
+}: PropertyCardProps) {
   const x = useMotionValue(0)
-  const rotate = useTransform(x, [-200, 200], [-30, 30])
-  const likeOpacity = useTransform(x, [60, 140], [0, 1])
-  const passOpacity = useTransform(x, [-140, -60], [1, 0])
-  const matchOpacity = useTransform(x, [140, 220], [0, 1])
-  const opacity = useTransform(
-    x,
-    [-200, -100, 0, 100, 200],
-    [0.5, 1, 1, 1, 0.5]
-  )
+  const rotate = useTransform(x, [-200, 200], [-18, 18])
+  // Make indicators unmissable: appear from very small drags, with strong scale
+  const likeOpacity = useTransform(x, [10, 30], [0, 1])
+  const passOpacity = useTransform(x, [-30, -10], [1, 0])
+  const likeScale = useTransform(x, [0, 30, 120], [0.9, 1.1, 1.25])
+  const passScale = useTransform(x, [-120, -30, 0], [1.25, 1.1, 0.9])
+  const matchOpacity = useTransform(x, [120, 200], [0, 1])
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5])
+
+  // Autoplay "jiggle" hint: right then left once (first mount) - smoother with spring animations
+  useEffect(() => {
+    if (!autoplayHint || index !== 0 || typeof window === 'undefined') return
+    let cancelled = false
+
+    const prefersReduced =
+      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    async function runHint() {
+      if (prefersReduced) {
+        onAutoplayDone?.()
+        return
+      }
+
+      // slight pause before hint
+      await new Promise((r) => setTimeout(r, 350))
+      if (cancelled) return
+
+      // Smooth spring to the right
+      await new Promise<void>((resolve) => {
+        const controls = animate(x, 110, {
+          type: 'spring',
+          stiffness: 220,
+          damping: 20,
+          mass: 0.4,
+          onComplete: () => resolve(),
+        })
+        return () => controls.stop()
+      })
+      if (cancelled) return
+
+      // Back to center
+      await new Promise<void>((resolve) => {
+        const controls = animate(x, 0, {
+          type: 'spring',
+          stiffness: 260,
+          damping: 22,
+          mass: 0.35,
+          onComplete: () => resolve(),
+        })
+        return () => controls.stop()
+      })
+      if (cancelled) return
+
+      // Smooth spring to the left
+      await new Promise<void>((resolve) => {
+        const controls = animate(x, -110, {
+          type: 'spring',
+          stiffness: 220,
+          damping: 20,
+          mass: 0.4,
+          onComplete: () => resolve(),
+        })
+        return () => controls.stop()
+      })
+      if (cancelled) return
+
+      // Back to center
+      await new Promise<void>((resolve) => {
+        const controls = animate(x, 0, {
+          type: 'spring',
+          stiffness: 260,
+          damping: 22,
+          mass: 0.35,
+          onComplete: () => resolve(),
+        })
+        return () => controls.stop()
+      })
+      if (cancelled) return
+
+      onAutoplayDone?.()
+    }
+
+    void runHint()
+    return () => {
+      cancelled = true
+    }
+  }, [autoplayHint, index, onAutoplayDone, x])
 
   const handleDragEnd = (_event: unknown, info: { offset: { x: number } }) => {
     const threshold = 100
@@ -107,16 +197,11 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
   return (
     <motion.div
       className="absolute inset-0 cursor-grab will-change-transform active:cursor-grabbing"
-      style={{
-        x,
-        rotate,
-        opacity,
-      }}
+      style={{ x, rotate, opacity }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={handleDragEnd}
       onDragStart={() => {
-        // prevents image drag ghosting on some browsers
         const el = document.activeElement as HTMLElement | null
         if (el?.blur) el.blur()
       }}
@@ -130,7 +215,7 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
             src={property.image}
             alt={`Property in ${property.location}`}
             fill
-            className="pointer-events-none object-cover select-none"
+            className="pointer-events-none select-none object-cover"
             sizes="300px"
             priority={index === 0}
             placeholder="blur"
@@ -144,43 +229,160 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
             }}
           />
 
-          {/* Like/Dislike Indicators + Match badge */}
-          {/* Like/Pass indicators appear earlier during drag */}
+          {/* Price Tag (match SwipeDemo style) */}
+          <div className="absolute bottom-2 left-2 rounded-lg bg-white/95 px-3 py-1.5 backdrop-blur sm:bottom-3 sm:left-3 sm:px-3.5 sm:py-2">
+            <p className="text-base font-bold text-gray-900 sm:text-lg">
+              {property.price}
+            </p>
+          </div>
+
+          {/* Like/Pass Indicators — premium chip style */}
           <motion.div
-            className="absolute top-4 right-4 rounded-full bg-emerald-500/90 p-3 text-white shadow-lg backdrop-blur-sm"
+            className="pointer-events-none absolute top-3 right-3 z-30"
             aria-hidden="true"
             style={{ opacity: likeOpacity }}
           >
-            <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
+            <div
+              className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(16,185,129,0.35)] backdrop-blur-sm"
+              style={{ transform: `scale(${(likeScale as unknown as number) || 1})` }}
+            >
+              <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
+              <span className="text-xs font-semibold tracking-wide">LIKED</span>
+            </div>
           </motion.div>
 
           <motion.div
-            className="absolute top-4 left-4 rounded-full bg-rose-500/90 p-3 text-white shadow-lg backdrop-blur-sm"
+            className="pointer-events-none absolute top-3 left-3 z-30"
             aria-hidden="true"
             style={{ opacity: passOpacity }}
           >
-            <X className="h-8 w-8" aria-hidden="true" />
+            <div
+              className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(244,63,94,0.35)] backdrop-blur-sm"
+              style={{ transform: `scale(${(passScale as unknown as number) || 1})` }}
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              <span className="text-xs font-semibold tracking-wide">PASSED</span>
+            </div>
           </motion.div>
 
           {/* "It's a Match!" overlay when swiping right far enough */}
           <motion.div
-            className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
+            className="pointer-events-none absolute inset-x-0 top-1/2 z-30 -translate-y-1/2 text-center"
             aria-hidden="true"
             style={{ opacity: matchOpacity }}
           >
-            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-md">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(16,185,129,0.45)] backdrop-blur-sm">
               <Heart className="h-4 w-4 fill-current" />
               It&#39;s a Match!
             </span>
           </motion.div>
         </div>
 
-        {/* Property Details */}
+        {/* Property Details (match SwipeDemo info + action buttons) */}
         <div className="p-4">
-          <h3 className="text-2xl font-bold text-gray-900">{property.price}</h3>
-          <p className="mt-1 text-gray-600">
-            {property.beds} beds • {property.location}
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
+                {property.location}
+              </h3>
+              <div className="mt-2 flex items-center gap-4 text-gray-600">
+                <div className="text-sm">{property.beds} beds</div>
+                <div className="text-sm">{property.baths} baths</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons like SwipeDemo with click effects */}
+          <div className="mt-4 flex gap-3">
+            <motion.button
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-red-500 py-2.5 text-red-500 transition-all hover:bg-red-50"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => {
+                // subtle "pass" effect
+                try {
+                  // toast via global or event
+                  // @ts-ignore
+                  if (window?.toast) {
+                    // @ts-ignore
+                    window.toast({
+                      title: 'Passed',
+                      description: 'We\'ll show you more like this.',
+                      variant: 'destructive',
+                    })
+                  } else {
+                    const evt = new CustomEvent('landing-toast', {
+                      detail: {
+                        title: 'Passed',
+                        description: "We'll show you more like this.",
+                        variant: 'destructive',
+                      },
+                    })
+                    window.dispatchEvent(evt)
+                  }
+                } catch {}
+                onSwipe('left')
+              }}
+              aria-label="Pass on this property"
+            >
+              <X className="h-4 w-4" />
+              <span className="text-sm font-medium">Pass</span>
+            </motion.button>
+
+            <motion.button
+              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-green-500 py-2.5 text-white transition-all hover:bg-green-600"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={(e) => {
+                // click burst effect
+                const btn = e.currentTarget
+                const burst = document.createElement('span')
+                burst.style.position = 'absolute'
+                burst.style.left = '50%'
+                burst.style.top = '50%'
+                burst.style.width = '10px'
+                burst.style.height = '10px'
+                burst.style.borderRadius = '9999px'
+                burst.style.transform = 'translate(-50%, -50%)'
+                burst.style.background = 'rgba(255,255,255,0.8)'
+                burst.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)'
+                burst.style.transition = 'transform 380ms ease-out, opacity 380ms ease-out'
+                btn.appendChild(burst)
+                requestAnimationFrame(() => {
+                  burst.style.transform = 'translate(-50%, -50%) scale(12)'
+                  burst.style.opacity = '0'
+                })
+                setTimeout(() => burst.remove(), 420)
+
+                try {
+                  // toast via global or event
+                  // @ts-ignore
+                  if (window?.toast) {
+                    // @ts-ignore
+                    window.toast({
+                      title: "It's a Match!",
+                      description: 'Saved to your likes.',
+                      variant: 'success',
+                    })
+                  } else {
+                    const evt = new CustomEvent('landing-toast', {
+                      detail: {
+                        title: "It's a Match!",
+                        description: 'Saved to your likes.',
+                        variant: 'success',
+                      },
+                    })
+                    window.dispatchEvent(evt)
+                  }
+                } catch {}
+                onSwipe('right')
+              }}
+              aria-label="Love this property"
+            >
+              <Heart className="h-4 w-4 fill-current" />
+              <span className="text-sm font-medium">Love</span>
+            </motion.button>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -190,53 +392,61 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
 export function PhoneMockup() {
   const [cards, setCards] = useState<Property[]>(placeholderProperties)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoplayDoneRef = useRef(false)
 
-  // On mount, fetch up to 3 marketing listings and display them fully populated
+  // On mount, fetch up to 3 marketing listings; fill with placeholders if fewer.
   useEffect(() => {
     let cancelled = false
 
     async function initCards() {
       const cardsResp = await fetchMarketingCards()
 
-      if (!cancelled && cardsResp.length > 0) {
-        const mapped: Property[] = cardsResp.slice(0, 3).map((c, idx) => {
-          const price =
-            typeof c.price === 'number'
-              ? `$${c.price.toLocaleString()}`
-              : (placeholderProperties[idx]?.price ?? '$000,000')
-          const beds =
-            typeof c.bedrooms === 'number'
-              ? c.bedrooms
-              : (placeholderProperties[idx]?.beds ?? 3)
-          const location =
-            typeof c.address === 'string' && c.address.length > 0
-              ? c.address
-              : (placeholderProperties[idx]?.location ?? 'Unknown')
+      if (!cancelled) {
+        if (cardsResp.length > 0) {
+          const mapped: Property[] = cardsResp.map((c, idx) => {
+            const price =
+              typeof c.price === 'number'
+                ? `$${c.price.toLocaleString()}`
+                : (placeholderProperties[idx % placeholderProperties.length]?.price ?? '$000,000')
+            const beds =
+              typeof c.bedrooms === 'number'
+                ? c.bedrooms
+                : (placeholderProperties[idx % placeholderProperties.length]?.beds ?? 3)
+            const baths =
+              typeof c.bathrooms === 'number'
+                ? c.bathrooms
+                : (placeholderProperties[idx % placeholderProperties.length]?.baths ?? 2)
+            const location =
+              typeof c.address === 'string' && c.address.length > 0
+                ? c.address
+                : (placeholderProperties[idx % placeholderProperties.length]?.location ?? 'Unknown')
 
-          return {
-            id: idx + 1,
-            image:
-              c.imageUrl ??
-              placeholderProperties[idx]?.image ??
-              '/images/properties/house-1.svg',
-            price,
-            beds,
-            location,
-          }
-        })
+            return {
+              id: idx + 1,
+              image:
+                c.imageUrl ??
+                placeholderProperties[idx % placeholderProperties.length]?.image ??
+                '/images/properties/house-1.svg',
+              price,
+              beds,
+              baths,
+              location,
+            }
+          })
 
-        // If fewer than 3 returned, fill with placeholders to keep stack shape
-        const filled: Property[] =
-          mapped.length < 3
-            ? [
-                ...mapped,
-                ...placeholderProperties
-                  .slice(mapped.length, 3)
-                  .map((p, i) => ({ ...p, id: mapped.length + i + 1 })),
-              ]
-            : mapped
-
-        setCards(filled)
+          const base =
+            mapped.length >= 3
+              ? mapped.slice(0, 3)
+              : [
+                  ...mapped,
+                  ...placeholderProperties
+                    .slice(0, 3 - mapped.length)
+                    .map((p, i) => ({ ...p, id: mapped.length + i + 1 })),
+                ]
+          setCards(base)
+        } else {
+          setCards(placeholderProperties.slice(0, 3))
+        }
       }
     }
 
@@ -249,35 +459,64 @@ export function PhoneMockup() {
     }
   }, [])
 
+  // Use existing UI/Toast system when there's a right-swipe "match"
+  // We assume a global toast API is available via window or injected provider.
+  const showMatchToast = useCallback(() => {
+    try {
+      // shadcn/ui toast usually via useToast, but on landing we might have a global
+      // Fallback to a custom event if global isn't available.
+      // @ts-ignore
+      if (window?.toast) {
+        // @ts-ignore
+        window.toast({
+          title: "It's a Match!",
+          description: 'You and this home are a perfect fit.',
+          variant: 'success',
+        })
+      } else {
+        const evt = new CustomEvent('landing-toast', {
+          detail: {
+            title: "It's a Match!",
+            description: 'You and this home are a perfect fit.',
+            variant: 'success',
+          },
+        })
+        window.dispatchEvent(evt)
+      }
+    } catch {
+      // no-op
+    }
+  }, [])
+
+  // Infinite cycle: recycle top card to the back with new id; delay for right swipe to reveal match overlay
   const handleSwipe = useCallback(
     (cardId: number, direction: 'left' | 'right') => {
-      // Fire a quick toast-like overlay for right swipes using the existing "It's a Match!" UI
-      // We emulate the visual by briefly delaying removal on right swipe so the overlay is visible.
       setCards((prev) => {
-        // If right swipe, keep the card briefly to show the overlay then remove
+        const top = prev.find((c) => c.id === cardId)
+        if (!top) return prev
+        const rest = prev.filter((c) => c.id !== cardId)
+        const nextId = (prev.reduce((m, c) => Math.max(m, c.id), 0) || 0) + 1
+
         if (direction === 'right') {
+          // show toast and delay recycle slightly to let "match" badge be visible
+          showMatchToast()
           if (timeoutRef.current) clearTimeout(timeoutRef.current)
           timeoutRef.current = setTimeout(() => {
-            setCards((cur) => cur.filter((c) => c.id !== cardId))
-          }, 400) // 400ms to allow overlay animation to show
+            setCards((cur) => {
+              const stillTop = cur.find((c) => c.id === cardId)
+              if (!stillTop) return cur
+              const remaining = cur.filter((c) => c.id !== cardId)
+              return [...remaining, { ...stillTop, id: nextId }]
+            })
+          }, 450)
           return prev
         }
 
-        // Left swipe: remove immediately
-        const newCards = prev.filter((c) => c.id !== cardId)
-
-        // Reset cards when all are swiped
-        if (newCards.length === 0) {
-          timeoutRef.current = setTimeout(
-            () => setCards(prev.length > 0 ? prev : placeholderProperties),
-            1000
-          )
-        }
-
-        return newCards
+        // Left: recycle immediately
+        return [...rest, { ...top, id: nextId }]
       })
     },
-    []
+    [showMatchToast]
   )
 
   // Cleanup timeout on unmount
@@ -311,36 +550,65 @@ export function PhoneMockup() {
         />
 
         {/* Screen */}
-        <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-zinc-950 ring-1 ring-white/10">
-          {/* Dynamic subtle screen gradient */}
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_80%_-20%,rgba(56,189,248,0.15),transparent_60%),radial-gradient(1200px_600px_at_10%_120%,rgba(59,130,246,0.15),transparent_60%)]"
-            aria-hidden="true"
-          />
+        <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-[#0b0f1a] ring-1 ring-white/10">
+          {/* Premium gradient aurora backdrop with subtle grain */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div
+              className="absolute inset-0 opacity-[0.85] [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)]"
+              style={{
+                background:
+                  'radial-gradient(1200px 700px at 80% -20%, rgba(56,189,248,0.18), transparent 60%),' +
+                  'radial-gradient(1000px 600px at 10% 110%, rgba(59,130,246,0.16), transparent 60%),' +
+                  'conic-gradient(from 210deg at 60% 40%, rgba(147,197,253,0.08), rgba(56,189,248,0.10), rgba(59,130,246,0.08), rgba(147,197,253,0.08))',
+                filter: 'saturate(1.1) blur(0.2px)',
+              }}
+            />
+            {/* Subtle starfield with film grain for depth */}
+            <div
+              className="absolute inset-0 opacity-80"
+              style={{
+                background:
+                  'radial-gradient(0.6px 0.6px at 8% 12%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.5px 0.5px at 14% 32%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.7px 0.7px at 22% 54%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.6px 0.6px at 28% 76%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.7px 0.7px at 36% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.5px 0.5px at 44% 42%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.8px 0.8px at 52% 64%, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.6px 0.6px at 60% 82%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.6px 0.6px at 68% 26%, rgba(255,255,255,0.7), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.5px 0.5px at 76% 48%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.7px 0.7px at 84% 70%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
+                  'radial-gradient(0.6px 0.6px at 90% 88%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%)',
+                mixBlendMode: 'screen',
+              }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.12]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
+                backgroundSize: '3px 3px',
+                mixBlendMode: 'overlay',
+              }}
+            />
+          </div>
+          {/* Inner vignette to focus content and add premium depth */}
+          <div className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 ring-white/5 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)]" aria-hidden="true" />
 
           {/* Status Bar */}
           <div className="flex h-8 items-center justify-between px-5 text-[11px] text-zinc-300/90">
             <span className="tracking-tight">9:41</span>
+            {/* Removed decorative ovals that looked like sensors behind the speaker grill */}
             <div className="flex items-center gap-1.5">
-              <div
-                className="h-3 w-5 rounded-sm bg-zinc-300/90"
-                aria-hidden="true"
-              />
-              <div
-                className="h-3 w-5 rounded-sm bg-zinc-300/90"
-                aria-hidden="true"
-              />
-              <div
-                className="h-3 w-5 rounded-sm bg-zinc-300/90"
-                aria-hidden="true"
-              />
+              {/* Intentionally left empty to avoid extra shapes */}
             </div>
           </div>
 
           {/* App Content */}
           <div className="relative h-[calc(100%-2rem)] bg-transparent p-4">
             {/* App Header */}
-            <h2 className="mb-3 text-center text-lg font-semibold tracking-tight text-zinc-100">
+            <h2 className="mb-2 text-center text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
               HomeMatch
             </h2>
 
@@ -368,6 +636,10 @@ export function PhoneMockup() {
                   property={property}
                   index={index}
                   onSwipe={(direction) => handleSwipe(property.id, direction)}
+                  autoplayHint={index === 0 && !autoplayDoneRef.current}
+                  onAutoplayDone={() => {
+                    autoplayDoneRef.current = true
+                  }}
                 />
               ))}
 

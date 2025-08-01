@@ -29,7 +29,7 @@ export function HowItWorks() {
   ]
 
   return (
-    <section className="bg-white py-16 sm:py-24" id="how-it-works">
+    <section className="relative bg-transparent py-12 sm:py-16" id="how-it-works">
       <div className="container mx-auto px-4">
         <motion.div
           className="mx-auto max-w-3xl text-center"
@@ -61,8 +61,8 @@ export function HowItWorks() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.45 }}
             >
-              <Card className="relative h-full overflow-hidden border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg">
-                <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white">
+              <Card className="relative h-full overflow-hidden border-white/60 bg-white/80 p-6 shadow-[0_6px_28px_rgba(2,6,23,0.08)] backdrop-blur-[2px] transition-shadow hover:shadow-[0_10px_36px_rgba(2,6,23,0.12)]">
+                <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_8px_24px_rgba(2,26,68,0.18)]">
                   <step.icon className="h-6 w-6" />
                 </div>
                 <h3
@@ -82,11 +82,7 @@ export function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <Button size="lg" asChild className="px-8">
-            <Link href="/signup">Start Swiping</Link>
-          </Button>
-        </div>
+        
       </div>
     </section>
   )

@@ -3,10 +3,11 @@ import Link from 'next/link'
 export function Header() {
   return (
     <header className="absolute top-0 z-50 w-full">
+      {/* Align header content with hero container and text column */}
       <nav className="container mx-auto flex items-center justify-between px-4 py-6">
         <Link
           href="/"
-          className="text-2xl font-bold text-white"
+          className="ml-3 text-2xl font-bold text-white sm:ml-4"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
           HomeMatch

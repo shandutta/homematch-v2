@@ -16,10 +16,10 @@ type Star = {
 type Props = {
   className?: string
   // Keep constant density across devices per request
-  starCount?: number // default 220
+  starCount?: number // default 320 (increased density)
 }
 
-export function ParallaxStarsCanvas({ className, starCount = 220 }: Props) {
+export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const rafRef = useRef<number | null>(null)
   const starsRef = useRef<Star[]>([])
@@ -131,9 +131,10 @@ export function ParallaxStarsCanvas({ className, starCount = 220 }: Props) {
         const py = s.y * h
 
         // Twinkle: sin phase varying by time + per-star offset
-        const twinkleSpeed = 0.0016
-        const tw = Math.sin(t * twinkleSpeed + s.twinklePhase) * 0.35 + 0.65
-        const alpha = s.baseAlpha * tw * 0.9
+        // Slightly faster twinkle and brighter stars for higher perceived density
+        const twinkleSpeed = 0.0022
+        const tw = Math.sin(t * twinkleSpeed + s.twinklePhase) * 0.4 + 0.6
+        const alpha = s.baseAlpha * tw * 1.0
 
         // Parallax offset based on pointer position and layer depth
         const parX =

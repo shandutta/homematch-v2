@@ -33,7 +33,34 @@ const features = [
 
 export function FeatureGrid() {
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="relative py-14 sm:py-16">
+      {/* Clean break from Hero; align background with How It Works refined light grid */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        aria-hidden
+        style={{
+          background:
+            'radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.06) 0%, rgba(2,26,68,0.03) 35%, rgba(255,255,255,1) 65%)',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-20"
+        aria-hidden
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
+        aria-hidden
+        style={{
+          backgroundImage:
+            'radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%)',
+        }}
+      />
+
       <div className="container mx-auto px-4">
         <motion.div
           className="mx-auto max-w-3xl text-center"
