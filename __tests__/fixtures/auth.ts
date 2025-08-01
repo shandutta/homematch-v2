@@ -196,14 +196,15 @@ export const authFixtures = {
                 (window as any).__supabaseReady === true ||
                 // lazily query supabase session if helper not available
                 (async () => {
-                  try {
-                    // @ts-ignore - evaluate in browser
-                    const { data } = await (window as any)
-                      .supabase?.auth?.getSession?.()
-                    return !!data?.session
-                  } catch {
-                    return false
-                  }
+          try {
+            const supabase = (window as any)?.supabase
+            const getSession = supabase?.auth?.getSession
+            if (typeof getSession !== 'function') return false
+            const { data } = await getSession()
+            return !!(data && data.session)
+          } catch {
+            return false
+          }
                 })(),
               { timeout: 5000 }
             )
@@ -269,9 +270,11 @@ export const authFixtures = {
         try {
           const sessionCleared = await page.evaluate(async () => {
             try {
-              // @ts-ignore
-              const { data } = await (window as any).supabase?.auth?.getSession?.()
-              return !data?.session
+              const supabase = (window as any)?.supabase
+              const getSession = supabase?.auth?.getSession
+              if (typeof getSession !== 'function') return true
+              const { data } = await getSession()
+              return !(data && data.session)
             } catch {
               return true
             }
@@ -283,9 +286,11 @@ export const authFixtures = {
               await page.waitForTimeout(500)
               const ok = await page.evaluate(async () => {
                 try {
-                  // @ts-ignore
-                  const { data } = await (window as any).supabase?.auth?.getSession?.()
-                  return !data?.session
+                  const supabase = (window as any)?.supabase
+                  const getSession = supabase?.auth?.getSession
+                  if (typeof getSession !== 'function') return true
+                  const { data } = await getSession()
+                  return !(data && data.session)
                 } catch {
                   return true
                 }

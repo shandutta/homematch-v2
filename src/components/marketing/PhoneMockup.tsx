@@ -87,6 +87,9 @@ interface PropertyCardProps {
 function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-200, 200], [-30, 30])
+  const likeOpacity = useTransform(x, [60, 140], [0, 1])
+  const passOpacity = useTransform(x, [-140, -60], [1, 0])
+  const matchOpacity = useTransform(x, [140, 220], [0, 1])
   const opacity = useTransform(
     x,
     [-200, -100, 0, 100, 200],
@@ -112,6 +115,11 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={handleDragEnd}
+      onDragStart={() => {
+        // prevents image drag ghosting on some browsers
+        const el = document.activeElement as HTMLElement | null
+        if (el?.blur) el.blur()
+      }}
       animate={{ scale: 1 - index * 0.05, zIndex: 100 - index }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
@@ -122,11 +130,12 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
             src={property.image}
             alt={`Property in ${property.location}`}
             fill
-            className="object-cover"
+            className="select-none object-cover pointer-events-none"
             sizes="300px"
             priority={index === 0}
             placeholder="blur"
             blurDataURL={getPropertyBlurPlaceholder(property.image)}
+            draggable={false}
             onError={(e) => {
               const target = e.target as HTMLImageElement
               if (target && target.src !== '/images/properties/house-1.svg') {
@@ -136,18 +145,19 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
           />
 
           {/* Like/Dislike Indicators + Match badge */}
+          {/* Like/Pass indicators appear earlier during drag */}
           <motion.div
-            className="absolute top-4 right-4 rounded-full bg-emerald-500 p-3 text-white shadow-lg"
+            className="absolute top-4 right-4 rounded-full bg-emerald-500/90 p-3 text-white shadow-lg backdrop-blur-sm"
             aria-hidden="true"
-            style={{ opacity: useTransform(x, [0, 120], [0, 1]) }}
+            style={{ opacity: likeOpacity }}
           >
             <Heart className="h-8 w-8 fill-current" aria-hidden="true" />
           </motion.div>
 
           <motion.div
-            className="absolute top-4 left-4 rounded-full bg-rose-500 p-3 text-white shadow-lg"
+            className="absolute top-4 left-4 rounded-full bg-rose-500/90 p-3 text-white shadow-lg backdrop-blur-sm"
             aria-hidden="true"
-            style={{ opacity: useTransform(x, [-120, 0], [1, 0]) }}
+            style={{ opacity: passOpacity }}
           >
             <X className="h-8 w-8" aria-hidden="true" />
           </motion.div>
@@ -156,7 +166,7 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
           <motion.div
             className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
             aria-hidden="true"
-            style={{ opacity: useTransform(x, [120, 180], [0, 1]) }}
+            style={{ opacity: matchOpacity }}
           >
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-md">
               <Heart className="h-4 w-4 fill-current" />
