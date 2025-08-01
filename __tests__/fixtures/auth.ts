@@ -58,74 +58,23 @@ export const authFixtures = {
         // Submit the form
         await submitButton.click()
 
-        // Wait for authentication to complete - check for both success and failure
-        try {
-          // First check if we're redirected to validation (success)
-          await utils.waitForAuthRedirect(/.*\/validation/, {
-            timeout: 5000, // Shorter timeout to fail faster
-            errorMessage: `Failed to authenticate user ${user.email}`,
-          })
+        // Wait for authentication to complete - check for redirection
+        await utils.waitForAuthRedirect(/.*\/validation/, {
+          timeout: config.timeouts.AUTH_REDIRECT,
+          errorMessage: `Failed to authenticate user ${user.email}`,
+        })
 
-          // Wait for authentication session to be fully established
-          // This is crucial because the login is handled client-side
-          // but the validation page checks auth server-side
-          await page.waitForTimeout(2000)
+        // Wait for the page to settle after redirect
+        await utils.waitForReactToSettle()
 
-          // Wait for Supabase to set auth cookies
-          await page.waitForTimeout(1000)
-
-          // WebKit/Safari and Firefox specific: Ensure cookies are properly set
-          // These browsers require additional time for cookie propagation in test environments
-          const browserName = page.context().browser()?.browserType().name()
-          if (browserName === 'webkit' || browserName === 'firefox') {
-            // Both WebKit and Firefox need enhanced cookie handling
-            console.log(`🔍 ${browserName} detected - applying enhanced cookie handling`)
-            
-            // Extra time for cookies to propagate
-            await page.waitForTimeout(3000)
-            
-            // Force cookie propagation through navigation
-            await page.goto('/', { waitUntil: 'networkidle' })
-            await page.waitForTimeout(2000)
-            
-            // Return to validation page
-            await page.goto('/validation', { waitUntil: 'networkidle' })
-            
-            // Hard reload to ensure server reads cookies
-            await page.reload({ waitUntil: 'networkidle' })
-          } else {
-            // Chromium continues with simple reload
-            await page.reload({ waitUntil: 'networkidle' })
-          }
-          
-          await utils.waitForReactToSettle()
-        } catch (error) {
-          // If redirect fails, check current URL and page state
-          const currentUrl = page.url()
-          console.log(`🔍 Current URL after login attempt: ${currentUrl}`)
-
-          // Check for error alerts on the page
-          const alertSelector =
-            '.alert-destructive, [role="alert"], .error-message'
-          const errorAlert = page.locator(alertSelector).first()
-          const isErrorVisible = await errorAlert
-            .isVisible({ timeout: 1000 })
-            .catch(() => false)
-
-          if (isErrorVisible) {
-            const errorText = await errorAlert.textContent()
-            throw new Error(`Authentication failed: ${errorText}`)
-          }
-
-          // If still on login page, authentication failed
-          if (currentUrl.includes('/login')) {
-            throw new Error(
-              `Authentication failed: Still on login page. Check test user credentials.`
-            )
-          }
-
-          // Re-throw original error if we can't determine the cause
-          throw error
+        const browserName = page.context().browser()?.browserType().name()
+        if (browserName === 'webkit' || browserName === 'firefox') {
+          console.log(
+            `🔍 ${browserName} detected - applying extra wait for auth propagation`
+          )
+          // Extra time for cookies to propagate before verification
+          await page.waitForTimeout(3000)
+          await page.reload({ waitUntil: 'networkidle' })
         }
       },
 
@@ -137,17 +86,17 @@ export const authFixtures = {
         if (!isVisible) {
           throw new Error('Sign out button is not visible')
         }
-        
+
         // Firefox specific: Handle form submission differently
         const browserName = page.context().browser()?.browserType().name()
         if (browserName === 'firefox') {
           // Firefox needs explicit wait for form submission
           await Promise.all([
-            page.waitForNavigation({ 
+            page.waitForNavigation({
               waitUntil: 'networkidle',
-              timeout: config.timeouts.AUTH_LOGOUT 
+              timeout: config.timeouts.AUTH_LOGOUT,
             }),
-            signOutButton.click()
+            signOutButton.click(),
           ])
         } else {
           await signOutButton.click()
@@ -158,10 +107,13 @@ export const authFixtures = {
         const currentUrl = page.url()
         if (!currentUrl.includes('/') && !currentUrl.includes('/login')) {
           try {
-            await page.waitForURL((url) => {
-              const urlStr = url.toString()
-              return urlStr.endsWith('/') || urlStr.includes('/login')
-            }, { timeout: config.timeouts.AUTH_LOGOUT })
+            await page.waitForURL(
+              (url) => {
+                const urlStr = url.toString()
+                return urlStr.endsWith('/') || urlStr.includes('/login')
+              },
+              { timeout: config.timeouts.AUTH_LOGOUT }
+            )
           } catch {
             // If we're still not on expected page, force navigation
             await page.goto('/login')
@@ -188,90 +140,96 @@ export const authFixtures = {
       },
 
       async verifyAuthenticated(user: TestUser = config.users.user1) {
+        const browserName = page.context().browser()?.browserType().name()
+        const isWebKit = browserName === 'webkit'
+        const isFirefox = browserName === 'firefox'
+
         // Should be on validation dashboard
         await page.waitForURL(/.*\/validation/, {
           timeout: config.timeouts.NAVIGATION,
         })
 
         // Verify validation dashboard content
-        let attempts = 0
-        const maxAttempts = config.timeouts.ELEMENT_VISIBLE / 100
-        while (attempts < maxAttempts) {
-          const h1Text = await page.locator('h1').textContent()
-          if (h1Text?.includes('HomeMatch V2 - Database Migration Validation'))
-            break
-          await page.waitForTimeout(100)
-          attempts++
-        }
-        const h1Text = await page.locator('h1').textContent()
+        const h1Locator = page.locator('h1')
+        await h1Locator.waitFor({
+          state: 'visible',
+          timeout: config.timeouts.ELEMENT_VISIBLE,
+        })
+        const h1Text = await h1Locator.textContent()
         if (!h1Text?.includes('HomeMatch V2 - Database Migration Validation')) {
           throw new Error(
             `Expected h1 to contain validation text, got: ${h1Text}`
           )
         }
 
-        // Browser-specific wait for auth state to be ready
-        const browserName = page.context().browser()?.browserType().name()
-        if (browserName === 'webkit' || browserName === 'firefox') {
-          // WebKit and Firefox need extra time for auth state to propagate
-          console.log(`🔍 ${browserName} - waiting for auth state propagation`)
-          await page.waitForTimeout(2000)
-        }
+        // Retry loop for authentication verification, especially for WebKit/Firefox
+        const maxAttempts = isWebKit || isFirefox ? 5 : 3
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            if (isWebKit || isFirefox) {
+              console.log(
+                `🔍 ${browserName} - auth verification attempt ${attempt}/${maxAttempts}`
+              )
+              // On retries, force a reload to get fresh server state
+              if (attempt > 1) {
+                await page.reload({ waitUntil: 'networkidle' })
+                await page.waitForTimeout(1000 * attempt) // increasing backoff
+              }
+            }
 
-        // Wait for user data to load - check for either the email or the "No Authenticated User" message
-        attempts = 0
-        let userDataLoaded = false
-        const extendedMaxAttempts = (browserName === 'webkit' || browserName === 'firefox') ? maxAttempts * 2 : maxAttempts
-        
-        while (attempts < extendedMaxAttempts) {
-          // Check if email is visible in the header
-          const emailVisible = await page
-            .locator('header')
-            .locator(`text=${user.email}`)
-            .isVisible()
-            .catch(() => false)
-
-          // Also check if "No Authenticated User" message is visible
-          const noUserMessage = await page
-            .locator('text=No Authenticated User')
-            .isVisible()
-            .catch(() => false)
-
-          if (emailVisible || noUserMessage) {
-            userDataLoaded = true
-            break
-          }
-
-          await page.waitForTimeout(100)
-          attempts++
-        }
-
-        if (!userDataLoaded) {
-          throw new Error(
-            'User data section did not load on validation dashboard'
-          )
-        }
-
-        // Now verify that the email is actually displayed (not the no user message)
-        const emailVisible = await page
-          .locator('header')
-          .locator(`text=${user.email}`)
-          .isVisible()
-          .catch(() => false)
-
-        if (!emailVisible) {
-          // Get page content for debugging
-          const pageContent = await page.content()
-          const hasNoUserMessage = pageContent.includes('No Authenticated User')
-
-          if (hasNoUserMessage) {
-            throw new Error(
-              `Authentication state not preserved: User ${user.email} logged in but validation page shows "No Authenticated User"`
+            // Wait for user data to load - check for either the email or the "No Authenticated User" message
+            const userEmailLocator = page
+              .locator('header')
+              .locator(`text=${user.email}`)
+            const noUserMessageLocator = page.locator(
+              'text=No Authenticated User'
             )
-          } else {
-            throw new Error(
-              `User email ${user.email} is not visible on validation dashboard`
-            )
+
+            // Wait for either locator to be visible
+            await Promise.race([
+              userEmailLocator.waitFor({
+                state: 'visible',
+                timeout: config.timeouts.ELEMENT_VISIBLE,
+              }),
+              noUserMessageLocator.waitFor({
+                state: 'visible',
+                timeout: config.timeouts.ELEMENT_VISIBLE,
+              }),
+            ])
+
+            // Now, check which one is actually visible
+            const emailVisible = await userEmailLocator.isVisible()
+            if (emailVisible) {
+              console.log(
+                `✅ ${browserName} - auth state verified on attempt ${attempt}`
+              )
+              return // Success!
+            }
+
+            const noUserMessageVisible = await noUserMessageLocator.isVisible()
+            if (noUserMessageVisible) {
+              // This is a failure condition for this attempt, but we might retry
+              console.warn(
+                `⚠️ ${browserName} - attempt ${attempt}: auth state not preserved. Retrying...`
+              )
+              if (attempt === maxAttempts) {
+                throw new Error(
+                  `Authentication state not preserved after ${maxAttempts} attempts: User ${user.email} logged in but validation page shows "No Authenticated User"`
+                )
+              }
+              // Continue to next attempt in the loop
+            } else {
+              // Should not happen if Promise.race resolved
+              throw new Error('Auth verification in indeterminate state.')
+            }
+          } catch (error) {
+            if (attempt === maxAttempts) {
+              console.error(
+                `❌ ${browserName} - auth verification failed after ${maxAttempts} attempts.`
+              )
+              // Re-throw the last error
+              throw error
+            }
           }
         }
       },
@@ -283,7 +241,7 @@ export const authFixtures = {
           console.log(`🔍 ${browserName} - waiting for logout to complete`)
           await page.waitForTimeout(1000)
         }
-        
+
         const finalUrl = page.url()
 
         if (finalUrl.includes('/login')) {

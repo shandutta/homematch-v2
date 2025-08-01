@@ -11,7 +11,10 @@ import {
   SavedSearchInsert,
 } from '@/types/database'
 
-// Mock the server client module
+/**
+ * Mock the server client module
+ * Note: Jest globals are provided by the Jest runtime during tests. Editor TS errors are expected to disappear when running tests.
+ */
 jest.mock('@/lib/supabase/server')
 
 describe('UserService Unit Tests', () => {
@@ -22,9 +25,10 @@ describe('UserService Unit Tests', () => {
     // Clear all mocks before each test
     jest.clearAllMocks()
 
-    // Get the mocked createClient function
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const serverModule = require('@/lib/supabase/server')
+    // Get the mocked createClient function (ESM import-friendly)
+    const serverModule = jest.requireActual('@/lib/supabase/server') as {
+      createClient: jest.Mock
+    }
     mockCreateClient = serverModule.createClient
 
     userService = new UserService()

@@ -46,17 +46,17 @@ const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState } = useFormContext()
-  
+
   // Always call useFormState with a default value to avoid conditional hook calls
   const formState = useFormState({ name: fieldContext?.name || '' })
-  
+
   // Add null checks for SSG compatibility
   if (!fieldContext || !fieldContext.name || !itemContext) {
     return {
       id: 'fallback-id',
       name: '',
       formItemId: 'fallback-form-item',
-      formDescriptionId: 'fallback-form-item-description', 
+      formDescriptionId: 'fallback-form-item-description',
       formMessageId: 'fallback-form-item-message',
       invalid: false,
       isDirty: false,
@@ -64,7 +64,7 @@ const useFormField = () => {
       error: undefined,
     }
   }
-  
+
   const fieldState = getFieldState(fieldContext.name, formState)
   const { id } = itemContext
 
