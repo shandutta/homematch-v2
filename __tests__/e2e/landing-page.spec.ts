@@ -14,7 +14,6 @@ test.describe('Landing Page Navigation', () => {
   // Pruned: retain only targeted navigation and footer checks in this file
 
   test('should navigate to signup from hero CTA', async ({ page }) => {
-
     await page.goto('/')
     // Capture hero section screenshot for visual sanity
     const hero = page.locator('[data-testid="hero"]')
@@ -35,7 +34,6 @@ test.describe('Landing Page Navigation', () => {
     await expect(page.locator('body')).toContainText(
       /create your account|sign up/i
     )
-
   })
 
   // Removed secondary CTA navigation to reduce duplication with smoke tests
@@ -46,19 +44,30 @@ test.describe('Landing Page Navigation', () => {
 
   // Removed footer navigation duplication
 
-  test('should redirect authenticated users to validation page', async ({ page }) => {
+  test('should redirect authenticated users to validation page', async ({
+    page,
+  }) => {
     // authenticate via UI to avoid custom fixtures types
     await page.goto('/login')
     // Fill typical login form fields if present; otherwise rely on middleware redirect when already logged
-    const hasEmail = await page.getByLabel(/email/i).count().then(c => c > 0)
+    const hasEmail = await page
+      .getByLabel(/email/i)
+      .count()
+      .then((c) => c > 0)
     if (hasEmail) {
       await page.getByLabel(/email/i).fill('user@example.com')
     }
-    const hasPassword = await page.getByLabel(/password/i).count().then(c => c > 0)
+    const hasPassword = await page
+      .getByLabel(/password/i)
+      .count()
+      .then((c) => c > 0)
     if (hasPassword) {
       await page.getByLabel(/password/i).fill('Password123!')
     }
-    const hasSubmit = await page.getByRole('button', { name: /log in|sign in/i }).count().then(c => c > 0)
+    const hasSubmit = await page
+      .getByRole('button', { name: /log in|sign in/i })
+      .count()
+      .then((c) => c > 0)
     if (hasSubmit) {
       await page.getByRole('button', { name: /log in|sign in/i }).click()
       // wait a moment for auth to settle
@@ -91,7 +100,6 @@ test.describe('Landing Page Navigation', () => {
     // Final assertion
     await expect(page.url()).toMatch(/\/validation/)
     await expect(page.getByText('HomeMatch')).toBeVisible()
-
   })
 })
 

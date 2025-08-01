@@ -40,7 +40,10 @@ function toNumberOrUndefined(v: unknown): number | undefined {
 function toStringOrUndefined(v: unknown): string | undefined {
   return typeof v === 'string' ? v : undefined
 }
-function materializeCardFromSearch(item: ZillowSearchResult, imageUrl: string): ZillowCard {
+function materializeCardFromSearch(
+  item: ZillowSearchResult,
+  imageUrl: string
+): ZillowCard {
   return {
     zpid: String(item.zpid),
     imageUrl,
