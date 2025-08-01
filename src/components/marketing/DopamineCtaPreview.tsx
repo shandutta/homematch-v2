@@ -17,17 +17,17 @@ export function DopamineCtaPreview({ className }: Props) {
           // Layout
           'relative inline-flex items-center justify-center rounded-full px-8 py-3',
           // Typography
-          'text-white text-base font-medium tracking-[0.02em]',
+          'text-base font-medium tracking-[0.02em] text-white',
           // Depth + background
           'bg-[linear-gradient(180deg,#1b1f2a_0%,#0f131b_100%)] ring-1 ring-white/10',
           'shadow-[0_2px_8px_rgba(0,0,0,0.35)]',
           // Interaction
-          'select-none transition-all duration-150 ease-out',
+          'transition-all duration-150 ease-out select-none',
           'hover:scale-[1.02] hover:shadow-[0_4px_16px_rgba(0,0,0,0.45)]',
-          'active:scale-[0.99] active:translate-y-[1px]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f131b]',
+          'active:translate-y-[1px] active:scale-[0.99]',
+          'focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f131b] focus-visible:outline-none',
           // Needed for sheen/glow layers
-          'overflow-hidden group'
+          'group overflow-hidden'
         )}
         data-cta="dopamine"
       >

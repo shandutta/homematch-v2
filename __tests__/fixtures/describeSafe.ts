@@ -7,7 +7,11 @@ export function describeSafe(name: string, cb: (t: typeof test) => void) {
 
   // Create a counting facade for test that increments on each test() registration
   const countingTest = Object.assign(
-    ((title: string, fn: Parameters<typeof test>[1], opts?: Parameters<typeof test>[2]) => {
+    ((
+      title: string,
+      fn: Parameters<typeof test>[1],
+      opts?: Parameters<typeof test>[2]
+    ) => {
       testCount++
       // @ts-expect-error - passthrough to Playwright test with same signature
       return test(title, fn, opts)

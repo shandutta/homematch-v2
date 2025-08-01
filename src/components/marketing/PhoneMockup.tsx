@@ -130,7 +130,7 @@ function PropertyCard({ property, index, onSwipe }: PropertyCardProps) {
             src={property.image}
             alt={`Property in ${property.location}`}
             fill
-            className="select-none object-cover pointer-events-none"
+            className="pointer-events-none object-cover select-none"
             sizes="300px"
             priority={index === 0}
             placeholder="blur"
