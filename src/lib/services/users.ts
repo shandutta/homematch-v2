@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import {
   UserProfile,
   UserProfileInsert,
@@ -15,7 +16,10 @@ import {
 
 export class UserService {
   private async getSupabase() {
-    return createClient()
+    if (typeof window === 'undefined') {
+      return createServerClient()
+    }
+    return createBrowserClient()
   }
 
   // User Profile Operations

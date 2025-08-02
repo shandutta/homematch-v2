@@ -60,6 +60,14 @@ ON CONFLICT (zpid) DO UPDATE SET
   updated_at = NOW();
 
 -- ============================
+-- Test Users for Development & E2E Testing
+-- NOTE: Auth users with proper password hashes are created by:
+--   node scripts/setup-test-users-admin.js
+-- This ensures correct bcrypt hashing and proper trigger execution
+-- Run after: supabase db reset --linked
+-- ============================
+
+-- ============================
 -- Enforce uniqueness and clean duplicates by zpid (idempotent)
 -- 1) Ensure a unique index exists on properties(zpid)
 DO $$

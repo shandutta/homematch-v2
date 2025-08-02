@@ -102,6 +102,7 @@ Desktop.ini
 .tmp/
 temp/
 .images/
+v1-reference/
 
 # Log files from scripts
 logs/
