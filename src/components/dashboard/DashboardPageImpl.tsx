@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { UserService } from '@/lib/services/users';
-import { createClient } from '@/lib/supabase/client';
 import { useRouter as useNextRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
