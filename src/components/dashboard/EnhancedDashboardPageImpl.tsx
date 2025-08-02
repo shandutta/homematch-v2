@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { EnhancedPropertyCard } from './EnhancedPropertyCard';
-import { PropertyService } from '@/lib/services/properties';
 import { DashboardData } from '@/lib/data/loader';
 import { UserProfile } from '@/types/database';
 import { Heart, X, Eye } from 'lucide-react';
@@ -166,14 +165,12 @@ export function EnhancedDashboardPageImpl({
     
     setLoading(true);
     try {
-      const propertyService = new PropertyService();
-      const newProperties = await propertyService.searchProperties({
-        filters: {},
-        pagination: { page: 1, limit: 3 }
-      });
-      
-      if (newProperties.properties.length > 0) {
-        setProperties(prev => [...prev, ...newProperties.properties.slice(0, 3 - prev.length)]);
+      const response = await fetch('/api/properties?limit=3');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.properties && data.properties.length > 0) {
+          setProperties(prev => [...prev, ...data.properties.slice(0, 3 - prev.length)]);
+        }
       }
     } catch (error) {
       console.error('Error loading more properties:', error);
