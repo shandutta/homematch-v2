@@ -19,6 +19,11 @@ declare global {
   }
 }
 
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
 interface PropertyMapProps {
   property: Property;
   className?: string;

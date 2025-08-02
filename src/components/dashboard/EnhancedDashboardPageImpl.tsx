@@ -10,7 +10,6 @@ import { EnhancedPropertyCard } from './EnhancedPropertyCard';
 import { DashboardData } from '@/lib/data/loader';
 import { UserProfile } from '@/types/database';
 import { Heart, X, Eye } from 'lucide-react';
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens';
 
 interface SwipeStats {
   totalViewed: number;
@@ -221,7 +220,7 @@ export function EnhancedDashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-foreground">{swipeStats.totalViewed}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Total properties you've seen
+              Total properties you&apos;ve seen
             </p>
           </CardContent>
         </Card>
@@ -247,7 +246,7 @@ export function EnhancedDashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{swipeStats.totalLiked}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Properties you're interested in
+              Properties you&apos;re interested in
             </p>
           </CardContent>
         </Card>
@@ -273,7 +272,7 @@ export function EnhancedDashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-red-600">{swipeStats.totalPassed}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Properties you've declined
+              Properties you&apos;ve declined
             </p>
           </CardContent>
         </Card>
@@ -296,7 +295,7 @@ export function EnhancedDashboardPageImpl({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property, index) => {
+            {properties.map((property) => {
               const neighborhood = initialData.neighborhoods.find(
                 n => n.id === property.neighborhood_id
               );

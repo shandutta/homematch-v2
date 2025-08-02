@@ -79,3 +79,56 @@ export function EnhancedPropertyMap({
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div class="p-3 max-w-xs">
+              <h3 class="font-semibold text-sm mb-1">${property.address}</h3>
+              <p class="text-xs text-gray-600">${property.city}, ${property.state}</p>
+              <p class="text-xs font-bold text-blue-600 mt-1">$${property.price.toLocaleString()}</p>
+            </div>
+          `,
+        });
+
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker);
+        });
+      }
+
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error loading map:', err);
+      setError('Failed to load map');
+      setIsLoading(false);
+    }
+  }, [property.coordinates, zoom, showMarker]);
+
+  if (isLoading) {
+    return (
+      <div className={`relative h-32 w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !property.coordinates) {
+    return (
+      <div className={`relative h-32 w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="mx-auto h-6 w-6 text-gray-400 mb-1" />
+            <p className="text-xs text-gray-600">
+              {error || 'Map unavailable'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      ref={mapRef} 
+      className={`h-32 w-full rounded-lg border ${className}`}
+      style={{ minHeight: '128px' }}
+    />
+  );
+}
