@@ -1,4 +1,4 @@
-import { DashboardPageImpl } from '@/components/dashboard/DashboardPageImpl';
+import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { loadDashboardData } from '@/lib/data/loader';
 import { UserService } from '@/lib/services/users';
@@ -62,7 +62,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <DashboardErrorBoundary>
-      <DashboardPageImpl
+      <EnhancedDashboardPageImpl
         initialData={dashboardData}
         returning={returning}
         userProfile={finalUserData}
