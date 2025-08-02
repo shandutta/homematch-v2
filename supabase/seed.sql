@@ -87,7 +87,7 @@ EXCEPTION
     NULL;
 END $$;
 
--- 2) Delete duplicate rows keeping the most recent updated_at (or highest id if null)
+--2) Delete duplicate rows keeping the most recent updated_at (or highest id if null)
 WITH ranked AS (
   SELECT id, zpid,
          ROW_NUMBER() OVER (PARTITION BY zpid ORDER BY updated_at DESC NULLS LAST, id DESC) AS rn
