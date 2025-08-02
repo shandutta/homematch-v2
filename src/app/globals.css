@@ -133,4 +133,34 @@
   .hero-cta-primary:hover {
     box-shadow: 0 0 40px rgba(41, 227, 255, 0.5);
   }
+
+  /* Styles for the new dashboard look and feel */
+  .gradient-grid-bg {
+    background-color: #020b1f; /* Fallback color */
+    /* Exact background from src/app/page.tsx for perfect cohesion */
+    background-image:
+      /* Layer 1: Radial gradient for depth */
+      radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.06) 0%, rgba(2,26,68,0.03) 35%, rgba(255,255,255,0) 65%),
+      /* Layer 2: Repeating grid pattern */
+      repeating-linear-gradient(0deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px), 
+      repeating-linear-gradient(90deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px),
+      /* Layer 3: Additional colored radial glows */
+      radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), 
+      radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%);
+    background-size: 100% 100%, 28px 28px, 100% 100%, 100% 100%, 100% 100%;
+  }
+
+  .card-glassmorphism-style {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(2, 6, 23, 0.1);
+    transition: background 0.3s ease, border 0.3s ease;
+  }
+
+  .card-glassmorphism-style:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
 }
