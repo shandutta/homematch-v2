@@ -109,7 +109,7 @@ export function DashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-foreground">{swipeStats.totalViewed}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Total properties you've seen
+              Total properties you&apos;ve seen
             </p>
           </CardContent>
         </Card>
@@ -135,7 +135,7 @@ export function DashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{swipeStats.totalLiked}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Properties you're interested in
+              Properties you&apos;re interested in
             </p>
           </CardContent>
         </Card>
@@ -161,7 +161,7 @@ export function DashboardPageImpl({
           <CardContent>
             <div className="text-3xl font-bold text-red-600">{swipeStats.totalPassed}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Properties you've declined
+              Properties you&apos;ve declined
             </p>
           </CardContent>
         </Card>

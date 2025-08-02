@@ -29,8 +29,8 @@ export class DashboardErrorBoundary extends Component<Props, State> {
     console.error('Dashboard error:', error, errorInfo);
     
     // Log to analytics service
-    if (typeof window !== 'undefined' && (window as { gtag?: Function }).gtag) {
-      (window as { gtag?: Function }).gtag?.('event', 'exception', {
+    if (typeof window !== 'undefined' && (window as { gtag?: (...args: unknown[]) => void }).gtag) {
+      (window as { gtag?: (...args: unknown[]) => void }).gtag?.('event', 'exception', {
         description: error.message,
         fatal: false,
       });
