@@ -19,11 +19,6 @@ declare global {
   }
 }
 
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
 interface PropertyMapProps {
   property: Property;
   className?: string;
@@ -122,7 +117,7 @@ export function PropertyMap({
       setError('Failed to load map');
       setIsLoading(false);
     }
-  }, [property.coordinates, zoom, showMarker]);
+  }, [property.coordinates, zoom, showMarker, property.address, property.city, property.price, property.state]);
 
   if (isLoading) {
     return (
