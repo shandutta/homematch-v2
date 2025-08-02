@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
   if (isAuthPath && user) {
     // user is logged in, redirect to validation dashboard
     const url = request.nextUrl.clone()
-    url.pathname = '/validation'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 

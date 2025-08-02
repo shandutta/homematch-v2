@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import {
   Property,
   PropertyInsert,
@@ -12,7 +13,10 @@ import { PropertySearch } from '@/lib/schemas/property'
 
 export class PropertyService {
   private async getSupabase() {
-    return await createClient()
+    if (typeof window === 'undefined') {
+      return createServerClient()
+    }
+    return createBrowserClient()
   }
 
   // Property Operations
