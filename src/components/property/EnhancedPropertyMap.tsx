@@ -4,6 +4,57 @@ import { useEffect, useRef, useState } from 'react';
 import { Property } from '@/types/database';
 import { MapPin, Loader2 } from 'lucide-react';
 
+// Strong typing for Google Maps
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
+interface MapOptions {
+  center: Coordinates;
+  zoom: number;
+  styles?: Array<{
+    featureType?: string;
+    elementType?: string;
+    stylers?: Array<Record<string, string | boolean>>;
+  }>;
+  disableDefaultUI?: boolean;
+  zoomControl?: boolean;
+  mapTypeControl?: boolean;
+  streetViewControl?: boolean;
+  fullscreenControl?: boolean;
+}
+
+interface MarkerOptions {
+  position: Coordinates;
+  map: any;
+  title?: string;
+  icon?: {
+    url: string;
+    scaledSize?: any;
+    anchor?: any;
+  };
+}
+
+interface InfoWindowOptions {
+  content?: string;
+}
+
+// Extend Window interface for Google Maps
+declare global {
+  interface Window {
+    google: {
+      maps: {
+        Map: new (element: HTMLElement, options: MapOptions) => any;
+        Marker: new (options: MarkerOptions) => any;
+        InfoWindow: new (options?: InfoWindowOptions) => any;
+        Size: new (width: number, height: number) => any;
+        Point: new (x: number, y: number) => any;
+      };
+    };
+  }
+}
+
 interface EnhancedPropertyMapProps {
   property: Property;
   className?: string;
@@ -32,7 +83,12 @@ export function EnhancedPropertyMap({
     }
 
     try {
-      const coords = property.coordinates as { lat: number; lng: number };
+      const coords = property.coordinates as Coordinates;
+      if (!coords?.lat || !coords?.lng) {
+        setError('No coordinates available');
+        setIsLoading(false);
+        return;
+      }
       
       // Create map
       const map = new window.google.maps.Map(mapRef.current, {
