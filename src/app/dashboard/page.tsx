@@ -1,4 +1,5 @@
 import { DashboardPageImpl } from '@/components/dashboard/DashboardPageImpl';
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { loadDashboardData } from '@/lib/data/loader';
 import { UserService } from '@/lib/services/users';
 import { createClient } from '@/lib/supabase/server';
@@ -46,7 +47,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     //   redirect('/onboarding');
     // }
 
-    const returning = searchParams?.returning === 'true';
+    const returning = (await searchParams)?.returning === 'true';
 
     const swipes = interactions.map((interaction) => ({
       ...interaction,
@@ -59,7 +60,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       totalPassed: swipes.filter((s) => !s.vote).length,
     };
 
-    return (
+  return (
+    <DashboardErrorBoundary>
       <DashboardPageImpl
         initialData={dashboardData}
         returning={returning}
@@ -67,7 +69,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         initialSwipeStats={swipeStats}
         session={{ user } as Session}
       />
-    );
+    </DashboardErrorBoundary>
+  );
   } catch (error) {
     console.error('Dashboard error:', error);
     redirect('/login');
