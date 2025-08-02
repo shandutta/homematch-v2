@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Property } from '@/types/database';
-import { MapPin, Heart, X, Home, ExternalLink, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
-import { PropertyMap } from '@/components/property/PropertyMap';
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens';
+import { MapPin, Heart, X, Home, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 
 interface EnhancedPropertyCardProps {
   property: Property;
