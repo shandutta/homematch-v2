@@ -16,15 +16,14 @@ const nextConfig: NextConfig = {
         hostname: 'images.zillowstatic.com',
         pathname: '/**',
       },
-      // Keep Unsplash only if still needed; otherwise you can remove this block safely
-      // {
-      //   protocol: 'https',
-      //   hostname: 'images.unsplash.com',
-      //   pathname: '/**',
-      // },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
     // optional: domains fallback in case remotePatterns is bypassed somewhere
-    domains: ['photos.zillowstatic.com', 'images.zillowstatic.com'],
+    domains: ['photos.zillowstatic.com', 'images.zillowstatic.com', 'images.unsplash.com'],
     // optional tuning for responsive images
     deviceSizes: [320, 420, 768, 1024, 1200, 1600],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],

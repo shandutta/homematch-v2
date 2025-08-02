@@ -1,8 +1,9 @@
 import { PropertyService } from '@/lib/services/properties';
-import { Property } from '@/types/database';
+import { Property, Neighborhood } from '@/types/database';
 
 export interface DashboardData {
   properties: Property[];
+  neighborhoods: Neighborhood[];
   totalProperties: number;
   scored: boolean;
   userStats: {
@@ -23,9 +24,12 @@ export async function loadDashboardData(
   const propertyService = new PropertyService();
 
   try {
-    const { properties, total } = await propertyService.searchProperties({
-      pagination: { limit, page: offset / limit + 1 },
-    });
+    const [{ properties, total }, neighborhoods] = await Promise.all([
+      propertyService.searchProperties({
+        pagination: { limit, page: offset / limit + 1 },
+      }),
+      propertyService.getNeighborhoodsByCity('San Francisco', 'CA'),
+    ]);
 
     // Fetch user stats (mock for now, can be implemented later)
     const userStats = {
@@ -36,6 +40,7 @@ export async function loadDashboardData(
 
     return {
       properties: properties || [],
+      neighborhoods: neighborhoods || [],
       totalProperties: total || 0,
       scored: withScoring,
       userStats,
@@ -44,6 +49,7 @@ export async function loadDashboardData(
     // Return empty data on error
     return {
       properties: [],
+      neighborhoods: [],
       totalProperties: 0,
       scored: false,
       userStats: {
