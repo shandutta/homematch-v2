@@ -8,7 +8,7 @@ import { RetryFixture } from '../types/fixtures'
 // Export just the fixtures object, not a test object
 export const retryFixtures = {
   // eslint-disable-next-line no-empty-pattern
-  retry: async ({}, use) => {
+  retry: async ({}: any, use: any) => {
     const retryFixture: RetryFixture = {
       async retry<T>(
         operation: () => Promise<T>,

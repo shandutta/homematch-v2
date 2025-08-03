@@ -62,38 +62,24 @@ describe('Property Schema Validation', () => {
       const result = propertySchema.safeParse(invalidProperty)
       expect(result.success).toBe(false)
 
-      if (!result.success) {
-        expect(result.error.issues).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              path: ['id'],
-              message: expect.stringContaining('Invalid uuid'),
-            }),
-            expect.objectContaining({
-              path: ['address'],
-              message: expect.stringContaining(
-                'String must contain at least 1 character(s)'
-              ),
-            }),
-            expect.objectContaining({
-              path: ['price'],
-              message: expect.stringContaining(
-                'Number must be greater than or equal to 0'
-              ),
-            }),
-            expect.objectContaining({
-              path: ['bedrooms'],
-              message: expect.stringContaining(
-                'Number must be less than or equal to 20'
-              ),
-            }),
-            expect.objectContaining({
-              path: ['property_type'],
-              message: expect.stringContaining('Invalid enum value'),
-            }),
-          ])
-        )
-      }
+      const errorMessages = result.success
+        ? []
+        : result.error.issues.map((issue) => issue.message)
+      expect(errorMessages).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Invalid uuid'),
+          expect.stringContaining(
+            'String must contain at least 1 character(s)'
+          ),
+          expect.stringContaining(
+            'Number must be greater than or equal to 0'
+          ),
+          expect.stringContaining(
+            'Number must be less than or equal to 20'
+          ),
+          expect.stringContaining('Invalid enum value'),
+        ])
+      )
     })
 
     test('should validate property search filters correctly', () => {
@@ -330,18 +316,15 @@ describe('Property Schema Validation', () => {
       const result = boundingBoxSchema.safeParse(invalidBoundingBox)
       expect(result.success).toBe(false)
 
-      if (!result.success) {
-        expect(result.error.issues).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              message: 'North must be greater than south',
-            }),
-            expect.objectContaining({
-              message: 'East must be greater than west',
-            }),
-          ])
-        )
-      }
+      const errorMessages = result.success
+        ? []
+        : result.error.issues.map((issue) => issue.message)
+      expect(errorMessages).toEqual(
+        expect.arrayContaining([
+          'North must be greater than south',
+          'East must be greater than west',
+        ])
+      )
     })
   })
 

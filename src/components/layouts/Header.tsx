@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Home, Heart, Eye, X, Settings } from 'lucide-react'
+import { Heart, Eye, X, Settings } from 'lucide-react'
 
 export function Header() {
   return (

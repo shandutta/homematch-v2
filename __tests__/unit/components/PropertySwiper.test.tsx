@@ -24,14 +24,14 @@ describe('PropertySwiper Component', () => {
     render(<PropertySwiper properties={mockProperties} onDecision={onDecision} />)
     const cards = screen.getAllByTestId('tinder-card')
     expect(cards).toHaveLength(2)
-    expect(screen.getByText('1 Cool St')).toBeInTheDocument()
-    expect(screen.getByText('2 Neat Ave')).toBeInTheDocument()
+    expect(screen.getByText('1 Cool St')).toBeDefined()
+    expect(screen.getByText('2 Neat Ave')).toBeDefined()
   })
 
   test('should render empty state when no properties are provided', () => {
     const onDecision = jest.fn()
     render(<PropertySwiper properties={[]} onDecision={onDecision} />)
-    expect(screen.getByText('All out of properties!')).toBeInTheDocument()
+    expect(screen.getByText('All out of properties!')).toBeDefined()
   })
 
   // Note: Testing the actual swipe gesture is an E2E concern.

@@ -1,5 +1,5 @@
 import { InteractionService } from '@/lib/services/interactions'
-import { InteractionSummary, InteractionType, PageResponse } from '@/types/app'
+import { InteractionSummary, PageResponse } from '@/types/app'
 import { Property } from '@/types/database'
 
 // Mock the global fetch function

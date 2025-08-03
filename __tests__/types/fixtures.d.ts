@@ -1,6 +1,14 @@
 /**
- * TypeScript definitions for HomeMatch V2 Playwright fixtures
+ * Global test types for HomeMatch V2
  */
+ 
+// Extend Jest matchers with @testing-library/jest-dom types so TS recognizes
+// toBeInTheDocument, toHaveAttribute, etc. in unit tests.
+import '@testing-library/jest-dom'
+
+// Extend Jest matchers with @testing-library/jest-dom types so TS recognizes
+// toBeInTheDocument, toHaveAttribute, etc. in unit tests.
+import '@testing-library/jest-dom'
 
 // Test user interface
 export interface TestUser {
@@ -94,10 +102,10 @@ export interface ConfigFixture {
 }
 
 // Combined fixtures interface
-export interface HomematchFixtures
-  extends UtilsFixture,
-    AuthFixture,
-    RetryFixture,
-    ConfigFixture {
+export interface HomematchFixtures {
+  utils: UtilsFixture
+  auth: AuthFixture
+  retry: RetryFixture
+  config: ConfigFixture
   logger: TestLogger
 }

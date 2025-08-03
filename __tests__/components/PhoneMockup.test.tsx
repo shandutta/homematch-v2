@@ -111,44 +111,49 @@ describe('PhoneMockup Component', () => {
     render(<PhoneMockup />)
 
     // Get the first property card (should be draggable)
-    const propertyCard =
-      screen.getByText('$850,000').closest('[draggable]') ||
-      screen.getByText('$850,000').closest('div')
+    const propertyCard = screen.getByText('$850,000').closest('[draggable]')
+    expect(propertyCard).not.toBeNull()
 
-    if (propertyCard) {
-      // Simulate drag start
-      fireEvent.mouseDown(propertyCard, { clientX: 0, clientY: 0 })
+    // Simulate drag start
+    fireEvent.mouseDown(propertyCard!, { clientX: 0, clientY: 0 })
 
-      // Simulate drag move (swipe right)
-      fireEvent.mouseMove(propertyCard, { clientX: 150, clientY: 0 })
+    // Simulate drag move (swipe right)
+    fireEvent.mouseMove(propertyCard!, { clientX: 150, clientY: 0 })
 
-      // Simulate drag end
-      fireEvent.mouseUp(propertyCard, { clientX: 150, clientY: 0 })
+    // Simulate drag end
+    fireEvent.mouseUp(propertyCard!, { clientX: 150, clientY: 0 })
 
-      // Wait for any state updates
-      await waitFor(() => {
-        // After swiping, the first property should be removed
-        // and the second property should now be visible as the top card
-        expect(screen.getByText('$1,200,000')).toBeInTheDocument()
-      })
-    }
+    // Wait for any state updates
+    await waitFor(() => {
+      // After swiping, the first property should be removed
+      // and the second property should now be visible as the top card
+      expect(screen.getByText('$1,200,000')).toBeInTheDocument()
+    })
   })
 
   it('shows empty state when all cards are swiped', async () => {
     render(<PhoneMockup />)
 
-    // Mock the component's internal state to simulate all cards being swiped
-    // This would require a more complex test setup with state manipulation
-    // For now, we'll test that the empty state elements exist in the DOM
+    const initialCards = ['$850,000', '$1,200,000', '$950,000']
 
-    const emptyStateText = screen.queryByText('Loading more homes...')
-    const emptyStateEmoji = screen.queryByText('🏠')
+    for (const price of initialCards) {
+      const propertyCard = screen.getByText(price).closest('[draggable]')
+      expect(propertyCard).not.toBeNull()
 
-    // These elements should exist in the component (even if not visible initially)
-    // They will be shown when cards array is empty
-    if (emptyStateText || emptyStateEmoji) {
-      expect(emptyStateText || emptyStateEmoji).toBeInTheDocument()
+      fireEvent.mouseDown(propertyCard!, { clientX: 0, clientY: 0 })
+      fireEvent.mouseMove(propertyCard!, { clientX: 150, clientY: 0 })
+      fireEvent.mouseUp(propertyCard!, { clientX: 150, clientY: 0 })
+
+      await waitFor(() => {
+        expect(screen.queryByText(price)).not.toBeInTheDocument()
+      })
     }
+
+    // After all cards are swiped, check for the empty state
+    await waitFor(() => {
+      expect(screen.getByText('Loading more homes...')).toBeInTheDocument()
+      expect(screen.getByText('🏠')).toBeInTheDocument()
+    })
   })
 
   it('has proper accessibility attributes', () => {

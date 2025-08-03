@@ -16,17 +16,23 @@ export function PropertySwiper({
   onDecision,
 }: PropertySwiperProps) {
   const [currentIndex, setCurrentIndex] = useState(properties.length - 1)
-  const canSwipe = currentIndex >= 0
 
   // used for outOfFrame closure
   const currentIndexRef = useRef(currentIndex)
   currentIndexRef.current = currentIndex
 
+  // Local interface describing the imperative API exposed by react-tinder-card.
+  // The package doesn't ship types for the ref, so we define a minimal surface we use.
+  type TinderCardApi = {
+    swipe: (dir: 'left' | 'right') => Promise<void> | void
+    restoreCard: () => void
+  }
+
   const childRefs = useMemo(
     () =>
       Array(properties.length)
         .fill(0)
-        .map(() => React.createRef<any>()),
+        .map(() => React.createRef<TinderCardApi | null>()),
     [properties.length]
   )
 
@@ -61,7 +67,8 @@ export function PropertySwiper({
       <div className="relative w-full h-full">
         {properties.map((property, index) => (
           <TinderCard
-            ref={childRefs[index]}
+            // Cast only at the boundary where third-party component lacks proper ref typing.
+            ref={childRefs[index] as unknown as React.Ref<any>}
             className="absolute w-full h-full"
             key={property.id}
             onSwipe={(dir: string) => swiped(dir, property.id, index)}

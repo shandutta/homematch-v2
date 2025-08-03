@@ -13,10 +13,10 @@ import { authFixtures } from './auth'
 // Combine all fixtures into a single test object
 export const test = base
   .extend(configFixtures)
-  .extend(utilsFixtures)
   .extend(loggerFixtures)
   .extend(retryFixtures)
   .extend(authFixtures)
+  .extend(utilsFixtures)
 
 // Re-export expect for convenience
 export { expect } from '@playwright/test'

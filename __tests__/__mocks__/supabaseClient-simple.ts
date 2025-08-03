@@ -155,7 +155,7 @@ export const makeMockClient = (): jest.Mocked<SupabaseClient<Database>> => {
     functionsUrl: 'mock-functions-url',
   }
 
-  return mockClient as jest.Mocked<SupabaseClient<Database>>
+  return mockClient as unknown as jest.Mocked<SupabaseClient<Database>>
 }
 
 /**
@@ -271,6 +271,6 @@ export const configureMockRpcResponse = (
   client: jest.Mocked<SupabaseClient<Database>>,
   response: { data?: any; error?: any }
 ) => {
-  client.rpc.mockResolvedValue(response)
+  ;(client.rpc as jest.Mock).mockResolvedValue(response)
   return client
 }

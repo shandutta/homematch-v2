@@ -36,6 +36,10 @@
     ".next",
     "out",
     "dist",
-    "homematch-original-analysis"
+    "homematch-original-analysis",
+    "v1-reference",
+    "playwright-report",
+    "test-results",
+    "migrated_data"
   ]
 }

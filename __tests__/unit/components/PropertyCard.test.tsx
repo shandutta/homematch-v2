@@ -38,19 +38,18 @@ const mockProperty: Property = {
 describe('PropertyCard Component', () => {
   test('should render property details correctly', () => {
     render(<PropertyCard property={mockProperty} />)
-    expect(screen.getByText('123 Main St')).toBeInTheDocument()
-    expect(screen.getByText('$500,000')).toBeInTheDocument()
-    expect(screen.getByText(/3 beds/)).toBeInTheDocument()
-    expect(screen.getByText(/2 baths/)).toBeInTheDocument()
-    expect(screen.getByText(/1,500 sqft/)).toBeInTheDocument()
+    expect(screen.getByText('123 Main St')).toBeDefined()
+    expect(screen.getByText('$500,000')).toBeDefined()
+    expect(screen.getByText(/3 beds/)).toBeDefined()
+    expect(screen.getByText(/2 baths/)).toBeDefined()
+    expect(screen.getByText(/1,500 sqft/)).toBeDefined()
   })
 
   test('should render Zillow link with correct href', () => {
     render(<PropertyCard property={mockProperty} />)
     const zillowLink = screen.getByLabelText('View on Zillow')
-    expect(zillowLink).toBeInTheDocument()
-    expect(zillowLink).toHaveAttribute(
-      'href',
+    expect(zillowLink).toBeTruthy()
+    expect(zillowLink.getAttribute('href')).toBe(
       'https://www.zillow.com/homedetails/12345678_zpid/'
     )
   })
@@ -58,14 +57,14 @@ describe('PropertyCard Component', () => {
   test('should render action buttons when onDecision is provided', () => {
     const onDecision = jest.fn()
     render(<PropertyCard property={mockProperty} onDecision={onDecision} />)
-    expect(screen.getByLabelText('Pass property')).toBeInTheDocument()
-    expect(screen.getByLabelText('Like property')).toBeInTheDocument()
+    expect(screen.getByLabelText('Pass property')).toBeDefined()
+    expect(screen.getByLabelText('Like property')).toBeDefined()
   })
 
   test('should not render action buttons when onDecision is not provided', () => {
     render(<PropertyCard property={mockProperty} />)
-    expect(screen.queryByLabelText('Pass property')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('Like property')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Pass property')).toBeNull()
+    expect(screen.queryByLabelText('Like property')).toBeNull()
   })
 
   test('should call onDecision with "skip" when pass button is clicked', () => {
@@ -84,12 +83,12 @@ describe('PropertyCard Component', () => {
 
   test('should render PropertyMap when coordinates are present', () => {
     render(<PropertyCard property={mockProperty} />)
-    expect(screen.getByTestId('property-map')).toBeInTheDocument()
+    expect(screen.getByTestId('property-map')).toBeDefined()
   })
 
   test('should not render PropertyMap when coordinates are null', () => {
     const propWithoutCoords = { ...mockProperty, coordinates: null }
     render(<PropertyCard property={propWithoutCoords} />)
-    expect(screen.queryByTestId('property-map')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('property-map')).toBeNull()
   })
 })

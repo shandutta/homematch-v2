@@ -218,7 +218,7 @@ export const makeMockClient = (): jest.Mocked<SupabaseClient<Database>> => {
     functionsUrl: 'mock-functions-url',
   }
 
-  return mockClient as jest.Mocked<SupabaseClient<Database>>
+  return mockClient as unknown as jest.Mocked<SupabaseClient<Database>>
 }
 
 /**
@@ -261,28 +261,33 @@ export const configureMockResponse = (
 
   // Configure the terminator methods on the query builder to return the specified response
   if (queryBuilder && typeof queryBuilder === 'object') {
-    if (queryBuilder.single) {
-      queryBuilder.single.mockResolvedValue(response)
+    // Type assertion to avoid TS errors - in runtime these methods exist on the mock
+    const qb = queryBuilder as any
+    if (qb.single) {
+      qb.single.mockResolvedValue(response)
     }
-    if (queryBuilder.maybeSingle) {
-      queryBuilder.maybeSingle.mockResolvedValue(response)
+    if (qb.maybeSingle) {
+      qb.maybeSingle.mockResolvedValue(response)
     }
-    if (queryBuilder.then) {
-      queryBuilder.then.mockResolvedValue(response)
+    if (qb.then) {
+      qb.then.mockResolvedValue(response)
     }
   }
 
-  // For queries that return arrays/lists, configure the promise resolution
-  if (Array.isArray(response.data)) {
-    const listResponse = {
-      data: response.data,
-      error: response.error,
-      count: response.count,
+    // For queries that return arrays/lists, configure the promise resolution
+    if (Array.isArray(response.data)) {
+      const listResponse = {
+        data: response.data,
+        error: response.error,
+        count: response.count,
+      }
+      // Type assertion to avoid TS errors - in runtime these methods exist on the mock
+      const qb = queryBuilder as any
+      if (qb && qb.then) {
+        qb.then.mockResolvedValue(listResponse)
+      }
     }
-    if (queryBuilder && queryBuilder.then) {
-      queryBuilder.then.mockResolvedValue(listResponse)
-    }
-  }
+  
 
   // Return the client for chaining if needed
   return client
@@ -295,6 +300,6 @@ export const configureMockRpcResponse = (
   client: jest.Mocked<SupabaseClient<Database>>,
   response: { data?: any; error?: any }
 ) => {
-  client.rpc.mockResolvedValue(response)
+  ;(client.rpc as jest.Mock).mockResolvedValue(response)
   return client
 }

@@ -8,7 +8,7 @@ import { ConfigFixture } from '../types/fixtures'
 // Export just the fixtures object, not a test object
 export const configFixtures = {
   // eslint-disable-next-line no-empty-pattern
-  config: async ({}, use) => {
+  config: async ({}: any, use: any) => {
     const config: ConfigFixture = {
       timeouts: {
         PAGE_LOAD: 30000, // 30 seconds for initial page load

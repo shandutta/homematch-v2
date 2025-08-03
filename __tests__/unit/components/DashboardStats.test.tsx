@@ -5,12 +5,17 @@ import { InteractionSummary } from '@/types/app'
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => {
+  const Link = ({ children, href }: { children: React.ReactNode; href: string }) => {
     return <a href={href}>{children}</a>
   }
+  Link.displayName = 'NextLinkMock'
+  return Link
 })
 
 describe('DashboardStats Component', () => {
+  // Provide a simple wrapper with an explicit displayName to satisfy react/display-name in test renders if needed
+  const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+  TestWrapper.displayName = 'DashboardStatsTestWrapper'
   test('should render skeletons when loading and no data is present', () => {
     const { container } = render(
       <DashboardStats summary={undefined} isLoading={true} />
@@ -24,14 +29,14 @@ describe('DashboardStats Component', () => {
     const mockSummary: InteractionSummary = { viewed: 10, liked: 5, passed: 3 }
     render(<DashboardStats summary={mockSummary} isLoading={false} />)
 
-    expect(screen.getByText('Viewed')).toBeInTheDocument()
-    expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('Viewed')).toBeTruthy()
+    expect(screen.getByText('10')).toBeTruthy()
 
-    expect(screen.getByText('Liked')).toBeInTheDocument()
-    expect(screen.getByText('5')).toBeInTheDocument()
+    expect(screen.getByText('Liked')).toBeTruthy()
+    expect(screen.getByText('5')).toBeTruthy()
 
-    expect(screen.getByText('Passed')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('Passed')).toBeTruthy()
+    expect(screen.getByText('3')).toBeTruthy()
   })
 
   test('should have correct links for each stat tile', () => {
@@ -39,12 +44,15 @@ describe('DashboardStats Component', () => {
     render(<DashboardStats summary={mockSummary} isLoading={false} />)
 
     const viewedLink = screen.getByText('Viewed').closest('a')
-    expect(viewedLink).toHaveAttribute('href', '/dashboard/viewed')
+    expect(viewedLink).toBeTruthy()
+    expect(viewedLink?.getAttribute('href')).toBe('/dashboard/viewed')
 
     const likedLink = screen.getByText('Liked').closest('a')
-    expect(likedLink).toHaveAttribute('href', '/dashboard/liked')
+    expect(likedLink).toBeTruthy()
+    expect(likedLink?.getAttribute('href')).toBe('/dashboard/liked')
 
     const passedLink = screen.getByText('Passed').closest('a')
-    expect(passedLink).toHaveAttribute('href', '/dashboard/passed')
+    expect(passedLink).toBeTruthy()
+    expect(passedLink?.getAttribute('href')).toBe('/dashboard/passed')
   })
 })
