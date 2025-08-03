@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Property } from '@/types/database';
+import { Property } from '@/lib/schemas/property';
 import { MapPin, Loader2 } from 'lucide-react';
 
 // Strong typing for Google Maps
@@ -10,50 +10,12 @@ interface Coordinates {
   lng: number;
 }
 
-interface MapOptions {
-  center: Coordinates;
-  zoom: number;
-  styles?: Array<{
-    featureType?: string;
-    elementType?: string;
-    stylers?: Array<Record<string, string | boolean>>;
-  }>;
-  disableDefaultUI?: boolean;
-  zoomControl?: boolean;
-  mapTypeControl?: boolean;
-  streetViewControl?: boolean;
-  fullscreenControl?: boolean;
-}
-
-interface MarkerOptions {
-  position: Coordinates;
-  map: any;
-  title?: string;
-  icon?: {
-    url: string;
-    scaledSize?: any;
-    anchor?: any;
-  };
-}
-
-interface InfoWindowOptions {
-  content?: string;
-}
-
 // Extend Window interface for Google Maps
-declare global {
-  interface Window {
-    google: {
-      maps: {
-        Map: new (element: HTMLElement, options: MapOptions) => any;
-        Marker: new (options: MarkerOptions) => any;
-        InfoWindow: new (options?: InfoWindowOptions) => any;
-        Size: new (width: number, height: number) => any;
-        Point: new (x: number, y: number) => any;
-      };
-    };
-  }
-}
+// declare global {
+//   interface Window {
+//     google: any;
+//   }
+// }
 
 interface EnhancedPropertyMapProps {
   property: Property;

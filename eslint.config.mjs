@@ -4,11 +4,29 @@ import tsPlugin from '@typescript-eslint/eslint-plugin'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
 import nextPlugin from '@next/eslint-plugin-next'
+import jestPlugin from 'eslint-plugin-jest'
 import prettierConfig from 'eslint-config-prettier'
 import globals from 'globals'
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
+  // Global ignores to exclude legacy and generated/output directories from default lint
+  {
+    ignores: [
+      'v1-reference/**/*',
+      'migrated_data/**/*',
+      'playwright-report/**/*',
+      'test-results/**/*',
+      '.next/**/*',
+      '.next-test/**/*',
+      'out/**/*',
+      'dist/**/*',
+      'homematch-original-analysis/**/*',
+      'node_modules/**/*',
+      '.pnpm-store/**/*',
+      'coverage/**/*',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
@@ -72,6 +90,21 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
+  // Legacy v1-reference override: fully relax rules and stop reporting in CI
+  {
+    files: ['v1-reference/**/*'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off',
+      'no-useless-escape': 'off',
+      'no-empty': 'off',
+      'jest/no-disabled-tests': 'off',
+      'jest/expect-expect': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-redeclare': 'off',
+    },
+  },
   {
     files: [
       '**/*.test.ts',
@@ -80,13 +113,20 @@ export default [
       '**/*.spec.tsx',
       '**/__tests__/**/*',
       '**/__mocks__/**/*',
+      'v1-reference/**/*.test.ts',
+      'v1-reference/**/*.spec.ts',
+      'v1-reference/lib/test-utils/**/*.ts',
     ],
+    plugins: {
+      jest: jestPlugin,
+    },
     languageOptions: {
       globals: {
         ...globals.jest,
       },
     },
     rules: {
+      ...jestPlugin.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },

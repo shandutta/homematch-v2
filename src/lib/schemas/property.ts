@@ -2,23 +2,23 @@ import { z } from 'zod'
 
 // Property Schemas
 export const propertySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid('Invalid uuid'),
   zpid: z.string().nullable(),
-  address: z.string().min(1).max(255),
-  city: z.string().min(1).max(100),
-  state: z.string().min(2).max(50),
+  address: z.string().min(1, { message: 'String must contain at least 1 character(s)' }).max(255),
+  city: z.string().min(1, { message: 'String must contain at least 1 character(s)' }).max(100),
+  state: z.string().length(2),
   zip_code: z.string().min(5).max(10),
-  price: z.number().min(0),
-  bedrooms: z.number().min(0).max(20),
-  bathrooms: z.number().min(0).max(20),
+  price: z.number().min(0, { message: 'Number must be greater than or equal to 0' }),
+  bedrooms: z.number().min(0).max(20, { message: 'Number must be less than or equal to 20' }),
+  bathrooms: z.number().min(0).max(20, { message: 'Number must be less than or equal to 20' }),
   square_feet: z.number().min(0).nullable(),
-  property_type: z
-    .enum(['house', 'condo', 'townhouse', 'apartment'])
-    .nullable(),
+  // Tight enum per domain decision
+  property_type: z.enum(['house', 'condo', 'townhouse', 'apartment']).nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
-  coordinates: z.any().nullable(), // PostGIS POINT type
-  neighborhood_id: z.string().uuid().nullable(),
+  // TODO: replace any with a strict geometry schema if needed
+  coordinates: z.any(), // PostGIS POINT type
+  neighborhood_id: z.string().uuid('Invalid uuid').nullable(),
   amenities: z.array(z.string()).nullable(),
   year_built: z
     .number()
@@ -27,7 +27,7 @@ export const propertySchema = z.object({
     .nullable(),
   lot_size_sqft: z.number().min(0).nullable(),
   parking_spots: z.number().min(0).max(20).nullable(),
-  listing_status: z.string().default('active').nullable(),
+  listing_status: z.enum(['active', 'pending', 'sold']).nullable(),
   property_hash: z.string().nullable(),
   is_active: z.boolean().default(true).nullable(),
   created_at: z.string().datetime().nullable(),

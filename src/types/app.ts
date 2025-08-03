@@ -4,6 +4,9 @@
  * Adheres to project STYLE_GUIDE.md and strict TypeScript mode.
  */
 
+import { Property } from '@/lib/schemas/property'
+import { UserPreferences } from '@/lib/schemas/user'
+
 /**
  * Interaction types aligned to DB: user_property_interactions.interaction_type
  * UI "pass" maps to "skip" in DB.
@@ -46,4 +49,22 @@ export interface PageRequest {
 export interface PageResponse<T> {
   items: T[]
   nextCursor?: string | null
+}
+
+/**
+ * Type for a complete dashboard data payload
+ */
+export interface DashboardData {
+  properties: Property[]
+}
+
+/**
+ * Type for user preferences (extends the Zod schema)
+ */
+export interface UserPreferencesExtended extends UserPreferences {
+  max_price?: number
+  min_bedrooms?: number
+  min_bathrooms?: number
+  property_types?: string[]
+  neighborhoods?: string[]
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Property, Neighborhood } from '@/types/database'
+import { Property } from '@/lib/schemas/property'
+import { Neighborhood } from '@/lib/schemas/property'
 import { Badge } from '@/components/ui/badge'
 import {
   MapPin,

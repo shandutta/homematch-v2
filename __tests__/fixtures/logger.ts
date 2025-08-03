@@ -143,14 +143,14 @@ class E2ETestLogger implements TestLogger {
 
 // Export just the fixtures object, not a test object
 export const loggerFixtures = {
-  logger: async ({ page }, use, testInfo) => {
+  logger: async ({ page }: { page: any }, use: any, testInfo: any) => {
     const logger = new E2ETestLogger(testInfo.title, {
       enabled: true,
       logToFile: false,
     })
 
     // Attach page event listeners for automatic logging
-    page.on('console', (msg) => {
+    page.on('console', (msg: any) => {
       const type = msg.type()
       if (type === 'error') {
         logger.error('CONSOLE', msg.text(), { location: msg.location() })
@@ -159,7 +159,7 @@ export const loggerFixtures = {
       }
     })
 
-    page.on('pageerror', (error) => {
+    page.on('pageerror', (error: any) => {
       logger.error('PAGE_ERROR', error.message, { stack: error.stack })
     })
 

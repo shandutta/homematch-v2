@@ -1,128 +1,187 @@
 /**
- * Utils fixture for HomeMatch V2 E2E tests
- * Provides page utilities and common wait functions
+ * Test helpers for Supabase mocking used across unit tests.
+ * This file intentionally lives outside of __mocks__ to satisfy eslint jest/no-mocks-import.
+ * It provides factory functions compatible with the expectations in unit tests.
  */
 
-import { UtilsFixture } from '../types/fixtures'
+type AnyFn = (...args: any[]) => any
 
-// Storage keys for auth state
-const STORAGE_KEYS = {
-  SUPABASE_AUTH_TOKEN: 'supabase.auth.token',
-  SUPABASE_AUTH_REFRESH_TOKEN: 'supabase.auth.refresh_token',
+export interface MockQueryBuilder {
+  select: AnyFn
+  insert: AnyFn
+  update: AnyFn
+  delete: AnyFn
+  eq: AnyFn
+  neq: AnyFn
+  gt: AnyFn
+  gte: AnyFn
+  lt: AnyFn
+  lte: AnyFn
+  like: AnyFn
+  ilike: AnyFn
+  in: AnyFn
+  contains: AnyFn
+  order: AnyFn
+  limit: AnyFn
+  range: AnyFn
+  single: () => Promise<{ data: unknown; error: null }>
+  maybeSingle: () => Promise<{ data: unknown; error: null }>
+  then: (onFulfilled: AnyFn) => Promise<unknown>
 }
 
-// Timeouts
-const TEST_TIMEOUTS = {
-  PAGE_LOAD: 30000,
-  NAVIGATION: 15000,
-  AUTH_REDIRECT: 10000,
-  AUTH_LOGOUT: 5000,
-  BUTTON_ENABLED: 5000,
-  ELEMENT_VISIBLE: 5000,
-  FORM_VALIDATION: 1000,
-  NETWORK_IDLE: 5000,
+export interface MockSupabaseClient {
+  from: (table: string) => MockQueryBuilder
+  rpc: AnyFn
+  auth: {
+    getUser: AnyFn
+    getSession: AnyFn
+    signInWithPassword: AnyFn
+  }
+  storage: {
+    from: AnyFn
+  }
+  realtime: {
+    channel: AnyFn
+  }
 }
 
-// Export just the fixtures object, not a test object
+const createChainableBuilderInternal = (response: {
+  data: unknown
+  error: null
+  count?: number | null
+}): MockQueryBuilder => {
+  const builder: any = {}
+  const chain = () => builder
+
+  Object.assign(builder, {
+    select: jest.fn(chain),
+    insert: jest.fn(chain),
+    update: jest.fn(chain),
+    delete: jest.fn(chain),
+    eq: jest.fn(chain),
+    neq: jest.fn(chain),
+    gt: jest.fn(chain),
+    gte: jest.fn(chain),
+    lt: jest.fn(chain),
+    lte: jest.fn(chain),
+    like: jest.fn(chain),
+    ilike: jest.fn(chain),
+    in: jest.fn(chain),
+    contains: jest.fn(chain),
+    order: jest.fn(chain),
+    limit: jest.fn(chain),
+    range: jest.fn(chain),
+    // Return configured terminal responses when provided
+    single: jest.fn(async () => {
+      // For default builders (array context), single() should return { data: null, error: null }
+      if (Array.isArray(response.data)) {
+        return { data: null, error: null }
+      }
+      // If response.data is non-array and provided, pass it through; otherwise default
+      if (response && 'data' in response && response.data !== undefined) {
+        return { data: response.data ?? null, error: null }
+      }
+      return { data: null, error: null }
+    }),
+    maybeSingle: jest.fn(async () => {
+      if (Array.isArray(response.data)) {
+        return { data: null, error: null }
+      }
+      if (response && 'data' in response && response.data !== undefined) {
+        return { data: response.data ?? null, error: null }
+      }
+      return { data: null, error: null }
+    }),
+    then: jest.fn(async (onFulfilled: AnyFn) =>
+      onFulfilled({
+        data: Array.isArray(response.data) ? response.data : [],
+        error: null,
+        // Default promise resolution should mirror test expectation (count: null)
+        count: response.count ?? null,
+      })
+    ),
+  })
+
+  return builder as MockQueryBuilder
+}
+
+/**
+ * Create a new typed mock Supabase client
+ */
+export const makeMockClient = (): MockSupabaseClient => {
+  const defaultResponse = { data: [], error: null as null, count: null as number | null }
+  const defaultBuilder = createChainableBuilderInternal(defaultResponse)
+
+  const client: MockSupabaseClient = {
+    from: jest.fn(() => defaultBuilder),
+    rpc: jest.fn(async () => ({ data: null, error: null })),
+    auth: {
+      getUser: jest.fn(async () => ({ data: { user: null }, error: null })),
+      getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
+      signInWithPassword: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
+    },
+    storage: {
+      from: jest.fn(() => ({
+        upload: jest.fn(async () => ({ data: null, error: null })),
+        download: jest.fn(async () => ({ data: null, error: null })),
+        getPublicUrl: jest.fn((path: string) => ({ data: { publicUrl: `mock-url/${path}` } })),
+      })),
+    },
+    realtime: {
+      channel: jest.fn(() => ({ subscribe: jest.fn(), unsubscribe: jest.fn() })),
+    },
+  }
+
+  return client
+}
+
 export const utilsFixtures = {
-  utils: async ({ page }, use) => {
-    const utils: UtilsFixture = {
-      async clearAuthState() {
-        // Clear all cookies including Supabase auth cookies
-        await page.context().clearCookies()
-
-        // Clear localStorage for any legacy auth tokens
-        const url = page.url()
-        if (url && !url.includes('about:blank')) {
-          // Clear legacy storage keys if they exist
-          await page.evaluate((storageKey) => {
-            localStorage.removeItem(storageKey)
-          }, STORAGE_KEYS.SUPABASE_AUTH_TOKEN)
-
-          await page.evaluate((storageKey) => {
-            localStorage.removeItem(storageKey)
-          }, STORAGE_KEYS.SUPABASE_AUTH_REFRESH_TOKEN)
-        }
-      },
-
-      async waitForReactToSettle() {
-        // Wait for network to be idle
-        await page.waitForLoadState('networkidle')
-
-        // Give React time to render
-        await page.waitForTimeout(500)
-
-        // Wait for DOM to be ready
-        await page.waitForLoadState('domcontentloaded')
-      },
-
-      async waitForFormValidation() {
-        await page.waitForTimeout(TEST_TIMEOUTS.FORM_VALIDATION)
-        await page.waitForLoadState('domcontentloaded')
-      },
-
-      async navigateWithRetry(url: string, options?: { retries?: number }) {
-        const maxRetries = options?.retries ?? 3
-        let lastError: Error | null = null
-
-        for (let i = 0; i < maxRetries; i++) {
-          try {
-            await page.goto(url, {
-              waitUntil: 'domcontentloaded',
-              timeout: TEST_TIMEOUTS.PAGE_LOAD,
-            })
-            return // Success
-          } catch (error) {
-            lastError = error as Error
-
-            if (i < maxRetries - 1) {
-              // Wait before retry
-              await page.waitForTimeout(1000)
-            }
-          }
-        }
-
-        throw lastError
-      },
-
-      async isAuthenticated() {
-        // Check for Supabase auth cookies
-        const cookies = await page.context().cookies()
-        const hasAuthCookie = cookies.some(
-          (c) => c.name.includes('sb-') && c.name.includes('auth-token')
-        )
-
-        return hasAuthCookie
-      },
-
-      async waitForAuthRedirect(
-        expectedUrl: string | RegExp,
-        options?: { timeout?: number; errorMessage?: string }
-      ) {
-        const {
-          timeout = TEST_TIMEOUTS.AUTH_REDIRECT,
-          errorMessage = 'Failed to redirect after authentication',
-        } = options || {}
-
-        try {
-          await page.waitForURL(expectedUrl, { timeout })
-        } catch {
-          // Check for error alerts
-          const destructiveAlert = page.locator('.alert-destructive').first()
-          const isAlertVisible = await destructiveAlert.isVisible()
-
-          if (isAlertVisible) {
-            const alertText = await destructiveAlert.textContent()
-            throw new Error(`${errorMessage}: ${alertText}`)
-          }
-
-          throw new Error(`${errorMessage}: URL did not match expected pattern`)
-        }
-      },
-    }
-
-    await use(utils)
-  },
+  makeMockClient,
 }
 
-// expect is exported from index.ts
+/**
+ * Configure a specific table response for a given mock client
+ */
+export const configureMockResponse = (
+  client: MockSupabaseClient,
+  table: string,
+  response:
+    | { data: unknown; error: null } // simple shape
+    | {
+        single?: { data: unknown; error: null }
+        maybeSingle?: { data: unknown; error: null }
+        array?: { data: unknown[]; error: null; count: number | null }
+      }
+): void => {
+  ;(client.from as jest.Mock).mockImplementation((t: string) => {
+    if (t === table) {
+      // Normalize provided response to the internal format used by createChainableBuilderInternal
+      if ('single' in (response as any) || 'maybeSingle' in (response as any) || 'array' in (response as any)) {
+        const complex = response as {
+          single?: { data: unknown; error: null }
+          maybeSingle?: { data: unknown; error: null }
+          array?: { data: unknown[]; error: null; count: number | null }
+        }
+        // Prefer array config for promise resolve
+        const arrayData = complex.array?.data ?? []
+        const count = complex.array?.count ?? (Array.isArray(arrayData) ? arrayData.length : null)
+        // Prefer single config for single/maybeSingle when provided; else default to null
+        const chosenSingle = complex.single ?? { data: null, error: null }
+        const builder = createChainableBuilderInternal({ data: arrayData, error: null, count })
+        // Override terminal methods directly on this specific builder to honor complex config
+        ;(builder as any).single = jest.fn(async () => chosenSingle)
+        ;(builder as any).maybeSingle = jest.fn(async () => complex.maybeSingle ?? chosenSingle)
+        return builder
+      } else {
+        const simple = response as { data: unknown; error: null }
+        return createChainableBuilderInternal({
+          data: Array.isArray(simple.data) ? simple.data : simple.data ?? [],
+          error: simple.error,
+          count: Array.isArray(simple.data) ? simple.data.length : null,
+        })
+      }
+    }
+    // default builder for other tables
+    return createChainableBuilderInternal({ data: [], error: null, count: 0 })
+  })
+}

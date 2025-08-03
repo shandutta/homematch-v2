@@ -113,20 +113,16 @@ describe('Database Integration Tests', () => {
 
       expect(propError).toBeNull()
       expect(propertiesWithNeighborhoods).toBeDefined()
+      expect(propertiesWithNeighborhoods!.length).toBeGreaterThan(0)
 
-      if (
-        propertiesWithNeighborhoods &&
-        propertiesWithNeighborhoods.length > 0
-      ) {
-        propertiesWithNeighborhoods.forEach((property: any) => {
-          expect(property.id).toBeDefined()
-          expect(property.neighborhood_id).toBeDefined()
-          expect(property.neighborhoods).toBeDefined()
-          expect(property.neighborhoods.id).toBe(property.neighborhood_id)
-          expect(property.neighborhoods.name).toBeDefined()
-          expect(property.neighborhoods.city).toBeDefined()
-        })
-      }
+      propertiesWithNeighborhoods!.forEach((property: any) => {
+        expect(property.id).toBeDefined()
+        expect(property.neighborhood_id).toBeDefined()
+        expect(property.neighborhoods).toBeDefined()
+        expect(property.neighborhoods.id).toBe(property.neighborhood_id)
+        expect(property.neighborhoods.name).toBeDefined()
+        expect(property.neighborhoods.city).toBeDefined()
+      })
     }, 15000)
 
     test('should validate spatial relationship queries work correctly', async () => {
@@ -148,16 +144,15 @@ describe('Database Integration Tests', () => {
 
       expect(spatialError).toBeNull()
       expect(spatialData).toBeDefined()
+      expect(spatialData!.length).toBeGreaterThan(0)
 
-      if (spatialData && spatialData.length > 0) {
-        spatialData.forEach((property: any) => {
-          expect(property.coordinates).toBeDefined()
-          expect(property.neighborhoods).toBeDefined()
-          expect(property.neighborhoods.bounds).toBeDefined()
-          expect(typeof property.coordinates).toBe('object')
-          expect(typeof property.neighborhoods.bounds).toBe('object')
-        })
-      }
+      spatialData!.forEach((property: any) => {
+        expect(property.coordinates).toBeDefined()
+        expect(property.neighborhoods).toBeDefined()
+        expect(property.neighborhoods.bounds).toBeDefined()
+        expect(typeof property.coordinates).toBe('object')
+        expect(typeof property.neighborhoods.bounds).toBe('object')
+      })
     }, 15000)
 
     test('should ensure property counts per neighborhood are reasonable', async () => {
@@ -175,19 +170,18 @@ describe('Database Integration Tests', () => {
 
       expect(countError).toBeNull()
       expect(neighborhoodCounts).toBeDefined()
+      expect(neighborhoodCounts!.length).toBeGreaterThan(0)
 
-      if (neighborhoodCounts && neighborhoodCounts.length > 0) {
-        neighborhoodCounts.forEach((neighborhood: any) => {
-          expect(neighborhood.id).toBeDefined()
-          expect(neighborhood.name).toBeDefined()
-          expect(neighborhood.properties).toBeDefined()
+      neighborhoodCounts!.forEach((neighborhood: any) => {
+        expect(neighborhood.id).toBeDefined()
+        expect(neighborhood.name).toBeDefined()
+        expect(neighborhood.properties).toBeDefined()
 
-          // Properties count should be reasonable (not negative, not extremely high)
-          const propertyCount = neighborhood.properties[0]?.count || 0
-          expect(propertyCount).toBeGreaterThanOrEqual(0)
-          expect(propertyCount).toBeLessThan(500) // Reasonable upper bound
-        })
-      }
+        // Properties count should be reasonable (not negative, not extremely high)
+        const propertyCount = neighborhood.properties[0]?.count || 0
+        expect(propertyCount).toBeGreaterThanOrEqual(0)
+        expect(propertyCount).toBeLessThan(500) // Reasonable upper bound
+      })
     }, 15000)
 
     test('should validate cross-table data consistency', async () => {
@@ -200,29 +194,27 @@ describe('Database Integration Tests', () => {
         .limit(50)
 
       expect(orphanError).toBeNull()
+      expect(orphanedProperties).toBeDefined()
+      expect(orphanedProperties!.length).toBeGreaterThan(0)
 
-      if (orphanedProperties && orphanedProperties.length > 0) {
-        // Verify all referenced neighborhoods exist
-        const neighborhoodIds = [
-          ...new Set(orphanedProperties.map((p: any) => p.neighborhood_id)),
-        ]
+      // Verify all referenced neighborhoods exist
+      const neighborhoodIds = [
+        ...new Set(orphanedProperties!.map((p: any) => p.neighborhood_id)),
+      ]
 
-        const { data: existingNeighborhoods, error: neighError } =
-          await supabase
-            .from('neighborhoods')
-            .select('id')
-            .in('id', neighborhoodIds)
+      const { data: existingNeighborhoods, error: neighError } =
+        await supabase
+          .from('neighborhoods')
+          .select('id')
+          .in('id', neighborhoodIds)
 
-        expect(neighError).toBeNull()
-        expect(existingNeighborhoods).toBeDefined()
+      expect(neighError).toBeNull()
+      expect(existingNeighborhoods).toBeDefined()
 
-        const existingIds = existingNeighborhoods?.map((n: any) => n.id) || []
+      const existingIds = existingNeighborhoods!.map((n: any) => n.id)
 
-        // All referenced neighborhood IDs should exist
-        neighborhoodIds.forEach((id) => {
-          expect(existingIds).toContain(id)
-        })
-      }
+      // All referenced neighborhood IDs should exist
+      expect(existingIds.length).toBe(neighborhoodIds.length)
     }, 15000)
   })
 

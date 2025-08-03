@@ -3,10 +3,13 @@
  * Consolidated from fixtures-test.spec.ts, fixtures-complete.spec.ts, and fixtures-validation.spec.ts
  */
 
-import { test, expect } from '../fixtures/index'
+import { test, expect } from '@playwright/test'
+import { HomematchFixtures } from '../types/fixtures'
 
-test.describe('Fixtures Validation', () => {
-  test('should validate all fixtures work together', async ({
+const testWithFixtures = test.extend<HomematchFixtures>({})
+
+testWithFixtures.describe('Fixtures Validation', () => {
+  testWithFixtures('should validate all fixtures work together', async ({
     utils,
     config,
     logger,
@@ -35,7 +38,7 @@ test.describe('Fixtures Validation', () => {
     logger.step('All fixtures validation completed')
   })
 
-  test('should handle navigation with retry mechanism', async ({
+  testWithFixtures('should handle navigation with retry mechanism', async ({
     page,
     utils,
     retry,

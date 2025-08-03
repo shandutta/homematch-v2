@@ -3,18 +3,21 @@
  * Consolidated from auth-simple-fixtures.spec.ts and auth-fixtures-comprehensive.spec.ts
  */
 
-import { test } from '../fixtures/index'
+import { test } from '@playwright/test'
+import { HomematchFixtures } from '../types/fixtures'
+
+const testWithFixtures = test.extend<HomematchFixtures>({})
 
 // =============================================================================
 // Authentication Tests - Using All Fixtures
 // =============================================================================
 
-test.describe('Authentication Flow', () => {
+testWithFixtures.describe('Authentication Flow', () => {
   // Pruned: keep only one happy-path flow and essential redirect test
 
   // Removed: form validation (covered by unit/integration)
 
-  test('should complete full login and logout flow', async ({
+  testWithFixtures('should complete full login and logout flow', async ({
     page,
     auth,
     config,
@@ -43,7 +46,7 @@ test.describe('Authentication Flow', () => {
     logger.step('Full authentication flow completed successfully')
   })
 
-  test('should redirect to validation page after successful login', async ({
+  testWithFixtures('should redirect to validation page after successful login', async ({
     page,
     auth,
     config,

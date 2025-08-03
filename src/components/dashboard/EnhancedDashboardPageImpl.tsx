@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import {
   useInteractionSummary,
   useRecordInteraction,
@@ -13,10 +13,20 @@ import { DashboardData } from '@/lib/data/loader'
 
 interface EnhancedDashboardPageImplProps {
   initialData: DashboardData
+  // These props are passed from the server component but not currently used in the client component
+  // They will be used in future iterations for enhanced functionality
+  // _returning?: boolean  // Prefixed with _ to indicate unused variable
+  // _userProfile?: any // Will be typed properly with Zod later
+  // _initialSwipeStats?: any // Will be typed properly with Zod later
+  // _session?: any // Will be typed properly with Zod later
 }
 
 export function EnhancedDashboardPageImpl({
   initialData,
+  // _returning,  // Prefixed with _ to indicate unused variable
+  // _userProfile,  // Prefixed with _ to indicate unused variable
+  // _initialSwipeStats,  // Prefixed with _ to indicate unused variable
+  // _session,  // Prefixed with _ to indicate unused variable
 }: EnhancedDashboardPageImplProps) {
   // Component State
   const [properties, setProperties] = useState<Property[]>(
