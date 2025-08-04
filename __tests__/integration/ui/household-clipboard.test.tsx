@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { TEST_USERS, TEST_MESSAGES } from '@/__tests__/fixtures/test-data'
 
 // Mock external services but keep UI interactions real
-vi.mock('@/lib/services/users')
+vi.mock('@/lib/services/users-client')
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     refresh: vi.fn(),

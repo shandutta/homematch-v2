@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { SavedSearch } from '@/types/database'
 import { Search, Trash2, Bell, BellOff } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,7 +15,7 @@ interface SavedSearchesSectionProps {
 export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [loading, setLoading] = useState(true)
-  const userService = useMemo(() => new UserService(), [])
+  const userService = useMemo(() => UserServiceClient, [])
 
   const loadSavedSearches = useCallback(async () => {
     setLoading(true)

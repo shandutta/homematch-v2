@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfileForm } from '@/components/profile/ProfileForm'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 
 // Mock dependencies
-jest.mock('@/lib/services/users')
+jest.mock('@/lib/services/users-client')
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -37,9 +37,7 @@ describe('ProfileForm', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUpdateUserProfile = jest.fn().mockResolvedValue(mockProfile)
-    ;(UserService as jest.Mock).mockImplementation(() => ({
-      updateUserProfile: mockUpdateUserProfile,
-    }))
+    ;(UserServiceClient.updateUserProfile as jest.Mock) = mockUpdateUserProfile
   })
 
   it('renders form with initial values from profile', () => {

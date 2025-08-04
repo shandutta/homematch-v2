@@ -10,7 +10,7 @@ import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
-import { useRenderPerformance } from '@/lib/utils/performance'
+import { useRenderPerformance } from '@/lib/utils/client-performance'
 
 interface EnhancedDashboardPageImplProps {
   initialData: DashboardData

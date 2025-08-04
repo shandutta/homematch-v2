@@ -5,7 +5,7 @@ import TinderCard from 'react-tinder-card'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
-import { useRenderPerformance } from '@/lib/utils/performance'
+import { useRenderPerformance } from '@/lib/utils/client-performance'
 import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 
 interface PropertySwiperProps {
