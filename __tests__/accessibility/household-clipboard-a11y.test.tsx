@@ -1,6 +1,6 @@
 /**
  * Accessibility tests for clipboard functionality in HouseholdSection component
- * 
+ *
  * These tests ensure:
  * - Keyboard navigation works properly
  * - Screen reader accessibility
@@ -41,7 +41,7 @@ describe('HouseholdSection Accessibility', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Mock clipboard for component functionality
     Object.defineProperty(navigator, 'clipboard', {
       value: {
@@ -59,25 +59,29 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Verify button is focusable
       expect(copyButton).toBeInTheDocument()
       expect(copyButton.tagName).toBe('BUTTON')
-      
+
       // Test keyboard navigation
       await user.tab()
       // Should focus on the copy button (may need to tab multiple times depending on form elements)
       copyButton.focus()
       expect(copyButton).toHaveFocus()
-      
+
       // Test activation with Enter key
       await user.keyboard('{Enter}')
-      expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
-      
+      expect(toast.success).toHaveBeenCalledWith(
+        TEST_MESSAGES.clipboard.success
+      )
+
       // Test activation with Space key
       vi.clearAllMocks()
       await user.keyboard(' ')
-      expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
+      expect(toast.success).toHaveBeenCalledWith(
+        TEST_MESSAGES.clipboard.success
+      )
     })
 
     it('create household form is keyboard accessible', async () => {
@@ -85,20 +89,22 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
-      
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
+
       // Test tab order
       await user.tab()
       expect(nameInput).toHaveFocus()
-      
+
       await user.tab()
       expect(createButton).toHaveFocus()
-      
+
       // Test form submission with Enter key
       await user.click(nameInput)
       await user.type(nameInput, 'Accessible Family')
       await user.keyboard('{Enter}')
-      
+
       // Form should attempt to submit (mocked service will handle)
       expect(nameInput).toHaveValue('Accessible Family')
     })
@@ -109,12 +115,13 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Should have accessible name (either aria-label or text content)
       expect(copyButton).toHaveAccessibleName()
-      
+
       // Should have descriptive text for screen readers
-      const accessibleName = copyButton.getAttribute('aria-label') || copyButton.textContent
+      const accessibleName =
+        copyButton.getAttribute('aria-label') || copyButton.textContent
       expect(accessibleName).toMatch(/copy|clipboard/i)
     })
 
@@ -122,13 +129,17 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       // Check for proper heading structure
-      const heading = screen.getByRole('heading', { name: /current household/i })
+      const heading = screen.getByRole('heading', {
+        name: /current household/i,
+      })
       expect(heading).toBeInTheDocument()
-      
+
       // Household name should be clearly labeled
-      const householdName = screen.getByText(profileWithHousehold.household.name)
+      const householdName = screen.getByText(
+        profileWithHousehold.household.name
+      )
       expect(householdName).toBeInTheDocument()
-      
+
       // Household ID should be clearly labeled
       const householdId = screen.getByText(profileWithHousehold.household.id)
       expect(householdId).toBeInTheDocument()
@@ -139,11 +150,11 @@ describe('HouseholdSection Accessibility', () => {
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
       const codeInput = screen.getByPlaceholderText('Enter household code')
-      
+
       // Inputs should have accessible names
       expect(nameInput).toHaveAccessibleName()
       expect(codeInput).toHaveAccessibleName()
-      
+
       // Check for proper form labeling
       expect(nameInput.getAttribute('placeholder')).toBeTruthy()
       expect(codeInput.getAttribute('placeholder')).toBeTruthy()
@@ -155,12 +166,14 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
-      
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
+
       // Buttons should have proper roles
       expect(copyButton).toHaveAttribute('type', 'button')
       expect(leaveButton).toHaveAttribute('type', 'button')
-      
+
       // Check for ARIA attributes if present
       if (copyButton.hasAttribute('aria-describedby')) {
         const describedBy = copyButton.getAttribute('aria-describedby')
@@ -171,9 +184,11 @@ describe('HouseholdSection Accessibility', () => {
     it('form elements have proper ARIA relationships', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
       const joinButton = screen.getByRole('button', { name: /join household/i })
-      
+
       // Buttons should have proper types for form submission
       expect(createButton.getAttribute('type')).toBe('submit')
       expect(joinButton.getAttribute('type')).toBe('submit')
@@ -186,14 +201,16 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
-      
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
+
       // Test focus order
       await user.tab()
       // Focus should be on first interactive element
       const focusedElement = document.activeElement
       expect(focusedElement).toBeInstanceOf(HTMLElement)
-      
+
       // Verify all interactive elements are reachable
       expect(copyButton.tabIndex).not.toBe(-1)
       expect(leaveButton.tabIndex).not.toBe(-1)
@@ -204,11 +221,11 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Focus button and activate
       copyButton.focus()
       await user.click(copyButton)
-      
+
       // Focus should remain on button or move to appropriate location
       // (Implementation dependent - button should remain focusable)
       expect(copyButton).toBeInTheDocument()
@@ -217,15 +234,19 @@ describe('HouseholdSection Accessibility', () => {
 
   describe('Automated Accessibility Testing', () => {
     it('has no accessibility violations with household', async () => {
-      const { container } = render(<HouseholdSection profile={profileWithHousehold} />)
-      
+      const { container } = render(
+        <HouseholdSection profile={profileWithHousehold} />
+      )
+
       const results = await axe(container)
       expect(results).toHaveNoViolations()
     })
 
     it('has no accessibility violations without household', async () => {
-      const { container } = render(<HouseholdSection profile={profileWithoutHousehold} />)
-      
+      const { container } = render(
+        <HouseholdSection profile={profileWithoutHousehold} />
+      )
+
       const results = await axe(container)
       expect(results).toHaveNoViolations()
     })
@@ -237,11 +258,11 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Focus the button
       await user.tab()
       copyButton.focus()
-      
+
       // Button should have focus styles (checked via class or computed styles)
       // This is a basic check - in a real app you'd test computed styles
       expect(copyButton).toHaveFocus()
@@ -255,12 +276,16 @@ describe('HouseholdSection Accessibility', () => {
       // - axe-core for automated contrast checking
       // - Manual testing with browser dev tools
       // - Specialized contrast checking libraries
-      
-      const householdName = screen.getByText(profileWithHousehold.household.name)
+
+      const householdName = screen.getByText(
+        profileWithHousehold.household.name
+      )
       expect(householdName).toBeInTheDocument()
-      
+
       // Verify text is not using low-contrast utility classes
-      expect(householdName.className).not.toMatch(/text-gray-300|text-gray-400/i)
+      expect(householdName.className).not.toMatch(
+        /text-gray-300|text-gray-400/i
+      )
     })
   })
 
@@ -269,13 +294,15 @@ describe('HouseholdSection Accessibility', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
-      
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
+
       // Buttons should not have classes that make them too small
       // In practice, you'd test computed styles for 44px minimum touch target
       expect(copyButton.className).not.toMatch(/w-4|h-4|p-1/i) // Very small size classes
       expect(leaveButton.className).not.toMatch(/w-4|h-4|p-1/i)
-      
+
       // Should have reasonable padding/size classes
       expect(copyButton.className).toMatch(/p-|px-|py-|w-|h-/)
       expect(leaveButton.className).toMatch(/p-|px-|py-|w-|h-/)
@@ -287,15 +314,17 @@ describe('HouseholdSection Accessibility', () => {
       const user = userEvent.setup()
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
-      const createButton = screen.getByRole('button', { name: /create household/i })
-      
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
+
       // Try to submit without entering name
       await user.click(createButton)
-      
+
       // Error message should be present and accessible
       const errorMessage = screen.getByText('Please enter a household name')
       expect(errorMessage).toBeInTheDocument()
-      
+
       // Error should have proper ARIA attributes
       if (errorMessage.hasAttribute('role')) {
         expect(errorMessage).toHaveAttribute('role', 'alert')

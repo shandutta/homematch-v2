@@ -68,7 +68,7 @@ describe('Database Schema Validation - Integration Tests', () => {
     test('should verify RLS policies are active and enforcing', async () => {
       // Note: This test uses service role key which bypasses RLS
       // In production, RLS policies would restrict access for anon/authenticated users
-      
+
       // Since we're using service role, we can access all tables
       // This just verifies the tables are accessible and RLS doesn't block service role
       const protectedTables: (keyof Database['public']['Tables'])[] = [
@@ -106,9 +106,9 @@ describe('Database Schema Validation - Integration Tests', () => {
       expect(properties!.length).toBeGreaterThan(0)
 
       // Verify that neighborhood_id references exist
-      const neighborhoodIds = properties!.map((p) => p.neighborhood_id).filter(
-        (id): id is string => id !== null
-      )
+      const neighborhoodIds = properties!
+        .map((p) => p.neighborhood_id)
+        .filter((id): id is string => id !== null)
       const uniqueNeighborhoodIds = [...new Set(neighborhoodIds)]
       const { data: neighborhoods, error: neighError } = await supabase
         .from('neighborhoods')
@@ -165,13 +165,13 @@ describe('Database Schema Validation - Integration Tests', () => {
       // PostGIS should be properly configured with spatial reference systems
       // We can't directly query spatial_ref_sys through Supabase client,
       // but we can verify PostGIS functions work by testing a simple spatial query
-      
+
       // Test that ST_GeomFromText works (indicates PostGIS is properly set up)
       const { data: _data, error } = await supabase
         .from('properties')
         .select('coordinates')
         .limit(1)
-      
+
       // If properties table is accessible and has coordinates field, PostGIS is working
       expect(error).toBeNull()
       // This validates that PostGIS geometry types are supported

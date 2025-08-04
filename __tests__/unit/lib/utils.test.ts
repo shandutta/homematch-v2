@@ -27,7 +27,11 @@ describe('utils', () => {
     test('handles conditional classes', () => {
       const falseCondition = false
       const trueCondition = true
-      const result = cn('base', falseCondition ? 'false-class' : '', trueCondition ? 'true-class' : '')
+      const result = cn(
+        'base',
+        falseCondition ? 'false-class' : '',
+        trueCondition ? 'true-class' : ''
+      )
       expect(result).toBe('base true-class')
     })
 
@@ -43,8 +47,8 @@ describe('utils', () => {
 
     test('handles object notation', () => {
       const result = cn({
-        'active': true,
-        'disabled': false,
+        active: true,
+        disabled: false,
         'hover:bg-blue-500': true,
       })
       expect(result).toBe('active hover:bg-blue-500')
@@ -93,37 +97,53 @@ describe('utils', () => {
   describe('logger', () => {
     test('info logs with [INFO] prefix', () => {
       logger.info('test message', { data: 'test' })
-      
-      expect(console.log).toHaveBeenCalledWith('[INFO]', 'test message', { data: 'test' })
+
+      expect(console.log).toHaveBeenCalledWith('[INFO]', 'test message', {
+        data: 'test',
+      })
       expect(console.log).toHaveBeenCalledTimes(1)
     })
 
     test('warn logs with [WARN] prefix', () => {
       logger.warn('warning message', 123)
-      
-      expect(console.warn).toHaveBeenCalledWith('[WARN]', 'warning message', 123)
+
+      expect(console.warn).toHaveBeenCalledWith(
+        '[WARN]',
+        'warning message',
+        123
+      )
       expect(console.warn).toHaveBeenCalledTimes(1)
     })
 
     test('error logs with [ERROR] prefix', () => {
       const error = new Error('test error')
       logger.error('error occurred', error)
-      
-      expect(console.error).toHaveBeenCalledWith('[ERROR]', 'error occurred', error)
+
+      expect(console.error).toHaveBeenCalledWith(
+        '[ERROR]',
+        'error occurred',
+        error
+      )
       expect(console.error).toHaveBeenCalledTimes(1)
     })
 
     test('handles multiple arguments', () => {
       logger.info('arg1', 'arg2', 'arg3', { key: 'value' })
-      
-      expect(console.log).toHaveBeenCalledWith('[INFO]', 'arg1', 'arg2', 'arg3', { key: 'value' })
+
+      expect(console.log).toHaveBeenCalledWith(
+        '[INFO]',
+        'arg1',
+        'arg2',
+        'arg3',
+        { key: 'value' }
+      )
     })
 
     test('handles no arguments', () => {
       logger.info()
       logger.warn()
       logger.error()
-      
+
       expect(console.log).toHaveBeenCalledWith('[INFO]')
       expect(console.warn).toHaveBeenCalledWith('[WARN]')
       expect(console.error).toHaveBeenCalledWith('[ERROR]')
@@ -133,9 +153,9 @@ describe('utils', () => {
       const obj = { test: 'object' }
       const arr = [1, 2, 3]
       const fn = () => 'function'
-      
+
       logger.info('string', 123, true, obj, arr, fn, null, undefined)
-      
+
       expect(console.log).toHaveBeenCalledWith(
         '[INFO]',
         'string',

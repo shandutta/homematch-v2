@@ -90,7 +90,9 @@ describe('AccountSection', () => {
 
   it('shows loading state while signing out', async () => {
     const user = userEvent.setup()
-    mockSignOut.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+    mockSignOut.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100))
+    )
     render(<AccountSection user={mockUser} />)
 
     const signOutButton = screen.getByRole('button', { name: /sign out/i })
@@ -103,13 +105,18 @@ describe('AccountSection', () => {
     render(<AccountSection user={mockUser} />)
 
     expect(screen.getByText('Danger Zone')).toBeInTheDocument()
-    expect(screen.getByText(/deleting your account is permanent/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /delete account/i })).toBeInTheDocument()
+    expect(
+      screen.getByText(/deleting your account is permanent/i)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /delete account/i })
+    ).toBeInTheDocument()
   })
 
   it('requires double confirmation for account deletion', async () => {
     const user = userEvent.setup()
-    global.confirm = jest.fn()
+    global.confirm = jest
+      .fn()
       .mockReturnValueOnce(true) // First confirmation
       .mockReturnValueOnce(false) // Second confirmation cancelled
 
@@ -143,7 +150,8 @@ describe('AccountSection', () => {
 
   it('shows not implemented message for account deletion', async () => {
     const user = userEvent.setup()
-    global.confirm = jest.fn()
+    global.confirm = jest
+      .fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
 
@@ -153,31 +161,36 @@ describe('AccountSection', () => {
     await user.click(deleteButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/account deletion is not yet implemented/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/account deletion is not yet implemented/i)
+      ).toBeInTheDocument()
     })
   })
 
   it('shows loading state during account deletion attempt', async () => {
     const user = userEvent.setup()
-    global.confirm = jest.fn()
+    global.confirm = jest
+      .fn()
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
 
     render(<AccountSection user={mockUser} />)
 
     const deleteButton = screen.getByRole('button', { name: /delete account/i })
-    
+
     // Button should not be disabled initially
     expect(deleteButton).not.toBeDisabled()
-    
+
     // Click and wait for the error message to appear
     await user.click(deleteButton)
 
     // Wait for the error message to confirm the operation completed
     await waitFor(() => {
-      expect(screen.getByText(/account deletion is not yet implemented/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/account deletion is not yet implemented/i)
+      ).toBeInTheDocument()
     })
-    
+
     // Button should be enabled again after the operation completes
     expect(deleteButton).not.toBeDisabled()
   })

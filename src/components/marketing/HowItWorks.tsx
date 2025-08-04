@@ -27,7 +27,10 @@ export function HowItWorks() {
   ]
 
   return (
-    <section className="relative bg-transparent py-12 sm:py-16" id="how-it-works">
+    <section
+      className="relative bg-transparent py-12 sm:py-16"
+      id="how-it-works"
+    >
       <div className="container mx-auto px-4">
         <motion.div
           className="mx-auto max-w-3xl text-center"
@@ -79,8 +82,6 @@ export function HowItWorks() {
             </motion.div>
           ))}
         </div>
-
-        
       </div>
     </section>
   )

@@ -20,9 +20,7 @@ module.exports = {
   testTimeout: 10000,
   maxWorkers: process.platform === 'win32' ? 1 : '50%',
   workerIdleMemoryLimit: '1GB',
-  transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$))',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
   testMatch: ['**/__tests__/unit/**/*.(test|spec).(js|jsx|ts|tsx)'],
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',

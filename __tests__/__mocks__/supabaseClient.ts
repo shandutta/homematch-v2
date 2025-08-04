@@ -274,20 +274,19 @@ export const configureMockResponse = (
     }
   }
 
-    // For queries that return arrays/lists, configure the promise resolution
-    if (Array.isArray(response.data)) {
-      const listResponse = {
-        data: response.data,
-        error: response.error,
-        count: response.count,
-      }
-      // Type assertion to avoid TS errors - in runtime these methods exist on the mock
-      const qb = queryBuilder as any
-      if (qb && qb.then) {
-        qb.then.mockResolvedValue(listResponse)
-      }
+  // For queries that return arrays/lists, configure the promise resolution
+  if (Array.isArray(response.data)) {
+    const listResponse = {
+      data: response.data,
+      error: response.error,
+      count: response.count,
     }
-  
+    // Type assertion to avoid TS errors - in runtime these methods exist on the mock
+    const qb = queryBuilder as any
+    if (qb && qb.then) {
+      qb.then.mockResolvedValue(listResponse)
+    }
+  }
 
   // Return the client for chaining if needed
   return client

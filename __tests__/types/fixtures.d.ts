@@ -1,7 +1,7 @@
 /**
  * Global test types for HomeMatch V2
  */
- 
+
 // Extend Jest matchers with @testing-library/jest-dom types so TS recognizes
 // toBeInTheDocument, toHaveAttribute, etc. in unit tests.
 import '@testing-library/jest-dom'

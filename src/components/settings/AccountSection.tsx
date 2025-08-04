@@ -53,7 +53,9 @@ export function AccountSection({ user }: AccountSectionProps) {
     try {
       // In a real app, you would call an API endpoint that handles account deletion
       // For now, we'll just show an error message
-      throw new Error('Account deletion is not yet implemented. Please contact support.')
+      throw new Error(
+        'Account deletion is not yet implemented. Please contact support.'
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete account')
     } finally {
@@ -72,22 +74,22 @@ export function AccountSection({ user }: AccountSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
             <Shield className="h-6 w-6" />
             Account Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-purple-200 mb-1">Email Address</p>
+            <p className="mb-1 text-sm text-purple-200">Email Address</p>
             <p className="text-white">{user.email}</p>
           </div>
           <div>
-            <p className="text-sm text-purple-200 mb-1">Account ID</p>
-            <p className="text-white font-mono text-sm">{user.id}</p>
+            <p className="mb-1 text-sm text-purple-200">Account ID</p>
+            <p className="font-mono text-sm text-white">{user.id}</p>
           </div>
           <div>
-            <p className="text-sm text-purple-200 mb-1">Account Created</p>
+            <p className="mb-1 text-sm text-purple-200">Account Created</p>
             <p className="text-white">
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString('en-US', {
@@ -99,7 +101,9 @@ export function AccountSection({ user }: AccountSectionProps) {
             </p>
           </div>
           <div>
-            <p className="text-sm text-purple-200 mb-1">Authentication Provider</p>
+            <p className="mb-1 text-sm text-purple-200">
+              Authentication Provider
+            </p>
             <p className="text-white capitalize">
               {user.app_metadata?.provider || 'Email'}
             </p>
@@ -109,7 +113,9 @@ export function AccountSection({ user }: AccountSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white">Session Management</CardTitle>
+          <CardTitle className="text-xl text-white">
+            Session Management
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-purple-200">
@@ -119,7 +125,7 @@ export function AccountSection({ user }: AccountSectionProps) {
             onClick={handleSignOut}
             disabled={loading}
             variant="outline"
-            className="w-full border-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="w-full border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-white"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
@@ -132,19 +138,19 @@ export function AccountSection({ user }: AccountSectionProps) {
           <CardTitle className="text-xl text-white">Danger Zone</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert className="bg-red-500/10 border-red-500/20">
+          <Alert className="border-red-500/20 bg-red-500/10">
             <AlertTriangle className="h-4 w-4 text-red-400" />
             <AlertDescription className="text-red-200">
-              Deleting your account is permanent and cannot be undone. All your data,
-              including properties, preferences, and household information will be
-              permanently deleted.
+              Deleting your account is permanent and cannot be undone. All your
+              data, including properties, preferences, and household information
+              will be permanently deleted.
             </AlertDescription>
           </Alert>
           <Button
             onClick={handleDeleteAccount}
             disabled={loading}
             variant="outline"
-            className="w-full border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete Account

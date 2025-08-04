@@ -4,13 +4,15 @@ require('@testing-library/jest-dom')
 require('./__tests__/setupSupabaseMock')
 
 // Handle React 19 AggregateError in tests
-global.AggregateError = global.AggregateError || class AggregateError extends Error {
-  constructor(errors, message) {
-    super(message)
-    this.name = 'AggregateError'
-    this.errors = errors
+global.AggregateError =
+  global.AggregateError ||
+  class AggregateError extends Error {
+    constructor(errors, message) {
+      super(message)
+      this.name = 'AggregateError'
+      this.errors = errors
+    }
   }
-}
 
 // Add error boundary for React 19 compatibility
 const originalConsoleError = console.error
@@ -45,27 +47,46 @@ HTMLCanvasElement.prototype.getContext = jest.fn((contextType) => {
   return null
 })
 
-HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mockDataURL')
+HTMLCanvasElement.prototype.toDataURL = jest.fn(
+  () => 'data:image/png;base64,mockDataURL'
+)
 
 // Mock framer-motion to handle animation props in React 19
 jest.mock('framer-motion', () => {
   const React = require('react')
-  
+
   // List of all motion props to strip
   const motionProps = [
-    'animate', 'initial', 'exit', 'transition', 'variants', 'style',
-    'whileHover', 'whileTap', 'whileDrag', 'whileFocus', 'whileInView',
-    'drag', 'dragConstraints', 'dragElastic', 'dragMomentum',
-    'onAnimationStart', 'onAnimationComplete', 'onUpdate', 'onDrag',
-    'viewport', 'layout', 'layoutId'
+    'animate',
+    'initial',
+    'exit',
+    'transition',
+    'variants',
+    'style',
+    'whileHover',
+    'whileTap',
+    'whileDrag',
+    'whileFocus',
+    'whileInView',
+    'drag',
+    'dragConstraints',
+    'dragElastic',
+    'dragMomentum',
+    'onAnimationStart',
+    'onAnimationComplete',
+    'onUpdate',
+    'onDrag',
+    'viewport',
+    'layout',
+    'layoutId',
   ]
-  
+
   // Create a motion component that strips animation props
   const createMotionComponent = (element) => {
     const MotionComponent = ({ children, ...props }) => {
       // Strip all motion-specific props
       const cleanProps = { ...props }
-      motionProps.forEach(prop => {
+      motionProps.forEach((prop) => {
         delete cleanProps[prop]
       })
       return React.createElement(element, cleanProps, children)
@@ -73,15 +94,38 @@ jest.mock('framer-motion', () => {
     MotionComponent.displayName = `Motion${element.charAt(0).toUpperCase()}${element.slice(1)}`
     return MotionComponent
   }
-  
+
   // Create motion object with all common HTML elements
   const motion = {}
-  const htmlElements = ['div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'section', 'article', 'aside', 'header', 'footer', 'nav', 'main', 'button', 'a', 'img', 'ul', 'ol', 'li']
-  
-  htmlElements.forEach(element => {
+  const htmlElements = [
+    'div',
+    'span',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'p',
+    'section',
+    'article',
+    'aside',
+    'header',
+    'footer',
+    'nav',
+    'main',
+    'button',
+    'a',
+    'img',
+    'ul',
+    'ol',
+    'li',
+  ]
+
+  htmlElements.forEach((element) => {
     motion[element] = createMotionComponent(element)
   })
-  
+
   return {
     motion,
     AnimatePresence: ({ children }) => children,

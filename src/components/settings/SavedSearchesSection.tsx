@@ -33,9 +33,13 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     loadSavedSearches()
   }, [loadSavedSearches])
 
-  const toggleNotifications = async (searchId: string, currentState: boolean) => {
+  const toggleNotifications = async (
+    searchId: string,
+    currentState: boolean
+  ) => {
     try {
-      const filters = savedSearches.find(s => s.id === searchId)?.filters as Record<string, unknown>
+      const filters = savedSearches.find((s) => s.id === searchId)
+        ?.filters as Record<string, unknown>
       await userService.updateSavedSearch(searchId, {
         filters: {
           ...filters,
@@ -81,7 +85,9 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <Card className="card-glassmorphism-style">
         <CardContent className="py-8">
-          <p className="text-center text-purple-200">Loading saved searches...</p>
+          <p className="text-center text-purple-200">
+            Loading saved searches...
+          </p>
         </CardContent>
       </Card>
     )
@@ -91,17 +97,18 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
             <Search className="h-6 w-6" />
             Saved Searches
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-purple-200 text-center py-8">
+          <p className="py-8 text-center text-purple-200">
             You haven&apos;t saved any searches yet.
           </p>
-          <p className="text-sm text-purple-300/60 text-center">
-            Save searches from the main dashboard to get notified about new matches!
+          <p className="text-center text-sm text-purple-300/60">
+            Save searches from the main dashboard to get notified about new
+            matches!
           </p>
         </CardContent>
       </Card>
@@ -112,7 +119,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
             <Search className="h-6 w-6" />
             Saved Searches
           </CardTitle>
@@ -131,14 +138,16 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         return (
           <Card key={search.id} className="card-glassmorphism-style">
             <CardContent className="pt-6">
-              <div className="flex items-start justify-between mb-4">
+              <div className="mb-4 flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white mb-2">{search.name}</h3>
+                  <h3 className="mb-2 text-lg font-semibold text-white">
+                    {search.name}
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {formatFilters(filters).map((filter, index) => (
                       <span
                         key={index}
-                        className="text-sm text-purple-200 bg-purple-500/20 px-2 py-1 rounded"
+                        className="rounded bg-purple-500/20 px-2 py-1 text-sm text-purple-200"
                       >
                         {filter}
                       </span>
@@ -149,8 +158,12 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => toggleNotifications(search.id, hasNotifications)}
-                    className={hasNotifications ? 'text-green-400' : 'text-gray-400'}
+                    onClick={() =>
+                      toggleNotifications(search.id, hasNotifications)
+                    }
+                    className={
+                      hasNotifications ? 'text-green-400' : 'text-gray-400'
+                    }
                   >
                     {hasNotifications ? (
                       <Bell className="h-4 w-4" />

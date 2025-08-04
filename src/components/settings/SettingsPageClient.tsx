@@ -8,7 +8,13 @@ import { PreferencesSection } from './PreferencesSection'
 import { NotificationsSection } from './NotificationsSection'
 import { AccountSection } from './AccountSection'
 import { SavedSearchesSection } from './SavedSearchesSection'
-import { Settings, Bell, User as UserIcon, Search, ArrowLeft } from 'lucide-react'
+import {
+  Settings,
+  Bell,
+  User as UserIcon,
+  Search,
+  ArrowLeft,
+} from 'lucide-react'
 import Link from 'next/link'
 
 interface SettingsPageClientProps {
@@ -22,13 +28,13 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="bg-purple-900/10 backdrop-blur-md border-b border-purple-500/20">
+      <div className="border-b border-purple-500/20 bg-purple-900/10 backdrop-blur-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link 
+              <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-purple-300 transition-colors hover:text-white"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back to Dashboard</span>
@@ -36,7 +42,7 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
               <h1 className="text-3xl font-bold">Settings</h1>
             </div>
             <Link href="/profile">
-              <button className="text-purple-300 hover:text-white transition-colors">
+              <button className="text-purple-300 transition-colors hover:text-white">
                 View Profile
               </button>
             </Link>
@@ -46,17 +52,30 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-purple-900/20 border border-purple-500/20">
-            <TabsTrigger value="preferences" className="flex items-center gap-2">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="border border-purple-500/20 bg-purple-900/20">
+            <TabsTrigger
+              value="preferences"
+              className="flex items-center gap-2"
+            >
               <Settings className="h-4 w-4" />
               Preferences
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger
+              value="notifications"
+              className="flex items-center gap-2"
+            >
               <Bell className="h-4 w-4" />
               Notifications
             </TabsTrigger>
-            <TabsTrigger value="saved-searches" className="flex items-center gap-2">
+            <TabsTrigger
+              value="saved-searches"
+              className="flex items-center gap-2"
+            >
               <Search className="h-4 w-4" />
               Saved Searches
             </TabsTrigger>

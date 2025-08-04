@@ -16,16 +16,19 @@ interface NotificationsSectionProps {
   profile: UserProfile
 }
 
-export function NotificationsSection({ user, profile }: NotificationsSectionProps) {
+export function NotificationsSection({
+  user,
+  profile,
+}: NotificationsSectionProps) {
   const userService = new UserService()
-  
+
   // Define specific notification types for strong typing
   type NotificationPreferences = {
     email?: Record<string, boolean>
     push?: Record<string, boolean>
     sms?: Record<string, boolean>
   }
-  
+
   const preferences = (profile.preferences || {}) as UserPreferences & {
     notifications?: NotificationPreferences
   }
@@ -79,14 +82,15 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
             <Mail className="h-6 w-6" />
             Email Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-purple-200">
-            Notifications will be sent to: <span className="text-white">{user.email}</span>
+            Notifications will be sent to:{' '}
+            <span className="text-white">{user.email}</span>
           </p>
           {Object.entries({
             newMatches: 'New property matches',
@@ -95,14 +99,20 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
             weeklyDigest: 'Weekly property digest',
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between">
-              <Label htmlFor={`email-${key}`} className="text-purple-200 cursor-pointer">
+              <Label
+                htmlFor={`email-${key}`}
+                className="cursor-pointer text-purple-200"
+              >
                 {label}
               </Label>
               <Switch
                 id={`email-${key}`}
                 checked={emailNotifications[key]}
                 onCheckedChange={(checked) =>
-                  setEmailNotifications({ ...emailNotifications, [key]: checked })
+                  setEmailNotifications({
+                    ...emailNotifications,
+                    [key]: checked,
+                  })
                 }
               />
             </div>
@@ -112,7 +122,7 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl text-white">
             <Bell className="h-5 w-5" />
             Push Notifications
           </CardTitle>
@@ -127,7 +137,10 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
             messages: 'Messages from household members',
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between">
-              <Label htmlFor={`push-${key}`} className="text-purple-200 cursor-pointer">
+              <Label
+                htmlFor={`push-${key}`}
+                className="cursor-pointer text-purple-200"
+              >
                 {label}
               </Label>
               <Switch
@@ -144,7 +157,7 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl text-white">
             <Smartphone className="h-5 w-5" />
             SMS Notifications
           </CardTitle>
@@ -158,7 +171,10 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
             viewingReminders: 'Property viewing reminders',
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between">
-              <Label htmlFor={`sms-${key}`} className="text-purple-200 cursor-pointer">
+              <Label
+                htmlFor={`sms-${key}`}
+                className="cursor-pointer text-purple-200"
+              >
                 {label}
               </Label>
               <Switch
@@ -170,7 +186,8 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
               />
             </div>
           ))}
-          {(smsNotifications.urgentAlerts || smsNotifications.viewingReminders) && (
+          {(smsNotifications.urgentAlerts ||
+            smsNotifications.viewingReminders) && (
             <p className="text-xs text-purple-300/60">
               Note: Phone number required in your profile for SMS notifications
             </p>
@@ -181,7 +198,7 @@ export function NotificationsSection({ user, profile }: NotificationsSectionProp
       <Button
         onClick={saveNotifications}
         disabled={loading}
-        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+        className="w-full bg-purple-600 text-white hover:bg-purple-700"
       >
         {loading ? (
           <>

@@ -1,6 +1,6 @@
 /**
  * Shared test fixtures for consistent data across all test levels
- * 
+ *
  * This module provides:
  * - Consistent user data for unit, integration, and e2e tests
  * - Realistic household data structures
@@ -131,23 +131,23 @@ export const TEST_SELECTORS = {
   householdName: '[data-testid="household-name"]',
   copyButton: '[data-testid="copy-household-code"]',
   leaveButton: '[data-testid="leave-household-button"]',
-  
+
   // Create household form
   createForm: '[data-testid="create-household-form"]',
   householdNameInput: '[data-testid="household-name-input"]',
   createButton: '[data-testid="create-household-button"]',
-  
+
   // Auth forms
   emailInput: '[data-testid="email-input"]',
   passwordInput: '[data-testid="password-input"]',
   signInButton: '[data-testid="signin-button"]',
   signUpButton: '[data-testid="signup-button"]',
-  
+
   // Toast notifications
   toastSuccess: '[data-testid="toast-success"]',
   toastError: '[data-testid="toast-error"]',
   toastContainer: '.sonner-toast',
-  
+
   // Navigation
   dashboardLink: '[data-testid="nav-dashboard"]',
   profileLink: '[data-testid="nav-profile"]',
@@ -180,7 +180,9 @@ export const createTestProfile = (overrides: any = {}) => ({
   ...overrides,
 })
 
-export const createTestHousehold = (overrides: Partial<typeof TEST_HOUSEHOLDS.primary> = {}) => ({
+export const createTestHousehold = (
+  overrides: Partial<typeof TEST_HOUSEHOLDS.primary> = {}
+) => ({
   ...TEST_HOUSEHOLDS.primary,
   ...overrides,
 })

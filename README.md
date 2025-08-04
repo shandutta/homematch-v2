@@ -108,27 +108,27 @@ See [Current Status](./docs/CURRENT_STATUS.md) for detailed roadmap.
 2. **Environment Setup**
 
    Create `.env.local` with your Supabase credentials:
-   
+
    ```bash
    # Required
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   
+
    # Optional (for additional features)
    OPENAI_API_KEY=your-openai-key
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-key
    ```
-   
+
    See [Implementation Plan](./docs/IMPLEMENTATION_PLAN.md#environment-variables) for complete setup.
 
 3. **Start Local Database** (Optional)
 
    For local development with Supabase:
-   
+
    ```bash
    pnpm dlx supabase@latest start -x studio
    ```
-   
+
    Or use the cloud Supabase instance directly.
 
 4. **Run Development Server**

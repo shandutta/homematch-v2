@@ -43,10 +43,13 @@ export class ApiErrorHandler {
     )
   }
 
-  static serverError(message = 'Internal server error', details?: unknown): NextResponse {
+  static serverError(
+    message = 'Internal server error',
+    details?: unknown
+  ): NextResponse {
     // Log server errors for monitoring
     console.error('Server error:', message, details)
-    
+
     return NextResponse.json(
       { error: message, code: 'SERVER_ERROR' },
       { status: 500 }

@@ -256,8 +256,14 @@ async function getMarketingProperties(): Promise<NextResponse> {
       return NextResponse.json([], { status: 200 })
     }
   } catch (err) {
-    return ApiErrorHandler.serverError('Failed to retrieve marketing properties', err)
+    return ApiErrorHandler.serverError(
+      'Failed to retrieve marketing properties',
+      err
+    )
   }
 }
 
-export const GET = withPerformanceTracking(getMarketingProperties, 'GET /api/properties/marketing')
+export const GET = withPerformanceTracking(
+  getMarketingProperties,
+  'GET /api/properties/marketing'
+)

@@ -6,7 +6,13 @@ import { Property } from '@/lib/schemas/property'
 // Mock the TinderCard component as it's a third-party library with its own tests
 jest.mock('react-tinder-card', () => ({
   __esModule: true,
-  default: ({ children, onSwipe }: { children: React.ReactNode; onSwipe: (dir: string) => void }) => (
+  default: ({
+    children,
+    onSwipe,
+  }: {
+    children: React.ReactNode
+    onSwipe: (dir: string) => void
+  }) => (
     <div data-testid="tinder-card" data-swipe={(dir: string) => onSwipe(dir)}>
       {children}
     </div>
@@ -71,7 +77,9 @@ const mockProperties: Property[] = [
 describe('PropertySwiper Component', () => {
   test('should render a card for each property', () => {
     const onDecision = jest.fn()
-    render(<PropertySwiper properties={mockProperties} onDecision={onDecision} />)
+    render(
+      <PropertySwiper properties={mockProperties} onDecision={onDecision} />
+    )
     const cards = screen.getAllByTestId('tinder-card')
     expect(cards).toHaveLength(2)
     expect(screen.getByText('1 Cool St')).toBeDefined()

@@ -4,30 +4,48 @@ import { z } from 'zod'
 export const propertySchema = z.object({
   id: z.string().uuid('Invalid uuid'),
   zpid: z.string().nullable(),
-  address: z.string().min(1, { message: 'String must contain at least 1 character(s)' }).max(255),
-  city: z.string().min(1, { message: 'String must contain at least 1 character(s)' }).max(100),
+  address: z
+    .string()
+    .min(1, { message: 'String must contain at least 1 character(s)' })
+    .max(255),
+  city: z
+    .string()
+    .min(1, { message: 'String must contain at least 1 character(s)' })
+    .max(100),
   state: z.string().length(2),
   zip_code: z.string().min(5).max(10),
-  price: z.number().min(0, { message: 'Number must be greater than or equal to 0' }),
-  bedrooms: z.number().min(0).max(20, { message: 'Number must be less than or equal to 20' }),
-  bathrooms: z.number().min(0).max(20, { message: 'Number must be less than or equal to 20' }),
+  price: z
+    .number()
+    .min(0, { message: 'Number must be greater than or equal to 0' }),
+  bedrooms: z
+    .number()
+    .min(0)
+    .max(20, { message: 'Number must be less than or equal to 20' }),
+  bathrooms: z
+    .number()
+    .min(0)
+    .max(20, { message: 'Number must be less than or equal to 20' }),
   square_feet: z.number().min(0).nullable(),
   // Tight enum per domain decision
-  property_type: z.enum(['house', 'condo', 'townhouse', 'apartment']).nullable(),
+  property_type: z
+    .enum(['house', 'condo', 'townhouse', 'apartment'])
+    .nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
   // Coordinates can be GeoJSON Point, lat/lng object, or null when unknown
-  coordinates: z.union([
-    z.object({
-      type: z.literal('Point'),
-      coordinates: z.tuple([z.number(), z.number()]) // [longitude, latitude]
-    }),
-    z.object({
-      lat: z.number(),
-      lng: z.number()
-    }),
-    z.unknown()
-  ]).nullable(),
+  coordinates: z
+    .union([
+      z.object({
+        type: z.literal('Point'),
+        coordinates: z.tuple([z.number(), z.number()]), // [longitude, latitude]
+      }),
+      z.object({
+        lat: z.number(),
+        lng: z.number(),
+      }),
+      z.unknown(),
+    ])
+    .nullable(),
   neighborhood_id: z.string().uuid('Invalid uuid').nullable(),
   amenities: z.array(z.string()).nullable(),
   year_built: z
@@ -82,10 +100,12 @@ export const neighborhoodSchema = z.object({
   city: z.string().min(1).max(100),
   state: z.string().min(2).max(50),
   metro_area: z.string().max(100).nullable(),
-  bounds: z.object({
-    type: z.literal('Polygon'),
-    coordinates: z.array(z.array(z.tuple([z.number(), z.number()])))
-  }).nullable(), // PostGIS POLYGON type as GeoJSON
+  bounds: z
+    .object({
+      type: z.literal('Polygon'),
+      coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
+    })
+    .nullable(), // PostGIS POLYGON type as GeoJSON
   median_price: z.number().min(0).nullable(),
   walk_score: z.number().min(0).max(100).nullable(),
   transit_score: z.number().min(0).max(100).nullable(),
@@ -141,10 +161,12 @@ export const propertyFiltersSchema = z.object({
   lot_size_max: z.number().min(0).optional(),
   parking_spots_min: z.number().min(0).optional(),
   listing_status: z.array(z.string()).optional(),
-  within_polygon: z.object({
-    type: z.literal('Polygon'),
-    coordinates: z.array(z.array(z.tuple([z.number(), z.number()])))
-  }).optional(), // PostGIS polygon for geographic filtering
+  within_polygon: z
+    .object({
+      type: z.literal('Polygon'),
+      coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
+    })
+    .optional(), // PostGIS polygon for geographic filtering
   within_radius: z
     .object({
       center: z.tuple([z.number(), z.number()]), // [lng, lat]

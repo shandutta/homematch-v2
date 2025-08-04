@@ -27,8 +27,12 @@ describe('UserService Unit Tests', () => {
     }
 
     // Ensure both client and server creators return the same mock using ESM-imported modules
-    const { createClient: mockClient } = _supabaseClient as unknown as { createClient: jest.Mock }
-    const { createClient: mockServer } = _supabaseServer as unknown as { createClient: jest.Mock }
+    const { createClient: mockClient } = _supabaseClient as unknown as {
+      createClient: jest.Mock
+    }
+    const { createClient: mockServer } = _supabaseServer as unknown as {
+      createClient: jest.Mock
+    }
     mockClient.mockReturnValue(mockSupabaseClient)
     mockServer.mockReturnValue(mockSupabaseClient)
 
@@ -38,7 +42,10 @@ describe('UserService Unit Tests', () => {
   describe('Profile Management', () => {
     test('should create a user profile', async () => {
       const profileInsert = { id: 'user-123', email: 'test@example.com' } as any
-      const mockCreatedProfile = { ...profileInsert, created_at: new Date().toISOString() }
+      const mockCreatedProfile = {
+        ...profileInsert,
+        created_at: new Date().toISOString(),
+      }
       mockSupabaseClient.single.mockResolvedValue({
         data: mockCreatedProfile,
         error: null,
@@ -94,10 +101,10 @@ describe('UserService Unit Tests', () => {
   // TODO: Move to integration tests
   describe('Skipped Integration-level Tests', () => {
     test('Household Operations', () => {
-      expect(true).toBe(true);
+      expect(true).toBe(true)
     })
     test('Interaction Tracking', () => {
-      expect(true).toBe(true);
+      expect(true).toBe(true)
     })
   })
 })

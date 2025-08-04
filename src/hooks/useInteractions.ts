@@ -45,30 +45,39 @@ export function useRecordInteraction() {
   >({
     mutationFn: ({ propertyId, type }) =>
       InteractionService.recordInteraction(propertyId, type),
-    
+
     // Optimistic update
     onMutate: async ({ type }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: interactionKeys.summaries() })
-      
+
       // Snapshot the previous value
       const previousSummary = queryClient.getQueryData<InteractionSummary>(
         interactionKeys.summaries()
       )
-      
+
       // Optimistically update
       if (previousSummary) {
-        queryClient.setQueryData<InteractionSummary>(interactionKeys.summaries(), {
-          ...previousSummary,
-          viewed: previousSummary.viewed + 1,
-          liked: type === 'liked' ? previousSummary.liked + 1 : previousSummary.liked,
-          passed: type === 'skip' ? previousSummary.passed + 1 : previousSummary.passed,
-        })
+        queryClient.setQueryData<InteractionSummary>(
+          interactionKeys.summaries(),
+          {
+            ...previousSummary,
+            viewed: previousSummary.viewed + 1,
+            liked:
+              type === 'liked'
+                ? previousSummary.liked + 1
+                : previousSummary.liked,
+            passed:
+              type === 'skip'
+                ? previousSummary.passed + 1
+                : previousSummary.passed,
+          }
+        )
       }
-      
+
       return { previousSummary }
     },
-    
+
     // If mutation fails, rollback
     onError: (err, variables, context) => {
       if (context?.previousSummary) {
@@ -78,7 +87,7 @@ export function useRecordInteraction() {
         )
       }
     },
-    
+
     // Always refetch after error or success
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
@@ -94,8 +103,10 @@ export function useInfiniteInteractions(type: InteractionType) {
   return useInfiniteQuery<PageResponse<Property>, Error>({
     queryKey: interactionKeys.list(type),
     queryFn: ({ pageParam }) =>
-      InteractionService.getInteractions(type, { cursor: pageParam as string | undefined }),
-    getNextPageParam: lastPage => lastPage.nextCursor,
+      InteractionService.getInteractions(type, {
+        cursor: pageParam as string | undefined,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined,
     staleTime: QUERY_STALE_TIMES.PROPERTY_LIST,
   })

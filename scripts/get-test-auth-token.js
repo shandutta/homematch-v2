@@ -15,7 +15,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 const testUser = {
   email: process.env.TEST_USER_1_EMAIL || 'test1@example.com',
-  password: process.env.TEST_USER_1_PASSWORD || 'testpassword123'
+  password: process.env.TEST_USER_1_PASSWORD || 'testpassword123',
 }
 
 async function getAuthToken() {
@@ -31,12 +31,14 @@ async function getAuthToken() {
     // Sign in the test user
     const { data, error } = await supabase.auth.signInWithPassword({
       email: testUser.email,
-      password: testUser.password
+      password: testUser.password,
     })
 
     if (error) {
       console.error('❌ Failed to sign in test user:', error.message)
-      console.log('Make sure test users are created first: pnpm run test:setup-users')
+      console.log(
+        'Make sure test users are created first: pnpm run test:setup-users'
+      )
       process.exit(1)
     }
 
@@ -47,7 +49,7 @@ async function getAuthToken() {
 
     console.log('✅ Test auth token generated')
     console.log('TEST_AUTH_TOKEN=' + data.session.access_token)
-    
+
     return data.session.access_token
   } catch (error) {
     console.error('❌ Error generating auth token:', error.message)

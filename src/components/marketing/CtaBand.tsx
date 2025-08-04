@@ -17,10 +17,7 @@ export function CtaBand() {
             'linear-gradient(180deg, #0B132B 0%, #0E1633 45%, #0B132B 100%)',
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10"
-        aria-hidden
-      >
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <ParallaxStarsCanvas className="absolute inset-0 opacity-80" />
       </div>
 

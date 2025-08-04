@@ -25,6 +25,7 @@ HomeMatch V2 is a modern property browsing application built with Next.js 15, Su
 ## Technology Stack
 
 > **💡 Quick Reference**
+>
 > - **Frontend**: Next.js 15 + React 19 + TypeScript 5 + Tailwind CSS 4
 > - **Backend**: Supabase (PostgreSQL + Auth + RLS)
 > - **Testing**: Jest + Vitest + Playwright (100% unit/integration pass rate)
@@ -62,11 +63,13 @@ HomeMatch V2 is a modern property browsing application built with Next.js 15, Su
 > **✅ Status**: Complete test infrastructure with 100% unit/integration test pass rates.
 >
 > **📊 Test Results**:
+>
 > - **Unit Tests**: 82/82 passing (100% success rate)
 > - **Integration Tests**: 36/36 passing (100% success rate)
 > - **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
 
 **Core Testing Stack:**
+
 - **Jest 30.0.5** 🟢 - Unit tests for components, functions, and utilities
 - **Vitest 3.2.4** 🟢 - Fast integration tests for API routes and services
 - **Playwright 1.54.1** 🟢 - End-to-end testing with cross-browser support
@@ -879,9 +882,9 @@ All API endpoints require authentication via Supabase Auth, except where noted. 
 ```typescript
 // Response
 {
-  viewed: number  // Count of viewed properties
-  liked: number   // Count of liked properties
-  passed: number  // Count of passed properties
+  viewed: number // Count of viewed properties
+  liked: number // Count of liked properties
+  passed: number // Count of passed properties
 }
 ```
 
@@ -936,9 +939,9 @@ interface Property {
     name: string
     city: string
     state: string
-    boundaries?: any  // GeoJSON
+    boundaries?: any // GeoJSON
   }
-  zpid?: string  // Zillow property ID
+  zpid?: string // Zillow property ID
 }
 ```
 
@@ -975,15 +978,16 @@ import { useAuth } from '@/lib/hooks/useAuth'
 
 function Component() {
   const { user, isLoading, error } = useAuth()
-  
+
   if (isLoading) return <Spinner />
   if (!user) return <LoginPrompt />
-  
+
   return <div>Welcome, {user.email}</div>
 }
 ```
 
 **Returns:**
+
 - `user`: Current user object or null
 - `isLoading`: Loading state boolean
 - `error`: Error object if authentication fails
@@ -999,7 +1003,7 @@ import { useInteractionSummary } from '@/hooks/useInteractions'
 
 function DashboardStats() {
   const { data: summary, isLoading, error } = useInteractionSummary()
-  
+
   return (
     <div>
       <Stat label="Viewed" value={summary?.viewed ?? 0} />
@@ -1019,14 +1023,14 @@ import { useRecordInteraction } from '@/hooks/useInteractions'
 
 function PropertyCard({ property }) {
   const { mutate: recordInteraction } = useRecordInteraction()
-  
+
   const handleLike = () => {
-    recordInteraction({ 
-      propertyId: property.id, 
-      type: 'liked' 
+    recordInteraction({
+      propertyId: property.id,
+      type: 'liked'
     })
   }
-  
+
   return <button onClick={handleLike}>Like</button>
 }
 ```
@@ -1045,15 +1049,15 @@ function LikedProperties() {
     hasNextPage,
     isFetchingNextPage
   } = useInfiniteInteractions('liked')
-  
+
   const properties = data?.pages.flatMap(page => page.items) ?? []
-  
+
   return (
     <>
       {properties.map(property => (
         <PropertyCard key={property.id} property={property} />
       ))}
-      
+
       {hasNextPage && (
         <button onClick={() => fetchNextPage()}>
           Load More
@@ -1079,7 +1083,7 @@ function FiltersForm() {
     priceMin: 0,
     priceMax: 1000000
   })
-  
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <input {...form.register('priceMin')} />
@@ -1096,13 +1100,15 @@ The interaction hooks use a consistent query key structure for cache management:
 const interactionKeys = {
   all: ['interactions'] as const,
   summary: () => [...interactionKeys.all, 'summary'] as const,
-  list: (type: InteractionType) => [...interactionKeys.all, 'list', type] as const,
+  list: (type: InteractionType) =>
+    [...interactionKeys.all, 'list', type] as const,
 }
 ```
 
 ### Future Hooks
 
 Planned hooks for future implementation:
+
 - `useProperties` - Property browsing with filters
 - `usePropertySearch` - Natural language search
 - `useHousehold` - Household management

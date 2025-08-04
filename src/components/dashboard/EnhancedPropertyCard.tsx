@@ -1,31 +1,39 @@
-'use client';
+'use client'
 
-import { useState, useCallback } from 'react';
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Property } from '@/types/database';
-import { MapPin, Heart, X, Home, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { useState, useCallback } from 'react'
+import Image from 'next/image'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Property } from '@/types/database'
+import {
+  MapPin,
+  Heart,
+  X,
+  Home,
+  ChevronLeft,
+  ChevronRight,
+  Camera,
+} from 'lucide-react'
 
 interface EnhancedPropertyCardProps {
-  property: Property;
-  neighborhood?: string;
-  onLike: (propertyId: string) => void;
-  onDislike: (propertyId: string) => void;
-  showActions?: boolean;
+  property: Property
+  neighborhood?: string
+  onLike: (propertyId: string) => void
+  onDislike: (propertyId: string) => void
+  showActions?: boolean
 }
 
-export function EnhancedPropertyCard({ 
-  property, 
+export function EnhancedPropertyCard({
+  property,
   neighborhood,
   onLike,
   onDislike,
-  showActions = true
+  showActions = true,
 }: EnhancedPropertyCardProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [isImageLoading, setIsImageLoading] = useState(true)
 
   // Format functions
   const formatPrice = (price: number) => {
@@ -34,47 +42,50 @@ export function EnhancedPropertyCard({
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price);
-  };
+    }).format(price)
+  }
 
   const formatBedsBaths = (beds: number, baths: number) => {
-    return `${beds} bed${beds !== 1 ? 's' : ''} • ${baths} bath${baths !== 1 ? 's' : ''}`;
-  };
+    return `${beds} bed${beds !== 1 ? 's' : ''} • ${baths} bath${baths !== 1 ? 's' : ''}`
+  }
 
   const formatSquareFeet = (sqft: number | null) => {
-    if (!sqft) return '';
-    return `${sqft.toLocaleString()} sqft`;
-  };
+    if (!sqft) return ''
+    return `${sqft.toLocaleString()} sqft`
+  }
 
   // Parse images
-  const images = property.images || [];
-  const validImages = images.filter((_, index) => !imageErrors.has(index));
-  const currentImageUrl = validImages[currentImageIndex] || '/images/properties/house-1.svg';
+  const images = property.images || []
+  const validImages = images.filter((_, index) => !imageErrors.has(index))
+  const currentImageUrl =
+    validImages[currentImageIndex] || '/images/properties/house-1.svg'
 
   const nextImage = useCallback(() => {
-    if (validImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
-  }, [validImages.length]);
+    if (validImages.length <= 1) return
+    setCurrentImageIndex((prev) => (prev + 1) % validImages.length)
+  }, [validImages.length])
 
   const prevImage = useCallback(() => {
-    if (validImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
-  }, [validImages.length]);
+    if (validImages.length <= 1) return
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + validImages.length) % validImages.length
+    )
+  }, [validImages.length])
 
   const handleImageError = useCallback((index: number) => {
-    setImageErrors(prev => new Set(Array.from(prev).concat(index)));
-  }, []);
+    setImageErrors((prev) => new Set(Array.from(prev).concat(index)))
+  }, [])
 
   return (
-    <Card className="w-full max-w-sm mx-auto overflow-hidden bg-card shadow-xl hover:shadow-2xl transition-all duration-300">
+    <Card className="bg-card mx-auto w-full max-w-sm overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl">
       {/* Image Section */}
       <div className="relative h-64 bg-gradient-to-br from-gray-100 to-gray-200">
         {isImageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-pulse rounded-full h-12 w-12 bg-gradient-to-r from-blue-400 to-purple-500"></div>
+            <div className="h-12 w-12 animate-pulse rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
           </div>
         )}
-        
+
         <Image
           src={currentImageUrl}
           alt={property.address || 'Property'}
@@ -85,13 +96,13 @@ export function EnhancedPropertyCard({
           onError={() => handleImageError(currentImageIndex)}
           onLoad={() => setIsImageLoading(false)}
         />
-        
+
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        
+
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
-          <Badge className="bg-white/95 backdrop-blur-sm px-3 py-1.5 text-lg font-bold text-gray-900 shadow-lg">
+          <Badge className="bg-white/95 px-3 py-1.5 text-lg font-bold text-gray-900 shadow-lg backdrop-blur-sm">
             {formatPrice(property.price)}
           </Badge>
         </div>
@@ -99,7 +110,10 @@ export function EnhancedPropertyCard({
         {/* Property Type Badge */}
         {property.property_type && (
           <div className="absolute top-4 left-4">
-            <Badge variant="secondary" className="bg-white/95 backdrop-blur-sm shadow-md">
+            <Badge
+              variant="secondary"
+              className="bg-white/95 shadow-md backdrop-blur-sm"
+            >
               <Home className="mr-1 h-3 w-3" />
               {property.property_type}
             </Badge>
@@ -111,37 +125,39 @@ export function EnhancedPropertyCard({
           <>
             <button
               onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition-all"
+              className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition-all hover:bg-black/80"
               aria-label="Previous image"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition-all"
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white transition-all hover:bg-black/80"
               aria-label="Next image"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
-            
+
             {/* Image Counter */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+            <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center space-x-1 rounded bg-black/70 px-2 py-1 text-xs text-white">
               <Camera className="h-3 w-3" />
-              <span>{currentImageIndex + 1} / {validImages.length}</span>
+              <span>
+                {currentImageIndex + 1} / {validImages.length}
+              </span>
             </div>
           </>
         )}
 
         {/* Image Dots */}
         {validImages.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 space-x-1">
             {validImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentImageIndex 
-                    ? 'bg-white w-4' 
+                className={`h-2 w-2 rounded-full transition-all ${
+                  index === currentImageIndex
+                    ? 'w-4 bg-white'
                     : 'bg-white/50 hover:bg-white/75'
                 }`}
                 aria-label={`Go to image ${index + 1}`}
@@ -152,20 +168,26 @@ export function EnhancedPropertyCard({
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="space-y-4 p-5">
         {/* Address */}
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-1">{property.address}</h3>
-          <p className="text-sm text-muted-foreground">
-            <MapPin className="inline h-3 w-3 mr-1" />
+          <h3 className="text-foreground mb-1 text-xl font-bold">
+            {property.address}
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            <MapPin className="mr-1 inline h-3 w-3" />
             {neighborhood || property.city}, {property.state}
           </p>
         </div>
 
         {/* Property Details */}
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">{formatBedsBaths(property.bedrooms || 0, property.bathrooms || 0)}</span>
-          <span className="font-medium">{formatSquareFeet(property.square_feet)}</span>
+          <span className="font-medium">
+            {formatBedsBaths(property.bedrooms || 0, property.bathrooms || 0)}
+          </span>
+          <span className="font-medium">
+            {formatSquareFeet(property.square_feet)}
+          </span>
         </div>
 
         {/* Description - Commented out for now */}
@@ -198,28 +220,28 @@ export function EnhancedPropertyCard({
 
         {/* Action Buttons */}
         {showActions && (
-          <div className="flex gap-3 mt-4">
+          <div className="mt-4 flex gap-3">
             <Button
               variant="outline"
               size="lg"
               onClick={() => onDislike(property.id)}
-              className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border-red-200 hover:border-red-300 transition-all hover:scale-105"
+              className="flex-1 border-red-200 bg-red-50 text-red-600 transition-all hover:scale-105 hover:border-red-300 hover:bg-red-100"
             >
-              <X className="h-5 w-5 mr-2" />
+              <X className="mr-2 h-5 w-5" />
               Pass
             </Button>
-            
+
             <Button
               size="lg"
               onClick={() => onLike(property.id)}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white transition-all hover:scale-105"
+              className="flex-1 bg-green-600 text-white transition-all hover:scale-105 hover:bg-green-700"
             >
-              <Heart className="h-5 w-5 mr-2" fill="currentColor" />
+              <Heart className="mr-2 h-5 w-5" fill="currentColor" />
               Like
             </Button>
           </div>
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

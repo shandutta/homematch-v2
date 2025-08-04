@@ -41,7 +41,7 @@ describe('HouseholdSection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     // Mock clipboard for each test
     const mockWriteText = jest.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
@@ -51,8 +51,10 @@ describe('HouseholdSection', () => {
       writable: true,
       configurable: true,
     })
-    
-    mockCreateHousehold = jest.fn().mockResolvedValue({ id: 'household-123', name: 'Test Household' })
+
+    mockCreateHousehold = jest
+      .fn()
+      .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = jest.fn().mockResolvedValue(true)
     mockLeaveHousehold = jest.fn().mockResolvedValue(true)
     ;(UserService as jest.Mock).mockImplementation(() => ({
@@ -70,8 +72,12 @@ describe('HouseholdSection', () => {
 
       expect(screen.getByText('Create a Household')).toBeInTheDocument()
       expect(screen.getByText('Join a Household')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('Enter household name')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('Enter household code')).toBeInTheDocument()
+      expect(
+        screen.getByPlaceholderText('Enter household name')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByPlaceholderText('Enter household code')
+      ).toBeInTheDocument()
     })
 
     it('creates a new household', async () => {
@@ -79,15 +85,22 @@ describe('HouseholdSection', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       await user.type(nameInput, 'My Family')
       await user.click(createButton)
 
       await waitFor(() => {
         expect(mockCreateHousehold).toHaveBeenCalledWith({ name: 'My Family' })
-        expect(mockJoinHousehold).toHaveBeenCalledWith(TEST_USERS.withoutHousehold.id, 'household-123')
-        expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.household.created)
+        expect(mockJoinHousehold).toHaveBeenCalledWith(
+          TEST_USERS.withoutHousehold.id,
+          'household-123'
+        )
+        expect(toast.success).toHaveBeenCalledWith(
+          TEST_MESSAGES.household.created
+        )
       })
     })
 
@@ -95,10 +108,14 @@ describe('HouseholdSection', () => {
       const user = userEvent.setup()
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
       await user.click(createButton)
 
-      expect(screen.getByText('Please enter a household name')).toBeInTheDocument()
+      expect(
+        screen.getByText('Please enter a household name')
+      ).toBeInTheDocument()
       expect(mockCreateHousehold).not.toHaveBeenCalled()
     })
 
@@ -113,8 +130,13 @@ describe('HouseholdSection', () => {
       await user.click(joinButton)
 
       await waitFor(() => {
-        expect(mockJoinHousehold).toHaveBeenCalledWith(TEST_USERS.withoutHousehold.id, 'existing-household-123')
-        expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.household.joined)
+        expect(mockJoinHousehold).toHaveBeenCalledWith(
+          TEST_USERS.withoutHousehold.id,
+          'existing-household-123'
+        )
+        expect(toast.success).toHaveBeenCalledWith(
+          TEST_MESSAGES.household.joined
+        )
       })
     })
 
@@ -125,7 +147,9 @@ describe('HouseholdSection', () => {
       const joinButton = screen.getByRole('button', { name: /join household/i })
       await user.click(joinButton)
 
-      expect(screen.getByText('Please enter a household code')).toBeInTheDocument()
+      expect(
+        screen.getByText('Please enter a household code')
+      ).toBeInTheDocument()
       expect(mockJoinHousehold).not.toHaveBeenCalled()
     })
 
@@ -135,13 +159,17 @@ describe('HouseholdSection', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       await user.type(nameInput, 'My Family')
       await user.click(createButton)
 
       await waitFor(() => {
-        expect(screen.getByText(TEST_MESSAGES.household.error)).toBeInTheDocument()
+        expect(
+          screen.getByText(TEST_MESSAGES.household.error)
+        ).toBeInTheDocument()
       })
     })
   })
@@ -153,9 +181,15 @@ describe('HouseholdSection', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       expect(screen.getByText('Current Household')).toBeInTheDocument()
-      expect(screen.getByText(TEST_USERS.withHousehold.profile.household.name)).toBeInTheDocument()
-      expect(screen.getByText(TEST_USERS.withHousehold.profile.household.id)).toBeInTheDocument()
-      expect(screen.getByText(/share this code with family members/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(TEST_USERS.withHousehold.profile.household.name)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(TEST_USERS.withHousehold.profile.household.id)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/share this code with family members/i)
+      ).toBeInTheDocument()
     })
 
     it('renders copy button and shows success toast when clicked', async () => {
@@ -170,7 +204,9 @@ describe('HouseholdSection', () => {
       await user.click(copyButton)
 
       // Verify toast is called (component logic)
-      expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
+      expect(toast.success).toHaveBeenCalledWith(
+        TEST_MESSAGES.clipboard.success
+      )
     })
 
     it('leaves household with confirmation', async () => {
@@ -178,12 +214,18 @@ describe('HouseholdSection', () => {
       global.confirm = jest.fn().mockReturnValue(true)
       render(<HouseholdSection profile={profileWithHousehold} />)
 
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
       await user.click(leaveButton)
 
-      expect(global.confirm).toHaveBeenCalledWith('Are you sure you want to leave this household?')
+      expect(global.confirm).toHaveBeenCalledWith(
+        'Are you sure you want to leave this household?'
+      )
       await waitFor(() => {
-        expect(mockLeaveHousehold).toHaveBeenCalledWith(TEST_USERS.withHousehold.id)
+        expect(mockLeaveHousehold).toHaveBeenCalledWith(
+          TEST_USERS.withHousehold.id
+        )
         expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.household.left)
       })
     })
@@ -193,7 +235,9 @@ describe('HouseholdSection', () => {
       global.confirm = jest.fn().mockReturnValue(false)
       render(<HouseholdSection profile={profileWithHousehold} />)
 
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
       await user.click(leaveButton)
 
       expect(mockLeaveHousehold).not.toHaveBeenCalled()
@@ -205,7 +249,9 @@ describe('HouseholdSection', () => {
       mockLeaveHousehold.mockRejectedValueOnce(new Error('Network error'))
       render(<HouseholdSection profile={profileWithHousehold} />)
 
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
       await user.click(leaveButton)
 
       await waitFor(() => {

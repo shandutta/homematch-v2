@@ -27,8 +27,12 @@ describe('PropertyService Unit Tests', () => {
     }
 
     // Ensure both client and server creators return the same mock using ESM-imported modules
-    const { createClient: mockClient } = _supabaseClient as unknown as { createClient: jest.Mock }
-    const { createClient: mockServer } = _supabaseServer as unknown as { createClient: jest.Mock }
+    const { createClient: mockClient } = _supabaseClient as unknown as {
+      createClient: jest.Mock
+    }
+    const { createClient: mockServer } = _supabaseServer as unknown as {
+      createClient: jest.Mock
+    }
     mockClient.mockReturnValue(mockSupabaseClient)
     mockServer.mockReturnValue(mockSupabaseClient)
 
@@ -130,13 +134,13 @@ describe('PropertyService Unit Tests', () => {
   // TODO: Move to integration tests
   describe('Skipped Integration-level Tests', () => {
     test('Search & Filtering', () => {
-      expect(true).toBe(true);
+      expect(true).toBe(true)
     })
     test('PostGIS Spatial Operations', () => {
-      expect(true).toBe(true);
+      expect(true).toBe(true)
     })
     test('Neighborhood Operations', () => {
-      expect(true).toBe(true);
+      expect(true).toBe(true)
     })
   })
 })

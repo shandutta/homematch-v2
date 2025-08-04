@@ -27,12 +27,12 @@ This style guide outlines visual and interaction guidelines for the HomeMatch re
 
 The HomeMatch colour palette is designed to convey trust, modernity, and sophistication while maintaining accessibility. The teal/cyan gradient (#29e3ff → #1ecfea) is reserved for primary actions like "Get started" buttons and should be used sparingly for high visibility elements.
 
-| Role              | Colours & Usage                                                                 | Notes                                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Primary brand** | Deep navy gradient (#020b1f → #03123b → #041a52)                                | Used for main backgrounds and immersive sections. Creates a sophisticated, premium feel.                           |
-| **Secondary**     | Rich purple (#6D28D9)                                                          | New accent color for buttons, highlights, and interactive elements. Creates a vibrant contrast with the navy theme. |
-| **Tertiary**      | Soft neutrals (white/gray with transparency)                                   | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                   |
-| **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B)                                        | Feedback colours for errors, warnings and alerts.                                                                  |
+| Role              | Colours & Usage                                  | Notes                                                                                                               |
+| ----------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **Primary brand** | Deep navy gradient (#020b1f → #03123b → #041a52) | Used for main backgrounds and immersive sections. Creates a sophisticated, premium feel.                            |
+| **Secondary**     | Rich purple (#6D28D9)                            | New accent color for buttons, highlights, and interactive elements. Creates a vibrant contrast with the navy theme. |
+| **Tertiary**      | Soft neutrals (white/gray with transparency)     | Background sections, cards and modals. Light neutrals soften dark themes and support white space.                   |
+| **Error/Warning** | Coral red (#FF6B6B) and Amber (#F59E0B)          | Feedback colours for errors, warnings and alerts.                                                                   |
 
 Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for text and interactive elements.
 
@@ -65,11 +65,11 @@ Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for t
 
 ## 4. Components (shadcn/ui)
 
-- **Buttons:** 
+- **Buttons:**
   - Primary buttons: High visibility gradient with hover glow effect
   - Secondary buttons: White with navy border and subtle hover effects
   - Support loading and disabled states
-- **Cards:** 
+- **Cards:**
   - Glass-morphism effect with backdrop blur (`backdrop-blur-[2px]`)
   - Soft shadows: `shadow-[0_6px_28px_rgba(2,6,23,0.08)]`
   - Hover effects with enhanced shadows

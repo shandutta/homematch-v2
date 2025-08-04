@@ -37,9 +37,7 @@ jest.mock('@/components/settings/SavedSearchesSection', () => ({
 
 jest.mock('@/components/settings/AccountSection', () => ({
   AccountSection: ({ user }: any) => (
-    <div data-testid="account-section">
-      AccountSection - User: {user.email}
-    </div>
+    <div data-testid="account-section">AccountSection - User: {user.email}</div>
   ),
 }))
 
@@ -68,9 +66,15 @@ describe('SettingsPageClient', () => {
     expect(screen.getByText('View Profile')).toBeInTheDocument()
 
     // Tab navigation
-    expect(screen.getByRole('tab', { name: /preferences/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /notifications/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /saved searches/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: /preferences/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: /notifications/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('tab', { name: /saved searches/i })
+    ).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /account/i })).toBeInTheDocument()
   })
 
@@ -82,8 +86,12 @@ describe('SettingsPageClient', () => {
       'active'
     )
     expect(screen.getByTestId('preferences-section')).toBeInTheDocument()
-    expect(screen.queryByTestId('notifications-section')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('saved-searches-section')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notifications-section')
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('saved-searches-section')
+    ).not.toBeInTheDocument()
     expect(screen.queryByTestId('account-section')).not.toBeInTheDocument()
   })
 
@@ -97,7 +105,9 @@ describe('SettingsPageClient', () => {
     expect(notificationsTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByTestId('notifications-section')).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('saved-searches-section')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('saved-searches-section')
+    ).not.toBeInTheDocument()
     expect(screen.queryByTestId('account-section')).not.toBeInTheDocument()
   })
 
@@ -105,13 +115,17 @@ describe('SettingsPageClient', () => {
     const user = userEvent.setup()
     render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
 
-    const savedSearchesTab = screen.getByRole('tab', { name: /saved searches/i })
+    const savedSearchesTab = screen.getByRole('tab', {
+      name: /saved searches/i,
+    })
     await user.click(savedSearchesTab)
 
     expect(savedSearchesTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByTestId('saved-searches-section')).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('notifications-section')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notifications-section')
+    ).not.toBeInTheDocument()
     expect(screen.queryByTestId('account-section')).not.toBeInTheDocument()
   })
 
@@ -125,8 +139,12 @@ describe('SettingsPageClient', () => {
     expect(accountTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByTestId('account-section')).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('notifications-section')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('saved-searches-section')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('notifications-section')
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('saved-searches-section')
+    ).not.toBeInTheDocument()
   })
 
   it('passes correct props to child components', async () => {
@@ -139,18 +157,18 @@ describe('SettingsPageClient', () => {
 
     // Navigate to notifications tab
     await user.click(screen.getByRole('tab', { name: /notifications/i }))
-    expect(await screen.findByTestId('notifications-section')).toHaveTextContent(
-      'User: test@example.com'
-    )
-    expect(await screen.findByTestId('notifications-section')).toHaveTextContent(
-      'Profile: profile-123'
-    )
+    expect(
+      await screen.findByTestId('notifications-section')
+    ).toHaveTextContent('User: test@example.com')
+    expect(
+      await screen.findByTestId('notifications-section')
+    ).toHaveTextContent('Profile: profile-123')
 
     // Navigate to saved searches tab
     await user.click(screen.getByRole('tab', { name: /saved searches/i }))
-    expect(await screen.findByTestId('saved-searches-section')).toHaveTextContent(
-      'UserId: user-123'
-    )
+    expect(
+      await screen.findByTestId('saved-searches-section')
+    ).toHaveTextContent('UserId: user-123')
 
     // Navigate to account tab
     await user.click(screen.getByRole('tab', { name: /account/i }))
@@ -162,7 +180,9 @@ describe('SettingsPageClient', () => {
   it('has correct navigation links', () => {
     render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
 
-    const dashboardLink = screen.getByRole('link', { name: /back to dashboard/i })
+    const dashboardLink = screen.getByRole('link', {
+      name: /back to dashboard/i,
+    })
     expect(dashboardLink).toHaveAttribute('href', '/dashboard')
 
     const profileLink = screen.getByRole('link', { name: /view profile/i })
@@ -180,11 +200,19 @@ describe('SettingsPageClient', () => {
     // Check for header styling
     const header = container.querySelector('.bg-purple-900\\/10')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('backdrop-blur-md', 'border-b', 'border-purple-500/20')
+    expect(header).toHaveClass(
+      'backdrop-blur-md',
+      'border-b',
+      'border-purple-500/20'
+    )
 
     // Check for tab styling
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('bg-purple-900/20', 'border', 'border-purple-500/20')
+    expect(tabsList).toHaveClass(
+      'bg-purple-900/20',
+      'border',
+      'border-purple-500/20'
+    )
   })
 
   it('switches between all tabs correctly', async () => {
@@ -201,11 +229,11 @@ describe('SettingsPageClient', () => {
     for (const tab of tabs) {
       await user.click(screen.getByRole('tab', { name: tab.name }))
       expect(screen.getByTestId(tab.testId)).toBeInTheDocument()
-      
+
       // Ensure other sections are not visible
       tabs
-        .filter(t => t.testId !== tab.testId)
-        .forEach(otherTab => {
+        .filter((t) => t.testId !== tab.testId)
+        .forEach((otherTab) => {
           expect(screen.queryByTestId(otherTab.testId)).not.toBeInTheDocument()
         })
     }

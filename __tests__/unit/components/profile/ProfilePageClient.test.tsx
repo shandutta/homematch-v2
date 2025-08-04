@@ -187,7 +187,9 @@ describe('ProfilePageClient', () => {
       />
     )
 
-    const dashboardLink = screen.getByRole('link', { name: /back to dashboard/i })
+    const dashboardLink = screen.getByRole('link', {
+      name: /back to dashboard/i,
+    })
     expect(dashboardLink).toHaveAttribute('href', '/dashboard')
 
     const settingsLink = screen.getByRole('link', { name: /settings/i })
@@ -209,11 +211,19 @@ describe('ProfilePageClient', () => {
     // Check for header styling
     const header = container.querySelector('.bg-purple-900\\/10')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('backdrop-blur-md', 'border-b', 'border-purple-500/20')
+    expect(header).toHaveClass(
+      'backdrop-blur-md',
+      'border-b',
+      'border-purple-500/20'
+    )
 
     // Check for tab styling
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('bg-purple-900/20', 'border', 'border-purple-500/20')
+    expect(tabsList).toHaveClass(
+      'bg-purple-900/20',
+      'border',
+      'border-purple-500/20'
+    )
   })
 
   it('handles profile without household', () => {

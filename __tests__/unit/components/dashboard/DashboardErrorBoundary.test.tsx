@@ -21,7 +21,6 @@ afterAll(() => {
   console.error = originalConsoleError
 })
 
-
 describe('DashboardErrorBoundary', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -45,14 +44,20 @@ describe('DashboardErrorBoundary', () => {
     )
 
     expect(screen.getByText('Something went wrong')).toBeInTheDocument()
-    expect(screen.getByText(/We encountered an error while loading your dashboard/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Refresh Page' })).toBeInTheDocument()
+    expect(
+      screen.getByText(/We encountered an error while loading your dashboard/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Try Again' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Refresh Page' })
+    ).toBeInTheDocument()
   })
 
   test('renders custom fallback when provided', () => {
     const customFallback = <div>Custom error message</div>
-    
+
     render(
       <DashboardErrorBoundary fallback={customFallback}>
         <ThrowError shouldThrow={true} />
@@ -128,7 +133,7 @@ describe('DashboardErrorBoundary', () => {
     const refreshButton = screen.getByRole('button', { name: 'Refresh Page' })
     expect(refreshButton).toBeInTheDocument()
     expect(refreshButton).not.toBeDisabled()
-    
+
     // Verify the button is clickable (JSDOM limitations prevent testing actual reload)
     await user.click(refreshButton)
     expect(refreshButton).toBeInTheDocument()

@@ -39,7 +39,10 @@ class PerformanceMonitor {
 
     // Log slow operations
     if (duration > 1000) {
-      console.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`, metadata)
+      console.warn(
+        `Slow operation detected: ${name} took ${duration.toFixed(2)}ms`,
+        metadata
+      )
     }
 
     return metric
@@ -62,7 +65,7 @@ class PerformanceMonitor {
     // In production, send to analytics service
     if (process.env.NODE_ENV === 'development') {
       console.table(
-        metrics.map(m => ({
+        metrics.map((m) => ({
           name: m.name,
           duration: `${m.duration.toFixed(2)}ms`,
           ...m.metadata,
@@ -79,12 +82,12 @@ export const performanceMonitor = new PerformanceMonitor()
 // React hook for component render performance
 export function useRenderPerformance(componentName: string) {
   const renderCount = useRef(0)
-  
+
   useEffect(() => {
     renderCount.current++
     const currentRenderCount = renderCount.current
     performanceMonitor.mark(`${componentName}-render-${currentRenderCount}`)
-    
+
     return () => {
       performanceMonitor.measure(
         `${componentName} render`,
@@ -96,13 +99,12 @@ export function useRenderPerformance(componentName: string) {
 }
 
 // API route performance wrapper
-export function withPerformanceTracking<T extends (...args: unknown[]) => Promise<unknown>>(
-  handler: T,
-  routeName: string
-): T {
+export function withPerformanceTracking<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(handler: T, routeName: string): T {
   return (async (...args) => {
     performanceMonitor.mark(`${routeName}-start`)
-    
+
     try {
       const result = await handler(...args)
       const typedResult = result as { status?: number }

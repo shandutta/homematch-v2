@@ -10,9 +10,15 @@ jest.mock('framer-motion', () => ({
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Heart: ({ className }: any) => <svg data-testid="heart-icon" className={className} />,
-  MapPin: ({ className }: any) => <svg data-testid="mappin-icon" className={className} />,
-  Sparkles: ({ className }: any) => <svg data-testid="sparkles-icon" className={className} />,
+  Heart: ({ className }: any) => (
+    <svg data-testid="heart-icon" className={className} />
+  ),
+  MapPin: ({ className }: any) => (
+    <svg data-testid="mappin-icon" className={className} />
+  ),
+  Sparkles: ({ className }: any) => (
+    <svg data-testid="sparkles-icon" className={className} />
+  ),
 }))
 
 describe('HowItWorks', () => {
@@ -20,7 +26,9 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     expect(screen.getByText('How It Works')).toBeInTheDocument()
-    expect(screen.getByText('Three simple steps to go from scrolling to moving in.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Three simple steps to go from scrolling to moving in.')
+    ).toBeInTheDocument()
   })
 
   test('renders all three steps', () => {
@@ -35,9 +43,17 @@ describe('HowItWorks', () => {
   test('renders step descriptions', () => {
     render(<HowItWorks />)
 
-    expect(screen.getByText(/Cozy craftsman or sleek modern\? Walkable cafés or quiet cul‑de‑sac\?/)).toBeInTheDocument()
-    expect(screen.getByText(/Make fast decisions with side‑by‑side swiping/)).toBeInTheDocument()
-    expect(screen.getByText(/Beyond bedrooms—discover areas that fit your lifestyle/)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /Cozy craftsman or sleek modern\? Walkable cafés or quiet cul‑de‑sac\?/
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Make fast decisions with side‑by‑side swiping/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Beyond bedrooms—discover areas that fit your lifestyle/)
+    ).toBeInTheDocument()
   })
 
   test('renders all step icons', () => {
@@ -78,18 +94,18 @@ describe('HowItWorks', () => {
   test('description has correct typography classes', () => {
     render(<HowItWorks />)
 
-    const description = screen.getByText('Three simple steps to go from scrolling to moving in.')
-    expect(description).toHaveClass(
-      'text-lg',
-      'text-gray-600',
-      'sm:text-xl'
+    const description = screen.getByText(
+      'Three simple steps to go from scrolling to moving in.'
     )
+    expect(description).toHaveClass('text-lg', 'text-gray-600', 'sm:text-xl')
   })
 
   test('step cards have correct styling', () => {
     render(<HowItWorks />)
 
-    const firstCard = screen.getByText('1. Tell Us Your Vibe').closest('.overflow-hidden')
+    const firstCard = screen
+      .getByText('1. Tell Us Your Vibe')
+      .closest('.overflow-hidden')
     expect(firstCard).toHaveClass(
       'relative',
       'h-full',
@@ -103,8 +119,10 @@ describe('HowItWorks', () => {
   test('step icons have gradient background', () => {
     render(<HowItWorks />)
 
-    const iconContainers = screen.getAllByTestId(/.*-icon/).map(icon => icon.parentElement)
-    iconContainers.forEach(container => {
+    const iconContainers = screen
+      .getAllByTestId(/.*-icon/)
+      .map((icon) => icon.parentElement)
+    iconContainers.forEach((container) => {
       expect(container).toHaveClass(
         'inline-flex',
         'rounded-xl',
@@ -138,10 +156,10 @@ describe('HowItWorks', () => {
     const stepTitles = [
       '1. Tell Us Your Vibe',
       '2. Swipe Together',
-      '3. Match With Neighborhoods'
+      '3. Match With Neighborhoods',
     ]
 
-    stepTitles.forEach(title => {
+    stepTitles.forEach((title) => {
       const element = screen.getByText(title)
       expect(element).toHaveClass('text-xl', 'font-semibold', 'text-gray-900')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-heading)' })
@@ -154,10 +172,10 @@ describe('HowItWorks', () => {
     const descriptions = [
       /Cozy craftsman or sleek modern/,
       /Make fast decisions with side‑by‑side swiping/,
-      /Beyond bedrooms—discover areas/
+      /Beyond bedrooms—discover areas/,
     ]
 
-    descriptions.forEach(desc => {
+    descriptions.forEach((desc) => {
       const element = screen.getByText(desc)
       expect(element).toHaveClass('text-gray-600')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-body)' })

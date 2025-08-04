@@ -109,7 +109,11 @@ const createChainableBuilderInternal = (response: {
  * Create a new typed mock Supabase client
  */
 export const makeMockClient = (): MockSupabaseClient => {
-  const defaultResponse = { data: [], error: null as null, count: null as number | null }
+  const defaultResponse = {
+    data: [],
+    error: null as null,
+    count: null as number | null,
+  }
   const defaultBuilder = createChainableBuilderInternal(defaultResponse)
 
   const client: MockSupabaseClient = {
@@ -117,18 +121,29 @@ export const makeMockClient = (): MockSupabaseClient => {
     rpc: jest.fn(async () => ({ data: null, error: null })),
     auth: {
       getUser: jest.fn(async () => ({ data: { user: null }, error: null })),
-      getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
-      signInWithPassword: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
+      getSession: jest.fn(async () => ({
+        data: { session: null },
+        error: null,
+      })),
+      signInWithPassword: jest.fn(async () => ({
+        data: { user: null, session: null },
+        error: null,
+      })),
     },
     storage: {
       from: jest.fn(() => ({
         upload: jest.fn(async () => ({ data: null, error: null })),
         download: jest.fn(async () => ({ data: null, error: null })),
-        getPublicUrl: jest.fn((path: string) => ({ data: { publicUrl: `mock-url/${path}` } })),
+        getPublicUrl: jest.fn((path: string) => ({
+          data: { publicUrl: `mock-url/${path}` },
+        })),
       })),
     },
     realtime: {
-      channel: jest.fn(() => ({ subscribe: jest.fn(), unsubscribe: jest.fn() })),
+      channel: jest.fn(() => ({
+        subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
+      })),
     },
   }
 
@@ -156,7 +171,11 @@ export const configureMockResponse = (
   ;(client.from as jest.Mock).mockImplementation((t: string) => {
     if (t === table) {
       // Normalize provided response to the internal format used by createChainableBuilderInternal
-      if ('single' in (response as any) || 'maybeSingle' in (response as any) || 'array' in (response as any)) {
+      if (
+        'single' in (response as any) ||
+        'maybeSingle' in (response as any) ||
+        'array' in (response as any)
+      ) {
         const complex = response as {
           single?: { data: unknown; error: null }
           maybeSingle?: { data: unknown; error: null }
@@ -164,18 +183,26 @@ export const configureMockResponse = (
         }
         // Prefer array config for promise resolve
         const arrayData = complex.array?.data ?? []
-        const count = complex.array?.count ?? (Array.isArray(arrayData) ? arrayData.length : null)
+        const count =
+          complex.array?.count ??
+          (Array.isArray(arrayData) ? arrayData.length : null)
         // Prefer single config for single/maybeSingle when provided; else default to null
         const chosenSingle = complex.single ?? { data: null, error: null }
-        const builder = createChainableBuilderInternal({ data: arrayData, error: null, count })
+        const builder = createChainableBuilderInternal({
+          data: arrayData,
+          error: null,
+          count,
+        })
         // Override terminal methods directly on this specific builder to honor complex config
         ;(builder as any).single = jest.fn(async () => chosenSingle)
-        ;(builder as any).maybeSingle = jest.fn(async () => complex.maybeSingle ?? chosenSingle)
+        ;(builder as any).maybeSingle = jest.fn(
+          async () => complex.maybeSingle ?? chosenSingle
+        )
         return builder
       } else {
         const simple = response as { data: unknown; error: null }
         return createChainableBuilderInternal({
-          data: Array.isArray(simple.data) ? simple.data : simple.data ?? [],
+          data: Array.isArray(simple.data) ? simple.data : (simple.data ?? []),
           error: simple.error,
           count: Array.isArray(simple.data) ? simple.data.length : null,
         })

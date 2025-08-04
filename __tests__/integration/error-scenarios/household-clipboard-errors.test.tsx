@@ -1,6 +1,6 @@
 /**
  * Error scenario tests for clipboard functionality in HouseholdSection component
- * 
+ *
  * This test suite focuses on error handling and edge cases:
  * - Clipboard API failures
  * - Network errors
@@ -42,12 +42,13 @@ describe('HouseholdSection Error Scenarios', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Set up default mocks
-    mockCreateHousehold = vi.fn().mockResolvedValue({ id: 'household-123', name: 'Test Household' })
+    mockCreateHousehold = vi
+      .fn()
+      .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = vi.fn().mockResolvedValue(true)
     mockLeaveHousehold = vi.fn().mockResolvedValue(true)
-    
     ;(UserService as any).mockImplementation(() => ({
       createHousehold: mockCreateHousehold,
       joinHousehold: mockJoinHousehold,
@@ -58,9 +59,11 @@ describe('HouseholdSection Error Scenarios', () => {
   describe('Clipboard API Error Scenarios', () => {
     it('handles clipboard.writeText() rejection gracefully', async () => {
       const user = userEvent.setup()
-      
+
       // Mock clipboard API that fails
-      const mockWriteText = vi.fn().mockRejectedValue(new Error('Clipboard access denied'))
+      const mockWriteText = vi
+        .fn()
+        .mockRejectedValue(new Error('Clipboard access denied'))
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         writable: true,
@@ -75,13 +78,15 @@ describe('HouseholdSection Error Scenarios', () => {
       await waitFor(() => {
         // Should still show success message (current implementation)
         // In production, you might want to show an error message
-        expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
+        expect(toast.success).toHaveBeenCalledWith(
+          TEST_MESSAGES.clipboard.success
+        )
       })
     })
 
     it('handles missing clipboard API (older browsers)', async () => {
       const user = userEvent.setup()
-      
+
       // Remove clipboard API entirely
       Object.defineProperty(navigator, 'clipboard', {
         value: undefined,
@@ -92,7 +97,7 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Button should still render and be clickable
       expect(copyButton).toBeInTheDocument()
       await user.click(copyButton)
@@ -103,7 +108,7 @@ describe('HouseholdSection Error Scenarios', () => {
 
     it('handles clipboard API with no writeText method', async () => {
       const user = userEvent.setup()
-      
+
       // Mock clipboard API without writeText
       Object.defineProperty(navigator, 'clipboard', {
         value: { readText: vi.fn() }, // Missing writeText
@@ -122,11 +127,13 @@ describe('HouseholdSection Error Scenarios', () => {
 
     it('handles permission denied errors', async () => {
       const user = userEvent.setup()
-      
+
       // Mock permission denied error
-      const mockWriteText = vi.fn().mockRejectedValue(
-        new DOMException('Permission denied', 'NotAllowedError')
-      )
+      const mockWriteText = vi
+        .fn()
+        .mockRejectedValue(
+          new DOMException('Permission denied', 'NotAllowedError')
+        )
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: mockWriteText },
         writable: true,
@@ -150,11 +157,13 @@ describe('HouseholdSection Error Scenarios', () => {
     it('handles create household network errors', async () => {
       const user = userEvent.setup()
       mockCreateHousehold.mockRejectedValue(new Error('Network error'))
-      
+
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       await user.type(nameInput, 'Test Family')
       await user.click(createButton)
@@ -167,11 +176,13 @@ describe('HouseholdSection Error Scenarios', () => {
     it('handles create household server errors (500)', async () => {
       const user = userEvent.setup()
       mockCreateHousehold.mockRejectedValue(new Error('Internal server error'))
-      
+
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       await user.type(nameInput, 'Test Family')
       await user.click(createButton)
@@ -184,7 +195,7 @@ describe('HouseholdSection Error Scenarios', () => {
     it('handles join household with invalid code', async () => {
       const user = userEvent.setup()
       mockJoinHousehold.mockRejectedValue(new Error('Household not found'))
-      
+
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const codeInput = screen.getByPlaceholderText('Enter household code')
@@ -201,26 +212,34 @@ describe('HouseholdSection Error Scenarios', () => {
     it('handles leave household when user is not a member', async () => {
       const user = userEvent.setup()
       global.confirm = vi.fn().mockReturnValue(true)
-      mockLeaveHousehold.mockRejectedValue(new Error('User not found in household'))
-      
+      mockLeaveHousehold.mockRejectedValue(
+        new Error('User not found in household')
+      )
+
       render(<HouseholdSection profile={profileWithHousehold} />)
 
-      const leaveButton = screen.getByRole('button', { name: /leave household/i })
+      const leaveButton = screen.getByRole('button', {
+        name: /leave household/i,
+      })
       await user.click(leaveButton)
 
       await waitFor(() => {
-        expect(screen.getByText('User not found in household')).toBeInTheDocument()
+        expect(
+          screen.getByText('User not found in household')
+        ).toBeInTheDocument()
       })
     })
 
     it('handles timeout errors during household operations', async () => {
       const user = userEvent.setup()
       mockCreateHousehold.mockRejectedValue(new Error('Request timeout'))
-      
+
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       await user.type(nameInput, 'Test Family')
       await user.click(createButton)
@@ -237,7 +256,9 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       // Very long name (500 characters)
       const longName = 'A'.repeat(500)
@@ -256,7 +277,9 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithoutHousehold} />)
 
       const nameInput = screen.getByPlaceholderText('Enter household name')
-      const createButton = screen.getByRole('button', { name: /create household/i })
+      const createButton = screen.getByRole('button', {
+        name: /create household/i,
+      })
 
       // Name with special characters
       const specialName = '<script>alert("test")</script>'
@@ -277,17 +300,25 @@ describe('HouseholdSection Error Scenarios', () => {
       const joinButton = screen.getByRole('button', { name: /join household/i })
 
       // Malformed codes
-      const malformedCodes = ['', '   ', '123', 'code with spaces', '🏠emoji-code']
-      
+      const malformedCodes = [
+        '',
+        '   ',
+        '123',
+        'code with spaces',
+        '🏠emoji-code',
+      ]
+
       for (const code of malformedCodes) {
         await user.clear(codeInput)
         await user.type(codeInput, code)
         await user.click(joinButton)
-        
+
         if (code.trim() === '') {
           // Should show validation error for empty code
           await waitFor(() => {
-            expect(screen.getByText('Please enter a household code')).toBeInTheDocument()
+            expect(
+              screen.getByText('Please enter a household code')
+            ).toBeInTheDocument()
           })
         }
       }
@@ -299,7 +330,7 @@ describe('HouseholdSection Error Scenarios', () => {
       // Mock server-side rendering environment
       const originalDocument = global.document
       const originalNavigator = global.navigator
-      
+
       // @ts-expect-error - Intentionally deleting global for SSR testing
       delete global.document
       // @ts-expect-error - Intentionally deleting global for SSR testing
@@ -317,7 +348,7 @@ describe('HouseholdSection Error Scenarios', () => {
 
     it('handles unsupported browser features gracefully', async () => {
       const user = userEvent.setup()
-      
+
       // Mock environment with limited features
       Object.defineProperty(navigator, 'clipboard', {
         value: null,
@@ -328,10 +359,10 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Should still render button
       expect(copyButton).toBeInTheDocument()
-      
+
       // Clicking should not crash the app
       await user.click(copyButton)
       // Implementation should handle gracefully
@@ -341,7 +372,7 @@ describe('HouseholdSection Error Scenarios', () => {
   describe('Toast System Error Scenarios', () => {
     it('handles toast system failures gracefully', async () => {
       const user = userEvent.setup()
-      
+
       // Mock toast system that throws errors
       vi.mocked(toast.success).mockImplementation(() => {
         throw new Error('Toast system unavailable')
@@ -357,7 +388,7 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Should not crash when toast fails
       expect(async () => {
         await user.click(copyButton)
@@ -368,7 +399,7 @@ describe('HouseholdSection Error Scenarios', () => {
   describe('Memory and Resource Error Scenarios', () => {
     it('handles rapid successive clicks without memory leaks', async () => {
       const user = userEvent.setup()
-      
+
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: vi.fn().mockResolvedValue(undefined) },
         writable: true,
@@ -378,7 +409,7 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Click rapidly 10 times
       for (let i = 0; i < 10; i++) {
         await user.click(copyButton)
@@ -392,10 +423,10 @@ describe('HouseholdSection Error Scenarios', () => {
 
     it('handles component unmount during async operations', async () => {
       const user = userEvent.setup()
-      
+
       // Mock slow clipboard operation
-      const slowWriteText = vi.fn(() => 
-        new Promise(resolve => setTimeout(resolve, 1000))
+      const slowWriteText = vi.fn(
+        () => new Promise((resolve) => setTimeout(resolve, 1000))
       )
       Object.defineProperty(navigator, 'clipboard', {
         value: { writeText: slowWriteText },
@@ -403,11 +434,13 @@ describe('HouseholdSection Error Scenarios', () => {
         configurable: true,
       })
 
-      const { unmount } = render(<HouseholdSection profile={profileWithHousehold} />)
+      const { unmount } = render(
+        <HouseholdSection profile={profileWithHousehold} />
+      )
 
       const copyButton = screen.getByTestId('copy-household-code')
       await user.click(copyButton)
-      
+
       // Unmount component before async operation completes
       unmount()
 

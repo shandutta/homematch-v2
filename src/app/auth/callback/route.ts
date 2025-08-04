@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     error_param,
     error_description,
     origin,
-    next
+    next,
   })
 
   if (error_param) {
@@ -27,21 +27,21 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     console.log('Attempting to exchange code for session...')
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (error) {
       console.error('Session exchange error:', {
         message: error.message,
         status: error.status,
         code: error.code,
-        details: error
+        details: error,
       })
     } else {
       console.log('Session exchange successful:', {
         user: data.user?.id,
-        session: data.session ? 'present' : 'missing'
+        session: data.session ? 'present' : 'missing',
       })
     }
-    
+
     if (!error) {
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === 'development'
@@ -56,7 +56,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.error('OAuth callback failed - no code received or session exchange failed')
+  console.error(
+    'OAuth callback failed - no code received or session exchange failed'
+  )
   // return the user to an error page with instructions
   return redirect('/auth/auth-code-error')
 }

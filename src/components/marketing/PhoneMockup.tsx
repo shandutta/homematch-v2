@@ -42,7 +42,7 @@ async function fetchMarketingCards(): Promise<MarketingCard[]> {
     }
     return []
   } catch (error) {
-    console.debug('Failed to fetch marketing cards:', error);
+    console.debug('Failed to fetch marketing cards:', error)
     return []
   }
 }
@@ -106,7 +106,11 @@ function PropertyCard({
   const likeScale = useTransform(x, [0, 30, 120], [0.9, 1.1, 1.25])
   const passScale = useTransform(x, [-120, -30, 0], [1.25, 1.1, 0.9])
   const matchOpacity = useTransform(x, [120, 200], [0, 1])
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5])
+  const opacity = useTransform(
+    x,
+    [-200, -100, 0, 100, 200],
+    [0.5, 1, 1, 1, 0.5]
+  )
 
   // Autoplay "jiggle" hint: right then left once (first mount) - smoother with spring animations
   useEffect(() => {
@@ -114,7 +118,8 @@ function PropertyCard({
     let cancelled = false
 
     const prefersReduced =
-      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     async function runHint() {
       if (prefersReduced) {
@@ -216,7 +221,7 @@ function PropertyCard({
             src={property.image}
             alt={`Property in ${property.location}`}
             fill
-            className="pointer-events-none select-none object-cover"
+            className="pointer-events-none object-cover select-none"
             sizes="300px"
             priority={index === 0}
             placeholder="blur"
@@ -245,7 +250,9 @@ function PropertyCard({
           >
             <div
               className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(16,185,129,0.35)] backdrop-blur-sm"
-              style={{ transform: `scale(${(likeScale as unknown as number) || 1})` }}
+              style={{
+                transform: `scale(${(likeScale as unknown as number) || 1})`,
+              }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
               <span className="text-xs font-semibold tracking-wide">LIKED</span>
@@ -259,10 +266,14 @@ function PropertyCard({
           >
             <div
               className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(244,63,94,0.35)] backdrop-blur-sm"
-              style={{ transform: `scale(${(passScale as unknown as number) || 1})` }}
+              style={{
+                transform: `scale(${(passScale as unknown as number) || 1})`,
+              }}
             >
               <X className="h-4 w-4" aria-hidden="true" />
-              <span className="text-xs font-semibold tracking-wide">PASSED</span>
+              <span className="text-xs font-semibold tracking-wide">
+                PASSED
+              </span>
             </div>
           </motion.div>
 
@@ -302,31 +313,31 @@ function PropertyCard({
               onClick={() => {
                 // subtle "pass" effect
                 try {
-            // toast via global or event
-            // @ts-expect-error window.toast might not exist
-            if (window?.toast) {
-              // @ts-expect-error window.toast might not exist
-              window.toast({
-                title: 'Passed',
-                description: 'We\'ll show you more like this.',
-                variant: 'destructive',
-              })
-            } else {
-              const evt = new CustomEvent('landing-toast', {
-                detail: {
-                  title: 'Passed',
-                  description: "We'll show you more like this.",
-                  variant: 'destructive',
-                },
-              })
-              window.dispatchEvent(evt)
-            }
-          } catch {
-            // ignore error
-          }
-          onSwipe('left')
-        }}
-        aria-label="Pass on this property"
+                  // toast via global or event
+                  // @ts-expect-error window.toast might not exist
+                  if (window?.toast) {
+                    // @ts-expect-error window.toast might not exist
+                    window.toast({
+                      title: 'Passed',
+                      description: "We'll show you more like this.",
+                      variant: 'destructive',
+                    })
+                  } else {
+                    const evt = new CustomEvent('landing-toast', {
+                      detail: {
+                        title: 'Passed',
+                        description: "We'll show you more like this.",
+                        variant: 'destructive',
+                      },
+                    })
+                    window.dispatchEvent(evt)
+                  }
+                } catch {
+                  // ignore error
+                }
+                onSwipe('left')
+              }}
+              aria-label="Pass on this property"
             >
               <X className="h-4 w-4" />
               <span className="text-sm font-medium">Pass</span>
@@ -349,7 +360,8 @@ function PropertyCard({
                 burst.style.transform = 'translate(-50%, -50%)'
                 burst.style.background = 'rgba(255,255,255,0.8)'
                 burst.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)'
-                burst.style.transition = 'transform 380ms ease-out, opacity 380ms ease-out'
+                burst.style.transition =
+                  'transform 380ms ease-out, opacity 380ms ease-out'
                 btn.appendChild(burst)
                 requestAnimationFrame(() => {
                   burst.style.transform = 'translate(-50%, -50%) scale(12)'
@@ -412,25 +424,30 @@ export function PhoneMockup() {
             const price =
               typeof c.price === 'number'
                 ? `$${c.price.toLocaleString()}`
-                : (placeholderProperties[idx % placeholderProperties.length]?.price ?? '$000,000')
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.price ?? '$000,000')
             const beds =
               typeof c.bedrooms === 'number'
                 ? c.bedrooms
-                : (placeholderProperties[idx % placeholderProperties.length]?.beds ?? 3)
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.beds ?? 3)
             const baths =
               typeof c.bathrooms === 'number'
                 ? c.bathrooms
-                : (placeholderProperties[idx % placeholderProperties.length]?.baths ?? 2)
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.baths ?? 2)
             const location =
               typeof c.address === 'string' && c.address.length > 0
                 ? c.address
-                : (placeholderProperties[idx % placeholderProperties.length]?.location ?? 'Unknown')
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.location ?? 'Unknown')
 
             return {
               id: idx + 1,
               image:
                 c.imageUrl ??
-                placeholderProperties[idx % placeholderProperties.length]?.image ??
+                placeholderProperties[idx % placeholderProperties.length]
+                  ?.image ??
                 '/images/properties/house-1.svg',
               price,
               beds,
@@ -557,9 +574,12 @@ export function PhoneMockup() {
         {/* Screen */}
         <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-[#0b0f1a] ring-1 ring-white/10">
           {/* Premium gradient aurora backdrop with subtle grain */}
-          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div
+            className="pointer-events-none absolute inset-0"
+            aria-hidden="true"
+          >
             <div
-              className="absolute inset-0 opacity-[0.85] [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)]"
+              className="absolute inset-0 [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)] opacity-[0.85]"
               style={{
                 background:
                   'radial-gradient(1200px 700px at 80% -20%, rgba(56,189,248,0.18), transparent 60%),' +
@@ -599,7 +619,10 @@ export function PhoneMockup() {
             />
           </div>
           {/* Inner vignette to focus content and add premium depth */}
-          <div className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 ring-white/5 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)]" aria-hidden="true" />
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)] ring-white/5"
+            aria-hidden="true"
+          />
 
           {/* Status Bar */}
           <div className="flex h-8 items-center justify-between px-5 text-[11px] text-zinc-300/90">

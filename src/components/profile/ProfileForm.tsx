@@ -41,11 +41,13 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   const userService = new UserService()
 
   // Extract preferences or use defaults
-  const preferences = (profile.preferences || {}) as Partial<UserPreferences & {
-    display_name?: string
-    phone?: string
-    bio?: string
-  }>
+  const preferences = (profile.preferences || {}) as Partial<
+    UserPreferences & {
+      display_name?: string
+      phone?: string
+      bio?: string
+    }
+  >
 
   const form = useValidatedForm(ProfileSchema, {
     display_name: preferences.display_name || user.email?.split('@')[0] || '',
@@ -88,7 +90,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
             name="display_name"
@@ -99,7 +101,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                   <Input
                     {...field}
                     placeholder="Enter your display name"
-                    className="bg-white/10 border-purple-500/20 text-white placeholder:text-purple-300/50"
+                    className="border-purple-500/20 bg-white/10 text-white placeholder:text-purple-300/50"
                   />
                 </FormControl>
                 <FormMessage className="text-red-400" />
@@ -118,7 +120,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                     {...field}
                     type="tel"
                     placeholder="(123) 456-7890"
-                    className="bg-white/10 border-purple-500/20 text-white placeholder:text-purple-300/50"
+                    className="border-purple-500/20 bg-white/10 text-white placeholder:text-purple-300/50"
                   />
                 </FormControl>
                 <FormMessage className="text-red-400" />
@@ -128,9 +130,11 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         </div>
 
         <div>
-          <p className="text-sm text-purple-200 mb-2">Email</p>
+          <p className="mb-2 text-sm text-purple-200">Email</p>
           <p className="text-white">{user.email}</p>
-          <p className="text-xs text-purple-300/60 mt-1">Email cannot be changed</p>
+          <p className="mt-1 text-xs text-purple-300/60">
+            Email cannot be changed
+          </p>
         </div>
 
         <FormField
@@ -144,7 +148,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                   {...field}
                   rows={4}
                   placeholder="Tell us a bit about yourself..."
-                  className="w-full px-3 py-2 bg-white/10 border border-purple-500/20 rounded-md text-white placeholder:text-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full resize-none rounded-md border border-purple-500/20 bg-white/10 px-3 py-2 text-white placeholder:text-purple-300/50 focus:border-transparent focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 />
               </FormControl>
               <FormMessage className="text-red-400" />
@@ -155,7 +159,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         <Button
           type="submit"
           disabled={loading}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-purple-600 text-white hover:bg-purple-700"
         >
           {loading ? (
             <>

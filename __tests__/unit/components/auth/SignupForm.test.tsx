@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SignupSchema, type SignupData } from '@/lib/schemas/auth'
 // import { z } from 'zod'
 
-// Type-safe expectation helper  
+// Type-safe expectation helper
 // const expectToBeCalledWithValidData = (
 //   mockFn: jest.Mock,
 //   schema: any,
@@ -13,17 +13,17 @@ import { SignupSchema, type SignupData } from '@/lib/schemas/auth'
 // ) => {
 //   expect(mockFn).toHaveBeenCalled()
 //   const callArgs = mockFn.mock.calls[0][0]
-//   
+//
 //   // Validate the call arguments against the schema
 //   const result = schema.safeParse(callArgs)
 //   if (!result.success) {
 //     throw new Error(`Mock called with invalid data: ${result.error.message}`)
 //   }
-//   
+//
 //   if (expectedData) {
 //     expect(callArgs).toMatchObject(expectedData)
 //   }
-//   
+//
 //   return callArgs
 // }
 
@@ -33,9 +33,9 @@ const createMockSignupData = (overrides?: Partial<SignupData>): SignupData => {
     email: 'newuser@example.com',
     password: 'Password123',
     confirmPassword: 'Password123',
-    ...overrides
+    ...overrides,
   }
-  
+
   // Validate against Zod schema to ensure type safety
   return SignupSchema.parse(baseData)
 }
@@ -59,73 +59,92 @@ process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
 // Mock location for the component (if it's not already set)
 if (!global.location) {
   global.location = {
-    origin: 'http://localhost:3000'
+    origin: 'http://localhost:3000',
   } as any
 }
 
 // Mock UI components to avoid complex rendering issues
 jest.mock('@/components/ui/form', () => ({
   Form: ({ children }: any) => <div data-testid="form">{children}</div>,
-  FormControl: ({ children }: any) => <div data-testid="form-control">{children}</div>,
+  FormControl: ({ children }: any) => (
+    <div data-testid="form-control">{children}</div>
+  ),
   FormField: ({ render, name }: any) => {
-    const field = { 
+    const field = {
       name,
-      value: name === 'email' ? validSignupData.email : 
-             name === 'password' ? validSignupData.password :
-             name === 'confirmPassword' ? validSignupData.confirmPassword : '',
+      value:
+        name === 'email'
+          ? validSignupData.email
+          : name === 'password'
+            ? validSignupData.password
+            : name === 'confirmPassword'
+              ? validSignupData.confirmPassword
+              : '',
       onChange: jest.fn(),
       onBlur: jest.fn(),
-      ref: jest.fn()
+      ref: jest.fn(),
     }
     return render({ field })
   },
-  FormItem: ({ children }: any) => <div data-testid="form-item">{children}</div>,
+  FormItem: ({ children }: any) => (
+    <div data-testid="form-item">{children}</div>
+  ),
   FormLabel: ({ children }: any) => {
-    const labelText = children?.toString() || '';
-    let htmlFor = 'input';
-    if (labelText === 'Email') htmlFor = 'email';
-    else if (labelText === 'Password') htmlFor = 'password';
-    else if (labelText === 'Confirm Password') htmlFor = 'confirmPassword';
+    const labelText = children?.toString() || ''
+    let htmlFor = 'input'
+    if (labelText === 'Email') htmlFor = 'email'
+    else if (labelText === 'Password') htmlFor = 'password'
+    else if (labelText === 'Confirm Password') htmlFor = 'confirmPassword'
     return <label htmlFor={htmlFor}>{children}</label>
   },
-  FormMessage: () => <div data-testid="form-message" />
+  FormMessage: () => <div data-testid="form-message" />,
 }))
 
 jest.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => <div className={className}>{children}</div>,
-  CardContent: ({ children, className }: any) => <div className={className}>{children}</div>,
+  Card: ({ children, className }: any) => (
+    <div className={className}>{children}</div>
+  ),
+  CardContent: ({ children, className }: any) => (
+    <div className={className}>{children}</div>
+  ),
   CardHeader: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children, className }: any) => <h1 className={className}>{children}</h1>
+  CardTitle: ({ children, className }: any) => (
+    <h1 className={className}>{children}</h1>
+  ),
 }))
 
 jest.mock('@/components/ui/alert', () => ({
-  Alert: ({ children, variant }: any) => <div data-variant={variant}>{children}</div>,
-  AlertDescription: ({ children }: any) => <div>{children}</div>
+  Alert: ({ children, variant }: any) => (
+    <div data-variant={variant}>{children}</div>
+  ),
+  AlertDescription: ({ children }: any) => <div>{children}</div>,
 }))
 
 jest.mock('@/components/ui/input', () => ({
   Input: (props: any) => {
-    const id = props.name || props.type || 'input';
+    const id = props.name || props.type || 'input'
     return <input {...props} id={id} />
-  }
+  },
 }))
 
 jest.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled, type, variant, className }: any) => (
-    <button 
-      onClick={onClick} 
-      disabled={disabled} 
-      type={type} 
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      type={type}
       data-variant={variant}
       className={className}
     >
       {children}
     </button>
-  )
+  ),
 }))
 
 jest.mock('lucide-react', () => ({
-  Loader2: ({ className }: any) => <div className={className} data-testid="loader" />
+  Loader2: ({ className }: any) => (
+    <div className={className} data-testid="loader" />
+  ),
 }))
 
 // Mock the form hook with proper react-hook-form structure
@@ -175,7 +194,11 @@ jest.mock('@/hooks/useValidatedForm', () => ({
       watch: jest.fn(),
       reset: jest.fn(),
       getValues: jest.fn(() => defaultValues || {}),
-      getFieldState: jest.fn(() => ({ invalid: false, isDirty: false, isTouched: false })),
+      getFieldState: jest.fn(() => ({
+        invalid: false,
+        isDirty: false,
+        isTouched: false,
+      })),
       trigger: jest.fn(),
       setError: jest.fn(),
       clearErrors: jest.fn(),
@@ -204,11 +227,15 @@ describe('SignupForm', () => {
     render(<SignupForm />)
 
     // Check for title (more specific)
-    expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /create account/i })
+    ).toBeInTheDocument()
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
     expect(screen.getByLabelText('Confirm Password')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /create account/i })
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
     expect(screen.getByText('Or continue with')).toBeInTheDocument()
   })
@@ -216,7 +243,7 @@ describe('SignupForm', () => {
   test('handles successful signup', async () => {
     mockSignUp.mockResolvedValueOnce({ error: null })
     const user = userEvent.setup()
-    
+
     render(<SignupForm />)
 
     const submitButton = screen.getByRole('button', { name: /create account/i })
@@ -233,15 +260,17 @@ describe('SignupForm', () => {
     })
 
     // Check success message is displayed
-    expect(screen.getByText(/check your email for a verification link/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/check your email for a verification link/i)
+    ).toBeInTheDocument()
   })
 
   test('displays error message on signup failure', async () => {
     const errorMessage = 'User already exists'
-    mockSignUp.mockResolvedValueOnce({ 
-      error: { message: errorMessage } 
+    mockSignUp.mockResolvedValueOnce({
+      error: { message: errorMessage },
     })
-    
+
     const user = userEvent.setup()
     render(<SignupForm />)
 
@@ -264,7 +293,7 @@ describe('SignupForm', () => {
   test('handles Google OAuth signup', async () => {
     mockSignInWithOAuth.mockResolvedValueOnce({ error: null })
     const user = userEvent.setup()
-    
+
     render(<SignupForm />)
 
     const googleButton = screen.getByRole('button', { name: /google/i })
@@ -282,10 +311,10 @@ describe('SignupForm', () => {
 
   test('displays error on Google OAuth failure', async () => {
     const errorMessage = 'OAuth configuration error'
-    mockSignInWithOAuth.mockResolvedValueOnce({ 
-      error: { message: errorMessage } 
+    mockSignInWithOAuth.mockResolvedValueOnce({
+      error: { message: errorMessage },
     })
-    
+
     const user = userEvent.setup()
     render(<SignupForm />)
 
@@ -298,10 +327,13 @@ describe('SignupForm', () => {
   })
 
   test('disables form elements while loading', async () => {
-    mockSignUp.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({ error: null }), 100))
+    mockSignUp.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 100)
+        )
     )
-    
+
     const user = userEvent.setup()
     render(<SignupForm />)
 
@@ -327,10 +359,13 @@ describe('SignupForm', () => {
   })
 
   test('shows loading spinner during submission', async () => {
-    mockSignUp.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({ error: null }), 100))
+    mockSignUp.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 100)
+        )
     )
-    
+
     const user = userEvent.setup()
     render(<SignupForm />)
 
@@ -347,19 +382,23 @@ describe('SignupForm', () => {
   test('success state hides the form', async () => {
     mockSignUp.mockResolvedValueOnce({ error: null })
     const user = userEvent.setup()
-    
+
     render(<SignupForm />)
 
     // Initially form elements should be visible
     expect(screen.getByDisplayValue(validSignupData.email)).toBeInTheDocument()
-    
+
     const submitButton = screen.getByRole('button', { name: /create account/i })
     await user.click(submitButton)
 
     await waitFor(() => {
       // Form elements should be gone
-      expect(screen.queryByDisplayValue(validSignupData.email)).not.toBeInTheDocument()
-      expect(screen.queryByDisplayValue(validSignupData.password)).not.toBeInTheDocument()
+      expect(
+        screen.queryByDisplayValue(validSignupData.email)
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByDisplayValue(validSignupData.password)
+      ).not.toBeInTheDocument()
       // Success message should be shown
       expect(screen.getByText(/check your email/i)).toBeInTheDocument()
     })
@@ -367,10 +406,10 @@ describe('SignupForm', () => {
 
   test('error state keeps form visible', async () => {
     const errorMessage = 'Signup failed'
-    mockSignUp.mockResolvedValueOnce({ 
-      error: { message: errorMessage } 
+    mockSignUp.mockResolvedValueOnce({
+      error: { message: errorMessage },
     })
-    
+
     const user = userEvent.setup()
     render(<SignupForm />)
 

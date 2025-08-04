@@ -20,7 +20,10 @@ describe('InteractionService', () => {
         json: async () => ({ success: true, interaction: mockInteraction }),
       })
 
-      const result = await InteractionService.recordInteraction('prop1', 'liked')
+      const result = await InteractionService.recordInteraction(
+        'prop1',
+        'liked'
+      )
 
       expect(mockFetch).toHaveBeenCalledWith('/api/interactions', {
         method: 'POST',
@@ -45,7 +48,11 @@ describe('InteractionService', () => {
 
   describe('getInteractionSummary', () => {
     it('should send a GET request and return the summary', async () => {
-      const mockSummary: InteractionSummary = { viewed: 10, liked: 5, passed: 3 }
+      const mockSummary: InteractionSummary = {
+        viewed: 10,
+        liked: 5,
+        passed: 3,
+      }
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockSummary,
@@ -83,7 +90,9 @@ describe('InteractionService', () => {
         json: async () => mockResponse,
       })
 
-      const result = await InteractionService.getInteractions('liked', { limit: 5 })
+      const result = await InteractionService.getInteractions('liked', {
+        limit: 5,
+      })
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/interactions?type=liked&limit=5',

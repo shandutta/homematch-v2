@@ -7,7 +7,7 @@ import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import {
   createInteractionRequestSchema,
   interactionSummarySchema,
-  paginationQuerySchema
+  paginationQuerySchema,
 } from '@/lib/schemas/api'
 
 export async function POST(request: NextRequest) {
@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
     // Rate limiting
     const rateLimitResult = await apiRateLimiter.check(user.id)
     if (!rateLimitResult.success) {
-      return ApiErrorHandler.badRequest('Too many requests. Please try again later.')
+      return ApiErrorHandler.badRequest(
+        'Too many requests. Please try again later.'
+      )
     }
 
     const body = await request.json()
@@ -44,7 +46,10 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       // Not fatal; insert might still succeed if no matching row existed
-      console.warn('Warning deleting previous interaction:', deleteError.message)
+      console.warn(
+        'Warning deleting previous interaction:',
+        deleteError.message
+      )
     }
 
     // Insert the new interaction
@@ -88,9 +93,9 @@ export async function GET(request: NextRequest) {
     const queryParams = {
       type: searchParams.get('type'),
       cursor: searchParams.get('cursor'),
-      limit: searchParams.get('limit')
+      limit: searchParams.get('limit'),
     }
-    
+
     const type = queryParams.type as InteractionType | 'summary' | null
 
     if (!type) {
@@ -104,9 +109,12 @@ export async function GET(request: NextRequest) {
       // Aggregate counts grouped by interaction_type for current user
       // Supabase JS doesn't support SQL GROUP BY directly via .group().
       // Use RPC to aggregate counts per type for the current user.
-      const { data, error } = await supabase.rpc('get_user_interaction_summary', {
-        p_user_id: user.id,
-      })
+      const { data, error } = await supabase.rpc(
+        'get_user_interaction_summary',
+        {
+          p_user_id: user.id,
+        }
+      )
 
       if (error) {
         console.error('Summary fetch failed:', error)
@@ -124,9 +132,12 @@ export async function GET(request: NextRequest) {
       const typedData = data as InteractionSummaryRow[] | null
 
       const summaryData = {
-        liked: typedData?.find(d => d.interaction_type === 'liked')?.count ?? 0,
-        passed: typedData?.find(d => d.interaction_type === 'skip')?.count ?? 0,
-        viewed: typedData?.find(d => d.interaction_type === 'viewed')?.count ?? 0
+        liked:
+          typedData?.find((d) => d.interaction_type === 'liked')?.count ?? 0,
+        passed:
+          typedData?.find((d) => d.interaction_type === 'skip')?.count ?? 0,
+        viewed:
+          typedData?.find((d) => d.interaction_type === 'viewed')?.count ?? 0,
       }
 
       // Validate response against schema
@@ -143,7 +154,7 @@ export async function GET(request: NextRequest) {
 
     const paginationQuery = paginationQuerySchema.parse({
       cursor: queryParams.cursor,
-      limit: queryParams.limit || '12'
+      limit: queryParams.limit || '12',
     })
     const { cursor, limit } = paginationQuery
 
@@ -187,7 +198,7 @@ export async function GET(request: NextRequest) {
 
     // Flatten the structure: take the first property from the array.
     const items = (typedData ?? [])
-      .map(row => (row.property ? row.property[0] : null))
+      .map((row) => (row.property ? row.property[0] : null))
       .filter(Boolean)
 
     const nextCursor =
@@ -196,6 +207,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ items, nextCursor })
   } catch (err) {
     console.error('GET /api/interactions unexpected error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

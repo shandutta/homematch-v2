@@ -22,7 +22,7 @@ jest.mock('next/image', () => ({
 describe('EnhancedPropertyCard', () => {
   const mockOnLike = jest.fn()
   const mockOnDislike = jest.fn()
-  
+
   const mockProperty = createMockDatabaseProperty({
     id: '1',
     address: '123 Test Street',
@@ -95,13 +95,17 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(screen.queryByRole('button', { name: /pass/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /like/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /pass/i })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /like/i })
+    ).not.toBeInTheDocument()
   })
 
   test('calls onLike when like button is clicked', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <EnhancedPropertyCard
         property={mockProperty}
@@ -119,7 +123,7 @@ describe('EnhancedPropertyCard', () => {
 
   test('calls onDislike when pass button is clicked', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <EnhancedPropertyCard
         property={mockProperty}
@@ -144,14 +148,18 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: 'Previous image' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Next image' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Previous image' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Next image' })
+    ).toBeInTheDocument()
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })
 
   test('navigates images correctly', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <EnhancedPropertyCard
         property={mockProperty}
@@ -198,8 +206,12 @@ describe('EnhancedPropertyCard', () => {
     )
 
     // Should not show navigation buttons
-    expect(screen.queryByRole('button', { name: 'Previous image' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Next image' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Previous image' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Next image' })
+    ).not.toBeInTheDocument()
     expect(screen.queryByText(/1 \/ 1/)).not.toBeInTheDocument()
   })
 
@@ -232,7 +244,7 @@ describe('EnhancedPropertyCard', () => {
     )
 
     const image = screen.getByAltText('123 Test Street')
-    
+
     // Simulate image error
     fireEvent.error(image)
 

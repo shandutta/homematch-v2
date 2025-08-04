@@ -1,31 +1,33 @@
-import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl';
-import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
-import { loadDashboardData } from '@/lib/data/loader';
+import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl'
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary'
+import { loadDashboardData } from '@/lib/data/loader'
 // import { UserService } from '@/lib/services/users';  // Commented out as it's not currently used
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 // import { Session } from '@supabase/supabase-js';  // Commented out as it's not currently used
 
 interface DashboardPageProps {
   searchParams: {
-    [key: string]: string | string[] | undefined;
-  };
+    [key: string]: string | string[] | undefined
+  }
 }
 
-export default async function DashboardPage({ searchParams: _searchParams }: DashboardPageProps) {
-  const supabase = await createClient();
+export default async function DashboardPage({
+  searchParams: _searchParams,
+}: DashboardPageProps) {
+  const supabase = await createClient()
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login');
+    redirect('/login')
   }
 
   // const userService = new UserService();
-  
+
   try {
-    const dashboardData = await loadDashboardData();
+    const dashboardData = await loadDashboardData()
     // const [userData, interactions, dashboardData] = await Promise.all([
     //   userService.getUserProfile(user.id),
     //   userService.getUserInteractions(user.id, 1000),
@@ -61,20 +63,20 @@ export default async function DashboardPage({ searchParams: _searchParams }: Das
     //   totalPassed: swipes.filter((s) => !s.vote).length,
     // };
 
-  return (
-    <DashboardErrorBoundary>
-      <EnhancedDashboardPageImpl
-        initialData={dashboardData}
-        // The following props are passed for future use but are currently unused in the client component
-        // returning={returning}
-        // userProfile={finalUserData}
-        // initialSwipeStats={swipeStats}
-        // session={{ user } as Session}
-      />
-    </DashboardErrorBoundary>
-  );
+    return (
+      <DashboardErrorBoundary>
+        <EnhancedDashboardPageImpl
+          initialData={dashboardData}
+          // The following props are passed for future use but are currently unused in the client component
+          // returning={returning}
+          // userProfile={finalUserData}
+          // initialSwipeStats={swipeStats}
+          // session={{ user } as Session}
+        />
+      </DashboardErrorBoundary>
+    )
   } catch (error) {
-    console.error('Dashboard error:', error);
-    redirect('/login');
+    console.error('Dashboard error:', error)
+    redirect('/login')
   }
 }

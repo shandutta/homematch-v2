@@ -55,9 +55,12 @@ describe('NotificationsSection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(() => ({
-      updateUserProfile: mockUpdateUserProfile,
-    } as any))
+    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(
+      () =>
+        ({
+          updateUserProfile: mockUpdateUserProfile,
+        }) as any
+    )
   })
 
   test('renders all notification sections', () => {
@@ -70,8 +73,10 @@ describe('NotificationsSection', () => {
 
   test('displays user email', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
-    
-    expect(screen.getByText(/Notifications will be sent to:/)).toBeInTheDocument()
+
+    expect(
+      screen.getByText(/Notifications will be sent to:/)
+    ).toBeInTheDocument()
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
   })
 
@@ -79,8 +84,10 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Get the email section card to avoid conflicts with push notifications
-    const emailSection = screen.getByText('Email Notifications').closest('.card-glassmorphism-style')
-    
+    const emailSection = screen
+      .getByText('Email Notifications')
+      .closest('.card-glassmorphism-style')
+
     expect(emailSection).toHaveTextContent('New property matches')
     expect(emailSection).toHaveTextContent('Price drops on liked properties')
     expect(emailSection).toHaveTextContent('Updates on saved searches')
@@ -90,7 +97,9 @@ describe('NotificationsSection', () => {
   test('renders all push notification options', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const pushSection = screen.getByText('Push Notifications').closest('.card-glassmorphism-style')
+    const pushSection = screen
+      .getByText('Push Notifications')
+      .closest('.card-glassmorphism-style')
     expect(pushSection).toHaveTextContent('New property matches')
     expect(pushSection).toHaveTextContent('Price drops')
     expect(pushSection).toHaveTextContent('Messages from household members')
@@ -100,14 +109,18 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     expect(screen.getByLabelText('Urgent property alerts')).toBeInTheDocument()
-    expect(screen.getByLabelText('Property viewing reminders')).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Property viewing reminders')
+    ).toBeInTheDocument()
   })
 
   test('toggles email notifications', async () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const weeklyDigestSwitch = screen.getByRole('switch', { name: 'Weekly property digest' })
+    const weeklyDigestSwitch = screen.getByRole('switch', {
+      name: 'Weekly property digest',
+    })
     expect(weeklyDigestSwitch).not.toBeChecked()
 
     await user.click(weeklyDigestSwitch)
@@ -118,7 +131,9 @@ describe('NotificationsSection', () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const newMatchesSwitch = screen.getAllByRole('switch', { name: 'New property matches' })[1]
+    const newMatchesSwitch = screen.getAllByRole('switch', {
+      name: 'New property matches',
+    })[1]
     expect(newMatchesSwitch).not.toBeChecked()
 
     await user.click(newMatchesSwitch)
@@ -129,7 +144,9 @@ describe('NotificationsSection', () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const urgentAlertsSwitch = screen.getByRole('switch', { name: 'Urgent property alerts' })
+    const urgentAlertsSwitch = screen.getByRole('switch', {
+      name: 'Urgent property alerts',
+    })
     expect(urgentAlertsSwitch).not.toBeChecked()
 
     await user.click(urgentAlertsSwitch)
@@ -144,25 +161,35 @@ describe('NotificationsSection', () => {
     expect(screen.queryByText(/Phone number required/)).not.toBeInTheDocument()
 
     // Enable SMS notification
-    const urgentAlertsSwitch = screen.getByRole('switch', { name: 'Urgent property alerts' })
+    const urgentAlertsSwitch = screen.getByRole('switch', {
+      name: 'Urgent property alerts',
+    })
     await user.click(urgentAlertsSwitch)
 
     // Note should appear
-    expect(screen.getByText(/Phone number required in your profile for SMS notifications/)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /Phone number required in your profile for SMS notifications/
+      )
+    ).toBeInTheDocument()
   })
 
   test('saves preferences successfully', async () => {
     mockUpdateUserProfile.mockResolvedValueOnce({ success: true })
     const user = userEvent.setup()
-    
+
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Toggle a switch
-    const weeklyDigestSwitch = screen.getByRole('switch', { name: 'Weekly property digest' })
+    const weeklyDigestSwitch = screen.getByRole('switch', {
+      name: 'Weekly property digest',
+    })
     await user.click(weeklyDigestSwitch)
 
     // Click save
-    const saveButton = screen.getByRole('button', { name: /Save Notification Preferences/i })
+    const saveButton = screen.getByRole('button', {
+      name: /Save Notification Preferences/i,
+    })
     await user.click(saveButton)
 
     await waitFor(() => {
@@ -175,40 +202,50 @@ describe('NotificationsSection', () => {
           }),
         }),
       })
-      expect(toast.success).toHaveBeenCalledWith('Notification preferences saved')
+      expect(toast.success).toHaveBeenCalledWith(
+        'Notification preferences saved'
+      )
     })
   })
 
   test('handles save error', async () => {
     mockUpdateUserProfile.mockRejectedValueOnce(new Error('Update failed'))
     const user = userEvent.setup()
-    
+
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const saveButton = screen.getByRole('button', { name: /Save Notification Preferences/i })
+    const saveButton = screen.getByRole('button', {
+      name: /Save Notification Preferences/i,
+    })
     await user.click(saveButton)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to save notification preferences')
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to save notification preferences'
+      )
     })
   })
 
   test('shows loading state during save', async () => {
-    mockUpdateUserProfile.mockImplementation(() => 
-      new Promise(resolve => setTimeout(resolve, 100))
+    mockUpdateUserProfile.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100))
     )
     const user = userEvent.setup()
-    
+
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const saveButton = screen.getByRole('button', { name: /Save Notification Preferences/i })
+    const saveButton = screen.getByRole('button', {
+      name: /Save Notification Preferences/i,
+    })
     await user.click(saveButton)
 
     expect(screen.getByText('Saving...')).toBeInTheDocument()
     expect(saveButton).toBeDisabled()
 
     await waitFor(() => {
-      expect(screen.getByText(/Save Notification Preferences/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Save Notification Preferences/i)
+      ).toBeInTheDocument()
     })
   })
 
@@ -218,14 +255,18 @@ describe('NotificationsSection', () => {
       preferences: null,
     }
 
-    render(<NotificationsSection user={mockUser} profile={profileWithoutPrefs} />)
+    render(
+      <NotificationsSection user={mockUser} profile={profileWithoutPrefs} />
+    )
 
     // Should render with default values
     // Check that email section exists and has the expected options
-    const emailSection = screen.getByText('Email Notifications').closest('.card-glassmorphism-style')
+    const emailSection = screen
+      .getByText('Email Notifications')
+      .closest('.card-glassmorphism-style')
     expect(emailSection).toHaveTextContent('New property matches')
     expect(emailSection).toHaveTextContent('Weekly property digest')
-    
+
     // Check that all sections are rendered
     expect(screen.getByText('Push Notifications')).toBeInTheDocument()
     expect(screen.getByText('SMS Notifications')).toBeInTheDocument()
@@ -249,9 +290,15 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Toggle switches in different categories
-    const emailSwitch = screen.getByRole('switch', { name: 'Weekly property digest' })
-    const pushSwitch = screen.getAllByRole('switch', { name: 'New property matches' })[1]
-    const smsSwitch = screen.getByRole('switch', { name: 'Urgent property alerts' })
+    const emailSwitch = screen.getByRole('switch', {
+      name: 'Weekly property digest',
+    })
+    const pushSwitch = screen.getAllByRole('switch', {
+      name: 'New property matches',
+    })[1]
+    const smsSwitch = screen.getByRole('switch', {
+      name: 'Urgent property alerts',
+    })
 
     await user.click(emailSwitch)
     await user.click(pushSwitch)

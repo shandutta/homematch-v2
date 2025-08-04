@@ -202,11 +202,10 @@ describe('Database Integration Tests', () => {
         ...new Set(orphanedProperties!.map((p: any) => p.neighborhood_id)),
       ]
 
-      const { data: existingNeighborhoods, error: neighError } =
-        await supabase
-          .from('neighborhoods')
-          .select('id')
-          .in('id', neighborhoodIds)
+      const { data: existingNeighborhoods, error: neighError } = await supabase
+        .from('neighborhoods')
+        .select('id')
+        .in('id', neighborhoodIds)
 
       expect(neighError).toBeNull()
       expect(existingNeighborhoods).toBeDefined()

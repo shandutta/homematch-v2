@@ -106,8 +106,10 @@ describe('ProfileForm', () => {
 
   it('shows loading state while submitting', async () => {
     const user = userEvent.setup()
-    mockUpdateUserProfile.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
-    
+    mockUpdateUserProfile.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100))
+    )
+
     render(<ProfileForm user={mockUser} profile={mockProfile} />)
 
     const submitButton = screen.getByRole('button', { name: /save profile/i })

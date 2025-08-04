@@ -118,7 +118,13 @@ export default [
     settings: { react: { version: 'detect' } },
   },
   {
-    files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*', 'vitest.setup.ts', 'jest.setup.js'],
+    files: [
+      '**/*.js',
+      '*.config.{js,ts,mjs}',
+      'scripts/**/*',
+      'vitest.setup.ts',
+      'jest.setup.js',
+    ],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -138,12 +144,12 @@ export default [
         project: './tsconfig.json',
         tsconfigRootDir: __dirname,
         ecmaVersion: 'latest',
-        sourceType: 'module'
-      }
+        sourceType: 'module',
+      },
     },
     rules: {
-      'no-undef': 'off'
-    }
+      'no-undef': 'off',
+    },
   },
   // Legacy v1-reference override: fully relax rules and stop reporting in CI
   {

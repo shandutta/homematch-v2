@@ -50,7 +50,7 @@ async function setupIntegrationTests() {
     console.log('\n4️⃣  Generating test auth token...')
     const getAuthToken = require('./get-test-auth-token.js')
     const authToken = await getAuthToken()
-    
+
     // Set the auth token in environment for the tests
     process.env.TEST_AUTH_TOKEN = authToken
     process.env.BASE_URL = 'http://localhost:3000'
