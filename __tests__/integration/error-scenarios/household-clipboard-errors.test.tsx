@@ -14,12 +14,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { HouseholdSection } from '@/components/profile/HouseholdSection'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { TEST_USERS, TEST_MESSAGES } from '@/__tests__/fixtures/test-data'
 
 // Mock external services
-vi.mock('@/lib/services/users')
+vi.mock('@/lib/services/users-client')
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     refresh: vi.fn(),
@@ -49,11 +49,9 @@ describe('HouseholdSection Error Scenarios', () => {
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = vi.fn().mockResolvedValue(true)
     mockLeaveHousehold = vi.fn().mockResolvedValue(true)
-    ;(UserService as any).mockImplementation(() => ({
-      createHousehold: mockCreateHousehold,
-      joinHousehold: mockJoinHousehold,
-      leaveHousehold: mockLeaveHousehold,
-    }))
+    ;(UserServiceClient.createHousehold as any) = mockCreateHousehold
+    ;(UserServiceClient.joinHousehold as any) = mockJoinHousehold
+    ;(UserServiceClient.leaveHousehold as any) = mockLeaveHousehold
   })
 
   describe('Clipboard API Error Scenarios', () => {

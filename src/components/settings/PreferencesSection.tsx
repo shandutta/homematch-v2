@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { Loader2, Save } from 'lucide-react'
 
@@ -25,7 +25,7 @@ interface PreferencesSectionProps {
 }
 
 export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
-  const userService = new UserService()
+  const userService = UserServiceClient
   // Define local preferences type for UI-specific preferences
   type LocalPreferences = UserPreferences & {
     priceRange?: [number, number]

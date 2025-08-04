@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { Loader2, Save, Mail, Bell, Smartphone } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export function NotificationsSection({
   user,
   profile,
 }: NotificationsSectionProps) {
-  const userService = new UserService()
+  const userService = UserServiceClient
 
   // Define specific notification types for strong typing
   type NotificationPreferences = {

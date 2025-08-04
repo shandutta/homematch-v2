@@ -1,8 +1,6 @@
 /**
- * Performance monitoring utilities
+ * Performance monitoring utilities - Server-side only
  */
-
-import { useRef, useEffect } from 'react'
 
 interface PerformanceMetric {
   name: string
@@ -78,25 +76,6 @@ class PerformanceMonitor {
 }
 
 export const performanceMonitor = new PerformanceMonitor()
-
-// React hook for component render performance
-export function useRenderPerformance(componentName: string) {
-  const renderCount = useRef(0)
-
-  useEffect(() => {
-    renderCount.current++
-    const currentRenderCount = renderCount.current
-    performanceMonitor.mark(`${componentName}-render-${currentRenderCount}`)
-
-    return () => {
-      performanceMonitor.measure(
-        `${componentName} render`,
-        `${componentName}-render-${currentRenderCount}`,
-        { renderCount: currentRenderCount }
-      )
-    }
-  })
-}
 
 // API route performance wrapper
 export function withPerformanceTracking<

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Loader2, Save } from 'lucide-react'
 import { z } from 'zod'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -38,7 +38,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const userService = new UserService()
+  const userService = UserServiceClient
 
   // Extract preferences or use defaults
   const preferences = (profile.preferences || {}) as Partial<

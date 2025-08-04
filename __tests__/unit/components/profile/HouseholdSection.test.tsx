@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HouseholdSection } from '@/components/profile/HouseholdSection'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { TEST_USERS, TEST_MESSAGES } from '@/__tests__/fixtures/test-data'
 
 // Mock dependencies
-jest.mock('@/lib/services/users')
+jest.mock('@/lib/services/users-client')
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -57,11 +57,9 @@ describe('HouseholdSection', () => {
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = jest.fn().mockResolvedValue(true)
     mockLeaveHousehold = jest.fn().mockResolvedValue(true)
-    ;(UserService as jest.Mock).mockImplementation(() => ({
-      createHousehold: mockCreateHousehold,
-      joinHousehold: mockJoinHousehold,
-      leaveHousehold: mockLeaveHousehold,
-    }))
+    ;(UserServiceClient.createHousehold as jest.Mock) = mockCreateHousehold
+    ;(UserServiceClient.joinHousehold as jest.Mock) = mockJoinHousehold
+    ;(UserServiceClient.leaveHousehold as jest.Mock) = mockLeaveHousehold
   })
 
   describe('without household', () => {

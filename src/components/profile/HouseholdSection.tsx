@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Users, UserPlus, LogOut, Copy } from 'lucide-react'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -21,7 +21,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
   const [householdName, setHouseholdName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const router = useRouter()
-  const userService = new UserService()
+  const userService = UserServiceClient
 
   const createHousehold = async () => {
     if (!householdName.trim()) {

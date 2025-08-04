@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SavedSearchesSection } from '@/components/settings/SavedSearchesSection'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import type { SavedSearch } from '@/types/database'
 
 // Mock dependencies
-jest.mock('@/lib/services/users')
+jest.mock('@/lib/services/users-client')
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -61,14 +61,9 @@ describe('SavedSearchesSection', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockConfirm.mockReturnValue(true)
-    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(
-      () =>
-        ({
-          getUserSavedSearches: mockGetUserSavedSearches,
-          updateSavedSearch: mockUpdateSavedSearch,
-          deleteSavedSearch: mockDeleteSavedSearch,
-        }) as any
-    )
+    ;(UserServiceClient.getUserSavedSearches as jest.Mock) = mockGetUserSavedSearches
+    ;(UserServiceClient.updateSavedSearch as jest.Mock) = mockUpdateSavedSearch
+    ;(UserServiceClient.deleteSavedSearch as jest.Mock) = mockDeleteSavedSearch
   })
 
   test('renders loading state initially', () => {

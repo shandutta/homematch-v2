@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NotificationsSection } from '@/components/settings/NotificationsSection'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import type { User } from '@supabase/supabase-js'
 import type { UserProfile } from '@/types/database'
 
 // Mock dependencies
-jest.mock('@/lib/services/users')
+jest.mock('@/lib/services/users-client')
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -55,12 +55,7 @@ describe('NotificationsSection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(
-      () =>
-        ({
-          updateUserProfile: mockUpdateUserProfile,
-        }) as any
-    )
+    ;(UserServiceClient.updateUserProfile as jest.Mock) = mockUpdateUserProfile
   })
 
   test('renders all notification sections', () => {
