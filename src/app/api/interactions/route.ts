@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { InteractionType } from '@/types/app'
 import { Property } from '@/types/database'
-
-const interactionSchema = z.object({
-  propertyId: z.string().uuid(),
-  type: z.enum(['viewed', 'liked', 'skip']),
-})
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import {
+  createInteractionRequestSchema,
+  interactionSummarySchema,
+  paginationQuerySchema
+} from '@/lib/schemas/api'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,16 +19,19 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return ApiErrorHandler.unauthorized()
+    }
+
+    // Rate limiting
+    const rateLimitResult = await apiRateLimiter.check(user.id)
+    if (!rateLimitResult.success) {
+      return ApiErrorHandler.badRequest('Too many requests. Please try again later.')
     }
 
     const body = await request.json()
-    const parsed = interactionSchema.safeParse(body)
+    const parsed = createInteractionRequestSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body', details: parsed.error.flatten() },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(parsed.error)
     }
 
     const { propertyId, type } = parsed.data
@@ -62,10 +66,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, interaction: newInteraction })
+    return ApiErrorHandler.success({ interaction: newInteraction })
   } catch (err) {
-    console.error('POST /api/interactions unexpected error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return ApiErrorHandler.serverError('Failed to process interaction', err)
   }
 }
 
@@ -82,7 +85,13 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') as InteractionType | 'summary' | null
+    const queryParams = {
+      type: searchParams.get('type'),
+      cursor: searchParams.get('cursor'),
+      limit: searchParams.get('limit')
+    }
+    
+    const type = queryParams.type as InteractionType | 'summary' | null
 
     if (!type) {
       return NextResponse.json(
@@ -114,14 +123,15 @@ export async function GET(request: NextRequest) {
       }
       const typedData = data as InteractionSummaryRow[] | null
 
-      const liked =
-        typedData?.find(d => d.interaction_type === 'liked')?.count ?? 0
-      const passed =
-        typedData?.find(d => d.interaction_type === 'skip')?.count ?? 0
-      const viewed =
-        typedData?.find(d => d.interaction_type === 'viewed')?.count ?? 0
+      const summaryData = {
+        liked: typedData?.find(d => d.interaction_type === 'liked')?.count ?? 0,
+        passed: typedData?.find(d => d.interaction_type === 'skip')?.count ?? 0,
+        viewed: typedData?.find(d => d.interaction_type === 'viewed')?.count ?? 0
+      }
 
-      return NextResponse.json({ liked, passed, viewed })
+      // Validate response against schema
+      const validatedSummary = interactionSummarySchema.parse(summaryData)
+      return NextResponse.json(validatedSummary)
     }
 
     if (!['viewed', 'liked', 'skip'].includes(type)) {
@@ -131,8 +141,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const cursor = searchParams.get('cursor')
-    const limit = parseInt(searchParams.get('limit') || '12', 10)
+    const paginationQuery = paginationQuerySchema.parse({
+      cursor: queryParams.cursor,
+      limit: queryParams.limit || '12'
+    })
+    const { cursor, limit } = paginationQuery
 
     // Join interactions -> properties for the current user
     // Note: selecting nested properties requires a foreign key relationship in Supabase

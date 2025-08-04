@@ -1,8 +1,16 @@
-import { faker } from '@faker-js/faker';
+import { faker } from '@faker-js/faker'
+import type { Database } from '@/types/database'
 import type { 
-  Property, 
-  Neighborhood,
-} from '@/lib/schemas/property';
+  Property as SchemaProperty, 
+  Neighborhood as SchemaNeighborhood,
+} from '@/lib/schemas/property'
+
+// Database types for backend/API tests
+type DatabaseProperty = Database['public']['Tables']['properties']['Row']
+
+// Schema types for frontend components (default export)
+type Property = SchemaProperty
+type Neighborhood = SchemaNeighborhood
 import type { 
   UserPropertyInteraction,
   UserProfile,
@@ -17,7 +25,7 @@ export const createMockProperty = (overrides?: Partial<Property>): Property => (
   zpid: faker.string.numeric(10),
   address: faker.location.streetAddress(),
   city: faker.location.city(),
-  state: faker.location.state(),
+  state: faker.location.state({ abbreviated: true }),
   zip_code: faker.location.zipCode(),
   price: faker.number.int({ min: 100000, max: 5000000 }),
   bedrooms: faker.number.int({ min: 1, max: 6 }),
@@ -33,8 +41,44 @@ export const createMockProperty = (overrides?: Partial<Property>): Property => (
   neighborhood_id: faker.string.uuid(),
   images: [faker.image.url()],
   description: faker.lorem.paragraph(),
-  // Default to null to align with UI schema defaults in most unit tests; override as needed
-  coordinates: null,
+  // Default to a GeoJSON Point to align with database schema; override as needed
+  coordinates: {
+    type: 'Point',
+    coordinates: [faker.location.longitude(), faker.location.latitude()]
+  } as unknown,
+  amenities: [faker.word.adjective(), faker.word.adjective()],
+  parking_spots: faker.number.int({ min: 0, max: 10 }),
+  property_hash: faker.string.alphanumeric(32),
+  ...overrides
+});
+
+// Database property factory for backend/API tests
+export const createMockDatabaseProperty = (overrides?: Partial<DatabaseProperty>): DatabaseProperty => ({
+  id: faker.string.uuid(),
+  zpid: faker.string.numeric(10),
+  address: faker.location.streetAddress(),
+  city: faker.location.city(),
+  state: faker.location.state({ abbreviated: true }),
+  zip_code: faker.location.zipCode(),
+  price: faker.number.int({ min: 100000, max: 5000000 }),
+  bedrooms: faker.number.int({ min: 1, max: 6 }),
+  bathrooms: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
+  square_feet: faker.number.int({ min: 500, max: 10000 }),
+  lot_size_sqft: faker.number.int({ min: 1000, max: 50000 }),
+  year_built: faker.number.int({ min: 1900, max: 2024 }),
+  property_type: faker.helpers.arrayElement(['house', 'condo', 'townhouse', 'apartment']),
+  listing_status: faker.helpers.arrayElement(['active', 'pending', 'sold']),
+  is_active: true,
+  created_at: faker.date.past().toISOString(),
+  updated_at: faker.date.recent().toISOString(),
+  neighborhood_id: faker.string.uuid(),
+  images: [faker.image.url()],
+  description: faker.lorem.paragraph(),
+  // Database expects unknown type for coordinates
+  coordinates: {
+    type: 'Point',
+    coordinates: [faker.location.longitude(), faker.location.latitude()]
+  } as unknown,
   amenities: [faker.word.adjective(), faker.word.adjective()],
   parking_spots: faker.number.int({ min: 0, max: 10 }),
   property_hash: faker.string.alphanumeric(32),
@@ -62,7 +106,7 @@ export const createMockNeighborhood = (overrides?: Partial<Neighborhood>): Neigh
   id: faker.string.uuid(),
   name: faker.location.county(),
   city: faker.location.city(),
-  state: faker.location.state(),
+  state: faker.location.state({ abbreviated: true }),
   metro_area: faker.location.city(),
   created_at: faker.date.past().toISOString(),
   bounds: null,

@@ -10,14 +10,10 @@ interface Coordinates {
   lng: number;
 }
 
+import type { GoogleMapInstance, GoogleMarkerInstance, GoogleInfoWindowInstance } from '@/types/google-maps'
+
 // Extend Window interface for Google Maps to satisfy TS during SSR/type-check.
 // The actual Google Maps script populates window.google at runtime in the browser.
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    google?: any;
-  }
-}
 
 interface EnhancedPropertyMapProps {
   property: Property;
@@ -47,15 +43,33 @@ export function EnhancedPropertyMap({
     }
 
     try {
-      const coords = property.coordinates as Coordinates;
+      // Handle different coordinate formats
+      let coords: Coordinates | null = null;
+      
+      if (property.coordinates && typeof property.coordinates === 'object') {
+        const coordsObj = property.coordinates as Record<string, unknown>;
+        
+        // Handle GeoJSON Point format
+        if (coordsObj.type === 'Point' && Array.isArray(coordsObj.coordinates)) {
+          coords = {
+            lat: coordsObj.coordinates[1], // latitude is second
+            lng: coordsObj.coordinates[0]  // longitude is first
+          };
+        }
+        // Handle lat/lng object format
+        else if (typeof coordsObj.lat === 'number' && typeof coordsObj.lng === 'number') {
+          coords = coordsObj as unknown as Coordinates;
+        }
+      }
+      
       if (!coords?.lat || !coords?.lng) {
         setError('No coordinates available');
         setIsLoading(false);
         return;
       }
       
-      // Create map
-      const map = new window.google.maps.Map(mapRef.current, {
+      // Create map with proper typing
+      const map = new window.google!.maps.Map(mapRef.current, {
         center: coords,
         zoom,
         styles: [
@@ -79,7 +93,7 @@ export function EnhancedPropertyMap({
 
       // Add marker
       if (showMarker) {
-        const marker = new window.google.maps.Marker({
+        const marker = new window.google!.maps.Marker({
           position: coords,
           map,
           title: property.address || 'Property',
@@ -90,13 +104,13 @@ export function EnhancedPropertyMap({
                 <circle cx="16" cy="16" r="6" fill="#ffffff"/>
               </svg>
             `),
-            scaledSize: new window.google.maps.Size(32, 32),
-            anchor: new window.google.maps.Point(16, 16),
+            scaledSize: new window.google!.maps.Size(32, 32),
+            anchor: new window.google!.maps.Point(16, 16),
           },
         });
 
         // Add info window
-        const infoWindow = new window.google.maps.InfoWindow({
+        const infoWindow = new window.google!.maps.InfoWindow({
           content: `
             <div class="p-3 max-w-xs">
               <h3 class="font-semibold text-sm mb-1">${property.address}</h3>
@@ -106,8 +120,8 @@ export function EnhancedPropertyMap({
           `,
         });
 
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker);
+        (marker as GoogleMarkerInstance).addListener('click', () => {
+          (infoWindow as GoogleInfoWindowInstance).open(map as GoogleMapInstance, marker as GoogleMarkerInstance);
         });
       }
 

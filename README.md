@@ -1,6 +1,6 @@
 # HomeMatch V2
 
-**Status**: Foundation Complete, Core Features In Development
+**Status**: Foundation Complete, Dashboard & Interactions Implemented
 
 AI-powered property browsing application built with Next.js 15, Supabase, and modern tooling. Features ML-based recommendations and household collaboration.
 
@@ -10,15 +10,18 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 
 - **Authentication**: Supabase Auth with Google OAuth
 - **Database**: PostGIS-enabled PostgreSQL with RLS
+- **Dashboard**: Tinder-style property swiper with like/pass functionality
+- **Interactions**: Real-time tracking of viewed/liked/passed properties
+- **Property Cards**: Glassmorphism design with Zillow integration
 - **Testing**: Comprehensive test infrastructure
 - **Type Safety**: Full TypeScript with Zod validation
 
 ### 🚧 In Development
 
-- **Property Discovery**: Browse and search properties
+- **Property Search**: Advanced filtering and sorting
 - **ML Scoring**: 3-phase recommendation system
 - **Household Collaboration**: Multi-user property sharing
-- **Geographic Search**: Neighborhood-based queries
+- **Natural Language Search**: AI-powered search queries
 
 ## Tech Stack
 
@@ -49,6 +52,8 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 
 - **Database**: 6 tables with RLS, 2,214 records migrated (99.1%)
 - **Authentication**: Email/password and Google OAuth
+- **Dashboard**: Interactive property swiper with real-time counters
+- **Interaction Pages**: Dedicated views for liked/passed/viewed properties
 - **Testing**: Jest (82/82), Vitest (36/36), Playwright infrastructure
 - **CI/CD**: GitHub Actions with automated testing
 - **Type Safety**: Strict TypeScript with Zod validation
@@ -56,9 +61,9 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 ### 🚧 Next Steps
 
 - Landing page and marketing site
-- Property browsing UI
-- Search implementation
-- User dashboard
+- Property listing/grid UI
+- Search implementation with filters
+- ML recommendation engine
 
 See [Current Status](./docs/CURRENT_STATUS.md) for detailed roadmap.
 
@@ -102,16 +107,29 @@ See [Current Status](./docs/CURRENT_STATUS.md) for detailed roadmap.
 
 2. **Environment Setup**
 
+   Create `.env.local` with your Supabase credentials:
+   
    ```bash
-   cp .env.example .env.local
-   # Add your Supabase credentials
+   # Required
+   NEXT_PUBLIC_SUPABASE_URL=your-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   
+   # Optional (for additional features)
+   OPENAI_API_KEY=your-openai-key
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-key
    ```
+   
+   See [Implementation Plan](./docs/IMPLEMENTATION_PLAN.md#environment-variables) for complete setup.
 
-3. **Start Local Database**
+3. **Start Local Database** (Optional)
 
+   For local development with Supabase:
+   
    ```bash
-   pnpm run test:infra:start  # Starts Docker + Supabase
+   pnpm dlx supabase@latest start -x studio
    ```
+   
+   Or use the cloud Supabase instance directly.
 
 4. **Run Development Server**
    ```bash
