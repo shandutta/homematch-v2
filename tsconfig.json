@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "types": ["jest", "@testing-library/jest-dom"],
     "incremental": true,
     "plugins": [
       {
@@ -29,7 +30,18 @@
     "__tests__/**/*.ts",
     "__tests__/**/*.tsx",
     "jest.setup.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+
+    // ensure ESLint project parsing can find these top-level TS files
+    "middleware.ts",
+    "next.config.ts",
+    "playwright.config.ts",
+    "playwright.remote.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+
+    // scripts
+    "scripts/**/*.ts"
   ],
   "exclude": [
     "node_modules",

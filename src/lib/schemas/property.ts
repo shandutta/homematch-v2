@@ -16,8 +16,8 @@ export const propertySchema = z.object({
   property_type: z.enum(['house', 'condo', 'townhouse', 'apartment']).nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
-  // TODO: replace any with a strict geometry schema if needed
-  coordinates: z.any(), // PostGIS POINT type
+  // Coordinates can be GeoJSON-like object or null when unknown
+  coordinates: z.any().nullable(),
   neighborhood_id: z.string().uuid('Invalid uuid').nullable(),
   amenities: z.array(z.string()).nullable(),
   year_built: z
@@ -27,6 +27,7 @@ export const propertySchema = z.object({
     .nullable(),
   lot_size_sqft: z.number().min(0).nullable(),
   parking_spots: z.number().min(0).max(20).nullable(),
+  // Constrain listing_status to known literals; allow null; coerce unknown strings via preprocess if needed upstream
   listing_status: z.enum(['active', 'pending', 'sold']).nullable(),
   property_hash: z.string().nullable(),
   is_active: z.boolean().default(true).nullable(),

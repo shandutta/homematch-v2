@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef } from 'react'
 import TinderCard from 'react-tinder-card'
-import { Property } from '@/types/database' // Align with PropertyCard's type source
+import { Property } from '@/lib/schemas/property'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
 
@@ -68,6 +68,7 @@ export function PropertySwiper({
         {properties.map((property, index) => (
           <TinderCard
             // Cast only at the boundary where third-party component lacks proper ref typing.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ref={childRefs[index] as unknown as React.Ref<any>}
             className="absolute w-full h-full"
             key={property.id}

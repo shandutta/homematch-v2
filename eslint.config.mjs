@@ -7,6 +7,11 @@ import nextPlugin from '@next/eslint-plugin-next'
 import jestPlugin from 'eslint-plugin-jest'
 import prettierConfig from 'eslint-config-prettier'
 import globals from 'globals'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -28,16 +33,51 @@ export default [
     ],
   },
   js.configs.recommended,
+  // JS-only block
   {
-    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
+    files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {
-      parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
+        ecmaFeatures: { jsx: true },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        React: 'readonly',
+      },
+    },
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      '@next/next': nextPlugin,
+    },
+    rules: {
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooksPlugin.configs.recommended.rules,
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
+
+      '@next/next/no-html-link-for-pages': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+    },
+    settings: { react: { version: 'detect' } },
+  },
+  // TypeScript block with project-aware parser so DOM lib is respected
+  // Limit to app source and tests to avoid project parse errors on top-level configs/scripts
+  {
+    files: ['src/**/*.{ts,tsx}', '__tests__/**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
       },
       globals: {
         ...globals.browser,
@@ -59,7 +99,6 @@ export default [
       ...nextPlugin.configs.recommended.rules,
       ...nextPlugin.configs['core-web-vitals'].rules,
 
-      // Custom rules
       '@next/next/no-html-link-for-pages': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -72,12 +111,11 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+
+      // Important in TS projects: rely on TS for undefined symbols
+      'no-undef': 'off',
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
+    settings: { react: { version: 'detect' } },
   },
   {
     files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*'],
@@ -88,7 +126,24 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off', // Often disabled in TS projects in favor of TS's own checks
     },
+  },
+  // Ensure Next config (ESM TS) is parsed with TS parser to avoid "Unexpected token {"
+  {
+    files: ['next.config.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+        ecmaVersion: 'latest',
+        sourceType: 'module'
+      }
+    },
+    rules: {
+      'no-undef': 'off'
+    }
   },
   // Legacy v1-reference override: fully relax rules and stop reporting in CI
   {

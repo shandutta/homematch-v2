@@ -4,7 +4,6 @@ import { useInfiniteInteractions } from '@/hooks/useInteractions'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { Button } from '@/components/ui/button'
-import { Property } from '@/types/database'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface InteractionsListPageProps {
@@ -21,7 +20,8 @@ export function InteractionsListPage({ type, title }: InteractionsListPageProps)
     isFetchingNextPage,
   } = useInfiniteInteractions(type)
 
-  const properties = data?.pages.flatMap(page => page.items as Property[]) ?? []
+  // Items come from API typed to the Zod Property schema used across UI
+  const properties = data?.pages.flatMap(page => page.items) ?? []
 
   const renderSkeletons = () => (
     Array.from({ length: 6 }).map((_, i) => (

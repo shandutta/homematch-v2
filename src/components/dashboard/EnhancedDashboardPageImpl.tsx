@@ -7,7 +7,7 @@ import {
 } from '@/hooks/useInteractions'
 import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
 import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
-import { Property } from '@/types/database'
+import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
 
@@ -29,8 +29,10 @@ export function EnhancedDashboardPageImpl({
   // _session,  // Prefixed with _ to indicate unused variable
 }: EnhancedDashboardPageImplProps) {
   // Component State
+  // Cast/normalize initialData.properties (runtime data) to our UI Property type.
+  // The source data may have looser string enums; we trust upstream Zod parsing on fetch/load.
   const [properties, setProperties] = useState<Property[]>(
-    initialData.properties
+    initialData.properties as unknown as Property[]
   )
   const [optimisticSummary, setOptimisticSummary] = useState<
     InteractionSummary | undefined
