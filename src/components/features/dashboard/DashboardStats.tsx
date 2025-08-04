@@ -23,12 +23,12 @@ const StatTile = ({
   icon: React.ElementType
   colorClass: string
 }) => (
-  <Link href={href} className="block card-glassmorphism-style p-6 group">
+  <Link href={href} className="card-glassmorphism-style group block p-6">
     <div className="flex items-center justify-between">
       <div className="text-sm font-medium text-purple-200/80">{label}</div>
       <Icon className={`h-6 w-6 ${colorClass} opacity-70`} />
     </div>
-    <div className={`text-4xl font-bold mt-2 ${colorClass}`}>
+    <div className={`mt-2 text-4xl font-bold ${colorClass}`}>
       {value !== undefined ? (
         value
       ) : (
@@ -41,7 +41,7 @@ const StatTile = ({
 export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
   if (isLoading && !summary) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         <Skeleton className="h-28 w-full rounded-lg bg-white/10" />
         <Skeleton className="h-28 w-full rounded-lg bg-white/10" />
         <Skeleton className="h-28 w-full rounded-lg bg-white/10" />
@@ -51,7 +51,7 @@ export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
 
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+      className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3"
       data-testid="dashboard-stats"
     >
       <StatTile

@@ -49,21 +49,21 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
             <ActivityIcon className="h-6 w-6" />
             Activity Overview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="p-4 rounded-lg border border-purple-500/20 bg-white/5"
+                className="rounded-lg border border-purple-500/20 bg-white/5 p-4"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm text-purple-200">{stat.label}</p>
-                  <div className={`p-2 rounded-lg ${stat.bgClass}`}>
+                  <div className={`rounded-lg p-2 ${stat.bgClass}`}>
                     <stat.icon className={`h-5 w-5 ${stat.colorClass}`} />
                   </div>
                 </div>
@@ -74,7 +74,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             ))}
           </div>
 
-          <div className="mt-6 p-4 rounded-lg border border-purple-500/20 bg-purple-500/10">
+          <div className="mt-6 rounded-lg border border-purple-500/20 bg-purple-500/10 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-purple-200">Total Interactions</p>
@@ -104,17 +104,23 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             <p className="text-purple-200">
               {summary.likes > summary.dislikes ? (
                 <>
-                  <span className="text-green-400 font-semibold">Great taste!</span> You&apos;ve
-                  liked more properties than you&apos;ve passed on.
+                  <span className="font-semibold text-green-400">
+                    Great taste!
+                  </span>{' '}
+                  You&apos;ve liked more properties than you&apos;ve passed on.
                 </>
               ) : summary.likes === summary.dislikes ? (
                 <>
-                  <span className="text-blue-400 font-semibold">Balanced approach!</span>{' '}
+                  <span className="font-semibold text-blue-400">
+                    Balanced approach!
+                  </span>{' '}
                   You&apos;ve liked and passed on an equal number of properties.
                 </>
               ) : (
                 <>
-                  <span className="text-yellow-400 font-semibold">Selective buyer!</span>{' '}
+                  <span className="font-semibold text-yellow-400">
+                    Selective buyer!
+                  </span>{' '}
                   You&apos;re being careful about which properties you like.
                 </>
               )}
@@ -122,8 +128,9 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             {summary.saved_searches > 0 && (
               <p className="text-purple-200">
                 You have{' '}
-                <span className="text-purple-400 font-semibold">
-                  {summary.saved_searches} saved {summary.saved_searches === 1 ? 'search' : 'searches'}
+                <span className="font-semibold text-purple-400">
+                  {summary.saved_searches} saved{' '}
+                  {summary.saved_searches === 1 ? 'search' : 'searches'}
                 </span>{' '}
                 to help you find your perfect home.
               </p>

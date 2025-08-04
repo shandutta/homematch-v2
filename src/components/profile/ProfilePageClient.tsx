@@ -36,13 +36,13 @@ export function ProfilePageClient({
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="bg-purple-900/10 backdrop-blur-md border-b border-purple-500/20">
+      <div className="border-b border-purple-500/20 bg-purple-900/10 backdrop-blur-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link 
+              <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-purple-300 transition-colors hover:text-white"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back to Dashboard</span>
@@ -50,7 +50,10 @@ export function ProfilePageClient({
               <h1 className="text-3xl font-bold">My Profile</h1>
             </div>
             <Link href="/settings">
-              <Button variant="outline" className="border-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-500/20">
+              <Button
+                variant="outline"
+                className="border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+              >
                 Settings
               </Button>
             </Link>
@@ -60,8 +63,12 @@ export function ProfilePageClient({
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-purple-900/20 border border-purple-500/20">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="border border-purple-500/20 bg-purple-900/20">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
               Profile
@@ -79,7 +86,9 @@ export function ProfilePageClient({
           <TabsContent value="profile" className="space-y-6">
             <Card className="card-glassmorphism-style">
               <CardHeader>
-                <CardTitle className="text-2xl text-white">Profile Information</CardTitle>
+                <CardTitle className="text-2xl text-white">
+                  Profile Information
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ProfileForm user={user} profile={profile} />

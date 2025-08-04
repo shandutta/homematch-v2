@@ -157,9 +157,7 @@ describe('Migration Data Integrity', () => {
 
       expect(neighError).toBeNull()
       expect(referencedNeighborhoods).toBeDefined()
-      expect(referencedNeighborhoods!.length).toBe(
-        uniqueNeighborhoodIds.length
-      )
+      expect(referencedNeighborhoods!.length).toBe(uniqueNeighborhoodIds.length)
     }, 15000)
 
     test('should validate property hash uniqueness and deduplication', async () => {
@@ -180,13 +178,13 @@ describe('Migration Data Integrity', () => {
       const uniqueHashes = new Set(hashes)
 
       // All hashes should be unique (no duplicates)
-        expect(uniqueHashes.size).toBe(hashes.length)
+      expect(uniqueHashes.size).toBe(hashes.length)
 
-        // Verify hashes are non-empty strings
-        hashes.forEach((hash: string) => {
-          expect(typeof hash).toBe('string')
-          expect(hash.length).toBeGreaterThan(0)
-        })
+      // Verify hashes are non-empty strings
+      hashes.forEach((hash: string) => {
+        expect(typeof hash).toBe('string')
+        expect(hash.length).toBeGreaterThan(0)
+      })
     }, 10000)
 
     test('should verify PostgreSQL polygon format compatibility', async () => {
@@ -268,9 +266,7 @@ describe('Migration Data Integrity', () => {
       })
 
       // Verify geographic diversity
-      const cities = [
-        ...new Set(propertiesWithCoords!.map((p: any) => p.city)),
-      ]
+      const cities = [...new Set(propertiesWithCoords!.map((p: any) => p.city))]
       const states = [
         ...new Set(propertiesWithCoords!.map((p: any) => p.state)),
       ]

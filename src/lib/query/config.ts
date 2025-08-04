@@ -20,7 +20,7 @@ export function createQueryClient() {
         staleTime: QUERY_STALE_TIMES.PROPERTY_LIST,
         gcTime: QUERY_CACHE_TIMES.DEFAULT,
         retry: 3,
-        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         refetchOnWindowFocus: false,
       },
       mutations: {

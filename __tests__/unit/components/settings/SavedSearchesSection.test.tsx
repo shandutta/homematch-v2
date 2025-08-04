@@ -61,16 +61,19 @@ describe('SavedSearchesSection', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockConfirm.mockReturnValue(true)
-    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(() => ({
-      getUserSavedSearches: mockGetUserSavedSearches,
-      updateSavedSearch: mockUpdateSavedSearch,
-      deleteSavedSearch: mockDeleteSavedSearch,
-    } as any))
+    ;(UserService as jest.MockedClass<typeof UserService>).mockImplementation(
+      () =>
+        ({
+          getUserSavedSearches: mockGetUserSavedSearches,
+          updateSavedSearch: mockUpdateSavedSearch,
+          deleteSavedSearch: mockDeleteSavedSearch,
+        }) as any
+    )
   })
 
   test('renders loading state initially', () => {
-    mockGetUserSavedSearches.mockImplementation(() => 
-      new Promise(resolve => setTimeout(resolve, 100))
+    mockGetUserSavedSearches.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100))
     )
 
     render(<SavedSearchesSection userId="user-123" />)
@@ -84,8 +87,12 @@ describe('SavedSearchesSection', () => {
     render(<SavedSearchesSection userId="user-123" />)
 
     await waitFor(() => {
-      expect(screen.getByText("You haven't saved any searches yet.")).toBeInTheDocument()
-      expect(screen.getByText(/Save searches from the main dashboard/)).toBeInTheDocument()
+      expect(
+        screen.getByText("You haven't saved any searches yet.")
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/Save searches from the main dashboard/)
+      ).toBeInTheDocument()
     })
   })
 
@@ -127,12 +134,16 @@ describe('SavedSearchesSection', () => {
 
     await waitFor(() => {
       // First search has notifications enabled (Bell icon)
-      const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
+      const firstSearchCard = screen
+        .getByText('Downtown Condos')
+        .closest('.card-glassmorphism-style')
       const bellButton = firstSearchCard?.querySelector('.text-green-400')
       expect(bellButton).toBeInTheDocument()
 
       // Second search has notifications disabled (BellOff icon)
-      const secondSearchCard = screen.getByText('Family Homes').closest('.card-glassmorphism-style')
+      const secondSearchCard = screen
+        .getByText('Family Homes')
+        .closest('.card-glassmorphism-style')
       const bellOffButton = secondSearchCard?.querySelector('.text-gray-400')
       expect(bellOffButton).toBeInTheDocument()
     })
@@ -150,10 +161,14 @@ describe('SavedSearchesSection', () => {
     })
 
     // Click notification toggle for first search
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const notificationButton = firstSearchCard?.querySelector('button[class*="text-green-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const notificationButton = firstSearchCard?.querySelector(
+      'button[class*="text-green-400"]'
+    )
     expect(notificationButton).toBeInTheDocument()
-    
+
     await user.click(notificationButton!)
 
     await waitFor(() => {
@@ -177,10 +192,14 @@ describe('SavedSearchesSection', () => {
       expect(screen.getByText('Downtown Condos')).toBeInTheDocument()
     })
 
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const notificationButton = firstSearchCard?.querySelector('button[class*="text-green-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const notificationButton = firstSearchCard?.querySelector(
+      'button[class*="text-green-400"]'
+    )
     expect(notificationButton).toBeInTheDocument()
-    
+
     await user.click(notificationButton!)
 
     await waitFor(() => {
@@ -200,14 +219,20 @@ describe('SavedSearchesSection', () => {
     })
 
     // Click delete button for first search
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const deleteButton = firstSearchCard?.querySelector('button[class*="text-red-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const deleteButton = firstSearchCard?.querySelector(
+      'button[class*="text-red-400"]'
+    )
     expect(deleteButton).toBeInTheDocument()
-    
+
     await user.click(deleteButton!)
 
     await waitFor(() => {
-      expect(mockConfirm).toHaveBeenCalledWith('Are you sure you want to delete this saved search?')
+      expect(mockConfirm).toHaveBeenCalledWith(
+        'Are you sure you want to delete this saved search?'
+      )
       expect(mockDeleteSavedSearch).toHaveBeenCalledWith('search-1')
       expect(toast.success).toHaveBeenCalledWith('Saved search deleted')
     })
@@ -224,10 +249,14 @@ describe('SavedSearchesSection', () => {
       expect(screen.getByText('Downtown Condos')).toBeInTheDocument()
     })
 
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const deleteButton = firstSearchCard?.querySelector('button[class*="text-red-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const deleteButton = firstSearchCard?.querySelector(
+      'button[class*="text-red-400"]'
+    )
     expect(deleteButton).toBeInTheDocument()
-    
+
     await user.click(deleteButton!)
 
     expect(mockDeleteSavedSearch).not.toHaveBeenCalled()
@@ -244,10 +273,14 @@ describe('SavedSearchesSection', () => {
       expect(screen.getByText('Downtown Condos')).toBeInTheDocument()
     })
 
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const deleteButton = firstSearchCard?.querySelector('button[class*="text-red-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const deleteButton = firstSearchCard?.querySelector(
+      'button[class*="text-red-400"]'
+    )
     expect(deleteButton).toBeInTheDocument()
-    
+
     await user.click(deleteButton!)
 
     await waitFor(() => {
@@ -290,20 +323,22 @@ describe('SavedSearchesSection', () => {
   })
 
   test('handles filters without price range', async () => {
-    const searchWithoutPrice: SavedSearch[] = [{
-      id: 'search-3',
-      user_id: 'user-123',
-      household_id: 'household-123',
-      name: 'No Price Range',
-      filters: {
-        location: 'Downtown',
-        bedrooms: 2,
-        propertyType: 'condo',
-        notifications: true,
+    const searchWithoutPrice: SavedSearch[] = [
+      {
+        id: 'search-3',
+        user_id: 'user-123',
+        household_id: 'household-123',
+        name: 'No Price Range',
+        filters: {
+          location: 'Downtown',
+          bedrooms: 2,
+          propertyType: 'condo',
+          notifications: true,
+        },
+        is_active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
-      is_active: true,
-      created_at: '2024-01-01T00:00:00Z',
-    }]
+    ]
 
     mockGetUserSavedSearches.mockResolvedValueOnce(searchWithoutPrice)
 
@@ -331,10 +366,14 @@ describe('SavedSearchesSection', () => {
       expect(screen.getByText('Downtown Condos')).toBeInTheDocument()
     })
 
-    const firstSearchCard = screen.getByText('Downtown Condos').closest('.card-glassmorphism-style')
-    const deleteButton = firstSearchCard?.querySelector('button[class*="text-red-400"]')
+    const firstSearchCard = screen
+      .getByText('Downtown Condos')
+      .closest('.card-glassmorphism-style')
+    const deleteButton = firstSearchCard?.querySelector(
+      'button[class*="text-red-400"]'
+    )
     expect(deleteButton).toBeInTheDocument()
-    
+
     await user.click(deleteButton!)
 
     await waitFor(() => {

@@ -7,7 +7,10 @@ import { AuthFixture, TestUser } from '../types/fixtures'
 
 // Export just the fixtures object, not a test object
 export const authFixtures = {
-  auth: async ({ page, config, utils }: { page: any; config: any; utils: any }, use: any) => {
+  auth: async (
+    { page, config, utils }: { page: any; config: any; utils: any },
+    use: any
+  ) => {
     const auth: AuthFixture = {
       async login(user: TestUser = config.users.user1) {
         // Ensure clean state before authentication

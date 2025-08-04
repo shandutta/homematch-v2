@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function DashboardSkeleton() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header Skeleton */}
       <div className="mb-8">
-        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="mb-2 h-8 w-48" />
         <Skeleton className="h-4 w-64" />
       </div>
 
@@ -17,8 +17,8 @@ export function DashboardSkeleton() {
         {[1, 2, 3].map((i) => (
           <Card key={i} className="bg-card">
             <CardContent className="p-6">
-              <Skeleton className="h-4 w-32 mb-2" />
-              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="mb-2 h-4 w-32" />
+              <Skeleton className="mb-2 h-8 w-16" />
               <Skeleton className="h-3 w-40" />
             </CardContent>
           </Card>
@@ -26,9 +26,9 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Property Cards Skeleton */}
-      <div className="rounded-lg bg-card p-6 shadow-sm">
-        <Skeleton className="h-6 w-32 mb-4" />
-        <div className="relative h-[600px] w-full max-w-md mx-auto">
+      <div className="bg-card rounded-lg p-6 shadow-sm">
+        <Skeleton className="mb-4 h-6 w-32" />
+        <div className="relative mx-auto h-[600px] w-full max-w-md">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -42,8 +42,8 @@ export function DashboardSkeleton() {
                 <CardContent className="p-0">
                   <Skeleton className="h-1/2 w-full" />
                   <div className="h-1/2 p-4">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <Skeleton className="mb-2 h-6 w-3/4" />
+                    <Skeleton className="mb-4 h-4 w-1/2" />
                     <div className="grid grid-cols-3 gap-3">
                       {[1, 2, 3].map((j) => (
                         <Skeleton key={j} className="h-4 w-full" />
@@ -57,7 +57,7 @@ export function DashboardSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function PropertyCardSkeleton() {
@@ -65,8 +65,8 @@ export function PropertyCardSkeleton() {
     <div className="relative h-full w-full overflow-hidden rounded-xl bg-white shadow-xl">
       <Skeleton className="h-1/2 w-full" />
       <div className="h-1/2 p-4">
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        <Skeleton className="h-4 w-1/2 mb-4" />
+        <Skeleton className="mb-2 h-6 w-3/4" />
+        <Skeleton className="mb-4 h-4 w-1/2" />
         <div className="grid grid-cols-3 gap-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-4 w-full" />
@@ -74,5 +74,5 @@ export function PropertyCardSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }

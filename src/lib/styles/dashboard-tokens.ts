@@ -91,13 +91,13 @@ export const dashboardTokens = {
     },
   },
   spacing: {
-    xs: '0.25rem',    // 4px
-    sm: '0.5rem',     // 8px
-    md: '1rem',       // 16px
-    lg: '1.5rem',     // 24px
-    xl: '2rem',       // 32px
-    '2xl': '3rem',    // 48px
-    '3xl': '4rem',    // 64px
+    xs: '0.25rem', // 4px
+    sm: '0.5rem', // 8px
+    md: '1rem', // 16px
+    lg: '1.5rem', // 24px
+    xl: '2rem', // 32px
+    '2xl': '3rem', // 48px
+    '3xl': '4rem', // 64px
   },
   shadows: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
@@ -118,11 +118,11 @@ export const dashboardTokens = {
     },
   },
   borderRadius: {
-    sm: '0.125rem',   // 2px
-    md: '0.375rem',   // 6px
-    lg: '0.5rem',     // 8px
-    xl: '0.75rem',    // 12px
-    '2xl': '1rem',    // 16px
+    sm: '0.125rem', // 2px
+    md: '0.375rem', // 6px
+    lg: '0.5rem', // 8px
+    xl: '0.75rem', // 12px
+    '2xl': '1rem', // 16px
     full: '9999px',
   },
   typography: {
@@ -131,12 +131,12 @@ export const dashboardTokens = {
       mono: ['JetBrains Mono', 'monospace'],
     },
     fontSize: {
-      xs: '0.75rem',    // 12px
-      sm: '0.875rem',   // 14px
-      base: '1rem',     // 16px
-      lg: '1.125rem',   // 18px
-      xl: '1.25rem',    // 20px
-      '2xl': '1.5rem',  // 24px
+      xs: '0.75rem', // 12px
+      sm: '0.875rem', // 14px
+      base: '1rem', // 16px
+      lg: '1.125rem', // 18px
+      xl: '1.25rem', // 20px
+      '2xl': '1.5rem', // 24px
       '3xl': '1.875rem', // 30px
     },
     fontWeight: {
@@ -164,15 +164,16 @@ export const dashboardTokens = {
 }
 
 // Utility functions for consistent styling
-export const getElevation = (level: keyof typeof dashboardTokens.shadows) => 
+export const getElevation = (level: keyof typeof dashboardTokens.shadows) =>
   dashboardTokens.shadows[level]
 
-export const getSpacing = (size: keyof typeof dashboardTokens.spacing) => 
+export const getSpacing = (size: keyof typeof dashboardTokens.spacing) =>
   dashboardTokens.spacing[size]
 
 export const getColor = (color: string, shade?: string) => {
   const [colorName] = color.split('.')
-  const colorObj = dashboardTokens.colors[colorName as keyof typeof dashboardTokens.colors]
+  const colorObj =
+    dashboardTokens.colors[colorName as keyof typeof dashboardTokens.colors]
   if (shade && typeof colorObj === 'object') {
     return (colorObj as Record<string, string>)[shade]
   }

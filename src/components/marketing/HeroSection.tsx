@@ -12,12 +12,16 @@ export function HeroSection() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
   return (
-    <section className="relative min-h-screen overflow-hidden" data-testid="hero">
+    <section
+      className="relative min-h-screen overflow-hidden"
+      data-testid="hero"
+    >
       {/* Deeper Navy Gradient Background */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, #020b1f 0%, #03123b 48%, #041a52 100%)',
+          background:
+            'linear-gradient(135deg, #020b1f 0%, #03123b 48%, #041a52 100%)',
         }}
       />
 
@@ -64,8 +68,9 @@ export function HeroSection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
               >
-                House hunting just became your favorite couples activity. Find your perfect
-                home together with AI that learns what you both love.
+                House hunting just became your favorite couples activity. Find
+                your perfect home together with AI that learns what you both
+                love.
               </motion.p>
 
               <motion.div

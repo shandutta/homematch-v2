@@ -9,52 +9,48 @@ import { HomematchFixtures } from '../types/fixtures'
 const testWithFixtures = test.extend<HomematchFixtures>({})
 
 testWithFixtures.describe('Fixtures Validation', () => {
-  testWithFixtures('should validate all fixtures work together', async ({
-    utils,
-    config,
-    logger,
-    retry,
-  }) => {
-    logger.step('Testing all fixtures integration')
+  testWithFixtures(
+    'should validate all fixtures work together',
+    async ({ utils, config, logger, retry }) => {
+      logger.step('Testing all fixtures integration')
 
-    // Test basic page operations
-    await retry.network(async () => {
-      await utils.navigateWithRetry('/')
-      await utils.waitForReactToSettle()
-    })
+      // Test basic page operations
+      await retry.network(async () => {
+        await utils.navigateWithRetry('/')
+        await utils.waitForReactToSettle()
+      })
 
-    // Test authentication state
-    await utils.clearAuthState()
-    const isAuth = await utils.isAuthenticated()
-    expect(isAuth).toBe(false)
+      // Test authentication state
+      await utils.clearAuthState()
+      const isAuth = await utils.isAuthenticated()
+      expect(isAuth).toBe(false)
 
-    // Test logger functionality
-    logger.info('TEST', 'All fixtures working correctly')
+      // Test logger functionality
+      logger.info('TEST', 'All fixtures working correctly')
 
-    // Test config access
-    expect(config.timeouts.PAGE_LOAD).toBeGreaterThan(0)
-    expect(config.users.user1.email).toBeDefined()
+      // Test config access
+      expect(config.timeouts.PAGE_LOAD).toBeGreaterThan(0)
+      expect(config.users.user1.email).toBeDefined()
 
-    logger.step('All fixtures validation completed')
-  })
+      logger.step('All fixtures validation completed')
+    }
+  )
 
-  testWithFixtures('should handle navigation with retry mechanism', async ({
-    page,
-    utils,
-    retry,
-    logger,
-  }) => {
-    logger.step('Testing retry fixture with navigation')
+  testWithFixtures(
+    'should handle navigation with retry mechanism',
+    async ({ page, utils, retry, logger }) => {
+      logger.step('Testing retry fixture with navigation')
 
-    // Test navigation with retry
-    await retry.network(async () => {
-      await utils.navigateWithRetry('/')
-      await utils.waitForReactToSettle()
-    })
+      // Test navigation with retry
+      await retry.network(async () => {
+        await utils.navigateWithRetry('/')
+        await utils.waitForReactToSettle()
+      })
 
-    // Verify page loaded
-    await expect(page.locator('h1')).toBeVisible()
+      // Verify page loaded
+      await expect(page.locator('h1')).toBeVisible()
 
-    logger.step('Navigation retry test completed')
-  })
+      logger.step('Navigation retry test completed')
+    }
+  )
 })

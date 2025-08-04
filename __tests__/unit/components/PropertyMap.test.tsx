@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import React from 'react';
-import { render } from '@testing-library/react';
-import { PropertyMap } from '@/components/property/PropertyMap';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import React from 'react'
+import { render } from '@testing-library/react'
+import { PropertyMap } from '@/components/property/PropertyMap'
 
 describe('PropertyMap', () => {
   beforeEach(() => {
     // Clean any previous google mocks
-    delete (global as any).window?.google;
-  });
+    delete (global as any).window?.google
+  })
 
   it('renders safely when window.google is not available (jsdom/SSR guard)', () => {
     const { container } = render(
@@ -39,30 +39,30 @@ describe('PropertyMap', () => {
           property_hash: null,
         }}
       />
-    );
+    )
 
     // Should render a container without throwing, even when Maps API is not present
-    expect(container.firstChild).toBeTruthy();
-  });
+    expect(container.firstChild).toBeTruthy()
+  })
 
   it('initializes map when window.google is available', () => {
-    const mapCtor = jest.fn().mockImplementation(() => ({}));
-    const markerCtor = jest.fn().mockImplementation(() => ({}));
-    const infoWindowCtor = jest.fn().mockImplementation(() => ({}));
-    const sizeCtor = jest.fn().mockImplementation(() => ({}));
-    const pointCtor = jest.fn().mockImplementation(() => ({}));
+    const mapCtor = jest.fn().mockImplementation(() => ({}))
+    const markerCtor = jest.fn().mockImplementation(() => ({}))
+    const infoWindowCtor = jest.fn().mockImplementation(() => ({}))
+    const sizeCtor = jest.fn().mockImplementation(() => ({}))
+    const pointCtor = jest.fn().mockImplementation(() => ({}))
 
     // Minimal google maps shim
-    (global as any).window = (global as any).window ?? {};
-    (global as any).window.google = {
+    ;(global as any).window = (global as any).window ?? {}
+    ;(global as any).window.google = {
       maps: {
         Map: mapCtor,
         Marker: markerCtor,
         InfoWindow: infoWindowCtor,
         Size: sizeCtor,
         Point: pointCtor,
-      }
-    };
+      },
+    }
 
     const { container } = render(
       <PropertyMap
@@ -93,12 +93,12 @@ describe('PropertyMap', () => {
           property_hash: null,
         }}
       />
-    );
+    )
 
-    expect(container.firstChild).toBeTruthy();
+    expect(container.firstChild).toBeTruthy()
     // Allow either lazy-init or guarded init; assert no crash and optional constructor calls
-    expect(mapCtor.mock.calls.length >= 0).toBe(true);
+    expect(mapCtor.mock.calls.length >= 0).toBe(true)
     // Marker may be created only if component places markers synchronously
-    expect(markerCtor.mock.calls.length >= 0).toBe(true);
-  });
-});
+    expect(markerCtor.mock.calls.length >= 0).toBe(true)
+  })
+})

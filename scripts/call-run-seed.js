@@ -10,24 +10,26 @@
  * Example:
  *   DOTENV_CONFIG_PATH=.env.local.remote-test node -r dotenv/config scripts/call-run-seed.js
  */
-(async () => {
+;(async () => {
   try {
     // Ensure fetch in Node
-    const fetchImpl = global.fetch ?? (await import('node-fetch')).default;
+    const fetchImpl = global.fetch ?? (await import('node-fetch')).default
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const service = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!url || !service) {
-      console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-      process.exit(1);
+      console.error(
+        'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+      )
+      process.exit(1)
     }
 
-    const baseUrl = url.replace(/\/+$/, '');
-    const rpcEndpoint = baseUrl + '/rest/v1/rpc/run_seed';
-    const restBase = baseUrl + '/rest/v1';
+    const baseUrl = url.replace(/\/+$/, '')
+    const rpcEndpoint = baseUrl + '/rest/v1/rpc/run_seed'
+    const restBase = baseUrl + '/rest/v1'
 
-    console.log('POST', rpcEndpoint);
+    console.log('POST', rpcEndpoint)
     const res = await fetchImpl(rpcEndpoint, {
       method: 'POST',
       headers: {
@@ -38,14 +40,14 @@
         Prefer: 'tx=commit,return=minimal',
       },
       body: '{}',
-    });
+    })
 
-    const bodyText = await res.text();
+    const bodyText = await res.text()
     if (!res.ok) {
-      console.error('RPC failed:', res.status, res.statusText, bodyText);
-      process.exit(2);
+      console.error('RPC failed:', res.status, res.statusText, bodyText)
+      process.exit(2)
     }
-    console.log('RPC run_seed OK');
+    console.log('RPC run_seed OK')
 
     // Verify via REST
     const verify1 = await fetchImpl(
@@ -58,9 +60,9 @@
           Accept: 'application/json',
         },
       }
-    );
-    const upText = await verify1.text();
-    console.log('user_profiles:', upText);
+    )
+    const upText = await verify1.text()
+    console.log('user_profiles:', upText)
 
     const verify2 = await fetchImpl(
       restBase +
@@ -72,13 +74,13 @@
           Accept: 'application/json',
         },
       }
-    );
-    const propsText = await verify2.text();
-    console.log('properties:', propsText);
+    )
+    const propsText = await verify2.text()
+    console.log('properties:', propsText)
 
-    process.exit(0);
+    process.exit(0)
   } catch (e) {
-    console.error('Unexpected:', e?.message || e);
-    process.exit(5);
+    console.error('Unexpected:', e?.message || e)
+    process.exit(5)
   }
-})();
+})()

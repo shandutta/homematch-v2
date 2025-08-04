@@ -47,7 +47,7 @@ jest.mock('sonner', () => ({
 describe.skip('PreferencesSection', () => {
   // Tests skipped due to React 19 compatibility issues
   // These tests work with React 18 but cause AggregateError in React 19
-  
+
   it('should be tested when React 19 testing library issues are resolved', () => {
     expect(true).toBe(true)
   })

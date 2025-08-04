@@ -1,4 +1,10 @@
-import { Interaction, InteractionSummary, InteractionType, PageRequest, PageResponse } from '@/types/app'
+import {
+  Interaction,
+  InteractionSummary,
+  InteractionType,
+  PageRequest,
+  PageResponse,
+} from '@/types/app'
 import { z } from 'zod'
 
 // If project has a central fetch wrapper, swap to it. Keep native fetch for now.
@@ -9,7 +15,10 @@ const SummarySchema = z.object({
 })
 
 export const InteractionService = {
-  async recordInteraction(propertyId: string, type: InteractionType): Promise<Interaction> {
+  async recordInteraction(
+    propertyId: string,
+    type: InteractionType
+  ): Promise<Interaction> {
     const res = await fetch('/api/interactions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -27,7 +36,9 @@ export const InteractionService = {
     const res = await fetch('/api/interactions?type=summary', { method: 'GET' })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new Error(`Failed to fetch interaction summary (${res.status}): ${text}`)
+      throw new Error(
+        `Failed to fetch interaction summary (${res.status}): ${text}`
+      )
     }
     const json = await res.json()
     const parsed = SummarySchema.safeParse(json)
@@ -43,7 +54,9 @@ export const InteractionService = {
   ): Promise<PageResponse<T>> {
     const params = new URLSearchParams({ type, limit: String(limit) })
     if (cursor) params.set('cursor', cursor)
-    const res = await fetch(`/api/interactions?${params.toString()}`, { method: 'GET' })
+    const res = await fetch(`/api/interactions?${params.toString()}`, {
+      method: 'GET',
+    })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
       throw new Error(`Failed to fetch interactions (${res.status}): ${text}`)

@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SwipeContainer } from '@/components/property/SwipeContainer'
-import { createMockProperty, createMockNeighborhood } from '@/__tests__/factories/test-data-factory'
+import {
+  createMockProperty,
+  createMockNeighborhood,
+} from '@/__tests__/factories/test-data-factory'
 
 // Mock the PropertyCard component
 jest.mock('@/components/property/PropertyCard', () => ({
@@ -55,7 +58,9 @@ describe('SwipeContainer', () => {
     )
 
     expect(screen.getByText('No properties to show')).toBeInTheDocument()
-    expect(screen.getByText('Check back later for new listings!')).toBeInTheDocument()
+    expect(
+      screen.getByText('Check back later for new listings!')
+    ).toBeInTheDocument()
   })
 
   test('renders action buttons', () => {
@@ -74,7 +79,7 @@ describe('SwipeContainer', () => {
 
   test('handles left swipe (pass)', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <SwipeContainer
         properties={mockProperties}
@@ -93,7 +98,7 @@ describe('SwipeContainer', () => {
 
   test('handles right swipe (like)', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <SwipeContainer
         properties={mockProperties}
@@ -112,7 +117,7 @@ describe('SwipeContainer', () => {
 
   test('advances to next property after swipe', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <SwipeContainer
         properties={mockProperties}
@@ -136,7 +141,7 @@ describe('SwipeContainer', () => {
   test('calls onEmpty when reaching last property', async () => {
     const user = userEvent.setup()
     const twoProperties = mockProperties.slice(0, 2)
-    
+
     render(
       <SwipeContainer
         properties={twoProperties}
@@ -172,7 +177,7 @@ describe('SwipeContainer', () => {
 
   test('hides swipe instructions after first swipe', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <SwipeContainer
         properties={mockProperties}
@@ -190,7 +195,9 @@ describe('SwipeContainer', () => {
     await user.click(likeButton)
 
     // Instructions should be gone
-    expect(screen.queryByText('Swipe or tap to like/dislike')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Swipe or tap to like/dislike')
+    ).not.toBeInTheDocument()
   })
 
   test('renders multiple property cards in stack', () => {
@@ -224,7 +231,7 @@ describe('SwipeContainer', () => {
 
   test('button hover states work correctly', async () => {
     const user = userEvent.setup()
-    
+
     render(
       <SwipeContainer
         properties={mockProperties}
@@ -240,7 +247,7 @@ describe('SwipeContainer', () => {
     // Test hover classes are applied
     await user.hover(passButton)
     expect(passButton).toHaveClass('group')
-    
+
     await user.hover(likeButton)
     expect(likeButton).toHaveClass('group')
   })

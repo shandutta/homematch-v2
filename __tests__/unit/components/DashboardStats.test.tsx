@@ -5,7 +5,13 @@ import { InteractionSummary } from '@/types/app'
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-  const Link = ({ children, href }: { children: React.ReactNode; href: string }) => {
+  const Link = ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode
+    href: string
+  }) => {
     return <a href={href}>{children}</a>
   }
   Link.displayName = 'NextLinkMock'
@@ -14,7 +20,9 @@ jest.mock('next/link', () => {
 
 describe('DashboardStats Component', () => {
   // Provide a simple wrapper with an explicit displayName to satisfy react/display-name in test renders if needed
-  const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>
+  const TestWrapper: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => <>{children}</>
   TestWrapper.displayName = 'DashboardStatsTestWrapper'
   test('should render skeletons when loading and no data is present', () => {
     const { container } = render(

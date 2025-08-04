@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
 // import { z } from 'zod'
-// Type-safe expectation helper  
+// Type-safe expectation helper
 // const expectToBeCalledWithValidData = (
 //   mockFn: jest.Mock,
 //   schema: any,
@@ -13,17 +13,17 @@ import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
 // ) => {
 //   expect(mockFn).toHaveBeenCalled()
 //   const callArgs = mockFn.mock.calls[0][0]
-//   
+//
 //   // Validate the call arguments against the schema
 //   const result = schema.safeParse(callArgs)
 //   if (!result.success) {
 //     throw new Error(`Mock called with invalid data: ${result.error.message}`)
 //   }
-//   
+//
 //   if (expectedData) {
 //     expect(callArgs).toMatchObject(expectedData)
 //   }
-//   
+//
 //   return callArgs
 // }
 
@@ -32,9 +32,9 @@ const createMockLoginData = (overrides?: Partial<LoginData>): LoginData => {
   const baseData = {
     email: 'test@example.com',
     password: 'password123',
-    ...overrides
+    ...overrides,
   }
-  
+
   // Validate against Zod schema to ensure type safety
   return LoginSchema.parse(baseData)
 }
@@ -43,7 +43,7 @@ const createMockLoginData = (overrides?: Partial<LoginData>): LoginData => {
 const validCredentials = createMockLoginData()
 const invalidCredentials = createMockLoginData({
   email: 'invalid@example.com',
-  password: 'wrongpassword'
+  password: 'wrongpassword',
 })
 
 // Since we have global mocks in setupSupabaseMock.ts, we don't need to re-mock them here
@@ -55,7 +55,7 @@ describe('LoginForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     // Mock the router
     const mockRouter = {
       push: mockPush,
@@ -66,14 +66,17 @@ describe('LoginForm', () => {
       prefetch: jest.fn(),
     }
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-    
+
     // Mock the Supabase client
     const mockSupabaseClient = {
       auth: {
         signInWithPassword: mockSignInWithPassword,
         signInWithOAuth: mockSignInWithOAuth,
         getUser: jest.fn(async () => ({ data: { user: null }, error: null })),
-        getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
+        getSession: jest.fn(async () => ({
+          data: { session: null },
+          error: null,
+        })),
       },
       from: jest.fn(() => ({
         select: jest.fn().mockReturnThis(),
@@ -81,8 +84,10 @@ describe('LoginForm', () => {
         update: jest.fn().mockReturnThis(),
         delete: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        then: jest.fn(async (onFulfilled: any) => onFulfilled({ data: [], error: null })),
-      }))
+        then: jest.fn(async (onFulfilled: any) =>
+          onFulfilled({ data: [], error: null })
+        ),
+      })),
     }
     ;(createClient as jest.Mock).mockReturnValue(mockSupabaseClient)
   })
@@ -102,7 +107,7 @@ describe('LoginForm', () => {
   test('handles successful email/password login', async () => {
     mockSignInWithPassword.mockResolvedValueOnce({ error: null })
     const user = userEvent.setup()
-    
+
     render(<LoginForm />)
 
     const emailInput = screen.getByLabelText('Email')
@@ -112,7 +117,7 @@ describe('LoginForm', () => {
     // Fill in form with validated fixture data
     await user.type(emailInput, validCredentials.email)
     await user.type(passwordInput, validCredentials.password)
-    
+
     // Submit form
     await user.click(submitButton)
 
@@ -125,18 +130,18 @@ describe('LoginForm', () => {
 
   test('displays error message on login failure', async () => {
     const errorMessage = 'Invalid credentials'
-    
-    mockSignInWithPassword.mockResolvedValueOnce({ 
-      error: { message: errorMessage } 
+
+    mockSignInWithPassword.mockResolvedValueOnce({
+      error: { message: errorMessage },
     })
-    
+
     const user = userEvent.setup()
     render(<LoginForm />)
 
     // Fill in form with validated but failing credentials
     const emailInput = screen.getByLabelText('Email')
     const passwordInput = screen.getByLabelText('Password')
-    
+
     await user.type(emailInput, invalidCredentials.email)
     await user.type(passwordInput, invalidCredentials.password)
 
@@ -153,7 +158,7 @@ describe('LoginForm', () => {
   test('handles Google OAuth login', async () => {
     mockSignInWithOAuth.mockResolvedValueOnce({ error: null })
     const user = userEvent.setup()
-    
+
     render(<LoginForm />)
 
     const googleButton = screen.getByRole('button', { name: /google/i })
@@ -171,10 +176,10 @@ describe('LoginForm', () => {
 
   test('displays error on Google OAuth failure', async () => {
     const errorMessage = 'OAuth error'
-    mockSignInWithOAuth.mockResolvedValueOnce({ 
-      error: { message: errorMessage } 
+    mockSignInWithOAuth.mockResolvedValueOnce({
+      error: { message: errorMessage },
     })
-    
+
     const user = userEvent.setup()
     render(<LoginForm />)
 
@@ -188,16 +193,19 @@ describe('LoginForm', () => {
 
   test('disables form elements while loading', async () => {
     // Mock a delayed response
-    mockSignInWithPassword.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({ error: null }), 200))
+    mockSignInWithPassword.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 200)
+        )
     )
-    
+
     const user = userEvent.setup()
     render(<LoginForm />)
 
     const emailInput = screen.getByLabelText('Email')
     const passwordInput = screen.getByLabelText('Password')
-    
+
     // Fill in valid data first
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
@@ -217,28 +225,34 @@ describe('LoginForm', () => {
     })
 
     // Wait for loading to complete
-    await waitFor(() => {
-      expect(emailInput).not.toBeDisabled()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(emailInput).not.toBeDisabled()
+      },
+      { timeout: 3000 }
+    )
   })
 
   test('shows loading spinner during submission', async () => {
-    mockSignInWithPassword.mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({ error: null }), 200))
+    mockSignInWithPassword.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 200)
+        )
     )
-    
+
     const user = userEvent.setup()
     render(<LoginForm />)
 
     const emailInput = screen.getByLabelText('Email')
     const passwordInput = screen.getByLabelText('Password')
-    
+
     // Fill in valid data first
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
 
     const submitButton = screen.getByRole('button', { name: /sign in/i })
-    
+
     // Initially no spinner
     expect(submitButton.querySelector('.animate-spin')).not.toBeInTheDocument()
 
@@ -250,19 +264,26 @@ describe('LoginForm', () => {
       const spinner = submitButton.querySelector('.animate-spin')
       expect(spinner).toBeInTheDocument()
     })
-    
+
     // Wait for completion
-    await waitFor(() => {
-      expect(submitButton.querySelector('.animate-spin')).not.toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(
+          submitButton.querySelector('.animate-spin')
+        ).not.toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
   })
 
   test('form submission is prevented when empty', async () => {
     // const user = userEvent.setup()
     render(<LoginForm />)
 
-    const form = screen.getByRole('button', { name: /sign in/i }).closest('form')
-    
+    const form = screen
+      .getByRole('button', { name: /sign in/i })
+      .closest('form')
+
     // Try to submit empty form
     fireEvent.submit(form!)
 

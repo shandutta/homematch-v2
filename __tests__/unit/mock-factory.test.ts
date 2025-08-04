@@ -7,10 +7,7 @@
  * Use local helpers that are not under __mocks__ to satisfy jest/no-mocks-import.
  * These helpers can re-export the same factory functions from a regular module path.
  */
-import {
-  makeMockClient,
-  configureMockResponse,
-} from '../fixtures/utils'
+import { makeMockClient, configureMockResponse } from '../fixtures/utils'
 
 describe('Typed Mock Factory', () => {
   let mockClient: ReturnType<typeof makeMockClient>
@@ -95,7 +92,9 @@ describe('Typed Mock Factory', () => {
     const maybeSingleResult = await builder.maybeSingle()
     expect(maybeSingleResult).toEqual({ data: null, error: null })
 
-    const arrayResult = await (builder as Promise<any>).then((result: any) => result)
+    const arrayResult = await (builder as Promise<any>).then(
+      (result: any) => result
+    )
     expect(arrayResult).toEqual({ data: [], error: null, count: null })
   })
 
@@ -130,7 +129,9 @@ describe('Typed Mock Factory', () => {
 
     const publicUrlResult = bucket.getPublicUrl('test.jpg')
     // Supabase returns the full path in public URL. Align expectation accordingly.
-    expect(publicUrlResult).toEqual({ data: { publicUrl: 'mock-url/test.jpg' } })
+    expect(publicUrlResult).toEqual({
+      data: { publicUrl: 'mock-url/test.jpg' },
+    })
   })
 
   test('should support RPC calls', async () => {

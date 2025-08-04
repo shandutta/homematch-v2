@@ -35,7 +35,9 @@ describe('ActivityStats', () => {
   it('calculates and displays engagement rate correctly', () => {
     render(<ActivityStats summary={mockSummary} />)
 
-    const engagementRate = Math.round((mockSummary.likes / mockSummary.views) * 100)
+    const engagementRate = Math.round(
+      (mockSummary.likes / mockSummary.views) * 100
+    )
     expect(screen.getByText('Engagement Rate')).toBeInTheDocument()
     expect(screen.getByText(`${engagementRate}%`)).toBeInTheDocument()
   })
@@ -51,7 +53,9 @@ describe('ActivityStats', () => {
     render(<ActivityStats summary={mockSummary} />)
 
     expect(screen.getByText(/great taste!/i)).toBeInTheDocument()
-    expect(screen.getByText(/liked more properties than you've passed on/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/liked more properties than you've passed on/i)
+    ).toBeInTheDocument()
   })
 
   it('shows correct insight for equal likes and dislikes', () => {
@@ -63,7 +67,9 @@ describe('ActivityStats', () => {
     render(<ActivityStats summary={balancedSummary} />)
 
     expect(screen.getByText(/balanced approach!/i)).toBeInTheDocument()
-    expect(screen.getByText(/liked and passed on an equal number/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/liked and passed on an equal number/i)
+    ).toBeInTheDocument()
   })
 
   it('shows correct insight for more dislikes than likes', () => {
@@ -75,14 +81,18 @@ describe('ActivityStats', () => {
     render(<ActivityStats summary={selectiveSummary} />)
 
     expect(screen.getByText(/selective buyer!/i)).toBeInTheDocument()
-    expect(screen.getByText(/being careful about which properties you like/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/being careful about which properties you like/i)
+    ).toBeInTheDocument()
   })
 
   it('displays saved searches message when present', () => {
     render(<ActivityStats summary={mockSummary} />)
 
     expect(screen.getByText(/3 saved searches/i)).toBeInTheDocument()
-    expect(screen.getByText(/to help you find your perfect home/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/to help you find your perfect home/i)
+    ).toBeInTheDocument()
   })
 
   it('uses singular form for single saved search', () => {

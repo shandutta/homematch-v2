@@ -31,7 +31,7 @@ export function EnhancedDashboardPageImpl({
 }: EnhancedDashboardPageImplProps) {
   // Performance monitoring
   useRenderPerformance('EnhancedDashboardPageImpl')
-  
+
   // Component State
   // Cast/normalize initialData.properties (runtime data) to our UI Property type.
   // The source data may have looser string enums; we trust upstream Zod parsing on fetch/load.
@@ -48,7 +48,7 @@ export function EnhancedDashboardPageImpl({
 
   const handleDecision = (propertyId: string, type: InteractionType) => {
     // 1. Optimistically remove the card from the UI
-    setProperties(prev => prev.filter(p => p.id !== propertyId))
+    setProperties((prev) => prev.filter((p) => p.id !== propertyId))
 
     // 2. Optimistically update the summary stats
     const currentSummary = optimisticSummary || summary

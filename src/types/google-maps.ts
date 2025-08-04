@@ -19,7 +19,10 @@ declare global {
   interface Window {
     google?: {
       maps?: {
-        Map: new (element?: Element | null, options?: unknown) => GoogleMapInstance
+        Map: new (
+          element?: Element | null,
+          options?: unknown
+        ) => GoogleMapInstance
         Marker: new (options?: unknown) => GoogleMarkerInstance
         InfoWindow: new (options?: unknown) => GoogleInfoWindowInstance
         LatLng: new (lat: number, lng: number) => unknown
@@ -33,7 +36,11 @@ declare global {
           TERRAIN: string
         }
         event: {
-          addListener: (instance: object, eventName: string, handler: (...args: unknown[]) => void) => unknown
+          addListener: (
+            instance: object,
+            eventName: string,
+            handler: (...args: unknown[]) => void
+          ) => unknown
         }
       }
     }

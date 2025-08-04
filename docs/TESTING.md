@@ -692,6 +692,7 @@ mcp__puppeteer__puppeteer_evaluate({
 ### Current Coverage Status
 
 **Unit Test Coverage**: ~50-60% (up from initial 6.7%)
+
 - **Test Files**: 39 unit test files (increased from 18)
 - **Components Tested**: Authentication, Dashboard, Property, Marketing, Settings, Utilities
 - **Infrastructure**: Complete mock factories and test utilities implemented
@@ -890,7 +891,11 @@ For complex features like clipboard functionality, use a layered approach:
 Use shared fixtures for consistent data across all test levels:
 
 ```typescript
-import { TEST_USERS, TEST_MESSAGES, TEST_SELECTORS } from '@/__tests__/fixtures/test-data'
+import {
+  TEST_USERS,
+  TEST_MESSAGES,
+  TEST_SELECTORS,
+} from '@/__tests__/fixtures/test-data'
 
 // Consistent test data across unit, integration, and e2e tests
 expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
@@ -899,6 +904,7 @@ expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
 #### Accessibility Testing (`__tests__/accessibility/`)
 
 Ensure features are accessible by testing:
+
 - Keyboard navigation (Tab, Enter, Space)
 - Screen reader support (ARIA attributes)
 - Focus management and visual indicators
@@ -907,20 +913,24 @@ Ensure features are accessible by testing:
 #### Error Scenario Testing (`__tests__/*/error-scenarios/`)
 
 Test error handling comprehensively:
+
 - **Integration Level**: API failures, network errors, permission denials
 - **E2E Level**: Offline scenarios, server errors, cross-browser issues
 
 #### Browser Clipboard Testing Best Practices
 
 **Unit Tests**: Mock clipboard API, test component logic only
+
 ```typescript
 Object.defineProperty(navigator, 'clipboard', {
   value: { writeText: vi.fn().mockResolvedValue(undefined) },
-  writable: true, configurable: true,
+  writable: true,
+  configurable: true,
 })
 ```
 
 **E2E Tests**: Use real clipboard API with proper permissions
+
 ```typescript
 test.beforeEach(async ({ page }) => {
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])

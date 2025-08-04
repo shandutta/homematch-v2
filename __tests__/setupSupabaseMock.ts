@@ -34,7 +34,9 @@ const createChainableBuilder = () => {
     range: jest.fn(() => builder),
     single: jest.fn(async () => ({ data: null, error: null })),
     maybeSingle: jest.fn(async () => ({ data: null, error: null })),
-    then: jest.fn(async (onFulfilled: AnyFn) => onFulfilled({ data: [], error: null, count: null })),
+    then: jest.fn(async (onFulfilled: AnyFn) =>
+      onFulfilled({ data: [], error: null, count: null })
+    ),
   }
   return builder
 }
@@ -45,10 +47,19 @@ const mockSupabaseClient: any = {
   auth: {
     getUser: jest.fn(async () => ({ data: { user: null }, error: null })),
     getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
-    signInWithPassword: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
-    signInWithOAuth: jest.fn(async () => ({ data: { url: null }, error: null })),
+    signInWithPassword: jest.fn(async () => ({
+      data: { user: null, session: null },
+      error: null,
+    })),
+    signInWithOAuth: jest.fn(async () => ({
+      data: { url: null },
+      error: null,
+    })),
     signOut: jest.fn(async () => ({ error: null })),
-    signUp: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
+    signUp: jest.fn(async () => ({
+      data: { user: null, session: null },
+      error: null,
+    })),
     resetPasswordForEmail: jest.fn(async () => ({ data: {}, error: null })),
     updateUser: jest.fn(async () => ({ data: { user: null }, error: null })),
     onAuthStateChange: jest.fn(() => ({
@@ -59,13 +70,15 @@ const mockSupabaseClient: any = {
     from: jest.fn(() => ({
       upload: jest.fn(async () => ({ data: null, error: null })),
       download: jest.fn(async () => ({ data: null, error: null })),
-      getPublicUrl: jest.fn((path: string) => ({ data: { publicUrl: `mock-url/${path}` } })),
+      getPublicUrl: jest.fn((path: string) => ({
+        data: { publicUrl: `mock-url/${path}` },
+      })),
       remove: jest.fn(async () => ({ data: null, error: null })),
       list: jest.fn(async () => ({ data: [], error: null })),
     })),
   },
   realtime: {
-    channel: jest.fn(() => ({ 
+    channel: jest.fn(() => ({
       subscribe: jest.fn(),
       unsubscribe: jest.fn(),
       on: jest.fn().mockReturnThis(),

@@ -36,28 +36,43 @@ export function SwipeDemo() {
     let cancelled = false
     async function fetchData() {
       try {
-        const res = await fetch('/api/properties/marketing', { cache: 'no-store' })
+        const res = await fetch('/api/properties/marketing', {
+          cache: 'no-store',
+        })
         if (!res.ok) return
         const data: unknown[] = await res.json()
         if (!Array.isArray(data)) return
         const mapped: Property[] = data
-          .filter((c): c is MarketingProperty => 
-            Boolean(c && typeof c === 'object' && 'imageUrl' in c && typeof (c as MarketingProperty).imageUrl === 'string')
+          .filter((c): c is MarketingProperty =>
+            Boolean(
+              c &&
+                typeof c === 'object' &&
+                'imageUrl' in c &&
+                typeof (c as MarketingProperty).imageUrl === 'string'
+            )
           )
           .slice(0, 6)
           .map((c, idx) => ({
             id: idx + 1,
             image: c.imageUrl,
-            price: typeof c.price === 'number' ? `$${c.price.toLocaleString()}` : '$—',
+            price:
+              typeof c.price === 'number'
+                ? `$${c.price.toLocaleString()}`
+                : '$—',
             address: typeof c.address === 'string' ? c.address : '—',
             beds: typeof c.bedrooms === 'number' ? c.bedrooms : 0,
             baths: typeof c.bathrooms === 'number' ? c.bathrooms : 0,
-            sqft: typeof c.sqft === 'number' ? c.sqft : (typeof c.livingArea === 'number' ? c.livingArea : '—'),
+            sqft:
+              typeof c.sqft === 'number'
+                ? c.sqft
+                : typeof c.livingArea === 'number'
+                  ? c.livingArea
+                  : '—',
           }))
         if (!cancelled) setProperties(mapped)
       } catch (error) {
         // Silent fail; keep empty - this is expected for marketing demo
-        console.debug('Failed to fetch marketing properties:', error);
+        console.debug('Failed to fetch marketing properties:', error)
       }
     }
     void fetchData()
@@ -66,17 +81,20 @@ export function SwipeDemo() {
     }
   }, [])
 
-  const handleSwipe = useCallback((swipeDirection: 'left' | 'right') => {
-    // Direction set drives exit animation; +1 => exit to right, -1 => exit to left
-    setDirection(swipeDirection === 'right' ? 1 : -1)
-    // Delay index increment slightly so the exit animation direction is respected visually
-    setTimeout(() => {
-      setCurrentIndex((prev) => {
-        const len = properties.length || 1
-        return (prev + 1) % len
-      })
-    }, 0)
-  }, [properties.length])
+  const handleSwipe = useCallback(
+    (swipeDirection: 'left' | 'right') => {
+      // Direction set drives exit animation; +1 => exit to right, -1 => exit to left
+      setDirection(swipeDirection === 'right' ? 1 : -1)
+      // Delay index increment slightly so the exit animation direction is respected visually
+      setTimeout(() => {
+        setCurrentIndex((prev) => {
+          const len = properties.length || 1
+          return (prev + 1) % len
+        })
+      }, 0)
+    },
+    [properties.length]
+  )
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
@@ -120,13 +138,17 @@ export function SwipeDemo() {
               href="/signup"
               aria-label="Start Swiping"
               data-cta="dopamine-tryit"
-              className="relative inline-flex items-center justify-center rounded-full bg-[#0F172A] px-8 py-4 text-base font-medium text-white shadow-[0_8px_30px_rgba(2,6,23,0.45)] transition-colors hover:bg-[#0b1222] focus:outline-none focus:ring-2 focus:ring-[#29E3FF] focus:ring-offset-2"
+              className="relative inline-flex items-center justify-center rounded-full bg-[#0F172A] px-8 py-4 text-base font-medium text-white shadow-[0_8px_30px_rgba(2,6,23,0.45)] transition-colors hover:bg-[#0b1222] focus:ring-2 focus:ring-[#29E3FF] focus:ring-offset-2 focus:outline-none"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
                 Start Swiping
               </span>
-              <span aria-hidden className="pointer-events-none absolute inset-0" id="tryit-particles-host" />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                id="tryit-particles-host"
+              />
             </a>
           </div>
         </motion.div>
@@ -187,15 +209,21 @@ export function SwipeDemo() {
                   {/* Property Image */}
                   <div className="relative h-[280px] sm:h-[350px]">
                     <Image
-                      src={(properties[currentIndex] || {}).image || '/images/properties/house-1.svg'}
-                      alt={(properties[currentIndex] || {}).address || 'Property'}
+                      src={
+                        (properties[currentIndex] || {}).image ||
+                        '/images/properties/house-1.svg'
+                      }
+                      alt={
+                        (properties[currentIndex] || {}).address || 'Property'
+                      }
                       fill
                       className="pointer-events-none object-cover select-none"
                       sizes="400px"
                       priority
                       placeholder="blur"
                       blurDataURL={getPropertyBlurPlaceholder(
-                        (properties[currentIndex] || {}).image || '/images/properties/house-1.svg'
+                        (properties[currentIndex] || {}).image ||
+                          '/images/properties/house-1.svg'
                       )}
                       draggable={false}
                     />

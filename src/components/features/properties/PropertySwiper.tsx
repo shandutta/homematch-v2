@@ -21,7 +21,7 @@ export function PropertySwiper({
 }: PropertySwiperProps) {
   // Performance monitoring
   useRenderPerformance('PropertySwiper')
-  
+
   const [currentIndex, setCurrentIndex] = useState(properties.length - 1)
 
   // used for outOfFrame closure
@@ -60,7 +60,7 @@ export function PropertySwiper({
 
   if (isLoading) {
     return (
-      <div className="relative w-full max-w-md mx-auto h-[600px]">
+      <div className="relative mx-auto h-[600px] w-full max-w-md">
         <PropertyCardSkeleton />
       </div>
     )
@@ -68,8 +68,10 @@ export function PropertySwiper({
 
   if (!properties.length) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold mb-4 text-white">All out of properties!</h2>
+      <div className="py-12 text-center">
+        <h2 className="mb-4 text-2xl font-semibold text-white">
+          All out of properties!
+        </h2>
         <p className="text-lg text-purple-300/80">
           Check back later for new listings in your area.
         </p>
@@ -78,13 +80,13 @@ export function PropertySwiper({
   }
 
   return (
-    <div className="relative w-full max-w-md mx-auto h-[600px]">
-      <div className="relative w-full h-full">
+    <div className="relative mx-auto h-[600px] w-full max-w-md">
+      <div className="relative h-full w-full">
         {properties.map((property, index) => (
           <TinderCard
             // Cast only at the boundary where third-party component lacks proper ref typing.
             ref={childRefs[index] as React.Ref<TinderCardApi>}
-            className="absolute w-full h-full"
+            className="absolute h-full w-full"
             key={property.id}
             onSwipe={(dir: string) => swiped(dir, property.id, index)}
             onCardLeftScreen={() => outOfFrame(property.id, index)}

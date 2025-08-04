@@ -71,12 +71,8 @@ describe('Property Schema Validation', () => {
           expect.stringContaining(
             'String must contain at least 1 character(s)'
           ),
-          expect.stringContaining(
-            'Number must be greater than or equal to 0'
-          ),
-          expect.stringContaining(
-            'Number must be less than or equal to 20'
-          ),
+          expect.stringContaining('Number must be greater than or equal to 0'),
+          expect.stringContaining('Number must be less than or equal to 20'),
           expect.stringContaining('Invalid enum value'),
         ])
       )

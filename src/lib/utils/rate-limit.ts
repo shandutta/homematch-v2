@@ -15,7 +15,9 @@ export interface RateLimitConfig {
 export class RateLimiter {
   constructor(private config: RateLimitConfig) {}
 
-  async check(identifier: string): Promise<{ success: boolean; remaining: number; resetTime: number }> {
+  async check(
+    identifier: string
+  ): Promise<{ success: boolean; remaining: number; resetTime: number }> {
     const now = Date.now()
     const record = store.get(identifier)
 
@@ -38,7 +40,11 @@ export class RateLimiter {
 
     // Increment counter
     record.count++
-    return { success: true, remaining: this.config.max - record.count, resetTime: record.resetTime }
+    return {
+      success: true,
+      remaining: this.config.max - record.count,
+      resetTime: record.resetTime,
+    }
   }
 
   private cleanup(now: number) {

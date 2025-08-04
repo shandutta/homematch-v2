@@ -31,12 +31,12 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
       rect: () => {},
       clip: () => {},
     }
-  }
+  },
 })
 
 // Mock HTMLCanvasElement.toDataURL
 Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
-  value: () => 'data:image/png;base64,test'
+  value: () => 'data:image/png;base64,test',
 })
 
 // Vitest is used for integration tests only
@@ -46,7 +46,7 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
 // Integration tests use local Supabase Docker stack
 config({ path: '.env.test.local' })
 
-// Set NODE_ENV to test for integration tests  
+// Set NODE_ENV to test for integration tests
 if (!process.env.NODE_ENV) {
   Object.defineProperty(process.env, 'NODE_ENV', {
     value: 'test',
