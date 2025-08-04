@@ -2,6 +2,23 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Header } from '@/components/layouts/Header';
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+  }),
+}));
+
+// Mock Supabase client
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      signOut: jest.fn().mockResolvedValue({ error: null }),
+    },
+  }),
+}));
+
 // The Header uses next/link only. For testing, next/link can be rendered as a regular anchor.
 jest.mock('next/link', () => {
   // Provide a typed mock and include children to satisfy a11y rule
@@ -23,7 +40,7 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: /Viewed/i })).toHaveAttribute('href', '/dashboard/viewed');
     expect(screen.getByRole('link', { name: /Passed/i })).toHaveAttribute('href', '/dashboard/passed');
 
-    // Settings button
+    // User dropdown button
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
@@ -47,14 +64,19 @@ describe('Header', () => {
     expect(passed).toHaveAttribute('href', '/dashboard/passed');
   });
 
-  test('settings button is present and interactive', async () => {
+  test('user dropdown menu works correctly', async () => {
     const user = userEvent.setup();
     render(<Header />);
 
-    const settingsBtn = screen.getByRole('button');
-    await user.click(settingsBtn);
+    const userBtn = screen.getByRole('button');
+    expect(userBtn).toBeInTheDocument();
 
-    // No specific handler is wired right now; ensure the button exists and is clickable
-    expect(settingsBtn).toBeInTheDocument();
+    // Click to open dropdown
+    await user.click(userBtn);
+
+    // Check dropdown items are visible as menu items
+    expect(screen.getByRole('menuitem', { name: /Profile/i })).toHaveAttribute('href', '/profile');
+    expect(screen.getByRole('menuitem', { name: /Settings/i })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('menuitem', { name: /Sign Out/i })).toBeInTheDocument();
   });
 });

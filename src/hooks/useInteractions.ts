@@ -9,6 +9,7 @@ import {
 import { InteractionService } from '@/lib/services/interactions'
 import { InteractionType, InteractionSummary, PageResponse } from '@/types/app'
 import { Property } from '@/lib/schemas/property'
+import { QUERY_STALE_TIMES } from '@/lib/query/config'
 
 // Centralized query keys for interactions, ensures consistency.
 export const interactionKeys = {
@@ -25,6 +26,7 @@ export function useInteractionSummary() {
   return useQuery<InteractionSummary, Error>({
     queryKey: interactionKeys.summaries(),
     queryFn: () => InteractionService.getInteractionSummary(),
+    staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY,
   })
 }
 
@@ -38,16 +40,49 @@ export function useRecordInteraction() {
   return useMutation<
     unknown,
     Error,
-    { propertyId: string; type: InteractionType }
+    { propertyId: string; type: InteractionType },
+    { previousSummary: InteractionSummary | undefined }
   >({
     mutationFn: ({ propertyId, type }) =>
       InteractionService.recordInteraction(propertyId, type),
     
-    // After the mutation is successful, invalidate the summary query to refetch fresh counts.
-    onSuccess: () => {
+    // Optimistic update
+    onMutate: async ({ type }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: interactionKeys.summaries() })
+      
+      // Snapshot the previous value
+      const previousSummary = queryClient.getQueryData<InteractionSummary>(
+        interactionKeys.summaries()
+      )
+      
+      // Optimistically update
+      if (previousSummary) {
+        queryClient.setQueryData<InteractionSummary>(interactionKeys.summaries(), {
+          ...previousSummary,
+          viewed: previousSummary.viewed + 1,
+          liked: type === 'liked' ? previousSummary.liked + 1 : previousSummary.liked,
+          passed: type === 'skip' ? previousSummary.passed + 1 : previousSummary.passed,
+        })
+      }
+      
+      return { previousSummary }
+    },
+    
+    // If mutation fails, rollback
+    onError: (err, variables, context) => {
+      if (context?.previousSummary) {
+        queryClient.setQueryData(
+          interactionKeys.summaries(),
+          context.previousSummary
+        )
+      }
+    },
+    
+    // Always refetch after error or success
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
     },
-    // Optional: onError handling for logging or showing toast notifications.
   })
 }
 
@@ -62,5 +97,6 @@ export function useInfiniteInteractions(type: InteractionType) {
       InteractionService.getInteractions(type, { cursor: pageParam as string | undefined }),
     getNextPageParam: lastPage => lastPage.nextCursor,
     initialPageParam: undefined,
+    staleTime: QUERY_STALE_TIMES.PROPERTY_LIST,
   })
 }

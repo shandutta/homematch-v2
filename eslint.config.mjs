@@ -69,7 +69,7 @@ export default [
   // TypeScript block with project-aware parser so DOM lib is respected
   // Limit to app source and tests to avoid project parse errors on top-level configs/scripts
   {
-    files: ['src/**/*.{ts,tsx}', '__tests__/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', '__tests__/**/*.{ts,tsx}', 'middleware.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -118,7 +118,7 @@ export default [
     settings: { react: { version: 'detect' } },
   },
   {
-    files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*'],
+    files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*', 'vitest.setup.ts', 'jest.setup.js'],
     languageOptions: {
       globals: {
         ...globals.node,

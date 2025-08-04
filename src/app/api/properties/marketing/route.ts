@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { withPerformanceTracking } from '@/lib/utils/performance'
 
 type MarketingCard = {
   zpid: string
@@ -11,7 +13,6 @@ type MarketingCard = {
   latitude: number | null
   longitude: number | null
 }
-type MarketingResponse = MarketingCard[] | { error: string }
 
 interface DbPropertyRow {
   zpid: string
@@ -28,7 +29,7 @@ interface DbPropertyRow {
   latitude: number | null
 }
 
-export async function GET(): Promise<NextResponse<MarketingResponse>> {
+async function getMarketingProperties(): Promise<NextResponse> {
   try {
     const supabase = await createSupabaseServerClient()
 
@@ -66,7 +67,8 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
         .limit(10)
 
       if (qErr) {
-        throw qErr
+        console.error('Database query error:', qErr)
+        return ApiErrorHandler.serverError('Failed to fetch properties', qErr)
       }
 
       rows =
@@ -254,9 +256,8 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
       return NextResponse.json([], { status: 200 })
     }
   } catch (err) {
-    return NextResponse.json(
-      { error: (err as Error).message ?? 'Unexpected error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to retrieve marketing properties', err)
   }
 }
+
+export const GET = withPerformanceTracking(getMarketingProperties, 'GET /api/properties/marketing')

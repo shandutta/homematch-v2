@@ -46,9 +46,19 @@ async function setupIntegrationTests() {
     console.log('\n3️⃣  Creating test users...')
     await runCommand('scripts/setup-test-users-admin.js')
 
+    // Step 4: Generate auth token for integration tests
+    console.log('\n4️⃣  Generating test auth token...')
+    const getAuthToken = require('./get-test-auth-token.js')
+    const authToken = await getAuthToken()
+    
+    // Set the auth token in environment for the tests
+    process.env.TEST_AUTH_TOKEN = authToken
+    process.env.BASE_URL = 'http://localhost:3000'
+
     console.log('\n✅ Integration test environment ready!')
     console.log('📦 Using local Supabase at: http://127.0.0.1:54321')
     console.log('👤 Test users: test1@example.com, test2@example.com')
+    console.log('🔐 Auth token generated for API tests')
   } catch (error) {
     console.error('\n❌ Failed to setup integration tests:', error)
     throw error

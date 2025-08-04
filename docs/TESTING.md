@@ -2,7 +2,7 @@
 
 > **Current Status**: Complete test infrastructure implemented with 100% unit/integration test pass rates and E2E testing. Migration foundation complete with 99.1% success rate (2,214 records migrated).
 
-This guide covers all testing approaches for HomeMatch V2, including unit tests, integration tests, end-to-end testing, fixtures, and debugging tools.
+This comprehensive guide covers all testing approaches for HomeMatch V2, including unit tests, integration tests, end-to-end testing, fixtures, debugging tools, and complete development workflows.
 
 ## Table of Contents
 
@@ -18,6 +18,7 @@ This guide covers all testing approaches for HomeMatch V2, including unit tests,
 10. [Test Coverage](#test-coverage)
 11. [CI/CD Integration](#cicd-integration)
 12. [Troubleshooting](#troubleshooting)
+13. [Development Workflows](#development-workflows)
 
 ## Testing Overview
 
@@ -688,6 +689,30 @@ mcp__puppeteer__puppeteer_evaluate({
 
 ## Test Coverage
 
+### Current Coverage Status
+
+**Unit Test Coverage**: ~50-60% (up from initial 6.7%)
+- **Test Files**: 39 unit test files (increased from 18)
+- **Components Tested**: Authentication, Dashboard, Property, Marketing, Settings, Utilities
+- **Infrastructure**: Complete mock factories and test utilities implemented
+
+### Recent Coverage Improvements
+
+The team successfully implemented a comprehensive unit test coverage plan that included:
+
+1. **Infrastructure Enhancement**
+   - Enhanced mock factory architecture (`test-data-factory.ts`)
+   - Type-safe test utilities (`test-helpers.ts`)
+   - Comprehensive Jest configuration
+
+2. **Component Coverage**
+   - Authentication components (LoginForm, SignupForm)
+   - Property components (SwipeContainer, EnhancedPropertyCard)
+   - Dashboard components (DashboardErrorBoundary)
+   - Marketing components (HeroSection, FeatureGrid, HowItWorks)
+   - Settings components (NotificationsSection, SavedSearchesSection)
+   - Utility functions (utils, image-blur)
+
 ### Coverage Workflow
 
 1. **Analyze current coverage** percentages for each function and method
@@ -702,6 +727,20 @@ mcp__puppeteer__puppeteer_evaluate({
 pnpm test:coverage        # Generate coverage report
 pnpm test:watch          # Watch mode with coverage
 npx jest --coverage      # Direct Jest coverage
+```
+
+### Coverage Configuration
+
+```javascript
+// jest.config.js
+coverageThreshold: {
+  global: {
+    branches: 50,
+    functions: 50,
+    lines: 50,
+    statements: 50,
+  },
+},
 ```
 
 ### Performance Benchmarks
@@ -836,23 +875,78 @@ lsof -ti:3000 | xargs kill -9
 4. **Add data-testid attributes** for reliable element selection
 5. **Leverage fixtures** for common operations
 
+### Advanced Testing Patterns
+
+#### Multi-Level Testing Strategy
+
+For complex features like clipboard functionality, use a layered approach:
+
+- **Unit Tests**: Component logic and behavior (fast feedback)
+- **Integration Tests**: UI integration with dependencies (realistic behavior)
+- **E2E Tests**: Real browser APIs and user workflows (user confidence)
+
+#### Test Fixtures (`__tests__/fixtures/test-data.ts`)
+
+Use shared fixtures for consistent data across all test levels:
+
+```typescript
+import { TEST_USERS, TEST_MESSAGES, TEST_SELECTORS } from '@/__tests__/fixtures/test-data'
+
+// Consistent test data across unit, integration, and e2e tests
+expect(toast.success).toHaveBeenCalledWith(TEST_MESSAGES.clipboard.success)
+```
+
+#### Accessibility Testing (`__tests__/accessibility/`)
+
+Ensure features are accessible by testing:
+- Keyboard navigation (Tab, Enter, Space)
+- Screen reader support (ARIA attributes)
+- Focus management and visual indicators
+- Touch targets for mobile devices
+
+#### Error Scenario Testing (`__tests__/*/error-scenarios/`)
+
+Test error handling comprehensively:
+- **Integration Level**: API failures, network errors, permission denials
+- **E2E Level**: Offline scenarios, server errors, cross-browser issues
+
+#### Browser Clipboard Testing Best Practices
+
+**Unit Tests**: Mock clipboard API, test component logic only
+```typescript
+Object.defineProperty(navigator, 'clipboard', {
+  value: { writeText: vi.fn().mockResolvedValue(undefined) },
+  writable: true, configurable: true,
+})
+```
+
+**E2E Tests**: Use real clipboard API with proper permissions
+```typescript
+test.beforeEach(async ({ page }) => {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+})
+
+const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
+```
+
+**Key Lesson**: Never test browser APIs in jsdom—use E2E tests for real browser functionality.
+
 ### Test Organization
 
 ```
 __tests__/
-├── unit/
-│   ├── services/
-│   ├── components/
-│   └── utils/
-├── integration/
-│   ├── database/
-│   ├── api/
-│   └── migration/
-├── e2e/
+├── fixtures/       # Shared test data and utilities
+├── unit/          # Fast, isolated component tests
+├── integration/   # Component + dependency tests
+│   ├── ui/       # UI integration tests
+│   └── error-scenarios/  # Error handling tests
+├── accessibility/ # Accessibility compliance tests
+├── e2e/          # Full user workflow tests
 │   ├── auth/
 │   ├── properties/
 │   ├── fixtures/
-│   └── helpers/
+│   ├── helpers/
+│   └── error-scenarios/  # Real browser error tests
 └── helpers/
     ├── test-utils.ts
     ├── constants.ts
@@ -872,6 +966,203 @@ __tests__/
 - CASCADE delete ensures complete cleanup
 - Service role key only used in test environment
 - No production data in tests
+
+---
+
+## Development Workflows
+
+### Git Workflows
+
+#### Commit and Push Workflow
+
+For commits that involve multiple modified files:
+
+1. **Stage all modified files** to git (unless there are files that should not be in version control)
+2. **Bundle related changes** into logical commits if needed
+3. **Create semantic commits** with clear, concise one-line messages
+4. **Push commits** to origin
+
+**Semantic Commit Format:**
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code style changes
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+#### Code Coverage Workflow
+
+To improve test coverage:
+
+1. **Analyze current coverage** percentages for each function and method
+2. **Add unit tests** to functions and methods without 100% coverage
+3. **Include edge cases** and negative test scenarios
+4. **Use mocks** for external functionality (web services, databases)
+5. **Re-run coverage analysis** and repeat as necessary
+
+**Coverage Commands:**
+
+```bash
+pnpm test:coverage        # Generate coverage report
+pnpm test:watch          # Watch mode with coverage
+```
+
+### Code Quality Checklist
+
+Before committing code:
+
+- [ ] Run `pnpm run lint` - ESLint validation
+- [ ] Run `pnpm run type-check` - TypeScript validation
+- [ ] Run `pnpm test` - All test suites pass
+- [ ] Check test coverage meets standards
+- [ ] Verify no `any` types introduced
+- [ ] Follow Prettier formatting (automatic)
+
+### Branch Management
+
+- **Main branch**: `main` - Production-ready code
+- **Feature branches**: `feature/descriptive-name`
+- **Hotfix branches**: `hotfix/issue-description`
+- **Documentation branches**: `docs/topic`
+
+### Environment Management
+
+- **Development**: `pnpm run dev` (port 3000)
+- **Testing**: Isolated environment with test database
+- **Production**: Built and deployed via CI/CD
+
+### Automation Scripts
+
+#### Test Infrastructure
+
+```bash
+# Start local test infrastructure
+pnpm run test:infra:start
+
+# Setup test users and data
+node scripts/setup-test-users-admin.js
+
+# Clean test environment
+pnpm run test:infra:clean
+```
+
+#### Database Operations
+
+```bash
+# Apply migrations
+pnpm run db:migrate
+
+# Reset database (development only)
+pnpm dlx supabase@latest db reset
+
+# Generate TypeScript types
+pnpm dlx supabase@latest gen types typescript --local > src/types/database.ts
+```
+
+#### Build and Deployment
+
+```bash
+# Production build
+pnpm run build
+
+# Test build for E2E testing
+node scripts/build-for-tests.js
+
+# Validate deployment
+node scripts/validate-deployment.js
+```
+
+### UI Design Workflows
+
+#### Design Iteration Process
+
+For creating design variations and UI iterations:
+
+1. **Read style guide** (`/docs/STYLE_GUIDE.md`) for design consistency
+2. **Analyze existing mockups** for reference patterns
+3. **Create variations** - Build 3 parallel variations of UI components
+4. **Output to iterations folder** as `ui_1.html`, `ui_2.html`, etc.
+5. **Review and decide** which variation works best
+
+**UI Iteration Goals:**
+
+- Create multiple design options for user review
+- Maintain consistency with established style guide
+- Enable rapid prototyping and comparison
+
+### Code Review Process
+
+#### Pre-Review Checklist
+
+- [ ] All tests pass
+- [ ] Code coverage maintained
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+- [ ] Security considerations addressed
+- [ ] Performance impact assessed
+
+#### Review Guidelines
+
+1. **Functional correctness**: Does the code work as intended?
+2. **Code quality**: Is it readable, maintainable, and well-structured?
+3. **Test coverage**: Are new features adequately tested?
+4. **Documentation**: Are changes properly documented?
+5. **Security**: Are there any security implications?
+6. **Performance**: Any performance impacts?
+
+### Deployment Workflows
+
+#### Staging Deployment
+
+1. **Feature branch** merged to `staging`
+2. **Automated tests** run in staging environment
+3. **Manual QA testing** on staging environment
+4. **Performance validation** with realistic data
+5. **Security scanning** for vulnerabilities
+
+#### Production Deployment
+
+1. **Staging approval** from QA team
+2. **Production build** with optimizations
+3. **Database migrations** (if needed)
+4. **Blue-green deployment** for zero downtime
+5. **Post-deployment validation** and monitoring
+6. **Rollback procedures** ready if needed
+
+### Monitoring and Maintenance
+
+#### Regular Maintenance Tasks
+
+- **Weekly**: Dependency updates and security patches
+- **Monthly**: Performance analysis and optimization
+- **Quarterly**: Architecture review and technical debt assessment
+
+#### Monitoring Dashboards
+
+- **Application Performance**: Response times, error rates
+- **Database Performance**: Query performance, connection pools
+- **Infrastructure**: Server resources, network performance
+- **User Experience**: Core Web Vitals, user feedback
+
+### Emergency Procedures
+
+#### Incident Response
+
+1. **Immediate assessment**: Severity and impact
+2. **Communication**: Notify stakeholders
+3. **Mitigation**: Quick fixes or rollback
+4. **Investigation**: Root cause analysis
+5. **Resolution**: Permanent fix and prevention
+6. **Post-mortem**: Document lessons learned
+
+#### Rollback Procedures
+
+- **Database rollback**: Migration rollback scripts
+- **Application rollback**: Previous version deployment
+- **Configuration rollback**: Revert environment changes
+- **Cache invalidation**: Clear relevant caches
 
 ---
 

@@ -46,17 +46,33 @@ const mockSupabaseClient: any = {
     getUser: jest.fn(async () => ({ data: { user: null }, error: null })),
     getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
     signInWithPassword: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
+    signInWithOAuth: jest.fn(async () => ({ data: { url: null }, error: null })),
+    signOut: jest.fn(async () => ({ error: null })),
+    signUp: jest.fn(async () => ({ data: { user: null, session: null }, error: null })),
+    resetPasswordForEmail: jest.fn(async () => ({ data: {}, error: null })),
+    updateUser: jest.fn(async () => ({ data: { user: null }, error: null })),
+    onAuthStateChange: jest.fn(() => ({
+      data: { subscription: { unsubscribe: jest.fn() } },
+    })),
   },
   storage: {
     from: jest.fn(() => ({
       upload: jest.fn(async () => ({ data: null, error: null })),
       download: jest.fn(async () => ({ data: null, error: null })),
       getPublicUrl: jest.fn((path: string) => ({ data: { publicUrl: `mock-url/${path}` } })),
+      remove: jest.fn(async () => ({ data: null, error: null })),
+      list: jest.fn(async () => ({ data: [], error: null })),
     })),
   },
   realtime: {
-    channel: jest.fn(() => ({ subscribe: jest.fn(), unsubscribe: jest.fn() })),
+    channel: jest.fn(() => ({ 
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
+      on: jest.fn().mockReturnThis(),
+    })),
   },
+  // Enhanced chainable builder with more methods
+  ...createChainableBuilder(),
 }
 
 // Mock the Supabase client creation globally by mocking the original module path
@@ -80,3 +96,27 @@ jest.mock('@/lib/supabase/client', () => {
     createClient: jest.fn(() => mockSupabaseClient),
   }
 })
+
+// Mock Next.js router globally
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
+  usePathname: jest.fn(() => '/'),
+  redirect: jest.fn(),
+  notFound: jest.fn(),
+}))
+
+// Mock process.env for tests
+const originalEnv = process.env
+process.env = {
+  ...originalEnv,
+  NODE_ENV: 'test',
+  NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+}

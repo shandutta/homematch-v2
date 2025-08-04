@@ -10,6 +10,7 @@ import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
+import { useRenderPerformance } from '@/lib/utils/performance'
 
 interface EnhancedDashboardPageImplProps {
   initialData: DashboardData
@@ -28,6 +29,9 @@ export function EnhancedDashboardPageImpl({
   // _initialSwipeStats,  // Prefixed with _ to indicate unused variable
   // _session,  // Prefixed with _ to indicate unused variable
 }: EnhancedDashboardPageImplProps) {
+  // Performance monitoring
+  useRenderPerformance('EnhancedDashboardPageImpl')
+  
   // Component State
   // Cast/normalize initialData.properties (runtime data) to our UI Property type.
   // The source data may have looser string enums; we trust upstream Zod parsing on fetch/load.
