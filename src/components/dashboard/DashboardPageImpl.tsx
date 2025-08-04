@@ -17,6 +17,7 @@ interface SwipeStats {
 }
 
 import { UserProfile } from '@/types/database';
+import { Property, Neighborhood } from '@/lib/schemas/property';
 
 interface DashboardPageImplProps {
   initialData: DashboardData;
@@ -170,8 +171,8 @@ export function DashboardPageImpl({
       <div className="rounded-lg bg-card p-6 shadow-sm">
         <h2 className="mb-4 text-xl font-semibold">Discover Properties</h2>
         <SwipeContainer
-          properties={initialData.properties}
-          neighborhoods={initialData.neighborhoods}
+          properties={initialData.properties as unknown as Property[]}
+          neighborhoods={initialData.neighborhoods as unknown as Neighborhood[]}
           onEmpty={() => {
             setHasShownWelcome(false);
             toast.success(

@@ -1,7 +1,7 @@
 import { jest, describe, test, expect } from '@jest/globals'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PropertyCard } from '@/components/property/PropertyCard'
-import { Property } from '@/types/database'
+import { Property } from '@/lib/schemas/property'
 
 // Mock child components
 jest.mock('@/components/property/PropertyMap', () => ({
@@ -19,7 +19,7 @@ const mockProperty: Property = {
   bathrooms: 2,
   square_feet: 1500,
   images: ['/image1.jpg'],
-  coordinates: { type: 'Point', coordinates: [-122, 37] },
+  coordinates: null,
   created_at: '2024-01-01T00:00:00.000Z',
   amenities: null,
   description: null,
@@ -82,12 +82,16 @@ describe('PropertyCard Component', () => {
   })
 
   test('should render PropertyMap when coordinates are present', () => {
-    render(<PropertyCard property={mockProperty} />)
+    const propertyWithCoords: Property = {
+      ...mockProperty,
+      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+    }
+    render(<PropertyCard property={propertyWithCoords} />)
     expect(screen.getByTestId('property-map')).toBeDefined()
   })
 
   test('should not render PropertyMap when coordinates are null', () => {
-    const propWithoutCoords = { ...mockProperty, coordinates: null }
+    const propWithoutCoords: Property = { ...mockProperty, coordinates: null }
     render(<PropertyCard property={propWithoutCoords} />)
     expect(screen.queryByTestId('property-map')).toBeNull()
   })

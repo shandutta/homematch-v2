@@ -5,7 +5,10 @@ import { config } from 'dotenv'
 config({ path: '.env.test.local' })
 
 // Set NODE_ENV to test for integration tests
-process.env.NODE_ENV = 'test'
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+});
 
 // Set default test environment variables for local Supabase
 process.env.NEXT_PUBLIC_SUPABASE_URL =

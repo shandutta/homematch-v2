@@ -33,11 +33,29 @@ export const createMockProperty = (overrides?: Partial<Property>): Property => (
   neighborhood_id: faker.string.uuid(),
   images: [faker.image.url()],
   description: faker.lorem.paragraph(),
-  coordinates: { lat: faker.location.latitude(), lng: faker.location.longitude() },
+  // Default to null to align with UI schema defaults in most unit tests; override as needed
+  coordinates: null,
   amenities: [faker.word.adjective(), faker.word.adjective()],
   parking_spots: faker.number.int({ min: 0, max: 10 }),
   property_hash: faker.string.alphanumeric(32),
   ...overrides
+});
+
+// Additional helpers aligned with UI layer expectations
+
+export const makeInteractionSummary = (overrides?: Partial<{ viewed: number; liked: number; passed: number }>) => ({
+  viewed: 0,
+  liked: 0,
+  passed: 0,
+  ...overrides,
+});
+
+export const makePagedInteractions = <T = unknown>(
+  items: T[],
+  nextCursor: string | null = null
+): { items: T[]; nextCursor: string | null } => ({
+  items,
+  nextCursor,
 });
 
 export const createMockNeighborhood = (overrides?: Partial<Neighborhood>): Neighborhood => ({

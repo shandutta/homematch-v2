@@ -1,7 +1,7 @@
 import { jest, describe, test, expect } from '@jest/globals'
 import { render, screen } from '@testing-library/react'
 import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
-import { Property } from '@/types/database'
+import { Property } from '@/lib/schemas/property'
 
 // Mock the TinderCard component as it's a third-party library with its own tests
 jest.mock('react-tinder-card', () => ({
@@ -14,8 +14,58 @@ jest.mock('react-tinder-card', () => ({
 }))
 
 const mockProperties: Property[] = [
-  { id: 'prop-1', address: '1 Cool St' } as Property,
-  { id: 'prop-2', address: '2 Neat Ave' } as Property,
+  {
+    id: 'prop-1',
+    zpid: null,
+    address: '1 Cool St',
+    city: 'Anytown',
+    state: 'CA',
+    zip_code: '12345',
+    price: 100000,
+    bedrooms: 2,
+    bathrooms: 1,
+    square_feet: 900,
+    property_type: 'house',
+    images: null,
+    description: null,
+    coordinates: null,
+    neighborhood_id: null,
+    amenities: null,
+    year_built: null,
+    lot_size_sqft: null,
+    parking_spots: null,
+    listing_status: 'active',
+    property_hash: null,
+    is_active: true,
+    created_at: null,
+    updated_at: null,
+  },
+  {
+    id: 'prop-2',
+    zpid: null,
+    address: '2 Neat Ave',
+    city: 'Anytown',
+    state: 'CA',
+    zip_code: '12345',
+    price: 200000,
+    bedrooms: 3,
+    bathrooms: 2,
+    square_feet: 1200,
+    property_type: 'condo',
+    images: null,
+    description: null,
+    coordinates: null,
+    neighborhood_id: null,
+    amenities: null,
+    year_built: null,
+    lot_size_sqft: null,
+    parking_spots: null,
+    listing_status: 'active',
+    property_hash: null,
+    is_active: true,
+    created_at: null,
+    updated_at: null,
+  },
 ]
 
 describe('PropertySwiper Component', () => {

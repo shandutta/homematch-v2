@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Property, Neighborhood } from '@/types/database';
+import { Property, Neighborhood } from '@/lib/schemas/property';
 import { PropertyCard } from './PropertyCard';
 import { Heart, X } from 'lucide-react';
 

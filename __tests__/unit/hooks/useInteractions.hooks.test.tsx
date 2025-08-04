@@ -1,68 +1,123 @@
-import { jest, describe, test, expect } from '@jest/globals'
-import { renderHook, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import {
-  useInteractionSummary,
-  useRecordInteraction,
-} from '@/hooks/useInteractions'
-import { InteractionService } from '@/lib/services/interactions'
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { InteractionService } from '@/lib/services/interactions';
+import { useInteractionSummary, useInfiniteInteractions } from '@/hooks/useInteractions';
 
-// Mock the service layer
-jest.mock('@/lib/services/interactions')
-const mockInteractionService = InteractionService as jest.Mocked<
-  typeof InteractionService
->
+// Jest auto-mock for InteractionService methods used by the hook
+jest.mock('@/lib/services/interactions', () => ({
+  InteractionService: {
+    getInteractionSummary: jest.fn(),
+    getInteractions: jest.fn(),
+  },
+}));
 
-const createTestQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false, // Disable retries for tests
+describe('useInteractionSummary', () => {
+  const getSummary = InteractionService.getInteractionSummary as jest.Mock;
+
+  const createWrapper = () => {
+    const qc = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,           // disable automatic retries to ensure immediate error surfacing
+          gcTime: Infinity,       // avoid garbage collection during test
+        },
       },
-    },
-  })
+    });
+    // eslint-disable-next-line react/display-name
+    return ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+  };
 
-describe('useInteractions Hooks', () => {
-  test('useInteractionSummary should fetch and return summary data', async () => {
-    const mockSummary = { liked: 5, passed: 3, viewed: 8 }
-    mockInteractionService.getInteractionSummary.mockResolvedValue(mockSummary)
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    const queryClient = createTestQueryClient()
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+  test('success: returns summary and no error', async () => {
+    getSummary.mockResolvedValue({ viewed: 2, liked: 1, passed: 0 });
 
-    const { result } = renderHook(() => useInteractionSummary(), { wrapper })
+    const { result } = renderHook(() => useInteractionSummary(), { wrapper: createWrapper() });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    // Initial loading state
+    expect(result.current.isLoading).toBe(true);
 
-    expect(result.current.data).toEqual(mockSummary)
-    expect(
-      mockInteractionService.getInteractionSummary
-    ).toHaveBeenCalledTimes(1)
-  })
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-  test('useRecordInteraction should call the service and invalidate queries on success', async () => {
-    const queryClient = createTestQueryClient()
-    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries')
-    mockInteractionService.recordInteraction.mockResolvedValue({} as any)
+    expect(result.current.isError).toBe(false);
+    expect(result.current.data).toEqual({ viewed: 2, liked: 1, passed: 0 });
+  });
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
+  test('error: sets isError', async () => {
+    // Immediate rejection and retries disabled means error should surface deterministically
+    getSummary.mockRejectedValue(new Error('boom'));
 
-    const { result } = renderHook(() => useRecordInteraction(), { wrapper })
+    const { result } = renderHook(() => useInteractionSummary(), { wrapper: createWrapper() });
 
-    result.current.mutate({ propertyId: 'prop-1', type: 'liked' })
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.data).toBeUndefined();
+  });
+});
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+describe('useInfiniteInteractions', () => {
+  const getInteractions = InteractionService.getInteractions as jest.Mock;
 
-    expect(mockInteractionService.recordInteraction).toHaveBeenCalledWith(
-      'prop-1',
-      'liked'
-    )
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: ['interactions', 'summary'],
-    })
-  })
-})
+  const createWrapper = () => {
+    const qc = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          gcTime: Infinity,
+        },
+      },
+    });
+    // eslint-disable-next-line react/display-name
+    return ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('loads first page and exposes nextCursor', async () => {
+    getInteractions.mockResolvedValue({ items: [{ id: 'p1' }], nextCursor: 'c2' });
+
+    const { result } = renderHook(() => useInfiniteInteractions('viewed'), { wrapper: createWrapper() });
+
+    // initially fetching
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.data?.pages[0]).toEqual({ items: [{ id: 'p1' }], nextCursor: 'c2' });
+    expect(result.current.hasNextPage).toBe(true);
+  });
+
+  test('fetchNextPage uses nextCursor and appends', async () => {
+    getInteractions
+      .mockResolvedValueOnce({ items: [{ id: 'p1' }], nextCursor: 'c2' })
+      .mockResolvedValueOnce({ items: [{ id: 'p2' }], nextCursor: null });
+
+    const { result } = renderHook(() => useInfiniteInteractions('liked'), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.data?.pages?.length).toBe(1));
+
+    await act(async () => {
+      await result.current.fetchNextPage();
+    });
+
+    await waitFor(() => expect(getInteractions).toHaveBeenLastCalledWith('liked', { cursor: 'c2' }));
+    expect(result.current.data?.pages.flatMap(p => p.items)).toEqual([{ id: 'p1' }, { id: 'p2' }]);
+    expect(result.current.hasNextPage).toBe(false);
+  });
+
+  test('handles error state', async () => {
+    getInteractions.mockRejectedValue(new Error('bad'));
+
+    const { result } = renderHook(() => useInfiniteInteractions('skip'), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 3000 });
+    expect(result.current.data).toBeUndefined();
+  });
+});

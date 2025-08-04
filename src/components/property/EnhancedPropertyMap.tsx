@@ -10,12 +10,14 @@ interface Coordinates {
   lng: number;
 }
 
-// Extend Window interface for Google Maps
-// declare global {
-//   interface Window {
-//     google: any;
-//   }
-// }
+// Extend Window interface for Google Maps to satisfy TS during SSR/type-check.
+// The actual Google Maps script populates window.google at runtime in the browser.
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    google?: any;
+  }
+}
 
 interface EnhancedPropertyMapProps {
   property: Property;
