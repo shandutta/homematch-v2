@@ -95,7 +95,10 @@ export class UserServiceClient {
   }
 
   // Alias for compatibility
-  static async updateUserProfile(userId: string, updates: UserProfileUpdate): Promise<UserProfile> {
+  static async updateUserProfile(
+    userId: string,
+    updates: UserProfileUpdate
+  ): Promise<UserProfile> {
     return this.updateProfile(userId, updates)
   }
 

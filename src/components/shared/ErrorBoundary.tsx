@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
             We encountered an unexpected error.
           </p>
           <Button
-            onClick={() => this.setState({ hasError: false })}
+            onClick={() => this.setState({ hasError: false, error: undefined })}
             variant="default"
           >
             Try Again

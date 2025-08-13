@@ -4,14 +4,20 @@ import Link from 'next/link'
 
 export function Footer() {
   return (
-    <footer className="mt-12 border-t border-purple-500/20 bg-purple-900/10">
-      <div className="container mx-auto px-4 py-6 text-center text-purple-300 sm:px-6 lg:px-8">
+    <footer className="mt-token-3xl border-token-primary-light bg-token-primary-light/10 border-t">
+      <div className="container-token text-token-secondary py-token-lg text-center">
         <p>&copy; {new Date().getFullYear()} HomeMatch. All rights reserved.</p>
-        <div className="mt-2 flex justify-center space-x-4 text-sm">
-          <Link href="/terms" className="transition-colors hover:text-white">
+        <div className="mt-token-sm gap-token-lg text-token-sm flex justify-center">
+          <Link
+            href="/terms"
+            className="transition-token-colors hover:text-token-primary"
+          >
             Terms of Service
           </Link>
-          <Link href="/privacy" className="transition-colors hover:text-white">
+          <Link
+            href="/privacy"
+            className="transition-token-colors hover:text-token-primary"
+          >
             Privacy Policy
           </Link>
         </div>

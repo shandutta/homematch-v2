@@ -1,5 +1,16 @@
 import type { NextConfig } from 'next'
 
+// Bundle analyzer configuration
+let withBundleAnalyzer: any
+try {
+  withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+  })
+} catch {
+  // Fallback if bundle analyzer is not installed
+  withBundleAnalyzer = (config: any) => config
+}
+
 const nextConfig: NextConfig = {
   /* config options here */
 
@@ -44,6 +55,30 @@ const nextConfig: NextConfig = {
   },
 
   trailingSlash: false,
+
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+
+  // Generate source maps for production debugging (optional)
+  productionBrowserSourceMaps: false,
+
+  // Experimental features for performance
+  experimental: {
+    // Future experimental features can be added here
+  },
+
+  // Optimize output
+  compiler: {
+    // Remove console logs in production (except errors and warnings)
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
+  },
 }
 
-export default nextConfig
+// Wrap with bundle analyzer if enabled
+export default withBundleAnalyzer(nextConfig)

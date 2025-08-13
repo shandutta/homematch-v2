@@ -150,8 +150,11 @@ describe('DashboardErrorBoundary', () => {
     )
 
     expect(mockGtag).toHaveBeenCalledWith('event', 'exception', {
-      description: 'Test error',
-      fatal: false,
+      event_category: 'dashboard_error',
+      custom_parameters: {
+        description: 'Test error',
+        fatal: false,
+      },
     })
 
     delete (window as any).gtag

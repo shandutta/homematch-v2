@@ -152,7 +152,8 @@ describe('PhoneMockup Component', () => {
     // After all cards are swiped, check for the empty state
     await waitFor(() => {
       expect(screen.getByText('Loading more homes...')).toBeInTheDocument()
-      expect(screen.getByText('🏠')).toBeInTheDocument()
+      // Check for the Home icon instead of emoji
+      expect(screen.getByRole('status')).toBeInTheDocument()
     })
   })
 

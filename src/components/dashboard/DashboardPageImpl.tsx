@@ -6,9 +6,14 @@ import { useRouter as useNextRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'react-hot-toast'
 import { SwipeContainer } from '@/components/property/SwipeContainer'
+import { Eye, Heart, X } from 'lucide-react'
 // import { useSettingsStore } from '@/lib/stores/settingsStore';
 // import { useSwipeStore } from '@/lib/stores/swipeStore';
 import { DashboardData } from '@/lib/data/loader'
+import {
+  CouplesMessages,
+  getRandomEncouragement,
+} from '@/lib/utils/couples-messaging'
 
 interface SwipeStats {
   totalViewed: number
@@ -55,7 +60,7 @@ export function DashboardPageImpl({
       const isNewUser = daysDifference < 0.003 // approximately 5 minutes
 
       if (isNewUser) {
-        toast.success(`Welcome to HomeMatch, ${session?.user?.email}! 🎉`)
+        toast.success(CouplesMessages.welcome.new)
         setHasShownWelcome(true)
       }
     }
@@ -80,15 +85,19 @@ export function DashboardPageImpl({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Your property browsing overview</p>
+    <div className="p-token-xl container mx-auto">
+      <div className="mb-token-xl">
+        <h1 className="mb-token-sm text-token-3xl font-bold">
+          {CouplesMessages.dashboard.title}
+        </h1>
+        <p className="text-muted-foreground">
+          {CouplesMessages.dashboard.subtitle}
+        </p>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mb-token-xl gap-token-lg grid grid-cols-1 md:grid-cols-3">
         <Card
-          className={`bg-card border-2 transition-all duration-300 hover:shadow-lg ${
+          className={`bg-card duration-token-normal ease-token-out hover:shadow-token-lg border-2 transition-all ${
             swipeStats.totalViewed > 0
               ? 'border-primary/20 hover:border-primary/40 cursor-pointer hover:scale-105'
               : 'border-border cursor-default'
@@ -97,91 +106,94 @@ export function DashboardPageImpl({
           role="region"
           aria-label="Properties Viewed"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              Properties Viewed
+          <CardHeader className="pb-token-sm flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-muted-foreground text-token-sm font-medium">
+              {CouplesMessages.stats.viewed.title}
             </CardTitle>
             <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-              <span className="text-lg">👁️</span>
+              <Eye className="text-primary h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-foreground text-3xl font-bold">
+            <div className="text-foreground text-token-3xl font-bold">
               {swipeStats.totalViewed}
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Total properties you&apos;ve seen
+            <p className="text-muted-foreground mt-token-xs text-token-xs">
+              {CouplesMessages.stats.viewed.subtitle}
             </p>
           </CardContent>
         </Card>
 
         <Card
-          className={`bg-card border-2 transition-all duration-300 hover:shadow-lg ${
+          className={`bg-card duration-token-normal ease-token-out hover:shadow-token-lg border-2 transition-all ${
             swipeStats.totalLiked > 0
-              ? 'cursor-pointer border-green-500/20 hover:scale-105 hover:border-green-500/40'
+              ? 'border-token-success-light hover:border-token-success cursor-pointer hover:scale-105'
               : 'border-border cursor-default'
           }`}
           onClick={handleLikedClick}
           role="region"
           aria-label="Properties Liked"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              Properties Liked
+          <CardHeader className="pb-token-sm flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-muted-foreground text-token-sm font-medium">
+              {CouplesMessages.stats.liked.title}
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
-              <span className="text-lg">❤️</span>
+            <div className="bg-token-success-light/10 flex h-8 w-8 items-center justify-center rounded-full">
+              <Heart className="text-token-success h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-token-3xl text-token-success font-bold">
               {swipeStats.totalLiked}
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Properties you&apos;re interested in
+            <p className="text-muted-foreground mt-token-xs text-token-xs">
+              {CouplesMessages.stats.liked.subtitle}
             </p>
           </CardContent>
         </Card>
 
         <Card
-          className={`bg-card border-2 transition-all duration-300 hover:shadow-lg ${
+          className={`bg-card duration-token-normal ease-token-out hover:shadow-token-lg border-2 transition-all ${
             swipeStats.totalPassed > 0
-              ? 'cursor-pointer border-red-500/20 hover:scale-105 hover:border-red-500/40'
+              ? 'border-token-error-light hover:border-token-error cursor-pointer hover:scale-105'
               : 'border-border cursor-default'
           }`}
           onClick={handlePassedClick}
           role="region"
           aria-label="Properties Passed"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
+          <CardHeader className="pb-token-sm flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-muted-foreground text-token-sm font-medium">
               Properties Passed
             </CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/10">
-              <span className="text-lg">👎</span>
+            <div className="bg-token-error-light/10 flex h-8 w-8 items-center justify-center rounded-full">
+              <X className="text-token-error h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">
+            <div className="text-token-3xl text-token-error font-bold">
               {swipeStats.totalPassed}
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Properties you&apos;ve declined
+            <p className="text-muted-foreground mt-token-xs text-token-xs">
+              Not quite right - but your perfect home is out there
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="bg-card rounded-lg p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold">Discover Properties</h2>
+      <div className="bg-card rounded-token-lg p-token-lg shadow-token-sm">
+        <h2 className="mb-token-md text-token-xl font-semibold">
+          {CouplesMessages.dashboard.discover}
+        </h2>
+        <p className="text-muted-foreground mb-token-md text-sm">
+          {getRandomEncouragement('swiping')}
+        </p>
         <SwipeContainer
           properties={initialData.properties as unknown as Property[]}
           neighborhoods={initialData.neighborhoods as unknown as Neighborhood[]}
           onEmpty={() => {
             setHasShownWelcome(false)
-            toast.success(
-              "You've seen all available properties! Check back later for new listings."
-            )
+            toast.success(CouplesMessages.empty.noProperties.message)
           }}
           onSwipe={(direction: 'left' | 'right') => {
             setSwipeStats((prev: SwipeStats) => ({

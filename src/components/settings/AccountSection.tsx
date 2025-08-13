@@ -74,23 +74,25 @@ export function AccountSection({ user }: AccountSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
             <Shield className="h-6 w-6" />
             Account Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="mb-1 text-sm text-purple-200">Email Address</p>
-            <p className="text-white">{user.email}</p>
+            <p className="text-primary/40 mb-1 text-sm">Email Address</p>
+            <p className="text-primary-foreground">{user.email}</p>
           </div>
           <div>
-            <p className="mb-1 text-sm text-purple-200">Account ID</p>
-            <p className="font-mono text-sm text-white">{user.id}</p>
+            <p className="text-primary/40 mb-1 text-sm">Account ID</p>
+            <p className="text-primary-foreground font-mono text-sm">
+              {user.id}
+            </p>
           </div>
           <div>
-            <p className="mb-1 text-sm text-purple-200">Account Created</p>
-            <p className="text-white">
+            <p className="text-primary/40 mb-1 text-sm">Account Created</p>
+            <p className="text-primary-foreground">
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -101,10 +103,10 @@ export function AccountSection({ user }: AccountSectionProps) {
             </p>
           </div>
           <div>
-            <p className="mb-1 text-sm text-purple-200">
+            <p className="text-primary/40 mb-1 text-sm">
               Authentication Provider
             </p>
-            <p className="text-white capitalize">
+            <p className="text-primary-foreground capitalize">
               {user.app_metadata?.provider || 'Email'}
             </p>
           </div>
@@ -113,19 +115,19 @@ export function AccountSection({ user }: AccountSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white">
+          <CardTitle className="text-primary-foreground text-xl">
             Session Management
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-purple-200">
+          <p className="text-primary/40 text-sm">
             Sign out from your current session on this device.
           </p>
           <Button
             onClick={handleSignOut}
             disabled={loading}
             variant="outline"
-            className="w-full border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+            className="border-primary/20 text-primary/60 hover:bg-primary/20 hover:text-primary-foreground w-full"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
@@ -133,12 +135,14 @@ export function AccountSection({ user }: AccountSectionProps) {
         </CardContent>
       </Card>
 
-      <Card className="card-glassmorphism-style border-red-500/20">
+      <Card className="card-glassmorphism-style border-destructive/20">
         <CardHeader>
-          <CardTitle className="text-xl text-white">Danger Zone</CardTitle>
+          <CardTitle className="text-primary-foreground text-xl">
+            Danger Zone
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert className="border-red-500/20 bg-red-500/10">
+          <Alert className="border-destructive/20 bg-destructive/10">
             <AlertTriangle className="h-4 w-4 text-red-400" />
             <AlertDescription className="text-red-200">
               Deleting your account is permanent and cannot be undone. All your
@@ -150,7 +154,7 @@ export function AccountSection({ user }: AccountSectionProps) {
             onClick={handleDeleteAccount}
             disabled={loading}
             variant="outline"
-            className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            className="border-destructive/20 hover:bg-destructive/10 w-full text-red-400 hover:text-red-300"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete Account

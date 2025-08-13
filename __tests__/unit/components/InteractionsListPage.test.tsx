@@ -1,8 +1,9 @@
 import { jest, describe, it, expect } from '@jest/globals'
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { InteractionsListPage } from '@/components/dashboard/InteractionsListPage'
+import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
 
 // Mock the hook used by the component
 jest.mock('@/hooks/useInteractions', () => ({
@@ -32,7 +33,7 @@ describe('InteractionsListPage', () => {
       data: undefined,
     })
 
-    render(<InteractionsListPage type="viewed" title="Viewed" />)
+    renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
     // Expect multiple skeletons visible (we render 6)
     const skeletons = document.querySelectorAll('.animate-pulse.h-96')
@@ -46,7 +47,7 @@ describe('InteractionsListPage', () => {
       data: { pages: [{ items: [] }] },
     })
 
-    render(<InteractionsListPage type="liked" title="Liked" />)
+    renderWithQuery(<InteractionsListPage type="liked" title="Liked" />)
 
     expect(screen.getByText(/No liked yet\./i)).toBeTruthy()
     expect(
@@ -97,7 +98,7 @@ describe('InteractionsListPage', () => {
     })
 
     // 'skip' is the allowed literal in InteractionType (domain renamed from "passed")
-    render(<InteractionsListPage type="skip" title="Passed" />)
+    renderWithQuery(<InteractionsListPage type="skip" title="Passed" />)
 
     // We expect to see two cards' addresses rendered via PropertyCard
     expect(screen.getByText('123 A')).toBeTruthy()
@@ -134,7 +135,7 @@ describe('InteractionsListPage', () => {
       },
     })
 
-    render(<InteractionsListPage type="viewed" title="Viewed" />)
+    renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
     const btn = screen.getByRole('button', {
       name: /Load More/i,
@@ -173,7 +174,7 @@ describe('InteractionsListPage', () => {
       },
     })
 
-    render(<InteractionsListPage type="viewed" title="Viewed" />)
+    renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
     const btn = screen.getByRole('button', {
       name: /Loading more.../i,

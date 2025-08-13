@@ -1,16 +1,17 @@
 # HomeMatch V2 Documentation Hub
 
-> **Simplified Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch V2.
+> **Consolidated Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch V2.
 
-This directory contains **6 core documents** organized by topic and purpose. Use this index to quickly find the information you need.
+This directory contains **7 core documents** organized by topic and purpose. Use this index to quickly find the information you need.
 
 ## Quick Navigation
 
 | Document                                       | Purpose                            | Contains                                                           |
 | ---------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
-| **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**         | Development setup & project status | Current status, environment setup, roadmap, MVP requirements       |
+| **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**         | Development setup & project status | Environment setup, dependencies, configuration, getting started    |
 | **[ARCHITECTURE.md](./ARCHITECTURE.md)**       | Complete system architecture       | Tech stack, database, security, API reference, custom hooks        |
 | **[TESTING.md](./TESTING.md)**                 | Testing & development workflows    | Unit/integration/E2E testing, git workflows, debugging, deployment |
+| **[PERFORMANCE.md](./PERFORMANCE.md)**         | Performance optimization guide     | Core Web Vitals, monitoring, testing, optimization strategies      |
 | **[STYLE_GUIDE.md](./STYLE_GUIDE.md)**         | UI/UX design guidelines            | Design principles, components, accessibility standards             |
 | **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)** | External API integration           | Zillow API endpoints, authentication, data sync                    |
 | **README.md** (this file)                      | Documentation index                | Quick navigation and getting started                               |
@@ -19,7 +20,7 @@ This directory contains **6 core documents** organized by topic and purpose. Use
 
 ### For New Developers
 
-1. **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Environment setup and current project status
+1. **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Environment setup and getting started
 2. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and technical architecture
 3. **[TESTING.md](./TESTING.md)** - Testing setup and development workflows
 
@@ -31,59 +32,40 @@ This directory contains **6 core documents** organized by topic and purpose. Use
 ### For DevOps/QA
 
 1. **[TESTING.md](./TESTING.md)** - Complete testing strategy and CI/CD integration
-2. **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Environment setup and deployment roadmap
+2. **[PERFORMANCE.md](./PERFORMANCE.md)** - Performance monitoring and optimization
+3. **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Environment setup and deployment
 
 ## Current Project Status
 
-**Last Updated**: August 4, 2025  
-**Status**: Foundation Complete, Dashboard & Interactions Implemented
+**Last Updated**: January 2025  
+**Status**: Production Ready with Advanced Features
 
 ### ✅ Production Ready
 
-- **Database Architecture**: 6 core tables with RLS policies, 99.1% migration success
-- **Test Infrastructure**: 100% unit/integration test pass rates
-- **Authentication**: Supabase Auth with Google OAuth integration
-- **Dashboard & Interactions**: Complete property swiper and user interaction system
-- **Data Migration**: 2,214 records migrated (1,123 neighborhoods + 1,091 properties)
+- **Core Features**: Property browsing, swiping, couples collaboration
+- **Database**: Supabase with PostGIS, RLS policies, real-time updates
+- **Authentication**: Complete auth flow with household management
+- **UI/UX**: Modern design with Framer Motion animations
+- **Testing**: Comprehensive test suite with 80%+ coverage
+- **Performance**: Optimized for Core Web Vitals compliance
 
-### ⚠️ In Development
+### 🚀 Advanced Features
 
-- Landing page (marketing)
-- Property search implementation
-- ML recommendation system
-- Household collaboration features
+- **ML Scoring**: 3-phase property matching system
+- **Real-time Sync**: Couples collaboration with live updates
+- **Geographic Search**: PostGIS spatial queries
+- **Natural Language**: AI-powered search capabilities
 
-## Document Details
+## Document Overview
 
-### SETUP_GUIDE.md
+### Core Documentation
 
-**Consolidates**: CURRENT_STATUS.md + IMPLEMENTATION_PLAN.md
-
-- Current implementation status with detailed progress tracking
-- Complete development environment setup instructions
-- Development roadmap and MVP requirements
-- Timeline and risk mitigation strategies
-
-### ARCHITECTURE.md
-
-**Enhanced with**: API_REFERENCE.md + HOOKS_REFERENCE.md
-
-- Complete system architecture and tech stack
-- Database schema with PostGIS integration
-- Authentication and security patterns
-- API endpoints and request/response schemas
-- Custom React hooks documentation
-- State management and component architecture
-
-### TESTING.md
-
-**Enhanced with**: DEVELOPMENT_WORKFLOWS.md
-
-- 4-tier testing strategy (unit, integration, E2E, debugging)
-- Complete development workflows and git processes
-- Code quality checklist and review procedures
-- Deployment workflows and monitoring
-- Emergency procedures and rollback strategies
+- **SETUP_GUIDE.md**: Environment setup and development workflow
+- **ARCHITECTURE.md**: System design, database schema, and API reference
+- **TESTING.md**: Complete testing strategy and quality assurance
+- **PERFORMANCE.md**: Optimization guide and monitoring setup
+- **STYLE_GUIDE.md**: Design system and UI/UX guidelines
+- **RAPIDAPI_ZILLOW.md**: External API integration reference
 
 ## External Resources
 

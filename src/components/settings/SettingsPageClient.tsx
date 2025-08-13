@@ -26,23 +26,26 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
   const [activeTab, setActiveTab] = useState('preferences')
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="text-primary-foreground min-h-screen">
       {/* Header */}
-      <div className="border-b border-purple-500/20 bg-purple-900/10 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-6">
+      <div
+        className="border-token-primary/20 bg-token-primary/10 border-b backdrop-blur-md"
+        data-testid="settings-header"
+      >
+        <div className="p-token-lg container mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-purple-300 transition-colors hover:text-white"
+                className="text-token-primary-light transition-token-colors hover:text-primary-foreground flex items-center gap-2"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back to Dashboard</span>
               </Link>
-              <h1 className="text-3xl font-bold">Settings</h1>
+              <h1 className="text-token-3xl font-bold">Settings</h1>
             </div>
             <Link href="/profile">
-              <button className="text-purple-300 transition-colors hover:text-white">
+              <button className="text-token-primary-light transition-token-colors hover:text-primary-foreground">
                 View Profile
               </button>
             </Link>
@@ -51,13 +54,13 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="p-token-xl container mx-auto">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="border border-purple-500/20 bg-purple-900/20">
+          <TabsList className="border-token-primary/20 bg-token-primary/20 border">
             <TabsTrigger
               value="preferences"
               className="flex items-center gap-2"

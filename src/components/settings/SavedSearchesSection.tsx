@@ -5,7 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { SavedSearch } from '@/types/database'
-import { Search, Trash2, Bell, BellOff } from 'lucide-react'
+import {
+  Search,
+  Trash2,
+  Bell,
+  BellOff,
+  MapPin,
+  DollarSign,
+  Bed,
+  Home,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SavedSearchesSectionProps {
@@ -71,13 +80,35 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
 
   const formatFilters = (filters: Record<string, unknown>) => {
     const parts = []
-    if (filters.location) parts.push(`📍 ${filters.location}`)
+    if (filters.location) {
+      parts.push({
+        icon: MapPin,
+        text: `${filters.location}`,
+        key: 'location',
+      })
+    }
     if (filters.priceMin || filters.priceMax) {
       const price = `$${filters.priceMin || 0} - $${filters.priceMax || '∞'}`
-      parts.push(`💰 ${price}`)
+      parts.push({
+        icon: DollarSign,
+        text: price,
+        key: 'price',
+      })
     }
-    if (filters.bedrooms) parts.push(`🛏️ ${filters.bedrooms}+ beds`)
-    if (filters.propertyType) parts.push(`🏠 ${filters.propertyType}`)
+    if (filters.bedrooms) {
+      parts.push({
+        icon: Bed,
+        text: `${filters.bedrooms}+ beds`,
+        key: 'bedrooms',
+      })
+    }
+    if (filters.propertyType) {
+      parts.push({
+        icon: Home,
+        text: `${filters.propertyType}`,
+        key: 'propertyType',
+      })
+    }
     return parts
   }
 
@@ -85,7 +116,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <Card className="card-glassmorphism-style">
         <CardContent className="py-8">
-          <p className="text-center text-purple-200">
+          <p className="text-primary/40 text-center">
             Loading saved searches...
           </p>
         </CardContent>
@@ -97,16 +128,16 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
             <Search className="h-6 w-6" />
             Saved Searches
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="py-8 text-center text-purple-200">
+          <p className="text-primary/40 py-8 text-center">
             You haven&apos;t saved any searches yet.
           </p>
-          <p className="text-center text-sm text-purple-300/60">
+          <p className="text-primary/60/60 text-center text-sm">
             Save searches from the main dashboard to get notified about new
             matches!
           </p>
@@ -119,13 +150,13 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
             <Search className="h-6 w-6" />
             Saved Searches
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-purple-200">
+          <p className="text-primary/40 text-sm">
             Manage your saved searches and notification preferences
           </p>
         </CardContent>
@@ -140,18 +171,22 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
             <CardContent className="pt-6">
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="mb-2 text-lg font-semibold text-white">
+                  <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
                     {search.name}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {formatFilters(filters).map((filter, index) => (
-                      <span
-                        key={index}
-                        className="rounded bg-purple-500/20 px-2 py-1 text-sm text-purple-200"
-                      >
-                        {filter}
-                      </span>
-                    ))}
+                    {formatFilters(filters).map((filter) => {
+                      const IconComponent = filter.icon
+                      return (
+                        <span
+                          key={filter.key}
+                          className="bg-primary/20 text-primary/40 flex items-center gap-1 rounded px-2 py-1 text-sm"
+                        >
+                          <IconComponent className="h-3 w-3" />
+                          {filter.text}
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -162,7 +197,9 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                       toggleNotifications(search.id, hasNotifications)
                     }
                     className={
-                      hasNotifications ? 'text-green-400' : 'text-gray-400'
+                      hasNotifications
+                        ? 'text-green-400'
+                        : 'text-muted-foreground/80'
                     }
                   >
                     {hasNotifications ? (
@@ -181,7 +218,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-purple-300/60">
+              <p className="text-primary/60/60 text-xs">
                 Created {new Date(search.created_at!).toLocaleDateString()}
               </p>
             </CardContent>

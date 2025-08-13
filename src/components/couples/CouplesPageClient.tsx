@@ -1,0 +1,308 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Heart, RefreshCw } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { CouplesMutualLikesSection } from './CouplesMutualLikesSection'
+import { CouplesActivityFeed } from './CouplesActivityFeed'
+import { CouplesStats } from './CouplesStats'
+import { CouplesHero } from './CouplesHero'
+import { CouplesPageSkeleton } from './CouplesLoadingStates'
+import {
+  NoHouseholdState,
+  WaitingForPartnerState,
+  NetworkErrorState,
+} from './CouplesEmptyStates'
+import { DisputedPropertiesAlert } from './DisputedPropertiesAlert'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from '@/lib/utils/toast'
+import type {
+  MutualLike,
+  HouseholdActivity,
+  CouplesStats as CouplesStatsType,
+} from '@/lib/services/couples'
+
+// Enhanced mutual like type with optional property details from API
+interface EnhancedMutualLike extends MutualLike {
+  property?: {
+    address: string
+    price: number
+    bedrooms: number
+    bathrooms: number
+    square_feet?: number
+    images?: string[]
+  }
+}
+
+export function CouplesPageClient() {
+  const [mutualLikes, setMutualLikes] = useState<EnhancedMutualLike[]>([])
+  const [activity, setActivity] = useState<HouseholdActivity[]>([])
+  const [stats, setStats] = useState<CouplesStatsType | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [userHouseholdStatus, setUserHouseholdStatus] = useState<
+    'loading' | 'no-household' | 'waiting-partner' | 'active' | 'error'
+  >('loading')
+
+  const fetchCouplesData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const supabase = createClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        toast.authRequired()
+        setError('Authentication required')
+        return
+      }
+
+      // First check user's household status
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
+        .select('household_id, households(id, user_count)')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!userProfile?.household_id) {
+        setUserHouseholdStatus('no-household')
+        return
+      }
+
+      // Check if there are other users in the household
+      const householdUserCount =
+        (userProfile.households as { user_count?: number })?.user_count || 1
+      if (householdUserCount < 2) {
+        setUserHouseholdStatus('waiting-partner')
+        return
+      }
+
+      setUserHouseholdStatus('active')
+
+      const authHeaders = {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      }
+
+      // Fetch all couples data in parallel
+      const [mutualLikesRes, activityRes, statsRes] = await Promise.all([
+        fetch('/api/couples/mutual-likes?includeProperties=true', {
+          headers: authHeaders,
+        }),
+        fetch('/api/couples/activity?limit=10', {
+          headers: authHeaders,
+        }),
+        fetch('/api/couples/stats', {
+          headers: authHeaders,
+        }),
+      ])
+
+      // Handle different types of errors
+      if (
+        mutualLikesRes.status === 401 ||
+        activityRes.status === 401 ||
+        statsRes.status === 401
+      ) {
+        toast.authRequired()
+        setError('Please sign in again')
+        return
+      }
+
+      if (!mutualLikesRes.ok || !activityRes.ok || !statsRes.ok) {
+        if (
+          mutualLikesRes.status >= 500 ||
+          activityRes.status >= 500 ||
+          statsRes.status >= 500
+        ) {
+          throw new Error('Server error - please try again later')
+        }
+        throw new Error('Failed to fetch couples data')
+      }
+
+      const [mutualLikesData, activityData, statsData] = await Promise.all([
+        mutualLikesRes.json(),
+        activityRes.json(),
+        statsRes.json(),
+      ])
+
+      setMutualLikes(mutualLikesData.mutualLikes || [])
+      setActivity(activityData.activity || [])
+      setStats(statsData.stats)
+
+      // Success toast if this was a retry
+      if (retryCount > 0) {
+        toast.success('Data loaded successfully!')
+      }
+    } catch (err) {
+      console.error('Error fetching couples data:', err)
+
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load couples data'
+      setError(errorMessage)
+
+      // Show appropriate toast
+      if (
+        errorMessage.includes('fetch') ||
+        errorMessage.includes('network') ||
+        !navigator.onLine
+      ) {
+        toast.networkError()
+      } else {
+        toast.error('Failed to load couples data', errorMessage)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [retryCount])
+
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1)
+    fetchCouplesData()
+  }
+
+  useEffect(() => {
+    fetchCouplesData()
+  }, [fetchCouplesData])
+
+  // Loading state
+  if (loading || userHouseholdStatus === 'loading') {
+    return <CouplesPageSkeleton />
+  }
+
+  // No household state
+  if (userHouseholdStatus === 'no-household') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <NoHouseholdState />
+      </motion.div>
+    )
+  }
+
+  // Waiting for partner state
+  if (userHouseholdStatus === 'waiting-partner') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <WaitingForPartnerState />
+      </motion.div>
+    )
+  }
+
+  // Error state with retry option
+  if (error) {
+    // Network/connection error
+    if (
+      error.includes('fetch') ||
+      error.includes('network') ||
+      !navigator.onLine
+    ) {
+      return <NetworkErrorState onRetry={handleRetry} />
+    }
+
+    // Generic error state
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Card className="card-glassmorphism-style max-w-md border-red-500/20">
+          <CardContent className="p-6 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+            >
+              <Heart className="mx-auto mb-4 h-12 w-12 text-red-400" />
+            </motion.div>
+
+            <h2 className="text-primary-foreground mb-2 text-xl font-semibold">
+              Something went wrong
+            </h2>
+
+            <p className="text-primary/60 mb-4 text-sm">{error}</p>
+
+            <div className="flex justify-center gap-2">
+              <Button
+                onClick={handleRetry}
+                size="sm"
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <motion.div
+      className="space-y-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <CouplesHero stats={stats} />
+
+      {/* Disputed Properties Alert */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.5 }}
+      >
+        <DisputedPropertiesAlert />
+      </motion.div>
+
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Main Content Area */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Mutual Likes Section */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <CouplesMutualLikesSection
+              mutualLikes={mutualLikes}
+              householdStats={
+                stats
+                  ? { total_household_likes: stats.total_household_likes }
+                  : undefined
+              }
+            />
+          </motion.div>
+
+          {/* Activity Feed */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <CouplesActivityFeed activity={activity} />
+          </motion.div>
+        </div>
+
+        {/* Sidebar with Stats */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <CouplesStats stats={stats} />
+        </motion.div>
+      </div>
+    </motion.div>
+  )
+}

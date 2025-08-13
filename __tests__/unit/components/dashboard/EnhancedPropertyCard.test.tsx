@@ -54,21 +54,19 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    // Check address
-    expect(screen.getByText('123 Test Street')).toBeInTheDocument()
-    expect(screen.getByText(/Test Neighborhood, TS/)).toBeInTheDocument()
-
-    // Check price formatting
-    expect(screen.getByText('$500,000')).toBeInTheDocument()
-
-    // Check beds/baths
-    expect(screen.getByText('3 beds • 2.5 baths')).toBeInTheDocument()
-
-    // Check square footage
-    expect(screen.getByText('2,000 sqft')).toBeInTheDocument()
-
-    // Check property type
-    expect(screen.getByText('house')).toBeInTheDocument()
+    // Use data-testid for stable targeting, fallback to content for user-facing validation
+    expect(screen.getByTestId('property-address')).toHaveTextContent(
+      '123 Test Street'
+    )
+    expect(screen.getByTestId('property-location')).toHaveTextContent(
+      'Test Neighborhood, TS'
+    )
+    expect(screen.getByTestId('property-price')).toHaveTextContent('$500,000')
+    expect(screen.getByTestId('property-beds-baths')).toHaveTextContent(
+      '3 beds • 2.5 baths'
+    )
+    expect(screen.getByTestId('property-sqft')).toHaveTextContent('2,000 sqft')
+    expect(screen.getByTestId('property-type')).toHaveTextContent('house')
   })
 
   test('renders action buttons when showActions is true', () => {
@@ -81,8 +79,8 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /pass/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /like/i })).toBeInTheDocument()
+    expect(screen.getByTestId('pass-button')).toBeInTheDocument()
+    expect(screen.getByTestId('like-button')).toBeInTheDocument()
   })
 
   test('hides action buttons when showActions is false', () => {
@@ -95,12 +93,8 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(
-      screen.queryByRole('button', { name: /pass/i })
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: /like/i })
-    ).not.toBeInTheDocument()
+    expect(screen.queryByTestId('pass-button')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('like-button')).not.toBeInTheDocument()
   })
 
   test('calls onLike when like button is clicked', async () => {
@@ -114,7 +108,7 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    const likeButton = screen.getByRole('button', { name: /like/i })
+    const likeButton = screen.getByTestId('like-button')
     await user.click(likeButton)
 
     expect(mockOnLike).toHaveBeenCalledWith('1')
@@ -132,7 +126,7 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    const passButton = screen.getByRole('button', { name: /pass/i })
+    const passButton = screen.getByTestId('pass-button')
     await user.click(passButton)
 
     expect(mockOnDislike).toHaveBeenCalledWith('1')
@@ -148,13 +142,9 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(
-      screen.getByRole('button', { name: 'Previous image' })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Next image' })
-    ).toBeInTheDocument()
-    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('previous-image-button')).toBeInTheDocument()
+    expect(screen.getByTestId('next-image-button')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 3')
   })
 
   test('navigates images correctly', async () => {
@@ -168,27 +158,27 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    const nextButton = screen.getByRole('button', { name: 'Next image' })
-    const prevButton = screen.getByRole('button', { name: 'Previous image' })
+    const nextButton = screen.getByTestId('next-image-button')
+    const prevButton = screen.getByTestId('previous-image-button')
 
     // Initially shows first image
-    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 3')
 
     // Click next
     await user.click(nextButton)
-    expect(screen.getByText('2 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('2 / 3')
 
     // Click next again
     await user.click(nextButton)
-    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('3 / 3')
 
     // Click next to wrap around
     await user.click(nextButton)
-    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 3')
 
     // Click previous to go back
     await user.click(prevButton)
-    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('3 / 3')
   })
 
   test('handles single image correctly', () => {
@@ -207,12 +197,10 @@ describe('EnhancedPropertyCard', () => {
 
     // Should not show navigation buttons
     expect(
-      screen.queryByRole('button', { name: 'Previous image' })
+      screen.queryByTestId('previous-image-button')
     ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Next image' })
-    ).not.toBeInTheDocument()
-    expect(screen.queryByText(/1 \/ 1/)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('next-image-button')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('image-counter')).not.toBeInTheDocument()
   })
 
   test('handles no images with fallback', () => {
@@ -249,7 +237,9 @@ describe('EnhancedPropertyCard', () => {
     fireEvent.error(image)
 
     // Component should handle error gracefully (no crash)
-    expect(screen.getByText('123 Test Street')).toBeInTheDocument()
+    expect(screen.getByTestId('property-address')).toHaveTextContent(
+      '123 Test Street'
+    )
   })
 
   test('formats prices correctly', () => {
@@ -268,7 +258,7 @@ describe('EnhancedPropertyCard', () => {
         />
       )
 
-      expect(screen.getByText(expected)).toBeInTheDocument()
+      expect(screen.getByTestId('property-price')).toHaveTextContent(expected)
       rerender(<></>)
     })
   })
@@ -295,10 +285,14 @@ describe('EnhancedPropertyCard', () => {
     )
 
     // Should still render
-    expect(screen.getByText('123 Test St')).toBeInTheDocument()
-    expect(screen.getByText('0 beds • 0 baths')).toBeInTheDocument()
+    expect(screen.getByTestId('property-address')).toHaveTextContent(
+      '123 Test St'
+    )
+    expect(screen.getByTestId('property-beds-baths')).toHaveTextContent(
+      '0 beds • 0 baths'
+    )
     // Square feet should be empty string when null
-    expect(screen.queryByText(/sqft/)).not.toBeInTheDocument()
+    expect(screen.getByTestId('property-sqft')).toHaveTextContent('')
   })
 
   test('uses neighborhood when provided', () => {
@@ -311,7 +305,9 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(screen.getByText(/Custom Neighborhood, TS/)).toBeInTheDocument()
+    expect(screen.getByTestId('property-location')).toHaveTextContent(
+      'Custom Neighborhood, TS'
+    )
   })
 
   test('falls back to city when no neighborhood', () => {
@@ -323,6 +319,8 @@ describe('EnhancedPropertyCard', () => {
       />
     )
 
-    expect(screen.getByText(/Test City, TS/)).toBeInTheDocument()
+    expect(screen.getByTestId('property-location')).toHaveTextContent(
+      'Test City, TS'
+    )
   })
 })

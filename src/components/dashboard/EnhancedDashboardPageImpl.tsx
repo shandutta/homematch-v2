@@ -5,8 +5,10 @@ import {
   useInteractionSummary,
   useRecordInteraction,
 } from '@/hooks/useInteractions'
+import { useCouplesInteraction } from '@/hooks/useCouplesInteractions'
 import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
 import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
+import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
@@ -14,6 +16,7 @@ import { useRenderPerformance } from '@/lib/utils/client-performance'
 
 interface EnhancedDashboardPageImplProps {
   initialData: DashboardData
+  userId?: string
   // These props are passed from the server component but not currently used in the client component
   // They will be used in future iterations for enhanced functionality
   // _returning?: boolean  // Prefixed with _ to indicate unused variable
@@ -24,6 +27,7 @@ interface EnhancedDashboardPageImplProps {
 
 export function EnhancedDashboardPageImpl({
   initialData,
+  userId,
   // _returning,  // Prefixed with _ to indicate unused variable
   // _userProfile,  // Prefixed with _ to indicate unused variable
   // _initialSwipeStats,  // Prefixed with _ to indicate unused variable
@@ -46,6 +50,9 @@ export function EnhancedDashboardPageImpl({
   const { data: summary, isLoading: summaryIsLoading } = useInteractionSummary()
   const { mutate: recordInteraction } = useRecordInteraction()
 
+  // Enhanced couples interaction with celebration support
+  const couplesInteraction = useCouplesInteraction()
+
   const handleDecision = (propertyId: string, type: InteractionType) => {
     // 1. Optimistically remove the card from the UI
     setProperties((prev) => prev.filter((p) => p.id !== propertyId))
@@ -63,18 +70,30 @@ export function EnhancedDashboardPageImpl({
       setOptimisticSummary(newSummary)
     }
 
-    // 3. Call the mutation to update the backend.
-    // React Query will handle refetching the summary in the background on success.
-    recordInteraction({ propertyId, type })
+    // 3. Use couples interaction if user is in a household, otherwise regular interaction
+    if (userId) {
+      couplesInteraction.recordInteraction({ propertyId, type })
+    } else {
+      recordInteraction({ propertyId, type })
+    }
   }
 
   // Use the optimistic summary if it exists, otherwise fall back to the fetched server state.
   const displaySummary = optimisticSummary || summary
 
   return (
-    <>
+    <div className="space-y-8">
       <DashboardStats summary={displaySummary} isLoading={summaryIsLoading} />
-      <PropertySwiper properties={properties} onDecision={handleDecision} />
-    </>
+
+      {/* Add MutualLikesSection if userId is available */}
+      {userId && <MutualLikesSection userId={userId} className="w-full" />}
+
+      <PropertySwiper
+        properties={properties}
+        onDecision={handleDecision}
+        celebrationTrigger={couplesInteraction.celebrationTrigger}
+        onClearCelebration={couplesInteraction.clearCelebration}
+      />
+    </div>
   )
 }

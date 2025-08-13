@@ -19,29 +19,29 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       label: 'Properties Viewed',
       value: summary.views,
       icon: Eye,
-      colorClass: 'text-blue-400',
-      bgClass: 'bg-blue-500/10',
+      colorClass: 'text-token-info',
+      bgClass: 'bg-token-info-light',
     },
     {
       label: 'Properties Liked',
       value: summary.likes,
       icon: Heart,
-      colorClass: 'text-green-400',
-      bgClass: 'bg-green-500/10',
+      colorClass: 'text-token-success',
+      bgClass: 'bg-token-success-light',
     },
     {
       label: 'Properties Passed',
       value: summary.dislikes,
       icon: X,
-      colorClass: 'text-red-400',
-      bgClass: 'bg-red-500/10',
+      colorClass: 'text-token-error',
+      bgClass: 'bg-token-error-light',
     },
     {
       label: 'Saved Searches',
       value: summary.saved_searches,
       icon: Search,
-      colorClass: 'text-purple-400',
-      bgClass: 'bg-purple-500/10',
+      colorClass: 'text-token-primary',
+      bgClass: 'bg-token-primary-light',
     },
   ]
 
@@ -49,7 +49,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
             <ActivityIcon className="h-6 w-6" />
             Activity Overview
           </CardTitle>
@@ -59,10 +59,10 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-lg border border-purple-500/20 bg-white/5 p-4"
+                className="border-primary/20 bg-background/5 rounded-lg border p-4"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm text-purple-200">{stat.label}</p>
+                  <p className="text-primary/40 text-sm">{stat.label}</p>
                   <div className={`rounded-lg p-2 ${stat.bgClass}`}>
                     <stat.icon className={`h-5 w-5 ${stat.colorClass}`} />
                   </div>
@@ -74,17 +74,17 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             ))}
           </div>
 
-          <div className="mt-6 rounded-lg border border-purple-500/20 bg-purple-500/10 p-4">
+          <div className="border-primary/20 bg-primary/10 mt-6 rounded-lg border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-200">Total Interactions</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-primary/40 text-sm">Total Interactions</p>
+                <p className="text-primary-foreground text-2xl font-bold">
                   {summary.total_interactions.toLocaleString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-purple-200">Engagement Rate</p>
-                <p className="text-2xl font-bold text-purple-400">
+                <p className="text-primary/40 text-sm">Engagement Rate</p>
+                <p className="text-primary/80 text-2xl font-bold">
                   {summary.views > 0
                     ? `${Math.round((summary.likes / summary.views) * 100)}%`
                     : '0%'}
@@ -97,11 +97,13 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white">Insights</CardTitle>
+          <CardTitle className="text-primary-foreground text-xl">
+            Insights
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className="text-purple-200">
+            <p className="text-primary/40">
               {summary.likes > summary.dislikes ? (
                 <>
                   <span className="font-semibold text-green-400">
@@ -126,9 +128,9 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
               )}
             </p>
             {summary.saved_searches > 0 && (
-              <p className="text-purple-200">
+              <p className="text-primary/40">
                 You have{' '}
-                <span className="font-semibold text-purple-400">
+                <span className="text-primary/80 font-semibold">
                   {summary.saved_searches} saved{' '}
                   {summary.saved_searches === 1 ? 'search' : 'searches'}
                 </span>{' '}

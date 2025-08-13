@@ -13,9 +13,12 @@ import {
   Heart,
   X,
 } from 'lucide-react'
-import Image from 'next/image'
+import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from './PropertyMap'
 import { InteractionType } from '@/types/app'
+import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
+import { useMutualLikes } from '@/hooks/useCouples'
+import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 
 interface PropertyCardProps {
   property: Property
@@ -38,6 +41,12 @@ export function PropertyCard({
   neighborhood,
   onDecision,
 }: PropertyCardProps) {
+  const { data: mutualLikes = [] } = useMutualLikes()
+
+  // Check if this property is a mutual like
+  const isMutualLike = mutualLikes.some(
+    (ml) => ml.property_id === property.id && ml.liked_by_count >= 2
+  )
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -52,35 +61,27 @@ export function PropertyCard({
     return new Intl.NumberFormat('en-US').format(sqft)
   }
 
-  // Use images array from property, fallback to placeholder
-  const imageUrl =
-    property.images && property.images.length > 0
-      ? property.images[0]
-      : '/images/properties/house-1.svg'
+  // Use images array from property - PropertyImage component handles fallbacks
 
   return (
-    <div className="bg-card relative h-full w-full overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl">
+    <div className="bg-card rounded-token-xl shadow-token-lg duration-token-normal ease-token-out hover:shadow-token-xl relative h-full w-full overflow-hidden transition-all">
       {/* Property Image */}
       <div className="relative h-1/2 w-full">
-        <Image
-          src={imageUrl}
+        <PropertyImage
+          src={property.images || undefined}
           alt={property.address || 'Property'}
           fill
           className="object-cover"
           priority
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          onError={(e) => {
-            ;(e.target as HTMLImageElement).src =
-              '/images/properties/house-1.svg'
-          }}
         />
 
         {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="from-token-secondary-900/70 via-token-secondary-900/20 absolute inset-0 bg-gradient-to-t to-transparent" />
 
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
-          <Badge className="bg-white/95 px-3 py-1.5 text-lg font-bold text-gray-900 shadow-md backdrop-blur-sm">
+          <Badge className="bg-token-background-primary/95 p-token-md text-token-lg text-token-secondary-900 shadow-token-md font-bold backdrop-blur-sm">
             {formatPrice(property.price)}
           </Badge>
         </div>
@@ -90,7 +91,7 @@ export function PropertyCard({
           <div className="absolute top-4 left-4">
             <Badge
               variant="secondary"
-              className="bg-white/95 shadow-md backdrop-blur-sm"
+              className="bg-token-background-primary/95 shadow-token-md backdrop-blur-sm"
             >
               <Home className="mr-1 h-3 w-3" />
               {property.property_type}
@@ -98,13 +99,22 @@ export function PropertyCard({
           </div>
         )}
 
+        {/* Mutual Likes Badge - positioned at top center */}
+        <div className="absolute top-4 left-1/2 z-10 -translate-x-1/2">
+          <MutualLikesIndicator
+            propertyId={property.id}
+            mutualLikes={mutualLikes}
+            variant="compact"
+          />
+        </div>
+
         {/* Zillow Link */}
         <a
           href={buildZillowUrl(property)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()} // Prevent card swipe on click
-          className="absolute top-4 right-4 rounded-full bg-black/40 p-2 text-white transition-colors hover:bg-black/60"
+          className="rounded-token-full bg-token-text-inverse/10 text-token-text-inverse duration-token-fast ease-token-out hover:bg-token-text-inverse/20 absolute top-4 right-4 flex h-10 w-10 items-center justify-center backdrop-blur-md transition-all"
           aria-label="View on Zillow"
         >
           <ExternalLink className="h-5 w-5" />
@@ -112,42 +122,51 @@ export function PropertyCard({
       </div>
 
       {/* Property Details */}
-      <div className="h-1/2 p-5">
-        <div className="mb-4">
-          <h3 className="text-foreground text-xl font-bold">
+      <div className="p-token-lg h-1/2">
+        <div className="mb-token-md">
+          <h3 className="text-foreground text-token-xl font-bold">
             {property.address}
           </h3>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-token-sm">
             {neighborhood?.name || property.city}, {property.state}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          <div className="flex items-center gap-1.5">
-            <Bed className="text-primary h-4 w-4" />
+        <div className="gap-token-sm text-token-sm grid grid-cols-3">
+          <div className="gap-token-xs flex items-center">
+            <Bed className="text-token-primary h-4 w-4" />
             <span className="font-medium">{property.bedrooms} beds</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Bath className="text-primary h-4 w-4" />
+          <div className="gap-token-xs flex items-center">
+            <Bath className="text-token-primary h-4 w-4" />
             <span className="font-medium">{property.bathrooms} baths</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Square className="text-primary h-4 w-4" />
+          <div className="gap-token-xs flex items-center">
+            <Square className="text-token-primary h-4 w-4" />
             <span className="font-medium">
               {formatSquareFeet(property.square_feet)} sqft
             </span>
           </div>
         </div>
 
+        {/* Storytelling Description */}
+        <div className="mt-token-md">
+          <StorytellingDescription
+            property={property}
+            neighborhood={neighborhood}
+            isMutualLike={isMutualLike}
+          />
+        </div>
+
         {property.description && (
-          <p className="text-muted-foreground mt-4 line-clamp-3 text-sm">
+          <p className="text-muted-foreground mt-token-md text-token-sm line-clamp-3">
             {property.description}
           </p>
         )}
 
-        <div className="mt-4 space-y-2">
+        <div className="mt-token-md space-y-2">
           {neighborhood && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-token-xs">
               <MapPin className="mr-1 h-3 w-3" />
               {neighborhood.name}
             </Badge>
@@ -156,7 +175,11 @@ export function PropertyCard({
           {property.amenities && property.amenities.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {property.amenities.slice(0, 3).map((amenity, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="text-token-xs"
+                >
                   {amenity}
                 </Badge>
               ))}
@@ -166,23 +189,23 @@ export function PropertyCard({
 
         {/* Mini Map - Conditionally render only if coordinates are available */}
         {property.coordinates != null && (
-          <div className="mt-4 h-24">
+          <div className="mt-token-md h-24">
             <PropertyMap
               property={property}
-              className="h-full w-full rounded-lg"
+              className="rounded-token-lg h-full w-full"
             />
           </div>
         )}
 
         {/* On-Card Action Buttons */}
         {onDecision && (
-          <div className="absolute right-5 bottom-5 flex space-x-3">
+          <div className="gap-token-sm absolute right-5 bottom-5 flex">
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onDecision(property.id, 'skip')
               }}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-red-400 backdrop-blur-md transition-all hover:bg-white/20"
+              className="rounded-token-full bg-token-text-inverse/10 text-token-error duration-token-fast ease-token-out hover:bg-token-text-inverse/20 flex h-14 w-14 items-center justify-center backdrop-blur-md transition-all"
               aria-label="Pass property"
             >
               <X size={32} />
@@ -192,7 +215,7 @@ export function PropertyCard({
                 e.stopPropagation()
                 onDecision(property.id, 'liked')
               }}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-green-400 backdrop-blur-md transition-all hover:bg-white/20"
+              className="rounded-token-full bg-token-text-inverse/10 text-token-success duration-token-fast ease-token-out hover:bg-token-text-inverse/20 flex h-14 w-14 items-center justify-center backdrop-blur-md transition-all"
               aria-label="Like property"
             >
               <Heart size={32} />

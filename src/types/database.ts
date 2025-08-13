@@ -414,7 +414,7 @@ export type PropertyWithNeighborhood = Property & {
   neighborhood?: Neighborhood | null
 }
 
-export type InteractionType = 'like' | 'dislike' | 'skip' | 'view'
+export type InteractionType = 'viewed' | 'liked' | 'skip'
 
 export type PropertyType = 'house' | 'condo' | 'townhouse' | 'apartment'
 

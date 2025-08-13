@@ -86,17 +86,17 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-token-lg">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-2xl text-white">
+          <CardTitle className="text-token-2xl text-primary-foreground">
             Search Preferences
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-token-lg">
           {/* Price Range */}
-          <div className="space-y-2">
-            <Label className="text-purple-200">
+          <div className="space-y-token-sm">
+            <Label className="text-primary/40">
               Price Range: ${priceRange[0].toLocaleString()} - $
               {priceRange[1].toLocaleString()}
             </Label>
@@ -108,19 +108,19 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
               min={0}
               max={2000000}
               step={50000}
-              className="[&_[role=slider]]:bg-purple-500"
+              className="[&_[role=slider]]:bg-primary"
             />
           </div>
 
           {/* Bedrooms and Bathrooms */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-purple-200">Minimum Bedrooms</Label>
+          <div className="gap-token-md grid grid-cols-2">
+            <div className="space-y-token-sm">
+              <Label className="text-primary/40">Minimum Bedrooms</Label>
               <Select
                 value={bedrooms.toString()}
                 onValueChange={(v) => setBedrooms(Number(v))}
               >
-                <SelectTrigger className="border-purple-500/20 bg-white/10 text-white">
+                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -133,13 +133,13 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-purple-200">Minimum Bathrooms</Label>
+            <div className="space-y-token-sm">
+              <Label className="text-primary/40">Minimum Bathrooms</Label>
               <Select
                 value={bathrooms.toString()}
                 onValueChange={(v) => setBathrooms(Number(v))}
               >
-                <SelectTrigger className="border-purple-500/20 bg-white/10 text-white">
+                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,8 +154,8 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
           </div>
 
           {/* Search Radius */}
-          <div className="space-y-2">
-            <Label className="text-purple-200">
+          <div className="space-y-token-sm">
+            <Label className="text-primary/40">
               Search Radius: {searchRadius} miles
             </Label>
             <Slider
@@ -164,7 +164,7 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
               min={1}
               max={50}
               step={1}
-              className="[&_[role=slider]]:bg-purple-500"
+              className="[&_[role=slider]]:bg-primary"
             />
           </div>
         </CardContent>
@@ -172,16 +172,18 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white">Property Types</CardTitle>
+          <CardTitle className="text-token-xl text-primary-foreground">
+            Property Types
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-token-md">
           {Object.entries({
             house: 'Single Family Home',
             condo: 'Condo/Apartment',
             townhouse: 'Townhouse',
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between">
-              <Label htmlFor={key} className="cursor-pointer text-purple-200">
+              <Label htmlFor={key} className="text-primary/40 cursor-pointer">
                 {label}
               </Label>
               <Switch
@@ -198,11 +200,11 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="text-xl text-white">
+          <CardTitle className="text-token-xl text-primary-foreground">
             Must-Have Features
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-token-md">
           {Object.entries({
             parking: 'Parking',
             pool: 'Pool',
@@ -212,7 +214,7 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
             <div key={key} className="flex items-center justify-between">
               <Label
                 htmlFor={`must-${key}`}
-                className="cursor-pointer text-purple-200"
+                className="text-primary/40 cursor-pointer"
               >
                 {label}
               </Label>
@@ -231,7 +233,7 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
       <Button
         onClick={savePreferences}
         disabled={loading}
-        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+        className="bg-primary text-primary-foreground hover:bg-primary w-full"
       >
         {loading ? (
           <>

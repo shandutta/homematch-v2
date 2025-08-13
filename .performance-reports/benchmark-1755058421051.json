@@ -1,0 +1,134 @@
+{
+  "lighthouse": [],
+  "api": [
+    {
+      "endpoint": "/api/health",
+      "method": "GET",
+      "name": "Health Check",
+      "samples": 5,
+      "metrics": {
+        "min": 51,
+        "max": 70,
+        "mean": 55,
+        "median": 52,
+        "p75": 52,
+        "p95": 70,
+        "p99": 70
+      }
+    },
+    {
+      "endpoint": "/api/properties/marketing",
+      "method": "GET",
+      "name": "Marketing Properties",
+      "samples": 5,
+      "metrics": {
+        "min": 41,
+        "max": 50,
+        "mean": 44,
+        "median": 43,
+        "p75": 43,
+        "p95": 50,
+        "p99": 50
+      }
+    },
+    {
+      "endpoint": "/api/couples/mutual-likes",
+      "method": "GET",
+      "name": "Mutual Likes",
+      "samples": 5,
+      "metrics": {
+        "min": 40,
+        "max": 51,
+        "mean": 47,
+        "median": 48,
+        "p75": 49,
+        "p95": 51,
+        "p99": 51
+      }
+    },
+    {
+      "endpoint": "/api/couples/activity",
+      "method": "GET",
+      "name": "Couples Activity",
+      "samples": 5,
+      "metrics": {
+        "min": 41,
+        "max": 45,
+        "mean": 42,
+        "median": 42,
+        "p75": 42,
+        "p95": 45,
+        "p99": 45
+      }
+    },
+    {
+      "endpoint": "/api/performance/metrics",
+      "method": "GET",
+      "name": "Performance Metrics",
+      "samples": 5,
+      "metrics": {
+        "min": 39,
+        "max": 45,
+        "mean": 42,
+        "median": 42,
+        "p75": 43,
+        "p95": 45,
+        "p99": 45
+      }
+    }
+  ],
+  "bundleSize": {
+    "js": {
+      "total": 9233849,
+      "files": [
+        {
+          "name": "e9e28_next_dist_compiled_next-devtools_index_4c7a890e.js",
+          "size": 1383618
+        },
+        {
+          "name": "e9e28_next_dist_compiled_next-devtools_index_37f3ba20.js",
+          "size": 1383550
+        },
+        {
+          "name": "e9e28_next_dist_compiled_react-dom_cda063f1._.js",
+          "size": 898155
+        },
+        {
+          "name": "e9ecf_react-dom_86e1b5ce._.js",
+          "size": 872951
+        },
+        {
+          "name": "50f70_framer-motion_dist_es_296822d3._.js",
+          "size": 782225
+        }
+      ]
+    },
+    "css": {
+      "total": 504431,
+      "files": [
+        {
+          "name": "[root-of-the-server]__9a6ce547._.css",
+          "size": 252065
+        },
+        {
+          "name": "src_app_globals_css_e59ae46c._.single.css",
+          "size": 244904
+        },
+        {
+          "name": "src_styles_mobile-enhancements_css_e59ae46c._.single.css",
+          "size": 4326
+        },
+        {
+          "name": "[next]_internal_font_google_geist_mono_68a01160_module_css_e59ae46c._.single.css",
+          "size": 1598
+        },
+        {
+          "name": "[next]_internal_font_google_geist_e531dabc_module_css_e59ae46c._.single.css",
+          "size": 1538
+        }
+      ]
+    },
+    "total": 22823356
+  },
+  "timestamp": "2025-08-13T04:13:09.964Z"
+}

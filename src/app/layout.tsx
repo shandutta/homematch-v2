@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+import '../styles/mobile-enhancements.css'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,16 +32,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&libraries=places`}
-          async
-          defer
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
         />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        {/* 
+          SECURITY NOTE: Google Maps loading moved to SecureMapLoader component
+          This reduces exposure and provides better error handling
+        */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ErrorBoundary>
+          <PerformanceProvider>{children}</PerformanceProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

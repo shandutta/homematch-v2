@@ -8,6 +8,20 @@ jest.mock('@/components/property/PropertyMap', () => ({
   PropertyMap: () => <div data-testid="property-map" />,
 }))
 
+jest.mock('@/components/features/storytelling/StorytellingDescription', () => ({
+  StorytellingDescription: () => <div data-testid="storytelling-description" />,
+}))
+
+jest.mock('@/components/features/couples/MutualLikesBadge', () => ({
+  MutualLikesIndicator: () => <div data-testid="mutual-likes-indicator" />,
+}))
+
+jest.mock('@/hooks/useCouples', () => ({
+  useMutualLikes: () => ({
+    data: [],
+  }),
+}))
+
 const mockProperty: Property = {
   id: 'prop-1',
   address: '123 Main St',
@@ -94,5 +108,15 @@ describe('PropertyCard Component', () => {
     const propWithoutCoords: Property = { ...mockProperty, coordinates: null }
     render(<PropertyCard property={propWithoutCoords} />)
     expect(screen.queryByTestId('property-map')).toBeNull()
+  })
+
+  test('should render StorytellingDescription component', () => {
+    render(<PropertyCard property={mockProperty} />)
+    expect(screen.getByTestId('storytelling-description')).toBeDefined()
+  })
+
+  test('should render MutualLikesIndicator component', () => {
+    render(<PropertyCard property={mockProperty} />)
+    expect(screen.getByTestId('mutual-likes-indicator')).toBeDefined()
   })
 })
