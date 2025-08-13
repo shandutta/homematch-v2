@@ -2,13 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
-import { MapPin, Loader2 } from 'lucide-react'
-
-// // Strong typing for Google Maps
-// interface Coordinates {
-//   lat: number;
-//   lng: number;
-// }
+import { MapPin, Loader2, Shield } from 'lucide-react'
+import { SecureMapLoader } from '@/components/shared/SecureMapLoader'
 
 import type {
   GoogleMapInstance,
@@ -162,10 +157,18 @@ export function PropertyMap({
   }
 
   return (
-    <div
-      ref={mapRef}
-      className={`h-32 w-full rounded-lg border ${className}`}
-      style={{ minHeight: '128px' }}
-    />
+    <SecureMapLoader 
+      onError={(error) => {
+        console.error('Map loader error:', error)
+        setError('Failed to load mapping service')
+        setIsLoading(false)
+      }}
+    >
+      <div
+        ref={mapRef}
+        className={`h-32 w-full rounded-lg border ${className}`}
+        style={{ minHeight: '128px' }}
+      />
+    </SecureMapLoader>
   )
 }

@@ -112,3 +112,6 @@ npm-debug.log*
 # Build artifacts
 dist/
 .turbo/
+
+# Zen MCP Server
+zen-mcp-server/

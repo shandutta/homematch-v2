@@ -95,12 +95,19 @@ describe('LoginForm', () => {
   test('renders login form with all elements', () => {
     render(<LoginForm />)
 
-    // Check for form elements
-    expect(screen.getByText('Welcome Back')).toBeInTheDocument()
-    expect(screen.getByLabelText('Email')).toBeInTheDocument()
-    expect(screen.getByLabelText('Password')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
+    // Use data-testid for stable element targeting
+    expect(screen.getByTestId('login-form')).toBeInTheDocument()
+    expect(screen.getByTestId('email-input')).toBeInTheDocument()
+    expect(screen.getByTestId('password-input')).toBeInTheDocument()
+    expect(screen.getByTestId('signin-button')).toBeInTheDocument()
+    expect(screen.getByTestId('google-signin-button')).toBeInTheDocument()
+
+    // Still check critical text content for user-facing validation
+    expect(
+      screen.getByText(
+        'Welcome back! Ready to continue your home search journey together?'
+      )
+    ).toBeInTheDocument()
     expect(screen.getByText('Or continue with')).toBeInTheDocument()
   })
 
@@ -110,9 +117,9 @@ describe('LoginForm', () => {
 
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText('Email')
-    const passwordInput = screen.getByLabelText('Password')
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
+    const emailInput = screen.getByTestId('email-input')
+    const passwordInput = screen.getByTestId('password-input')
+    const submitButton = screen.getByTestId('signin-button')
 
     // Fill in form with validated fixture data
     await user.type(emailInput, validCredentials.email)
@@ -139,13 +146,13 @@ describe('LoginForm', () => {
     render(<LoginForm />)
 
     // Fill in form with validated but failing credentials
-    const emailInput = screen.getByLabelText('Email')
-    const passwordInput = screen.getByLabelText('Password')
+    const emailInput = screen.getByTestId('email-input')
+    const passwordInput = screen.getByTestId('password-input')
 
     await user.type(emailInput, invalidCredentials.email)
     await user.type(passwordInput, invalidCredentials.password)
 
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
+    const submitButton = screen.getByTestId('signin-button')
     await user.click(submitButton)
 
     await waitFor(() => {
@@ -161,7 +168,7 @@ describe('LoginForm', () => {
 
     render(<LoginForm />)
 
-    const googleButton = screen.getByRole('button', { name: /google/i })
+    const googleButton = screen.getByTestId('google-signin-button')
     await user.click(googleButton)
 
     await waitFor(() => {
@@ -183,7 +190,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     render(<LoginForm />)
 
-    const googleButton = screen.getByRole('button', { name: /google/i })
+    const googleButton = screen.getByTestId('google-signin-button')
     await user.click(googleButton)
 
     await waitFor(() => {
@@ -203,15 +210,15 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText('Email')
-    const passwordInput = screen.getByLabelText('Password')
+    const emailInput = screen.getByTestId('email-input')
+    const passwordInput = screen.getByTestId('password-input')
 
     // Fill in valid data first
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
 
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
-    const googleButton = screen.getByRole('button', { name: /google/i })
+    const submitButton = screen.getByTestId('signin-button')
+    const googleButton = screen.getByTestId('google-signin-button')
 
     // Trigger login
     await user.click(submitButton)
@@ -244,33 +251,30 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText('Email')
-    const passwordInput = screen.getByLabelText('Password')
+    const emailInput = screen.getByTestId('email-input')
+    const passwordInput = screen.getByTestId('password-input')
 
     // Fill in valid data first
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
 
-    const submitButton = screen.getByRole('button', { name: /sign in/i })
+    const submitButton = screen.getByTestId('signin-button')
 
-    // Initially no spinner
-    expect(submitButton.querySelector('.animate-spin')).not.toBeInTheDocument()
+    // Initially button should not be disabled (assuming form is valid)
+    expect(submitButton).not.toBeDisabled()
 
     // Trigger login
     await user.click(submitButton)
 
-    // Check for spinner (Loader2 component)
+    // Check that button becomes disabled during loading
     await waitFor(() => {
-      const spinner = submitButton.querySelector('.animate-spin')
-      expect(spinner).toBeInTheDocument()
+      expect(submitButton).toBeDisabled()
     })
 
-    // Wait for completion
+    // Wait for completion - button should be enabled again
     await waitFor(
       () => {
-        expect(
-          submitButton.querySelector('.animate-spin')
-        ).not.toBeInTheDocument()
+        expect(submitButton).not.toBeDisabled()
       },
       { timeout: 3000 }
     )
@@ -280,9 +284,7 @@ describe('LoginForm', () => {
     // const user = userEvent.setup()
     render(<LoginForm />)
 
-    const form = screen
-      .getByRole('button', { name: /sign in/i })
-      .closest('form')
+    const form = screen.getByTestId('signin-button').closest('form')
 
     // Try to submit empty form
     fireEvent.submit(form!)

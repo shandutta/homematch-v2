@@ -82,15 +82,15 @@ export function NotificationsSection({
     <div className="space-y-6">
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
             <Mail className="h-6 w-6" />
             Email Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-purple-200">
+          <p className="text-primary/40 text-sm">
             Notifications will be sent to:{' '}
-            <span className="text-white">{user.email}</span>
+            <span className="text-primary-foreground">{user.email}</span>
           </p>
           {Object.entries({
             newMatches: 'New property matches',
@@ -101,7 +101,7 @@ export function NotificationsSection({
             <div key={key} className="flex items-center justify-between">
               <Label
                 htmlFor={`email-${key}`}
-                className="cursor-pointer text-purple-200"
+                className="text-primary/40 cursor-pointer"
               >
                 {label}
               </Label>
@@ -122,13 +122,13 @@ export function NotificationsSection({
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <Bell className="h-5 w-5" />
             Push Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-purple-200">
+          <p className="text-primary/40 text-sm">
             Get instant notifications on your device
           </p>
           {Object.entries({
@@ -139,7 +139,7 @@ export function NotificationsSection({
             <div key={key} className="flex items-center justify-between">
               <Label
                 htmlFor={`push-${key}`}
-                className="cursor-pointer text-purple-200"
+                className="text-primary/40 cursor-pointer"
               >
                 {label}
               </Label>
@@ -157,13 +157,13 @@ export function NotificationsSection({
 
       <Card className="card-glassmorphism-style">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl text-white">
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <Smartphone className="h-5 w-5" />
             SMS Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-purple-200">
+          <p className="text-primary/40 text-sm">
             Get text messages for important alerts
           </p>
           {Object.entries({
@@ -173,7 +173,7 @@ export function NotificationsSection({
             <div key={key} className="flex items-center justify-between">
               <Label
                 htmlFor={`sms-${key}`}
-                className="cursor-pointer text-purple-200"
+                className="text-primary/40 cursor-pointer"
               >
                 {label}
               </Label>
@@ -188,7 +188,7 @@ export function NotificationsSection({
           ))}
           {(smsNotifications.urgentAlerts ||
             smsNotifications.viewingReminders) && (
-            <p className="text-xs text-purple-300/60">
+            <p className="text-primary/60/60 text-xs">
               Note: Phone number required in your profile for SMS notifications
             </p>
           )}
@@ -198,7 +198,7 @@ export function NotificationsSection({
       <Button
         onClick={saveNotifications}
         disabled={loading}
-        className="w-full bg-purple-600 text-white hover:bg-purple-700"
+        className="bg-primary text-primary-foreground hover:bg-primary w-full"
       >
         {loading ? (
           <>

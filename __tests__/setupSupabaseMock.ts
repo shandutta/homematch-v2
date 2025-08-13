@@ -14,30 +14,52 @@ import { jest } from '@jest/globals'
 type AnyFn = (...args: any[]) => any
 
 const createChainableBuilder = () => {
-  const builder: any = {
-    select: jest.fn(() => builder),
-    insert: jest.fn(() => builder),
-    update: jest.fn(() => builder),
-    delete: jest.fn(() => builder),
-    eq: jest.fn(() => builder),
-    neq: jest.fn(() => builder),
-    gt: jest.fn(() => builder),
-    gte: jest.fn(() => builder),
-    lt: jest.fn(() => builder),
-    lte: jest.fn(() => builder),
-    like: jest.fn(() => builder),
-    ilike: jest.fn(() => builder),
-    in: jest.fn(() => builder),
-    contains: jest.fn(() => builder),
-    order: jest.fn(() => builder),
-    limit: jest.fn(() => builder),
-    range: jest.fn(() => builder),
-    single: jest.fn(async () => ({ data: null, error: null })),
-    maybeSingle: jest.fn(async () => ({ data: null, error: null })),
-    then: jest.fn(async (onFulfilled: AnyFn) =>
-      onFulfilled({ data: [], error: null, count: null })
-    ),
-  }
+  const builder = {
+    select: jest.fn(),
+    insert: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    eq: jest.fn(),
+    neq: jest.fn(),
+    gt: jest.fn(),
+    gte: jest.fn(),
+    lt: jest.fn(),
+    lte: jest.fn(),
+    like: jest.fn(),
+    ilike: jest.fn(),
+    in: jest.fn(),
+    contains: jest.fn(),
+    order: jest.fn(),
+    limit: jest.fn(),
+    range: jest.fn(),
+    single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    then: jest
+      .fn()
+      .mockImplementation((onFulfilled: AnyFn) =>
+        Promise.resolve(onFulfilled({ data: [], error: null, count: null }))
+      ),
+  } as any
+
+  // Set up circular references after builder is created
+  builder.select.mockReturnValue(builder)
+  builder.insert.mockReturnValue(builder)
+  builder.update.mockReturnValue(builder)
+  builder.delete.mockReturnValue(builder)
+  builder.eq.mockReturnValue(builder)
+  builder.neq.mockReturnValue(builder)
+  builder.gt.mockReturnValue(builder)
+  builder.gte.mockReturnValue(builder)
+  builder.lt.mockReturnValue(builder)
+  builder.lte.mockReturnValue(builder)
+  builder.like.mockReturnValue(builder)
+  builder.ilike.mockReturnValue(builder)
+  builder.in.mockReturnValue(builder)
+  builder.contains.mockReturnValue(builder)
+  builder.order.mockReturnValue(builder)
+  builder.limit.mockReturnValue(builder)
+  builder.range.mockReturnValue(builder)
+
   return builder
 }
 

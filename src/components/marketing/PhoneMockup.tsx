@@ -1,8 +1,10 @@
 'use client'
 
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { useMotionValue, useTransform, animate } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Heart, X } from 'lucide-react'
+import { Heart, X, Home } from 'lucide-react'
+import { MotionButton } from '@/components/ui/motion-button'
 import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
 
@@ -201,7 +203,7 @@ function PropertyCard({
   }
 
   return (
-    <motion.div
+    <MotionDiv
       className="absolute inset-0 cursor-grab will-change-transform active:cursor-grabbing"
       style={{ x, rotate, opacity }}
       drag="x"
@@ -236,49 +238,51 @@ function PropertyCard({
           />
 
           {/* Price Tag (match SwipeDemo style) */}
-          <div className="absolute bottom-2 left-2 rounded-lg bg-white/95 px-3 py-1.5 backdrop-blur sm:bottom-3 sm:left-3 sm:px-3.5 sm:py-2">
-            <p className="text-base font-bold text-gray-900 sm:text-lg">
+          <div className="rounded-token-lg bg-token-overlay-strong px-token-md py-token-xs sm:px-token-lg sm:py-token-sm absolute bottom-2 left-2 backdrop-blur sm:bottom-3 sm:left-3">
+            <p className="text-token-base text-token-secondary-dark sm:text-token-lg font-bold">
               {property.price}
             </p>
           </div>
 
           {/* Like/Pass Indicators — premium chip style */}
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute top-3 right-3 z-30"
             aria-hidden="true"
             style={{ opacity: likeOpacity }}
           >
             <div
-              className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(16,185,129,0.35)] backdrop-blur-sm"
+              className="gap-token-sm border-token-success-light/40 bg-token-success shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white backdrop-blur-sm"
               style={{
                 transform: `scale(${(likeScale as unknown as number) || 1})`,
               }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
-              <span className="text-xs font-semibold tracking-wide">LIKED</span>
+              <span className="text-token-xs tracking-token-wide font-semibold">
+                LIKED
+              </span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute top-3 left-3 z-30"
             aria-hidden="true"
             style={{ opacity: passOpacity }}
           >
             <div
-              className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(244,63,94,0.35)] backdrop-blur-sm"
+              className="gap-token-sm border-token-error-light/40 bg-token-error shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white backdrop-blur-sm"
               style={{
                 transform: `scale(${(passScale as unknown as number) || 1})`,
               }}
             >
               <X className="h-4 w-4" aria-hidden="true" />
-              <span className="text-xs font-semibold tracking-wide">
+              <span className="text-token-xs tracking-token-wide font-semibold">
                 PASSED
               </span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
           {/* "It's a Match!" overlay when swiping right far enough */}
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute inset-x-0 top-1/2 z-30 -translate-y-1/2 text-center"
             aria-hidden="true"
             style={{ opacity: matchOpacity }}
@@ -287,29 +291,31 @@ function PropertyCard({
               <Heart className="h-4 w-4 fill-current" />
               It&#39;s a Match!
             </span>
-          </motion.div>
+          </MotionDiv>
         </div>
 
         {/* Property Details (match SwipeDemo info + action buttons) */}
         <div className="p-4">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
+              <h3 className="text-token-base text-token-secondary-dark sm:text-token-lg font-semibold">
                 {property.location}
               </h3>
-              <div className="mt-2 flex items-center gap-4 text-gray-600">
-                <div className="text-sm">{property.beds} beds</div>
-                <div className="text-sm">{property.baths} baths</div>
+              <div className="mt-token-sm gap-token-lg text-token-secondary flex items-center">
+                <div className="text-token-sm">{property.beds} beds</div>
+                <div className="text-token-sm">{property.baths} baths</div>
               </div>
             </div>
           </div>
 
           {/* Action Buttons like SwipeDemo with click effects */}
-          <div className="mt-4 flex gap-3">
-            <motion.button
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-red-500 py-2.5 text-red-500 transition-all hover:bg-red-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+          <div className="mt-token-lg gap-token-md flex">
+            <MotionButton
+              className="gap-token-sm rounded-token-lg border-token-error py-token-sm text-token-error transition-token-all hover:bg-token-error-light flex flex-1 items-center justify-center border-2"
+              motionProps={{
+                whileHover: { scale: 1.02 },
+                whileTap: { scale: 0.96 },
+              }}
               onClick={() => {
                 // subtle "pass" effect
                 try {
@@ -340,13 +346,15 @@ function PropertyCard({
               aria-label="Pass on this property"
             >
               <X className="h-4 w-4" />
-              <span className="text-sm font-medium">Pass</span>
-            </motion.button>
+              <span className="text-token-sm font-medium">Pass</span>
+            </MotionButton>
 
-            <motion.button
-              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-green-500 py-2.5 text-white transition-all hover:bg-green-600"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+            <MotionButton
+              className="gap-token-sm rounded-token-lg bg-token-success py-token-sm transition-token-all hover:bg-token-success-dark relative flex flex-1 items-center justify-center overflow-hidden text-white"
+              motionProps={{
+                whileHover: { scale: 1.02 },
+                whileTap: { scale: 0.96 },
+              }}
               onClick={(e) => {
                 // click burst effect
                 const btn = e.currentTarget
@@ -397,12 +405,12 @@ function PropertyCard({
               aria-label="Love this property"
             >
               <Heart className="h-4 w-4 fill-current" />
-              <span className="text-sm font-medium">Love</span>
-            </motion.button>
+              <span className="text-token-sm font-medium">Love</span>
+            </MotionButton>
           </div>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   )
 }
 
@@ -675,8 +683,11 @@ export function PhoneMockup() {
               {cards.length === 0 && (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center" role="status" aria-live="polite">
-                    <div className="text-4xl" aria-hidden="true">
-                      🏠
+                    <div
+                      className="mb-2 flex justify-center"
+                      aria-hidden="true"
+                    >
+                      <Home className="h-12 w-12 text-zinc-400" />
                     </div>
                     <p className="mt-2 text-zinc-300">Loading more homes...</p>
                   </div>

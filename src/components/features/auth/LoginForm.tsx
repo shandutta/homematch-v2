@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Loader2 } from 'lucide-react'
+import { CouplesMessages } from '@/lib/utils/couples-messaging'
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
@@ -66,15 +67,18 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
+    <Card className="mx-auto w-full max-w-md" data-testid="login-form">
       <CardHeader>
-        <CardTitle className="text-center text-2xl font-bold">
-          Welcome Back
+        <CardTitle className="text-token-2xl text-center font-bold">
+          {CouplesMessages.welcome.returning}
         </CardTitle>
+        <p className="text-muted-foreground text-token-sm mt-token-sm text-center">
+          Ready to continue your home search journey together?
+        </p>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-token-md">
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" data-testid="error-alert">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -82,7 +86,7 @@ export function LoginForm() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleEmailLogin)}
-            className="space-y-4"
+            className="space-y-token-md"
           >
             <FormField
               control={form.control}
@@ -95,6 +99,7 @@ export function LoginForm() {
                       type="email"
                       placeholder="Enter your email"
                       disabled={loading}
+                      data-testid="email-input"
                       {...field}
                     />
                   </FormControl>
@@ -114,6 +119,7 @@ export function LoginForm() {
                       type="password"
                       placeholder="Enter your password"
                       disabled={loading}
+                      data-testid="password-input"
                       {...field}
                     />
                   </FormControl>
@@ -131,6 +137,7 @@ export function LoginForm() {
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
                   process.env.NODE_ENV !== 'test')
               }
+              data-testid="signin-button"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
@@ -142,8 +149,8 @@ export function LoginForm() {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background text-muted-foreground px-2">
+          <div className="text-token-xs relative flex justify-center uppercase">
+            <span className="bg-background text-muted-foreground px-token-sm">
               Or continue with
             </span>
           </div>
@@ -154,6 +161,7 @@ export function LoginForm() {
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full"
+          data-testid="google-signin-button"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Google

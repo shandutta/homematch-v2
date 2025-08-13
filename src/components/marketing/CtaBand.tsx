@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ParallaxStarsCanvas } from '@/components/marketing/ParallaxStarsCanvas'
@@ -22,7 +22,7 @@ export function CtaBand() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4">
-        <motion.div
+        <MotionDiv
           className="mx-auto max-w-4xl text-center"
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,7 +66,7 @@ export function CtaBand() {
               <Link href="/login">Already a Member?</Link>
             </Button>
           </div>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   )

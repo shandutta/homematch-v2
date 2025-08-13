@@ -4,29 +4,29 @@ import { Heart } from 'lucide-react'
 export function Footer() {
   return (
     <footer
-      className="py-12 text-white sm:py-16"
+      className="p-token-xl sm:p-token-2xl text-white"
       style={{ backgroundColor: '#011030' }}
     >
-      <div className="container mx-auto px-4">
+      <div className="p-token-md container mx-auto">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
             <h3
-              className="text-xl font-bold sm:text-2xl"
+              className="text-token-xl sm:text-token-2xl font-bold"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               HomeMatch
             </h3>
             <p
-              className="mt-2 text-sm text-white/60"
+              className="mt-token-sm text-token-sm text-white/60"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               Swipe. Match. Move In.
             </p>
-            <div className="mt-4 flex gap-4">
+            <div className="mt-token-md gap-token-md flex">
               <a
                 href="https://twitter.com/homematch"
-                className="text-white/60 transition-colors hover:text-white"
+                className="rounded-token-md p-token-md transition-token-colors inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-white/60 hover:bg-white/10 hover:text-white"
                 aria-label="Twitter"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -41,7 +41,7 @@ export function Footer() {
               </a>
               <a
                 href="https://instagram.com/homematch"
-                className="text-white/60 transition-colors hover:text-white"
+                className="rounded-token-md p-token-md transition-token-colors inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-white/60 hover:bg-white/10 hover:text-white"
                 aria-label="Instagram"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -60,19 +60,19 @@ export function Footer() {
           {/* Product */}
           <div>
             <h4
-              className="mb-3 text-sm font-semibold tracking-wider uppercase sm:mb-4"
+              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Product
             </h4>
             <ul
-              className="space-y-1.5 text-sm text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
                 <Link
                   href="/signup"
-                  className="transition-colors hover:text-white"
+                  className="p-token-sm transition-token-colors inline-block min-h-[44px] hover:text-white"
                 >
                   Get Started
                 </Link>
@@ -80,7 +80,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/login"
-                  className="transition-colors hover:text-white"
+                  className="p-token-sm transition-token-colors inline-block min-h-[44px] hover:text-white"
                 >
                   Sign In
                 </Link>
@@ -89,7 +89,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#features"
-                  className="transition-colors hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Features
                 </Link>
@@ -97,7 +97,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#how-it-works"
-                  className="transition-colors hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   How It Works
                 </Link>
@@ -108,20 +108,20 @@ export function Footer() {
           {/* Company */}
           <div>
             <h4
-              className="mb-3 text-sm font-semibold tracking-wider uppercase sm:mb-4"
+              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Company
             </h4>
             <ul
-              className="space-y-1.5 text-sm text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {/* TODO: Implement these pages */}
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   About Us
                 </Link>
@@ -129,7 +129,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Contact
                 </Link>
@@ -137,7 +137,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Blog
                 </Link>
@@ -145,7 +145,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Careers
                 </Link>
@@ -156,20 +156,20 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4
-              className="mb-3 text-sm font-semibold tracking-wider uppercase sm:mb-4"
+              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Legal
             </h4>
             <ul
-              className="space-y-1.5 text-sm text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {/* TODO: Implement these legal pages */}
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Privacy Policy
                 </Link>
@@ -177,7 +177,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Terms of Service
                 </Link>
@@ -185,7 +185,7 @@ export function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="cursor-not-allowed opacity-50 transition-colors hover:text-white"
+                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Cookie Policy
                 </Link>
@@ -194,9 +194,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-6 text-center sm:mt-12 sm:pt-8">
+        <div className="mt-token-xl pt-token-lg sm:mt-token-2xl sm:pt-token-xl border-t border-white/10 text-center">
           <p
-            className="flex items-center justify-center gap-1 text-xs text-white/60 sm:text-sm"
+            className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/60"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Built with
@@ -204,7 +204,7 @@ export function Footer() {
             in the Bay Area
           </p>
           <p
-            className="mt-1 text-xs text-white/40 sm:mt-2"
+            className="text-token-xs mt-1 text-white/40 sm:mt-2"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             © 2024 HomeMatch. All rights reserved.

@@ -1,8 +1,10 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useState, useCallback, useEffect } from 'react'
 import { Heart, X, Bed, Bath } from 'lucide-react'
+import { MotionButton } from '@/components/ui/motion-button'
+import { MotionDiv } from '@/components/ui/motion-components'
 import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
 
@@ -113,7 +115,7 @@ export function SwipeDemo() {
   return (
     <section className="relative bg-transparent py-8">
       <div className="container mx-auto px-4">
-        <motion.div
+        <MotionDiv
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -151,7 +153,7 @@ export function SwipeDemo() {
               />
             </a>
           </div>
-        </motion.div>
+        </MotionDiv>
 
         <div className="relative mx-auto mt-4 max-w-sm sm:mt-6 sm:max-w-md">
           {/* Removed "Love it / Nah" prompt to reduce confusion */}
@@ -170,7 +172,7 @@ export function SwipeDemo() {
                 key={currentIndex}
                 custom={direction}
                 variants={{
-                  enter: (direction) => ({
+                  enter: (direction: number) => ({
                     x: direction > 0 ? 1000 : -1000,
                     opacity: 0,
                   }),
@@ -179,7 +181,7 @@ export function SwipeDemo() {
                     x: 0,
                     opacity: 1,
                   },
-                  exit: (direction) => ({
+                  exit: (direction: number) => ({
                     zIndex: 0,
                     x: direction > 0 ? 1000 : -1000,
                     opacity: 0,
@@ -195,7 +197,7 @@ export function SwipeDemo() {
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
-                onDragEnd={(e, { offset, velocity }) => {
+                onDragEnd={(_e, { offset, velocity }) => {
                   const swipe = Math.abs(offset.x) * velocity.x
                   if (swipe < -10000) {
                     handleSwipe('left')
@@ -271,11 +273,13 @@ export function SwipeDemo() {
 
                     {/* Action Buttons */}
                     <div className="mt-4 flex gap-3 sm:mt-6 sm:gap-4">
-                      <motion.button
+                      <MotionButton
                         className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-red-500 py-2.5 text-red-500 transition-all hover:bg-red-50 sm:py-3"
                         style={{ fontFamily: 'var(--font-body)' }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        motionProps={{
+                          whileHover: { scale: 1.02 },
+                          whileTap: { scale: 0.98 },
+                        }}
                         onClick={() => handleSwipe('left')}
                         aria-label="Pass on this property"
                       >
@@ -283,13 +287,15 @@ export function SwipeDemo() {
                         <span className="text-sm font-medium sm:text-base">
                           Pass
                         </span>
-                      </motion.button>
+                      </MotionButton>
 
-                      <motion.button
+                      <MotionButton
                         className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-500 py-2.5 text-white transition-all hover:bg-green-600 sm:py-3"
                         style={{ fontFamily: 'var(--font-body)' }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        motionProps={{
+                          whileHover: { scale: 1.02 },
+                          whileTap: { scale: 0.98 },
+                        }}
                         onClick={() => handleSwipe('right')}
                         aria-label="Love this property"
                       >
@@ -297,7 +303,7 @@ export function SwipeDemo() {
                         <span className="text-sm font-medium sm:text-base">
                           Love
                         </span>
-                      </motion.button>
+                      </MotionButton>
                     </div>
                   </div>
                 </div>

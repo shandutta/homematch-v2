@@ -23,12 +23,14 @@ const StatTile = ({
   icon: React.ElementType
   colorClass: string
 }) => (
-  <Link href={href} className="card-glassmorphism-style group block p-6">
+  <Link href={href} className="card-glassmorphism-style group p-token-lg block">
     <div className="flex items-center justify-between">
-      <div className="text-sm font-medium text-purple-200/80">{label}</div>
+      <div className="text-token-sm font-medium text-purple-200/80">
+        {label}
+      </div>
       <Icon className={`h-6 w-6 ${colorClass} opacity-70`} />
     </div>
-    <div className={`mt-2 text-4xl font-bold ${colorClass}`}>
+    <div className={`text-token-3xl mt-2 font-bold ${colorClass}`}>
       {value !== undefined ? (
         value
       ) : (
@@ -51,7 +53,7 @@ export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
 
   return (
     <div
-      className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3"
+      className="gap-token-lg mb-8 grid grid-cols-1 md:grid-cols-3"
       data-testid="dashboard-stats"
     >
       <StatTile
@@ -59,21 +61,21 @@ export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
         label="Viewed"
         value={summary?.viewed}
         icon={Eye}
-        colorClass="text-blue-400"
+        colorClass="text-token-primary"
       />
       <StatTile
         href="/dashboard/liked"
         label="Liked"
         value={summary?.liked}
         icon={Heart}
-        colorClass="text-green-400"
+        colorClass="text-token-success"
       />
       <StatTile
         href="/dashboard/passed"
         label="Passed"
         value={summary?.passed}
         icon={X}
-        colorClass="text-red-400"
+        colorClass="text-token-error"
       />
     </div>
   )

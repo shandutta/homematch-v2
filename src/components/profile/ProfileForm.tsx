@@ -83,28 +83,30 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-token-lg">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="gap-token-lg grid grid-cols-1 md:grid-cols-2">
           <FormField
             control={form.control}
             name="display_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-purple-200">Display Name</FormLabel>
+                <FormLabel className="text-token-primary-light">
+                  Display Name
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="Enter your display name"
-                    className="border-purple-500/20 bg-white/10 text-white placeholder:text-purple-300/50"
+                    className="border-token-primary-light bg-background/10 text-primary-foreground placeholder:text-token-primary-light/60"
                   />
                 </FormControl>
-                <FormMessage className="text-red-400" />
+                <FormMessage className="text-token-error-light" />
               </FormItem>
             )}
           />
@@ -114,25 +116,27 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-purple-200">Phone Number</FormLabel>
+                <FormLabel className="text-token-primary-light">
+                  Phone Number
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="tel"
                     placeholder="(123) 456-7890"
-                    className="border-purple-500/20 bg-white/10 text-white placeholder:text-purple-300/50"
+                    className="border-token-primary-light bg-background/10 text-primary-foreground placeholder:text-token-primary-light/60"
                   />
                 </FormControl>
-                <FormMessage className="text-red-400" />
+                <FormMessage className="text-token-error-light" />
               </FormItem>
             )}
           />
         </div>
 
         <div>
-          <p className="mb-2 text-sm text-purple-200">Email</p>
-          <p className="text-white">{user.email}</p>
-          <p className="mt-1 text-xs text-purple-300/60">
+          <p className="text-token-sm text-token-primary-light mb-2">Email</p>
+          <p className="text-primary-foreground">{user.email}</p>
+          <p className="text-token-xs text-token-primary-light/60 mt-1">
             Email cannot be changed
           </p>
         </div>
@@ -142,16 +146,16 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-purple-200">Bio</FormLabel>
+              <FormLabel className="text-token-primary-light">Bio</FormLabel>
               <FormControl>
                 <textarea
                   {...field}
                   rows={4}
                   placeholder="Tell us a bit about yourself..."
-                  className="w-full resize-none rounded-md border border-purple-500/20 bg-white/10 px-3 py-2 text-white placeholder:text-purple-300/50 focus:border-transparent focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  className="rounded-token-md border-token-primary-light bg-background/10 p-token-md text-primary-foreground placeholder:text-token-primary-light/60 focus:ring-token-primary w-full resize-none border focus:border-transparent focus:ring-2 focus:outline-none"
                 />
               </FormControl>
-              <FormMessage className="text-red-400" />
+              <FormMessage className="text-token-error-light" />
             </FormItem>
           )}
         />
@@ -159,7 +163,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         <Button
           type="submit"
           disabled={loading}
-          className="bg-purple-600 text-white hover:bg-purple-700"
+          className="bg-token-primary text-primary-foreground hover:bg-token-primary-dark"
         >
           {loading ? (
             <>

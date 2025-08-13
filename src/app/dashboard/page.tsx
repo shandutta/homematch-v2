@@ -67,6 +67,7 @@ export default async function DashboardPage({
       <DashboardErrorBoundary>
         <EnhancedDashboardPageImpl
           initialData={dashboardData}
+          userId={user.id}
           // The following props are passed for future use but are currently unused in the client component
           // returning={returning}
           // userProfile={finalUserData}

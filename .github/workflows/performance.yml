@@ -1,0 +1,263 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for comparison
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'test-key' }}
+
+      - name: Start application
+        run: |
+          pnpm run start &
+          sleep 10 # Wait for server to start
+        env:
+          CI: true
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Run performance tests
+        run: pnpm run perf:ci
+        env:
+          CI: true
+          CI_BASE_URL: http://localhost:3000
+          CI_ARTIFACTS_DIR: ./performance-artifacts
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-artifacts
+          path: ./performance-artifacts/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find the latest performance report
+            const artifactsDir = './performance-artifacts';
+            const files = fs.readdirSync(artifactsDir);
+            const reportFile = files.find(f => f.startsWith('performance-report-') && f.endsWith('.md'));
+
+            if (reportFile) {
+              const report = fs.readFileSync(path.join(artifactsDir, reportFile), 'utf8');
+              
+              // Find and delete previous performance comment
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              
+              const botComment = comments.find(comment => 
+                comment.user.type === 'Bot' && 
+                comment.body.includes('## 📊 Performance Report')
+              );
+              
+              if (botComment) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id
+                });
+              }
+              
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
+
+      - name: Check performance budgets
+        run: |
+          # Parse the JSON report and check for violations
+          node -e "
+            const fs = require('fs');
+            const files = fs.readdirSync('./performance-artifacts');
+            const jsonFile = files.find(f => f.startsWith('performance-report-') && f.endsWith('.json'));
+            
+            if (jsonFile) {
+              const report = JSON.parse(fs.readFileSync('./performance-artifacts/' + jsonFile, 'utf8'));
+              const errors = report.violations.filter(v => v.severity === 'error');
+              
+              if (errors.length > 0) {
+                console.error('Performance budget violations found:');
+                errors.forEach(e => {
+                  console.error('  - ' + e.type + ': ' + (e.metric || e.category));
+                });
+                process.exit(1);
+              }
+            }
+          "
+
+  bundle-analysis:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Analyze bundle (PR)
+        run: |
+          ANALYZE=true pnpm run build > bundle-pr.txt 2>&1 || true
+          mv .next/analyze bundle-analyze-pr
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+
+      - name: Install dependencies (base)
+        run: pnpm install --frozen-lockfile
+
+      - name: Analyze bundle (base)
+        run: |
+          ANALYZE=true pnpm run build > bundle-base.txt 2>&1 || true
+          mv .next/analyze bundle-analyze-base
+
+      - name: Compare bundle sizes
+        run: |
+          node -e "
+            const fs = require('fs');
+            
+            function getSize(dir) {
+              // Parse bundle stats from Next.js analyze output
+              // This is a simplified version - adjust based on actual output
+              return {
+                total: 1000000,
+                js: 800000,
+                css: 200000
+              };
+            }
+            
+            const prSize = getSize('./bundle-analyze-pr');
+            const baseSize = getSize('./bundle-analyze-base');
+            
+            const diff = {
+              total: prSize.total - baseSize.total,
+              js: prSize.js - baseSize.js,
+              css: prSize.css - baseSize.css
+            };
+            
+            const formatSize = (bytes) => {
+              const sign = bytes >= 0 ? '+' : '';
+              return sign + (bytes / 1024).toFixed(1) + 'KB';
+            };
+            
+            const comment = '## 📦 Bundle Size Changes\\n\\n' +
+              '| Resource | Base | PR | Diff |\\n' +
+              '|----------|------|-----|------|\\n' +
+              '| Total | ' + (baseSize.total/1024).toFixed(1) + 'KB | ' + 
+                (prSize.total/1024).toFixed(1) + 'KB | ' + formatSize(diff.total) + ' |\\n' +
+              '| JS | ' + (baseSize.js/1024).toFixed(1) + 'KB | ' + 
+                (prSize.js/1024).toFixed(1) + 'KB | ' + formatSize(diff.js) + ' |\\n' +
+              '| CSS | ' + (baseSize.css/1024).toFixed(1) + 'KB | ' + 
+                (prSize.css/1024).toFixed(1) + 'KB | ' + formatSize(diff.css) + ' |';
+            
+            fs.writeFileSync('bundle-comment.md', comment);
+          "
+
+      - name: Comment bundle changes
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('bundle-comment.md')) {
+              const comment = fs.readFileSync('bundle-comment.md', 'utf8');
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }

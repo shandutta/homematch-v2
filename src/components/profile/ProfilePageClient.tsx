@@ -34,15 +34,18 @@ export function ProfilePageClient({
   // const router = useRouter()
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="text-primary-foreground min-h-screen">
       {/* Header */}
-      <div className="border-b border-purple-500/20 bg-purple-900/10 backdrop-blur-md">
+      <div
+        className="border-primary/20 bg-primary/10 border-b backdrop-blur-md"
+        data-testid="profile-header"
+      >
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-purple-300 transition-colors hover:text-white"
+                className="text-primary/60 hover:text-primary-foreground flex items-center gap-2 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back to Dashboard</span>
@@ -52,7 +55,7 @@ export function ProfilePageClient({
             <Link href="/settings">
               <Button
                 variant="outline"
-                className="border-purple-500/20 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                className="border-primary/20 text-primary/60 hover:bg-primary/20 hover:text-primary-foreground"
               >
                 Settings
               </Button>
@@ -68,7 +71,7 @@ export function ProfilePageClient({
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="border border-purple-500/20 bg-purple-900/20">
+          <TabsList className="border-primary/20 bg-primary/20 border">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
               Profile
@@ -86,7 +89,7 @@ export function ProfilePageClient({
           <TabsContent value="profile" className="space-y-6">
             <Card className="card-glassmorphism-style">
               <CardHeader>
-                <CardTitle className="text-2xl text-white">
+                <CardTitle className="text-primary-foreground text-2xl">
                   Profile Information
                 </CardTitle>
               </CardHeader>

@@ -149,7 +149,8 @@ describe('ProfilePageClient', () => {
     expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
   })
 
-  it('passes correct props to child components', () => {
+  it('passes correct props to child components', async () => {
+    const user = userEvent.setup()
     render(
       <ProfilePageClient
         user={mockUser}
@@ -164,18 +165,18 @@ describe('ProfilePageClient', () => {
 
     // Navigate to household tab
     const householdTab = screen.getByRole('tab', { name: /household/i })
-    userEvent.click(householdTab)
+    await user.click(householdTab)
 
     // HouseholdSection receives profile prop
-    expect(screen.findByText(/Profile: profile-123/)).toBeTruthy()
+    expect(await screen.findByText(/Profile: profile-123/)).toBeInTheDocument()
 
     // Navigate to activity tab
     const activityTab = screen.getByRole('tab', { name: /activity/i })
-    userEvent.click(activityTab)
+    await user.click(activityTab)
 
     // ActivityStats receives summary prop
-    expect(screen.findByText(/Likes: 25/)).toBeTruthy()
-    expect(screen.findByText(/Views: 50/)).toBeTruthy()
+    expect(await screen.findByText(/Likes: 25/)).toBeInTheDocument()
+    expect(await screen.findByText(/Views: 50/)).toBeInTheDocument()
   })
 
   it('has correct navigation links', () => {
@@ -206,24 +207,19 @@ describe('ProfilePageClient', () => {
     )
 
     // Check for main container classes
-    expect(container.firstChild).toHaveClass('min-h-screen', 'text-white')
+    expect(container.firstChild).toHaveClass(
+      'min-h-screen',
+      'text-primary-foreground'
+    )
 
-    // Check for header styling
-    const header = container.querySelector('.bg-purple-900\\/10')
+    // Check for header styling - use attribute selector for classes with special characters
+    const header = container.querySelector('[class*="bg-primary"]')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass(
-      'backdrop-blur-md',
-      'border-b',
-      'border-purple-500/20'
-    )
+    expect(header).toHaveClass('backdrop-blur-md', 'border-b')
 
-    // Check for tab styling
+    // Check for tab styling - update to match actual rendered classes
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass(
-      'bg-purple-900/20',
-      'border',
-      'border-purple-500/20'
-    )
+    expect(tabsList).toHaveClass('border', 'bg-primary/20')
   })
 
   it('handles profile without household', () => {
