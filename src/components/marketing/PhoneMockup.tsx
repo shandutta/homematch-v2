@@ -1,8 +1,10 @@
 'use client'
 
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { useMotionValue, useTransform, animate } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Heart, X } from 'lucide-react'
+import { Heart, X, Home } from 'lucide-react'
+import { MotionButton } from '@/components/ui/motion-button'
 import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
 
@@ -42,7 +44,7 @@ async function fetchMarketingCards(): Promise<MarketingCard[]> {
     }
     return []
   } catch (error) {
-    console.debug('Failed to fetch marketing cards:', error);
+    console.debug('Failed to fetch marketing cards:', error)
     return []
   }
 }
@@ -106,7 +108,11 @@ function PropertyCard({
   const likeScale = useTransform(x, [0, 30, 120], [0.9, 1.1, 1.25])
   const passScale = useTransform(x, [-120, -30, 0], [1.25, 1.1, 0.9])
   const matchOpacity = useTransform(x, [120, 200], [0, 1])
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5])
+  const opacity = useTransform(
+    x,
+    [-200, -100, 0, 100, 200],
+    [0.5, 1, 1, 1, 0.5]
+  )
 
   // Autoplay "jiggle" hint: right then left once (first mount) - smoother with spring animations
   useEffect(() => {
@@ -114,7 +120,8 @@ function PropertyCard({
     let cancelled = false
 
     const prefersReduced =
-      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     async function runHint() {
       if (prefersReduced) {
@@ -196,7 +203,7 @@ function PropertyCard({
   }
 
   return (
-    <motion.div
+    <MotionDiv
       className="absolute inset-0 cursor-grab will-change-transform active:cursor-grabbing"
       style={{ x, rotate, opacity }}
       drag="x"
@@ -216,7 +223,7 @@ function PropertyCard({
             src={property.image}
             alt={`Property in ${property.location}`}
             fill
-            className="pointer-events-none select-none object-cover"
+            className="pointer-events-none object-cover select-none"
             sizes="300px"
             priority={index === 0}
             placeholder="blur"
@@ -230,112 +237,121 @@ function PropertyCard({
             }}
           />
 
-          {/* Price Tag (match SwipeDemo style) */}
-          <div className="absolute bottom-2 left-2 rounded-lg bg-white/95 px-3 py-1.5 backdrop-blur sm:bottom-3 sm:left-3 sm:px-3.5 sm:py-2">
-            <p className="text-base font-bold text-gray-900 sm:text-lg">
+          {/* Price Tag - More prominent display */}
+          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+            <p className="text-xl font-bold text-gray-900">
               {property.price}
             </p>
           </div>
 
           {/* Like/Pass Indicators — premium chip style */}
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute top-3 right-3 z-30"
             aria-hidden="true"
             style={{ opacity: likeOpacity }}
           >
             <div
-              className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(16,185,129,0.35)] backdrop-blur-sm"
-              style={{ transform: `scale(${(likeScale as unknown as number) || 1})` }}
+              className="gap-token-sm border-token-success-light/40 bg-token-success shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
+              style={{
+                transform: `scale(${(likeScale as unknown as number) || 1})`,
+              }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
-              <span className="text-xs font-semibold tracking-wide">LIKED</span>
+              <span className="text-token-xs tracking-token-wide font-semibold">
+                LIKED
+              </span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute top-3 left-3 z-30"
             aria-hidden="true"
             style={{ opacity: passOpacity }}
           >
             <div
-              className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-500/90 px-3 py-1.5 text-white shadow-[0_6px_20px_rgba(244,63,94,0.35)] backdrop-blur-sm"
-              style={{ transform: `scale(${(passScale as unknown as number) || 1})` }}
+              className="gap-token-sm border-token-error-light/40 bg-token-error shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
+              style={{
+                transform: `scale(${(passScale as unknown as number) || 1})`,
+              }}
             >
               <X className="h-4 w-4" aria-hidden="true" />
-              <span className="text-xs font-semibold tracking-wide">PASSED</span>
+              <span className="text-token-xs tracking-token-wide font-semibold">
+                PASSED
+              </span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
           {/* "It's a Match!" overlay when swiping right far enough */}
-          <motion.div
+          <MotionDiv
             className="pointer-events-none absolute inset-x-0 top-1/2 z-30 -translate-y-1/2 text-center"
             aria-hidden="true"
             style={{ opacity: matchOpacity }}
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(16,185,129,0.45)] backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-token-xl blur-glass-sm">
               <Heart className="h-4 w-4 fill-current" />
               It&#39;s a Match!
             </span>
-          </motion.div>
+          </MotionDiv>
         </div>
 
-        {/* Property Details (match SwipeDemo info + action buttons) */}
+        {/* Property Details with improved styling */}
         <div className="p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
-                {property.location}
-              </h3>
-              <div className="mt-2 flex items-center gap-4 text-gray-600">
-                <div className="text-sm">{property.beds} beds</div>
-                <div className="text-sm">{property.baths} baths</div>
-              </div>
+          <div className="mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {property.location}
+            </h3>
+            <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
+              <span>{property.beds} beds</span>
+              <span>•</span>
+              <span>{property.baths} baths</span>
             </div>
           </div>
 
-          {/* Action Buttons like SwipeDemo with click effects */}
-          <div className="mt-4 flex gap-3">
-            <motion.button
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-red-500 py-2.5 text-red-500 transition-all hover:bg-red-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+          {/* Refined Action Buttons with Better Spacing */}
+          <div className="flex gap-3 pt-2">
+            <MotionButton
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-rose-200/70 bg-white px-5 py-2.5 text-rose-600 transition-all hover:border-rose-300/70 hover:bg-rose-50/40"
+              motionProps={{
+                whileHover: { scale: 1.01 },
+                whileTap: { scale: 0.99 },
+              }}
               onClick={() => {
-                // subtle "pass" effect
                 try {
-            // toast via global or event
-            // @ts-expect-error window.toast might not exist
-            if (window?.toast) {
-              // @ts-expect-error window.toast might not exist
-              window.toast({
-                title: 'Passed',
-                description: 'We\'ll show you more like this.',
-                variant: 'destructive',
-              })
-            } else {
-              const evt = new CustomEvent('landing-toast', {
-                detail: {
-                  title: 'Passed',
-                  description: "We'll show you more like this.",
-                  variant: 'destructive',
-                },
-              })
-              window.dispatchEvent(evt)
-            }
-          } catch {
-            // ignore error
-          }
-          onSwipe('left')
-        }}
-        aria-label="Pass on this property"
+                  // @ts-expect-error window.toast might not exist
+                  if (window?.toast) {
+                    // @ts-expect-error window.toast might not exist
+                    window.toast({
+                      title: 'Passed',
+                      description: "We'll show you more like this.",
+                      variant: 'destructive',
+                    })
+                  } else {
+                    const evt = new CustomEvent('landing-toast', {
+                      detail: {
+                        title: 'Passed',
+                        description: "We'll show you more like this.",
+                        variant: 'destructive',
+                      },
+                    })
+                    window.dispatchEvent(evt)
+                  }
+                } catch {
+                  // ignore error
+                }
+                onSwipe('left')
+              }}
+              aria-label="Pass on this property"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" strokeWidth={2.5} />
               <span className="text-sm font-medium">Pass</span>
-            </motion.button>
+            </MotionButton>
 
-            <motion.button
-              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-green-500 py-2.5 text-white transition-all hover:bg-green-600"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+            <MotionButton
+              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-emerald-600 px-5 py-2.5 text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow"
+              motionProps={{
+                whileHover: { scale: 1.01 },
+                whileTap: { scale: 0.99 },
+              }}
               onClick={(e) => {
                 // click burst effect
                 const btn = e.currentTarget
@@ -349,7 +365,8 @@ function PropertyCard({
                 burst.style.transform = 'translate(-50%, -50%)'
                 burst.style.background = 'rgba(255,255,255,0.8)'
                 burst.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)'
-                burst.style.transition = 'transform 380ms ease-out, opacity 380ms ease-out'
+                burst.style.transition =
+                  'transform 380ms ease-out, opacity 380ms ease-out'
                 btn.appendChild(burst)
                 requestAnimationFrame(() => {
                   burst.style.transform = 'translate(-50%, -50%) scale(12)'
@@ -358,7 +375,6 @@ function PropertyCard({
                 setTimeout(() => burst.remove(), 420)
 
                 try {
-                  // toast via global or event
                   // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
                     // @ts-expect-error window.toast might not exist
@@ -384,13 +400,13 @@ function PropertyCard({
               }}
               aria-label="Love this property"
             >
-              <Heart className="h-4 w-4 fill-current" />
+              <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
               <span className="text-sm font-medium">Love</span>
-            </motion.button>
+            </MotionButton>
           </div>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   )
 }
 
@@ -412,25 +428,30 @@ export function PhoneMockup() {
             const price =
               typeof c.price === 'number'
                 ? `$${c.price.toLocaleString()}`
-                : (placeholderProperties[idx % placeholderProperties.length]?.price ?? '$000,000')
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.price ?? '$000,000')
             const beds =
               typeof c.bedrooms === 'number'
                 ? c.bedrooms
-                : (placeholderProperties[idx % placeholderProperties.length]?.beds ?? 3)
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.beds ?? 3)
             const baths =
               typeof c.bathrooms === 'number'
                 ? c.bathrooms
-                : (placeholderProperties[idx % placeholderProperties.length]?.baths ?? 2)
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.baths ?? 2)
             const location =
               typeof c.address === 'string' && c.address.length > 0
                 ? c.address
-                : (placeholderProperties[idx % placeholderProperties.length]?.location ?? 'Unknown')
+                : (placeholderProperties[idx % placeholderProperties.length]
+                    ?.location ?? 'Unknown')
 
             return {
               id: idx + 1,
               image:
                 c.imageUrl ??
-                placeholderProperties[idx % placeholderProperties.length]?.image ??
+                placeholderProperties[idx % placeholderProperties.length]
+                  ?.image ??
                 '/images/properties/house-1.svg',
               price,
               beds,
@@ -534,9 +555,9 @@ export function PhoneMockup() {
   }, [])
 
   return (
-    <div className="relative mx-auto w-full max-w-sm">
+    <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
       {/* Professional Device Frame */}
-      <div className="relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] shadow-[0_10px_30px_rgba(2,6,23,0.25)] ring-1 ring-white/60 backdrop-blur-sm ring-inset">
+      <div className="relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] shadow-token-2xl ring-1 ring-white/60 blur-glass-md ring-inset">
         {/* Bezel/Inner border */}
         <div
           className="pointer-events-none absolute inset-0 rounded-[3rem] ring-1 ring-black/5"
@@ -557,9 +578,12 @@ export function PhoneMockup() {
         {/* Screen */}
         <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-[#0b0f1a] ring-1 ring-white/10">
           {/* Premium gradient aurora backdrop with subtle grain */}
-          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div
+            className="pointer-events-none absolute inset-0"
+            aria-hidden="true"
+          >
             <div
-              className="absolute inset-0 opacity-[0.85] [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)]"
+              className="absolute inset-0 [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)] opacity-[0.85]"
               style={{
                 background:
                   'radial-gradient(1200px 700px at 80% -20%, rgba(56,189,248,0.18), transparent 60%),' +
@@ -599,14 +623,32 @@ export function PhoneMockup() {
             />
           </div>
           {/* Inner vignette to focus content and add premium depth */}
-          <div className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 ring-white/5 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)]" aria-hidden="true" />
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)] ring-white/5"
+            aria-hidden="true"
+          />
 
-          {/* Status Bar */}
-          <div className="flex h-8 items-center justify-between px-5 text-[11px] text-zinc-300/90">
-            <span className="tracking-tight">9:41</span>
-            {/* Removed decorative ovals that looked like sensors behind the speaker grill */}
-            <div className="flex items-center gap-1.5">
-              {/* Intentionally left empty to avoid extra shapes */}
+          {/* Status Bar - Cleaner without timestamp */}
+          <div className="flex h-8 items-center justify-end px-5 text-[11px] text-zinc-300/90">
+            {/* Status icons area - battery, wifi, signal */}
+            <div className="flex items-center gap-1">
+              {/* Signal bars */}
+              <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor" className="opacity-90">
+                <rect x="0" y="6" width="2.5" height="4" rx="0.5" />
+                <rect x="4" y="4" width="2.5" height="6" rx="0.5" />
+                <rect x="8" y="2" width="2.5" height="8" rx="0.5" />
+                <rect x="12" y="0" width="2.5" height="10" rx="0.5" />
+              </svg>
+              {/* WiFi icon */}
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" className="opacity-90">
+                <path d="M7 2.5c2.5 0 4.5 1 6 2.5l-1.5 1.5c-1-1-2.5-1.5-4.5-1.5s-3.5.5-4.5 1.5L1 5C2.5 3.5 4.5 2.5 7 2.5zM7 6c1.5 0 2.5.5 3.5 1.5L9 9c-.5-.5-1-1-2-1s-1.5.5-2 1L3.5 7.5C4.5 6.5 5.5 6 7 6z" />
+              </svg>
+              {/* Battery icon */}
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none" className="opacity-90">
+                <rect x="0.5" y="1.5" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="0.8" />
+                <rect x="2" y="3" width="15" height="4" rx="0.5" fill="currentColor" />
+                <rect x="19" y="3.5" width="2" height="3" rx="0.5" fill="currentColor" />
+              </svg>
             </div>
           </div>
 
@@ -652,8 +694,11 @@ export function PhoneMockup() {
               {cards.length === 0 && (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center" role="status" aria-live="polite">
-                    <div className="text-4xl" aria-hidden="true">
-                      🏠
+                    <div
+                      className="mb-2 flex justify-center"
+                      aria-hidden="true"
+                    >
+                      <Home className="h-12 w-12 text-zinc-400" />
                     </div>
                     <p className="mt-2 text-zinc-300">Loading more homes...</p>
                   </div>

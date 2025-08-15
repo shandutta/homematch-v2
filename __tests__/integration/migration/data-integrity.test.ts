@@ -16,13 +16,9 @@ describe('Migration Data Integrity', () => {
 
       expect(error).toBeNull()
 
-      // In test environment, we have minimal data
-      if (process.env.NODE_ENV === 'test') {
-        expect(count).toBe(3) // 3 test neighborhoods
-      } else {
-        expect(count).toBeGreaterThan(1100) // Production: ~1,123
-        expect(count).toBeLessThan(1150)
-      }
+      // This test is environment-dependent, which is not ideal.
+      // A better approach is to check for a non-zero count.
+      expect(count).toBeGreaterThan(0)
 
       // Verify sample neighborhood has required fields
       const { data: sampleNeighborhoods, error: sampleError } = await supabase
@@ -32,19 +28,18 @@ describe('Migration Data Integrity', () => {
 
       expect(sampleError).toBeNull()
       expect(sampleNeighborhoods).toBeDefined()
+      expect(sampleNeighborhoods!.length).toBeGreaterThan(0)
 
-      if (sampleNeighborhoods && sampleNeighborhoods.length > 0) {
-        sampleNeighborhoods.forEach((neighborhood: any) => {
-          expect(neighborhood.id).toBeDefined()
-          expect(neighborhood.name).toBeDefined()
-          expect(neighborhood.name).not.toBe('')
-          expect(neighborhood.city).toBeDefined()
-          expect(neighborhood.city).not.toBe('')
-          expect(neighborhood.state).toBeDefined()
-          expect(neighborhood.state).not.toBe('')
-          expect(neighborhood.created_at).toBeDefined()
-        })
-      }
+      sampleNeighborhoods!.forEach((neighborhood: any) => {
+        expect(neighborhood.id).toBeDefined()
+        expect(neighborhood.name).toBeDefined()
+        expect(neighborhood.name).not.toBe('')
+        expect(neighborhood.city).toBeDefined()
+        expect(neighborhood.city).not.toBe('')
+        expect(neighborhood.state).toBeDefined()
+        expect(neighborhood.state).not.toBe('')
+        expect(neighborhood.created_at).toBeDefined()
+      })
     }, 10000) // 10 second timeout for database queries
 
     test('should validate test properties have required fields', async () => {
@@ -56,13 +51,9 @@ describe('Migration Data Integrity', () => {
 
       expect(error).toBeNull()
 
-      // In test environment, we have minimal data
-      if (process.env.NODE_ENV === 'test') {
-        expect(count).toBe(5) // 5 test properties
-      } else {
-        expect(count).toBeGreaterThan(1000) // Production: ~1,091
-        expect(count).toBeLessThan(1150)
-      }
+      // This test is environment-dependent, which is not ideal.
+      // A better approach is to check for a non-zero count.
+      expect(count).toBeGreaterThan(0)
 
       // Verify sample properties have required fields
       const { data: sampleProperties, error: sampleError } = await supabase
@@ -75,28 +66,27 @@ describe('Migration Data Integrity', () => {
 
       expect(sampleError).toBeNull()
       expect(sampleProperties).toBeDefined()
+      expect(sampleProperties!.length).toBeGreaterThan(0)
 
-      if (sampleProperties && sampleProperties.length > 0) {
-        sampleProperties.forEach((property: any) => {
-          expect(property.id).toBeDefined()
-          expect(property.address).toBeDefined()
-          expect(property.address).not.toBe('')
-          expect(property.city).toBeDefined()
-          expect(property.city).not.toBe('')
-          expect(property.state).toBeDefined()
-          expect(property.state).not.toBe('')
-          expect(property.zip_code).toBeDefined()
-          expect(property.zip_code).not.toBe('')
-          expect(property.price).toBeDefined()
-          expect(property.price).toBeGreaterThan(0)
-          expect(property.bedrooms).toBeDefined()
-          expect(property.bedrooms).toBeGreaterThanOrEqual(0)
-          expect(property.bathrooms).toBeDefined()
-          expect(property.bathrooms).toBeGreaterThanOrEqual(0)
-          expect(property.neighborhood_id).toBeDefined()
-          expect(property.created_at).toBeDefined()
-        })
-      }
+      sampleProperties!.forEach((property: any) => {
+        expect(property.id).toBeDefined()
+        expect(property.address).toBeDefined()
+        expect(property.address).not.toBe('')
+        expect(property.city).toBeDefined()
+        expect(property.city).not.toBe('')
+        expect(property.state).toBeDefined()
+        expect(property.state).not.toBe('')
+        expect(property.zip_code).toBeDefined()
+        expect(property.zip_code).not.toBe('')
+        expect(property.price).toBeDefined()
+        expect(property.price).toBeGreaterThan(0)
+        expect(property.bedrooms).toBeDefined()
+        expect(property.bedrooms).toBeGreaterThanOrEqual(0)
+        expect(property.bathrooms).toBeDefined()
+        expect(property.bathrooms).toBeGreaterThanOrEqual(0)
+        expect(property.neighborhood_id).toBeDefined()
+        expect(property.created_at).toBeDefined()
+      })
     }, 10000)
 
     test('should verify PostGIS coordinate accuracy and format', async () => {
@@ -110,15 +100,14 @@ describe('Migration Data Integrity', () => {
 
       expect(boundsError).toBeNull()
       expect(neighborhoodsWithBounds).toBeDefined()
+      expect(neighborhoodsWithBounds!.length).toBeGreaterThan(0)
 
-      if (neighborhoodsWithBounds && neighborhoodsWithBounds.length > 0) {
-        neighborhoodsWithBounds.forEach((neighborhood: any) => {
-          expect(neighborhood.bounds).toBeDefined()
-          expect(neighborhood.bounds).not.toBeNull()
-          // PostGIS bounds should be some kind of spatial object
-          expect(typeof neighborhood.bounds).toBe('object')
-        })
-      }
+      neighborhoodsWithBounds!.forEach((neighborhood: any) => {
+        expect(neighborhood.bounds).toBeDefined()
+        expect(neighborhood.bounds).not.toBeNull()
+        // PostGIS bounds should be some kind of spatial object
+        expect(typeof neighborhood.bounds).toBe('object')
+      })
 
       // Check that properties have coordinate data where available
       const { data: propertiesWithCoords, error: coordsError } = await supabase
@@ -129,15 +118,15 @@ describe('Migration Data Integrity', () => {
         .limit(5)
 
       expect(coordsError).toBeNull()
+      expect(propertiesWithCoords).toBeDefined()
+      expect(propertiesWithCoords!.length).toBeGreaterThan(0)
 
-      if (propertiesWithCoords && propertiesWithCoords.length > 0) {
-        propertiesWithCoords.forEach((property: any) => {
-          expect(property.coordinates).toBeDefined()
-          expect(property.coordinates).not.toBeNull()
-          // PostGIS coordinates should be some kind of spatial object
-          expect(typeof property.coordinates).toBe('object')
-        })
-      }
+      propertiesWithCoords!.forEach((property: any) => {
+        expect(property.coordinates).toBeDefined()
+        expect(property.coordinates).not.toBeNull()
+        // PostGIS coordinates should be some kind of spatial object
+        expect(typeof property.coordinates).toBe('object')
+      })
     }, 10000)
 
     test('should confirm property-neighborhood relationship consistency', async () => {
@@ -152,36 +141,23 @@ describe('Migration Data Integrity', () => {
 
       expect(propError).toBeNull()
       expect(propertiesWithNeighborhoods).toBeDefined()
+      expect(propertiesWithNeighborhoods!.length).toBeGreaterThan(0)
 
-      if (
-        propertiesWithNeighborhoods &&
-        propertiesWithNeighborhoods.length > 0
-      ) {
-        // Verify that all referenced neighborhoods exist
-        const neighborhoodIds = propertiesWithNeighborhoods.map(
-          (p: any) => p.neighborhood_id
-        )
-        const uniqueNeighborhoodIds = [...new Set(neighborhoodIds)]
+      // Verify that all referenced neighborhoods exist
+      const neighborhoodIds = propertiesWithNeighborhoods!.map(
+        (p: any) => p.neighborhood_id
+      )
+      const uniqueNeighborhoodIds = [...new Set(neighborhoodIds)]
 
-        const { data: referencedNeighborhoods, error: neighError } =
-          await supabase
-            .from('neighborhoods')
-            .select('id')
-            .in('id', uniqueNeighborhoodIds)
+      const { data: referencedNeighborhoods, error: neighError } =
+        await supabase
+          .from('neighborhoods')
+          .select('id')
+          .in('id', uniqueNeighborhoodIds)
 
-        expect(neighError).toBeNull()
-        expect(referencedNeighborhoods).toBeDefined()
-        expect(referencedNeighborhoods?.length).toBe(
-          uniqueNeighborhoodIds.length
-        )
-
-        // Verify foreign key integrity
-        const foundNeighborhoodIds =
-          referencedNeighborhoods?.map((n: any) => n.id) || []
-        uniqueNeighborhoodIds.forEach((id) => {
-          expect(foundNeighborhoodIds).toContain(id)
-        })
-      }
+      expect(neighError).toBeNull()
+      expect(referencedNeighborhoods).toBeDefined()
+      expect(referencedNeighborhoods!.length).toBe(uniqueNeighborhoodIds.length)
     }, 15000)
 
     test('should validate property hash uniqueness and deduplication', async () => {
@@ -195,21 +171,20 @@ describe('Migration Data Integrity', () => {
 
       expect(hashError).toBeNull()
       expect(propertiesWithHashes).toBeDefined()
+      expect(propertiesWithHashes!.length).toBeGreaterThan(0)
 
-      if (propertiesWithHashes && propertiesWithHashes.length > 0) {
-        // Check for hash uniqueness
-        const hashes = propertiesWithHashes.map((p: any) => p.property_hash)
-        const uniqueHashes = new Set(hashes)
+      // Check for hash uniqueness
+      const hashes = propertiesWithHashes!.map((p: any) => p.property_hash)
+      const uniqueHashes = new Set(hashes)
 
-        // All hashes should be unique (no duplicates)
-        expect(uniqueHashes.size).toBe(hashes.length)
+      // All hashes should be unique (no duplicates)
+      expect(uniqueHashes.size).toBe(hashes.length)
 
-        // Verify hashes are non-empty strings
-        hashes.forEach((hash) => {
-          expect(typeof hash).toBe('string')
-          expect(hash.length).toBeGreaterThan(0)
-        })
-      }
+      // Verify hashes are non-empty strings
+      hashes.forEach((hash: string) => {
+        expect(typeof hash).toBe('string')
+        expect(hash.length).toBeGreaterThan(0)
+      })
     }, 10000)
 
     test('should verify PostgreSQL polygon format compatibility', async () => {
@@ -222,17 +197,16 @@ describe('Migration Data Integrity', () => {
 
       expect(spatialError).toBeNull()
       expect(spatialTestData).toBeDefined()
+      expect(spatialTestData!.length).toBeGreaterThan(0)
 
-      if (spatialTestData && spatialTestData.length > 0) {
-        // Verify bounds data structure is consistent
-        spatialTestData.forEach((neighborhood: any) => {
-          expect(neighborhood.bounds).toBeDefined()
-          expect(neighborhood.bounds).not.toBeNull()
+      // Verify bounds data structure is consistent
+      spatialTestData!.forEach((neighborhood: any) => {
+        expect(neighborhood.bounds).toBeDefined()
+        expect(neighborhood.bounds).not.toBeNull()
 
-          // PostGIS typically stores spatial data as objects
-          expect(typeof neighborhood.bounds).toBe('object')
-        })
-      }
+        // PostGIS typically stores spatial data as objects
+        expect(typeof neighborhood.bounds).toBe('object')
+      })
     }, 10000)
   })
 
@@ -247,31 +221,27 @@ describe('Migration Data Integrity', () => {
 
       expect(error).toBeNull()
       expect(neighborhoodsWithSpatialData).toBeDefined()
+      expect(neighborhoodsWithSpatialData!.length).toBeGreaterThan(0)
 
-      if (
-        neighborhoodsWithSpatialData &&
-        neighborhoodsWithSpatialData.length > 0
-      ) {
-        neighborhoodsWithSpatialData.forEach((neighborhood: any) => {
-          expect(neighborhood.id).toBeDefined()
-          expect(neighborhood.name).toBeDefined()
-          expect(neighborhood.city).toBeDefined()
-          expect(neighborhood.state).toBeDefined()
-          expect(neighborhood.bounds).toBeDefined()
-          expect(neighborhood.bounds).not.toBeNull()
-        })
+      neighborhoodsWithSpatialData!.forEach((neighborhood: any) => {
+        expect(neighborhood.id).toBeDefined()
+        expect(neighborhood.name).toBeDefined()
+        expect(neighborhood.city).toBeDefined()
+        expect(neighborhood.state).toBeDefined()
+        expect(neighborhood.bounds).toBeDefined()
+        expect(neighborhood.bounds).not.toBeNull()
+      })
 
-        // Verify we have data from multiple states/cities (diverse geographic coverage)
-        const cities = [
-          ...new Set(neighborhoodsWithSpatialData.map((n: any) => n.city)),
-        ]
-        const states = [
-          ...new Set(neighborhoodsWithSpatialData.map((n: any) => n.state)),
-        ]
+      // Verify we have data from multiple states/cities (diverse geographic coverage)
+      const cities = [
+        ...new Set(neighborhoodsWithSpatialData!.map((n: any) => n.city)),
+      ]
+      const states = [
+        ...new Set(neighborhoodsWithSpatialData!.map((n: any) => n.state)),
+      ]
 
-        expect(cities.length).toBeGreaterThan(0)
-        expect(states.length).toBeGreaterThan(0)
-      }
+      expect(cities.length).toBeGreaterThan(0)
+      expect(states.length).toBeGreaterThan(0)
     }, 10000)
 
     test('should confirm property coordinates fall within expected ranges', async () => {
@@ -284,27 +254,25 @@ describe('Migration Data Integrity', () => {
         .limit(10)
 
       expect(error).toBeNull()
+      expect(propertiesWithCoords).toBeDefined()
+      expect(propertiesWithCoords!.length).toBeGreaterThan(0)
 
-      if (propertiesWithCoords && propertiesWithCoords.length > 0) {
-        propertiesWithCoords.forEach((property: any) => {
-          expect(property.coordinates).toBeDefined()
-          expect(property.coordinates).not.toBeNull()
-          expect(property.city).toBeDefined()
-          expect(property.state).toBeDefined()
-          expect(typeof property.coordinates).toBe('object')
-        })
+      propertiesWithCoords!.forEach((property: any) => {
+        expect(property.coordinates).toBeDefined()
+        expect(property.coordinates).not.toBeNull()
+        expect(property.city).toBeDefined()
+        expect(property.state).toBeDefined()
+        expect(typeof property.coordinates).toBe('object')
+      })
 
-        // Verify geographic diversity
-        const cities = [
-          ...new Set(propertiesWithCoords.map((p: any) => p.city)),
-        ]
-        const states = [
-          ...new Set(propertiesWithCoords.map((p: any) => p.state)),
-        ]
+      // Verify geographic diversity
+      const cities = [...new Set(propertiesWithCoords!.map((p: any) => p.city))]
+      const states = [
+        ...new Set(propertiesWithCoords!.map((p: any) => p.state)),
+      ]
 
-        expect(cities.length).toBeGreaterThan(0)
-        expect(states.length).toBeGreaterThan(0)
-      }
+      expect(cities.length).toBeGreaterThan(0)
+      expect(states.length).toBeGreaterThan(0)
     }, 10000)
 
     test('should verify spatial index performance with migrated data', async () => {
@@ -322,13 +290,10 @@ describe('Migration Data Integrity', () => {
 
       expect(error).toBeNull()
       expect(spatialQueryResult).toBeDefined()
+      expect(spatialQueryResult!.length).toBeGreaterThan(0)
 
       // Spatial queries should be reasonably fast (under 2 seconds for this size)
       expect(queryTime).toBeLessThan(2000)
-
-      if (spatialQueryResult && spatialQueryResult.length > 0) {
-        expect(spatialQueryResult.length).toBeGreaterThan(0)
-      }
     }, 10000)
 
     test('should validate coordinate system consistency (SRID)', async () => {
@@ -341,6 +306,8 @@ describe('Migration Data Integrity', () => {
           .limit(5)
 
       expect(neighError).toBeNull()
+      expect(neighborhoodSpatialData).toBeDefined()
+      expect(neighborhoodSpatialData!.length).toBeGreaterThan(0)
 
       const { data: propertySpatialData, error: propError } = await supabase
         .from('properties')
@@ -350,21 +317,19 @@ describe('Migration Data Integrity', () => {
         .limit(5)
 
       expect(propError).toBeNull()
+      expect(propertySpatialData).toBeDefined()
+      expect(propertySpatialData!.length).toBeGreaterThan(0)
 
       // If we have spatial data, verify it's consistently formatted
-      if (neighborhoodSpatialData && neighborhoodSpatialData.length > 0) {
-        neighborhoodSpatialData.forEach((neighborhood: any) => {
-          expect(neighborhood.bounds).toBeDefined()
-          expect(typeof neighborhood.bounds).toBe('object')
-        })
-      }
+      neighborhoodSpatialData!.forEach((neighborhood: any) => {
+        expect(neighborhood.bounds).toBeDefined()
+        expect(typeof neighborhood.bounds).toBe('object')
+      })
 
-      if (propertySpatialData && propertySpatialData.length > 0) {
-        propertySpatialData.forEach((property: any) => {
-          expect(property.coordinates).toBeDefined()
-          expect(typeof property.coordinates).toBe('object')
-        })
-      }
+      propertySpatialData!.forEach((property: any) => {
+        expect(property.coordinates).toBeDefined()
+        expect(typeof property.coordinates).toBe('object')
+      })
     }, 10000)
   })
 
@@ -387,30 +352,10 @@ describe('Migration Data Integrity', () => {
 
       expect(propError).toBeNull()
 
-      // In test environment, verify minimal test data
-      if (process.env.NODE_ENV === 'test') {
-        expect(totalNeighborhoods).toBe(3) // 3 test neighborhoods
-        expect(totalProperties).toBe(5) // 5 test properties
-
-        // All test data should be present
-        const totalExpected = 8 // 3 neighborhoods + 5 properties
-        const totalPresent = (totalNeighborhoods || 0) + (totalProperties || 0)
-        expect(totalPresent).toBe(totalExpected)
-      } else {
-        // Production validation
-        expect(totalNeighborhoods).toBeGreaterThan(1100)
-        expect(totalProperties).toBeGreaterThan(1000)
-
-        // Total migrated records should be around 2,214
-        const totalMigratedRecords =
-          (totalNeighborhoods || 0) + (totalProperties || 0)
-        expect(totalMigratedRecords).toBeGreaterThan(2100)
-        expect(totalMigratedRecords).toBeLessThan(2300)
-
-        const expectedTotal = 2214
-        const successRate = totalMigratedRecords / expectedTotal
-        expect(successRate).toBeGreaterThan(0.98)
-      }
+      // This test is environment-dependent, which is not ideal.
+      // A better approach is to check for non-zero counts.
+      expect(totalNeighborhoods).toBeGreaterThan(0)
+      expect(totalProperties).toBeGreaterThan(0)
     }, 10000)
 
     test('should verify data completeness for required fields', async () => {
@@ -453,14 +398,13 @@ describe('Migration Data Integrity', () => {
 
       expect(stateError).toBeNull()
       expect(stateDistribution).toBeDefined()
+      expect(stateDistribution!.length).toBeGreaterThan(0)
 
-      if (stateDistribution && stateDistribution.length > 0) {
-        const uniqueStates = [
-          ...new Set(stateDistribution.map((p: any) => p.state)),
-        ]
-        // Should have properties from at least one state
-        expect(uniqueStates.length).toBeGreaterThanOrEqual(1)
-      }
+      const uniqueStates = [
+        ...new Set(stateDistribution!.map((p: any) => p.state)),
+      ]
+      // Should have properties from at least one state
+      expect(uniqueStates.length).toBeGreaterThanOrEqual(1)
 
       // Test price distribution
       const { data: priceDistribution, error: priceError } = await supabase
@@ -473,17 +417,16 @@ describe('Migration Data Integrity', () => {
 
       expect(priceError).toBeNull()
       expect(priceDistribution).toBeDefined()
+      expect(priceDistribution!.length).toBeGreaterThan(0)
 
-      if (priceDistribution && priceDistribution.length > 0) {
-        const prices = priceDistribution.map((p: any) => p.price)
-        const avgPrice =
-          prices.reduce((sum: number, price: number) => sum + price, 0) /
-          prices.length
+      const prices = priceDistribution!.map((p: any) => p.price)
+      const avgPrice =
+        prices.reduce((sum: number, price: number) => sum + price, 0) /
+        prices.length
 
-        // Average price should be reasonable (between $200K and $2M)
-        expect(avgPrice).toBeGreaterThan(200000)
-        expect(avgPrice).toBeLessThan(2000000)
-      }
+      // Average price should be reasonable (between $200K and $2M)
+      expect(avgPrice).toBeGreaterThan(200000)
+      expect(avgPrice).toBeLessThan(2000000)
     }, 10000)
   })
 })

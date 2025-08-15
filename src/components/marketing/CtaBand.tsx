@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ParallaxStarsCanvas } from '@/components/marketing/ParallaxStarsCanvas'
@@ -17,16 +17,14 @@ export function CtaBand() {
             'linear-gradient(180deg, #0B132B 0%, #0E1633 45%, #0B132B 100%)',
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10"
-        aria-hidden
-      >
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <ParallaxStarsCanvas className="absolute inset-0 opacity-80" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4">
-        <motion.div
-          className="mx-auto max-w-4xl text-center"
+        <MotionDiv
+          className="mx-auto text-center"
+          style={{ maxWidth: '56rem' }}
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -39,8 +37,8 @@ export function CtaBand() {
             Make House‑Hunting Your Next Couples Game
           </h3>
           <p
-            className="mx-auto mt-3 max-w-2xl text-white/80 sm:text-lg"
-            style={{ fontFamily: 'var(--font-body)' }}
+            className="mx-auto mt-3 text-white/80 sm:text-lg"
+            style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
           >
             Tasteful swiping. Smart matches. Real progress. Join early access
             and start finding places you both love.
@@ -69,7 +67,7 @@ export function CtaBand() {
               <Link href="/login">Already a Member?</Link>
             </Button>
           </div>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   )

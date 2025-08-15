@@ -1,0 +1,28 @@
+'use client'
+
+import { ReactNode, useState } from 'react'
+import { Header } from '@/components/layouts/Header'
+import { Footer } from '@/components/layouts/Footer'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { createQueryClient } from '@/lib/query/config'
+
+interface DashboardLayoutProps {
+  children: ReactNode
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [queryClient] = useState(() => createQueryClient())
+
+  return (
+    <div className="gradient-grid-bg flex min-h-screen flex-col text-white">
+      <Header />
+      <main className="container mx-auto flex-grow px-4 py-8">
+        <QueryClientProvider client={queryClient}>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </QueryClientProvider>
+      </main>
+      <Footer />
+    </div>
+  )
+}

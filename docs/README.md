@@ -1,175 +1,104 @@
-# HomeMatch V2 Documentation Index
+# HomeMatch V2 Documentation Hub
 
-> **Complete Documentation Hub**: Guides for development, testing, architecture, and deployment of HomeMatch V2.
+> **Consolidated Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch V2.
 
-This directory contains all project documentation organized by topic and purpose. Use this index to quickly find the information you need.
+This directory contains **12 core documents** plus 4 task management files, organized by topic and purpose. Use this index to quickly find the information you need.
 
 ## Quick Navigation
 
-| Category            | Document                                               | Purpose                                                    |
-| ------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
-| **Current Status**  | [CURRENT_STATUS.md](./CURRENT_STATUS.md) 🆕            | Real-time project status and development roadmap           |
-| **Architecture**    | [ARCHITECTURE.md](./ARCHITECTURE.md)                   | System design, tech stack, and database schema             |
-| **Implementation**  | [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)     | Complete development roadmap and setup guide               |
-| **Testing**         | [TESTING.md](./TESTING.md)                             | Complete testing guide (unit, integration, E2E, debugging) |
-| **Style Guide**     | [STYLE_GUIDE.md](./STYLE_GUIDE.md)                     | UI/UX design guidelines and component standards            |
-| **API Integration** | [RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)             | Zillow API integration documentation                       |
-| **Development**     | [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) | Git workflows, code coverage, and development processes    |
+| Document                                           | Purpose                            | Contains                                                           |
+| -------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**             | Development setup & project status | Environment setup, dependencies, configuration, getting started    |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)**           | Complete system architecture       | Tech stack, database, security patterns, API reference, custom hooks |
+| **[REFACTORING_ARCHITECTURE.md](./REFACTORING_ARCHITECTURE.md)** | PropertyService refactoring guide | Implementation status, migration strategy, performance metrics    |
+| **[TESTING.md](./TESTING.md)**                     | Testing & development workflows    | Unit/integration/E2E testing, git workflows, debugging, deployment |
+| **[PERFORMANCE.md](./PERFORMANCE.md)**             | Performance optimization guide     | Core Web Vitals, monitoring, testing, optimization strategies      |
+| **[STYLE_GUIDE.md](./STYLE_GUIDE.md)**             | UI/UX design & component guidelines | Design system, component development, accessibility standards      |
+| **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)**   | Code quality & analysis reports    | Landing page analysis, performance assessments, best practices    |
+| **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)**     | External API integration           | Zillow API endpoints, authentication, data sync                    |
+| **[DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)** | Development processes     | Git workflows, code review, testing procedures                     |
+| **[CI_INTEGRATION_TESTS.md](./CI_INTEGRATION_TESTS.md)** | CI/CD testing integration    | Continuous integration, test automation, deployment validation     |
+| **[REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md)** | Refactoring overview         | High-level refactoring status and completed improvements           |
+| **README.md** (this file)                          | Documentation index                | Quick navigation and getting started                               |
 
-## Documentation Categories
-
-### Project Status & Planning
-
-- **[CURRENT_STATUS.md](./CURRENT_STATUS.md)** - Real-time project status 🆕
-  - Current implementation vs planned features
-  - Development roadmap with timeline
-  - MVP definition and next steps
-  - Technical debt and improvements needed
-  - Blockers, risks, and mitigation strategies
-
-### Architecture & Design
-
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Comprehensive system architecture
-  - Tech stack overview and rationale
-  - Database schema with PostGIS integration
-  - Authentication and security architecture
-  - State management and component structure
-  - Migration results and production status
-
-- **[STYLE_GUIDE.md](./STYLE_GUIDE.md)** - UI/UX design standards
-  - Design principles and color palette
-  - Typography and component guidelines
-  - Accessibility requirements
-  - Animation and interaction patterns
-
-### Development & Implementation
-
-- **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** - Complete development roadmap
-  - 4-week implementation timeline
-  - Foundation setup and component migration
-  - Data migration strategy and results
-  - Production deployment checklist
-
-- **[DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)** - Development processes
-  - Git workflows and semantic commits
-  - Code coverage improvement procedures
-  - UI design iteration processes
-  - Debugging and monitoring workflows
-
-### Testing & Quality Assurance
-
-- **[TESTING.md](./TESTING.md)** - Complete testing guide
-  - Complete testing strategy (4-tier approach)
-  - Unit, integration, and E2E testing
-  - Playwright fixtures architecture
-  - Database and migration testing
-  - Coverage analysis and debugging tools
-  - Local development setup and CI/CD integration
-
-### External Integrations
-
-- **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)** - Zillow API integration
-  - API endpoints and authentication
-  - Rate limiting and error handling
-  - Property data ingestion pipeline
-  - Cost optimization strategies
-
-## Project Status Overview
-
-### Completed Components
-
-- **Database Architecture**: 6 core tables with RLS policies, 99.1% migration success
-- **Test Infrastructure**: 100% unit/integration test pass rates, comprehensive E2E framework
-- **Service Layer**: Complete PropertyService and UserService with type safety
-- **Authentication**: Supabase Auth with Google OAuth integration
-- **PostGIS Integration**: Spatial queries with 2,176 preserved data points
-
-### Test Results Summary
-
-- **Unit Tests**: 82/82 passing (100% success rate)
-- **Integration Tests**: 36/36 passing (100% success rate)
-- **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
-- **Data Migration**: 2,214 records migrated (1,123 neighborhoods + 1,091 properties)
-
-## Getting Started
+## Getting Started Paths
 
 ### For New Developers
 
-1. **Start Here**: [README.md](../README.md) - Project overview and quick start
-2. **Setup Environment**: [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) - Section 2.1
-3. **Understand Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
-4. **Development Guidelines**: [CLAUDE.md](../CLAUDE.md) - Claude Code specific guidelines
-5. **Testing Setup**: [TESTING.md](./TESTING.md) - Complete testing guide
+1. **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Environment setup and getting started
+2. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and technical architecture
+3. **[TESTING.md](./TESTING.md)** - Testing setup and development workflows
+4. **[DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)** - Development processes and procedures
 
 ### For Designers
 
-1. **Design System**: [STYLE_GUIDE.md](./STYLE_GUIDE.md) - UI/UX guidelines
-2. **Component Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md) - Component structure
-3. **Development Workflows**: [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) - UI iteration process
+1. **[STYLE_GUIDE.md](./STYLE_GUIDE.md)** - Design system, component guidelines, and accessibility
+2. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Component architecture and state management
+3. **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)** - Code quality assessments and best practices
 
 ### For DevOps/QA
 
-1. **Testing Strategy**: [TESTING.md](./TESTING.md) - All testing approaches and CI/CD integration
-2. **Development Workflows**: [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) - Deployment procedures
+1. **[TESTING.md](./TESTING.md)** - Complete testing strategy and CI/CD integration
+2. **[CI_INTEGRATION_TESTS.md](./CI_INTEGRATION_TESTS.md)** - Continuous integration and test automation
+3. **[PERFORMANCE.md](./PERFORMANCE.md)** - Performance monitoring and optimization
+4. **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)** - Quality analysis and production readiness
 
-## Additional Documentation
+## Current Project Status
 
-### Root Level Files
+**Last Updated**: January 2025  
+**Status**: Production Ready with Advanced Features
 
-- **[../README.md](../README.md)** - Project overview, quick start, and tech stack
-- **[../CLAUDE.md](../CLAUDE.md)** - Claude Code development guidelines and project context
+### ✅ Production Ready
 
-### Test-Specific Documentation
+- **Core Features**: Property browsing, swiping, couples collaboration
+- **Database**: Supabase with PostGIS, RLS policies, real-time updates
+- **Authentication**: Complete auth flow with household management
+- **UI/UX**: Modern design with Framer Motion animations
+- **Testing**: Comprehensive test suite with 80%+ coverage
+- **Performance**: Optimized for Core Web Vitals compliance
 
-- **[../**tests**/fixtures/README.md](../**tests**/fixtures/README.md)** - Playwright fixtures architecture
+### 🚀 Advanced Features
 
-### Legacy Documentation
+- **ML Scoring**: 3-phase property matching system
+- **Real-time Sync**: Couples collaboration with live updates
+- **Geographic Search**: PostGIS spatial queries
+- **Natural Language**: AI-powered search capabilities
 
-For historical reference, the original V1 migration analysis is preserved in:
+## Document Overview
 
-- `homematch-original-analysis/` - V1 codebase analysis and migration documentation
+### Core Documentation
 
-## Cross-References
+- **SETUP_GUIDE.md**: Environment setup and development workflow
+- **ARCHITECTURE.md**: System design, database schema, security patterns, and API reference
+- **REFACTORING_ARCHITECTURE.md**: PropertyService refactoring guide with implementation status
+- **TESTING.md**: Complete testing strategy and quality assurance
+- **PERFORMANCE.md**: Optimization guide and monitoring setup
+- **STYLE_GUIDE.md**: Design system, component development guidelines, and accessibility
+- **PROJECT_ANALYSIS.md**: Code quality analysis, performance assessments, and best practices
+- **RAPIDAPI_ZILLOW.md**: External API integration reference
+- **DEVELOPMENT_WORKFLOWS.md**: Git workflows, code review, and deployment procedures
+- **CI_INTEGRATION_TESTS.md**: Continuous integration and test automation
+- **REFACTORING_SUMMARY.md**: High-level refactoring status and completed improvements
 
-### Common Navigation Paths
+### Task Management Files
 
-- **Database Schema** → [ARCHITECTURE.md](./ARCHITECTURE.md) → [TESTING.md](./TESTING.md)
-- **API Development** → [RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md) → [ARCHITECTURE.md](./ARCHITECTURE.md)
-- **Testing Setup** → [TESTING.md](./TESTING.md) → [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)
-- **Development Process** → [DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md) → [STYLE_GUIDE.md](./STYLE_GUIDE.md)
+- **tasks/README.md**: Task management overview and process
+- **tasks/completed-features.md**: Completed feature tracking
+- **tasks/karen-audit-findings.md**: Quality audit results and findings
+- **tasks/master-todo-list.md**: Master project todo and task list
 
-### Related External Resources
+## External Resources
 
 - **Supabase Documentation**: [supabase.com/docs](https://supabase.com/docs)
 - **Next.js 15 Guide**: [nextjs.org/docs](https://nextjs.org/docs)
 - **Playwright Documentation**: [playwright.dev](https://playwright.dev)
 - **shadcn/ui Components**: [ui.shadcn.com](https://ui.shadcn.com)
 
-## Documentation Standards
+## Maintenance
 
-### Writing Guidelines
-
-- **Clarity**: Use clear, concise language with specific examples
-- **Structure**: Organize with consistent headings and table of contents
-- **Code Examples**: Include relevant, working code snippets
-- **Cross-References**: Link to related documentation sections
-- **Status Updates**: Keep implementation status current and accurate
-
-### Maintenance
+**Documentation is maintained by the HomeMatch development team and updated with each release.**
 
 - **Regular Updates**: Documentation is updated with each major feature
 - **Version Control**: All documentation changes are tracked in git
 - **Review Process**: Documentation changes go through the same review process as code
 - **Feedback Integration**: Documentation is improved based on developer feedback
-
-## Contributing to Documentation
-
-1. **Identify Gaps**: Note missing or outdated information
-2. **Follow Standards**: Use consistent formatting and structure
-3. **Add Examples**: Include practical, working examples
-4. **Cross-Reference**: Update related documents when adding new content
-5. **Review Process**: Submit documentation changes via pull request
-
----
-
-**This documentation hub is maintained by the HomeMatch development team and updated with each release.**

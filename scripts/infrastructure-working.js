@@ -175,11 +175,45 @@ class WorkingInfrastructure {
     }
   }
 
+  async waitForServicesReady() {
+    const maxAttempts = 30
+    const delayMs = 2000
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // Check core services via curl
+        const services = [
+          'http://127.0.0.1:54321/rest/v1/properties?limit=1',
+          'http://127.0.0.1:54321/storage/v1/bucket',
+          'http://127.0.0.1:54321/auth/v1/health'
+        ]
+        
+        for (const service of services) {
+          execSync(`curl -s -f "${service}" > nul 2>&1`, { stdio: 'ignore' })
+        }
+        
+        await this.log(`All services ready after ${attempt} attempts`)
+        return true
+      } catch {
+        if (attempt === maxAttempts) {
+          await this.log('Services not ready after maximum attempts', 'warn')
+          return false
+        }
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
+    }
+  }
+
   async resetSupabaseDB() {
     await this.log('Resetting Supabase database...', 'progress')
 
     try {
       await this.runSupabaseCommand('db reset')
+      
+      // Wait for all services to be ready after container restart
+      await this.log('Waiting for services to be ready after reset...', 'progress')
+      await this.waitForServicesReady()
+      
       await this.log('Supabase database reset successfully')
       return true
     } catch (error) {

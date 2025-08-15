@@ -169,11 +169,13 @@ async function setupTestUsers() {
           console.log(
             `⚠️  Attempt ${attempt} failed for ${user.email}: ${error.message}. Retrying...`
           )
+          console.log('   Full error:', JSON.stringify(error, null, 2))
           await new Promise((resolve) => setTimeout(resolve, 2000 * attempt))
         } else {
           console.error(
             `❌ Failed to create ${user.email} after ${attempt} attempts: ${error.message}`
           )
+          console.error('   Full error:', JSON.stringify(error, null, 2))
         }
       }
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
 import { Brain, Users, Heart, MessageSquare } from 'lucide-react'
 
@@ -62,8 +62,9 @@ export function FeatureGrid() {
       />
 
       <div className="container mx-auto px-4">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
+        <MotionDiv
+          className="mx-auto text-center"
+          style={{ maxWidth: '48rem' }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -90,11 +91,11 @@ export function FeatureGrid() {
           >
             We turned the most stressful part of adulting into date night
           </p>
-        </motion.div>
+        </MotionDiv>
 
         <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
-            <motion.div
+            <MotionDiv
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -103,7 +104,7 @@ export function FeatureGrid() {
             >
               <Card className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:shadow-xl sm:p-6">
                 {/* Hover Glow Effect */}
-                <motion.div
+                <MotionDiv
                   className="absolute inset-0"
                   style={{
                     background:
@@ -115,7 +116,7 @@ export function FeatureGrid() {
                 />
 
                 {/* Neon Ring on Focus */}
-                <motion.div
+                <MotionDiv
                   className="absolute inset-0 rounded-lg transition-all duration-300"
                   whileHover={{
                     boxShadow: '0 0 0 2px rgba(41, 227, 255, 0.5)',
@@ -123,7 +124,7 @@ export function FeatureGrid() {
                 />
 
                 <div className="relative z-10">
-                  <motion.div
+                  <MotionDiv
                     className="mb-4 inline-flex rounded-lg p-3 text-white"
                     style={{
                       background:
@@ -133,7 +134,7 @@ export function FeatureGrid() {
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
                     <feature.icon className="h-6 w-6" />
-                  </motion.div>
+                  </MotionDiv>
 
                   <h3
                     className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
@@ -150,7 +151,7 @@ export function FeatureGrid() {
                   </p>
                 </div>
               </Card>
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
       </div>

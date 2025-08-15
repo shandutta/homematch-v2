@@ -3,13 +3,16 @@
  * Helps track and optimize LCP, FID, and CLS metrics
  */
 
+// Web Vitals API extension for Window object
+interface WebVitalsAPI {
+  getCLS: (callback: (metric: WebVitalMetric) => void) => void
+  getFID: (callback: (metric: WebVitalMetric) => void) => void
+  getLCP: (callback: (metric: WebVitalMetric) => void) => void
+}
+
 declare global {
   interface Window {
-    webVitals?: {
-      getCLS: (callback: (metric: WebVitalMetric) => void) => void
-      getFID: (callback: (metric: WebVitalMetric) => void) => void
-      getLCP: (callback: (metric: WebVitalMetric) => void) => void
-    }
+    webVitals?: WebVitalsAPI
   }
 }
 

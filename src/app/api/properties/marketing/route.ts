@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { withPerformanceTracking } from '@/lib/utils/performance'
 
 type MarketingCard = {
   zpid: string
@@ -11,7 +13,6 @@ type MarketingCard = {
   latitude: number | null
   longitude: number | null
 }
-type MarketingResponse = MarketingCard[] | { error: string }
 
 interface DbPropertyRow {
   zpid: string
@@ -28,7 +29,7 @@ interface DbPropertyRow {
   latitude: number | null
 }
 
-export async function GET(): Promise<NextResponse<MarketingResponse>> {
+async function getMarketingProperties(): Promise<NextResponse> {
   try {
     const supabase = await createSupabaseServerClient()
 
@@ -66,7 +67,8 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
         .limit(10)
 
       if (qErr) {
-        throw qErr
+        console.error('Database query error:', qErr)
+        return ApiErrorHandler.serverError('Failed to fetch properties', qErr)
       }
 
       rows =
@@ -116,7 +118,7 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
         // Dynamically read the local seed JSON to serve marketing images in dev
         const { promises: fsp } = await import('fs')
         const { default: path } = await import('path')
-        const seedPath = path.join(
+        const seedPath = path.resolve(
           process.cwd(),
           'migrated_data',
           'seed-properties.json'
@@ -149,8 +151,10 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
           longitude: r.longitude ?? null,
           latitude: r.latitude ?? null,
         }))
-      } catch {
-        // ignore if seed file not available
+      } catch (err) {
+        console.error('Failed to read seed file:', err)
+        // Return an empty array if the seed file cannot be read
+        effectiveRows = []
       }
     }
 
@@ -232,6 +236,12 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
           if (urls[0]) {
             fallbackImages.push(urls[0])
           }
+        } else if (res.status === 503) {
+          // If Zillow API is not configured, log a warning and stop trying.
+          console.warn(
+            'Marketing card fallback failed: Zillow API not configured.'
+          )
+          break
         }
       }
 
@@ -254,9 +264,14 @@ export async function GET(): Promise<NextResponse<MarketingResponse>> {
       return NextResponse.json([], { status: 200 })
     }
   } catch (err) {
-    return NextResponse.json(
-      { error: (err as Error).message ?? 'Unexpected error' },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      'Failed to retrieve marketing properties',
+      err
     )
   }
 }
+
+export const GET = withPerformanceTracking(
+  getMarketingProperties,
+  'GET /api/properties/marketing'
+)

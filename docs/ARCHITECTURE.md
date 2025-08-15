@@ -1,56 +1,89 @@
 # HomeMatch V2 - System Architecture
 
+📍 **You are here**: [Documentation Hub](./README.md) → [Setup Guide](./SETUP_GUIDE.md) → **Architecture** → [Testing](./TESTING.md)
+
 ## Overview
 
-HomeMatch V2 is a modern property browsing application built with Next.js 15, Supabase, and cutting-edge tooling. This architecture document outlines the complete system design, including technology stack, database schema, security patterns, and migration assessment from V1.
+HomeMatch V2 is a modern property browsing application built with Next.js 15, Supabase, and cutting-edge tooling. This architecture document outlines the complete system design, including technology stack, database schema, security patterns, API documentation, custom hooks, and migration assessment from V1.
+
+> **📖 Reading Path**: [SETUP_GUIDE.md](./SETUP_GUIDE.md) for current status → **This document** for technical details → [TESTING.md](./TESTING.md) for workflows
+
+## Table of Contents
+
+1. [Technology Stack](#technology-stack)
+2. [Database Architecture](#database-architecture)
+3. [Authentication Architecture](#authentication-architecture)
+4. [State Management Architecture](#state-management-architecture)
+5. [Component Architecture](#component-architecture)
+6. [ML Scoring System](#ml-scoring-system)
+7. [API Reference](#api-reference)
+8. [Custom React Hooks](#custom-react-hooks)
+9. [V1 Migration Results](#v1-migration-results)
 
 ---
 
 ## Technology Stack
 
+> **💡 Quick Reference**
+>
+> - **Frontend**: Next.js 15 + React 19 + TypeScript 5 + Tailwind CSS 4
+> - **Backend**: Supabase (PostgreSQL + Auth + RLS)
+> - **Testing**: Jest + Vitest + Playwright (100% unit/integration pass rate)
+> - **State**: TanStack Query + Zustand + React Hook Form + Zod
+
 ### Core Framework
 
-- **Next.js 15.4.4** ✅ - App Router with React 19 and Server Components
-- **TypeScript 5.x** ✅ - Full type safety throughout the application with strict mode
-- **Tailwind CSS 4** ✅ - Utility-first styling with custom design tokens
-- **shadcn/ui** ✅ - Modern, accessible component library built on Radix (15 components)
+- **Next.js 15.4.4** 🟢 - App Router with React 19 and Server Components
+- **TypeScript 5.x** 🟢 - Full type safety throughout the application with strict mode
+- **Tailwind CSS 4** 🟢 - Utility-first styling with custom design tokens
+- **shadcn/ui** 🟢 - Modern, accessible component library built on Radix (15 components)
 
 ### Backend Services
 
-- **Supabase** ✅ - PostgreSQL database with built-in authentication and real-time features
-- **Supabase Auth** ✅ - Handles user authentication, sessions, and Google OAuth (IMPLEMENTED)
-- **Row-Level Security** ✅ - Database-level authorization and data protection (ACTIVE IN PRODUCTION)
+- **Supabase** 🟢 - PostgreSQL database with built-in authentication and real-time features
+- **Supabase Auth** 🟢 - Handles user authentication, sessions, and Google OAuth
+- **Row-Level Security** 🟢 - Database-level authorization and data protection
 - **Edge Functions** 📋 - Serverless functions for complex business logic (inngest configured)
 
 ### State Management
 
-- **TanStack Query v5.83.0** ✅ - Server state management with caching, background updates, and optimistic mutations
-- **Zustand 5.0.6** ✅ - Lightweight client state for UI interactions and temporary data
-- **React Hook Form 7.61.1** ✅ - Form state management with validation (IMPLEMENTED)
+- **TanStack Query v5.83.0** 🟢 - Server state management with caching, background updates, and optimistic mutations
+- **Zustand 5.0.6** 🟢 - Lightweight client state for UI interactions and temporary data
+- **React Hook Form 7.61.1** 🟢 - Form state management with validation
 
 ### Validation & Type Safety
 
-- **Zod 3.25.76** ✅ - Runtime type validation for all API inputs, forms, and data transformations (IMPLEMENTED)
-- **TypeScript 5.x** ✅ - Compile-time type checking with strict configuration
-- **@hookform/resolvers 5.2.0** ✅ - React Hook Form + Zod integration (IMPLEMENTED)
-- **Generated Types** ✅ - Supabase auto-generated database types (IMPLEMENTED)
+- **Zod 3.25.76** 🟢 - Runtime type validation for all API inputs, forms, and data transformations
+- **TypeScript 5.x** 🟢 - Compile-time type checking with strict configuration
+- **@hookform/resolvers 5.2.0** 🟢 - React Hook Form + Zod integration
+- **Generated Types** 🟢 - Supabase auto-generated database types
 
 ### Testing Strategy
 
-> **Status**: Complete test infrastructure with 100% unit/integration test pass rates.
+> **✅ Status**: Complete test infrastructure with 100% unit/integration test pass rates.
 >
-> **Test Results**:
+> **📊 Test Results**:
 >
 > - **Unit Tests**: 82/82 passing (100% success rate)
 > - **Integration Tests**: 36/36 passing (100% success rate)
 > - **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
-> - **Test Infrastructure**: Docker automation, CI/CD pipeline, test database isolation
 
-- **Jest 30.0.5** ✅ - Unit tests for components, functions, and utilities with React Testing Library
-- **Vitest 3.2.4** ✅ - Fast integration tests for API routes, services, and database operations
-- **Playwright 1.54.1** ✅ - End-to-end testing with cross-browser support
-- **React Testing Library 16.3.0** ✅ - Component testing utilities with Jest
-- **Testing Infrastructure** ✅ - Complete with Docker automation, CI/CD, and test database isolation
+**Core Testing Stack:**
+
+- **Jest 30.0.5** 🟢 - Unit tests for components, functions, and utilities
+- **Vitest 3.2.4** 🟢 - Fast integration tests for API routes and services
+- **Playwright 1.54.1** 🟢 - End-to-end testing with cross-browser support
+
+<details>
+<summary><strong>Testing Infrastructure Details</strong></summary>
+
+- **React Testing Library 16.3.0** 🟢 - Component testing utilities with Jest
+- **Testing Infrastructure** 🟢 - Complete with Docker automation, CI/CD, and test database isolation
+- **Test Database** 🟢 - Isolated Supabase instance for integration testing
+- **CI/CD Integration** 🟢 - Automated testing in GitHub Actions
+- **Coverage Reporting** 🟢 - Comprehensive test coverage analysis
+
+</details>
 
 ### Code Quality & Development
 
@@ -460,18 +493,18 @@ components/
 │   ├── auth/                      # ✅ IMPLEMENTED - Complete auth system
 │   │   ├── LoginForm.tsx          # ✅ Login with email/password + Google OAuth
 │   │   └── SignupForm.tsx         # ✅ Registration with validation + confirmation
-│   ├── properties/
-│   │   ├── PropertyCard.tsx       # Property display card
-│   │   ├── PropertySwiper.tsx     # Tinder-style interface
-│   │   ├── PropertyDetail.tsx     # Full property modal
-│   │   ├── PropertyFilters.tsx    # Search and filter UI
-│   │   ├── PropertyGallery.tsx    # Image carousel
-│   │   └── PropertyMap.tsx        # Location map
-│   ├── dashboard/
-│   │   ├── UserStats.tsx          # User activity overview
-│   │   ├── LikedProperties.tsx    # Favorited properties
-│   │   ├── SearchHistory.tsx      # Recent searches
-│   │   └── PreferencesForm.tsx    # User settings
+│   ├── properties/                 # ✅ IMPLEMENTED - Property interactions
+│   │   ├── PropertyCard.tsx        # ✅ Property display with Zillow links
+│   │   ├── PropertySwiper.tsx      # ✅ Tinder-style swipe interface
+│   │   ├── PropertyDetail.tsx      # Full property modal
+│   │   ├── PropertyFilters.tsx     # Search and filter UI
+│   │   ├── PropertyGallery.tsx     # Image carousel
+│   │   └── PropertyMap.tsx         # Location map
+│   ├── dashboard/                  # ✅ IMPLEMENTED - User dashboard
+│   │   ├── DashboardStats.tsx      # ✅ Real-time interaction counters
+│   │   ├── InteractionsListPage.tsx # ✅ Paginated liked/passed/viewed
+│   │   ├── SearchHistory.tsx       # Recent searches
+│   │   └── PreferencesForm.tsx     # User settings
 │   └── onboarding/
 │       ├── WelcomeStep.tsx        # Introduction
 │       ├── PreferencesStep.tsx    # Initial preferences
@@ -810,6 +843,279 @@ export class PropertyScoringService {
 
 ---
 
+## API Reference
+
+HomeMatch V2 uses Next.js 15 App Router for API routes. All API endpoints are located under `/app/api/` and follow RESTful conventions.
+
+### Authentication
+
+All API endpoints require authentication via Supabase Auth, except where noted. Authentication is handled automatically via cookies when using the Supabase client.
+
+### Current Endpoints
+
+#### Interactions API
+
+**`POST /api/interactions`** - Records a user interaction with a property (view, like, or pass).
+
+```typescript
+// Request Body
+{
+  propertyId: string  // UUID of the property
+  type: "viewed" | "liked" | "skip"  // Interaction type
+}
+
+// Response
+{
+  success: true,
+  interaction: {
+    user_id: string
+    property_id: string
+    interaction_type: string
+    created_at: string
+    updated_at: string
+  }
+}
+```
+
+**`GET /api/interactions?type=summary`** - Retrieves a summary of user interactions.
+
+```typescript
+// Response
+{
+  viewed: number // Count of viewed properties
+  liked: number // Count of liked properties
+  passed: number // Count of passed properties
+}
+```
+
+**`GET /api/interactions?type=[viewed|liked|skip]`** - Retrieves paginated list of properties by interaction type.
+
+```typescript
+// Query Parameters
+type: "viewed" | "liked" | "skip" (required)
+cursor: ISO 8601 timestamp for pagination (optional)
+limit: Number of items to return (default: 10, max: 50)
+
+// Response
+{
+  items: Property[]  // Array of property objects
+  nextCursor: string | null  // Cursor for next page
+}
+```
+
+#### Properties API
+
+**`GET /api/properties`** - Retrieves a list of properties for browsing.
+
+**`GET /api/properties/[id]`** - Retrieves details for a specific property.
+
+### Data Types
+
+#### Property Interface
+
+```typescript
+interface Property {
+  id: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  price: number
+  bedrooms: number
+  bathrooms: number
+  square_feet?: number
+  property_type: 'house' | 'condo' | 'townhouse' | 'apartment'
+  images: string[]
+  description?: string
+  amenities: string[]
+  year_built?: number
+  lot_size_sqft?: number
+  parking_spots: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  neighborhood?: {
+    id: string
+    name: string
+    city: string
+    state: string
+    boundaries?: any // GeoJSON
+  }
+  zpid?: string // Zillow property ID
+}
+```
+
+### Database Functions
+
+**`get_user_interaction_summary`** - SQL RPC function that efficiently calculates interaction counts for a user.
+
+```sql
+-- Returns aggregated counts by interaction type
+SELECT * FROM get_user_interaction_summary(user_id);
+```
+
+### Future Endpoints
+
+- `POST /api/properties/search` - Natural language property search
+- `GET /api/users/preferences` - User preference management
+- `POST /api/households` - Household creation and management
+- `GET /api/recommendations` - ML-powered property recommendations
+
+---
+
+## Custom React Hooks
+
+HomeMatch V2 implements several custom hooks to encapsulate common logic and provide clean APIs for components. All hooks follow React's rules of hooks and are fully typed with TypeScript.
+
+### Authentication Hooks
+
+#### `useAuth`
+
+Provides authentication state and user information.
+
+```typescript
+import { useAuth } from '@/lib/hooks/useAuth'
+
+function Component() {
+  const { user, isLoading, error } = useAuth()
+
+  if (isLoading) return <Spinner />
+  if (!user) return <LoginPrompt />
+
+  return <div>Welcome, {user.email}</div>
+}
+```
+
+**Returns:**
+
+- `user`: Current user object or null
+- `isLoading`: Loading state boolean
+- `error`: Error object if authentication fails
+
+### Interaction Hooks
+
+#### `useInteractionSummary`
+
+Fetches and caches the user's interaction summary.
+
+```typescript
+import { useInteractionSummary } from '@/hooks/useInteractions'
+
+function DashboardStats() {
+  const { data: summary, isLoading, error } = useInteractionSummary()
+
+  return (
+    <div>
+      <Stat label="Viewed" value={summary?.viewed ?? 0} />
+      <Stat label="Liked" value={summary?.liked ?? 0} />
+      <Stat label="Passed" value={summary?.passed ?? 0} />
+    </div>
+  )
+}
+```
+
+#### `useRecordInteraction`
+
+Mutation hook for recording property interactions with optimistic updates.
+
+```typescript
+import { useRecordInteraction } from '@/hooks/useInteractions'
+
+function PropertyCard({ property }) {
+  const { mutate: recordInteraction } = useRecordInteraction()
+
+  const handleLike = () => {
+    recordInteraction({
+      propertyId: property.id,
+      type: 'liked'
+    })
+  }
+
+  return <button onClick={handleLike}>Like</button>
+}
+```
+
+#### `useInfiniteInteractions`
+
+Infinite query hook for paginated interaction lists.
+
+```typescript
+import { useInfiniteInteractions } from '@/hooks/useInteractions'
+
+function LikedProperties() {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteInteractions('liked')
+
+  const properties = data?.pages.flatMap(page => page.items) ?? []
+
+  return (
+    <>
+      {properties.map(property => (
+        <PropertyCard key={property.id} property={property} />
+      ))}
+
+      {hasNextPage && (
+        <button onClick={() => fetchNextPage()}>
+          Load More
+        </button>
+      )}
+    </>
+  )
+}
+```
+
+### Form Hooks
+
+#### `useValidatedForm`
+
+Wrapper around React Hook Form with Zod validation.
+
+```typescript
+import { useValidatedForm } from '@/hooks/useValidatedForm'
+import { PropertyFiltersSchema } from '@/lib/schemas/property'
+
+function FiltersForm() {
+  const form = useValidatedForm(PropertyFiltersSchema, {
+    priceMin: 0,
+    priceMax: 1000000
+  })
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <input {...form.register('priceMin')} />
+    </form>
+  )
+}
+```
+
+### Query Keys Structure
+
+The interaction hooks use a consistent query key structure for cache management:
+
+```typescript
+const interactionKeys = {
+  all: ['interactions'] as const,
+  summary: () => [...interactionKeys.all, 'summary'] as const,
+  list: (type: InteractionType) =>
+    [...interactionKeys.all, 'list', type] as const,
+}
+```
+
+### Future Hooks
+
+Planned hooks for future implementation:
+
+- `useProperties` - Property browsing with filters
+- `usePropertySearch` - Natural language search
+- `useHousehold` - Household management
+- `useRecommendations` - ML-powered suggestions
+
+---
+
 ## V1 Migration Results
 
 > **Migration Success**: High-quality V1 components identified and migration strategy executed. Core data migration achieved 99.1% success rate with 2,214 records successfully migrated.
@@ -961,6 +1267,182 @@ export class PropertyScoringService {
 - **Consent Management**: Clear opt-ins for data collection
 - **Data Deletion**: User-initiated account and data deletion
 - **Audit Logging**: Track access to sensitive user data
+
+---
+
+## Security Architecture
+
+> **Security Status**: Comprehensive security implementation that eliminates client-side API key exposure and implements defense-in-depth patterns.
+
+### Google Maps Security Implementation
+
+**Overview**: Secure Google Maps implementation that eliminates client-side API key exposure and implements comprehensive security controls.
+
+#### Security Architecture
+
+**Before (Insecure)**:
+- Google Maps API key exposed in client-side JavaScript
+- Direct API calls from browser to Google Maps
+- No rate limiting or request validation
+- **Risk Level**: 🔴 Critical
+
+**After (Secure)**:
+- No client-side API key exposure
+- Server-side proxy for all Google Maps API calls
+- Rate limiting and request validation
+- Comprehensive error handling
+- **Risk Level**: 🟢 Minimal
+
+#### Implementation Components
+
+**1. Server-Side API Routes**:
+
+- **`/api/maps/proxy-script`**: Proxies Google Maps JavaScript API without exposing keys, caches script responses for performance, proper error handling and fallbacks
+- **`/api/maps/geocode`**: Secure geocoding API proxy with input validation using Zod schemas, rate limiting (100 requests/minute per IP), sanitized response data
+- **`/api/maps/places/autocomplete`**: Secure Places Autocomplete API proxy with input validation and type safety, rate limiting, client-side caching for performance
+
+**2. Client-Side Components**:
+
+- **`SecureMapLoader`**: Loads Google Maps through secure proxy, no API key exposure, proper loading states and error handling, prevention of multiple loading attempts
+- **`SecureGeocodeClient` & `SecurePlacesClient`**: Type-safe client libraries with built-in rate limiting and caching, automatic request debouncing, comprehensive error handling
+- **`useSecureGoogleMaps` Hook**: React hook for secure Maps API usage with loading states and error management, debounced autocomplete functionality
+
+#### Environment Configuration
+
+**Required Environment Variables**:
+```bash
+# Server-side API key (Required)
+GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
+```
+
+**Google Cloud Console Setup**:
+
+1. **Create Server-Side API Key**:
+   - Go to Google Cloud Console → APIs & Services → Credentials
+   - Create API Key with application restrictions: "HTTP referrers"
+   - Add your server domain(s)
+   - Enable only required APIs: Maps JavaScript API, Geocoding API, Places API
+
+2. **Set API Restrictions**:
+   ```
+   HTTP referrers (web sites):
+   - https://yourdomain.com/*
+   - https://www.yourdomain.com/*
+   - http://localhost:3000/* (for development)
+   ```
+
+3. **Configure Rate Limits**: Set daily quotas, enable billing alerts, monitor usage in Cloud Console
+
+#### Security Benefits
+
+**✅ API Key Protection**:
+- Server-side keys never exposed to browsers
+- IP-based restrictions in Google Cloud Console
+- No client-side key leakage in source code
+
+**✅ Rate Limiting**:
+- Server-side: 100 requests/minute per IP
+- Client-side: Request debouncing and caching
+- Protection against abuse and cost overruns
+
+**✅ Input Validation**:
+- Zod schemas for all API requests
+- Type safety throughout the application
+- Sanitized responses to prevent XSS
+
+**✅ Error Handling**:
+- Graceful degradation when Maps unavailable
+- User-friendly error messages
+- Comprehensive logging for debugging
+
+#### Performance Optimizations
+
+**Caching Strategy**:
+- **Script Proxy**: 1-hour browser cache
+- **Geocoding**: No caching (results may change)
+- **Places Autocomplete**: 5-minute client-side cache
+- **Rate Limiting**: In-memory store with cleanup
+
+**Request Optimization**:
+- Debounced autocomplete (500ms delay)
+- Minimum 2-character input for autocomplete
+- Automatic cleanup of old cache entries
+
+#### Migration Guide
+
+**Updating Existing Components**:
+
+1. **Replace direct Google Maps usage**:
+   ```tsx
+   // Before
+   <Script src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}`} />
+   
+   // After
+   <SecureMapLoader>
+     <YourMapComponent />
+   </SecureMapLoader>
+   ```
+
+2. **Update API calls**:
+   ```tsx
+   // Before
+   const geocoder = new google.maps.Geocoder()
+   geocoder.geocode({ address }, callback)
+   
+   // After
+   const { geocodeAddress } = useSecureGoogleMaps()
+   const results = await geocodeAddress(address)
+   ```
+
+3. **Update autocomplete**:
+   ```tsx
+   // Before
+   const service = new google.maps.places.AutocompleteService()
+   service.getPlacePredictions({ input }, callback)
+   
+   // After
+   const { getPlacesPredictions } = useSecureGoogleMaps()
+   const predictions = await getPlacesPredictions(input)
+   ```
+
+#### Monitoring and Maintenance
+
+**Cost Monitoring**: Set up billing alerts in Google Cloud Console, monitor daily API usage, review quota settings monthly
+
+**Performance Monitoring**: Track API response times, monitor rate limiting effectiveness, review error rates and types
+
+**Security Audits**: Regular review of API key restrictions, validate that no keys are client-exposed, monitor for unusual usage patterns
+
+#### Troubleshooting
+
+**Common Issues**:
+
+1. **Maps not loading**: Check `GOOGLE_MAPS_SERVER_API_KEY` is set, verify API key restrictions in Cloud Console, check browser console for errors
+
+2. **Rate limiting errors**: Implement longer debouncing delays, review usage patterns, consider increasing rate limits
+
+3. **Geocoding failures**: Validate address format, check API quotas in Cloud Console, review error responses in logs
+
+**Debug Mode**:
+```bash
+# Enable debug logging
+NODE_ENV=development pnpm run dev
+
+# Check API responses
+curl -X POST http://localhost:3000/api/maps/geocode \
+  -H "Content-Type: application/json" \
+  -d '{"address": "1600 Amphitheatre Parkway, Mountain View, CA"}'
+```
+
+#### Security Checklist
+
+- [ ] `GOOGLE_MAPS_SERVER_API_KEY` configured
+- [ ] Client-side API key removed from all code
+- [ ] Google Cloud Console restrictions configured
+- [ ] Rate limiting tested and working
+- [ ] Error handling tested
+- [ ] Billing alerts configured
+- [ ] Security audit completed
 
 ---
 

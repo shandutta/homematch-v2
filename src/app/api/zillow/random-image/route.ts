@@ -73,9 +73,10 @@ export async function GET() {
   const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || DEFAULT_HOST
 
   if (!RAPIDAPI_KEY) {
+    console.error('RAPIDAPI_KEY not configured')
     return NextResponse.json(
-      { error: 'RAPIDAPI_KEY not configured' },
-      { status: 500 }
+      { error: 'Application is not configured for Zillow API access.' },
+      { status: 503 }
     )
   }
 

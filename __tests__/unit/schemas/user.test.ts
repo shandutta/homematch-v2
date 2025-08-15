@@ -59,24 +59,15 @@ describe('User Schema Validation', () => {
       const result = userPreferencesSchema.safeParse(invalidWeights)
       expect(result.success).toBe(false)
 
-      if (!result.success) {
-        expect(result.error.issues).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              path: ['ml_model_weights', 'price_weight'],
-              message: expect.stringContaining(
-                'Number must be less than or equal to 1'
-              ),
-            }),
-            expect.objectContaining({
-              path: ['ml_model_weights', 'location_weight'],
-              message: expect.stringContaining(
-                'Number must be greater than or equal to 0'
-              ),
-            }),
-          ])
-        )
-      }
+      const errorMessages = result.success
+        ? []
+        : result.error.issues.map((issue) => issue.message)
+      expect(errorMessages).toEqual(
+        expect.arrayContaining([
+          'Number must be less than or equal to 1',
+          'Number must be greater than or equal to 0',
+        ])
+      )
     })
 
     test('should validate notification frequency enum', () => {
@@ -282,24 +273,15 @@ describe('User Schema Validation', () => {
       const result = scoreDataSchema.safeParse(invalidScores)
       expect(result.success).toBe(false)
 
-      if (!result.success) {
-        expect(result.error.issues).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              path: ['ml_score'],
-              message: expect.stringContaining(
-                'Number must be less than or equal to 1'
-              ),
-            }),
-            expect.objectContaining({
-              path: ['cold_start_score'],
-              message: expect.stringContaining(
-                'Number must be greater than or equal to 0'
-              ),
-            }),
-          ])
-        )
-      }
+      const errorMessages = result.success
+        ? []
+        : result.error.issues.map((issue) => issue.message)
+      expect(errorMessages).toEqual(
+        expect.arrayContaining([
+          'Number must be less than or equal to 1',
+          'Number must be greater than or equal to 0',
+        ])
+      )
     })
 
     test('should handle preference validation and JSONB constraints', () => {

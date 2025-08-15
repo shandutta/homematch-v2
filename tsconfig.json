@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "types": ["jest", "@testing-library/jest-dom", "./src/types/jest"],
     "incremental": true,
     "plugins": [
       {
@@ -19,20 +20,46 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/__tests__/*": ["./__tests__/*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    ".next/types/**/*.ts"
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx",
+    "jest.setup.ts",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts",
+
+    // ensure ESLint project parsing can find these top-level TS files
+    "middleware.ts",
+    "next.config.ts",
+    "playwright.config.ts",
+    "playwright.remote.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+
+    // scripts
+    "scripts/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     ".next",
     "out",
     "dist",
-    "homematch-original-analysis"
+    "homematch-original-analysis",
+    "v1-reference",
+    "playwright-report",
+    "test-results",
+    "migrated_data",
+    "__tests__/**/*.test.ts",
+    "__tests__/**/*.test.tsx",
+    "__tests__/**/*.spec.ts",
+    "__tests__/**/*.spec.tsx",
+    "__tests__/setupSupabaseMock.ts",
+    "jest.setup.ts"
   ]
 }
