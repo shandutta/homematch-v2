@@ -27,6 +27,26 @@ type PlacePrediction = {
   }
 }
 
+// Google Places Autocomplete API response interfaces
+interface GooglePlacePrediction {
+  description: string
+  place_id: string
+  types: string[]
+  matched_substrings: Array<{
+    length: number
+    offset: number
+  }>
+  structured_formatting?: {
+    main_text: string
+    secondary_text?: string
+  }
+}
+
+interface GooglePlacesResponse {
+  status: string
+  predictions: GooglePlacePrediction[]
+}
+
 /**
  * Secure Places Autocomplete API Proxy
  * Rate-limited server-side proxy for Google Maps Places Autocomplete API
@@ -104,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return sanitized predictions
-    const predictions: PlacePrediction[] = data.predictions.map((prediction: any) => ({
+    const predictions: PlacePrediction[] = (data as GooglePlacesResponse).predictions.map((prediction: GooglePlacePrediction) => ({
       description: prediction.description,
       place_id: prediction.place_id,
       types: prediction.types,

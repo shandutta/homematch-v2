@@ -23,7 +23,8 @@ export function CtaBand() {
 
       <div className="relative z-10 container mx-auto px-4">
         <MotionDiv
-          className="mx-auto max-w-4xl text-center"
+          className="mx-auto text-center"
+          style={{ maxWidth: '56rem' }}
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -36,8 +37,8 @@ export function CtaBand() {
             Make House‑Hunting Your Next Couples Game
           </h3>
           <p
-            className="mx-auto mt-3 max-w-2xl text-white/80 sm:text-lg"
-            style={{ fontFamily: 'var(--font-body)' }}
+            className="mx-auto mt-3 text-white/80 sm:text-lg"
+            style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
           >
             Tasteful swiping. Smart matches. Real progress. Join early access
             and start finding places you both love.

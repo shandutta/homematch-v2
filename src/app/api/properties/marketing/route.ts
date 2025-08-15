@@ -118,7 +118,7 @@ async function getMarketingProperties(): Promise<NextResponse> {
         // Dynamically read the local seed JSON to serve marketing images in dev
         const { promises: fsp } = await import('fs')
         const { default: path } = await import('path')
-        const seedPath = path.join(
+        const seedPath = path.resolve(
           process.cwd(),
           'migrated_data',
           'seed-properties.json'
@@ -151,8 +151,10 @@ async function getMarketingProperties(): Promise<NextResponse> {
           longitude: r.longitude ?? null,
           latitude: r.latitude ?? null,
         }))
-      } catch {
-        // ignore if seed file not available
+      } catch (err) {
+        console.error('Failed to read seed file:', err)
+        // Return an empty array if the seed file cannot be read
+        effectiveRows = []
       }
     }
 
@@ -234,6 +236,12 @@ async function getMarketingProperties(): Promise<NextResponse> {
           if (urls[0]) {
             fallbackImages.push(urls[0])
           }
+        } else if (res.status === 503) {
+          // If Zillow API is not configured, log a warning and stop trying.
+          console.warn(
+            'Marketing card fallback failed: Zillow API not configured.'
+          )
+          break
         }
       }
 

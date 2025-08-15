@@ -12,8 +12,8 @@ import {
   Coffee,
   Star,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { MotionDiv, scaleIn, normalTransition } from '@/components/ui/motion-components'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 
 interface EmptyStateProps {
@@ -27,22 +27,23 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
       className={`card-glassmorphism-style border-orange-500/20 ${className}`}
     >
       <CardContent className="p-8 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+        <MotionDiv
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
-            <motion.div
+            <MotionDiv
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
             >
               <Home className="h-20 w-20 text-orange-400/30" />
-            </motion.div>
+            </MotionDiv>
             <UserPlus className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-orange-400" />
           </div>
-        </motion.div>
+        </MotionDiv>
 
         <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
           {CouplesMessages.onboarding.household.create}
@@ -98,27 +99,28 @@ export function WaitingForPartnerState({
       className={`card-glassmorphism-style border-purple-500/20 ${className}`}
     >
       <CardContent className="p-8 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+        <MotionDiv
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
-            <motion.div
+            <MotionDiv
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
               <Heart className="h-20 w-20 fill-current text-purple-400/30" />
-            </motion.div>
-            <motion.div
+            </MotionDiv>
+            <MotionDiv
               animate={{ scale: [0.8, 1.2, 0.8] }}
               transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
             >
               <Users className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-purple-400" />
-            </motion.div>
+            </MotionDiv>
           </div>
-        </motion.div>
+        </MotionDiv>
 
         <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
           {CouplesMessages.onboarding.household.invite}
@@ -182,15 +184,16 @@ export function NoMutualLikesState({
       className={`card-glassmorphism-style border-pink-500/20 ${className}`}
     >
       <CardContent className="p-8 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+        <MotionDiv
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
             {/* Animated double hearts */}
-            <motion.div
+            <MotionDiv
               animate={{
                 scale: [1, 1.1, 1],
                 rotate: [0, 5, -5, 0],
@@ -198,8 +201,8 @@ export function NoMutualLikesState({
               transition={{ duration: 4, repeat: Infinity }}
             >
               <Heart className="absolute top-2 left-2 h-16 w-16 fill-current text-pink-400/30" />
-            </motion.div>
-            <motion.div
+            </MotionDiv>
+            <MotionDiv
               animate={{
                 scale: [1, 1.1, 1],
                 rotate: [0, -5, 5, 0],
@@ -207,11 +210,11 @@ export function NoMutualLikesState({
               transition={{ duration: 4, repeat: Infinity, delay: 2 }}
             >
               <Heart className="absolute top-2 right-2 h-16 w-16 fill-current text-purple-400/30" />
-            </motion.div>
+            </MotionDiv>
 
             {/* Sparkles effect */}
             {[...Array(4)].map((_, i) => (
-              <motion.div
+              <MotionDiv
                 key={i}
                 className="absolute"
                 style={{
@@ -229,10 +232,10 @@ export function NoMutualLikesState({
                 }}
               >
                 <Sparkles className="h-3 w-3 text-yellow-400" />
-              </motion.div>
+              </MotionDiv>
             ))}
           </div>
-        </motion.div>
+        </MotionDiv>
 
         <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
           {hasIndividualLikes
@@ -300,22 +303,23 @@ export function NetworkErrorState({
   return (
     <Card className={`card-glassmorphism-style border-red-500/20 ${className}`}>
       <CardContent className="p-8 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+        <MotionDiv
+          variants={scaleIn}
+          initial="initial"
+          animate="animate"
+          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
-            <motion.div
+            <MotionDiv
               animate={{ rotate: 360 }}
               transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
             >
               <div className="h-20 w-20 rounded-full border-4 border-red-400/20 border-t-red-400" />
-            </motion.div>
+            </MotionDiv>
             <Heart className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-red-400" />
           </div>
-        </motion.div>
+        </MotionDiv>
 
         <h2 className="text-primary-foreground mb-3 text-xl font-semibold">
           Connection Issue

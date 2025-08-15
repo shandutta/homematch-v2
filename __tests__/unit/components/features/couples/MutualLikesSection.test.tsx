@@ -239,7 +239,7 @@ describe('MutualLikesSection Component', () => {
         expect(screen.getByText('Both Liked')).toBeInTheDocument()
         const heartIcon = document.querySelector('.lucide-heart')
         expect(heartIcon).toBeInTheDocument()
-        expect(heartIcon).toHaveClass('text-red-400/50', 'fill-current')
+        expect(heartIcon).toHaveClass('text-couples-accent/50', 'fill-current')
       })
     })
   })
@@ -288,7 +288,7 @@ describe('MutualLikesSection Component', () => {
       await waitFor(() => {
         const usersIcon = document.querySelector('.lucide-users')
         expect(usersIcon).toBeInTheDocument()
-        expect(usersIcon).toHaveClass('text-purple-400')
+        expect(usersIcon).toHaveClass('text-couples-secondary')
       })
     })
   })

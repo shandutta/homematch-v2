@@ -25,8 +25,8 @@ vi.mock('framer-motion', () => ({
 
 // Mock Next.js Image and Link
 vi.mock('next/image', () => ({
-  // eslint-disable-next-line @next/next/no-img-element
   default: ({ src, alt, ...props }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
 }))

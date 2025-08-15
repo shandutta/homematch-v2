@@ -180,14 +180,14 @@ export function MutualLikesSection({
   if (error) {
     return (
       <Card
-        className={`card-glassmorphism-style border-red-500/20 ${className}`}
+        className={`card-glassmorphism-style border-couples-accent/20 ${className}`}
         data-testid="mutual-likes-error"
       >
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-current text-red-400/50" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-red-400/50" />
+              <Heart className="h-5 w-5 fill-current text-couples-accent/50" />
+              <Users className="absolute -top-1 -right-1 h-4 w-4 text-couples-accent/50" />
             </div>
             Both Liked
           </CardTitle>
@@ -199,7 +199,7 @@ export function MutualLikesSection({
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
             >
-              <Heart className="mx-auto mb-4 h-12 w-12 fill-current text-red-400/30" />
+              <Heart className="mx-auto mb-4 h-12 w-12 fill-current text-couples-accent/30" />
             </MotionDiv>
 
             <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
@@ -211,7 +211,7 @@ export function MutualLikesSection({
             <Button
               onClick={handleRetry}
               size="sm"
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+              className="bg-gradient-to-r from-couples-accent to-couples-primary hover:opacity-80"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
@@ -225,14 +225,14 @@ export function MutualLikesSection({
   if (mutualLikes.length === 0) {
     return (
       <Card
-        className={`card-glassmorphism-style border-pink-500/20 ${className}`}
+        className={`card-glassmorphism-style border-couples-primary/20 ${className}`}
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-pink-400 text-pink-400" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+              <Heart className="h-5 w-5 fill-couples-primary text-couples-primary" />
+              <Users className="absolute -top-1 -right-1 h-4 w-4 text-couples-secondary" />
             </div>
             Both Liked
           </CardTitle>
@@ -249,7 +249,7 @@ export function MutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity }}
                 >
-                  <Heart className="h-12 w-12 fill-current text-pink-400/30" />
+                  <Heart className="h-12 w-12 fill-current text-couples-primary/30" />
                 </MotionDiv>
                 <MotionDiv
                   animate={{
@@ -258,7 +258,7 @@ export function MutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity, delay: 2 }}
                 >
-                  <Heart className="absolute top-0 left-4 h-12 w-12 fill-current text-purple-400/30" />
+                  <Heart className="absolute top-0 left-4 h-12 w-12 fill-current text-couples-secondary/30" />
                 </MotionDiv>
 
                 {/* Sparkles effect */}
@@ -310,9 +310,9 @@ export function MutualLikesSection({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Heart className="h-5 w-5 fill-pink-400 text-pink-400" />
+            <Heart className="h-5 w-5 fill-couples-primary text-couples-primary" />
             Both Liked ({mutualLikes.length})
-            <Users className="h-5 w-5 text-purple-400" />
+            <Users className="h-5 w-5 text-couples-secondary" />
           </CardTitle>
           {mutualLikes.length > 3 && (
             <Button variant="ghost" size="sm" asChild>
@@ -343,7 +343,7 @@ export function MutualLikesSection({
               }}
             >
               <Link href={`/properties/${like.property_id}`}>
-                <div className="group relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:border-pink-400/30 hover:bg-white/10">
+                <div className="group relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:border-couples-primary/30 hover:bg-white/10">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage

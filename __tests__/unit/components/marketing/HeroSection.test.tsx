@@ -2,16 +2,7 @@ import { render, screen } from '@testing-library/react'
 // import userEvent from '@testing-library/user-event'
 import { HeroSection } from '@/components/marketing/HeroSection'
 
-// Mock framer-motion to avoid animation issues in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-  },
-  useScroll: () => ({ scrollY: 0 }),
-  useTransform: () => 0,
-}))
+// Framer-motion is mocked globally in jest.setup.ts
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
@@ -84,15 +75,12 @@ describe('HeroSection', () => {
   test('renders gradient background', () => {
     render(<HeroSection />)
 
-    // Check for gradient background div
+    // Check for gradient background div with Tailwind class
     const gradientDiv = screen
       .getByTestId('hero')
-      .querySelector('div[style*="linear-gradient"]')
+      .querySelector('.bg-gradient-marketing-primary')
     expect(gradientDiv).toBeInTheDocument()
-    expect(gradientDiv).toHaveStyle({
-      background:
-        'linear-gradient(135deg, #020b1f 0%, #03123b 48%, #041a52 100%)',
-    })
+    expect(gradientDiv).toHaveClass('bg-gradient-marketing-primary')
   })
 
   test('renders vignette overlay', () => {

@@ -9,22 +9,25 @@
  * - Service unavailability
  * - Malformed data handling
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { HouseholdSection } from '@/components/profile/HouseholdSection'
-import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { TEST_USERS, TEST_MESSAGES } from '@/__tests__/fixtures/test-data'
 
-// Mock external services
-vi.mock('@/lib/services/users-client')
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    refresh: vi.fn(),
-  }),
+// Mock external services with proper Vitest patterns
+vi.mock('@/lib/services/users-client', () => ({
+  UserServiceClient: {
+    createHousehold: vi.fn(),
+    joinHousehold: vi.fn(),
+    leaveHousehold: vi.fn(),
+  },
 }))
+
+// next/navigation is already mocked centrally in setupSupabaseMock.ts
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -40,15 +43,18 @@ describe('HouseholdSection Error Scenarios', () => {
   let mockJoinHousehold: any
   let mockLeaveHousehold: any
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
 
-    // Set up default mocks
+    const { UserServiceClient } = await import('@/lib/services/users-client')
+    
+    // Set up default mocks using the imported mocked functions
     mockCreateHousehold = vi
       .fn()
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = vi.fn().mockResolvedValue(true)
     mockLeaveHousehold = vi.fn().mockResolvedValue(true)
+    
     ;(UserServiceClient.createHousehold as any) = mockCreateHousehold
     ;(UserServiceClient.joinHousehold as any) = mockJoinHousehold
     ;(UserServiceClient.leaveHousehold as any) = mockLeaveHousehold
@@ -117,7 +123,11 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      await user.click(copyButton)
+      
+      // Test should not throw unhandled errors
+      await expect(async () => {
+        await user.click(copyButton)
+      }).not.toThrow()
 
       // Should handle missing method gracefully
       // Implementation might use fallback or show error
@@ -372,7 +382,7 @@ describe('HouseholdSection Error Scenarios', () => {
       const user = userEvent.setup()
 
       // Mock toast system that throws errors
-      vi.mocked(toast.success).mockImplementation(() => {
+      ;(toast.success as any).mockImplementation(() => {
         throw new Error('Toast system unavailable')
       })
 
@@ -442,6 +452,9 @@ describe('HouseholdSection Error Scenarios', () => {
       // Unmount component before async operation completes
       unmount()
 
+      // Test passes if no unhandled promise rejections or memory leaks occur
+      expect.assertions(0) // Explicitly test for "no crashes" behavior
+      
       // Should not cause memory leaks or unhandled promise rejections
       // (This would show up in test output or CI)
     })

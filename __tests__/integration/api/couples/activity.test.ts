@@ -1,15 +1,15 @@
-import { describe, test, expect, beforeEach, afterEach } from 'vitest'
+import { vi } from 'vitest'
 import { GET } from '@/app/api/couples/activity/route'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { NextRequest } from 'next/server'
 
 // Mock the dependencies
-vi.mock('@/lib/supabase/server')
 vi.mock('@/lib/services/couples')
+vi.mock('@/lib/supabase/server')
 
 const mockCreateApiClient = vi.mocked(createApiClient)
-const mockCouplesService = vi.mocked(CouplesService)
+const mockCouplesService = CouplesService as any
 
 describe('/api/couples/activity', () => {
   const mockUser = {

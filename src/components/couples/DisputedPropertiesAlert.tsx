@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
+import { MotionDiv, fadeInUp, normalTransition } from '@/components/ui/motion-components'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquareMore, Users, ArrowRight, X } from 'lucide-react'
@@ -61,11 +62,12 @@ export function DisputedPropertiesAlert({
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-        transition={{ duration: 0.4, type: 'spring', stiffness: 300 }}
+      <MotionDiv
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ ...normalTransition, duration: 0.4, type: 'spring', stiffness: 300 }}
         className={className}
       >
         <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg">
@@ -73,7 +75,7 @@ export function DisputedPropertiesAlert({
             <div className="flex items-center justify-between gap-4">
               {/* Left Content */}
               <div className="flex flex-1 items-center gap-3">
-                <motion.div
+                <MotionDiv
                   className="flex-shrink-0"
                   animate={{ rotate: [0, -5, 5, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -81,7 +83,7 @@ export function DisputedPropertiesAlert({
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100">
                     <MessageSquareMore className="h-5 w-5 text-orange-600" />
                   </div>
-                </motion.div>
+                </MotionDiv>
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center gap-2">
@@ -129,7 +131,7 @@ export function DisputedPropertiesAlert({
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionDiv>
     </AnimatePresence>
   )
 }

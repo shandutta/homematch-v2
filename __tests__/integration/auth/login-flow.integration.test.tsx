@@ -5,29 +5,44 @@
  */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { vi } from 'vitest'
 import { LoginForm } from '@/components/features/auth/LoginForm'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { setupTestIsolation } from '@/__tests__/utils/test-isolation'
+import { setupTestIsolation } from '../../utils/test-isolation'
 
-// Only mock external dependencies, not internal form logic
+// Mock external dependencies
 vi.mock('@/lib/supabase/client')
-vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(),
-}))
+vi.mock('next/navigation')
 
 describe('Login Flow Integration', () => {
   const mockPush = vi.fn()
   const mockSignInWithPassword = vi.fn()
   const mockSignInWithOAuth = vi.fn()
+  
+  const mockUseRouter = vi.mocked(useRouter)
+  const mockCreateClient = vi.mocked(createClient)
 
   // Use test isolation utilities
   setupTestIsolation()
 
   beforeEach(() => {
-    // Mock router
-    ;(useRouter as any).mockReturnValue({
+    // Clear all mocks before each test
+    vi.clearAllMocks()
+    
+    // Reset mock implementations with default behavior
+    mockSignInWithPassword.mockResolvedValue({ 
+      data: { user: null, session: null }, 
+      error: null 
+    })
+    mockSignInWithOAuth.mockResolvedValue({ 
+      data: { url: null }, 
+      error: null 
+    })
+    
+    // Setup router mock with custom push handler
+    mockUseRouter.mockReturnValue({
       push: mockPush,
       replace: vi.fn(),
       back: vi.fn(),
@@ -35,9 +50,9 @@ describe('Login Flow Integration', () => {
       refresh: vi.fn(),
       prefetch: vi.fn(),
     })
-
-    // Mock Supabase client with realistic behavior
-    ;(createClient as any).mockReturnValue({
+    
+    // Setup Supabase client with custom auth handlers
+    mockCreateClient.mockReturnValue({
       auth: {
         signInWithPassword: mockSignInWithPassword,
         signInWithOAuth: mockSignInWithOAuth,

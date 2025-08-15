@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PropertyImage } from '@/components/ui/property-image'
-import { motion } from 'framer-motion'
+import { MotionDiv, slideInRight, scaleIn, normalTransition } from '@/components/ui/motion-components'
 import { formatPrice } from '@/lib/utils/formatting'
 import { formatDistanceToNow } from 'date-fns'
 import type { HouseholdActivity } from '@/lib/services/couples'
@@ -31,10 +31,10 @@ const interactionIcons = {
 }
 
 const interactionColors = {
-  like: 'text-pink-400',
-  dislike: 'text-red-400',
-  skip: 'text-yellow-400',
-  view: 'text-blue-400',
+  like: 'text-couples-primary',
+  dislike: 'text-couples-accent',
+  skip: 'text-couples-warning',
+  view: 'text-couples-info',
 }
 
 const interactionText = {
@@ -47,22 +47,22 @@ const interactionText = {
 export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
   if (activity.length === 0) {
     return (
-      <Card className="card-glassmorphism-style border-purple-500/20">
+      <Card className="card-glassmorphism-style border-couples-secondary/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Activity className="h-6 w-6 text-purple-400" />
+            <Activity className="h-6 w-6 text-couples-secondary" />
             Recent Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="py-12 text-center">
             <div className="mb-6 flex justify-center">
-              <motion.div
+              <MotionDiv
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <Activity className="h-16 w-16 text-purple-400/30" />
-              </motion.div>
+                <Activity className="h-16 w-16 text-couples-secondary/30" />
+              </MotionDiv>
             </div>
             <h3 className="text-primary-foreground mb-2 text-xl font-semibold">
               No activity yet!
@@ -72,7 +72,7 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
             </p>
             <Button
               asChild
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+              className="bg-gradient-couples-mutual hover:opacity-80"
             >
               <Link href="/dashboard">
                 Start Exploring
@@ -110,11 +110,12 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
           const actionText = interactionText[item.interaction_type]
 
           return (
-            <motion.div
+            <MotionDiv
               key={item.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              transition={{ ...normalTransition, delay: index * 0.05 }}
             >
               <Link href={`/properties/${item.property_id}`}>
                 <div className="group relative rounded-lg border border-white/5 bg-white/5 p-3 transition-all hover:border-purple-400/30 hover:bg-white/10">
@@ -135,9 +136,7 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
                           <div className="flex items-center gap-1">
                             <User className="text-primary/40 h-3 w-3" />
                             <span className="text-primary-foreground truncate text-xs font-medium">
-                              {item.user_display_name ||
-                                item.user_email ||
-                                'Someone'}
+                              {item.user_display_name || 'Someone'}
                             </span>
                           </div>
 
@@ -151,16 +150,18 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
                           </div>
 
                           {item.is_mutual && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-2 py-0.5"
+                            <MotionDiv
+                              variants={scaleIn}
+                              initial="initial"
+                              animate="animate"
+                              transition={normalTransition}
+                              className="flex items-center gap-1 rounded-full bg-gradient-couples-mutual px-2 py-0.5"
                             >
-                              <Sparkles className="h-3 w-3 text-pink-400" />
-                              <span className="text-xs font-semibold text-pink-400">
+                              <Sparkles className="h-3 w-3 text-couples-primary" />
+                              <span className="text-xs font-semibold text-couples-primary">
                                 Mutual!
                               </span>
-                            </motion.div>
+                            </MotionDiv>
                           )}
                         </div>
 
@@ -194,7 +195,7 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </MotionDiv>
           )
         })}
 

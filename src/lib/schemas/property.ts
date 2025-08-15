@@ -201,25 +201,11 @@ export const propertySearchSchema = z.object({
   pagination: propertyPaginationSchema.optional(),
 })
 
-// Coordinate helpers
-export const coordinatesSchema = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-})
-
-export const boundingBoxSchema = z
-  .object({
-    north: z.number().min(-90).max(90),
-    south: z.number().min(-90).max(90),
-    east: z.number().min(-180).max(180),
-    west: z.number().min(-180).max(180),
-  })
-  .refine((data) => data.north > data.south, {
-    message: 'North must be greater than south',
-  })
-  .refine((data) => data.east > data.west, {
-    message: 'East must be greater than west',
-  })
+// Re-export coordinate utilities for backward compatibility
+export { 
+  latLngSchema as coordinatesSchema,
+  boundingBoxSchema 
+} from '@/lib/utils/coordinates'
 
 // Export types
 export type Property = z.infer<typeof propertySchema>
@@ -238,5 +224,5 @@ export type PropertySort = z.infer<typeof propertySortSchema>
 export type PropertyPagination = z.infer<typeof propertyPaginationSchema>
 export type PropertySearch = z.infer<typeof propertySearchSchema>
 
-export type Coordinates = z.infer<typeof coordinatesSchema>
-export type BoundingBox = z.infer<typeof boundingBoxSchema>
+// Re-export coordinate types for backward compatibility
+export type { LatLng as Coordinates, BoundingBox } from '@/lib/utils/coordinates'

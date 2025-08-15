@@ -33,7 +33,8 @@ export function HowItWorks() {
     >
       <div className="container mx-auto px-4">
         <MotionDiv
-          className="mx-auto max-w-3xl text-center"
+          className="mx-auto text-center"
+          style={{ maxWidth: '48rem' }}
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

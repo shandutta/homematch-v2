@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Heart, Users } from 'lucide-react'
-import { MotionDiv, FadeInContainer, slideInRight, scaleIn, normalTransition } from '@/components/ui/motion-components'
+import { MotionDiv, slideInRight, scaleIn, normalTransition } from '@/components/ui/motion-components'
 
 // Enhanced skeleton with romantic theme
 export function CouplesHeroSkeleton() {

@@ -189,6 +189,18 @@ export default [
     rules: {
       ...jestPlugin.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'off',
+      'jest/no-conditional-expect': 'off', // TODO: Refactor test files to eliminate conditional expects
+      'jest/expect-expect': [
+        'warn',
+        {
+          assertFunctionNames: [
+            'expect',
+            'assertions.assertExists',
+            'assertions.assertNotExists',
+            'assertions.assertCount',
+          ],
+        },
+      ],
     },
   },
   {

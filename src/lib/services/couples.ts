@@ -1,56 +1,118 @@
+/**
+ * @module CouplesService
+ * @description Service for managing couples' shared property interactions and mutual likes.
+ * This service handles all household-related property decisions, activity tracking,
+ * and synchronization between household members.
+ */
+
 import { LRUCache } from 'lru-cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+/**
+ * Represents a property that has been liked by multiple household members
+ * @interface MutualLike
+ */
 export interface MutualLike {
+  /** Unique identifier of the property */
   property_id: string
+  /** Number of household members who liked this property */
   liked_by_count: number
+  /** Timestamp when the property was first liked by any household member */
   first_liked_at: string
+  /** Timestamp when the property was most recently liked by any household member */
   last_liked_at: string
-  user_ids: string[] // Track which users liked it
+  /** Array of user IDs who liked this property */
+  user_ids: string[]
 }
 
+/**
+ * Represents an activity entry in the household's property interaction timeline
+ * @interface HouseholdActivity
+ */
 export interface HouseholdActivity {
+  /** Unique identifier of the interaction */
   id: string
+  /** User ID who performed the interaction */
   user_id: string
+  /** Property ID that was interacted with */
   property_id: string
+  /** Type of interaction performed */
   interaction_type: 'like' | 'dislike' | 'skip' | 'view'
+  /** Timestamp when the interaction occurred */
   created_at: string
+  /** Display name of the user who performed the interaction */
   user_display_name: string
-  user_email: string
+  /** Address of the property */
   property_address: string
+  /** Price of the property */
   property_price: number
+  /** Number of bedrooms in the property */
   property_bedrooms: number
+  /** Number of bathrooms in the property */
   property_bathrooms: number
+  /** Array of image URLs for the property */
   property_images: string[]
-  is_mutual?: boolean // If this action created a mutual like
+  /** Whether this interaction created a mutual like with another household member */
+  is_mutual?: boolean
 }
 
+/**
+ * Statistical summary of a household's property search activity
+ * @interface CouplesStats
+ */
 export interface CouplesStats {
+  /** Total number of properties liked by all household members */
   total_mutual_likes: number
+  /** Total number of likes across the household */
   total_household_likes: number
+  /** Number of consecutive days with activity */
   activity_streak_days: number
+  /** Timestamp of the most recent mutual like, or null if none */
   last_mutual_like_at: string | null
 }
 
-// Cache configuration
+/**
+ * LRU Cache for storing mutual likes data
+ * @constant
+ * @description Caches mutual likes for 5 minutes to reduce database queries
+ */
 const mutualLikesCache = new LRUCache<string, MutualLike[]>({
   max: 1000,
   ttl: 5 * 60 * 1000, // 5 minutes
 })
 
+/**
+ * LRU Cache for storing household activity timeline
+ * @constant
+ * @description Caches household activity for 2 minutes for quick timeline access
+ */
 const householdActivityCache = new LRUCache<string, HouseholdActivity[]>({
   max: 500,
   ttl: 2 * 60 * 1000, // 2 minutes
 })
 
+/**
+ * LRU Cache for storing household statistics
+ * @constant
+ * @description Caches household stats for 10 minutes to optimize dashboard loading
+ */
 const householdStatsCache = new LRUCache<string, CouplesStats>({
   max: 1000,
   ttl: 10 * 60 * 1000, // 10 minutes
 })
 
+/**
+ * Service class for managing household property interactions and couples' features
+ * @class CouplesService
+ * @description Provides methods for tracking mutual likes, household activity, and statistics
+ * for couples searching for properties together. Uses caching for performance optimization.
+ */
 export class CouplesService {
   /**
-   * Clear cache for a household when interactions change
+   * Clears all cached data for a specific household
+   * @param {string} householdId - The unique identifier of the household
+   * @description Should be called when interactions change to ensure fresh data
+   * @complexity O(1)
    */
   static clearHouseholdCache(householdId: string): void {
     mutualLikesCache.delete(householdId)
@@ -59,7 +121,13 @@ export class CouplesService {
   }
 
   /**
-   * Get user's household ID efficiently
+   * Retrieves the household ID for a given user
+   * @private
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the user
+   * @returns {Promise<string | null>} The household ID or null if user has no household
+   * @complexity O(1) - Single database query
+   * @description Fetches household association from user_profiles table
    */
   private static async getUserHousehold(
     supabase: SupabaseClient,
@@ -75,7 +143,76 @@ export class CouplesService {
   }
 
   /**
-   * Optimized query to get mutual likes using a single database call with aggregation
+   * Executes RPC query to fetch mutual likes from database
+   * @private
+   */
+  private static async fetchMutualLikesFromRPC(
+    supabase: SupabaseClient,
+    householdId: string
+  ): Promise<{ data: unknown[]; error?: unknown }> {
+    const { data: mutualLikesData, error } = await supabase.rpc(
+      'get_household_mutual_likes',
+      {
+        p_household_id: householdId,
+      }
+    )
+
+    return { data: mutualLikesData || [], error }
+  }
+
+  /**
+   * Transforms raw mutual likes data from database to typed interface
+   * @private
+   */
+  private static transformMutualLikesData(rawData: unknown[]): MutualLike[] {
+    // Define interface for the raw data from the RPC function
+    interface MutualLikeRaw {
+      property_id: string
+      liked_by_count: string | number // Database might return as string
+      first_liked_at: string
+      last_liked_at: string
+      user_ids?: string[]
+    }
+
+    return rawData.map((item) => {
+      const typedItem = item as MutualLikeRaw
+      return {
+        property_id: typedItem.property_id,
+        liked_by_count:
+          typeof typedItem.liked_by_count === 'string'
+            ? parseInt(typedItem.liked_by_count, 10)
+            : typedItem.liked_by_count,
+        first_liked_at: typedItem.first_liked_at,
+        last_liked_at: typedItem.last_liked_at,
+        user_ids: typedItem.user_ids || [],
+      }
+    })
+  }
+
+  /**
+   * Handles cache operations for mutual likes
+   * @private
+   */
+  private static handleMutualLikesCache(
+    householdId: string,
+    result: MutualLike[],
+    startTime: number
+  ): void {
+    mutualLikesCache.set(householdId, result)
+    console.log(
+      `[CouplesService] Fetched ${result.length} mutual likes for household ${householdId} (${Date.now() - startTime}ms)`
+    )
+  }
+
+  /**
+   * Retrieves all properties that have been liked by multiple household members
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the requesting user
+   * @returns {Promise<MutualLike[]>} Array of mutual likes with metadata
+   * @complexity O(n) where n is the number of mutual likes
+   * @description Uses optimized RPC function with fallback to manual aggregation.
+   * Results are cached for 5 minutes to improve performance.
+   * @callsTo get_household_mutual_likes (RPC), getMutualLikesFallback (fallback)
    */
   static async getMutualLikes(
     supabase: SupabaseClient,
@@ -96,47 +233,22 @@ export class CouplesService {
         return cached
       }
 
-      // Optimized single query with aggregation
-      const { data: mutualLikesData, error } = await supabase.rpc(
-        'get_household_mutual_likes',
-        {
-          p_household_id: householdId,
-        }
+      // Fetch from database using RPC
+      const { data: mutualLikesData, error } = await this.fetchMutualLikesFromRPC(
+        supabase,
+        householdId
       )
 
       if (error) {
         console.error('[CouplesService] Error fetching mutual likes:', error)
-
         // Fallback to the original method if RPC fails
         return this.getMutualLikesFallback(supabase, householdId)
       }
 
-      // Define interface for the raw data from the RPC function
-      interface MutualLikeRaw {
-        property_id: string
-        liked_by_count: string | number // Database might return as string
-        first_liked_at: string
-        last_liked_at: string
-        user_ids?: string[]
-      }
+      // Transform and cache the result
+      const result = this.transformMutualLikesData(mutualLikesData)
+      this.handleMutualLikesCache(householdId, result, startTime)
 
-      const result = (mutualLikesData || []).map((item: MutualLikeRaw) => ({
-        property_id: item.property_id,
-        liked_by_count:
-          typeof item.liked_by_count === 'string'
-            ? parseInt(item.liked_by_count)
-            : item.liked_by_count,
-        first_liked_at: item.first_liked_at,
-        last_liked_at: item.last_liked_at,
-        user_ids: item.user_ids || [],
-      }))
-
-      // Cache the result
-      mutualLikesCache.set(householdId, result)
-
-      console.log(
-        `[CouplesService] Fetched ${result.length} mutual likes for household ${householdId} (${Date.now() - startTime}ms)`
-      )
       return result
     } catch (error) {
       console.error(
@@ -148,7 +260,14 @@ export class CouplesService {
   }
 
   /**
-   * Fallback method using the original approach
+   * Fallback implementation for retrieving mutual likes using client-side aggregation
+   * @private
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} householdId - The unique identifier of the household
+   * @returns {Promise<MutualLike[]>} Array of mutual likes with metadata
+   * @complexity O(n*m) where n is likes and m is unique properties
+   * @description Manual aggregation when RPC function is unavailable.
+   * Groups interactions by property and filters for 2+ unique users.
    */
   private static async getMutualLikesFallback(
     supabase: SupabaseClient,
@@ -210,7 +329,123 @@ export class CouplesService {
   }
 
   /**
-   * Get recent household activity timeline with enhanced data
+   * Fetches raw household activity data from database
+   * @private
+   */
+  private static async fetchHouseholdActivityData(
+    supabase: SupabaseClient,
+    householdId: string,
+    limit: number,
+    offset: number
+  ): Promise<unknown[]> {
+    const { data: activities, error } = await supabase.rpc(
+      'get_household_activity_enhanced',
+      {
+        p_household_id: householdId,
+        p_limit: limit,
+        p_offset: offset,
+      }
+    )
+
+    if (error) {
+      console.error(
+        '[CouplesService] Error fetching household activity:',
+        error
+      )
+      return []
+    }
+
+    return activities || []
+  }
+
+  /**
+   * Creates a set of property IDs that have mutual likes
+   * @private
+   */
+  private static async getMutualPropertyIds(
+    supabase: SupabaseClient,
+    userId: string
+  ): Promise<Set<string>> {
+    const mutualLikes = await this.getMutualLikes(supabase, userId)
+    return new Set(mutualLikes.map((ml) => ml.property_id))
+  }
+
+  /**
+   * Transforms raw activity data to typed HouseholdActivity objects
+   * @private
+   */
+  private static transformHouseholdActivityData(
+    rawActivities: unknown[],
+    mutualPropertyIds: Set<string>
+  ): HouseholdActivity[] {
+    // Define interface for the raw activity data from the database
+    interface HouseholdActivityRaw {
+      id: string
+      user_id: string
+      property_id: string
+      interaction_type: string
+      created_at: string
+      user_display_name?: string
+      user_email?: string
+      property_address?: string
+      property_price?: number
+      property_bedrooms?: number
+      property_bathrooms?: number
+      property_images?: string[]
+    }
+
+    return rawActivities.map((activity) => {
+      const typedActivity = activity as HouseholdActivityRaw
+      return {
+        id: typedActivity.id,
+        user_id: typedActivity.user_id,
+        property_id: typedActivity.property_id,
+        interaction_type: typedActivity.interaction_type as
+          | 'like'
+          | 'dislike'
+          | 'skip'
+          | 'view',
+        created_at: typedActivity.created_at,
+        user_display_name: typedActivity.user_display_name || 'Unknown',
+        property_address: typedActivity.property_address || '',
+        property_price: typedActivity.property_price || 0,
+        property_bedrooms: typedActivity.property_bedrooms || 0,
+        property_bathrooms: typedActivity.property_bathrooms || 0,
+        property_images: typedActivity.property_images || [],
+        is_mutual:
+          typedActivity.interaction_type === 'like' &&
+          mutualPropertyIds.has(typedActivity.property_id),
+      }
+    })
+  }
+
+  /**
+   * Handles caching for household activity data
+   * @private
+   */
+  private static handleActivityCache(
+    cacheKey: string,
+    result: HouseholdActivity[],
+    householdId: string,
+    startTime: number
+  ): void {
+    householdActivityCache.set(cacheKey, result)
+    console.log(
+      `[CouplesService] Fetched ${result.length} activities for household ${householdId} (${Date.now() - startTime}ms)`
+    )
+  }
+
+  /**
+   * Retrieves recent household activity timeline with property details
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the requesting user
+   * @param {number} [limit=20] - Maximum number of activities to retrieve
+   * @param {number} [offset=0] - Number of records to skip for pagination
+   * @returns {Promise<HouseholdActivity[]>} Array of household activities with property metadata
+   * @complexity O(n) where n is the number of activities
+   * @description Fetches household member interactions with properties, including
+   * property details and mutual like indicators. Results are cached for 2 minutes.
+   * @callsTo get_household_activity_enhanced (RPC), getMutualLikes
    */
   static async getHouseholdActivity(
     supabase: SupabaseClient,
@@ -235,74 +470,16 @@ export class CouplesService {
         return cached
       }
 
-      // Use the optimized database function
-      const { data: activities, error } = await supabase.rpc(
-        'get_household_activity_enhanced',
-        {
-          p_household_id: householdId,
-          p_limit: limit,
-          p_offset: offset,
-        }
-      )
+      // Fetch data and prepare mutual likes lookup
+      const [activities, mutualPropertyIds] = await Promise.all([
+        this.fetchHouseholdActivityData(supabase, householdId, limit, offset),
+        this.getMutualPropertyIds(supabase, userId)
+      ])
 
-      if (error) {
-        console.error(
-          '[CouplesService] Error fetching household activity:',
-          error
-        )
-        return []
-      }
+      // Transform and cache the result
+      const result = this.transformHouseholdActivityData(activities, mutualPropertyIds)
+      this.handleActivityCache(cacheKey, result, householdId, startTime)
 
-      // Get mutual likes to mark which activities created mutual likes
-      const mutualLikes = await this.getMutualLikes(supabase, userId)
-      const mutualPropertyIds = new Set(mutualLikes.map((ml) => ml.property_id))
-
-      // Define interface for the raw activity data from the database
-      interface HouseholdActivityRaw {
-        id: string
-        user_id: string
-        property_id: string
-        interaction_type: string
-        created_at: string
-        user_display_name?: string
-        user_email?: string
-        property_address?: string
-        property_price?: number
-        property_bedrooms?: number
-        property_bathrooms?: number
-        property_images?: string[]
-      }
-
-      const result: HouseholdActivity[] = (activities || []).map(
-        (activity: HouseholdActivityRaw) => ({
-          id: activity.id,
-          user_id: activity.user_id,
-          property_id: activity.property_id,
-          interaction_type: activity.interaction_type as
-            | 'like'
-            | 'dislike'
-            | 'skip'
-            | 'view',
-          created_at: activity.created_at,
-          user_display_name: activity.user_display_name || 'Unknown',
-          user_email: activity.user_email || '',
-          property_address: activity.property_address || '',
-          property_price: activity.property_price || 0,
-          property_bedrooms: activity.property_bedrooms || 0,
-          property_bathrooms: activity.property_bathrooms || 0,
-          property_images: activity.property_images || [],
-          is_mutual:
-            activity.interaction_type === 'like' &&
-            mutualPropertyIds.has(activity.property_id),
-        })
-      )
-
-      // Cache the result
-      householdActivityCache.set(cacheKey, result)
-
-      console.log(
-        `[CouplesService] Fetched ${result.length} activities for household ${householdId} (${Date.now() - startTime}ms)`
-      )
       return result
     } catch (error) {
       console.error(
@@ -314,7 +491,15 @@ export class CouplesService {
   }
 
   /**
-   * Get household statistics
+   * Calculates comprehensive statistics for a household's property search activity
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the requesting user
+   * @returns {Promise<CouplesStats | null>} Household statistics or null if no household
+   * @complexity O(n) where n is the number of interactions
+   * @description Aggregates mutual likes, total likes, and activity streaks.
+   * Implements streak calculation based on consecutive days of activity.
+   * Results are cached for 10 minutes.
+   * @callsTo getMutualLikes
    */
   static async getHouseholdStats(
     supabase: SupabaseClient,
@@ -418,7 +603,15 @@ export class CouplesService {
   }
 
   /**
-   * Check if a property interaction would create a mutual like
+   * Checks if liking a property would create a mutual like with another household member
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the user considering the like
+   * @param {string} propertyId - The unique identifier of the property
+   * @returns {Promise<{ wouldBeMutual: boolean; partnerUserId?: string }>} 
+   * Object indicating if mutual like would be created and which partner liked it
+   * @complexity O(1) - Single database query
+   * @description Pre-checks if an interaction would result in a mutual like,
+   * useful for UI feedback and notifications.
    */
   static async checkPotentialMutualLike(
     supabase: SupabaseClient,
@@ -456,7 +649,16 @@ export class CouplesService {
   }
 
   /**
-   * Notify when interactions happen (for real-time updates)
+   * Handles notification logic when a user interacts with a property
+   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {string} userId - The unique identifier of the user who interacted
+   * @param {string} propertyId - The unique identifier of the property
+   * @param {string} interactionType - Type of interaction (like, dislike, skip, view)
+   * @returns {Promise<void>}
+   * @complexity O(1)
+   * @description Clears household cache and checks for mutual like creation.
+   * Can be extended to trigger real-time notifications to household members.
+   * @callsTo clearHouseholdCache, checkPotentialMutualLike
    */
   static async notifyInteraction(
     supabase: SupabaseClient,

@@ -11,7 +11,7 @@
  * Note: Actual clipboard API testing is better suited for e2e tests with Playwright
  * since jsdom has limitations with browser APIs that require user interaction
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
@@ -20,18 +20,14 @@ import { toast } from 'sonner'
 import { TEST_USERS, TEST_MESSAGES } from '@/__tests__/fixtures/test-data'
 
 // Mock external services but keep UI interactions real
-vi.mock('@/lib/services/users-client')
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    refresh: vi.fn(),
-  }),
-}))
+jest.mock('@/lib/services/users-client')
+// next/navigation is already mocked centrally in setupSupabaseMock.ts
 
 // Mock toast but track calls
-vi.mock('sonner', () => ({
+jest.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
   },
 }))
 
@@ -39,13 +35,13 @@ describe('HouseholdSection UI Integration', () => {
   const profileWithHousehold = TEST_USERS.withHousehold.profile
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
 
     // Provide minimal clipboard mock for component functionality
     Object.defineProperty(navigator, 'clipboard', {
       value: {
-        writeText: vi.fn().mockResolvedValue(undefined),
-        readText: vi.fn().mockResolvedValue(''),
+        writeText: jest.fn().mockResolvedValue(undefined),
+        readText: jest.fn().mockResolvedValue(''),
       },
       writable: true,
       configurable: true,

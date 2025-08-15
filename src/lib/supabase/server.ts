@@ -115,7 +115,17 @@ export function createApiClient(request?: NextRequest) {
 }
 
 // Alternative server client with service role for administrative operations
-export function createServiceClient() {
+// WARNING: This uses the service role key which bypasses RLS
+// Only use for admin operations after proper authorization checks
+export async function createServiceClient() {
+  // Check if caller is authorized to use service role
+  // This should be enhanced based on your specific authorization requirements
+  const isAuthorized = await checkServiceRoleAuthorization()
+  
+  if (!isAuthorized) {
+    throw new Error('Unauthorized access to service role client')
+  }
+  
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -126,4 +136,31 @@ export function createServiceClient() {
       },
     }
   )
+}
+
+// Authorization check for service role usage
+async function checkServiceRoleAuthorization(): Promise<boolean> {
+  try {
+    // Get the current user from the regular client
+    const client = await createClient()
+    const {
+      data: { user },
+    } = await client.auth.getUser()
+    
+    if (!user) return false
+    
+    // Check if user has admin role
+    // This is a placeholder - implement your actual admin check logic
+    const { data: profile } = await client
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    // Only allow service role for admin users
+    // Adjust this based on your authorization model
+    return profile?.role === 'admin'
+  } catch {
+    return false
+  }
 }

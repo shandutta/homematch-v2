@@ -1,7 +1,8 @@
 'use client'
 
-import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
+import { useScroll, useTransform, MotionValue } from 'framer-motion'
 import { useEffect, useState, useMemo } from 'react'
+import { MotionDiv } from '@/components/ui/motion-components'
 
 /**
  * Deterministic PRNG (Mulberry32) to ensure SSR/CSR parity for star field
@@ -44,7 +45,7 @@ function StarComponent({
   )
 
   return (
-    <motion.div
+    <MotionDiv
       className="absolute rounded-full bg-white/20"
       style={{
         left: `${star.x}%`,

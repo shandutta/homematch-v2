@@ -5,16 +5,7 @@ import {
   MutualLikesIndicator,
 } from '@/components/features/couples/MutualLikesBadge'
 
-// Mock framer-motion to avoid animation complications in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, className, ...props }: any) => (
-      <div className={className} {...props}>
-        {children}
-      </div>
-    ),
-  },
-}))
+// Framer-motion is mocked globally in jest.setup.ts
 
 describe('MutualLikesBadge Component', () => {
   beforeEach(() => {

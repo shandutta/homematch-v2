@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, RefreshCw, RotateCcw, Wifi, WifiOff } from 'lucide-react'
+import type { WindowWithAnalytics, SentryScope } from '@/types/analytics'
 
 interface Props {
   children: ReactNode
@@ -78,8 +79,9 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     const errorType = this.categorizeError(error)
 
     // Report to analytics if available
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      ;(window as any).gtag('event', 'exception', {
+    const analyticsWindow = window as unknown as WindowWithAnalytics
+    if (typeof window !== 'undefined' && analyticsWindow.gtag) {
+      analyticsWindow.gtag('event', 'exception', {
         event_category: 'async_error',
         event_label: errorType,
         custom_parameters: {
@@ -93,8 +95,8 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     }
 
     // Report to Sentry if available
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      ;(window as any).Sentry.withScope((scope: any) => {
+    if (typeof window !== 'undefined' && analyticsWindow.Sentry) {
+      analyticsWindow.Sentry.withScope((scope: SentryScope) => {
         scope.setTag('error_boundary', 'async')
         scope.setContext('async_operation', {
           operation: this.props.operation,
@@ -102,7 +104,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
           isOnline: this.state.isOnline,
           retryCount: this.state.retryCount,
         })
-        ;(window as any).Sentry.captureException(error)
+        analyticsWindow.Sentry!.captureException(error)
       })
     }
 

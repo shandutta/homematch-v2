@@ -47,6 +47,25 @@ console.error = (...args) => {
   ) {
     return
   }
+  // Suppress Radix UI React 19 compatibility warnings
+  if (
+    args[0] &&
+    args[0].includes &&
+    (args[0].includes('validateDOMNesting') ||
+      args[0].includes('portal') ||
+      args[0].includes('dialog'))
+  ) {
+    return
+  }
+  // Suppress React 19 concurrent rendering warnings in tests
+  if (
+    args[0] &&
+    args[0].includes &&
+    (args[0].includes('concurrent rendering') ||
+      args[0].includes('flushSync'))
+  ) {
+    return
+  }
   originalConsoleError.apply(console, args)
 }
 
@@ -60,151 +79,98 @@ Object.defineProperty(global.navigator, 'clipboard', {
   configurable: true,
 })
 
-// Mock framer-motion for tests
+// Simple framer-motion mock for remaining edge cases
 jest.mock('framer-motion', () => {
-  const React = require('react')
-
-  // List of Framer Motion specific props to filter out
-  const motionProps = [
-    'initial',
-    'animate',
-    'exit',
-    'transition',
-    'variants',
-    'whileHover',
-    'whileTap',
-    'whileFocus',
-    'whileDrag',
-    'whileInView',
-    'drag',
-    'dragConstraints',
-    'dragElastic',
-    'dragMomentum',
-    'onAnimationStart',
-    'onAnimationComplete',
-    'onDragStart',
-    'onDragEnd',
-    'layout',
-    'layoutId',
-    'layoutDependency',
-    'layoutScroll',
-    'style',
-    'transformTemplate',
-    'transformValues',
-    'custom',
-  ]
-
-  // Helper to filter out motion props
-  const filterMotionProps = (props) => {
-    const filteredProps = {}
-    for (const key in props) {
-      // Skip all motion-specific props
-      if (!motionProps.includes(key)) {
-        filteredProps[key] = props[key]
-      }
-    }
-    return filteredProps
-  }
-
-  // Create motion components that filter props
-  const createMotionComponent = (Component) => {
-    return React.forwardRef((props, ref) => {
-      const filteredProps = filterMotionProps(props)
-      return React.createElement(Component, { ...filteredProps, ref })
-    })
-  }
-
   return {
     motion: {
-      div: createMotionComponent('div'),
-      button: createMotionComponent('button'),
-      span: createMotionComponent('span'),
-      section: createMotionComponent('section'),
-      article: createMotionComponent('article'),
-      header: createMotionComponent('header'),
-      footer: createMotionComponent('footer'),
-      main: createMotionComponent('main'),
-      nav: createMotionComponent('nav'),
-      aside: createMotionComponent('aside'),
-      img: createMotionComponent('img'),
-      a: createMotionComponent('a'),
-      p: createMotionComponent('p'),
-      h1: createMotionComponent('h1'),
-      h2: createMotionComponent('h2'),
-      h3: createMotionComponent('h3'),
-      ul: createMotionComponent('ul'),
-      li: createMotionComponent('li'),
-      form: createMotionComponent('form'),
-      input: createMotionComponent('input'),
-      label: createMotionComponent('label'),
+      div: 'div',
+      span: 'span', 
+      section: 'section',
+      article: 'article',
+      h1: 'h1',
+      h2: 'h2',
+      h3: 'h3',
+      p: 'p',
+      ul: 'ul',
+      li: 'li'
     },
     AnimatePresence: ({ children }) => children,
-    useMotionValue: () => ({
-      get: jest.fn(() => 0),
-      set: jest.fn(),
-    }),
-    useTransform: () => ({
-      get: jest.fn(() => 0),
-      set: jest.fn(),
-    }),
-    useAnimation: () => ({
-      start: jest.fn().mockResolvedValue(undefined),
-      set: jest.fn(),
-      stop: jest.fn(),
-    }),
-    useSpring: () => ({
-      get: jest.fn(() => 0),
-      set: jest.fn(),
-    }),
-    useScroll: () => ({
-      scrollX: { get: jest.fn(() => 0) },
-      scrollY: { get: jest.fn(() => 0) },
-      scrollXProgress: { get: jest.fn(() => 0) },
-      scrollYProgress: { get: jest.fn(() => 0) },
-    }),
-    useInView: () => false,
-    useDragControls: () => ({
-      start: jest.fn(),
-    }),
-    useMotionTemplate: () => '',
-    useReducedMotion: () => false,
-    usePresence: () => [true, null],
+    useScroll: () => ({ scrollY: { get: () => 0 } }),
+    useTransform: () => 0,
+    useMotionValue: (initial) => ({ get: () => initial, set: jest.fn() }),
+    useAnimation: () => ({ start: jest.fn(), stop: jest.fn() }),
+    useInView: () => false
   }
 })
 
-// Mock Canvas API for image-blur tests
-HTMLCanvasElement.prototype.getContext = jest.fn((contextType) => {
-  if (contextType === '2d') {
-    return {
-      createLinearGradient: jest.fn(() => ({
-        addColorStop: jest.fn(),
-      })),
-      fillRect: jest.fn(),
-      fillStyle: null,
+// Add global test helpers
+global.beforeEach = global.beforeEach || (() => {})
+global.afterEach = global.afterEach || (() => {})
+
+// Enhanced React 19 compatibility for async components
+const React = require('react')
+
+// Mock React.act for React 19 compatibility
+if (!global.React) {
+  global.React = React
+}
+
+// Add React 19 async component support - temporarily disabled for debugging
+// const originalCreateElement = React.createElement
+// React.createElement = function(type, props, ...children) {
+//   // Handle async components more gracefully in tests
+//   if (typeof type === 'function' && type.constructor && type.constructor.name === 'AsyncFunction') {
+//     // Wrap async components to prevent test failures
+//     return originalCreateElement('div', { 'data-testid': 'async-component-wrapper' }, ...children)
+//   }
+//   return originalCreateElement.apply(this, arguments)
+// }
+
+// Ensure proper cleanup between tests
+beforeEach(() => {
+  jest.clearAllMocks()
+  jest.restoreAllMocks()
+  
+  // Re-setup Canvas mocks after restoreAllMocks clears them
+  HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation((contextType) => {
+    if (contextType === '2d') {
+      return {
+        createLinearGradient: jest.fn().mockReturnValue({
+          addColorStop: jest.fn(),
+        }),
+        fillRect: jest.fn(),
+        fillStyle: null,
+      }
     }
-  }
-  return null
+    return null
+  })
+  
+  HTMLCanvasElement.prototype.toDataURL = jest.fn().mockReturnValue('data:image/png;base64,mockDataURL')
 })
 
-HTMLCanvasElement.prototype.toDataURL = jest.fn(
-  () => 'data:image/png;base64,mockDataURL'
-)
+afterEach(() => {
+  jest.clearAllTimers()
+  jest.useRealTimers()
+  // Additional cleanup for React 19
+  if (global.gc) {
+    global.gc()
+  }
+})
 
-// Polyfill Request/Response/fetch for route handler tests (NextRequest compatibility)
-try {
-  const { Request, Response, fetch, Headers } = require('undici')
-  if (typeof global.Request === 'undefined') {
-    global.Request = Request
-  }
-  if (typeof global.Response === 'undefined') {
-    global.Response = Response
-  }
-  if (typeof global.fetch === 'undefined') {
-    global.fetch = fetch
-  }
-  if (typeof global.Headers === 'undefined') {
-    global.Headers = Headers
-  }
-} catch {
-  // undici not available; tests that rely on Request/Response may fail
+// Canvas mocks are now set up in beforeEach to avoid being cleared by restoreAllMocks
+
+// Add TextEncoder/TextDecoder polyfill if needed
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util')
+  global.TextEncoder = TextEncoder
+  global.TextDecoder = TextDecoder
+}
+
+// Polyfill fetch for integration tests using node-fetch
+if (typeof global.fetch === 'undefined') {
+  const fetch = require('node-fetch')
+  global.fetch = fetch
+  global.Request = fetch.Request
+  global.Response = fetch.Response
+  global.Headers = fetch.Headers
 }

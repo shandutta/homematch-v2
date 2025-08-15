@@ -1,5 +1,5 @@
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { createClient as createBrowserClient } from '@/lib/supabase/client'
+// import { createClient as createServerClient } from '@/lib/supabase/server'
+// import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import {
   UserProfile,
   UserProfileInsert,
@@ -13,91 +13,107 @@ import {
   SavedSearchInsert,
   SavedSearchUpdate,
 } from '@/types/database'
+import { BaseService } from './base'
+import type { ISupabaseClientFactory } from './interfaces'
 
-export class UserService {
-  private async getSupabase() {
-    if (typeof window === 'undefined') {
-      return createServerClient()
-    }
-    return createBrowserClient()
+export class UserService extends BaseService {
+  constructor(clientFactory?: ISupabaseClientFactory) {
+    super(clientFactory)
   }
 
   // User Profile Operations
   async getUserProfile(userId: string): Promise<UserProfile | null> {
-    const supabase = await this.getSupabase()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    return this.executeSingleQuery(
+      'fetching user profile',
+      async (supabase) => {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
 
-    if (error) {
-      console.error('Error fetching user profile:', error)
-      return null
-    }
+        if (error) {
+          this.handleSupabaseError(error, 'fetching user profile', { userId })
+        }
 
-    return data
+        return data
+      }
+    )
   }
 
   async createUserProfile(
     profile: UserProfileInsert
   ): Promise<UserProfile | null> {
-    const supabase = await this.getSupabase()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .insert(profile)
-      .select()
-      .single()
+    return this.executeSingleQuery(
+      'creating user profile',
+      async (supabase) => {
+        const sanitizedProfile = this.sanitizeInput(profile)
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .insert(sanitizedProfile)
+          .select()
+          .single()
 
-    if (error) {
-      console.error('Error creating user profile:', error)
-      return null
-    }
+        if (error) {
+          this.handleSupabaseError(error, 'creating user profile', { profile })
+        }
 
-    return data
+        return data
+      }
+    )
   }
 
   async updateUserProfile(
     userId: string,
     updates: UserProfileUpdate
   ): Promise<UserProfile | null> {
-    const supabase = await this.getSupabase()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', userId)
-      .select()
-      .single()
+    return this.executeSingleQuery(
+      'updating user profile',
+      async (supabase) => {
+        const sanitizedUpdates = this.sanitizeInput(updates)
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .update({ ...sanitizedUpdates, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .select()
+          .single()
 
-    if (error) {
-      console.error('Error updating user profile:', error)
-      return null
-    }
+        if (error) {
+          this.handleSupabaseError(error, 'updating user profile', { userId, updates })
+        }
 
-    return data
+        return data
+      }
+    )
   }
 
   async getUserProfileWithHousehold(
     userId: string
   ): Promise<(UserProfile & { household?: Household }) | null> {
-    const supabase = await this.getSupabase()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select(
-        `
-        *,
-        household:households(*)
-      `
-      )
-      .eq('id', userId)
-      .single()
+    return this.executeSingleQuery(
+      'fetching user profile with household',
+      async (supabase) => {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select(
+            `
+            *,
+            household:households(*)
+          `
+          )
+          .eq('id', userId)
+          .single()
 
-    if (error) {
-      console.error('Error fetching user profile with household:', error)
-      return null
-    }
+        if (error) {
+          this.handleSupabaseError(error, 'fetching user profile with household', { userId })
+        }
 
-    return data
+        return data ? {
+          ...data,
+          household: data.household || undefined
+        } : null
+      }
+    )
   }
 
   // Household Operations

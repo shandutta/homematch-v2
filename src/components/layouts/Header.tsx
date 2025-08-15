@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { Heart, Eye, X, Settings, User, Menu } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { MotionDiv, fadeIn, slideInRight, fastTransition } from '@/components/ui/motion-components'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import {
   DropdownMenu,
@@ -170,22 +171,24 @@ export function Header() {
         {isMobileMenuOpen && (
           <>
             {/* Backdrop Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+            <MotionDiv
+              variants={fadeIn}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fastTransition}
               className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
               onClick={closeMobileMenu}
               aria-hidden="true"
             />
 
             {/* Mobile Menu Drawer */}
-            <motion.div
+            <MotionDiv
               id="mobile-menu"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               transition={{
                 type: 'spring',
                 stiffness: 300,
@@ -265,7 +268,7 @@ export function Header() {
                   </button>
                 </div>
               </nav>
-            </motion.div>
+            </MotionDiv>
           </>
         )}
       </AnimatePresence>

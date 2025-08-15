@@ -1270,6 +1270,182 @@ Planned hooks for future implementation:
 
 ---
 
+## Security Architecture
+
+> **Security Status**: Comprehensive security implementation that eliminates client-side API key exposure and implements defense-in-depth patterns.
+
+### Google Maps Security Implementation
+
+**Overview**: Secure Google Maps implementation that eliminates client-side API key exposure and implements comprehensive security controls.
+
+#### Security Architecture
+
+**Before (Insecure)**:
+- Google Maps API key exposed in client-side JavaScript
+- Direct API calls from browser to Google Maps
+- No rate limiting or request validation
+- **Risk Level**: 🔴 Critical
+
+**After (Secure)**:
+- No client-side API key exposure
+- Server-side proxy for all Google Maps API calls
+- Rate limiting and request validation
+- Comprehensive error handling
+- **Risk Level**: 🟢 Minimal
+
+#### Implementation Components
+
+**1. Server-Side API Routes**:
+
+- **`/api/maps/proxy-script`**: Proxies Google Maps JavaScript API without exposing keys, caches script responses for performance, proper error handling and fallbacks
+- **`/api/maps/geocode`**: Secure geocoding API proxy with input validation using Zod schemas, rate limiting (100 requests/minute per IP), sanitized response data
+- **`/api/maps/places/autocomplete`**: Secure Places Autocomplete API proxy with input validation and type safety, rate limiting, client-side caching for performance
+
+**2. Client-Side Components**:
+
+- **`SecureMapLoader`**: Loads Google Maps through secure proxy, no API key exposure, proper loading states and error handling, prevention of multiple loading attempts
+- **`SecureGeocodeClient` & `SecurePlacesClient`**: Type-safe client libraries with built-in rate limiting and caching, automatic request debouncing, comprehensive error handling
+- **`useSecureGoogleMaps` Hook**: React hook for secure Maps API usage with loading states and error management, debounced autocomplete functionality
+
+#### Environment Configuration
+
+**Required Environment Variables**:
+```bash
+# Server-side API key (Required)
+GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
+```
+
+**Google Cloud Console Setup**:
+
+1. **Create Server-Side API Key**:
+   - Go to Google Cloud Console → APIs & Services → Credentials
+   - Create API Key with application restrictions: "HTTP referrers"
+   - Add your server domain(s)
+   - Enable only required APIs: Maps JavaScript API, Geocoding API, Places API
+
+2. **Set API Restrictions**:
+   ```
+   HTTP referrers (web sites):
+   - https://yourdomain.com/*
+   - https://www.yourdomain.com/*
+   - http://localhost:3000/* (for development)
+   ```
+
+3. **Configure Rate Limits**: Set daily quotas, enable billing alerts, monitor usage in Cloud Console
+
+#### Security Benefits
+
+**✅ API Key Protection**:
+- Server-side keys never exposed to browsers
+- IP-based restrictions in Google Cloud Console
+- No client-side key leakage in source code
+
+**✅ Rate Limiting**:
+- Server-side: 100 requests/minute per IP
+- Client-side: Request debouncing and caching
+- Protection against abuse and cost overruns
+
+**✅ Input Validation**:
+- Zod schemas for all API requests
+- Type safety throughout the application
+- Sanitized responses to prevent XSS
+
+**✅ Error Handling**:
+- Graceful degradation when Maps unavailable
+- User-friendly error messages
+- Comprehensive logging for debugging
+
+#### Performance Optimizations
+
+**Caching Strategy**:
+- **Script Proxy**: 1-hour browser cache
+- **Geocoding**: No caching (results may change)
+- **Places Autocomplete**: 5-minute client-side cache
+- **Rate Limiting**: In-memory store with cleanup
+
+**Request Optimization**:
+- Debounced autocomplete (500ms delay)
+- Minimum 2-character input for autocomplete
+- Automatic cleanup of old cache entries
+
+#### Migration Guide
+
+**Updating Existing Components**:
+
+1. **Replace direct Google Maps usage**:
+   ```tsx
+   // Before
+   <Script src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}`} />
+   
+   // After
+   <SecureMapLoader>
+     <YourMapComponent />
+   </SecureMapLoader>
+   ```
+
+2. **Update API calls**:
+   ```tsx
+   // Before
+   const geocoder = new google.maps.Geocoder()
+   geocoder.geocode({ address }, callback)
+   
+   // After
+   const { geocodeAddress } = useSecureGoogleMaps()
+   const results = await geocodeAddress(address)
+   ```
+
+3. **Update autocomplete**:
+   ```tsx
+   // Before
+   const service = new google.maps.places.AutocompleteService()
+   service.getPlacePredictions({ input }, callback)
+   
+   // After
+   const { getPlacesPredictions } = useSecureGoogleMaps()
+   const predictions = await getPlacesPredictions(input)
+   ```
+
+#### Monitoring and Maintenance
+
+**Cost Monitoring**: Set up billing alerts in Google Cloud Console, monitor daily API usage, review quota settings monthly
+
+**Performance Monitoring**: Track API response times, monitor rate limiting effectiveness, review error rates and types
+
+**Security Audits**: Regular review of API key restrictions, validate that no keys are client-exposed, monitor for unusual usage patterns
+
+#### Troubleshooting
+
+**Common Issues**:
+
+1. **Maps not loading**: Check `GOOGLE_MAPS_SERVER_API_KEY` is set, verify API key restrictions in Cloud Console, check browser console for errors
+
+2. **Rate limiting errors**: Implement longer debouncing delays, review usage patterns, consider increasing rate limits
+
+3. **Geocoding failures**: Validate address format, check API quotas in Cloud Console, review error responses in logs
+
+**Debug Mode**:
+```bash
+# Enable debug logging
+NODE_ENV=development pnpm run dev
+
+# Check API responses
+curl -X POST http://localhost:3000/api/maps/geocode \
+  -H "Content-Type: application/json" \
+  -d '{"address": "1600 Amphitheatre Parkway, Mountain View, CA"}'
+```
+
+#### Security Checklist
+
+- [ ] `GOOGLE_MAPS_SERVER_API_KEY` configured
+- [ ] Client-side API key removed from all code
+- [ ] Google Cloud Console restrictions configured
+- [ ] Rate limiting tested and working
+- [ ] Error handling tested
+- [ ] Billing alerts configured
+- [ ] Security audit completed
+
+---
+
 ## Architecture Decision Records
 
 > **Decision Status**: All key architectural decisions validated through successful migration and production deployment.

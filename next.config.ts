@@ -33,12 +33,6 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-    // optional: domains fallback in case remotePatterns is bypassed somewhere
-    domains: [
-      'photos.zillowstatic.com',
-      'images.zillowstatic.com',
-      'images.unsplash.com',
-    ],
     // optional tuning for responsive images
     deviceSizes: [320, 420, 768, 1024, 1200, 1600],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],

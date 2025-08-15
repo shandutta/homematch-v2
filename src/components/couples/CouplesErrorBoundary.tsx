@@ -4,7 +4,7 @@ import { Component, ReactNode, ErrorInfo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Heart, RefreshCw, AlertTriangle } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { MotionDiv, fadeInUp, scaleIn, normalTransition } from '@/components/ui/motion-components'
 
 interface Props {
   children: ReactNode
@@ -46,24 +46,27 @@ export class CouplesErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <MotionDiv
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          transition={normalTransition}
           className="flex min-h-[400px] items-center justify-center"
         >
           <Card className="card-glassmorphism-style max-w-md border-red-500/20">
             <CardContent className="p-6 text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              <MotionDiv
+                variants={scaleIn}
+                initial="initial"
+                animate="animate"
+                transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
                 className="mb-4"
               >
                 <div className="relative mx-auto h-16 w-16">
                   <Heart className="absolute h-16 w-16 text-red-400/30" />
                   <AlertTriangle className="absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-red-400" />
                 </div>
-              </motion.div>
+              </MotionDiv>
 
               <h2 className="text-primary-foreground mb-2 text-xl font-semibold">
                 Something went wrong
@@ -107,7 +110,7 @@ export class CouplesErrorBoundary extends Component<Props, State> {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </MotionDiv>
       )
     }
 

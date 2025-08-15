@@ -10,8 +10,8 @@ import {
   Award,
   Sparkles,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { formatDistanceToNow } from 'date-fns'
+import { MotionDiv, scaleIn, slideInRight, normalTransition } from '@/components/ui/motion-components'
 import type { CouplesStats as CouplesStatsType } from '@/lib/services/couples'
 
 interface CouplesStatsProps {
@@ -21,16 +21,16 @@ interface CouplesStatsProps {
 export function CouplesStats({ stats }: CouplesStatsProps) {
   if (!stats) {
     return (
-      <Card className="card-glassmorphism-style border-rose-500/20">
+      <Card className="card-glassmorphism-style border-couples-accent/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <TrendingUp className="h-6 w-6 text-rose-400" />
+            <TrendingUp className="h-6 w-6 text-couples-accent" />
             Your Journey
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center">
-            <TrendingUp className="mx-auto mb-4 h-12 w-12 text-rose-400/30" />
+            <TrendingUp className="mx-auto mb-4 h-12 w-12 text-couples-accent/30" />
             <p className="text-primary/60">
               Start exploring to see your relationship stats!
             </p>
@@ -50,20 +50,21 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
   return (
     <div className="space-y-6">
       {/* Main Stats Card */}
-      <Card className="card-glassmorphism-style border-rose-500/20">
+      <Card className="card-glassmorphism-style border-couples-accent/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <TrendingUp className="h-6 w-6 text-rose-400" />
+            <TrendingUp className="h-6 w-6 text-couples-accent" />
             Your Journey
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Mutual Likes */}
-          <motion.div
+          <MotionDiv
             className="rounded-lg border border-pink-500/20 bg-gradient-to-br from-pink-500/10 to-purple-500/10 p-4 text-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            variants={scaleIn}
+            initial="initial"
+            animate="animate"
+            transition={{ ...normalTransition, delay: 0.1 }}
           >
             <div className="mb-2 flex items-center justify-center gap-2">
               <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
@@ -73,7 +74,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
               {stats.total_mutual_likes}
             </div>
             <div className="text-primary/60 text-sm">Mutual Likes</div>
-          </motion.div>
+          </MotionDiv>
 
           {/* Total Household Likes */}
           <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
@@ -107,20 +108,21 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
 
           {/* Activity Streak */}
           {stats.activity_streak_days > 0 && (
-            <motion.div
+            <MotionDiv
               className="flex items-center justify-between rounded-lg border border-orange-500/20 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              variants={slideInRight}
+              initial="initial"
+              animate="animate"
+              transition={{ ...normalTransition, delay: 0.2 }}
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20">
-                  <motion.div
+                  <MotionDiv
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <Flame className="h-5 w-5 text-orange-400" />
-                  </motion.div>
+                  </MotionDiv>
                 </div>
                 <div>
                   <div className="text-primary-foreground font-semibold">
@@ -132,7 +134,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
               {stats.activity_streak_days >= 7 && (
                 <Sparkles className="h-5 w-5 text-yellow-400" />
               )}
-            </motion.div>
+            </MotionDiv>
           )}
         </CardContent>
       </Card>
