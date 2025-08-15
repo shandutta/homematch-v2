@@ -46,6 +46,88 @@ AI-powered property browsing application built with Next.js 15, Supabase, and mo
 - **Playwright** for E2E tests (18/30 passing, 12 skipped)
 - **ESLint + Prettier** for code quality
 
+### Development Tools
+
+- **Framer Motion** for smooth animations and transitions
+- **Lucide Icons** for consistent iconography
+- **date-fns** for date manipulation
+- **Inngest** for background job processing
+
+## Quick Start
+
+```bash
+# Clone and install dependencies
+git clone <repository-url>
+cd homematch-v2
+pnpm install
+
+# Set up environment variables (see docs/SETUP_GUIDE.md)
+cp .env.example .env.local
+
+# Start Supabase locally
+pnpm dlx supabase@latest start -x studio
+
+# Run development server
+pnpm run dev
+```
+
+## Essential Commands
+
+```bash
+# Development
+pnpm run dev              # Start development server
+pnpm run build           # Production build
+pnpm run start           # Start production server
+
+# Testing
+pnpm run test            # Run all tests
+pnpm run test:unit       # Unit tests only
+pnpm run test:integration # Integration tests only
+pnpm run test:e2e        # E2E tests with Playwright
+
+# Database
+pnpm dlx supabase@latest start    # Start local Supabase
+pnpm dlx supabase@latest stop     # Stop local Supabase
+pnpm run db:migrate      # Apply database migrations
+
+# Code Quality
+pnpm run lint            # Lint code
+pnpm run type-check      # TypeScript checking
+```
+
+## Documentation
+
+📚 **Complete documentation** is available in the [docs/](./docs/) directory:
+
+- **[Setup Guide](./docs/SETUP_GUIDE.md)** - Environment setup and getting started
+- **[Architecture](./docs/ARCHITECTURE.md)** - System design and technical specs
+- **[Testing](./docs/TESTING.md)** - Testing strategy and development workflows
+- **[Performance](./docs/PERFORMANCE.md)** - Optimization and monitoring
+- **[Style Guide](./docs/STYLE_GUIDE.md)** - UI/UX design system
+- **[API Reference](./docs/RAPIDAPI_ZILLOW.md)** - External API integration
+
+## Key Features Detail
+
+### ML-Powered Recommendations
+- **Cold Start**: Rule-based scoring for new users
+- **Online Learning**: Real-time preference adaptation
+- **LightGBM**: Advanced ML model for personalization
+
+### Household Collaboration
+- Multi-user property sharing and discussion
+- Synchronized like/pass decisions across household members
+- Real-time updates and notifications
+
+### Geographic Intelligence
+- **PostGIS Integration**: Advanced spatial queries
+- **Neighborhood Analytics**: Demographic and market data
+- **Radius Search**: Distance-based property discovery
+
+### Real Estate Data Integration
+- **Zillow API**: Property details and market data
+- **Custom Data Pipeline**: Automated property ingestion
+- **Image Processing**: Property photo optimization
+
 ## Project Status
 
 ### ✅ Completed
@@ -116,7 +198,7 @@ See [Current Status](./docs/CURRENT_STATUS.md) for detailed roadmap.
 
    # Optional (for additional features)
    OPENAI_API_KEY=your-openai-key
-   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-key
+   GOOGLE_MAPS_SERVER_API_KEY=your-server-restricted-maps-key
    ```
 
    See [Implementation Plan](./docs/IMPLEMENTATION_PLAN.md#environment-variables) for complete setup.

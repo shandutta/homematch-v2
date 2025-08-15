@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { MotionDiv, MotionH2, MotionP } from '@/components/ui/motion-components'
 import { Heart, Trophy, Star, Flame, Home, Users } from 'lucide-react'
 import {
   CouplesMessages,
@@ -110,7 +111,7 @@ export function CouplesMilestoneCelebration({
   return (
     <AnimatePresence>
       {showCelebration && (
-        <motion.div
+        <MotionDiv
           className={`fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm ${className}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -123,7 +124,7 @@ export function CouplesMilestoneCelebration({
           {/* Confetti Effect */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {[...Array(12)].map((_, i) => (
-              <motion.div
+              <MotionDiv
                 key={i}
                 className={`absolute h-3 w-3 bg-gradient-to-r ${color} rounded-full`}
                 style={{
@@ -147,16 +148,16 @@ export function CouplesMilestoneCelebration({
           </div>
 
           {/* Celebration Card */}
-          <motion.div
+          <MotionDiv
             className={`relative mx-4 max-w-md rounded-2xl bg-gradient-to-br ${bgColor} border border-white/20 p-8 text-center shadow-2xl`}
             initial={{ scale: 0, rotate: -180, opacity: 0 }}
             animate={{ scale: [0, 1.2, 1], rotate: 0, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             {/* Animated Icon */}
-            <motion.div
+            <MotionDiv
               className="mx-auto mb-6 flex h-20 w-20 items-center justify-center"
               animate={{
                 scale: [1, 1.2, 1],
@@ -173,30 +174,30 @@ export function CouplesMilestoneCelebration({
               >
                 <Icon className="h-12 w-12 text-white" />
               </div>
-            </motion.div>
+            </MotionDiv>
 
             {/* Title */}
-            <motion.h2
+            <MotionH2
               className="mb-4 text-3xl font-bold text-gray-800"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
               {title}
-            </motion.h2>
+            </MotionH2>
 
             {/* Message */}
-            <motion.p
+            <MotionP
               className="mb-6 text-lg text-gray-600"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
               {message}
-            </motion.p>
+            </MotionP>
 
             {/* Partner Icon */}
-            <motion.div
+            <MotionDiv
               className="flex items-center justify-center gap-2 text-gray-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -205,22 +206,22 @@ export function CouplesMilestoneCelebration({
               <Users className="h-5 w-5" />
               <span className="text-sm">Together we&apos;re unstoppable!</span>
               <Home className="h-5 w-5" />
-            </motion.div>
+            </MotionDiv>
 
             {/* Close hint */}
-            <motion.div
+            <MotionDiv
               className="mt-6 text-xs text-gray-400"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
             >
               Tap anywhere to continue
-            </motion.div>
+            </MotionDiv>
 
             {/* Background Pattern */}
             <div className="absolute inset-0 overflow-hidden rounded-2xl">
               {[...Array(6)].map((_, i) => (
-                <motion.div
+                <MotionDiv
                   key={i}
                   className="absolute opacity-10"
                   style={{
@@ -238,11 +239,11 @@ export function CouplesMilestoneCelebration({
                   }}
                 >
                   <Heart className="h-6 w-6 fill-current" />
-                </motion.div>
+                </MotionDiv>
               ))}
             </div>
-          </motion.div>
-        </motion.div>
+          </MotionDiv>
+        </MotionDiv>
       )}
     </AnimatePresence>
   )

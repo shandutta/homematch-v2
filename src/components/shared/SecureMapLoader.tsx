@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Script from 'next/script'
+import { useEffect, useState, useCallback } from 'react'
 
 interface SecureMapLoaderProps {
   children: React.ReactNode
@@ -12,23 +11,72 @@ interface SecureMapLoaderProps {
 // Global state to track if Google Maps is loaded
 let isGoogleMapsLoaded = false
 let isGoogleMapsLoading = false
-const loadPromise = new Promise<void>((resolve, reject) => {
-  if (typeof window !== 'undefined') {
-    (window as any).__googleMapsResolve = resolve
-    ;(window as any).__googleMapsReject = reject
-  }
-})
+let loadPromise: Promise<void> | null = null
 
 /**
  * Secure Google Maps loader component that:
- * 1. Uses Next.js Script component for optimal loading
- * 2. Implements proper error handling
+ * 1. Loads Google Maps script through secure server proxy
+ * 2. Implements proper error handling without API key exposure
  * 3. Prevents multiple loading attempts
  * 4. Provides loading state management
+ * 5. No client-side API key exposure
  */
 export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderProps) {
   const [isLoaded, setIsLoaded] = useState(isGoogleMapsLoaded)
   const [error, setError] = useState<Error | null>(null)
+
+  const startSecureMapLoad = useCallback(async () => {
+    isGoogleMapsLoading = true
+    
+    try {
+      // Create promise for this loading attempt
+      loadPromise = new Promise<void>((resolve, reject) => {
+        // Set up global callback for Google Maps
+        ;(window as { initGoogleMaps?: () => void }).initGoogleMaps = () => {
+          if (!window.google?.maps) {
+            const error = new Error('Google Maps API not available after load')
+            setError(error)
+            onError?.(error)
+            reject(error)
+            return
+          }
+
+          isGoogleMapsLoaded = true
+          isGoogleMapsLoading = false
+          setIsLoaded(true)
+          onLoad?.()
+          resolve()
+        }
+
+        // Create and load the script through our secure proxy
+        const script = document.createElement('script')
+        script.src = '/api/maps/proxy-script'
+        script.async = true
+        script.defer = true
+        
+        script.onload = () => {
+          // Script loaded successfully
+        }
+        
+        script.onerror = () => {
+          isGoogleMapsLoading = false
+          const error = new Error('Failed to load Google Maps script')
+          setError(error)
+          onError?.(error)
+          reject(error)
+        }
+
+        document.head.appendChild(script)
+      })
+
+      await loadPromise
+    } catch (err) {
+      isGoogleMapsLoading = false
+      const error = err instanceof Error ? err : new Error('Unknown error loading maps')
+      setError(error)
+      onError?.(error)
+    }
+  }, [onLoad, onError])
 
   useEffect(() => {
     if (isGoogleMapsLoaded) {
@@ -38,7 +86,7 @@ export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderPr
     }
 
     // Wait for loading promise if already loading
-    if (isGoogleMapsLoading) {
+    if (isGoogleMapsLoading && loadPromise) {
       loadPromise
         .then(() => {
           setIsLoaded(true)
@@ -49,62 +97,25 @@ export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderPr
           setError(error)
           onError?.(error)
         })
-    }
-  }, [onLoad, onError])
-
-  const handleLoad = () => {
-    // Verify Google Maps API is actually available
-    if (!window.google?.maps) {
-      const error = new Error('Google Maps API not available after load')
-      setError(error)
-      onError?.(error)
-      ;(window as any).__googleMapsReject?.(error)
       return
     }
 
-    isGoogleMapsLoaded = true
-    isGoogleMapsLoading = false
-    setIsLoaded(true)
-    onLoad?.()
-    ;(window as any).__googleMapsResolve?.()
-  }
+    // Start loading process
+    if (!isGoogleMapsLoading) {
+      startSecureMapLoad()
+    }
+  }, [onLoad, onError, startSecureMapLoad])
 
-  const handleError = (e: any) => {
-    isGoogleMapsLoading = false
-    const error = new Error(`Failed to load Google Maps script: ${e.message || 'Unknown error'}`)
-    setError(error)
-    onError?.(error)
-    ;(window as any).__googleMapsReject?.(error)
+  // Show appropriate state
+  if (error) {
+    return <MapErrorFallback error={error.message} />
   }
-
-  const handleLoadStart = () => {
-    isGoogleMapsLoading = true
+  
+  if (isLoaded) {
+    return <>{children}</>
   }
-
-  // Don't load script if already loaded or loading
-  if (isGoogleMapsLoaded || isGoogleMapsLoading) {
-    return <>{isLoaded ? children : <MapLoadingFallback />}</>
-  }
-
-  // Validate API key is available
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  if (!apiKey) {
-    console.error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not configured')
-    return <MapErrorFallback error="Maps service unavailable" />
-  }
-
-  return (
-    <>
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`}
-        strategy="afterInteractive"
-        onLoad={handleLoad}
-        onError={handleError}
-        onReady={handleLoadStart}
-      />
-      {isLoaded ? children : error ? <MapErrorFallback error={error.message} /> : <MapLoadingFallback />}
-    </>
-  )
+  
+  return <MapLoadingFallback />
 }
 
 function MapLoadingFallback() {
@@ -145,7 +156,7 @@ export function useGoogleMapsLoader() {
       return
     }
 
-    if (isGoogleMapsLoading) {
+    if (isGoogleMapsLoading && loadPromise) {
       loadPromise
         .then(() => setIsLoaded(true))
         .catch(setError)

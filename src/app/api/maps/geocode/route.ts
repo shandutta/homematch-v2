@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { isValidLatLng, boundingBoxSchema } from '@/lib/utils/coordinates'
 
 const geocodeRequestSchema = z.object({
   address: z.string().min(1).max(200),
-  bounds: z.object({
-    north: z.number(),
-    south: z.number(),
-    east: z.number(),
-    west: z.number(),
-  }).optional(),
+  bounds: boundingBoxSchema.optional(),
 })
 
 type GeocodeResult = {
@@ -23,6 +19,25 @@ type GeocodeResult = {
   }
   place_id: string
   types: string[]
+}
+
+// Google Maps Geocoding API response interfaces
+interface GoogleGeocodeResult {
+  formatted_address: string
+  geometry: {
+    location: {
+      lat: number
+      lng: number
+    }
+    location_type: string
+  }
+  place_id: string
+  types: string[]
+}
+
+interface GoogleGeocodeResponse {
+  status: string
+  results: GoogleGeocodeResult[]
 }
 
 /**
@@ -85,16 +100,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Return sanitized results
-    const results: GeocodeResult[] = data.results.map((result: any) => ({
-      formatted_address: result.formatted_address,
-      geometry: {
-        location: result.geometry.location,
-        location_type: result.geometry.location_type,
-      },
-      place_id: result.place_id,
-      types: result.types,
-    }))
+    // Return sanitized results with coordinate validation
+    const results: GeocodeResult[] = (data as GoogleGeocodeResponse).results
+      .filter((result: GoogleGeocodeResult) => {
+        // Validate coordinates before returning
+        const coords = { lat: result.geometry.location.lat, lng: result.geometry.location.lng }
+        return isValidLatLng(coords)
+      })
+      .map((result: GoogleGeocodeResult) => ({
+        formatted_address: result.formatted_address,
+        geometry: {
+          location: result.geometry.location,
+          location_type: result.geometry.location_type,
+        },
+        place_id: result.place_id,
+        types: result.types,
+      }))
 
     return NextResponse.json({ results })
   } catch (error) {

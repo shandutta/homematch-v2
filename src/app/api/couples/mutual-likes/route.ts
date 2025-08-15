@@ -1,12 +1,70 @@
+/**
+ * @module MutualLikesAPI
+ * @description API endpoint for retrieving properties liked by multiple household members.
+ * Provides mutual likes data with optional property details enrichment.
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
+import { withRateLimit } from '@/lib/middleware/rateLimiter'
 
+/**
+ * GET /api/couples/mutual-likes
+ * 
+ * Retrieves all properties that have been liked by multiple household members
+ * 
+ * @param {NextRequest} request - The incoming request object
+ * @query {string} [includeProperties=true] - Whether to include full property details
+ * 
+ * @returns {Promise<NextResponse>} JSON response with mutual likes data
+ * @returns {200} Success - Returns array of mutual likes with optional property details
+ * @returns {401} Unauthorized - User is not authenticated
+ * @returns {500} Internal Server Error - Failed to fetch mutual likes
+ * 
+ * @description 
+ * This endpoint fetches all properties that have been liked by 2 or more household members.
+ * It uses the CouplesService which implements caching and optimized database queries.
+ * Property details can be optionally included to reduce client-side API calls.
+ * 
+ * @complexity O(n) where n is the number of mutual likes
+ * @performance Cached responses return in <100ms, fresh queries in 200-500ms
+ * @callsTo CouplesService.getMutualLikes, supabase.from('properties')
+ * 
+ * @example
+ * // Fetch mutual likes with property details
+ * GET /api/couples/mutual-likes?includeProperties=true
+ * 
+ * // Response
+ * {
+ *   "mutualLikes": [
+ *     {
+ *       "property_id": "123",
+ *       "liked_by_count": 2,
+ *       "first_liked_at": "2024-01-01T00:00:00Z",
+ *       "last_liked_at": "2024-01-02T00:00:00Z",
+ *       "property": {
+ *         "address": "123 Main St",
+ *         "price": 500000,
+ *         "bedrooms": 3,
+ *         "bathrooms": 2
+ *       }
+ *     }
+ *   ],
+ *   "performance": {
+ *     "totalTime": 150,
+ *     "cached": false,
+ *     "count": 1
+ *   }
+ * }
+ */
 export async function GET(request: NextRequest) {
-  const startTime = Date.now()
+  // Apply rate limiting (30 requests per minute for standard tier)
+  return withRateLimit(request, async () => {
+    const startTime = Date.now()
 
-  try {
-    const supabase = createApiClient(request)
+    try {
+      const supabase = createApiClient(request)
 
     // Get the current user
     const {
@@ -92,4 +150,5 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
+  })
 }

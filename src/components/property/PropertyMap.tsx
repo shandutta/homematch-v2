@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
-import { MapPin, Loader2, Shield } from 'lucide-react'
+import { MapPin, Loader2 } from 'lucide-react'
 import { SecureMapLoader } from '@/components/shared/SecureMapLoader'
+import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
 
 import type {
   GoogleMapInstance,
@@ -42,15 +43,17 @@ export function PropertyMap({
     }
 
     try {
-      const coords = property.coordinates as { lat: number; lng: number } | null
-      if (!coords || !coords?.lat || !coords?.lng) {
-        setError('No coordinates available')
+      // Parse coordinates using our utility function
+      const coords = parsePostGISGeometry(property.coordinates)
+      
+      if (!coords || !isValidLatLng(coords)) {
+        setError('No valid coordinates available')
         setIsLoading(false)
         return
       }
 
       // Create map with proper typing
-      const map = new window.google!.maps.Map(mapRef.current, {
+      const map = new window.google.maps.Map(mapRef.current, {
         center: coords,
         zoom,
         styles: [
@@ -74,7 +77,7 @@ export function PropertyMap({
 
       // Add marker
       if (showMarker) {
-        const marker = new window.google!.maps.Marker({
+        const marker = new window.google.maps.Marker({
           position: coords,
           map,
           title: property.address || 'Property',
@@ -87,13 +90,13 @@ export function PropertyMap({
                 <circle cx="16" cy="16" r="6" fill="#ffffff"/>
               </svg>
             `),
-            scaledSize: new window.google!.maps.Size(32, 32),
-            anchor: new window.google!.maps.Point(16, 16),
+            scaledSize: new window.google.maps.Size(32, 32),
+            anchor: new window.google.maps.Point(16, 16),
           },
         })
 
         // Add info window
-        const infoWindow = new window.google!.maps.InfoWindow({
+        const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div class="p-3 max-w-xs">
               <h3 class="font-semibold text-sm mb-1">${property.address}</h3>

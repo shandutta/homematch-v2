@@ -1,15 +1,16 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
+import { vi } from 'vitest'
 import { GET } from '@/app/api/couples/mutual-likes/route'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { NextRequest } from 'next/server'
 
 // Mock the dependencies
-vi.mock('@/lib/supabase/server')
 vi.mock('@/lib/services/couples')
+vi.mock('@/lib/supabase/server')
 
 const mockCreateApiClient = vi.mocked(createApiClient)
-const mockCouplesService = vi.mocked(CouplesService)
+const mockCouplesService = CouplesService as any
 
 describe('/api/couples/mutual-likes', () => {
   const mockUser = {
@@ -38,9 +39,14 @@ describe('/api/couples/mutual-likes', () => {
     auth: {
       getUser: vi.fn(),
     },
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        in: vi.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
+      })),
+    })),
   }
 
   beforeEach(() => {
@@ -109,8 +115,14 @@ describe('/api/couples/mutual-likes', () => {
       const response = await GET(request)
       const data = await response.json()
 
+      // API defaults to includeProperties=true, so it adds property: null to each like
+      const expectedWithProperties = mockMutualLikes.map(like => ({
+        ...like,
+        property: null
+      }))
+
       expect(response.status).toBe(200)
-      expect(data.mutualLikes).toEqual(mockMutualLikes)
+      expect(data.mutualLikes).toEqual(expectedWithProperties)
       expect(data.performance).toEqual({
         totalTime: expect.any(Number),
         cached: expect.any(Boolean),
@@ -166,10 +178,11 @@ describe('/api/couples/mutual-likes', () => {
 
       mockCouplesService.getMutualLikes.mockResolvedValue(mockMutualLikes)
       mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        in: vi.fn().mockResolvedValue({
-          data: mockProperties,
-          error: null,
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({
+            data: mockProperties,
+            error: null,
+          }),
         }),
       })
 
@@ -191,10 +204,11 @@ describe('/api/couples/mutual-likes', () => {
     test('should handle missing properties gracefully', async () => {
       mockCouplesService.getMutualLikes.mockResolvedValue(mockMutualLikes)
       mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        in: vi.fn().mockResolvedValue({
-          data: [], // No matching properties found
-          error: null,
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({
+            data: [], // No matching properties found
+            error: null,
+          }),
         }),
       })
 
@@ -215,10 +229,11 @@ describe('/api/couples/mutual-likes', () => {
     test('should continue without properties when property fetch fails', async () => {
       mockCouplesService.getMutualLikes.mockResolvedValue(mockMutualLikes)
       mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        in: vi.fn().mockResolvedValue({
-          data: null,
-          error: new Error('Database error'),
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({
+            data: null,
+            error: new Error('Database error'),
+          }),
         }),
       })
 
@@ -230,8 +245,14 @@ describe('/api/couples/mutual-likes', () => {
       const response = await GET(request)
       const data = await response.json()
 
+      // When property fetch fails, API still adds property: null to each like
+      const expectedWithNullProperties = mockMutualLikes.map(like => ({
+        ...like,
+        property: null
+      }))
+
       expect(response.status).toBe(200)
-      expect(data.mutualLikes).toEqual(mockMutualLikes)
+      expect(data.mutualLikes).toEqual(expectedWithNullProperties)
     })
   })
 
@@ -246,10 +267,11 @@ describe('/api/couples/mutual-likes', () => {
 
     test('should include properties by default', async () => {
       mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        in: vi.fn().mockResolvedValue({
-          data: [],
-          error: null,
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
         }),
       })
 
@@ -345,7 +367,8 @@ describe('/api/couples/mutual-likes', () => {
         cached: expect.any(Boolean),
         count: expect.any(Number),
       })
-      expect(data.performance.totalTime).toBeGreaterThan(0)
+      // Performance timing in tests can be 0ms due to mocking, so >= 0 is acceptable
+      expect(data.performance.totalTime).toBeGreaterThanOrEqual(0)
       expect(data.performance.count).toBe(2)
     })
 
@@ -412,10 +435,11 @@ describe('/api/couples/mutual-likes', () => {
 
       mockCouplesService.getMutualLikes.mockResolvedValue(mockMutualLikes)
       mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn().mockReturnThis(),
-        in: vi.fn().mockResolvedValue({
-          data: properties,
-          error: null,
+        select: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({
+            data: properties,
+            error: null,
+          }),
         }),
       })
 

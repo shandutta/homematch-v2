@@ -36,18 +36,23 @@ export function LoginForm() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      router.push('/validation')
+      if (error) {
+        setError(error.message)
+      } else {
+        router.push('/validation')
+      }
+    } catch (networkError) {
+      // Handle network errors or other exceptions
+      setError(networkError instanceof Error ? networkError.message : 'Network error occurred')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleGoogleLogin = async () => {

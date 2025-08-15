@@ -4,6 +4,19 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Max width values for Tailwind v4 */
+  --width-xs: 20rem;    /* 320px */
+  --width-sm: 24rem;    /* 384px */
+  --width-md: 28rem;    /* 448px */
+  --width-lg: 32rem;    /* 512px */
+  --width-xl: 36rem;    /* 576px */
+  --width-2xl: 42rem;   /* 672px */
+  --width-3xl: 48rem;   /* 768px */
+  --width-4xl: 56rem;   /* 896px */
+  --width-5xl: 64rem;   /* 1024px */
+  --width-6xl: 72rem;   /* 1152px */
+  --width-7xl: 80rem;   /* 1280px */
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -124,6 +137,32 @@
     rgba(236, 72, 153, 0.2) 0%,
     rgba(147, 51, 234, 0.2) 100%
   );
+
+  /* Marketing Semantic Colors - Group 1 (8 tokens) */
+  --color-marketing-text-primary: #1f2937;
+  --color-marketing-text-secondary: #6b7280;
+  --color-marketing-error: #ef4444;
+  --color-marketing-error-bg: #fef2f2;
+  --gradient-marketing-primary: linear-gradient(to bottom right, #021A44, #063A9E);
+  --gradient-marketing-card: linear-gradient(to bottom right, #021A44, #063A9E);
+  --bg-marketing-glass: rgba(255, 255, 255, 0.05);
+  --border-marketing-glass: rgba(255, 255, 255, 0.2);
+
+  /* Couples Theme System - Group 2 (7 tokens) */
+  --color-couples-primary: #ec4899;
+  --color-couples-secondary: #8b5cf6;
+  --color-couples-accent: #f43f5e;
+  --color-couples-success: #22c55e;
+  --color-couples-warning: #f59e0b;
+  --color-couples-info: #eab308;
+  --gradient-couples-mutual: linear-gradient(to right, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
+
+  /* Glassmorphism Enhancement - Group 3 (5 tokens) */
+  --blur-glassmorphism-sm: 4px;
+  --blur-glassmorphism-md: 8px;
+  --blur-glassmorphism-lg: 12px;
+  --opacity-glass-subtle: 0.05;
+  --opacity-glass-strong: 0.95;
 
   /* Design Token Spacing */
   --spacing-xs: 0.25rem;
@@ -264,12 +303,61 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+/* Custom max-width utilities for Tailwind v4 */
+@utility max-w-xs {
+  max-width: 20rem;
+}
+
+@utility max-w-sm {
+  max-width: 24rem;
+}
+
+@utility max-w-md {
+  max-width: 28rem;
+}
+
+@utility max-w-lg {
+  max-width: 32rem;
+}
+
+@utility max-w-xl {
+  max-width: 36rem;
+}
+
+@utility max-w-2xl {
+  max-width: 42rem;
+}
+
+@utility max-w-3xl {
+  max-width: 48rem;
+}
+
+@utility max-w-4xl {
+  max-width: 56rem;
+}
+
+@utility max-w-5xl {
+  max-width: 64rem;
+}
+
+@utility max-w-6xl {
+  max-width: 72rem;
+}
+
+@utility max-w-7xl {
+  max-width: 80rem;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 
@@ -1119,5 +1207,86 @@
     display: inline-block;
     padding-top: 8px;
     padding-bottom: 8px;
+  }
+
+  /* Marketing Semantic Utility Classes */
+  .text-marketing-primary {
+    color: var(--color-marketing-text-primary);
+  }
+  .text-marketing-secondary {
+    color: var(--color-marketing-text-secondary);
+  }
+  .text-marketing-error {
+    color: var(--color-marketing-error);
+  }
+  .bg-marketing-error {
+    background-color: var(--color-marketing-error-bg);
+  }
+  .bg-gradient-marketing-primary {
+    background: var(--gradient-marketing-primary);
+  }
+  .bg-gradient-marketing-card {
+    background: var(--gradient-marketing-card);
+  }
+  .bg-marketing-glass {
+    background-color: var(--bg-marketing-glass);
+    backdrop-filter: blur(var(--blur-glassmorphism-md));
+  }
+  .border-marketing-glass {
+    border-color: var(--border-marketing-glass);
+  }
+
+  /* Couples Theme Utility Classes */
+  .text-couples-primary {
+    color: var(--color-couples-primary);
+  }
+  .text-couples-secondary {
+    color: var(--color-couples-secondary);
+  }
+  .text-couples-accent {
+    color: var(--color-couples-accent);
+  }
+  .text-couples-success {
+    color: var(--color-couples-success);
+  }
+  .text-couples-warning {
+    color: var(--color-couples-warning);
+  }
+  .text-couples-info {
+    color: var(--color-couples-info);
+  }
+  .bg-couples-primary {
+    background-color: var(--color-couples-primary);
+  }
+  .bg-couples-secondary {
+    background-color: var(--color-couples-secondary);
+  }
+  .bg-couples-accent {
+    background-color: var(--color-couples-accent);
+  }
+  .bg-gradient-couples-mutual {
+    background: var(--gradient-couples-mutual);
+  }
+  .border-couples-primary {
+    border-color: var(--color-couples-primary);
+  }
+
+  /* Glassmorphism Enhancement Utility Classes */
+  .blur-glass-sm {
+    backdrop-filter: blur(var(--blur-glassmorphism-sm));
+  }
+  .blur-glass-md {
+    backdrop-filter: blur(var(--blur-glassmorphism-md));
+  }
+  .blur-glass-lg {
+    backdrop-filter: blur(var(--blur-glassmorphism-lg));
+  }
+  .glass-subtle {
+    background-color: rgba(255, 255, 255, var(--opacity-glass-subtle));
+    backdrop-filter: blur(var(--blur-glassmorphism-md));
+  }
+  .glass-strong {
+    background-color: rgba(255, 255, 255, var(--opacity-glass-strong));
+    backdrop-filter: blur(var(--blur-glassmorphism-lg));
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, PanInfo } from 'framer-motion'
 import { useState, useCallback, useEffect } from 'react'
 import { Heart, X, Bed, Bath } from 'lucide-react'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -116,7 +116,8 @@ export function SwipeDemo() {
     <section className="relative bg-transparent py-8">
       <div className="container mx-auto px-4">
         <MotionDiv
-          className="mx-auto max-w-3xl text-center"
+          className="mx-auto text-center"
+          style={{ maxWidth: '48rem' }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -155,7 +156,7 @@ export function SwipeDemo() {
           </div>
         </MotionDiv>
 
-        <div className="relative mx-auto mt-4 max-w-sm sm:mt-6 sm:max-w-md">
+        <div className="relative mx-auto mt-4 w-full sm:mt-6" style={{ maxWidth: '32rem' }}>
           {/* Removed "Love it / Nah" prompt to reduce confusion */}
 
           {/* Card Container */}
@@ -168,7 +169,7 @@ export function SwipeDemo() {
             aria-live="polite"
           >
             <AnimatePresence initial={false} custom={direction}>
-              <motion.div
+              <MotionDiv
                 key={currentIndex}
                 custom={direction}
                 variants={{
@@ -197,7 +198,7 @@ export function SwipeDemo() {
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
-                onDragEnd={(_e, { offset, velocity }) => {
+                onDragEnd={(_e: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) => {
                   const swipe = Math.abs(offset.x) * velocity.x
                   if (swipe < -10000) {
                     handleSwipe('left')
@@ -271,43 +272,43 @@ export function SwipeDemo() {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="mt-4 flex gap-3 sm:mt-6 sm:gap-4">
+                    {/* Action Buttons - Refined Style */}
+                    <div className="mt-5 flex gap-3 sm:mt-6">
                       <MotionButton
-                        className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-red-500 py-2.5 text-red-500 transition-all hover:bg-red-50 sm:py-3"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-rose-200/70 bg-white px-5 py-2.5 text-rose-600 transition-all hover:border-rose-300/70 hover:bg-rose-50/40"
                         style={{ fontFamily: 'var(--font-body)' }}
                         motionProps={{
-                          whileHover: { scale: 1.02 },
-                          whileTap: { scale: 0.98 },
+                          whileHover: { scale: 1.01 },
+                          whileTap: { scale: 0.99 },
                         }}
                         onClick={() => handleSwipe('left')}
                         aria-label="Pass on this property"
                       >
-                        <X className="h-4 w-4 sm:h-5 sm:w-5" />
-                        <span className="text-sm font-medium sm:text-base">
+                        <X className="h-4 w-4" strokeWidth={2.5} />
+                        <span className="text-sm font-medium">
                           Pass
                         </span>
                       </MotionButton>
 
                       <MotionButton
-                        className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-500 py-2.5 text-white transition-all hover:bg-green-600 sm:py-3"
+                        className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-emerald-600 px-5 py-2.5 text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow"
                         style={{ fontFamily: 'var(--font-body)' }}
                         motionProps={{
-                          whileHover: { scale: 1.02 },
-                          whileTap: { scale: 0.98 },
+                          whileHover: { scale: 1.01 },
+                          whileTap: { scale: 0.99 },
                         }}
                         onClick={() => handleSwipe('right')}
                         aria-label="Love this property"
                       >
-                        <Heart className="h-4 w-4 fill-current sm:h-5 sm:w-5" />
-                        <span className="text-sm font-medium sm:text-base">
+                        <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
+                        <span className="text-sm font-medium">
                           Love
                         </span>
                       </MotionButton>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </MotionDiv>
             </AnimatePresence>
           </div>
         </div>

@@ -237,9 +237,9 @@ function PropertyCard({
             }}
           />
 
-          {/* Price Tag (match SwipeDemo style) */}
-          <div className="rounded-token-lg bg-token-overlay-strong px-token-md py-token-xs sm:px-token-lg sm:py-token-sm absolute bottom-2 left-2 backdrop-blur sm:bottom-3 sm:left-3">
-            <p className="text-token-base text-token-secondary-dark sm:text-token-lg font-bold">
+          {/* Price Tag - More prominent display */}
+          <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+            <p className="text-xl font-bold text-gray-900">
               {property.price}
             </p>
           </div>
@@ -251,7 +251,7 @@ function PropertyCard({
             style={{ opacity: likeOpacity }}
           >
             <div
-              className="gap-token-sm border-token-success-light/40 bg-token-success shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white backdrop-blur-sm"
+              className="gap-token-sm border-token-success-light/40 bg-token-success shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
               style={{
                 transform: `scale(${(likeScale as unknown as number) || 1})`,
               }}
@@ -269,7 +269,7 @@ function PropertyCard({
             style={{ opacity: passOpacity }}
           >
             <div
-              className="gap-token-sm border-token-error-light/40 bg-token-error shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white backdrop-blur-sm"
+              className="gap-token-sm border-token-error-light/40 bg-token-error shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
               style={{
                 transform: `scale(${(passScale as unknown as number) || 1})`,
               }}
@@ -287,39 +287,36 @@ function PropertyCard({
             aria-hidden="true"
             style={{ opacity: matchOpacity }}
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_30px_rgba(16,185,129,0.45)] backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-token-xl blur-glass-sm">
               <Heart className="h-4 w-4 fill-current" />
               It&#39;s a Match!
             </span>
           </MotionDiv>
         </div>
 
-        {/* Property Details (match SwipeDemo info + action buttons) */}
+        {/* Property Details with improved styling */}
         <div className="p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-token-base text-token-secondary-dark sm:text-token-lg font-semibold">
-                {property.location}
-              </h3>
-              <div className="mt-token-sm gap-token-lg text-token-secondary flex items-center">
-                <div className="text-token-sm">{property.beds} beds</div>
-                <div className="text-token-sm">{property.baths} baths</div>
-              </div>
+          <div className="mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {property.location}
+            </h3>
+            <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
+              <span>{property.beds} beds</span>
+              <span>•</span>
+              <span>{property.baths} baths</span>
             </div>
           </div>
 
-          {/* Action Buttons like SwipeDemo with click effects */}
-          <div className="mt-token-lg gap-token-md flex">
+          {/* Refined Action Buttons with Better Spacing */}
+          <div className="flex gap-3 pt-2">
             <MotionButton
-              className="gap-token-sm rounded-token-lg border-token-error py-token-sm text-token-error transition-token-all hover:bg-token-error-light flex flex-1 items-center justify-center border-2"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-rose-200/70 bg-white px-5 py-2.5 text-rose-600 transition-all hover:border-rose-300/70 hover:bg-rose-50/40"
               motionProps={{
-                whileHover: { scale: 1.02 },
-                whileTap: { scale: 0.96 },
+                whileHover: { scale: 1.01 },
+                whileTap: { scale: 0.99 },
               }}
               onClick={() => {
-                // subtle "pass" effect
                 try {
-                  // toast via global or event
                   // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
                     // @ts-expect-error window.toast might not exist
@@ -345,15 +342,15 @@ function PropertyCard({
               }}
               aria-label="Pass on this property"
             >
-              <X className="h-4 w-4" />
-              <span className="text-token-sm font-medium">Pass</span>
+              <X className="h-4 w-4" strokeWidth={2.5} />
+              <span className="text-sm font-medium">Pass</span>
             </MotionButton>
 
             <MotionButton
-              className="gap-token-sm rounded-token-lg bg-token-success py-token-sm transition-token-all hover:bg-token-success-dark relative flex flex-1 items-center justify-center overflow-hidden text-white"
+              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-emerald-600 px-5 py-2.5 text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow"
               motionProps={{
-                whileHover: { scale: 1.02 },
-                whileTap: { scale: 0.96 },
+                whileHover: { scale: 1.01 },
+                whileTap: { scale: 0.99 },
               }}
               onClick={(e) => {
                 // click burst effect
@@ -378,7 +375,6 @@ function PropertyCard({
                 setTimeout(() => burst.remove(), 420)
 
                 try {
-                  // toast via global or event
                   // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
                     // @ts-expect-error window.toast might not exist
@@ -404,8 +400,8 @@ function PropertyCard({
               }}
               aria-label="Love this property"
             >
-              <Heart className="h-4 w-4 fill-current" />
-              <span className="text-token-sm font-medium">Love</span>
+              <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
+              <span className="text-sm font-medium">Love</span>
             </MotionButton>
           </div>
         </div>
@@ -559,9 +555,9 @@ export function PhoneMockup() {
   }, [])
 
   return (
-    <div className="relative mx-auto w-full max-w-sm">
+    <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
       {/* Professional Device Frame */}
-      <div className="relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] shadow-[0_10px_30px_rgba(2,6,23,0.25)] ring-1 ring-white/60 backdrop-blur-sm ring-inset">
+      <div className="relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] shadow-token-2xl ring-1 ring-white/60 blur-glass-md ring-inset">
         {/* Bezel/Inner border */}
         <div
           className="pointer-events-none absolute inset-0 rounded-[3rem] ring-1 ring-black/5"
@@ -632,12 +628,27 @@ export function PhoneMockup() {
             aria-hidden="true"
           />
 
-          {/* Status Bar */}
-          <div className="flex h-8 items-center justify-between px-5 text-[11px] text-zinc-300/90">
-            <span className="tracking-tight">9:41</span>
-            {/* Removed decorative ovals that looked like sensors behind the speaker grill */}
-            <div className="flex items-center gap-1.5">
-              {/* Intentionally left empty to avoid extra shapes */}
+          {/* Status Bar - Cleaner without timestamp */}
+          <div className="flex h-8 items-center justify-end px-5 text-[11px] text-zinc-300/90">
+            {/* Status icons area - battery, wifi, signal */}
+            <div className="flex items-center gap-1">
+              {/* Signal bars */}
+              <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor" className="opacity-90">
+                <rect x="0" y="6" width="2.5" height="4" rx="0.5" />
+                <rect x="4" y="4" width="2.5" height="6" rx="0.5" />
+                <rect x="8" y="2" width="2.5" height="8" rx="0.5" />
+                <rect x="12" y="0" width="2.5" height="10" rx="0.5" />
+              </svg>
+              {/* WiFi icon */}
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" className="opacity-90">
+                <path d="M7 2.5c2.5 0 4.5 1 6 2.5l-1.5 1.5c-1-1-2.5-1.5-4.5-1.5s-3.5.5-4.5 1.5L1 5C2.5 3.5 4.5 2.5 7 2.5zM7 6c1.5 0 2.5.5 3.5 1.5L9 9c-.5-.5-1-1-2-1s-1.5.5-2 1L3.5 7.5C4.5 6.5 5.5 6 7 6z" />
+              </svg>
+              {/* Battery icon */}
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none" className="opacity-90">
+                <rect x="0.5" y="1.5" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="0.8" />
+                <rect x="2" y="3" width="15" height="4" rx="0.5" fill="currentColor" />
+                <rect x="19" y="3.5" width="2" height="3" rx="0.5" fill="currentColor" />
+              </svg>
             </div>
           </div>
 

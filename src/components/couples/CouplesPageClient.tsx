@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart, RefreshCw } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { MotionDiv, scaleIn, fadeInUp, slideInRight } from '@/components/ui/motion-components'
 import { Button } from '@/components/ui/button'
 import { CouplesMutualLikesSection } from './CouplesMutualLikesSection'
 import { CouplesActivityFeed } from './CouplesActivityFeed'
@@ -178,26 +178,28 @@ export function CouplesPageClient() {
   // No household state
   if (userHouseholdStatus === 'no-household') {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <MotionDiv
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
         transition={{ duration: 0.5 }}
       >
         <NoHouseholdState />
-      </motion.div>
+      </MotionDiv>
     )
   }
 
   // Waiting for partner state
   if (userHouseholdStatus === 'waiting-partner') {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <MotionDiv
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
         transition={{ duration: 0.5 }}
       >
         <WaitingForPartnerState />
-      </motion.div>
+      </MotionDiv>
     )
   }
 
@@ -217,13 +219,14 @@ export function CouplesPageClient() {
       <div className="flex min-h-[400px] items-center justify-center">
         <Card className="card-glassmorphism-style max-w-md border-red-500/20">
           <CardContent className="p-6 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+            <MotionDiv
+              variants={scaleIn}
+              initial="initial"
+              animate="animate"
               transition={{ type: 'spring', stiffness: 200 }}
             >
               <Heart className="mx-auto mb-4 h-12 w-12 text-red-400" />
-            </motion.div>
+            </MotionDiv>
 
             <h2 className="text-primary-foreground mb-2 text-xl font-semibold">
               Something went wrong
@@ -248,28 +251,29 @@ export function CouplesPageClient() {
   }
 
   return (
-    <motion.div
+    <MotionDiv
       className="space-y-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={fadeInUp}
+      initial="initial"
+      animate="animate"
       transition={{ duration: 0.5 }}
     >
       <CouplesHero stats={stats} />
 
       {/* Disputed Properties Alert */}
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05, duration: 0.5 }}
       >
         <DisputedPropertiesAlert />
-      </motion.div>
+      </MotionDiv>
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main Content Area */}
         <div className="space-y-6 lg:col-span-2">
           {/* Mutual Likes Section */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
@@ -282,27 +286,28 @@ export function CouplesPageClient() {
                   : undefined
               }
             />
-          </motion.div>
+          </MotionDiv>
 
           {/* Activity Feed */}
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
             <CouplesActivityFeed activity={activity} />
-          </motion.div>
+          </MotionDiv>
         </div>
 
         {/* Sidebar with Stats */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <MotionDiv
+          variants={slideInRight}
+          initial="initial"
+          animate="animate"
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <CouplesStats stats={stats} />
-        </motion.div>
+        </MotionDiv>
       </div>
-    </motion.div>
+    </MotionDiv>
   )
 }

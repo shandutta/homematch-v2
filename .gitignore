@@ -35,8 +35,7 @@ yarn-error.log*
 helper_scripts
 
 # env files (can opt-in for committing if needed)
-.env*
-.env*.local
+# Note: Some .env files like .env.example are committed for documentation
 
 # vercel
 .vercel
@@ -48,9 +47,10 @@ next-env.d.ts
 #VS Code Workspace
 homematch-v2.code-workspace
 
-# Local environment variables
-.env*
-.env*.local
+# Local environment variables (specific patterns)
+.env.local
+.env.development.local
+.env.production.local
 
 # Old Code
 homematch-original-analysis/
@@ -76,8 +76,8 @@ migration-report-*.md
 supabase.exe
 supabase-cli.tar.gz
 
-# Test environment files
-.env.test.local
+# Test environment files (committed for CI, but can be ignored for local changes)
+# .env.test.local
 
 # Test artifacts
 test-results/

@@ -64,4 +64,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   'REDACTED_SUPABASE_SERVICE_ROLE_KEY'
 
+// Set default BASE_URL for integration tests - force override since it's being set incorrectly
+process.env.BASE_URL = 'http://localhost:3000'
+
 // No mocks in integration tests - we use the real Supabase Docker stack

@@ -109,8 +109,8 @@ describe('Property Schema Validation', () => {
 
     test('should handle coordinate validation and transformation', () => {
       const validCoordinates = {
-        latitude: 37.7749,
-        longitude: -122.4194,
+        lat: 37.7749,
+        lng: -122.4194,
       }
 
       const result = coordinatesSchema.safeParse(validCoordinates)
@@ -118,8 +118,8 @@ describe('Property Schema Validation', () => {
 
       // Test invalid coordinates
       const invalidCoordinates = {
-        latitude: 91, // Out of range
-        longitude: -181, // Out of range
+        lat: 91, // Out of range
+        lng: -181, // Out of range
       }
 
       const invalidResult = coordinatesSchema.safeParse(invalidCoordinates)

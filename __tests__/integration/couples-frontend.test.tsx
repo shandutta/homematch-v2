@@ -1,43 +1,24 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest'
+import { vi, describe, test, beforeEach, expect } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
 
-// Mock the hooks
+// Mock the hooks with Vitest patterns
 vi.mock('@/hooks/useCouples', () => ({
-  useCouples: vi.fn(() => ({
-    mutualLikes: [],
-    householdActivity: [],
-    isLoading: false,
-    error: null,
-  })),
+  useCouples: vi.fn(),
 }))
 
 vi.mock('@/hooks/useCouplesFeatures', () => ({
-  useCouplesFeatures: vi.fn(() => ({
-    mutualLikesCount: 0,
-    recentActivity: [],
-    isLoading: false,
-    error: null,
-  })),
+  useCouplesFeatures: vi.fn(),
 }))
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(() => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
-  })),
-  useSearchParams: vi.fn(() => ({
-    get: vi.fn(() => null),
-  })),
-}))
+// next/navigation is already mocked centrally in setupSupabaseMock.ts
 
 describe('Couples Frontend Integration', () => {
   let queryClient: QueryClient
 
-  beforeEach(() => {
+  beforeEach(async () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -46,6 +27,24 @@ describe('Couples Frontend Integration', () => {
       },
     })
     vi.clearAllMocks()
+    
+    // Setup default mock implementations
+    const { useCouples } = await import('@/hooks/useCouples')
+    const { useCouplesFeatures } = await import('@/hooks/useCouplesFeatures')
+    
+    ;(useCouples as any).mockReturnValue({
+      mutualLikes: [],
+      householdActivity: [],
+      isLoading: false,
+      error: null,
+    })
+    
+    ;(useCouplesFeatures as any).mockReturnValue({
+      mutualLikesCount: 0,
+      recentActivity: [],
+      isLoading: false,
+      error: null,
+    })
   })
 
   const renderWithQueryClient = (component: React.ReactElement) => {
@@ -157,15 +156,16 @@ describe('Couples Frontend Integration', () => {
       const { useCouples } = await import('@/hooks/useCouples')
 
       // The hook should handle errors gracefully
-      const result = vi.mocked(useCouples).mockReturnValue({
+      ;(useCouples as any).mockReturnValue({
         mutualLikes: [],
         householdActivity: [],
         isLoading: false,
         error: new Error('Network error'),
       })
 
+      const result = (useCouples as any)()
       expect(result).toBeDefined()
-      expect(result().error).toBeDefined()
+      expect(result.error).toBeDefined()
     })
 
     test('should handle successful API responses', async () => {
@@ -187,7 +187,7 @@ describe('Couples Frontend Integration', () => {
 
       const { useCouples } = await import('@/hooks/useCouples')
 
-      const result = vi.mocked(useCouples).mockReturnValue({
+      ;(useCouples as any).mockReturnValue({
         mutualLikes: [
           {
             property_id: 'prop-1',
@@ -202,8 +202,9 @@ describe('Couples Frontend Integration', () => {
         error: null,
       })
 
-      expect(result().mutualLikes).toHaveLength(1)
-      expect(result().mutualLikes[0].property_id).toBe('prop-1')
+      const result = (useCouples as any)()
+      expect(result.mutualLikes).toHaveLength(1)
+      expect(result.mutualLikes[0].property_id).toBe('prop-1')
     })
   })
 

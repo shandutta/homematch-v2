@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -227,7 +228,7 @@ export function DisputedPropertiesView({
 
       <AnimatePresence mode="popLayout">
         {disputedProperties.map((property, index) => (
-          <motion.div
+          <MotionDiv
             key={property.property_id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -375,7 +376,7 @@ export function DisputedPropertiesView({
                 {/* Expanded Details */}
                 <AnimatePresence>
                   {expandedProperty === property.property_id && (
-                    <motion.div
+                    <MotionDiv
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -405,7 +406,7 @@ export function DisputedPropertiesView({
                             </div>
                           </div>
                         )}
-                    </motion.div>
+                    </MotionDiv>
                   )}
                 </AnimatePresence>
 
@@ -480,7 +481,7 @@ export function DisputedPropertiesView({
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
         ))}
       </AnimatePresence>
     </div>
