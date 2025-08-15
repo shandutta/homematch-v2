@@ -11,11 +11,12 @@ import { retryFixtures } from './retry'
 import { authFixtures } from './auth'
 
 // Combine all fixtures into a single test object
+// Note: Order matters - authFixtures depends on utilsFixtures
 export const test = base
   .extend(configFixtures)
-  .extend(utilsFixtures)
   .extend(loggerFixtures)
   .extend(retryFixtures)
+  .extend(utilsFixtures)
   .extend(authFixtures)
 
 // Re-export expect for convenience

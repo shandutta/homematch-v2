@@ -59,6 +59,7 @@ export async function middleware(request: NextRequest) {
     '/households',
     '/helloworld_notes',
     '/validation',
+    '/couples',
   ]
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
@@ -78,8 +79,43 @@ export async function middleware(request: NextRequest) {
   if (isAuthPath && user) {
     // user is logged in, redirect to validation dashboard
     const url = request.nextUrl.clone()
-    url.pathname = '/validation'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Add security headers
+  const response = supabaseResponse
+  
+  // Security headers for protection against common attacks
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+  )
+  
+  // Content Security Policy (adjust based on your needs)
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' https://fonts.gstatic.com; " +
+      "img-src 'self' data: https: blob:; " +
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com; " +
+      "frame-ancestors 'none';"
+    )
+  }
+  
+  // Strict Transport Security (HSTS) for production
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    )
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
@@ -90,7 +126,7 @@ export async function middleware(request: NextRequest) {
   //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
   // 3. Change the myNewResponse object instead of the supabaseResponse object
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {

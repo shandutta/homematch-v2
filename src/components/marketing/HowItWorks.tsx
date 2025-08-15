@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
 
@@ -27,10 +27,14 @@ export function HowItWorks() {
   ]
 
   return (
-    <section className="relative bg-transparent py-12 sm:py-16" id="how-it-works">
+    <section
+      className="relative bg-transparent py-12 sm:py-16"
+      id="how-it-works"
+    >
       <div className="container mx-auto px-4">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
+        <MotionDiv
+          className="mx-auto text-center"
+          style={{ maxWidth: '48rem' }}
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -48,11 +52,11 @@ export function HowItWorks() {
           >
             Three simple steps to go from scrolling to moving in.
           </p>
-        </motion.div>
+        </MotionDiv>
 
         <div className="mt-12 grid gap-6 sm:mt-16 sm:grid-cols-3">
           {steps.map((step, i) => (
-            <motion.div
+            <MotionDiv
               key={step.title}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -76,11 +80,9 @@ export function HowItWorks() {
                   {step.description}
                 </p>
               </Card>
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
-
-        
       </div>
     </section>
   )

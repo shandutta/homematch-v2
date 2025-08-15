@@ -2,6 +2,18 @@ import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
+import {
+  Home,
+  BarChart3,
+  Database,
+  Building2,
+  AlertTriangle,
+  Info,
+  PartyPopper,
+  Target,
+  MapPin,
+  Rocket,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -99,7 +111,10 @@ export default async function ValidationPage() {
       <header className="mx-auto mb-8 flex max-w-6xl items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            🏠 HomeMatch V2 - Database Migration Validation
+            <div className="flex items-center gap-2">
+              <Home className="h-6 w-6 text-blue-600" />
+              <span>HomeMatch V2 - Database Migration Validation</span>
+            </div>
           </h1>
           <p className="mt-2 text-gray-600">
             Comprehensive validation of Phase 1 & 2 implementation
@@ -129,7 +144,10 @@ export default async function ValidationPage() {
         {/* Overall Status */}
         <div className="rounded-lg border bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold text-gray-900">
-            📊 Migration Status Overview
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <span>Migration Status Overview</span>
+            </div>
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
             <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4">
@@ -169,7 +187,10 @@ export default async function ValidationPage() {
         <div className="rounded-lg border bg-white shadow-sm">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              🗄️ Database Tables Status
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-blue-600" />
+                <span>Database Tables Status</span>
+              </div>
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Validation of all 6 core tables from the schema
@@ -226,7 +247,10 @@ export default async function ValidationPage() {
         <div className="rounded-lg border bg-white shadow-sm">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              🏘️ Property Service Validation
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                <span>Property Service Validation</span>
+              </div>
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Testing property search, stats, and database operations
@@ -358,7 +382,7 @@ export default async function ValidationPage() {
                 {propertyStats?.total_properties === 0 && (
                   <div className="rounded-lg border-yellow-200 bg-yellow-50 p-4">
                     <div className="mb-2 flex items-center gap-2">
-                      <span className="text-xl text-yellow-500">⚠️</span>
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       <h3 className="font-medium text-yellow-900">
                         No Properties Found
                       </h3>
@@ -389,7 +413,7 @@ export default async function ValidationPage() {
             {!user ? (
               <div className="rounded-lg border-yellow-200 bg-yellow-50 p-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-xl text-yellow-500">⚠️</span>
+                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
                   <h3 className="font-medium text-yellow-900">
                     No Authenticated User
                   </h3>
@@ -471,7 +495,7 @@ export default async function ValidationPage() {
                 ) : (
                   <div className="rounded-lg border-yellow-200 bg-yellow-50 p-4">
                     <div className="mb-2 flex items-center gap-2">
-                      <span className="text-xl text-yellow-500">⚠️</span>
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       <h3 className="font-medium text-yellow-900">
                         No User Profile
                       </h3>
@@ -492,7 +516,10 @@ export default async function ValidationPage() {
         <div className="rounded-lg border bg-white shadow-sm">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              🗺️ PostGIS & Extensions Status
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-blue-600" />
+                <span>PostGIS & Extensions Status</span>
+              </div>
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Geographic capabilities and database extensions
@@ -523,7 +550,7 @@ export default async function ValidationPage() {
             ) : (
               <div className="rounded-lg border-blue-200 bg-blue-50 p-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-xl text-blue-500">ℹ️</span>
+                  <Info className="h-5 w-5 text-blue-500" />
                   <h3 className="font-medium text-blue-900">
                     Extensions Status Unknown
                   </h3>
@@ -541,7 +568,10 @@ export default async function ValidationPage() {
         {/* Implementation Summary */}
         <div className="rounded-lg border-2 border-green-200 bg-green-50 p-6">
           <h2 className="mb-4 text-xl font-semibold text-green-900">
-            🎉 Implementation Summary
+            <div className="flex items-center gap-2">
+              <PartyPopper className="h-5 w-5 text-blue-600" />
+              <span>Implementation Summary</span>
+            </div>
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
@@ -562,7 +592,10 @@ export default async function ValidationPage() {
               </ul>
             </div>
             <div>
-              <h3 className="mb-3 font-medium text-blue-800">🎯 Next Steps</h3>
+              <h3 className="mb-3 flex items-center gap-2 font-medium text-blue-800">
+                <Target className="h-4 w-4" />
+                <span>Next Steps</span>
+              </h3>
               <ul className="space-y-2 text-sm text-blue-700">
                 <li>• API routes implementation for property endpoints</li>
                 <li>• Frontend components for property browsing</li>
@@ -579,7 +612,9 @@ export default async function ValidationPage() {
 
         {/* Ready for Production Banner */}
         <div className="rounded-lg border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-6 text-center">
-          <div className="mb-2 text-4xl">🎉</div>
+          <div className="mb-2">
+            <PartyPopper className="mx-auto h-16 w-16 text-green-500" />
+          </div>
           <h2 className="mb-2 text-2xl font-bold text-gray-900">
             Migration Successfully Completed!
           </h2>
@@ -602,7 +637,10 @@ export default async function ValidationPage() {
               ✅ Validation Complete
             </span>
             <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-              🚀 Ready for Features
+              <div className="flex items-center gap-2">
+                <Rocket className="h-4 w-4 text-blue-600" />
+                <span>Ready for Features</span>
+              </div>
             </span>
           </div>
         </div>

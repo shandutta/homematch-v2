@@ -1,0 +1,252 @@
+'use client'
+
+import { useState } from 'react'
+import { User } from '@supabase/supabase-js'
+import { UserProfile, UserPreferences } from '@/types/database'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Slider } from '@/components/ui/slider'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { UserServiceClient } from '@/lib/services/users-client'
+import { toast } from 'sonner'
+import { Loader2, Save } from 'lucide-react'
+
+interface PreferencesSectionProps {
+  user: User
+  profile: UserProfile
+}
+
+export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
+  const userService = UserServiceClient
+  // Define local preferences type for UI-specific preferences
+  type LocalPreferences = UserPreferences & {
+    priceRange?: [number, number]
+    bedrooms?: number
+    bathrooms?: number
+    propertyTypes?: Record<string, boolean>
+    mustHaves?: Record<string, boolean>
+    searchRadius?: number
+  }
+
+  const preferences = (profile.preferences || {}) as LocalPreferences
+
+  const [loading, setLoading] = useState(false)
+  const [priceRange, setPriceRange] = useState<[number, number]>(
+    preferences.priceRange || [200000, 800000]
+  )
+  const [bedrooms, setBedrooms] = useState(preferences.bedrooms || 2)
+  const [bathrooms, setBathrooms] = useState(preferences.bathrooms || 2)
+  const [propertyTypes, setPropertyTypes] = useState(
+    preferences.propertyTypes || {
+      house: true,
+      condo: true,
+      townhouse: true,
+    }
+  )
+  const [mustHaves, setMustHaves] = useState(
+    preferences.mustHaves || {
+      parking: false,
+      pool: false,
+      gym: false,
+      petFriendly: false,
+    }
+  )
+  const [searchRadius, setSearchRadius] = useState(
+    preferences.searchRadius || 10
+  )
+
+  const savePreferences = async () => {
+    setLoading(true)
+    try {
+      await userService.updateUserProfile(user.id, {
+        preferences: {
+          ...preferences,
+          priceRange,
+          bedrooms,
+          bathrooms,
+          propertyTypes,
+          mustHaves,
+          searchRadius,
+        },
+      })
+      toast.success('Preferences saved successfully')
+    } catch (_error) {
+      toast.error('Failed to save preferences')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-token-lg">
+      <Card className="card-glassmorphism-style">
+        <CardHeader>
+          <CardTitle className="text-token-2xl text-primary-foreground">
+            Search Preferences
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-token-lg">
+          {/* Price Range */}
+          <div className="space-y-token-sm">
+            <Label className="text-primary/40">
+              Price Range: ${priceRange[0].toLocaleString()} - $
+              {priceRange[1].toLocaleString()}
+            </Label>
+            <Slider
+              value={priceRange}
+              onValueChange={(value) =>
+                setPriceRange(value as [number, number])
+              }
+              min={0}
+              max={2000000}
+              step={50000}
+              className="[&_[role=slider]]:bg-primary"
+            />
+          </div>
+
+          {/* Bedrooms and Bathrooms */}
+          <div className="gap-token-md grid grid-cols-2">
+            <div className="space-y-token-sm">
+              <Label className="text-primary/40">Minimum Bedrooms</Label>
+              <Select
+                value={bedrooms.toString()}
+                onValueChange={(v) => setBedrooms(Number(v))}
+              >
+                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <SelectItem key={num} value={num.toString()}>
+                      {num}+ {num === 1 ? 'Bedroom' : 'Bedrooms'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-token-sm">
+              <Label className="text-primary/40">Minimum Bathrooms</Label>
+              <Select
+                value={bathrooms.toString()}
+                onValueChange={(v) => setBathrooms(Number(v))}
+              >
+                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 1.5, 2, 2.5, 3, 3.5, 4].map((num) => (
+                    <SelectItem key={num} value={num.toString()}>
+                      {num}+ {num === 1 ? 'Bathroom' : 'Bathrooms'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Search Radius */}
+          <div className="space-y-token-sm">
+            <Label className="text-primary/40">
+              Search Radius: {searchRadius} miles
+            </Label>
+            <Slider
+              value={[searchRadius]}
+              onValueChange={([v]) => setSearchRadius(v)}
+              min={1}
+              max={50}
+              step={1}
+              className="[&_[role=slider]]:bg-primary"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="card-glassmorphism-style">
+        <CardHeader>
+          <CardTitle className="text-token-xl text-primary-foreground">
+            Property Types
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-token-md">
+          {Object.entries({
+            house: 'Single Family Home',
+            condo: 'Condo/Apartment',
+            townhouse: 'Townhouse',
+          }).map(([key, label]) => (
+            <div key={key} className="flex items-center justify-between">
+              <Label htmlFor={key} className="text-primary/40 cursor-pointer">
+                {label}
+              </Label>
+              <Switch
+                id={key}
+                checked={propertyTypes[key]}
+                onCheckedChange={(checked) =>
+                  setPropertyTypes({ ...propertyTypes, [key]: checked })
+                }
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="card-glassmorphism-style">
+        <CardHeader>
+          <CardTitle className="text-token-xl text-primary-foreground">
+            Must-Have Features
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-token-md">
+          {Object.entries({
+            parking: 'Parking',
+            pool: 'Pool',
+            gym: 'Gym/Fitness Center',
+            petFriendly: 'Pet Friendly',
+          }).map(([key, label]) => (
+            <div key={key} className="flex items-center justify-between">
+              <Label
+                htmlFor={`must-${key}`}
+                className="text-primary/40 cursor-pointer"
+              >
+                {label}
+              </Label>
+              <Switch
+                id={`must-${key}`}
+                checked={mustHaves[key]}
+                onCheckedChange={(checked) =>
+                  setMustHaves({ ...mustHaves, [key]: checked })
+                }
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Button
+        onClick={savePreferences}
+        disabled={loading}
+        className="bg-primary text-primary-foreground hover:bg-primary w-full"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Saving...
+          </>
+        ) : (
+          <>
+            <Save className="mr-2 h-4 w-4" />
+            Save Preferences
+          </>
+        )}
+      </Button>
+    </div>
+  )
+}

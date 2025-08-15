@@ -1,0 +1,166 @@
+'use client'
+
+import { useState } from 'react'
+import { User } from '@supabase/supabase-js'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react'
+
+interface AccountSectionProps {
+  user: User
+}
+
+export function AccountSection({ user }: AccountSectionProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleSignOut = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      router.push('/login')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign out')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    const confirmed = confirm(
+      'Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.'
+    )
+
+    if (!confirmed) return
+
+    const doubleConfirmed = confirm(
+      'This is your last chance to cancel. Are you absolutely sure you want to delete your account?'
+    )
+
+    if (!doubleConfirmed) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      // In a real app, you would call an API endpoint that handles account deletion
+      // For now, we'll just show an error message
+      throw new Error(
+        'Account deletion is not yet implemented. Please contact support.'
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete account')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Card className="card-glassmorphism-style">
+        <CardHeader>
+          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
+            <Shield className="h-6 w-6" />
+            Account Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-primary/40 mb-1 text-sm">Email Address</p>
+            <p className="text-primary-foreground">{user.email}</p>
+          </div>
+          <div>
+            <p className="text-primary/40 mb-1 text-sm">Account ID</p>
+            <p className="text-primary-foreground font-mono text-sm">
+              {user.id}
+            </p>
+          </div>
+          <div>
+            <p className="text-primary/40 mb-1 text-sm">Account Created</p>
+            <p className="text-primary-foreground">
+              {user.created_at
+                ? new Date(user.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : 'Unknown'}
+            </p>
+          </div>
+          <div>
+            <p className="text-primary/40 mb-1 text-sm">
+              Authentication Provider
+            </p>
+            <p className="text-primary-foreground capitalize">
+              {user.app_metadata?.provider || 'Email'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="card-glassmorphism-style">
+        <CardHeader>
+          <CardTitle className="text-primary-foreground text-xl">
+            Session Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-primary/40 text-sm">
+            Sign out from your current session on this device.
+          </p>
+          <Button
+            onClick={handleSignOut}
+            disabled={loading}
+            variant="outline"
+            className="border-primary/20 text-primary/60 hover:bg-primary/20 hover:text-primary-foreground w-full"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="card-glassmorphism-style border-destructive/20">
+        <CardHeader>
+          <CardTitle className="text-primary-foreground text-xl">
+            Danger Zone
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-destructive/20 bg-destructive/10">
+            <AlertTriangle className="h-4 w-4 text-red-400" />
+            <AlertDescription className="text-red-200">
+              Deleting your account is permanent and cannot be undone. All your
+              data, including properties, preferences, and household information
+              will be permanently deleted.
+            </AlertDescription>
+          </Alert>
+          <Button
+            onClick={handleDeleteAccount}
+            disabled={loading}
+            variant="outline"
+            className="border-destructive/20 hover:bg-destructive/10 w-full text-red-400 hover:text-red-300"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Account
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

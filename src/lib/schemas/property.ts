@@ -2,23 +2,51 @@ import { z } from 'zod'
 
 // Property Schemas
 export const propertySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid('Invalid uuid'),
   zpid: z.string().nullable(),
-  address: z.string().min(1).max(255),
-  city: z.string().min(1).max(100),
-  state: z.string().min(2).max(50),
+  address: z
+    .string()
+    .min(1, { message: 'String must contain at least 1 character(s)' })
+    .max(255),
+  city: z
+    .string()
+    .min(1, { message: 'String must contain at least 1 character(s)' })
+    .max(100),
+  state: z.string().length(2),
   zip_code: z.string().min(5).max(10),
-  price: z.number().min(0),
-  bedrooms: z.number().min(0).max(20),
-  bathrooms: z.number().min(0).max(20),
+  price: z
+    .number()
+    .min(0, { message: 'Number must be greater than or equal to 0' }),
+  bedrooms: z
+    .number()
+    .min(0)
+    .max(20, { message: 'Number must be less than or equal to 20' }),
+  bathrooms: z
+    .number()
+    .min(0)
+    .max(20, { message: 'Number must be less than or equal to 20' }),
   square_feet: z.number().min(0).nullable(),
+  // Tight enum per domain decision
   property_type: z
     .enum(['house', 'condo', 'townhouse', 'apartment'])
     .nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
-  coordinates: z.any().nullable(), // PostGIS POINT type
-  neighborhood_id: z.string().uuid().nullable(),
+  // Coordinates can be GeoJSON Point, lat/lng object, or null when unknown
+  coordinates: z
+    .union([
+      z.object({
+        type: z.literal('Point'),
+        coordinates: z.tuple([z.number(), z.number()]), // [longitude, latitude]
+      }),
+      z.object({
+        lat: z.number(),
+        lng: z.number(),
+      }),
+      z.unknown(),
+    ])
+    .nullable(),
+  neighborhood_id: z.string().uuid('Invalid uuid').nullable(),
   amenities: z.array(z.string()).nullable(),
   year_built: z
     .number()
@@ -27,7 +55,8 @@ export const propertySchema = z.object({
     .nullable(),
   lot_size_sqft: z.number().min(0).nullable(),
   parking_spots: z.number().min(0).max(20).nullable(),
-  listing_status: z.string().default('active').nullable(),
+  // Constrain listing_status to known literals; allow null; coerce unknown strings via preprocess if needed upstream
+  listing_status: z.enum(['active', 'pending', 'sold']).nullable(),
   property_hash: z.string().nullable(),
   is_active: z.boolean().default(true).nullable(),
   created_at: z.string().datetime().nullable(),
@@ -71,7 +100,12 @@ export const neighborhoodSchema = z.object({
   city: z.string().min(1).max(100),
   state: z.string().min(2).max(50),
   metro_area: z.string().max(100).nullable(),
-  bounds: z.any().nullable(), // PostGIS POLYGON type
+  bounds: z
+    .object({
+      type: z.literal('Polygon'),
+      coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
+    })
+    .nullable(), // PostGIS POLYGON type as GeoJSON
   median_price: z.number().min(0).nullable(),
   walk_score: z.number().min(0).max(100).nullable(),
   transit_score: z.number().min(0).max(100).nullable(),
@@ -127,7 +161,12 @@ export const propertyFiltersSchema = z.object({
   lot_size_max: z.number().min(0).optional(),
   parking_spots_min: z.number().min(0).optional(),
   listing_status: z.array(z.string()).optional(),
-  within_polygon: z.any().optional(), // PostGIS polygon for geographic filtering
+  within_polygon: z
+    .object({
+      type: z.literal('Polygon'),
+      coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
+    })
+    .optional(), // PostGIS polygon for geographic filtering
   within_radius: z
     .object({
       center: z.tuple([z.number(), z.number()]), // [lng, lat]
@@ -162,25 +201,11 @@ export const propertySearchSchema = z.object({
   pagination: propertyPaginationSchema.optional(),
 })
 
-// Coordinate helpers
-export const coordinatesSchema = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-})
-
-export const boundingBoxSchema = z
-  .object({
-    north: z.number().min(-90).max(90),
-    south: z.number().min(-90).max(90),
-    east: z.number().min(-180).max(180),
-    west: z.number().min(-180).max(180),
-  })
-  .refine((data) => data.north > data.south, {
-    message: 'North must be greater than south',
-  })
-  .refine((data) => data.east > data.west, {
-    message: 'East must be greater than west',
-  })
+// Re-export coordinate utilities for backward compatibility
+export { 
+  latLngSchema as coordinatesSchema,
+  boundingBoxSchema 
+} from '@/lib/utils/coordinates'
 
 // Export types
 export type Property = z.infer<typeof propertySchema>
@@ -199,5 +224,5 @@ export type PropertySort = z.infer<typeof propertySortSchema>
 export type PropertyPagination = z.infer<typeof propertyPaginationSchema>
 export type PropertySearch = z.infer<typeof propertySearchSchema>
 
-export type Coordinates = z.infer<typeof coordinatesSchema>
-export type BoundingBox = z.infer<typeof boundingBoxSchema>
+// Re-export coordinate types for backward compatibility
+export type { LatLng as Coordinates, BoundingBox } from '@/lib/utils/coordinates'

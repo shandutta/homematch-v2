@@ -7,7 +7,10 @@ import { AuthFixture, TestUser } from '../types/fixtures'
 
 // Export just the fixtures object, not a test object
 export const authFixtures = {
-  auth: async ({ page, config, utils }, use) => {
+  auth: async (
+    { page, config, utils }: { page: any; config: any; utils: any },
+    use: any
+  ) => {
     const auth: AuthFixture = {
       async login(user: TestUser = config.users.user1) {
         // Ensure clean state before authentication
@@ -109,7 +112,7 @@ export const authFixtures = {
         if (!currentUrl.includes('/') && !currentUrl.includes('/login')) {
           try {
             await page.waitForURL(
-              (url) => {
+              (url: any) => {
                 const urlStr = url.toString()
                 return urlStr.endsWith('/') || urlStr.includes('/login')
               },
