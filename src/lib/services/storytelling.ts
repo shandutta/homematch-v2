@@ -141,7 +141,7 @@ export class StorytellingService {
 
     // Outdoor living
     if (
-      property.property_type === 'house' &&
+      property.property_type === 'single_family' &&
       property.lot_size_sqft &&
       property.lot_size_sqft > 1000
     ) {
@@ -227,7 +227,7 @@ export class StorytellingService {
         amenityText.includes('kitchen') ||
         (property.square_feet !== null && property.square_feet > 1200),
       hasOutdoorSpace:
-        property.property_type === 'house' &&
+        property.property_type === 'single_family' &&
         property.lot_size_sqft !== null &&
         property.lot_size_sqft > 500,
       isSpacious:

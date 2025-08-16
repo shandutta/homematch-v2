@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Star = {
   x: number
@@ -15,8 +15,8 @@ type Star = {
 
 type Props = {
   className?: string
-  // Keep constant density across devices per request
-  starCount?: number // default 320 (increased density)
+  // Responsive density with mobile optimization
+  starCount?: number // default 320 (reduced on mobile)
 }
 
 export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
@@ -26,6 +26,18 @@ export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
   const sizeRef = useRef({ w: 0, h: 0 })
   const mouseRef = useRef({ x: 0, y: 0 })
   const motionScaleRef = useRef(1)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Mobile detection effect
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -44,11 +56,13 @@ export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
       ctx.scale(dpr, dpr) // scale drawing if needed (we'll draw in CSS pixels)
     }
 
-    // Init starfield
+    // Init starfield with responsive density
     const initStars = () => {
       const stars: Star[] = []
       const layers = [0, 1, 2] // far, mid, near
-      for (let i = 0; i < starCount; i++) {
+      // Reduce star count by 70% on mobile for better performance and less visual clutter
+      const responsiveStarCount = isMobile ? Math.floor(starCount * 0.3) : starCount
+      for (let i = 0; i < responsiveStarCount; i++) {
         const layer = layers[Math.floor(Math.random() * layers.length)]
         // radius by layer: near bigger
         const r =
@@ -193,7 +207,7 @@ export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
       window.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [starCount])
+  }, [starCount, isMobile])
 
   return (
     <div

@@ -114,11 +114,50 @@ export async function withRateLimit(
   handler: () => Promise<NextResponse>,
   tier: keyof typeof RATE_LIMIT_TIERS = 'standard'
 ): Promise<NextResponse> {
-  const rateLimitResponse = await rateLimit(request, tier)
-  if (rateLimitResponse) {
-    return rateLimitResponse
+  try {
+    const rateLimitResponse = await rateLimit(request, tier)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+    
+    // Execute handler with proper error handling
+    try {
+      return await handler()
+    } catch (handlerError) {
+      console.error('[withRateLimit] Handler error:', handlerError)
+      
+      // Check if it's an auth error (common pattern)
+      if (handlerError instanceof Error) {
+        if (handlerError.message.includes('Unauthorized') || 
+            handlerError.message.includes('auth') ||
+            handlerError.message.includes('token')) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          )
+        }
+      }
+      
+      // Return generic 500 for other errors
+      return NextResponse.json(
+        { error: 'Internal Server Error' },
+        { status: 500 }
+      )
+    }
+  } catch (rateLimitError) {
+    console.error('[withRateLimit] Rate limit error:', rateLimitError)
+    
+    // If rate limiting itself fails, allow the request but log the error
+    try {
+      return await handler()
+    } catch (handlerError) {
+      console.error('[withRateLimit] Handler error after rate limit failure:', handlerError)
+      return NextResponse.json(
+        { error: 'Internal Server Error' },
+        { status: 500 }
+      )
+    }
   }
-  return handler()
 }
 
 // Enhanced rate limiting for authentication endpoints

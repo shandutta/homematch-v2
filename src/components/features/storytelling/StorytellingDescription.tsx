@@ -198,7 +198,7 @@ const FUTURE_VISION_TAGS = {
 
 // Property type specific templates
 const DESCRIPTION_TEMPLATES = {
-  house: {
+  single_family: {
     starter: [
       'Perfect starter home where your love story begins',
       'Charming space to build your first memories together',
@@ -238,7 +238,7 @@ const DESCRIPTION_TEMPLATES = {
       'Sophisticated urban living at its absolute finest',
     ],
   },
-  townhouse: {
+  townhome: {
     starter: [
       'Best of both worlds - private space with community connection',
       'Townhome charm perfect for young professionals in love',
@@ -258,7 +258,7 @@ const DESCRIPTION_TEMPLATES = {
       'Prestigious address with thoughtful family features',
     ],
   },
-  apartment: {
+  multi_family: {
     starter: [
       'Urban apartment living at its most vibrant finest',
       'Convenient location perfect for adventurous city lovers',
@@ -290,6 +290,25 @@ const MUTUAL_LIKE_MESSAGES = [
   'Love at first sight, for both of you',
 ]
 
+// Deterministic random function using property ID as seed
+function seededRandom(seed: string): number {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  const normalized = Math.abs(hash) / 2147483647
+  return normalized
+}
+
+// Get deterministic random index based on property ID and context
+function getSeededIndex(propertyId: string, context: string, arrayLength: number): number {
+  const combinedSeed = `${propertyId}-${context}`
+  const random = seededRandom(combinedSeed)
+  return Math.floor(random * arrayLength)
+}
+
 function generateLifestyleTags(
   property: Property,
   neighborhood?: Neighborhood
@@ -317,7 +336,7 @@ function generateLifestyleTags(
 
   // Pet-friendly logic
   if (
-    property.property_type === 'house' &&
+    property.property_type === 'single_family' &&
     property.lot_size_sqft &&
     property.lot_size_sqft > 2000
   ) {
@@ -398,7 +417,12 @@ function generateLifestyleTags(
 
   // Return max 3 tags, with preference for unique/interesting ones
   const uniqueTags = [...new Set(tags)]
-  const shuffled = uniqueTags.sort(() => 0.5 - Math.random())
+  // Use property ID for deterministic shuffling
+  const shuffled = uniqueTags.sort((a, b) => {
+    const seedA = seededRandom(`${property.id}-${a}`)
+    const seedB = seededRandom(`${property.id}-${b}`)
+    return seedA - seedB
+  })
   return shuffled.slice(0, 3)
 }
 
@@ -451,11 +475,12 @@ function getLifestyleStory(
   // Relaxation
   stories.push(...LIFESTYLE_STORIES.relaxation)
 
-  // Pick a random story
-  return stories[Math.floor(Math.random() * stories.length)]
+  // Pick a deterministic story based on property ID
+  const index = getSeededIndex(property.id, 'lifestyle-story', stories.length)
+  return stories[index]
 }
 
-function getNeighborhoodPerks(_neighborhood?: Neighborhood): string {
+function getNeighborhoodPerks(property: Property, _neighborhood?: Neighborhood): string {
   const perks: string[] = []
 
   if (_neighborhood?.walk_score && _neighborhood.walk_score > 80) {
@@ -474,7 +499,8 @@ function getNeighborhoodPerks(_neighborhood?: Neighborhood): string {
     perks.push('Charming neighborhood perfect for couples exploring together')
   }
 
-  return perks[Math.floor(Math.random() * perks.length)]
+  const index = getSeededIndex(property.id, 'neighborhood-perk', perks.length)
+  return perks[index]
 }
 
 function getFutureVisionTag(
@@ -483,47 +509,39 @@ function getFutureVisionTag(
   // Family potential
   if (property.bedrooms && property.bedrooms >= 3 && property.bathrooms >= 2) {
     const vision = FUTURE_VISION_TAGS.familyReady
+    const index = getSeededIndex(property.id, 'future-vision-family', vision.descriptions.length)
     return {
       tag: vision.tag,
-      description:
-        vision.descriptions[
-          Math.floor(Math.random() * vision.descriptions.length)
-        ],
+      description: vision.descriptions[index],
     }
   }
 
   // Entertainment focus
   if (property.square_feet && property.square_feet > 1500) {
     const vision = FUTURE_VISION_TAGS.entertaining
+    const index = getSeededIndex(property.id, 'future-vision-entertainment', vision.descriptions.length)
     return {
       tag: vision.tag,
-      description:
-        vision.descriptions[
-          Math.floor(Math.random() * vision.descriptions.length)
-        ],
+      description: vision.descriptions[index],
     }
   }
 
   // Cozy romantic space
   if (property.bedrooms && property.bedrooms <= 2) {
     const vision = FUTURE_VISION_TAGS.romantic
+    const index = getSeededIndex(property.id, 'future-vision-romantic', vision.descriptions.length)
     return {
       tag: vision.tag,
-      description:
-        vision.descriptions[
-          Math.floor(Math.random() * vision.descriptions.length)
-        ],
+      description: vision.descriptions[index],
     }
   }
 
   // Default retreat
   const vision = FUTURE_VISION_TAGS.retreat
+  const index = getSeededIndex(property.id, 'future-vision-retreat', vision.descriptions.length)
   return {
     tag: vision.tag,
-    description:
-      vision.descriptions[
-        Math.floor(Math.random() * vision.descriptions.length)
-      ],
+    description: vision.descriptions[index],
   }
 }
 
@@ -534,11 +552,11 @@ function getDescription(
 ): string {
   // Return mutual like message first if applicable
   if (isMutualLike) {
-    const mutualIndex = Math.floor(Math.random() * MUTUAL_LIKE_MESSAGES.length)
+    const mutualIndex = getSeededIndex(property.id, 'mutual-like', MUTUAL_LIKE_MESSAGES.length)
     return MUTUAL_LIKE_MESSAGES[mutualIndex]
   }
 
-  const propertyType = property.property_type || 'house'
+  const propertyType = property.property_type || 'single_family'
 
   // Determine price category
   let priceCategory: 'starter' | 'family' | 'luxury'
@@ -553,11 +571,11 @@ function getDescription(
   // Get templates for this property type and price category
   const templates =
     DESCRIPTION_TEMPLATES[propertyType]?.[priceCategory] ||
-    DESCRIPTION_TEMPLATES.house.starter
+    DESCRIPTION_TEMPLATES.single_family.starter
 
-  // Choose a template description
-  const randomIndex = Math.floor(Math.random() * templates.length)
-  return templates[randomIndex]
+  // Choose a template description based on property ID
+  const index = getSeededIndex(property.id, `description-${propertyType}-${priceCategory}`, templates.length)
+  return templates[index]
 }
 
 export function StorytellingDescription({
@@ -573,7 +591,7 @@ export function StorytellingDescription({
   const lifestyleTags = generateLifestyleTags(property, neighborhood)
   const lifestyleStory = getLifestyleStory(property, neighborhood)
   const neighborhoodPerk = showNeighborhoodPerks
-    ? getNeighborhoodPerks(neighborhood)
+    ? getNeighborhoodPerks(property, neighborhood)
     : null
   const futureVision = showFutureVision ? getFutureVisionTag(property) : null
 

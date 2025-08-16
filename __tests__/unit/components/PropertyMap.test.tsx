@@ -76,7 +76,7 @@ describe('PropertyMap', () => {
           bedrooms: 1,
           bathrooms: 1,
           square_feet: 500,
-          property_type: 'house',
+          property_type: 'single_family',
           listing_status: 'active',
           is_active: true,
           created_at: null,

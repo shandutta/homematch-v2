@@ -13,7 +13,7 @@ export const userPreferencesSchema = z.object({
       square_feet_min: z.number().min(0).optional(),
       square_feet_max: z.number().min(0).optional(),
       property_types: z
-        .array(z.enum(['house', 'condo', 'townhouse', 'apartment']))
+        .array(z.enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other']))
         .optional(),
       neighborhoods: z.array(z.string().uuid()).optional(),
       amenities: z.array(z.string()).optional(),
@@ -139,7 +139,7 @@ export const searchFiltersSchema = z.object({
   square_feet_min: z.number().min(0).optional(),
   square_feet_max: z.number().min(0).optional(),
   property_types: z
-    .array(z.enum(['house', 'condo', 'townhouse', 'apartment']))
+    .array(z.enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other']))
     .optional(),
   neighborhoods: z.array(z.string().uuid()).optional(),
   amenities: z.array(z.string()).optional(),

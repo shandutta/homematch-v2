@@ -18,6 +18,7 @@ import { MotionDiv } from '@/components/ui/motion-components'
 import { MutualLikesBadge } from './MutualLikesBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/utils/toast'
+import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 
 interface MutualLike {
   property_id: string
@@ -133,7 +134,11 @@ export function MutualLikesSection({
   if (loading) {
     return (
       <Card
-        className={`card-glassmorphism-style ${className}`}
+        className={`border-white/10 ${className}`}
+        style={{
+          backgroundColor: dashboardTokens.colors.background.cardDark,
+          borderColor: dashboardTokens.colors.secondary[700]
+        }}
         data-testid="mutual-likes-loading"
       >
         <CardHeader>
@@ -180,7 +185,11 @@ export function MutualLikesSection({
   if (error) {
     return (
       <Card
-        className={`card-glassmorphism-style border-couples-accent/20 ${className}`}
+        className={`border-couples-accent/20 ${className}`}
+        style={{
+          backgroundColor: dashboardTokens.colors.background.cardDark,
+          borderColor: dashboardTokens.colors.secondary[700]
+        }}
         data-testid="mutual-likes-error"
       >
         <CardHeader>
@@ -225,7 +234,11 @@ export function MutualLikesSection({
   if (mutualLikes.length === 0) {
     return (
       <Card
-        className={`card-glassmorphism-style border-couples-primary/20 ${className}`}
+        className={`border-couples-primary/20 ${className}`}
+        style={{
+          backgroundColor: dashboardTokens.colors.background.cardDark,
+          borderColor: dashboardTokens.colors.secondary[700]
+        }}
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
@@ -287,11 +300,11 @@ export function MutualLikesSection({
                 No mutual likes yet!
               </h3>
 
-              <p className="text-primary/60 mb-1 text-sm">
+              <p className="mb-1 text-sm" style={{ color: dashboardTokens.colors.text.secondary }}>
                 Properties you both like will appear here
               </p>
 
-              <div className="text-primary/40 flex items-center justify-center gap-2 text-xs">
+              <div className="flex items-center justify-center gap-2 text-xs" style={{ color: dashboardTokens.colors.text.muted }}>
                 <Star className="h-3 w-3" />
                 <span>Keep swiping to find your first match</span>
               </div>
@@ -304,7 +317,11 @@ export function MutualLikesSection({
 
   return (
     <Card
-      className={`card-glassmorphism-style ${className}`}
+      className={`${className}`}
+      style={{
+        backgroundColor: dashboardTokens.colors.background.cardDark,
+        borderColor: dashboardTokens.colors.secondary[700]
+      }}
       data-testid="mutual-likes-list"
     >
       <CardHeader>
@@ -369,8 +386,8 @@ export function MutualLikesSection({
                       </div>
 
                       {like.property && (
-                        <div className="text-primary/60 flex items-center gap-3 text-xs">
-                          <span className="font-semibold text-green-400">
+                        <div className="flex items-center gap-3 text-xs" style={{ color: dashboardTokens.colors.text.secondary }}>
+                          <span className="font-semibold" style={{ color: dashboardTokens.colors.success[500] }}>
                             ${(like.property.price / 1000).toFixed(0)}k
                           </span>
                           <span>{like.property.bedrooms} bed</span>
@@ -378,14 +395,14 @@ export function MutualLikesSection({
                         </div>
                       )}
 
-                      <p className="text-primary/40 mt-1 text-xs">
+                      <p className="mt-1 text-xs" style={{ color: dashboardTokens.colors.text.muted }}>
                         Liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <ChevronRight className="text-primary/40 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <ChevronRight className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" style={{ color: dashboardTokens.colors.text.muted }} />
                 </div>
               </Link>
             </MotionDiv>

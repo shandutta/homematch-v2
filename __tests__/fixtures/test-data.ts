@@ -10,11 +10,11 @@
 
 export const TEST_USERS = {
   withHousehold: {
-    id: 'user-with-household-123',
-    email: 'test-with-household@example.com',
-    password: 'test-password-123',
+    id: 'test-user-1',
+    email: 'test1@example.com',
+    password: 'testpassword123',
     profile: {
-      id: 'user-with-household-123',
+      id: 'test-user-1',
       household_id: 'household-456',
       onboarding_completed: true,
       preferences: {
@@ -42,11 +42,11 @@ export const TEST_USERS = {
     },
   },
   withoutHousehold: {
-    id: 'user-without-household-456',
-    email: 'test-without-household@example.com',
-    password: 'test-password-456',
+    id: 'test-user-2',
+    email: 'test2@example.com',
+    password: 'testpassword456',
     profile: {
-      id: 'user-without-household-456',
+      id: 'test-user-2',
       household_id: null,
       onboarding_completed: true,
       preferences: {
@@ -66,11 +66,11 @@ export const TEST_USERS = {
     },
   },
   freshUser: {
-    id: 'fresh-user-789',
-    email: 'fresh-user@example.com',
-    password: 'test-password-789',
+    id: 'test-user-3',
+    email: 'test3@example.com',
+    password: 'testpassword789',
     profile: {
-      id: 'fresh-user-789',
+      id: 'test-user-3',
       household_id: null,
       onboarding_completed: false,
       preferences: null,
@@ -202,6 +202,7 @@ export const MOCK_SCENARIOS = {
  */
 export const TEST_TIMEOUTS = {
   default: 5000,
+  element: 5000,
   navigation: 10000,
   api: 15000,
   clipboard: 3000,

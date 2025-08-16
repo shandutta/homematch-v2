@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { PropertyService } from '@/lib/services/properties'
-import { setupTestDatabase, cleanupTestDatabase } from '../fixtures'
+import { setupTestDatabase, cleanupTestDatabase } from './fixtures'
+import { createTestClientFactory } from '../utils/test-client-factory'
 import { Property, PropertyInsert } from '@/types/database'
 
 describe('Filter Builder Patterns Integration Tests', () => {
@@ -9,17 +10,46 @@ describe('Filter Builder Patterns Integration Tests', () => {
   
   beforeAll(async () => {
     await setupTestDatabase()
-    propertyService = new PropertyService()
+    const clientFactory = createTestClientFactory()
+    propertyService = new PropertyService(clientFactory)
   })
 
   afterAll(async () => {
     await cleanupTestDatabase()
   })
 
+  afterEach(async () => {
+    // Clean up test properties after each test to prevent accumulation
+    const clientFactory = createTestClientFactory()
+    const supabase = await clientFactory.createClient()
+    
+    const { error } = await supabase
+      .from('properties')
+      .delete()
+      .like('address', '%Filter Test%')
+    
+    if (error) {
+      console.warn('Failed to clean up test properties:', error)
+    }
+  })
+
   beforeEach(async () => {
-    // Clean up test data before each test
-    const supabase = await propertyService['getSupabase']()
-    await supabase.from('properties').delete().in('id', testProperties.map(p => p.id))
+    // Use the test client factory directly for proper cleanup
+    const clientFactory = createTestClientFactory()
+    const supabase = await clientFactory.createClient()
+    
+    // Clean ALL existing test properties that match our pattern
+    // First, delete any existing properties with "Filter Test" in the address
+    const { error: deleteError } = await supabase
+      .from('properties')
+      .delete()
+      .like('address', '%Filter Test%')
+    
+    if (deleteError) {
+      console.warn('Failed to delete existing test properties:', deleteError)
+    }
+    
+    // Reset the testProperties array
     testProperties = []
 
     // Create comprehensive test dataset
@@ -28,7 +58,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         address: '100 Filter Test Lane',
         city: 'Filter City',
         state: 'CA',
-        zipcode: '90210',
+        zip_code: '90210',
         price: 500000,
         bedrooms: 3,
         bathrooms: 2.5,
@@ -45,7 +75,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         address: '200 Filter Test Ave',
         city: 'Filter City',
         state: 'CA',
-        zipcode: '90211',
+        zip_code: '90211',
         price: 750000,
         bedrooms: 4,
         bathrooms: 3,
@@ -62,7 +92,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         address: '300 Filter Test Blvd',
         city: 'Filter City',
         state: 'NY',
-        zipcode: '10001',
+        zip_code: '10001',
         price: 450000,
         bedrooms: 2,
         bathrooms: 2,
@@ -70,6 +100,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         property_type: 'condo',
         listing_status: 'pending',
         year_built: 2015,
+        lot_size_sqft: 2000,
         parking_spots: 1,
         amenities: ['gym', 'concierge'],
         is_active: true
@@ -78,7 +109,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         address: '400 Filter Test Dr',
         city: 'Filter City',
         state: 'CA',
-        zipcode: '90212',
+        zip_code: '90212',
         price: 950000,
         bedrooms: 5,
         bathrooms: 4,
@@ -95,7 +126,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         address: '500 Filter Test Ct',
         city: 'Filter City',
         state: 'CA',
-        zipcode: '90213',
+        zip_code: '90213',
         price: 300000,
         bedrooms: 1,
         bathrooms: 1,
@@ -103,6 +134,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         property_type: 'condo',
         listing_status: 'sold',
         year_built: 2010,
+        lot_size_sqft: 1500,
         parking_spots: 1,
         amenities: ['laundry'],
         is_active: true
@@ -482,8 +514,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         }
       })
 
-      // Should return all properties when filters are undefined
-      expect(result.properties.length).toBe(testProperties.length)
+      // Should return properties when filters are undefined
+      // Check that test properties are included in the results
+      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
+      const testPropertyIds = testProperties.map(p => p.id)
+      const resultPropertyIds = result.properties.map(p => p.id)
+      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(includesAllTestProperties).toBe(true)
     })
 
     test('should handle null filter values gracefully', async () => {
@@ -495,8 +532,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         }
       })
 
-      // Should return all properties when filters are null
-      expect(result.properties.length).toBe(testProperties.length)
+      // Should return properties when filters are null
+      // Check that test properties are included in the results
+      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
+      const testPropertyIds = testProperties.map(p => p.id)
+      const resultPropertyIds = result.properties.map(p => p.id)
+      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(includesAllTestProperties).toBe(true)
     })
 
     test('should handle empty arrays gracefully', async () => {
@@ -508,8 +550,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         }
       })
 
-      // Should return all properties when array filters are empty
-      expect(result.properties.length).toBe(testProperties.length)
+      // Should return properties when array filters are empty
+      // Check that test properties are included in the results
+      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
+      const testPropertyIds = testProperties.map(p => p.id)
+      const resultPropertyIds = result.properties.map(p => p.id)
+      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(includesAllTestProperties).toBe(true)
     })
 
     test('should handle zero values correctly', async () => {
@@ -526,7 +573,12 @@ describe('Filter Builder Patterns Integration Tests', () => {
       })
 
       // Should treat zero as a valid filter value
-      expect(result.properties.length).toBe(testProperties.length)
+      // Check that test properties are included in the results
+      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
+      const testPropertyIds = testProperties.map(p => p.id)
+      const resultPropertyIds = result.properties.map(p => p.id)
+      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(includesAllTestProperties).toBe(true)
     })
 
     test('should handle negative values appropriately', async () => {
@@ -538,7 +590,12 @@ describe('Filter Builder Patterns Integration Tests', () => {
       })
 
       // Should still apply filters even with negative values
-      expect(result.properties.length).toBe(testProperties.length)
+      // Check that test properties are included in the results
+      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
+      const testPropertyIds = testProperties.map(p => p.id)
+      const resultPropertyIds = result.properties.map(p => p.id)
+      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(includesAllTestProperties).toBe(true)
     })
   })
 

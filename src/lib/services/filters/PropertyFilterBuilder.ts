@@ -107,8 +107,8 @@ export class PropertyFilterBuilder {
   ): ReturnType<SupabaseClient<Database>['from']> {
     const filterValue = filters[rule.filterKey]
 
-    // Skip if filter value is undefined or empty array
-    if (filterValue === undefined) {
+    // Skip if filter value is undefined or null
+    if (filterValue === undefined || filterValue === null) {
       return query
     }
 

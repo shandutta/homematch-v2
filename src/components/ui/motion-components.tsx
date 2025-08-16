@@ -8,10 +8,10 @@ const filterMotionProps = (props: Record<string, unknown>) => {
   const {
     // React 19 server component props that should be filtered
     ref: _ref,
-    key: _key,
     suppressHydrationWarning: _suppressHydrationWarning,
     ...motionProps
   } = props
+  // Note: 'key' is handled by React internally and shouldn't be accessed
   return motionProps
 }
 

@@ -26,9 +26,9 @@ export const propertySchema = z.object({
     .min(0)
     .max(20, { message: 'Number must be less than or equal to 20' }),
   square_feet: z.number().min(0).nullable(),
-  // Tight enum per domain decision
+  // Tight enum per domain decision - matches production database schema
   property_type: z
-    .enum(['house', 'condo', 'townhouse', 'apartment'])
+    .enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other'])
     .nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
@@ -148,7 +148,7 @@ export const propertyFiltersSchema = z.object({
   square_feet_min: z.number().min(0).optional(),
   square_feet_max: z.number().min(0).optional(),
   property_types: z
-    .array(z.enum(['house', 'condo', 'townhouse', 'apartment']))
+    .array(z.enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other']))
     .optional(),
   neighborhoods: z.array(z.string().uuid()).optional(),
   amenities: z.array(z.string()).optional(),

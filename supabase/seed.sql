@@ -19,7 +19,7 @@ INSERT INTO public.properties (
 )
 VALUES 
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dev-100001', '123 Test St', 'San Francisco', 'CA', '94110', 
-   750000, 2, 1.5, 1200, 'house', 'active', 
+   750000, 2, 1.5, 1200, 'single_family', 'active', 
    ST_SetSRID(ST_MakePoint(-122.45, 37.75), 4326),
    '11111111-1111-1111-1111-111111111111', 'test-hash-1', true),
    
@@ -29,17 +29,17 @@ VALUES
    '11111111-1111-1111-1111-111111111111', 'test-hash-2', true),
    
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'dev-100003', '789 Demo Blvd', 'Oakland', 'CA', '94612', 
-   650000, 2, 1, 1100, 'townhouse', 'active',
+   650000, 2, 1, 1100, 'townhome', 'active',
    ST_SetSRID(ST_MakePoint(-122.25, 37.85), 4326),
    '22222222-2222-2222-2222-222222222222', 'test-hash-3', true),
    
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'dev-100004', '321 Example Ln', 'Berkeley', 'CA', '94702', 
-   950000, 4, 2.5, 2000, 'house', 'active',
+   950000, 4, 2.5, 2000, 'single_family', 'active',
    ST_SetSRID(ST_MakePoint(-122.25, 37.90), 4326),
    '33333333-3333-3333-3333-333333333333', 'test-hash-4', true),
    
   ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'dev-100005', '654 Mock Rd', 'Berkeley', 'CA', '94702', 
-   1200000, 4, 3, 2500, 'house', 'active',
+   1200000, 4, 3, 2500, 'single_family', 'active',
    ST_SetSRID(ST_MakePoint(-122.26, 37.91), 4326),
    '33333333-3333-3333-3333-333333333333', 'test-hash-5', true)
 ON CONFLICT (zpid) DO UPDATE SET
@@ -132,7 +132,7 @@ WITH inline_json AS (
   SELECT jsonb_build_array(
     jsonb_build_object(
       'zpid','dev-100001','address','1200 Lakeview Dr','city','Oakland','state','CA','zip_code','94610',
-      'price',975000,'bedrooms',3,'bathrooms',2.0,'square_feet',1680,'property_type','house',
+      'price',975000,'bedrooms',3,'bathrooms',2.0,'square_feet',1680,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&auto=format&fit=crop&w=1600'),
       'description','Classic craftsman near Lake Merritt with sunny backyard and updated kitchen.',
       'listing_status','active','latitude',37.8124,'longitude',-122.2476
@@ -146,7 +146,7 @@ WITH inline_json AS (
     ),
     jsonb_build_object(
       'zpid','dev-100003','address','4180 Claremont Ave','city','Berkeley','state','CA','zip_code','94705',
-      'price',1649000,'bedrooms',4,'bathrooms',2.5,'square_feet',2350,'property_type','house',
+      'price',1649000,'bedrooms',4,'bathrooms',2.5,'square_feet',2350,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&auto=format&fit=crop&w=1600'),
       'description','Renovated hillside home with decks and bay views.',
       'listing_status','active','latitude',37.8586,'longitude',-122.2416
@@ -160,7 +160,7 @@ WITH inline_json AS (
     ),
     jsonb_build_object(
       'zpid','dev-100005','address','6312 College Ave','city','Oakland','state','CA','zip_code','94618',
-      'price',1190000,'bedrooms',3,'bathrooms',2.0,'square_feet',1580,'property_type','townhouse',
+      'price',1190000,'bedrooms',3,'bathrooms',2.0,'square_feet',1580,'property_type','townhome',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1599420186946-7b88fef55aaf?q=80&auto=format&fit=crop&w=1600'),
       'description','Walkable Rockridge townhouse near BART and shops.',
       'listing_status','active','latitude',37.8465,'longitude',-122.2524
@@ -198,7 +198,7 @@ SELECT
   COALESCE((j->>'bedrooms')::int, NULL) AS bedrooms,
   COALESCE((j->>'bathrooms')::numeric, NULL) AS bathrooms,
   COALESCE((j->>'square_feet')::int, NULL) AS square_feet,
-  COALESCE(j->>'property_type', 'house') AS property_type,
+  COALESCE(j->>'property_type', 'single_family') AS property_type,
   COALESCE(j->>'listing_status', 'active') AS listing_status,
   CASE 
     WHEN (j ? 'latitude') AND (j ? 'longitude') 
@@ -239,7 +239,7 @@ WITH additional_properties AS (
   SELECT jsonb_build_array(
     jsonb_build_object(
       'zpid','dev-100006','address','2847 Pine St','city','San Francisco','state','CA','zip_code','94115',
-      'price',1890000,'bedrooms',3,'bathrooms',2.5,'square_feet',1850,'property_type','house',
+      'price',1890000,'bedrooms',3,'bathrooms',2.5,'square_feet',1850,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&auto=format&fit=crop&w=1600'),
       'description','Victorian home in Pacific Heights with period details and modern updates.',
       'listing_status','active','latitude',37.7886,'longitude',-122.4386
@@ -260,14 +260,14 @@ WITH additional_properties AS (
     ),
     jsonb_build_object(
       'zpid','dev-100009','address','3542 18th St','city','San Francisco','state','CA','zip_code','94110',
-      'price',1725000,'bedrooms',4,'bathrooms',3.0,'square_feet',2100,'property_type','house',
+      'price',1725000,'bedrooms',4,'bathrooms',3.0,'square_feet',2100,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&auto=format&fit=crop&w=1600'),
       'description','Remodeled Mission home with open floor plan and private garden.',
       'listing_status','active','latitude',37.7615,'longitude',-122.4194
     ),
     jsonb_build_object(
       'zpid','dev-100010','address','5627 Lawton St','city','San Francisco','state','CA','zip_code','94122',
-      'price',1385000,'bedrooms',3,'bathrooms',2.0,'square_feet',1480,'property_type','house',
+      'price',1385000,'bedrooms',3,'bathrooms',2.0,'square_feet',1480,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&auto=format&fit=crop&w=1600'),
       'description','Sunset District home with updated kitchen and sunny backyard.',
       'listing_status','active','latitude',37.7565,'longitude',-122.4636
@@ -288,7 +288,7 @@ WITH additional_properties AS (
     ),
     jsonb_build_object(
       'zpid','dev-100013','address','1456 Grove St','city','Berkeley','state','CA','zip_code','94709',
-      'price',1220000,'bedrooms',3,'bathrooms',2.0,'square_feet',1350,'property_type','house',
+      'price',1220000,'bedrooms',3,'bathrooms',2.0,'square_feet',1350,'property_type','single_family',
       'images',jsonb_build_array('https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&auto=format&fit=crop&w=1600'),
       'description','Charming Berkeley bungalow near UC campus.',
       'listing_status','active','latitude',37.8715,'longitude',-122.2730
@@ -314,7 +314,7 @@ SELECT
   COALESCE((j->>'bedrooms')::int, NULL) AS bedrooms,
   COALESCE((j->>'bathrooms')::numeric, NULL) AS bathrooms,
   COALESCE((j->>'square_feet')::int, NULL) AS square_feet,
-  COALESCE(j->>'property_type', 'house') AS property_type,
+  COALESCE(j->>'property_type', 'single_family') AS property_type,
   COALESCE(j->>'listing_status', 'active') AS listing_status,
   CASE 
     WHEN (j ? 'latitude') AND (j ? 'longitude') 

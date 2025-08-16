@@ -10,6 +10,7 @@ export const configFixtures = {
   // eslint-disable-next-line no-empty-pattern
   config: async ({}: any, use: any) => {
     const config: ConfigFixture = {
+      baseUrl: process.env.BASE_URL || 'http://localhost:3000',
       timeouts: {
         PAGE_LOAD: 30000, // 30 seconds for initial page load
         NAVIGATION: 15000, // 15 seconds for navigation between pages

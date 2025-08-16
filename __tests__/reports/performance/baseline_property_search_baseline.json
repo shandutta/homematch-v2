@@ -1,0 +1,77 @@
+{
+  "testName": "baseline_property_search",
+  "metrics": [
+    {
+      "name": "baseline_property_search",
+      "duration": 42.3132999999998,
+      "timestamp": "2025-08-16T02:36:13.257Z",
+      "memory": {
+        "rss": 0,
+        "heapTotal": 0,
+        "heapUsed": 1199536,
+        "external": 26863,
+        "arrayBuffers": 24819
+      }
+    },
+    {
+      "name": "baseline_property_search",
+      "duration": 53.713300000001254,
+      "timestamp": "2025-08-16T02:36:13.310Z",
+      "memory": {
+        "rss": 81920,
+        "heapTotal": 0,
+        "heapUsed": 1176424,
+        "external": 16743,
+        "arrayBuffers": 16743
+      }
+    },
+    {
+      "name": "baseline_property_search",
+      "duration": 94.29280000000108,
+      "timestamp": "2025-08-16T02:36:13.405Z",
+      "memory": {
+        "rss": 294912,
+        "heapTotal": 0,
+        "heapUsed": 1173560,
+        "external": 24456,
+        "arrayBuffers": 24456
+      }
+    },
+    {
+      "name": "baseline_property_search",
+      "duration": 92.1864999999998,
+      "timestamp": "2025-08-16T02:36:13.497Z",
+      "memory": {
+        "rss": 0,
+        "heapTotal": 0,
+        "heapUsed": 1169896,
+        "external": 16233,
+        "arrayBuffers": 16233
+      }
+    },
+    {
+      "name": "baseline_property_search",
+      "duration": 57.15979999999945,
+      "timestamp": "2025-08-16T02:36:13.554Z",
+      "memory": {
+        "rss": -147456,
+        "heapTotal": 2097152,
+        "heapUsed": -9399232,
+        "external": -167166,
+        "arrayBuffers": -164731
+      }
+    }
+  ],
+  "summary": {
+    "mean": 67.93314000000028,
+    "median": 57.15979999999945,
+    "min": 42.3132999999998,
+    "max": 94.29280000000108,
+    "p95": 94.29280000000108,
+    "p99": 94.29280000000108,
+    "memoryPeak": 1.1439666748046875
+  },
+  "thresholds": {},
+  "passed": true,
+  "failures": []
+}

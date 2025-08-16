@@ -21,7 +21,7 @@ const createMockProperty = (overrides?: Partial<Property>): Property => ({
   bedrooms: 3,
   bathrooms: 2,
   square_feet: 1500,
-  property_type: 'house',
+  property_type: 'single_family',
   images: [],
   description: null,
   coordinates: null,
@@ -81,7 +81,7 @@ describe('StorytellingService', () => {
       const property = createMockProperty({
         square_feet: 2000,
         amenities: ['large kitchen', 'garden'],
-        property_type: 'house',
+        property_type: 'single_family',
         lot_size_sqft: 600,
       })
       const neighborhood = createMockNeighborhood()
@@ -99,7 +99,7 @@ describe('StorytellingService', () => {
         bedrooms: 1,
         bathrooms: 1,
         square_feet: 800,
-        property_type: 'apartment',
+        property_type: 'multi_family',
         amenities: [],
         lot_size_sqft: null,
       })
@@ -230,7 +230,7 @@ describe('StorytellingService', () => {
         bedrooms: 4, // Triggers 'Work from Home Ready' (P8), 'Future Family Home' (P9)
         bathrooms: 3, // Triggers 'Future Family Home' (P9)
         square_feet: 1800, // Triggers 'Culinary Paradise' (P7), 'Entertainment Haven' (P6)
-        property_type: 'house',
+        property_type: 'single_family',
         lot_size_sqft: 1500, // Triggers 'Private Oasis' (P7)
         amenities: [],
       })
@@ -299,7 +299,7 @@ describe('StorytellingService', () => {
 
     test('should not generate "Resort-Style Living" tag for non-condos', () => {
       const property = createMockProperty({
-        property_type: 'house',
+        property_type: 'single_family',
         amenities: ['gym', 'pool'],
       })
       const tags = StorytellingService.generateLifestyleTags(property)
@@ -312,7 +312,7 @@ describe('StorytellingService', () => {
         bedrooms: 1,
         bathrooms: 1,
         square_feet: 500,
-        property_type: 'apartment',
+        property_type: 'multi_family',
         amenities: [],
         lot_size_sqft: null,
       })
@@ -398,7 +398,7 @@ describe('StorytellingService', () => {
 
     test('should generate "Private Oasis" for houses with large lot size', () => {
       const property = createMockProperty({
-        property_type: 'house',
+        property_type: 'single_family',
         lot_size_sqft: 1500, // > 1000
         bedrooms: 2, // Reset to not trigger other high priority tags
         bathrooms: 1,

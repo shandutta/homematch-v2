@@ -1,0 +1,16 @@
+{
+  "testName": "couples_queries",
+  "metrics": [],
+  "summary": {
+    "mean": null,
+    "min": null,
+    "max": null,
+    "memoryPeak": null
+  },
+  "thresholds": {
+    "maxDuration": 200,
+    "percentile95": 180
+  },
+  "passed": true,
+  "failures": []
+}

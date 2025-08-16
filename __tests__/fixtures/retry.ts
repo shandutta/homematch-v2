@@ -119,6 +119,18 @@ export const retryFixtures = {
           },
         })
       },
+
+      async withTimeout<T>(
+        operation: () => Promise<T>,
+        timeout: number = 10000
+      ): Promise<T> {
+        return Promise.race([
+          operation(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Operation timed out after ${timeout}ms`)), timeout)
+          ),
+        ])
+      },
     }
 
     await use(retryFixture)

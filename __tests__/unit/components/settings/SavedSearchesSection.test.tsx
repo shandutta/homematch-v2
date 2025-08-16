@@ -50,7 +50,7 @@ describe('SavedSearchesSection', () => {
         priceMin: 400000,
         priceMax: 700000,
         bedrooms: 3,
-        propertyType: 'house',
+        propertyType: 'single_family',
         notifications: false,
       },
       is_active: true,
@@ -119,7 +119,7 @@ describe('SavedSearchesSection', () => {
       expect(screen.getByText('Suburbs')).toBeInTheDocument()
       expect(screen.getByText('$400000 - $700000')).toBeInTheDocument()
       expect(screen.getByText('3+ beds')).toBeInTheDocument()
-      expect(screen.getByText('house')).toBeInTheDocument()
+      expect(screen.getByText('single_family')).toBeInTheDocument()
     })
   })
 

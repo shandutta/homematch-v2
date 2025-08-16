@@ -43,7 +43,7 @@ const mockProperty: Property = {
   neighborhood_id: null,
   parking_spots: null,
   property_hash: null,
-  property_type: 'house',
+  property_type: 'single_family',
   updated_at: null,
   year_built: null,
   zpid: '12345678',

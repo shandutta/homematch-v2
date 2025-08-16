@@ -45,7 +45,7 @@ export function LoginForm() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/validation')
+        router.push('/dashboard')
       }
     } catch (networkError) {
       // Handle network errors or other exceptions
@@ -72,16 +72,13 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md" data-testid="login-form">
+    <Card className="mx-auto w-full" data-testid="login-form">
       <CardHeader>
-        <CardTitle className="text-token-2xl text-center font-bold">
+        <CardTitle className="text-2xl text-center font-bold">
           {CouplesMessages.welcome.returning}
         </CardTitle>
-        <p className="text-muted-foreground text-token-sm mt-token-sm text-center">
-          Ready to continue your home search journey together?
-        </p>
       </CardHeader>
-      <CardContent className="space-y-token-md">
+      <CardContent className="space-y-6">
         {error && (
           <Alert variant="destructive" data-testid="error-alert">
             <AlertDescription>{error}</AlertDescription>
@@ -91,7 +88,7 @@ export function LoginForm() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleEmailLogin)}
-            className="space-y-token-md"
+            className="space-y-4"
           >
             <FormField
               control={form.control}
@@ -102,7 +99,7 @@ export function LoginForm() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder="Email"
                       disabled={loading}
                       data-testid="email-input"
                       {...field}
@@ -122,7 +119,7 @@ export function LoginForm() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder="Password"
                       disabled={loading}
                       data-testid="password-input"
                       {...field}
@@ -154,8 +151,8 @@ export function LoginForm() {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="text-token-xs relative flex justify-center uppercase">
-            <span className="bg-background text-muted-foreground px-token-sm">
+          <div className="text-xs relative flex justify-center uppercase">
+            <span className="bg-background text-muted-foreground px-2">
               Or continue with
             </span>
           </div>

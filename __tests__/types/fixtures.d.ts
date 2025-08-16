@@ -55,6 +55,7 @@ export interface UtilsFixture {
 // Auth fixture interface
 export interface AuthFixture {
   login: (user?: TestUser) => Promise<void>
+  loginIfNeeded: (user?: TestUser) => Promise<void>
   logout: () => Promise<void>
   fillLoginForm: (user?: TestUser) => Promise<void>
   verifyAuthenticated: (user?: TestUser) => Promise<void>
@@ -77,10 +78,12 @@ export interface RetryFixture {
   network: <T>(operation: () => Promise<T>) => Promise<T>
   element: <T>(operation: () => Promise<T>) => Promise<T>
   auth: <T>(operation: () => Promise<T>) => Promise<T>
+  withTimeout: <T>(operation: () => Promise<T>, timeout?: number) => Promise<T>
 }
 
 // Config fixture interface
 export interface ConfigFixture {
+  baseUrl: string
   timeouts: {
     PAGE_LOAD: number
     NAVIGATION: number

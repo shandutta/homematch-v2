@@ -5,6 +5,7 @@ import { InteractionService } from '@/lib/services/interactions'
 import { createClient } from '@/lib/supabase/standalone'
 import { setupTestDatabase, cleanupTestDatabase } from './fixtures'
 import { getTestDataFactory } from '../utils/test-data-factory'
+import { createTestClientFactory } from '../utils/test-client-factory'
 import { randomUUID } from 'crypto'
 
 describe('Error Handling Patterns Integration Tests', () => {
@@ -26,9 +27,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       testClient = createClient()
       
       // Create client factory that returns our test client
-      const clientFactory = {
-        createClient: async () => testClient
-      }
+      const clientFactory = createTestClientFactory()
       propertyService = new PropertyService(clientFactory)
       
       // Get existing test user (from setup-test-users-admin.js)
@@ -58,7 +57,7 @@ describe('Error Handling Patterns Integration Tests', () => {
         city: 'Test City',
         state: 'CA',
         zip_code: '90210',
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true
       } as any
@@ -79,7 +78,7 @@ describe('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true,
         zpid: uniqueZpid
@@ -291,7 +290,7 @@ describe('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true
       }

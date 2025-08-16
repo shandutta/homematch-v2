@@ -113,7 +113,7 @@ const mockProperties: Property[] = [
     bedrooms: 2,
     bathrooms: 1,
     square_feet: 900,
-    property_type: 'house',
+    property_type: 'single_family',
     images: null,
     description: null,
     coordinates: null,

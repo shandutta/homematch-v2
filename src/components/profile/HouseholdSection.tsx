@@ -120,7 +120,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
           <CardContent className="space-y-6">
             <div>
               <p className="text-primary/40 mb-2 text-sm">Household Name</p>
-              <p className="text-primary-foreground text-xl">
+              <p className="text-primary-foreground text-xl" data-testid="household-name">
                 {profile.household.name}
               </p>
             </div>
@@ -128,7 +128,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             <div>
               <p className="text-primary/40 mb-2 text-sm">Household Code</p>
               <div className="flex items-center gap-2">
-                <code className="bg-primary/30 text-primary/60 rounded px-3 py-1 text-sm">
+                <code className="bg-primary/30 text-primary/60 rounded px-3 py-1 text-sm" data-testid="household-id">
                   {profile.household.id}
                 </code>
                 <Button
@@ -151,6 +151,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               disabled={loading}
               variant="outline"
               className="border-destructive/20 hover:bg-destructive/10 text-red-400 hover:text-red-300"
+              data-testid="leave-household-button"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Leave Household
@@ -175,7 +176,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             Create a Household
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4" data-testid="create-household-form">
           <p className="text-primary/40">
             Create a household to share property searches and preferences with
             family members.
@@ -186,11 +187,13 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               value={householdName}
               onChange={(e) => setHouseholdName(e.target.value)}
               className="border-primary/20 bg-background/10 text-primary-foreground placeholder:text-primary/60/50"
+              data-testid="household-name-input"
             />
             <Button
               onClick={createHousehold}
               disabled={loading}
               className="bg-primary text-primary-foreground hover:bg-primary"
+              data-testid="create-household-button"
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Create Household
