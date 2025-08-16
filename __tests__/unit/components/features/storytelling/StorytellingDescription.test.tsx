@@ -271,31 +271,21 @@ describe('StorytellingDescription', () => {
   it('renders Pet Paradise for houses with large lots', () => {
     const largeHouse: Property = {
       ...mockProperty,
+      id: 'test-property-4', // Use ID that deterministically includes Pet Paradise
       property_type: 'single_family',
       lot_size_sqft: 8000,
     }
 
-    // Run test multiple times since tags are randomized
-    let foundPetParadise = false
-    for (let i = 0; i < 25; i++) {
-      const { unmount } = render(
-        <StorytellingDescription
-          property={largeHouse}
-          neighborhood={mockNeighborhood}
-          isMutualLike={false}
-        />
-      )
+    render(
+      <StorytellingDescription
+        property={largeHouse}
+        neighborhood={mockNeighborhood}
+        isMutualLike={false}
+      />
+    )
 
-      if (screen.queryByText('Pet Paradise')) {
-        foundPetParadise = true
-        unmount()
-        break
-      }
-      unmount()
-    }
-
-    // Should eventually render Pet Paradise tag due to large lot
-    expect(foundPetParadise).toBe(true)
+    // Should render Pet Paradise tag due to large lot (deterministic based on property ID)
+    expect(screen.getByText('Pet Paradise')).toBeInTheDocument()
   })
 
   it('applies custom className', () => {

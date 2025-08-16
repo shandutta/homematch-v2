@@ -289,7 +289,7 @@ test.describe('Property Service Facade UI Tests - Real Browser', () => {
           await page.waitForTimeout(2000)
           
           // Check if UI updated
-          const updatedProperties = await page.locator('[data-testid="property-card"], .property-card').count()
+          const _updatedProperties = await page.locator('[data-testid="property-card"], .property-card').count()
           logger.info('Triggered UI update through property interaction')
         }
       }

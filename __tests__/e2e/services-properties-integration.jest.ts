@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import { PropertyService } from '@/lib/services/properties'
 import { createClient } from '@/lib/supabase/server'
-import { setupTestDatabase, cleanupTestDatabase } from '../../fixtures'
+import { setupTestDatabase, cleanupTestDatabase } from '../integration/fixtures'
 import { Property, PropertyInsert, Neighborhood } from '@/types/database'
 
 describe('PropertyService Integration Tests', () => {
@@ -33,7 +33,7 @@ describe('PropertyService Integration Tests', () => {
         address: '123 Test Street',
         city: 'Test City',
         state: 'CA',
-        zipcode: '90210',
+        zip_code: '90210',
         price: 500000,
         bedrooms: 3,
         bathrooms: 2,
@@ -57,7 +57,7 @@ describe('PropertyService Integration Tests', () => {
         address: '456 Update Street',
         city: 'Update City',
         state: 'CA',
-        zipcode: '90211',
+        zip_code: '90211',
         price: 600000,
         bedrooms: 4,
         bathrooms: 3,
@@ -84,7 +84,7 @@ describe('PropertyService Integration Tests', () => {
         address: '789 Delete Street',
         city: 'Delete City',
         state: 'CA',
-        zipcode: '90212',
+        zip_code: '90212',
         price: 700000,
         bedrooms: 2,
         bathrooms: 1,
@@ -114,7 +114,7 @@ describe('PropertyService Integration Tests', () => {
           address: '100 Luxury Lane',
           city: 'Beverly Hills',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 2000000,
           bedrooms: 5,
           bathrooms: 4,
@@ -131,7 +131,7 @@ describe('PropertyService Integration Tests', () => {
           address: '200 Budget Blvd',
           city: 'Affordable City',
           state: 'CA',
-          zipcode: '90211',
+          zip_code: '90211',
           price: 300000,
           bedrooms: 2,
           bathrooms: 1,
@@ -147,7 +147,7 @@ describe('PropertyService Integration Tests', () => {
           address: '300 Medium Manor',
           city: 'Middle City',
           state: 'CA',
-          zipcode: '90212',
+          zip_code: '90212',
           price: 800000,
           bedrooms: 3,
           bathrooms: 2,
@@ -231,7 +231,7 @@ describe('PropertyService Integration Tests', () => {
         p.price <= 900000 && 
         p.bedrooms >= 2 && 
         p.bedrooms <= 3 &&
-        ['condo', 'townhome'].includes(p.property_type)
+        p.property_type && ['condo', 'townhome'].includes(p.property_type)
       )).toBe(true)
     })
 
@@ -263,6 +263,8 @@ describe('PropertyService Integration Tests', () => {
     test('should handle sorting', async () => {
       const searchResult = await propertyService.searchProperties({
         pagination: {
+          page: 1,
+          limit: 10,
           sort: { field: 'price', direction: 'asc' }
         }
       })
@@ -348,7 +350,7 @@ describe('PropertyService Integration Tests', () => {
           address: '100 Analytics Ave',
           city: 'Stats City',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 500000,
           bedrooms: 3,
           bathrooms: 2,
@@ -361,7 +363,7 @@ describe('PropertyService Integration Tests', () => {
           address: '200 Analytics Ave',
           city: 'Stats City',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 700000,
           bedrooms: 4,
           bathrooms: 3,
@@ -374,7 +376,7 @@ describe('PropertyService Integration Tests', () => {
           address: '300 Analytics Ave',
           city: 'Stats City',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 300000,
           bedrooms: 2,
           bathrooms: 1,
@@ -455,7 +457,7 @@ describe('PropertyService Integration Tests', () => {
         address: '123 Neighborhood St',
         city: 'Test City',
         state: 'CA',
-        zipcode: '90210',
+        zip_code: '90210',
         price: 500000,
         bedrooms: 3,
         bathrooms: 2,
@@ -489,7 +491,7 @@ describe('PropertyService Integration Tests', () => {
           address: '100 Neighborhood Ave',
           city: 'Property City',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 400000,
           bedrooms: 2,
           bathrooms: 1,
@@ -503,7 +505,7 @@ describe('PropertyService Integration Tests', () => {
           address: '200 Neighborhood Ave',
           city: 'Property City',
           state: 'CA',
-          zipcode: '90210',
+          zip_code: '90210',
           price: 600000,
           bedrooms: 3,
           bathrooms: 2,

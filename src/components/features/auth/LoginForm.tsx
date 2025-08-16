@@ -137,7 +137,7 @@ export function LoginForm() {
                 loading ||
                 (!form.formState.isValid &&
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NODE_ENV !== 'test')
+                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
               }
               data-testid="signin-button"
             >

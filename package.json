@@ -25,7 +25,7 @@
     "test:integration:watch": "pnpm exec tsx scripts/integration-test-setup.js && pnpm exec vitest",
     "build:test": "node scripts/build-for-tests.js",
     "test:e2e": "pnpm run test:e2e:ui-tests && pnpm run test:e2e:api-tests",
-    "test:e2e:ui-tests": "node scripts/playwright-wrapper.js test",
+    "test:e2e:ui-tests": "cross-env NEXT_PUBLIC_TEST_MODE=true node scripts/playwright-wrapper.js test",
     "test:e2e:api-tests": "pnpm exec vitest run --config vitest.e2e.config.ts",
     "test:e2e:smoke": "node scripts/playwright-wrapper.js test __tests__/e2e/smoke-min.spec.ts",
     "test:e2e:ui": "node scripts/playwright-wrapper.js test --ui",

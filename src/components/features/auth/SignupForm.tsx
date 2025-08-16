@@ -165,7 +165,7 @@ export function SignupForm() {
                 loading ||
                 (!form.formState.isValid &&
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NODE_ENV !== 'test')
+                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
               }
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

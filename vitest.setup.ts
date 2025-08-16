@@ -87,3 +87,27 @@ try {
 }
 
 // No mocks in integration tests - we use the real Supabase Docker stack
+
+// Global test isolation: each test gets a clean database state
+import { beforeEach, afterEach } from 'vitest'
+
+let testStartTime = 0
+
+beforeEach(() => {
+  // Record test start time for isolation
+  testStartTime = Date.now()
+  
+  // Force garbage collection if available (helps with memory isolation)
+  if (global.gc) {
+    global.gc()
+  }
+})
+
+afterEach(() => {
+  // Add small delay between tests to prevent race conditions
+  const testDuration = Date.now() - testStartTime
+  if (testDuration < 50) {
+    // If test was very fast, add small delay to prevent DB race conditions
+    return new Promise(resolve => setTimeout(resolve, 50 - testDuration))
+  }
+})

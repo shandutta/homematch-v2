@@ -293,6 +293,16 @@ describe('Database Integration Tests', () => {
       // Create test interaction with complex JSONB data
       const testUserId = testUsers.user1.id
 
+      // First, clean up any existing interaction to avoid duplicate key error
+      await supabase
+        .from('user_property_interactions')
+        .delete()
+        .match({
+          user_id: testUserId,
+          property_id: testPropertyId,
+          interaction_type: 'like'
+        })
+
       const { data: interaction, error: createError } = await supabase
         .from('user_property_interactions')
         .insert({

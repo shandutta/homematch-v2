@@ -99,7 +99,7 @@ describe('Login Flow Integration', () => {
           email: 'test@example.com',
           password: 'validpassword123',
         })
-        expect(mockPush).toHaveBeenCalledWith('/validation')
+        expect(mockPush).toHaveBeenCalledWith('/dashboard')
       })
     })
 

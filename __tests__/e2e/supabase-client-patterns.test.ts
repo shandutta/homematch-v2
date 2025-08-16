@@ -32,7 +32,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Should not throw errors for basic operations
       expect(error).toBeFalsy()
     })
-  }
+  })
 
   describe('Browser Client Pattern', () => {
     test('should create browser client with proper configuration', () => {
@@ -85,7 +85,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       
       expect(error).toBeFalsy()
     })
-  }
+  })
 
   describe('Service Role Client Pattern', () => {
     test('should create service role client with admin privileges', () => {
@@ -106,7 +106,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Should not have RLS restrictions
       expect(error).toBeFalsy()
     })
-  }
+  })
 
   describe('Client Selection Patterns', () => {
     test('PropertyService should select correct client based on environment', async () => {
@@ -172,7 +172,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Should handle auth operations
       expect(error).toBeFalsy()
     })
-  }
+  })
 
   describe('Client Error Handling Patterns', () => {
     test('should handle network errors consistently across clients', async () => {
@@ -224,7 +224,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
         expect(typeof error.message).toBe('string')
       }
     })
-  }
+  })
 
   describe('Client Performance Patterns', () => {
     test('should create clients efficiently', () => {
@@ -261,7 +261,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       expect(result1.error).toBeFalsy()
       expect(result2.error).toBeFalsy()
     })
-  }
+  })
 
   describe('Client Configuration Patterns', () => {
     test('should apply correct settings for standalone client', async () => {
@@ -289,7 +289,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Test client should be configured with service role
       expect(client).toBeTruthy()
     })
-  }
+  })
 
   describe('Client Integration Patterns', () => {
     test('should work correctly with PropertyService integration', async () => {
@@ -324,5 +324,5 @@ describe('Supabase Client Patterns E2E Tests', () => {
         expect(result.error).toBeFalsy()
       })
     })
-  }
+  })
 })

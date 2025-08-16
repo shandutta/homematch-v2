@@ -278,6 +278,66 @@ const DESCRIPTION_TEMPLATES = {
       'Urban sophistication reaching its absolute peak',
     ],
   },
+  manufactured: {
+    starter: [
+      'Smart affordable living with modern conveniences',
+      'Quality craftsmanship designed for comfortable living',
+      'Well-maintained community perfect for first-time buyers',
+      'Practical choice for couples starting their journey',
+    ],
+    family: [
+      'Family-friendly community with affordable charm',
+      'Spacious layouts designed for growing families',
+      'Community atmosphere with affordable family living',
+      'Smart choice for families seeking value and comfort',
+    ],
+    luxury: [
+      'Premium manufactured home living exceeding expectations',
+      'Luxury amenities in a thoughtfully designed community',
+      'High-end finishes with low-maintenance lifestyle',
+      'Upscale living with intelligent value proposition',
+    ],
+  },
+  land: {
+    starter: [
+      'Blank canvas perfect for building your dream together',
+      'Raw potential waiting for your shared vision',
+      'Build your love story from the ground up',
+      'Your future home starts with this perfect foundation',
+    ],
+    family: [
+      'Spacious lot ready for your growing family dreams',
+      'Room to create the perfect family compound',
+      'Build exactly what your family needs and wants',
+      'Investment in your family\'s future starts here',
+    ],
+    luxury: [
+      'Premium lot in exclusive area for custom estate',
+      'Executive building site for your architectural vision',
+      'Prestigious location worthy of your luxury dreams',
+      'Create the ultimate custom retreat on this exceptional site',
+    ],
+  },
+  other: {
+    starter: [
+      'Unique property perfect for creative couples',
+      'Something special for those who dare to be different',
+      'Unconventional charm for unconventional love',
+      'One-of-a-kind opportunity for adventurous hearts',
+    ],
+    family: [
+      'Distinctive property offering unique family living',
+      'Special features perfect for creative family life',
+      'Unique design elements for families who stand out',
+      'Character-filled space for memorable family moments',
+    ],
+    luxury: [
+      'Extraordinary property for those with discerning taste',
+      'Luxury living with distinctive architectural character',
+      'Unique luxury offering unlike anything else available',
+      'Exceptional property for couples with exceptional standards',
+    ],
+  },
 }
 
 // Mutual like specific messages

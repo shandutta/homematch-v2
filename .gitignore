@@ -85,6 +85,7 @@ supabase-cli.tar.gz
 test-results/
 playwright-report/
 playwright/.cache/
+__tests__/reports/performance/
 
 # Additional OS files
 Thumbs.db

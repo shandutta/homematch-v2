@@ -620,7 +620,7 @@ describe('MutualLikesSection Component', () => {
   })
 
   describe('Responsive Design', () => {
-    test('should maintain glass morphism styling', async () => {
+    test('should maintain card styling with dashboard tokens', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ mutualLikes: mockMutualLikes }),
@@ -629,8 +629,9 @@ describe('MutualLikesSection Component', () => {
       const { container } = render(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        const cardElement = container.querySelector('.card-glassmorphism-style')
+        const cardElement = container.querySelector('[data-testid="mutual-likes-list"]')
         expect(cardElement).toBeInTheDocument()
+        expect(cardElement).toHaveAttribute('style')
       })
     })
   })

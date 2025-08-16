@@ -307,7 +307,9 @@ describe('Couples Components Accessibility Tests', () => {
       expect(screen.getByText('123 Accessible St')).toHaveClass(
         'text-primary-foreground'
       )
-      expect(screen.getByText('$500k')).toHaveClass('text-green-400')
+      // Price now uses inline styles with design tokens instead of Tailwind classes
+      const priceElement = screen.getByText('$500k')
+      expect(priceElement).toHaveClass('font-semibold')
     })
 
     test('should properly label interactive elements', async () => {

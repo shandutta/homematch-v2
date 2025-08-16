@@ -24,10 +24,14 @@ const playwrightCli = path.join(
 // Pass through all arguments
 const args = process.argv.slice(2)
 
-// Spawn the Playwright process
+// Spawn the Playwright process with environment variables
 const child = spawn('node', [playwrightCli, ...args], {
   stdio: 'inherit',
   cwd: path.join(__dirname, '..'),
+  env: {
+    ...process.env,
+    NEXT_PUBLIC_TEST_MODE: process.env.NEXT_PUBLIC_TEST_MODE || 'true',
+  },
 })
 
 // Handle process exit

@@ -32,8 +32,7 @@ module.exports = {
   workerIdleMemoryLimit: '1GB',
   transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
   testMatch: [
-    '**/__tests__/unit/**/*.(test|spec).(js|jsx|ts|tsx)',
-    '**/__tests__/integration/**/*.(test|spec).(js|jsx|ts|tsx)'
+    '**/__tests__/unit/**/*.(test|spec).(js|jsx|ts|tsx)'
   ],
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',

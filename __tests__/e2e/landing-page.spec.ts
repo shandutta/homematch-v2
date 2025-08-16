@@ -95,7 +95,7 @@ test.describe('Landing Page Navigation', () => {
     }
 
     // WebKit can bounce through /login briefly; allow intermediate redirect and then assert final URL
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     // If we land on /login, try a second submit once before asserting
     if (/\/login$/.test(page.url())) {
       const btn = page.getByRole('button', { name: /log in|sign in/i }).first()
@@ -111,7 +111,7 @@ test.describe('Landing Page Navigation', () => {
           form?.requestSubmit?.()
         })
       }
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     }
 
     await expect(page).toHaveURL(/\/validation/, { timeout: 45000 })
