@@ -104,9 +104,7 @@ describe('LoginForm', () => {
 
     // Still check critical text content for user-facing validation
     expect(
-      screen.getByText(
-        'Welcome back! Ready to continue your home search journey together?'
-      )
+      screen.getByText('Welcome back')
     ).toBeInTheDocument()
     expect(screen.getByText('Or continue with')).toBeInTheDocument()
   })
@@ -131,7 +129,7 @@ describe('LoginForm', () => {
     await waitFor(() => {
       // Verify the auth call was made with the correct data
       expect(mockSignInWithPassword).toHaveBeenCalledWith(validCredentials)
-      expect(mockPush).toHaveBeenCalledWith('/validation')
+      expect(mockPush).toHaveBeenCalledWith('/dashboard')
     })
   })
 

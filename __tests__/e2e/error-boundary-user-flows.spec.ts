@@ -4,7 +4,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test'
-import { TEST_USERS, TEST_ROUTES, TEST_SELECTORS, TEST_TIMEOUTS } from '../fixtures/test-data'
+import { TEST_USERS, TEST_ROUTES, TEST_TIMEOUTS } from '../fixtures/test-data'
 
 // Helper function to simulate network failures
 async function simulateNetworkFailure(page: Page, pattern: string) {
@@ -33,7 +33,7 @@ async function checkForErrorUI(
           foundError = true
           break
         }
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -48,7 +48,7 @@ async function checkForErrorUI(
           foundError = true
           break
         }
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -63,7 +63,7 @@ async function checkForErrorUI(
           foundError = true
           break
         }
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -98,7 +98,7 @@ test.describe('Error Boundary User Flows', () => {
     
     // Login with test user
     await page.goto(TEST_ROUTES.auth.signIn)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     
     const emailInput = await page.locator('input[type="email"]').first()
     await emailInput.fill(TEST_USERS.withHousehold.email)
@@ -110,7 +110,7 @@ test.describe('Error Boundary User Flows', () => {
     await Promise.all([
       page.waitForNavigation({
         timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       }).catch(() => {}),
       submitButton.click()
     ])
@@ -125,7 +125,7 @@ test.describe('Error Boundary User Flows', () => {
     }) => {
       // Navigate to dashboard
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Check if dashboard loaded successfully using multiple selectors
@@ -149,7 +149,7 @@ test.describe('Error Boundary User Flows', () => {
             dashboardLoaded = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -180,7 +180,7 @@ test.describe('Error Boundary User Flows', () => {
               await page.waitForTimeout(2000)
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -194,7 +194,7 @@ test.describe('Error Boundary User Flows', () => {
       await simulateNetworkFailure(page, '**/api/properties**')
       
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Dashboard structure should still be visible even if data fails
@@ -214,7 +214,7 @@ test.describe('Error Boundary User Flows', () => {
             navigationFound = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -242,7 +242,7 @@ test.describe('Error Boundary User Flows', () => {
               }
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -251,7 +251,7 @@ test.describe('Error Boundary User Flows', () => {
 
     test('recovers from transient network errors', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Initially block API calls
       await simulateNetworkFailure(page, '**/api/**')
@@ -278,7 +278,7 @@ test.describe('Error Boundary User Flows', () => {
             await page.waitForTimeout(2000)
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -291,15 +291,15 @@ test.describe('Error Boundary User Flows', () => {
         '[role="main"]'
       ]
       
-      let contentVisible = false
+      let _contentVisible = false
       for (const selector of contentSelectors) {
         try {
           const element = await page.locator(selector).first()
           if (await element.isVisible()) {
-            contentVisible = true
+            _contentVisible = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -311,7 +311,7 @@ test.describe('Error Boundary User Flows', () => {
   test.describe('Property Browsing Error Scenarios', () => {
     test('handles property loading failures gracefully', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Look for property cards or empty state
@@ -331,7 +331,7 @@ test.describe('Error Boundary User Flows', () => {
             foundProperties = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -354,7 +354,7 @@ test.describe('Error Boundary User Flows', () => {
       })
 
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // UI should remain stable despite partial failures
@@ -373,7 +373,7 @@ test.describe('Error Boundary User Flows', () => {
             uiStable = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -412,7 +412,7 @@ test.describe('Error Boundary User Flows', () => {
 
     test('handles session expiry gracefully', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       
       // Simulate session expiry by clearing cookies mid-session
       await page.context().clearCookies()
@@ -456,7 +456,7 @@ test.describe('Error Boundary User Flows', () => {
             foundRecoveryOption = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }

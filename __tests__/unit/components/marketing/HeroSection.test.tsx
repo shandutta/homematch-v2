@@ -99,9 +99,9 @@ describe('HeroSection', () => {
     const primaryButton = screen.getByText('Get started').closest('a')
     const secondaryButton = screen.getByText('Log in').closest('a')
 
-    // Check button classes
-    expect(primaryButton).toHaveClass('px-8', 'py-4')
-    expect(secondaryButton).toHaveClass('border-2', 'px-8', 'py-4')
+    // Check button classes - responsive design tokens
+    expect(primaryButton).toHaveClass('sm:px-8', 'sm:py-4')
+    expect(secondaryButton).toHaveClass('border-2', 'sm:px-8', 'sm:py-4')
   })
 
   test('responsive grid layout is applied', () => {

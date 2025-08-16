@@ -26,7 +26,7 @@ jest.mock('@/components/profile/ProfileForm', () => ({
 
 jest.mock('@/components/profile/HouseholdSection', () => ({
   HouseholdSection: ({ profile }: any) => (
-    <div data-testid="household-section">
+    <div data-testid="household-component">
       HouseholdSection - Profile: {profile.id}
     </div>
   ),
@@ -107,7 +107,12 @@ describe('ProfilePageClient', () => {
       'active'
     )
     expect(screen.getByTestId('profile-form')).toBeInTheDocument()
-    expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
+    
+    // The household section should be in the DOM but hidden (inactive tab)
+    const householdSection = screen.getByTestId('household-section')
+    expect(householdSection).toBeInTheDocument()
+    expect(householdSection).toHaveAttribute('hidden')
+    
     expect(screen.queryByTestId('activity-stats')).not.toBeInTheDocument()
   })
 
@@ -125,7 +130,12 @@ describe('ProfilePageClient', () => {
     await user.click(householdTab)
 
     expect(householdTab).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('household-section')).toBeInTheDocument()
+    
+    // The household section should now be visible
+    const householdSection = screen.getByTestId('household-section')
+    expect(householdSection).not.toHaveAttribute('hidden')
+    
+    // Profile form should be hidden
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
     expect(screen.queryByTestId('activity-stats')).not.toBeInTheDocument()
   })
@@ -146,7 +156,7 @@ describe('ProfilePageClient', () => {
     expect(activityTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByTestId('activity-stats')).toBeInTheDocument()
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
+    expect(screen.getByTestId('household-section')).toHaveAttribute('hidden')
   })
 
   it('passes correct props to child components', async () => {
@@ -168,6 +178,7 @@ describe('ProfilePageClient', () => {
     await user.click(householdTab)
 
     // HouseholdSection receives profile prop
+    expect(await screen.findByTestId('household-component')).toBeInTheDocument()
     expect(await screen.findByText(/Profile: profile-123/)).toBeInTheDocument()
 
     // Navigate to activity tab

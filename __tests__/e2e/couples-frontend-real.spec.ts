@@ -13,7 +13,7 @@ test.describe('Couples Features E2E Tests', () => {
       try {
         localStorage.clear()
         sessionStorage.clear()
-      } catch (e) {
+      } catch (_e) {
         // Ignore if not available
       }
     })
@@ -23,7 +23,7 @@ test.describe('Couples Features E2E Tests', () => {
     test('displays mutual likes section with proper loading states', async ({ page }) => {
       // Navigate to dashboard (this will require authentication)
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle authentication redirect if needed
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -38,7 +38,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -102,7 +102,7 @@ test.describe('Couples Features E2E Tests', () => {
 
     test('handles mutual likes data display correctly', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -114,7 +114,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -151,25 +151,25 @@ test.describe('Couples Features E2E Tests', () => {
             await expect(firstCard).toBeVisible()
             
             // Check for property details
-            const addressElements = firstCard.locator('text=/\d+.*street|avenue|blvd|road|drive/i')
+            const addressElements = firstCard.locator('text=/\\d+.*street|avenue|blvd|road|drive/i')
             if (await addressElements.count() > 0) {
               await expect(addressElements.first()).toBeVisible()
               console.log('Property address displayed correctly')
             }
 
-            const priceElements = firstCard.locator('text=/\$\d+/i')
+            const priceElements = firstCard.locator('text=/\\$\\d+/i')
             if (await priceElements.count() > 0) {
               await expect(priceElements.first()).toBeVisible()
               console.log('Property price displayed correctly')
             }
 
-            const bedroomElements = firstCard.locator('text=/\d+.*bed/i')
+            const bedroomElements = firstCard.locator('text=/\\d+.*bed/i')
             if (await bedroomElements.count() > 0) {
               await expect(bedroomElements.first()).toBeVisible()
               console.log('Bedroom count displayed correctly')
             }
 
-            const bathroomElements = firstCard.locator('text=/\d+.*bath/i')
+            const bathroomElements = firstCard.locator('text=/\\d+.*bath/i')
             if (await bathroomElements.count() > 0) {
               await expect(bathroomElements.first()).toBeVisible()
               console.log('Bathroom count displayed correctly')
@@ -190,7 +190,7 @@ test.describe('Couples Features E2E Tests', () => {
 
     test('handles error states gracefully', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -202,7 +202,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -216,7 +216,7 @@ test.describe('Couples Features E2E Tests', () => {
 
       // Reload to trigger the error
       await page.reload()
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Look for error states
       const errorSelectors = [
@@ -248,7 +248,7 @@ test.describe('Couples Features E2E Tests', () => {
   test.describe('Mutual Likes Badge Component', () => {
     test('displays badge correctly when mutual likes exist', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -260,7 +260,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -291,7 +291,7 @@ test.describe('Couples Features E2E Tests', () => {
 
     test('does not display badge when no mutual likes exist', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -304,7 +304,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-single-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -337,7 +337,7 @@ test.describe('Couples Features E2E Tests', () => {
   test.describe('Property Navigation Integration', () => {
     test('allows navigation to property details from mutual likes', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -349,7 +349,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -369,7 +369,7 @@ test.describe('Couples Features E2E Tests', () => {
           
           // Click the property link
           await firstLink.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
           
           // Should navigate to property details page
           const currentUrl = page.url()
@@ -381,7 +381,7 @@ test.describe('Couples Features E2E Tests', () => {
               'h1',
               '.property-title',
               '.property-address',
-              'text=/\$\d+/i'
+              'text=/\\$\\d+/i'
             ]
             
             for (const detailSelector of detailsSelectors) {
@@ -401,7 +401,7 @@ test.describe('Couples Features E2E Tests', () => {
     test('shows mutual likes indicators on property pages', async ({ page }) => {
       // Try to navigate directly to a property page
       await page.goto('/properties')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -413,7 +413,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -449,7 +449,7 @@ test.describe('Couples Features E2E Tests', () => {
       await page.setViewportSize({ width: 375, height: 667 })
       
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -461,7 +461,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -481,7 +481,7 @@ test.describe('Couples Features E2E Tests', () => {
 
     test('supports keyboard navigation', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -493,7 +493,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -526,7 +526,7 @@ test.describe('Couples Features E2E Tests', () => {
   test.describe('Real Data Integration', () => {
     test('handles various property data formats correctly', async ({ page }) => {
       await page.goto('/dashboard')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Handle auth redirect
       if (page.url().includes('login') || page.url().includes('signin')) {
@@ -538,7 +538,7 @@ test.describe('Couples Features E2E Tests', () => {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
         }
       }
 
@@ -550,21 +550,21 @@ test.describe('Couples Features E2E Tests', () => {
           const card = propertyCards.nth(i)
           
           // Check for various price formats ($500k, $1.2M, $450,000)
-          const priceElements = card.locator('text=/\$[\d,]+k?|\\$[\d.]+M|\\$[\d,]+/i')
+          const priceElements = card.locator('text=/\\$[\\d,]+k?|\\$[\\d.]+M|\\$[\\d,]+/i')
           if (await priceElements.count() > 0) {
             const priceText = await priceElements.first().textContent()
             console.log(`Property ${i + 1} price format: ${priceText}`)
           }
           
           // Check for bedroom/bathroom variations (3 beds, 2.5 baths, etc.)
-          const bedBathElements = card.locator('text=/\d+\.?\d*\s*(bed|bath)/i')
+          const bedBathElements = card.locator('text=/\\d+\\.?\\d*\\s*(bed|bath)/i')
           if (await bedBathElements.count() > 0) {
             const bedBathTexts = await bedBathElements.allTextContents()
             console.log(`Property ${i + 1} bed/bath: ${bedBathTexts.join(', ')}`)
           }
           
           // Check for square footage if displayed
-          const sqftElements = card.locator('text=/\d+,?\d*\s*(sq\s?ft|sqft)/i')
+          const sqftElements = card.locator('text=/\\d+,?\\d*\\s*(sq\\s?ft|sqft)/i')
           if (await sqftElements.count() > 0) {
             const sqftText = await sqftElements.first().textContent()
             console.log(`Property ${i + 1} sqft: ${sqftText}`)
@@ -580,7 +580,7 @@ test.describe('Couples Features E2E Tests', () => {
       
       // Handle auth redirect immediately
       if (page.url().includes('login') || page.url().includes('signin')) {
-        await page.waitForLoadState('networkidle')
+        await page.waitForLoadState('domcontentloaded')
         const emailInput = page.locator('input[type="email"]').first()
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
@@ -592,7 +592,7 @@ test.describe('Couples Features E2E Tests', () => {
         }
       }
 
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Check for loading states first
       const loadingSelectors = [

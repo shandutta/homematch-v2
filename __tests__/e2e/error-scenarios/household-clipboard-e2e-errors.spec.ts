@@ -41,7 +41,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
 
       // Navigate to profile
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Simulate session expiration by clearing cookies
       await page.context().clearCookies()
@@ -62,7 +62,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
           .isVisible()
 
         expect(
-          currentUrl.includes('/auth/signin') || hasErrorToast
+          currentUrl.includes('/login') || hasErrorToast
         ).toBeTruthy()
       }
     })
@@ -74,10 +74,10 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.goto(TEST_ROUTES.app.profile)
 
       // Should redirect to login or show error
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       const currentUrl = page.url()
-      expect(currentUrl).toContain('/auth/signin')
+      expect(currentUrl).toContain('/login')
 
       // Verify clipboard functionality is not accessible
       const copyButton = page.locator(TEST_SELECTORS.copyButton)
@@ -98,7 +98,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
 
       await expect(page).toHaveURL(TEST_ROUTES.app.dashboard)
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Go offline
       await context.setOffline(true)
@@ -166,7 +166,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Try to create household
       await page.fill(TEST_SELECTORS.householdNameInput, 'Server Error Test')
@@ -195,7 +195,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Ensure household exists
       const hasHousehold = await page
@@ -239,7 +239,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Try operations that might trigger popups
       const copyButton = page.locator(TEST_SELECTORS.copyButton)
@@ -276,7 +276,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Should handle corrupted data gracefully
       // Either show create form or error message
@@ -326,7 +326,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Create household
       await page.fill(
@@ -342,7 +342,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
 
       // But then handle the fact that household doesn't exist
       await page.reload()
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Should detect missing household and show create form again
       await expect(page.locator(TEST_SELECTORS.createForm)).toBeVisible()
@@ -363,7 +363,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Ensure household exists
       const hasHousehold = await page
@@ -406,7 +406,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Mobile browsers may have different clipboard behavior
       const copyButton = page.locator(TEST_SELECTORS.copyButton)
@@ -437,7 +437,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Ensure household exists
       const hasHousehold = await page
@@ -481,7 +481,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Start clipboard operation
       const copyButton = page.locator(TEST_SELECTORS.copyButton)

@@ -13,7 +13,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       try {
         localStorage.clear()
         sessionStorage.clear()
-      } catch (e) {
+      } catch (_e) {
         // Ignore if not available
       }
     })
@@ -21,8 +21,8 @@ test.describe('Authentication Flow E2E Tests', () => {
 
   test.describe('Form Validation (Real Browser Behavior)', () => {
     test('validates email format using real validation logic', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Multiple selector strategies for robustness
       const emailSelectors = [
@@ -112,8 +112,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('requires both email and password using real validation', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const submitButton = page.locator('button[type="submit"]').first()
       if (await submitButton.count() === 0) {
@@ -146,8 +146,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('handles password strength validation if implemented', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -179,8 +179,8 @@ test.describe('Authentication Flow E2E Tests', () => {
 
   test.describe('Authentication Flow with Real Server', () => {
     test('handles successful email/password authentication flow', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -192,13 +192,13 @@ test.describe('Authentication Flow E2E Tests', () => {
       await submitButton.click()
 
       // Wait for navigation or error
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       
       // Check for successful authentication (either redirect or error message)
       try {
         // If successful, should redirect away from login
         await expect(page).not.toHaveURL(/.*login.*/, { timeout: 5000 })
-      } catch (e) {
+      } catch (_e) {
         // If unsuccessful, should show error message
         const errorMessage = await page.locator('[role="alert"], .error, [data-testid="error-alert"]').first()
         if (await errorMessage.count() > 0) {
@@ -208,8 +208,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('handles OAuth authentication flow if available', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Look for OAuth buttons
       const oauthSelectors = [
@@ -243,8 +243,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('handles authentication errors with real error display', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -256,7 +256,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       await submitButton.click()
 
       // Wait for error response
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Look for error messages
       const errorSelectors = [
@@ -268,12 +268,12 @@ test.describe('Authentication Flow E2E Tests', () => {
         'text=/wrong.*password/i'
       ]
 
-      let errorFound = false
+      let _errorFound = false
       for (const selector of errorSelectors) {
         const errorElement = page.locator(selector)
         if (await errorElement.count() > 0) {
           await expect(errorElement.first()).toBeVisible()
-          errorFound = true
+          _errorFound = true
           break
         }
       }
@@ -287,8 +287,8 @@ test.describe('Authentication Flow E2E Tests', () => {
 
   test.describe('Loading States (Real Browser Behavior)', () => {
     test('shows loading state during authentication', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -305,7 +305,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       // Check for loading state (button might be disabled or show spinner)
       try {
         await expect(submitButton).toBeDisabled({ timeout: 1000 })
-      } catch (e) {
+      } catch (_e) {
         // If button doesn't get disabled, look for loading indicators
         const loadingSelectors = [
           '[data-testid="loading"]',
@@ -323,12 +323,12 @@ test.describe('Authentication Flow E2E Tests', () => {
       }
 
       // Wait for completion
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
 
     test('handles loading state transitions correctly', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -346,14 +346,14 @@ test.describe('Authentication Flow E2E Tests', () => {
       await page.waitForTimeout(500)
 
       // Should return to normal state after completion
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
     })
   })
 
   test.describe('Accessibility (Real Implementation)', () => {
     test('provides proper accessibility attributes', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Check for form structure
       const form = page.locator('form').first()
@@ -380,8 +380,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('supports keyboard navigation', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Tab navigation should work
       await page.keyboard.press('Tab')
@@ -407,8 +407,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('handles screen reader announcements for errors', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -418,7 +418,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       await passwordInput.fill('wrongpassword')
       await submitButton.click()
 
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Look for ARIA live regions or role="alert"
       const alertElements = page.locator('[role="alert"]')
@@ -426,7 +426,7 @@ test.describe('Authentication Flow E2E Tests', () => {
         await expect(alertElements.first()).toBeVisible()
         
         // Check for ARIA attributes that help screen readers
-        const ariaLive = await alertElements.first().getAttribute('aria-live')
+        const _ariaLive = await alertElements.first().getAttribute('aria-live')
         const role = await alertElements.first().getAttribute('role')
         expect(role).toBe('alert')
       }
@@ -435,8 +435,8 @@ test.describe('Authentication Flow E2E Tests', () => {
 
   test.describe('Form Reset and State Management', () => {
     test('clears errors when user starts typing', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -447,7 +447,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       await passwordInput.fill('wrongpassword')
       await submitButton.click()
 
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Look for error message
       const errorElement = page.locator('[role="alert"], .error, [data-testid="error-alert"]').first()
@@ -468,8 +468,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('maintains form state during loading', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       const emailInput = page.locator('input[type="email"]').first()
       const passwordInput = page.locator('input[type="password"]').first()
@@ -492,7 +492,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       try {
         await expect(emailInput).toHaveValue(email)
         await expect(passwordInput).toHaveValue(password)
-      } catch (e) {
+      } catch (_e) {
         // If navigation occurred, this is also valid behavior
         console.log('Form navigated away - checking new page')
       }
@@ -501,8 +501,8 @@ test.describe('Authentication Flow E2E Tests', () => {
 
   test.describe('Integration with Real App Flow', () => {
     test('handles post-login navigation correctly', async ({ page }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Try with test credentials that might actually work
       const emailInput = page.locator('input[type="email"]').first()
@@ -513,7 +513,7 @@ test.describe('Authentication Flow E2E Tests', () => {
       await passwordInput.fill('testpassword123')
       await submitButton.click()
 
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Check if we navigated away from login (successful) or stayed (failed)
       const currentUrl = page.url()
@@ -533,8 +533,8 @@ test.describe('Authentication Flow E2E Tests', () => {
     })
 
     test('works with different browser environments', async ({ page, browserName }) => {
-      await page.goto('/auth/login')
-      await page.waitForLoadState('networkidle')
+      await page.goto('/login')
+      await page.waitForLoadState('domcontentloaded')
 
       // Basic functionality should work across browsers
       const emailInput = page.locator('input[type="email"]').first()

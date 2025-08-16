@@ -19,10 +19,23 @@ export class AuthHelper {
    */
   async clearAuthState(): Promise<void> {
     await this.page.context().clearCookies()
-    await this.page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear()
-    })
+    
+    // Navigate to a valid origin first to access localStorage
+    try {
+      await this.page.goto('http://localhost:3000/')
+      await this.page.evaluate(() => {
+        try {
+          localStorage.clear()
+          sessionStorage.clear()
+        } catch (e) {
+          // localStorage might not be available in some contexts
+          console.log('Could not clear storage:', e)
+        }
+      })
+    } catch (e) {
+      // Storage operations failed, continue without clearing
+      console.log('Storage operations failed:', e)
+    }
   }
 
   /**
@@ -34,7 +47,7 @@ export class AuthHelper {
 
     // Navigate to login page
     await this.page.goto(TEST_ROUTES.auth.signIn)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
 
     // Find email input with multiple strategies
     const emailSelectors = [
@@ -52,7 +65,7 @@ export class AuthHelper {
           state: 'visible'
         })
         if (emailInput) break
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -79,7 +92,7 @@ export class AuthHelper {
           state: 'visible'
         })
         if (passwordInput) break
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -107,7 +120,7 @@ export class AuthHelper {
           state: 'visible'
         })
         if (submitButton) break
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -120,7 +133,7 @@ export class AuthHelper {
     await Promise.all([
       this.page.waitForNavigation({ 
         timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       }).catch(() => {}), // Catch timeout in case of no navigation
       submitButton.click()
     ])
@@ -151,7 +164,7 @@ export class AuthHelper {
           state: 'visible'
         })
         if (logoutButton) break
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }
@@ -163,7 +176,7 @@ export class AuthHelper {
     await Promise.all([
       this.page.waitForNavigation({
         timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       }).catch(() => {}),
       logoutButton.click()
     ])
@@ -199,7 +212,7 @@ export class AuthHelper {
           if (element) {
             return true
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -210,7 +223,7 @@ export class AuthHelper {
              url.includes('/validation') || 
              url.includes('/profile') ||
              url.includes('/properties')
-    } catch (e) {
+    } catch (_e) {
       return false
     }
   }

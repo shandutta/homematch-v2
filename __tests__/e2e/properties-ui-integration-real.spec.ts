@@ -7,7 +7,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { TEST_USERS, TEST_ROUTES, TEST_SELECTORS, TEST_TIMEOUTS } from '../fixtures/test-data'
+import { TEST_USERS, TEST_ROUTES, TEST_TIMEOUTS } from '../fixtures/test-data'
 
 test.describe('Properties Services UI Integration - Real Browser Tests', () => {
   
@@ -17,7 +17,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
     
     // Login with test user
     await page.goto(TEST_ROUTES.auth.signIn)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     
     const emailInput = await page.locator('input[type="email"]').first()
     await emailInput.fill(TEST_USERS.withHousehold.email)
@@ -29,7 +29,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
     await Promise.all([
       page.waitForNavigation({
         timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       }).catch(() => {}),
       submitButton.click()
     ])
@@ -42,7 +42,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
     test('should display properties from database', async ({ page }) => {
       // Navigate to dashboard where properties are displayed
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
       
       // Multiple selector strategies for property cards
@@ -65,7 +65,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
             foundSelector = selector
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -90,7 +90,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
               hasNoPropertiesMessage = true
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -117,15 +117,15 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
           'text=/$[0-9,]+/'
         ]
         
-        let foundPrice = false
+        let _foundPrice = false
         for (const selector of priceSelectors) {
           try {
             const element = await firstCard.locator(selector).first()
             if (await element.isVisible()) {
-              foundPrice = true
+              _foundPrice = true
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -138,15 +138,15 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
           'p[class*="address"]'
         ]
         
-        let foundAddress = false
+        let _foundAddress = false
         for (const selector of addressSelectors) {
           try {
             const element = await firstCard.locator(selector).first()
             if (await element.isVisible()) {
-              foundAddress = true
+              _foundAddress = true
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -158,7 +158,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
 
     test('should filter properties by criteria', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
       
       // Look for filter/search functionality
@@ -179,7 +179,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
             state: 'visible'
           })
           if (filterButton) break
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -214,7 +214,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
               }
             }
             if (priceInput) break
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -240,7 +240,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
                 await page.waitForTimeout(2000)
                 break
               }
-            } catch (e) {
+            } catch (_e) {
               continue
             }
           }
@@ -253,7 +253,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
 
     test('should handle property interactions (like/pass)', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
       
       // Look for property interaction buttons
@@ -283,7 +283,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
             foundInteractionButton = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -307,7 +307,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
               console.log('No properties available for interaction - valid state')
               return
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -320,7 +320,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
   test.describe('Household Property Sharing', () => {
     test('should display household shared properties', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
       
       // Look for household-related UI elements
@@ -343,7 +343,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
             foundHouseholdElement = true
             break
           }
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -354,7 +354,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
         
         // Try navigating to profile where household features might be
         await page.goto(TEST_ROUTES.app.profile)
-        await page.waitForLoadState('networkidle')
+        await page.waitForLoadState('domcontentloaded')
         await page.waitForTimeout(1000)
         
         // Check for household section in profile
@@ -368,7 +368,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
               foundHouseholdElement = true
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }
@@ -381,7 +381,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
   test.describe('Search and Discovery', () => {
     test('should perform property search', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
       
       // Look for search input
@@ -403,7 +403,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
             state: 'visible'
           })
           if (searchInput) break
-        } catch (e) {
+        } catch (_e) {
           continue
         }
       }
@@ -431,7 +431,7 @@ test.describe('Properties Services UI Integration - Real Browser Tests', () => {
               searchTriggered = true
               break
             }
-          } catch (e) {
+          } catch (_e) {
             continue
           }
         }

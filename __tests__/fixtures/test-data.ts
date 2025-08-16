@@ -155,8 +155,8 @@ export const TEST_SELECTORS = {
 
 export const TEST_ROUTES = {
   auth: {
-    signIn: '/auth/signin',
-    signUp: '/auth/signup',
+    signIn: '/login',
+    signUp: '/signup',
     signOut: '/auth/signout',
   },
   app: {

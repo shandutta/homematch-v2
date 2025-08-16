@@ -113,8 +113,41 @@ async function globalSetup() {
     console.log('📦 Using local Supabase at: http://127.0.0.1:54321')
     console.log('👤 Test users: test1@example.com, test2@example.com')
 
-    // Minimal stability wait
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // ENHANCED STABILITY WAIT - Addresses Phase 1 infrastructure race conditions
+    console.log('🔄 Verifying service stability...')
+    
+    // Comprehensive readiness check with multiple retries
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      try {
+        // Check API endpoint
+        const apiResponse = await fetch('http://127.0.0.1:54321/rest/v1/', {
+          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ' },
+          timeout: 3000
+        })
+        
+        // Check auth endpoint
+        const authResponse = await fetch('http://127.0.0.1:54321/auth/v1/health', {
+          timeout: 3000
+        })
+        
+        if (apiResponse.ok && authResponse.ok) {
+          console.log(`   ✅ All services ready (attempt ${attempt})`)
+          break
+        } else {
+          throw new Error('Services not ready')
+        }
+      } catch {
+        if (attempt === 10) {
+          console.log('   ⚠️  Services may not be fully ready, proceeding anyway')
+          break
+        }
+        console.log(`   ⏳ Services not ready, waiting... (attempt ${attempt}/10)`)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+    
+    // Final stability wait to prevent race conditions
+    await new Promise((resolve) => setTimeout(resolve, 2000))
   } catch (error) {
     console.error('\n❌ Failed to setup E2E tests:', error)
     throw error

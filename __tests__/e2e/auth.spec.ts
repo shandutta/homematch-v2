@@ -4,11 +4,11 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { TEST_USERS, TEST_ROUTES, TEST_TIMEOUTS } from '../fixtures/test-data'
+import { TEST_USERS, TEST_ROUTES } from '../fixtures/test-data'
 import { createAuthHelper } from '../utils/auth-helper'
 
 test.describe('Authentication Flow', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page: _page, context }) => {
     // Grant necessary permissions
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   })
@@ -45,7 +45,7 @@ test.describe('Authentication Flow', () => {
 
   test('should show error for invalid credentials', async ({ page }) => {
     await page.goto(TEST_ROUTES.auth.signIn)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     
     // Try to login with invalid credentials
     const emailInput = await page.locator('input[type="email"]').first()
@@ -80,7 +80,7 @@ test.describe('Authentication Flow', () => {
           errorFound = true
           break
         }
-      } catch (e) {
+      } catch (_e) {
         continue
       }
     }

@@ -38,9 +38,10 @@ test.describe('Couples Features Workflow', () => {
 
   test.beforeAll(async () => {
     // Initialize Supabase admin client for test setup
+    // Use hardcoded values for local test environment
     supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      'http://127.0.0.1:54321',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.pmctc3-i5D7PRVq4HOXcXDZ0Er3mrC8a2W7yIa5jePI',
       {
         auth: {
           autoRefreshToken: false,
@@ -127,7 +128,7 @@ test.describe('Couples Features Workflow', () => {
 
   async function loginUser(page: Page, userKey: keyof typeof testUsers) {
     const user = testUsers[userKey]
-    await page.goto('/auth/login')
+    await page.goto('/login')
 
     await page.fill('input[type="email"]', user.email)
     await page.fill('input[type="password"]', user.password)
@@ -139,7 +140,7 @@ test.describe('Couples Features Workflow', () => {
 
   async function likeProperty(page: Page, propertyId: string) {
     // Navigate to property swiper
-    await page.goto('/dashboard/swipe')
+    await page.goto('/dashboard')
 
     // Wait for properties to load
     await page.waitForSelector('[data-testid="property-card"]')
@@ -215,7 +216,7 @@ test.describe('Couples Features Workflow', () => {
     await loginUser(page, 'partner2')
 
     // Go to property search/browse page
-    await page.goto('/dashboard/properties')
+    await page.goto('/dashboard/liked')
 
     // Look for property cards with mutual like badges
     const mutualProperty = page.locator(
@@ -233,7 +234,7 @@ test.describe('Couples Features Workflow', () => {
     await loginUser(page, 'partner1')
 
     // Partner 2 likes another property first
-    await page.goto('/dashboard/swipe')
+    await page.goto('/dashboard')
 
     // We'll simulate partner 2 liking a property through API
     await page.evaluate(async (propertyId) => {
@@ -279,7 +280,7 @@ test.describe('Couples Features Workflow', () => {
     ])
 
     // Login with temp user
-    await page.goto('/auth/login')
+    await page.goto('/login')
     await page.fill('input[type="email"]', 'temp-test@example.com')
     await page.fill('input[type="password"]', 'TempPass123!')
     await page.click('button[type="submit"]')

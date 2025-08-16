@@ -59,6 +59,7 @@ const testEnv = {
   ...process.env,
   // Force test environment
   NODE_ENV: 'test',
+  NEXT_PUBLIC_TEST_MODE: 'true',
   // Supabase test configuration
   NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
   NEXT_PUBLIC_SUPABASE_ANON_KEY:
