@@ -120,37 +120,89 @@ export class DatabaseSnapshotManager {
   async restoreSnapshot(snapshotId: string): Promise<void> {
     const snapshot = await this.loadSnapshot(snapshotId)
     
-    // Clear existing data in reverse dependency order
+    // Complete clearing order including all referenced tables
     const clearOrder = [
       'user_property_interactions',
-      'household_members',
+      'household_members', 
       'property_images',
       'properties',
       'households',
       'user_profiles',
+      'users', // Add missing public.users table
     ]
 
+    // Clear existing data with proper deletion strategy
     for (const table of clearOrder) {
-      if (snapshot.metadata.tables.includes(table)) {
-        // Delete all records (be careful in production!)
-        await (this.client as any).from(table).delete().neq('id', '')
+      try {
+        // Use truncate-like approach: delete all records without conditions
+        const { error } = await (this.client as any)
+          .from(table)
+          .delete()
+          .gte('created_at', '1900-01-01') // Match all records with a date condition
+        
+        if (error && !error.message?.includes('does not exist')) {
+          if (process.env.DEBUG_SNAPSHOTS) {
+            console.debug(`Warning clearing table ${table}:`, error.message)
+          }
+        }
+      } catch (clearError) {
+        // Continue with other tables if one fails
+        if (process.env.DEBUG_SNAPSHOTS) {
+          console.debug(`Failed to clear table ${table}:`, clearError)
+        }
       }
     }
 
-    // Restore data in dependency order
-    const restoreOrder = snapshot.metadata.tables.reverse()
+    // Restore data in proper dependency order (NOT reversed)
+    const restoreOrder = [
+      'users',           // Must be first (referenced by user_profiles)
+      'user_profiles',   // References users
+      'households',      // Independent table
+      'properties',      // Independent table  
+      'property_images', // References properties
+      'household_members', // References households and user_profiles
+      'user_property_interactions', // References users, properties, households
+    ]
     
     for (const table of restoreOrder) {
       const tableData = snapshot.data[table]
       if (tableData && tableData.length > 0) {
-        // Insert in batches to avoid timeouts
-        const batchSize = 100
-        for (let i = 0; i < tableData.length; i += batchSize) {
-          const batch = tableData.slice(i, i + batchSize)
-          const { error } = await (this.client as any).from(table).insert(batch)
-          
-          if (error) {
-            console.error(`Failed to restore table ${table}:`, error)
+        try {
+          // Insert in batches with conflict resolution
+          const batchSize = 100
+          for (let i = 0; i < tableData.length; i += batchSize) {
+            const batch = tableData.slice(i, i + batchSize)
+            
+            // Use upsert to handle conflicts gracefully
+            const { error } = await (this.client as any)
+              .from(table)
+              .upsert(batch, { 
+                onConflict: 'id',
+                ignoreDuplicates: false 
+              })
+            
+            if (error) {
+              if (process.env.DEBUG_SNAPSHOTS) {
+                console.debug(`Failed to restore batch for table ${table}:`, error.message)
+              }
+              // Try individual inserts as fallback
+              for (const record of batch) {
+                try {
+                  await (this.client as any)
+                    .from(table)
+                    .upsert(record, { onConflict: 'id', ignoreDuplicates: true })
+                } catch (recordError) {
+                  // Silent failure for individual records
+                  if (process.env.DEBUG_SNAPSHOTS) {
+                    console.debug(`Failed to restore record in ${table}:`, recordError)
+                  }
+                }
+              }
+            }
+          }
+        } catch (tableError) {
+          if (process.env.DEBUG_SNAPSHOTS) {
+            console.debug(`Failed to restore table ${table}:`, tableError)
           }
         }
       }

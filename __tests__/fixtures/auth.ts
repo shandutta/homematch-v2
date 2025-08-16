@@ -82,6 +82,14 @@ export const authFixtures = {
         }
       },
 
+      async loginIfNeeded(user: TestUser = config.users.user1) {
+        // Check if already authenticated
+        const isAuth = await utils.isAuthenticated()
+        if (!isAuth) {
+          await this.login(user)
+        }
+      },
+
       async logout() {
         const signOutButton = page.locator(
           'button[type="submit"]:has-text("Sign out")'

@@ -6,6 +6,7 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './__tests__/e2e',
   testMatch: '**/*.spec.ts',
+  testIgnore: '**/api/**', // Exclude API tests - they run with Vitest
   globalSetup: './scripts/global-setup.js',
   /* Run tests in files in parallel */
   fullyParallel: false, // Disabled to prevent auth race conditions with shared test users

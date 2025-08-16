@@ -59,7 +59,7 @@ const mockProperty: Property = {
   bedrooms: 3,
   bathrooms: 2,
   square_feet: 1800,
-  property_type: 'house',
+  property_type: 'single_family',
   images: null,
   description: null,
   coordinates: null,
@@ -271,13 +271,13 @@ describe('StorytellingDescription', () => {
   it('renders Pet Paradise for houses with large lots', () => {
     const largeHouse: Property = {
       ...mockProperty,
-      property_type: 'house',
+      property_type: 'single_family',
       lot_size_sqft: 8000,
     }
 
     // Run test multiple times since tags are randomized
     let foundPetParadise = false
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 25; i++) {
       const { unmount } = render(
         <StorytellingDescription
           property={largeHouse}

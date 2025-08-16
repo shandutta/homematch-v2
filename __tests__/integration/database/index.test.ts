@@ -46,37 +46,28 @@ async function getTestProperty(supabase: any) {
 
 // Helper to get test household
 async function getTestHousehold(supabase: any, userId: string) {
-  const { data: user, error } = await supabase
-    .from('user_profiles')
-    .select('household_id')
-    .eq('id', userId)
+  // Always create a dedicated "Test Family" household for this test
+  // to avoid conflicts with other tests that might create random households
+  const { data: household, error: createError } = await supabase
+    .from('households')
+    .insert({
+      name: 'Test Family',
+      collaboration_mode: 'shared',
+    })
+    .select()
     .single()
 
-  if (error || !user || !user.household_id) {
-    // Create a test household if none exists
-    const { data: household, error: createError } = await supabase
-      .from('households')
-      .insert({
-        name: 'Test Family',
-        collaboration_mode: 'shared',
-      })
-      .select()
-      .single()
-
-    if (createError || !household) {
-      throw new Error('Could not create test household')
-    }
-
-    // Update user with household
-    await supabase
-      .from('user_profiles')
-      .update({ household_id: household.id })
-      .eq('id', userId)
-
-    return household.id
+  if (createError || !household) {
+    throw new Error('Could not create test household')
   }
 
-  return user.household_id
+  // Update user with household
+  await supabase
+    .from('user_profiles')
+    .update({ household_id: household.id })
+    .eq('id', userId)
+
+  return household.id
 }
 
 describe('Database Integration Tests', () => {

@@ -23,7 +23,7 @@ describe('Property Schema Validation', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'house',
+        property_type: 'single_family',
         images: [
           'https://example.com/image1.jpg',
           'https://example.com/image2.jpg',
@@ -88,7 +88,7 @@ describe('Property Schema Validation', () => {
         bathrooms_max: 3,
         square_feet_min: 1000,
         square_feet_max: 2500,
-        property_types: ['house', 'condo'],
+        property_types: ['single_family', 'condo'],
         neighborhoods: ['123e4567-e89b-12d3-a456-426614174000'],
         amenities: ['parking', 'pool'],
         year_built_min: 1990,
@@ -127,7 +127,7 @@ describe('Property Schema Validation', () => {
     })
 
     test('should validate property type enums and constraints', () => {
-      const validPropertyTypes = ['house', 'condo', 'townhouse', 'apartment']
+      const validPropertyTypes = ['single_family', 'condo', 'townhome', 'multi_family']
 
       validPropertyTypes.forEach((type) => {
         const property = {
@@ -331,7 +331,7 @@ describe('Property Schema Validation', () => {
           price_min: 500000,
           price_max: 1000000,
           bedrooms_min: 2,
-          property_types: ['house', 'condo'],
+          property_types: ['single_family', 'condo'],
           neighborhoods: ['123e4567-e89b-12d3-a456-426614174000'],
         },
         pagination: {

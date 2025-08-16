@@ -67,4 +67,23 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 // Set default BASE_URL for integration tests - force override since it's being set incorrectly
 process.env.BASE_URL = 'http://localhost:3000'
 
+// Try to load auth token from temp file if it exists (for integration tests)
+import * as fs from 'fs'
+import * as path from 'path'
+
+try {
+  const tokenFile = path.join(process.cwd(), '.test-auth-token')
+  if (fs.existsSync(tokenFile)) {
+    const token = fs.readFileSync(tokenFile, 'utf8').trim()
+    if (token) {
+      process.env.TEST_AUTH_TOKEN = token
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug('✅ Loaded TEST_AUTH_TOKEN from .test-auth-token')
+      }
+    }
+  }
+} catch {
+  // Ignore - token may not be needed for all tests
+}
+
 // No mocks in integration tests - we use the real Supabase Docker stack

@@ -6,11 +6,11 @@ import Link from 'next/link'
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 py-12 sm:px-8 lg:px-12">
+      <div className="w-full max-w-lg space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">HomeMatch</h1>
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <p className="mt-3 text-gray-600">Sign in to your account</p>
         </div>
 
         <LoginForm />

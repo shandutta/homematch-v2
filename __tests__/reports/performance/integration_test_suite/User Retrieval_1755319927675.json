@@ -1,0 +1,94 @@
+{
+  "testName": "integration_test_suite/User Retrieval",
+  "metrics": [
+    {
+      "name": "integration_test_suite/User Retrieval",
+      "duration": 19.733400000000074,
+      "timestamp": "2025-08-16T04:52:07.614Z",
+      "memory": {
+        "rss": 1355776,
+        "heapTotal": 1835008,
+        "heapUsed": -9622648,
+        "external": 6015,
+        "arrayBuffers": -99559
+      },
+      "metadata": {
+        "iteration": 1
+      }
+    },
+    {
+      "name": "integration_test_suite/User Retrieval",
+      "duration": 17.308500000000095,
+      "timestamp": "2025-08-16T04:52:07.631Z",
+      "memory": {
+        "rss": 892928,
+        "heapTotal": 262144,
+        "heapUsed": 960848,
+        "external": -136346,
+        "arrayBuffers": -30094
+      },
+      "metadata": {
+        "iteration": 2
+      }
+    },
+    {
+      "name": "integration_test_suite/User Retrieval",
+      "duration": 14.350199999999859,
+      "timestamp": "2025-08-16T04:52:07.645Z",
+      "memory": {
+        "rss": -1105920,
+        "heapTotal": 0,
+        "heapUsed": 942448,
+        "external": 6025,
+        "arrayBuffers": 5780
+      },
+      "metadata": {
+        "iteration": 3
+      }
+    },
+    {
+      "name": "integration_test_suite/User Retrieval",
+      "duration": 14.982999999999265,
+      "timestamp": "2025-08-16T04:52:07.660Z",
+      "memory": {
+        "rss": 155648,
+        "heapTotal": 0,
+        "heapUsed": 922664,
+        "external": 6025,
+        "arrayBuffers": 5780
+      },
+      "metadata": {
+        "iteration": 4
+      }
+    },
+    {
+      "name": "integration_test_suite/User Retrieval",
+      "duration": 14.17790000000059,
+      "timestamp": "2025-08-16T04:52:07.674Z",
+      "memory": {
+        "rss": 16384,
+        "heapTotal": 0,
+        "heapUsed": 921136,
+        "external": 14217,
+        "arrayBuffers": 13972
+      },
+      "metadata": {
+        "iteration": 5
+      }
+    }
+  ],
+  "summary": {
+    "mean": 16.110599999999977,
+    "median": 14.982999999999265,
+    "min": 14.17790000000059,
+    "max": 19.733400000000074,
+    "p95": 19.733400000000074,
+    "p99": 19.733400000000074,
+    "memoryPeak": 0.9163360595703125
+  },
+  "thresholds": {
+    "maxDuration": 100
+  },
+  "passed": true,
+  "failures": []
+}

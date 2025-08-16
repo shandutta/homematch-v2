@@ -1,0 +1,94 @@
+{
+  "testName": "integration_test_suite/Property Creation",
+  "metrics": [
+    {
+      "name": "integration_test_suite/Property Creation",
+      "duration": 6.42450000000008,
+      "timestamp": "2025-08-16T03:55:03.829Z",
+      "memory": {
+        "rss": 65536,
+        "heapTotal": 0,
+        "heapUsed": 232048,
+        "external": 3383,
+        "arrayBuffers": 3383
+      },
+      "metadata": {
+        "iteration": 1
+      }
+    },
+    {
+      "name": "integration_test_suite/Property Creation",
+      "duration": 7.246999999999389,
+      "timestamp": "2025-08-16T03:55:03.837Z",
+      "memory": {
+        "rss": -4096,
+        "heapTotal": 0,
+        "heapUsed": 236752,
+        "external": 3399,
+        "arrayBuffers": 3399
+      },
+      "metadata": {
+        "iteration": 2
+      }
+    },
+    {
+      "name": "integration_test_suite/Property Creation",
+      "duration": 8.033199999999852,
+      "timestamp": "2025-08-16T03:55:03.845Z",
+      "memory": {
+        "rss": 0,
+        "heapTotal": 0,
+        "heapUsed": 234432,
+        "external": 3303,
+        "arrayBuffers": 3303
+      },
+      "metadata": {
+        "iteration": 3
+      }
+    },
+    {
+      "name": "integration_test_suite/Property Creation",
+      "duration": 6.718300000000454,
+      "timestamp": "2025-08-16T03:55:03.851Z",
+      "memory": {
+        "rss": 0,
+        "heapTotal": 0,
+        "heapUsed": 235544,
+        "external": 3423,
+        "arrayBuffers": 3423
+      },
+      "metadata": {
+        "iteration": 4
+      }
+    },
+    {
+      "name": "integration_test_suite/Property Creation",
+      "duration": 6.20679999999993,
+      "timestamp": "2025-08-16T03:55:03.858Z",
+      "memory": {
+        "rss": 0,
+        "heapTotal": 0,
+        "heapUsed": 236328,
+        "external": 3363,
+        "arrayBuffers": 3363
+      },
+      "metadata": {
+        "iteration": 5
+      }
+    }
+  ],
+  "summary": {
+    "mean": 6.925959999999941,
+    "median": 6.718300000000454,
+    "min": 6.20679999999993,
+    "max": 8.033199999999852,
+    "p95": 8.033199999999852,
+    "p99": 8.033199999999852,
+    "memoryPeak": 0.2257843017578125
+  },
+  "thresholds": {
+    "maxDuration": 150
+  },
+  "passed": true,
+  "failures": []
+}

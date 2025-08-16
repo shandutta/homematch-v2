@@ -244,20 +244,20 @@ function PropertyCard({
             </p>
           </div>
 
-          {/* Like/Pass Indicators — premium chip style */}
+          {/* Like/Pass Indicators — improved spacing and sizing */}
           <MotionDiv
             className="pointer-events-none absolute top-3 right-3 z-30"
             aria-hidden="true"
             style={{ opacity: likeOpacity }}
           >
             <div
-              className="gap-token-sm border-token-success-light/40 bg-token-success shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
+              className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-white shadow-lg backdrop-blur-sm"
               style={{
                 transform: `scale(${(likeScale as unknown as number) || 1})`,
               }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
-              <span className="text-token-xs tracking-token-wide font-semibold">
+              <span className="text-sm font-semibold tracking-wide">
                 LIKED
               </span>
             </div>
@@ -269,13 +269,13 @@ function PropertyCard({
             style={{ opacity: passOpacity }}
           >
             <div
-              className="gap-token-sm border-token-error-light/40 bg-token-error shadow-token-lg px-token-md py-token-xs flex items-center rounded-full border text-white blur-glass-sm"
+              className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-600/95 px-4 py-2 text-white shadow-lg backdrop-blur-sm"
               style={{
                 transform: `scale(${(passScale as unknown as number) || 1})`,
               }}
             >
               <X className="h-4 w-4" aria-hidden="true" />
-              <span className="text-token-xs tracking-token-wide font-semibold">
+              <span className="text-sm font-semibold tracking-wide">
                 PASSED
               </span>
             </div>
@@ -307,13 +307,13 @@ function PropertyCard({
             </div>
           </div>
 
-          {/* Refined Action Buttons with Better Spacing */}
-          <div className="flex gap-3 pt-2">
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-3">
             <MotionButton
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-rose-200/70 bg-white px-5 py-2.5 text-rose-600 transition-all hover:border-rose-300/70 hover:bg-rose-50/40"
+              className="flex flex-1 items-center justify-center rounded-lg border-2 border-rose-200/70 bg-white px-6 py-3.5 text-rose-600 transition-all hover:border-rose-300/70 hover:bg-rose-50/40"
               motionProps={{
-                whileHover: { scale: 1.01 },
-                whileTap: { scale: 0.99 },
+                whileHover: { scale: 1.02 },
+                whileTap: { scale: 0.98 },
               }}
               onClick={() => {
                 try {
@@ -342,15 +342,14 @@ function PropertyCard({
               }}
               aria-label="Pass on this property"
             >
-              <X className="h-4 w-4" strokeWidth={2.5} />
-              <span className="text-sm font-medium">Pass</span>
+              Pass
             </MotionButton>
 
             <MotionButton
-              className="relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg bg-emerald-600 px-5 py-2.5 text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow"
+              className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg bg-emerald-600 px-6 py-3.5 text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow"
               motionProps={{
-                whileHover: { scale: 1.01 },
-                whileTap: { scale: 0.99 },
+                whileHover: { scale: 1.02 },
+                whileTap: { scale: 0.98 },
               }}
               onClick={(e) => {
                 // click burst effect
@@ -400,8 +399,7 @@ function PropertyCard({
               }}
               aria-label="Love this property"
             >
-              <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
-              <span className="text-sm font-medium">Love</span>
+              Love
             </MotionButton>
           </div>
         </div>

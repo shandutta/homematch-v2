@@ -49,8 +49,8 @@ homematch-v2.code-workspace
 
 # Local environment variables (specific patterns)
 .env.local
-.env.development.local
-.env.production.local
+.env.vercel
+.env.test.local
 
 # Old Code
 homematch-original-analysis/
@@ -61,6 +61,8 @@ __tests__/browser_screenshots
 # Claude AI local settings and tasks
 .claude/
 .mcp*
+.playwright-mcp/
+.performance-reports/
 
 # Server logs
 dev-server.log
@@ -103,6 +105,7 @@ Desktop.ini
 temp/
 .images/
 v1-reference/
+.test-auth-token
 
 # Log files from scripts
 logs/

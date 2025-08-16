@@ -32,7 +32,7 @@ describe('EnhancedPropertyCard', () => {
     bedrooms: 3,
     bathrooms: 2.5,
     square_feet: 2000,
-    property_type: 'house',
+    property_type: 'single_family',
     images: [
       'https://example.com/image1.jpg',
       'https://example.com/image2.jpg',
@@ -66,7 +66,7 @@ describe('EnhancedPropertyCard', () => {
       '3 beds • 2.5 baths'
     )
     expect(screen.getByTestId('property-sqft')).toHaveTextContent('2,000 sqft')
-    expect(screen.getByTestId('property-type')).toHaveTextContent('house')
+    expect(screen.getByTestId('property-type')).toHaveTextContent('single_family')
   })
 
   test('renders action buttons when showActions is true', () => {

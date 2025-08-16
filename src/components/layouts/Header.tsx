@@ -84,6 +84,7 @@ export function Header() {
                 href="/dashboard"
                 className="p-token-sm text-token-xl focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark rounded-token-md inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center font-bold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 aria-label="HomeMatch - Go to dashboard"
+                data-testid="nav-dashboard"
               >
                 HomeMatch
               </Link>
@@ -123,7 +124,10 @@ export function Header() {
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-token-sm text-token-primary-light transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95">
+                  <button 
+                    className="p-token-sm text-token-primary-light transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95"
+                    data-testid="user-menu"
+                  >
                     <User className="h-7 w-7" />
                     <span className="sr-only">User menu</span>
                   </button>
@@ -138,6 +142,7 @@ export function Header() {
                     <Link
                       href="/profile"
                       className="text-token-primary-light p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center hover:text-white"
+                      data-testid="nav-profile"
                     >
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
@@ -156,6 +161,7 @@ export function Header() {
                   <DropdownMenuItem
                     onClick={handleSignOut}
                     className="text-token-primary-light p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center hover:text-white"
+                    data-testid="logout-button"
                   >
                     <span>Sign Out</span>
                   </DropdownMenuItem>
@@ -244,6 +250,7 @@ export function Header() {
                     href="/profile"
                     onClick={closeMobileMenu}
                     className="rounded-token-lg p-token-md text-token-primary-light transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
+                    data-testid="nav-profile"
                   >
                     <User className="h-6 w-6 flex-shrink-0" />
                     <span className="text-token-lg font-medium">Profile</span>
@@ -263,6 +270,7 @@ export function Header() {
                     }}
                     className="rounded-token-lg p-token-md text-token-primary-light transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] w-full touch-manipulation items-center space-x-3 text-left hover:text-white focus-visible:ring-2 focus-visible:outline-none"
                     type="button"
+                    data-testid="logout-button"
                   >
                     <span className="text-token-lg font-medium">Sign Out</span>
                   </button>

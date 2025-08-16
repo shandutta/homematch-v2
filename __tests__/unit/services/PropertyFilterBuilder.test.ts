@@ -116,7 +116,7 @@ describe('PropertyFilterBuilder', () => {
 
     test('should apply array filters correctly', () => {
       const filters: PropertyFilters = {
-        property_types: ['house', 'condo'],
+        property_types: ['single_family', 'condo'],
         neighborhoods: ['uuid-1', 'uuid-2'],
         listing_status: ['active', 'pending']
       }
@@ -127,7 +127,7 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
         column: 'property_type',
-        value: ['house', 'condo']
+        value: ['single_family', 'condo']
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
@@ -215,7 +215,7 @@ describe('PropertyFilterBuilder', () => {
         bedrooms_max: 5,
         bathrooms_min: 2,
         square_feet_min: 1500,
-        property_types: ['house', 'townhouse'],
+        property_types: ['single_family', 'townhome'],
         neighborhoods: ['neighborhood-1'],
         amenities: ['pool'],
         year_built_min: 2000,
@@ -277,7 +277,7 @@ describe('PropertyFilterBuilder', () => {
         bathrooms_max: 3,
         square_feet_min: 1000,
         square_feet_max: 3000,
-        property_types: ['house', 'condo'],
+        property_types: ['single_family', 'condo'],
         neighborhoods: ['uuid-1', 'uuid-2'],
         year_built_min: 1990,
         year_built_max: 2020,

@@ -1,0 +1,94 @@
+{
+  "testName": "integration_test_suite/Interaction Creation",
+  "metrics": [
+    {
+      "name": "integration_test_suite/Interaction Creation",
+      "duration": 41.29930000000013,
+      "timestamp": "2025-08-16T04:54:17.545Z",
+      "memory": {
+        "rss": 176128,
+        "heapTotal": 0,
+        "heapUsed": 1895656,
+        "external": 12976,
+        "arrayBuffers": 12731
+      },
+      "metadata": {
+        "iteration": 1
+      }
+    },
+    {
+      "name": "integration_test_suite/Interaction Creation",
+      "duration": 39.175700000000234,
+      "timestamp": "2025-08-16T04:54:17.584Z",
+      "memory": {
+        "rss": 368640,
+        "heapTotal": 0,
+        "heapUsed": 1925832,
+        "external": 21182,
+        "arrayBuffers": 20937
+      },
+      "metadata": {
+        "iteration": 2
+      }
+    },
+    {
+      "name": "integration_test_suite/Interaction Creation",
+      "duration": 38.68319999999994,
+      "timestamp": "2025-08-16T04:54:17.623Z",
+      "memory": {
+        "rss": 827392,
+        "heapTotal": 1572864,
+        "heapUsed": -8878360,
+        "external": -100268,
+        "arrayBuffers": -97532
+      },
+      "metadata": {
+        "iteration": 3
+      }
+    },
+    {
+      "name": "integration_test_suite/Interaction Creation",
+      "duration": 30.38650000000007,
+      "timestamp": "2025-08-16T04:54:17.654Z",
+      "memory": {
+        "rss": 81920,
+        "heapTotal": 0,
+        "heapUsed": 1882848,
+        "external": 21118,
+        "arrayBuffers": 20873
+      },
+      "metadata": {
+        "iteration": 4
+      }
+    },
+    {
+      "name": "integration_test_suite/Interaction Creation",
+      "duration": 35.963500000000295,
+      "timestamp": "2025-08-16T04:54:17.690Z",
+      "memory": {
+        "rss": 651264,
+        "heapTotal": 0,
+        "heapUsed": 1905832,
+        "external": 13018,
+        "arrayBuffers": 12773
+      },
+      "metadata": {
+        "iteration": 5
+      }
+    }
+  ],
+  "summary": {
+    "mean": 37.10164000000013,
+    "median": 38.68319999999994,
+    "min": 30.38650000000007,
+    "max": 41.29930000000013,
+    "p95": 41.29930000000013,
+    "p99": 41.29930000000013,
+    "memoryPeak": 1.8366165161132812
+  },
+  "thresholds": {
+    "maxDuration": 300
+  },
+  "passed": true,
+  "failures": []
+}

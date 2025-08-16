@@ -7,8 +7,7 @@ export const CouplesMessages = {
   // Welcome Messages
   welcome: {
     new: 'Welcome to HomeMatch! Find your dream home together 🏠💕',
-    returning:
-      'Welcome back! Ready to continue your home search journey together?',
+    returning: 'Welcome back',
     dashboard: 'Find your dream home together',
     subtitle: 'Swipe, match, and move in together',
   },
