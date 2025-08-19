@@ -66,7 +66,9 @@ describe('EnhancedPropertyCard', () => {
       '3 beds • 2.5 baths'
     )
     expect(screen.getByTestId('property-sqft')).toHaveTextContent('2,000 sqft')
-    expect(screen.getByTestId('property-type')).toHaveTextContent('single_family')
+    expect(screen.getByTestId('property-type')).toHaveTextContent(
+      'single_family'
+    )
   })
 
   test('renders action buttons when showActions is true', () => {

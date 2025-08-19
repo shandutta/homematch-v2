@@ -3,9 +3,7 @@ import { Heart } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer
-      className="p-token-xl sm:p-token-2xl text-white bg-gradient-marketing-primary"
-    >
+    <footer className="p-token-xl sm:p-token-2xl bg-gradient-marketing-primary text-white">
       <div className="p-token-md container mx-auto">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}

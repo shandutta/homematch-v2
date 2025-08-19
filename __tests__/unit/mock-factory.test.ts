@@ -76,7 +76,9 @@ describe('Typed Mock Factory', () => {
     expect(builder.lte('price', 500000)).toBe(builder)
     expect(builder.like('address', '%street%')).toBe(builder)
     expect(builder.ilike('address', '%STREET%')).toBe(builder)
-    expect(builder.in('property_type', ['single_family', 'condo'])).toBe(builder)
+    expect(builder.in('property_type', ['single_family', 'condo'])).toBe(
+      builder
+    )
     expect(builder.contains('amenities', ['pool'] as any)).toBe(builder)
     expect(builder.order('created_at')).toBe(builder)
     expect(builder.limit(10)).toBe(builder)

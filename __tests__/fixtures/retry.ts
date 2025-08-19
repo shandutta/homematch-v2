@@ -127,7 +127,10 @@ export const retryFixtures = {
         return Promise.race([
           operation(),
           new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`Operation timed out after ${timeout}ms`)), timeout)
+            setTimeout(
+              () => reject(new Error(`Operation timed out after ${timeout}ms`)),
+              timeout
+            )
           ),
         ])
       },

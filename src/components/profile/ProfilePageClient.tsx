@@ -99,7 +99,11 @@ export function ProfilePageClient({
             </Card>
           </TabsContent>
 
-          <TabsContent value="household" className="space-y-6" data-testid="household-section">
+          <TabsContent
+            value="household"
+            className="space-y-6"
+            data-testid="household-section"
+          >
             <HouseholdSection profile={profile} />
           </TabsContent>
 

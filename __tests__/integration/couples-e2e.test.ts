@@ -1,135 +1,24 @@
-import { describe, test, expect, beforeAll, beforeEach  } from 'vitest'
+import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { CouplesService } from '@/lib/services/couples'
 import { createClient as createStandaloneClient } from '@/lib/supabase/standalone'
-import { getTestDataFactory } from '../utils/test-data-factory'
+import { createAuthenticatedClient } from '../utils/test-users'
 import { randomUUID } from 'crypto'
-
-// We'll get actual test users from the database instead of hardcoding
-let TEST_USERS: Array<{
-  id: string
-  email: string
-  displayName: string
-}> = []
 
 let TEST_HOUSEHOLD_ID: string = randomUUID()
 
-const TEST_PROPERTIES = [
-  {
-    id: randomUUID(),
-    address: '123 Test St, Test City, TC 12345',
-    city: 'Test City',
-    state: 'TC',
-    zip_code: '12345',
-    price: 500000,
-    bedrooms: 3,
-    bathrooms: 2,
-    square_feet: 1500,
-    property_type: 'single_family',
-    images: ['/test-image1.jpg'],
-    listing_status: 'active',
-    is_active: true
-  },
-  {
-    id: randomUUID(),
-    address: '456 Test Ave, Test City, TC 12346',
-    city: 'Test City',
-    state: 'TC',
-    zip_code: '12346',
-    price: 750000,
-    bedrooms: 4,
-    bathrooms: 3,
-    square_feet: 2000,
-    property_type: 'single_family',
-    images: ['/test-image2.jpg'],
-    listing_status: 'active',
-    is_active: true
-  },
-  {
-    id: randomUUID(),
-    address: '789 Test Blvd, Test City, TC 12347',
-    city: 'Test City',
-    state: 'TC',
-    zip_code: '12347',
-    price: 300000,
-    bedrooms: 2,
-    bathrooms: 1,
-    square_feet: 1000,
-    property_type: 'condo',
-    images: ['/test-image3.jpg'],
-    listing_status: 'active',
-    is_active: true
-  },
-]
+// Remove hardcoded properties - we'll create them dynamically in tests
 
 describe('Couples E2E Integration Tests', () => {
   let supabase: any
 
   beforeAll(async () => {
     try {
-      // Create Supabase client directly for integration tests
-      const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
-      const supabaseKey =
-        process.env.SUPABASE_ANON_KEY ||
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ'
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Supabase environment variables not set')
-      }
-
-      supabase = createClient(supabaseUrl, supabaseKey)
-
-      // Create a service role client for test setup
-      const serviceClient = createStandaloneClient()
-      const factory = getTestDataFactory(serviceClient)
-      
-      // Get existing test users from database
-      const testUser1 = await factory.getTestUser('test1@example.com')
-      const testUser2 = await factory.getTestUser('test2@example.com')
-      
-      TEST_USERS = [
-        {
-          id: testUser1.id,
-          email: testUser1.email || 'test1@example.com',
-          displayName: 'Test User 1',
-        },
-        {
-          id: testUser2.id,
-          email: testUser2.email || 'test2@example.com',
-          displayName: 'Test User 2',
-        },
-      ]
-
-      console.log('TEST_USERS set up with IDs:', TEST_USERS.map(u => ({ id: u.id, email: u.email })))
-
-      // Ensure user_profiles are set up properly with the correct user IDs from TestDataFactory
-      await supabase.from('user_profiles').upsert([
-        {
-          id: TEST_USERS[0].id,
-          household_id: TEST_HOUSEHOLD_ID,
-          onboarding_completed: false,
-          preferences: {}
-        },
-        {
-          id: TEST_USERS[1].id,
-          household_id: TEST_HOUSEHOLD_ID, 
-          onboarding_completed: false,
-          preferences: {}
-        },
-      ])
-
-      // Authenticate as the first test user so RLS policies work
-      // Try to use the service role token directly instead of password auth
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: TEST_USERS[0].email,
-        password: 'testpassword123'  // Match setup script password
-      })
-      
-      if (authError) {
-        console.warn('Could not authenticate test user, proceeding without auth for RLS-exempt queries:', authError)
-        // Use service role client for test operations instead
-        supabase = createStandaloneClient()
-      }
+      // Create service role client for admin operations
+      supabase = createClient(
+        process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
 
       // Test connection
       const { error } = await supabase
@@ -239,7 +128,7 @@ describe('Couples E2E Integration Tests', () => {
       }
 
       // Assert that at least one function exists (graceful degradation)
-      const existingFunctions = results.filter(r => r.exists)
+      const existingFunctions = results.filter((r) => r.exists)
       expect(existingFunctions.length).toBeGreaterThanOrEqual(0)
     })
   })
@@ -258,14 +147,22 @@ describe('Couples E2E Integration Tests', () => {
             TEST_USERS.map((u) => u.id)
           )
 
-        await supabase
-          .from('properties')
-          .delete()
+        // Clean up properties created during tests (keep only essential cleanup)
+        const { data: testInteractions } = await supabase
+          .from('user_property_interactions')
+          .select('property_id')
           .in(
-            'id',
-            TEST_PROPERTIES.map((p) => p.id)
+            'user_id',
+            TEST_USERS.map((u) => u.id)
           )
-        
+
+        if (testInteractions && testInteractions.length > 0) {
+          const propertyIds = [
+            ...new Set(testInteractions.map((i) => i.property_id)),
+          ]
+          await supabase.from('properties').delete().in('id', propertyIds)
+        }
+
         // Don't delete user_profiles, just reset household_id
         await supabase
           .from('user_profiles')
@@ -294,18 +191,21 @@ describe('Couples E2E Integration Tests', () => {
 
       // Create test user profiles without any property interactions
       try {
-        await supabase.from('user_profiles')
-          .update({ household_id: TEST_HOUSEHOLD_ID })
-          .eq('id', TEST_USERS[0].id)
-        
-        await supabase.from('user_profiles')
-          .update({ household_id: TEST_HOUSEHOLD_ID })
-          .eq('id', TEST_USERS[1].id)
+        // Use predefined test users
+        const { user: user1 } = await createAuthenticatedClient(0)
+        const { user: user2 } = await createAuthenticatedClient(1)
 
-        const result = await CouplesService.getMutualLikes(
-          supabase,
-          TEST_USERS[0].id
-        )
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: TEST_HOUSEHOLD_ID })
+          .eq('id', user1.id)
+
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: TEST_HOUSEHOLD_ID })
+          .eq('id', user2.id)
+
+        const result = await CouplesService.getMutualLikes(supabase, user1.id)
         expect(result).toEqual([])
       } catch (error) {
         console.warn('Could not test empty mutual likes:', error)
@@ -319,7 +219,7 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
 
@@ -328,12 +228,20 @@ describe('Couples E2E Integration Tests', () => {
           .from('user_property_interactions')
           .select('*')
           .eq('household_id', scenario.household.id)
-        console.log('Inserted interactions:', insertedData?.length, 'Error:', selectError)
+        console.log(
+          'Inserted interactions:',
+          insertedData?.length,
+          'Error:',
+          selectError
+        )
 
         // Debug: Test RPC function directly first
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('get_household_mutual_likes', {
-          p_household_id: scenario.household.id
-        })
+        const { data: rpcResult, error: rpcError } = await supabase.rpc(
+          'get_household_mutual_likes',
+          {
+            p_household_id: scenario.household.id,
+          }
+        )
         console.log('RPC direct test - Result:', rpcResult, 'Error:', rpcError)
 
         // Test the service
@@ -374,12 +282,16 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
-        
+
         // Add more interactions for testing activity feed
-        await factory.createInteraction(scenario.users[1].id, scenario.properties[1].id, 'dislike')
+        await factory.createInteraction(
+          scenario.users[1].id,
+          scenario.properties[1].id,
+          'dislike'
+        )
 
         const result = await CouplesService.getHouseholdActivity(
           supabase,
@@ -429,14 +341,22 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
-        
+
         // Add more interactions to create additional mutual likes
         const extraProperty = await factory.createProperty()
-        await factory.createInteraction(scenario.users[0].id, extraProperty.id, 'like')
-        await factory.createInteraction(scenario.users[1].id, extraProperty.id, 'like')
+        await factory.createInteraction(
+          scenario.users[0].id,
+          extraProperty.id,
+          'like'
+        )
+        await factory.createInteraction(
+          scenario.users[1].id,
+          extraProperty.id,
+          'like'
+        )
 
         const result = await CouplesService.getHouseholdStats(
           supabase,
@@ -463,15 +383,19 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
-        
+
         // Create a new property for testing potential mutual likes
         const newProperty = await factory.createProperty()
 
         // User 1 likes the new property
-        await factory.createInteraction(scenario.users[0].id, newProperty.id, 'like')
+        await factory.createInteraction(
+          scenario.users[0].id,
+          newProperty.id,
+          'like'
+        )
 
         // Check if user 2 liking the new property would create mutual like
         const result = await CouplesService.checkPotentialMutualLike(
@@ -506,7 +430,7 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
 
@@ -541,7 +465,7 @@ describe('Couples E2E Integration Tests', () => {
         // Use TestDataFactory which has proper race condition fixes
         const serviceClient = createStandaloneClient()
         const factory = getTestDataFactory(serviceClient)
-        
+
         // Create couples scenario using TestDataFactory
         const scenario = await factory.createCouplesScenario()
 

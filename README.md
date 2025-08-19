@@ -109,21 +109,25 @@ pnpm run type-check      # TypeScript checking
 ## Key Features Detail
 
 ### ML-Powered Recommendations
+
 - **Cold Start**: Rule-based scoring for new users
 - **Online Learning**: Real-time preference adaptation
 - **LightGBM**: Advanced ML model for personalization
 
 ### Household Collaboration
+
 - Multi-user property sharing and discussion
 - Synchronized like/pass decisions across household members
 - Real-time updates and notifications
 
 ### Geographic Intelligence
+
 - **PostGIS Integration**: Advanced spatial queries
 - **Neighborhood Analytics**: Demographic and market data
 - **Radius Search**: Distance-based property discovery
 
 ### Real Estate Data Integration
+
 - **Zillow API**: Property details and market data
 - **Custom Data Pipeline**: Automated property ingestion
 - **Image Processing**: Property photo optimization

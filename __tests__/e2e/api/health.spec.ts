@@ -24,10 +24,12 @@ describe('E2E: /api/health', () => {
 
     // Should return either 200 (healthy) or 503 (unhealthy)
     expect([200, 503]).toContain(response.status)
-    
+
     // Check response headers
     expect(response.headers.get('content-type')).toContain('application/json')
-    expect(response.headers.get('cache-control')).toBe('no-cache, no-store, must-revalidate')
+    expect(response.headers.get('cache-control')).toBe(
+      'no-cache, no-store, must-revalidate'
+    )
 
     // Check response structure
     expect(body).toBeDefined()
@@ -102,9 +104,9 @@ describe('E2E: /api/health', () => {
     // Both responses should have the same structure
     const keys1 = Object.keys(body1).sort()
     const keys2 = Object.keys(body2).sort()
-    
+
     expect(keys1).toEqual(keys2)
-    
+
     // Static fields should be the same
     expect(body1.service).toBe(body2.service)
     expect(body1.version).toBe(body2.version)
@@ -119,10 +121,10 @@ describe('E2E: /api/health', () => {
 
   test('should reject non-GET methods appropriately', async () => {
     const methods = ['POST', 'PUT', 'DELETE', 'PATCH'] as const
-    
+
     for (const method of methods) {
       const response = await client.request('/api/health', { method })
-      
+
       // Should return 405 Method Not Allowed
       expect(response.status).toBe(405)
     }

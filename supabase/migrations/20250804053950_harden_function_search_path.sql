@@ -1,6 +1,5 @@
--- Migration: 20250804053950_harden_function_search_path.sql
+-- Migration: harden_function_search_path (timestamped by server on apply)
 -- Purpose: Harden search_path and schema-qualify references for key functions flagged by Supabase Advisor.
--- Note: This file mirrors the SQL applied remotely via MCP.
 
 -- 1) get_user_interaction_summary
 CREATE OR REPLACE FUNCTION public.get_user_interaction_summary(p_user_id uuid)

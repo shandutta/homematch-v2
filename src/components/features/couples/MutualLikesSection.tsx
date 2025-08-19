@@ -137,7 +137,7 @@ export function MutualLikesSection({
         className={`border-white/10 ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700]
+          borderColor: dashboardTokens.colors.secondary[700],
         }}
         data-testid="mutual-likes-loading"
       >
@@ -188,15 +188,15 @@ export function MutualLikesSection({
         className={`border-couples-accent/20 ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700]
+          borderColor: dashboardTokens.colors.secondary[700],
         }}
         data-testid="mutual-likes-error"
       >
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-current text-couples-accent/50" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-couples-accent/50" />
+              <Heart className="text-couples-accent/50 h-5 w-5 fill-current" />
+              <Users className="text-couples-accent/50 absolute -top-1 -right-1 h-4 w-4" />
             </div>
             Both Liked
           </CardTitle>
@@ -208,7 +208,7 @@ export function MutualLikesSection({
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
             >
-              <Heart className="mx-auto mb-4 h-12 w-12 fill-current text-couples-accent/30" />
+              <Heart className="text-couples-accent/30 mx-auto mb-4 h-12 w-12 fill-current" />
             </MotionDiv>
 
             <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
@@ -220,7 +220,7 @@ export function MutualLikesSection({
             <Button
               onClick={handleRetry}
               size="sm"
-              className="bg-gradient-to-r from-couples-accent to-couples-primary hover:opacity-80"
+              className="from-couples-accent to-couples-primary bg-gradient-to-r hover:opacity-80"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
@@ -237,15 +237,15 @@ export function MutualLikesSection({
         className={`border-couples-primary/20 ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700]
+          borderColor: dashboardTokens.colors.secondary[700],
         }}
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-couples-primary text-couples-primary" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-couples-secondary" />
+              <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
+              <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
             </div>
             Both Liked
           </CardTitle>
@@ -262,7 +262,7 @@ export function MutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity }}
                 >
-                  <Heart className="h-12 w-12 fill-current text-couples-primary/30" />
+                  <Heart className="text-couples-primary/30 h-12 w-12 fill-current" />
                 </MotionDiv>
                 <MotionDiv
                   animate={{
@@ -271,7 +271,7 @@ export function MutualLikesSection({
                   }}
                   transition={{ duration: 4, repeat: Infinity, delay: 2 }}
                 >
-                  <Heart className="absolute top-0 left-4 h-12 w-12 fill-current text-couples-secondary/30" />
+                  <Heart className="text-couples-secondary/30 absolute top-0 left-4 h-12 w-12 fill-current" />
                 </MotionDiv>
 
                 {/* Sparkles effect */}
@@ -300,11 +300,17 @@ export function MutualLikesSection({
                 No mutual likes yet!
               </h3>
 
-              <p className="mb-1 text-sm" style={{ color: dashboardTokens.colors.text.secondary }}>
+              <p
+                className="mb-1 text-sm"
+                style={{ color: dashboardTokens.colors.text.secondary }}
+              >
                 Properties you both like will appear here
               </p>
 
-              <div className="flex items-center justify-center gap-2 text-xs" style={{ color: dashboardTokens.colors.text.muted }}>
+              <div
+                className="flex items-center justify-center gap-2 text-xs"
+                style={{ color: dashboardTokens.colors.text.muted }}
+              >
                 <Star className="h-3 w-3" />
                 <span>Keep swiping to find your first match</span>
               </div>
@@ -320,16 +326,16 @@ export function MutualLikesSection({
       className={`${className}`}
       style={{
         backgroundColor: dashboardTokens.colors.background.cardDark,
-        borderColor: dashboardTokens.colors.secondary[700]
+        borderColor: dashboardTokens.colors.secondary[700],
       }}
       data-testid="mutual-likes-list"
     >
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Heart className="h-5 w-5 fill-couples-primary text-couples-primary" />
+            <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
             Both Liked ({mutualLikes.length})
-            <Users className="h-5 w-5 text-couples-secondary" />
+            <Users className="text-couples-secondary h-5 w-5" />
           </CardTitle>
           {mutualLikes.length > 3 && (
             <Button variant="ghost" size="sm" asChild>
@@ -360,7 +366,7 @@ export function MutualLikesSection({
               }}
             >
               <Link href={`/properties/${like.property_id}`}>
-                <div className="group relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:border-couples-primary/30 hover:bg-white/10">
+                <div className="group hover:border-couples-primary/30 relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage
@@ -386,8 +392,18 @@ export function MutualLikesSection({
                       </div>
 
                       {like.property && (
-                        <div className="flex items-center gap-3 text-xs" style={{ color: dashboardTokens.colors.text.secondary }}>
-                          <span className="font-semibold" style={{ color: dashboardTokens.colors.success[500] }}>
+                        <div
+                          className="flex items-center gap-3 text-xs"
+                          style={{
+                            color: dashboardTokens.colors.text.secondary,
+                          }}
+                        >
+                          <span
+                            className="font-semibold"
+                            style={{
+                              color: dashboardTokens.colors.success[500],
+                            }}
+                          >
                             ${(like.property.price / 1000).toFixed(0)}k
                           </span>
                           <span>{like.property.bedrooms} bed</span>
@@ -395,14 +411,20 @@ export function MutualLikesSection({
                         </div>
                       )}
 
-                      <p className="mt-1 text-xs" style={{ color: dashboardTokens.colors.text.muted }}>
+                      <p
+                        className="mt-1 text-xs"
+                        style={{ color: dashboardTokens.colors.text.muted }}
+                      >
                         Liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <ChevronRight className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" style={{ color: dashboardTokens.colors.text.muted }} />
+                  <ChevronRight
+                    className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+                    style={{ color: dashboardTokens.colors.text.muted }}
+                  />
                 </div>
               </Link>
             </MotionDiv>

@@ -1,14 +1,14 @@
 /**
  * Error Handling Abstraction for HomeMatch v2 Services
- * 
+ *
  * Provides consistent error handling, logging, and response patterns
  * across all service implementations.
  */
 
-import type { 
-  ServiceError, 
-  ServiceResponse, 
-  IErrorHandler 
+import type {
+  ServiceError,
+  ServiceResponse,
+  IErrorHandler,
 } from '@/lib/services/interfaces'
 
 // ============================================================================
@@ -51,7 +51,11 @@ function isPostgrestError(error: unknown): error is PostgrestError {
 }
 
 function isSupabaseError(error: unknown): error is SupabaseError {
-  return typeof error === 'object' && error !== null && ('message' in error || 'code' in error)
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ('message' in error || 'code' in error)
+  )
 }
 
 function isErrorWithContext(error: unknown): error is ErrorWithContext {
@@ -59,7 +63,11 @@ function isErrorWithContext(error: unknown): error is ErrorWithContext {
 }
 
 function isStandardError(error: unknown): error is StandardError {
-  return typeof error === 'object' && error !== null && ('message' in error || 'code' in error)
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ('message' in error || 'code' in error)
+  )
 }
 
 // ============================================================================
@@ -69,7 +77,7 @@ function isStandardError(error: unknown): error is StandardError {
 export class DatabaseError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'DatabaseError'
@@ -81,7 +89,7 @@ export class DatabaseError extends Error {
 export class ValidationError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'ValidationError'
@@ -93,7 +101,7 @@ export class ValidationError extends Error {
 export class AuthenticationError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'AuthenticationError'
@@ -105,7 +113,7 @@ export class AuthenticationError extends Error {
 export class AuthorizationError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'AuthorizationError'
@@ -117,7 +125,7 @@ export class AuthorizationError extends Error {
 export class NotFoundError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'NotFoundError'
@@ -129,7 +137,7 @@ export class NotFoundError extends Error {
 export class ServiceUnavailableError extends Error {
   public readonly code: string
   public readonly details: Record<string, unknown>
-  
+
   constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'ServiceUnavailableError'
@@ -144,14 +152,14 @@ export class ServiceUnavailableError extends Error {
 
 export class ErrorHandler implements IErrorHandler {
   private static instance: ErrorHandler
-  
+
   static getInstance(): ErrorHandler {
     if (!ErrorHandler.instance) {
       ErrorHandler.instance = new ErrorHandler()
     }
     return ErrorHandler.instance
   }
-  
+
   /**
    * Handles and transforms errors into standardized ServiceError format
    */
@@ -169,19 +177,19 @@ export class ErrorHandler implements IErrorHandler {
         service: serviceName,
         method: methodName,
         timestamp: new Date().toISOString(),
-        args: this.sanitizeArgs(args)
-      }
+        args: this.sanitizeArgs(args),
+      },
     }
-    
+
     // Add user context if available
     const userId = this.extractUserId(error, args)
     if (userId) {
       baseError.context!.userId = userId
     }
-    
+
     return baseError
   }
-  
+
   /**
    * Returns appropriate default values based on expected return type
    */
@@ -189,15 +197,15 @@ export class ErrorHandler implements IErrorHandler {
     if (expectedType === undefined || expectedType === null) {
       return null as T
     }
-    
+
     if (typeof expectedType === 'boolean') {
       return false as T
     }
-    
+
     if (Array.isArray(expectedType)) {
       return [] as T
     }
-    
+
     if (typeof expectedType === 'object') {
       // For complex objects, try to determine the structure
       if ('properties' in expectedType && 'total' in expectedType) {
@@ -206,24 +214,24 @@ export class ErrorHandler implements IErrorHandler {
           properties: [],
           total: 0,
           page: 1,
-          limit: 20
+          limit: 20,
         } as T
       }
-      
+
       return null as T
     }
-    
+
     if (typeof expectedType === 'number') {
       return 0 as T
     }
-    
+
     if (typeof expectedType === 'string') {
       return '' as T
     }
-    
+
     return null as T
   }
-  
+
   /**
    * Extracts error code from various error types
    */
@@ -231,24 +239,25 @@ export class ErrorHandler implements IErrorHandler {
     if (isStandardError(error) && error.code) {
       return error.code
     }
-    
+
     if (error instanceof DatabaseError) return 'DATABASE_ERROR'
     if (error instanceof ValidationError) return 'VALIDATION_ERROR'
     if (error instanceof AuthenticationError) return 'AUTHENTICATION_ERROR'
     if (error instanceof AuthorizationError) return 'AUTHORIZATION_ERROR'
     if (error instanceof NotFoundError) return 'NOT_FOUND_ERROR'
-    if (error instanceof ServiceUnavailableError) return 'SERVICE_UNAVAILABLE_ERROR'
-    
+    if (error instanceof ServiceUnavailableError)
+      return 'SERVICE_UNAVAILABLE_ERROR'
+
     // Supabase specific error codes
     if (isPostgrestError(error)) {
       if (error.code === 'PGRST116') return 'NOT_FOUND'
       if (error.code === 'PGRST301') return 'AUTHENTICATION_REQUIRED'
       if (error.code === 'PGRST302') return 'AUTHORIZATION_FAILED'
     }
-    
+
     return 'UNKNOWN_ERROR'
   }
-  
+
   /**
    * Extracts human-readable error message
    */
@@ -256,51 +265,51 @@ export class ErrorHandler implements IErrorHandler {
     if (isStandardError(error) && error.message) {
       return error.message
     }
-    
+
     if (typeof error === 'string') {
       return error
     }
-    
+
     return 'An unknown error occurred'
   }
-  
+
   /**
    * Extracts error details for debugging
    */
   private getErrorDetails(error: unknown): Record<string, unknown> {
     const details: Record<string, unknown> = {}
-    
+
     if (isSupabaseError(error)) {
       if (error.details) {
         details.originalDetails = error.details
       }
-      
+
       if (error.hint) {
         details.hint = error.hint
       }
-      
+
       if (error.code) {
         details.originalCode = error.code
       }
-      
+
       if (error.stack && process.env.NODE_ENV === 'development') {
         details.stack = error.stack
       }
     }
-    
+
     return details
   }
-  
+
   /**
    * Sanitizes arguments to prevent logging sensitive data
    */
   private sanitizeArgs(args?: unknown[]): unknown[] {
     if (!args) return []
-    
-    return args.map(arg => {
+
+    return args.map((arg) => {
       if (typeof arg === 'object' && arg !== null) {
         const sanitized: Record<string, unknown> = {}
-        
+
         for (const [key, value] of Object.entries(arg)) {
           // Skip sensitive fields
           if (this.isSensitiveField(key)) {
@@ -311,14 +320,14 @@ export class ErrorHandler implements IErrorHandler {
             sanitized[key] = value
           }
         }
-        
+
         return sanitized
       }
-      
+
       return arg
     })
   }
-  
+
   /**
    * Checks if a field contains sensitive data
    */
@@ -330,14 +339,14 @@ export class ErrorHandler implements IErrorHandler {
       'key',
       'auth',
       'session',
-      'cookie'
+      'cookie',
     ]
-    
-    return sensitiveFields.some(sensitive => 
+
+    return sensitiveFields.some((sensitive) =>
       fieldName.toLowerCase().includes(sensitive)
     )
   }
-  
+
   /**
    * Attempts to extract user ID from error context
    */
@@ -346,7 +355,7 @@ export class ErrorHandler implements IErrorHandler {
     if (isErrorWithContext(error) && error.context?.userId) {
       return error.context.userId
     }
-    
+
     // Try to extract from arguments
     if (args) {
       for (const arg of args) {
@@ -358,7 +367,7 @@ export class ErrorHandler implements IErrorHandler {
         }
       }
     }
-    
+
     return undefined
   }
 }
@@ -378,8 +387,8 @@ export function withErrorHandling<T extends unknown[], R>(
 ) {
   const originalMethod = descriptor.value!
   const errorHandler = ErrorHandler.getInstance()
-  
-  descriptor.value = async function(this: object, ...args: T): Promise<R> {
+
+  descriptor.value = async function (this: object, ...args: T): Promise<R> {
     try {
       const result = await originalMethod.apply(this, args)
       return result
@@ -390,7 +399,7 @@ export function withErrorHandling<T extends unknown[], R>(
         propertyKey,
         args
       )
-      
+
       // Log error with full context
       console.error('Service Error:', {
         service: serviceError.context?.service,
@@ -400,15 +409,15 @@ export function withErrorHandling<T extends unknown[], R>(
         timestamp: serviceError.context?.timestamp,
         ...(process.env.NODE_ENV === 'development' && {
           details: serviceError.details,
-          args: serviceError.context?.args
-        })
+          args: serviceError.context?.args,
+        }),
       })
-      
+
       // Return appropriate default to maintain backward compatibility
       return errorHandler.getDefaultReturn<R>()
     }
   }
-  
+
   return descriptor
 }
 
@@ -425,18 +434,18 @@ export class ServiceResponseWrapper {
     return {
       data,
       error: null,
-      success: true
+      success: true,
     }
   }
-  
+
   static error<T>(error: ServiceError): ServiceResponse<T> {
     return {
       data: null,
       error,
-      success: false
+      success: false,
     }
   }
-  
+
   static fromTryCatch<T>(
     fn: () => Promise<T>,
     serviceName: string,
@@ -444,10 +453,15 @@ export class ServiceResponseWrapper {
     args?: unknown[]
   ): Promise<ServiceResponse<T>> {
     return fn()
-      .then(data => this.success(data))
-      .catch(error => {
+      .then((data) => this.success(data))
+      .catch((error) => {
         const errorHandler = ErrorHandler.getInstance()
-        const serviceError = errorHandler.handleError(error, serviceName, methodName, args)
+        const serviceError = errorHandler.handleError(
+          error,
+          serviceName,
+          methodName,
+          args
+        )
         return this.error<T>(serviceError)
       })
   }
@@ -466,50 +480,56 @@ export interface LogContext {
 }
 
 export class ServiceLogger {
-  static logServiceCall(context: LogContext, details?: Record<string, unknown>) {
+  static logServiceCall(
+    context: LogContext,
+    details?: Record<string, unknown>
+  ) {
     const logLevel = context.success ? 'info' : 'error'
     const message = `${context.service}.${context.method}`
-    
+
     const logData = {
       message,
       context,
       timestamp: new Date().toISOString(),
-      ...(details && { details })
+      ...(details && { details }),
     }
-    
+
     if (logLevel === 'error') {
       console.error(logData)
     } else if (process.env.NODE_ENV === 'development') {
       console.log(logData)
     }
   }
-  
+
   static async withLogging<T>(
     fn: () => Promise<T>,
     context: Omit<LogContext, 'success' | 'duration'>
   ): Promise<T> {
     const startTime = Date.now()
-    
+
     try {
       const result = await fn()
       const duration = Date.now() - startTime
-      
+
       this.logServiceCall({
         ...context,
         success: true,
-        duration
+        duration,
       })
-      
+
       return result
     } catch (error) {
       const duration = Date.now() - startTime
-      
-      this.logServiceCall({
-        ...context,
-        success: false,
-        duration
-      }, { error: error instanceof Error ? error.message : String(error) })
-      
+
+      this.logServiceCall(
+        {
+          ...context,
+          success: false,
+          duration,
+        },
+        { error: error instanceof Error ? error.message : String(error) }
+      )
+
       throw error
     }
   }

@@ -82,11 +82,11 @@ describe('My Integration Test', () => {
 
     // Test your actual service/API
     const result = await myService.getUserInteractions(user.id)
-    
+
     expect(result).toContainEqual(
       expect.objectContaining({
         property_id: property.id,
-        interaction_type: 'like'
+        interaction_type: 'like',
       })
     )
   })
@@ -100,14 +100,14 @@ describe('API Endpoint Test', () => {
   test('should handle real requests', async () => {
     // Create test data
     const scenario = await factory.createCouplesScenario()
-    
+
     // Make real API call
     const response = await fetch('/api/couples/activity', {
       headers: {
-        'x-test-user-id': scenario.users[0].id
-      }
+        'x-test-user-id': scenario.users[0].id,
+      },
     })
-    
+
     expect(response.status).toBe(200)
     const data = await response.json()
     expect(data.activity).toBeDefined()
@@ -121,17 +121,17 @@ describe('API Endpoint Test', () => {
 test('should handle couples with mutual likes', async () => {
   // Use pre-built scenarios
   const scenario = await factory.createCouplesScenario()
-  
+
   // scenario includes:
   // - 2 users in a household
   // - 3 properties
   // - Mutual likes on property1
   // - Individual likes on other properties
-  
+
   const mutualLikes = await queries.getHouseholdMutualLikes(
     scenario.household.id
   )
-  
+
   expect(mutualLikes).toContain(scenario.properties[0].id)
 })
 ```
@@ -164,12 +164,12 @@ test('should handle couples with mutual likes', async () => {
 ```typescript
 describe('Feature Test', () => {
   let factory: TestDataFactory
-  
+
   beforeEach(() => {
     // Fresh factory for each test
     factory = new TestDataFactory()
   })
-  
+
   afterEach(async () => {
     // Clean up after each test
     await factory.cleanup()
@@ -200,8 +200,8 @@ const seattleBuyer = await factory.createUser({
   preferences: {
     preferred_cities: ['Seattle'],
     min_price: 400000,
-    max_price: 600000
-  }
+    max_price: 600000,
+  },
 })
 ```
 
@@ -254,7 +254,7 @@ pnpm dlx supabase@latest start
 // Force cleanup in afterAll
 afterAll(async () => {
   await cleanupAllTestData()
-  
+
   // Additional manual cleanup if needed
   const client = createClient()
   await client.from('user_interactions').delete().like('user_id', 'test-%')
@@ -275,7 +275,7 @@ afterAll(async () => {
 jest.mock('@/lib/supabase/server')
 const mockClient = {
   from: jest.fn().mockReturnThis(),
-  select: jest.fn().mockResolvedValue({ data: mockData })
+  select: jest.fn().mockResolvedValue({ data: mockData }),
 }
 ```
 

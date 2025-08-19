@@ -28,7 +28,7 @@ function runIsolated(command, args = []) {
 async function checkSupabaseStatus() {
   try {
     const response = await fetch('http://127.0.0.1:54321/rest/v1/', {
-      timeout: 2000
+      timeout: 2000,
     })
     return response.ok
   } catch {
@@ -41,16 +41,21 @@ async function checkTestUsersExist() {
   try {
     const response = await fetch('http://127.0.0.1:54321/auth/v1/admin/users', {
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
+        apikey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
       },
-      timeout: 2000
+      timeout: 2000,
     })
-    
+
     if (!response.ok) return false
-    
+
     const data = await response.json()
-    return data.users && data.users.some(user => user.email === 'test1@example.com')
+    return (
+      data.users &&
+      data.users.some((user) => user.email === 'test1@example.com')
+    )
   } catch {
     return false
   }
@@ -63,11 +68,11 @@ async function globalSetup() {
     // Step 1: Check if Supabase is already running
     console.log('1️⃣  Checking Supabase status...')
     const isRunning = await checkSupabaseStatus()
-    
+
     if (!isRunning) {
       console.log('   Starting local Supabase...')
       await runIsolated('scripts/infrastructure-working.js', ['start'])
-      
+
       // Wait for Supabase to be ready
       console.log('   ⏳ Waiting for Supabase to be ready...')
       await new Promise((resolve) => setTimeout(resolve, 3000))
@@ -78,7 +83,7 @@ async function globalSetup() {
     // Step 2: Check if test users exist
     console.log('\n2️⃣  Checking test users...')
     const usersExist = await checkTestUsersExist()
-    
+
     if (!usersExist) {
       console.log('   Creating test users...')
       await runIsolated('scripts/setup-test-users-admin.js')
@@ -91,13 +96,17 @@ async function globalSetup() {
     console.log('\n3️⃣  Checking database schema...')
     try {
       // Quick validation that essential tables exist
-      const response = await fetch('http://127.0.0.1:54321/rest/v1/user_profiles?limit=1', {
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ'
-        },
-        timeout: 2000
-      })
-      
+      const response = await fetch(
+        'http://127.0.0.1:54321/rest/v1/user_profiles?limit=1',
+        {
+          headers: {
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ',
+          },
+          timeout: 2000,
+        }
+      )
+
       if (response.ok) {
         console.log('   ✅ Database schema looks good')
       } else {
@@ -115,21 +124,27 @@ async function globalSetup() {
 
     // ENHANCED STABILITY WAIT - Addresses Phase 1 infrastructure race conditions
     console.log('🔄 Verifying service stability...')
-    
+
     // Comprehensive readiness check with multiple retries
     for (let attempt = 1; attempt <= 10; attempt++) {
       try {
         // Check API endpoint
         const apiResponse = await fetch('http://127.0.0.1:54321/rest/v1/', {
-          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ' },
-          timeout: 3000
+          headers: {
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ',
+          },
+          timeout: 3000,
         })
-        
+
         // Check auth endpoint
-        const authResponse = await fetch('http://127.0.0.1:54321/auth/v1/health', {
-          timeout: 3000
-        })
-        
+        const authResponse = await fetch(
+          'http://127.0.0.1:54321/auth/v1/health',
+          {
+            timeout: 3000,
+          }
+        )
+
         if (apiResponse.ok && authResponse.ok) {
           console.log(`   ✅ All services ready (attempt ${attempt})`)
           break
@@ -138,14 +153,18 @@ async function globalSetup() {
         }
       } catch {
         if (attempt === 10) {
-          console.log('   ⚠️  Services may not be fully ready, proceeding anyway')
+          console.log(
+            '   ⚠️  Services may not be fully ready, proceeding anyway'
+          )
           break
         }
-        console.log(`   ⏳ Services not ready, waiting... (attempt ${attempt}/10)`)
+        console.log(
+          `   ⏳ Services not ready, waiting... (attempt ${attempt}/10)`
+        )
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     }
-    
+
     // Final stability wait to prevent race conditions
     await new Promise((resolve) => setTimeout(resolve, 2000))
   } catch (error) {

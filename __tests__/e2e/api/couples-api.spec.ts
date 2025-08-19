@@ -3,7 +3,7 @@ import { E2EHttpClient } from '../../utils/e2e-http-client'
 
 /**
  * Couples API E2E Tests - Real HTTP Requests
- * 
+ *
  * These tests make real HTTP requests to the dev server to verify the complete
  * integration works as expected. This includes testing auth middleware, rate
  * limiting, request parsing, business logic, and response formatting.
@@ -22,7 +22,9 @@ describe('Couples API E2E Tests', () => {
   // Test if the API endpoints can be called without crashing
   describe('API Endpoint Availability', () => {
     test('mutual-likes endpoint should handle unauthenticated requests', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/mutual-likes')
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/mutual-likes'
+      )
       const data = await response.json()
 
       // Should return 401 for unauthenticated request
@@ -32,7 +34,9 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('activity endpoint should handle unauthenticated requests', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/activity')
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/activity'
+      )
       const data = await response.json()
 
       // Should return 401 for unauthenticated request
@@ -52,13 +56,16 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('notify endpoint should handle unauthenticated requests', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/notify', {
-        method: 'POST',
-        body: {
-          property_id: 'test-property',
-          interaction_type: 'like',
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/notify',
+        {
+          method: 'POST',
+          body: {
+            property_id: 'test-property',
+            interaction_type: 'like',
+          },
         }
-      })
+      )
       const data = await response.json()
 
       // Should return 401 for unauthenticated request
@@ -70,9 +77,12 @@ describe('Couples API E2E Tests', () => {
 
   describe('API Parameter Handling', () => {
     test('mutual-likes should handle query parameters correctly', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/mutual-likes', {
-        query: { includeProperties: 'false' }
-      })
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/mutual-likes',
+        {
+          query: { includeProperties: 'false' },
+        }
+      )
 
       // Even without auth, it should parse parameters correctly
       // and fail at auth step, not parameter parsing
@@ -83,9 +93,12 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('activity should handle limit and offset parameters correctly', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/activity', {
-        query: { limit: '10', offset: '5' }
-      })
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/activity',
+        {
+          query: { limit: '10', offset: '5' },
+        }
+      )
 
       // Even without auth, it should parse parameters correctly
       expect(response.status).toBe(401)
@@ -95,9 +108,12 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('activity should handle invalid parameters gracefully', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/activity', {
-        query: { limit: 'invalid', offset: 'also-invalid' }
-      })
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/activity',
+        {
+          query: { limit: 'invalid', offset: 'also-invalid' },
+        }
+      )
 
       // Should not crash on invalid parameters
       expect(response.status).toBe(401)
@@ -107,10 +123,13 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('notify should handle missing request body', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/notify', {
-        method: 'POST'
-        // No body provided
-      })
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/notify',
+        {
+          method: 'POST',
+          // No body provided
+        }
+      )
 
       // Should handle missing body gracefully
       expect(response.status).toBe(401) // Auth fails before body validation
@@ -121,10 +140,13 @@ describe('Couples API E2E Tests', () => {
 
     test('notify should handle invalid JSON body', async () => {
       try {
-        const response = await client.unauthenticatedRequest('/api/couples/notify', {
-          method: 'POST',
-          body: 'invalid json'
-        })
+        const response = await client.unauthenticatedRequest(
+          '/api/couples/notify',
+          {
+            method: 'POST',
+            body: 'invalid json',
+          }
+        )
 
         // Should handle invalid JSON gracefully
         expect(response.status).toBeOneOf([400, 401])
@@ -158,7 +180,9 @@ describe('Couples API E2E Tests', () => {
     })
 
     test('error responses should have consistent structure', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/mutual-likes')
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/mutual-likes'
+      )
       const data = await response.json()
 
       // Check error response structure
@@ -172,7 +196,9 @@ describe('Couples API E2E Tests', () => {
   describe('API Performance', () => {
     test('API endpoints should respond within reasonable time', async () => {
       const startTime = Date.now()
-      const response = await client.unauthenticatedRequest('/api/couples/mutual-likes')
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/mutual-likes'
+      )
       const endTime = Date.now()
 
       const responseTime = endTime - startTime
@@ -193,7 +219,9 @@ describe('Couples API E2E Tests', () => {
       ]
 
       // Make concurrent requests
-      const promises = endpoints.map(endpoint => client.unauthenticatedRequest(endpoint))
+      const promises = endpoints.map((endpoint) =>
+        client.unauthenticatedRequest(endpoint)
+      )
       const responses = await Promise.all(promises)
 
       // All should complete successfully
@@ -217,10 +245,13 @@ describe('Couples API E2E Tests', () => {
       // Test POST on GET-only endpoint
       try {
         // This should either return 405 Method Not Allowed or handle gracefully
-        const response = await client.unauthenticatedRequest('/api/couples/mutual-likes', {
-          method: 'POST',
-          body: { test: 'data' }
-        })
+        const response = await client.unauthenticatedRequest(
+          '/api/couples/mutual-likes',
+          {
+            method: 'POST',
+            body: { test: 'data' },
+          }
+        )
         expect(response.status).toBeOneOf([405, 401, 500])
       } catch (error) {
         // It's acceptable for unsupported methods to throw
@@ -233,9 +264,12 @@ describe('Couples API E2E Tests', () => {
       const longQuery = 'a'.repeat(10000)
 
       try {
-        const response = await client.unauthenticatedRequest('/api/couples/mutual-likes', {
-          query: { query: longQuery }
-        })
+        const response = await client.unauthenticatedRequest(
+          '/api/couples/mutual-likes',
+          {
+            query: { query: longQuery },
+          }
+        )
         expect(response.status).toBeOneOf([200, 400, 401, 414, 500])
       } catch (error) {
         // It's acceptable for malformed requests to throw
@@ -246,7 +280,9 @@ describe('Couples API E2E Tests', () => {
 
   describe('Security', () => {
     test('should not expose sensitive information in error messages', async () => {
-      const response = await client.unauthenticatedRequest('/api/couples/mutual-likes')
+      const response = await client.unauthenticatedRequest(
+        '/api/couples/mutual-likes'
+      )
       const data = await response.json()
 
       // Check that error doesn't expose sensitive info
@@ -273,9 +309,12 @@ describe('Couples API E2E Tests', () => {
 
       for (const query of dangerousQueries) {
         try {
-          const response = await client.unauthenticatedRequest('/api/couples/mutual-likes', {
-            query
-          })
+          const response = await client.unauthenticatedRequest(
+            '/api/couples/mutual-likes',
+            {
+              query,
+            }
+          )
           // Should not crash and should return appropriate error
           expect(response.status).toBeOneOf([200, 400, 401, 422, 500])
         } catch (error) {
@@ -292,12 +331,12 @@ describe('Couples API E2E Tests', () => {
       try {
         // Use test user credentials
         await client.authenticateAs('test1@example.com', 'password123')
-        
+
         const response = await client.get('/api/couples/mutual-likes')
-        
+
         // Should succeed with auth
         expect(response.status).toBeOneOf([200, 500]) // 200 for success, 500 for DB issues
-        
+
         if (response.ok) {
           const data = await response.json()
           expect(data).toHaveProperty('mutualLikes')
@@ -305,7 +344,10 @@ describe('Couples API E2E Tests', () => {
         }
       } catch (error) {
         // Test user may not exist yet - that's okay for this conversion
-        console.log('Test user authentication failed (expected during setup):', error)
+        console.log(
+          'Test user authentication failed (expected during setup):',
+          error
+        )
       }
     })
   })

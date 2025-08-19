@@ -109,7 +109,10 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     }
 
     // Auto-retry for certain error types only if we haven't exceeded the limit
-    if (this.shouldAutoRetry(error) && this.state.retryCount < this.maxAutoRetries) {
+    if (
+      this.shouldAutoRetry(error) &&
+      this.state.retryCount < this.maxAutoRetries
+    ) {
       this.scheduleAutoRetry()
     }
   }
@@ -123,7 +126,11 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     if (message.includes('timeout')) {
       return 'timeout'
     }
-    if (message.includes('401') || message.includes('403') || message.includes('unauthorized')) {
+    if (
+      message.includes('401') ||
+      message.includes('403') ||
+      message.includes('unauthorized')
+    ) {
       return 'auth'
     }
     if (message.includes('404') || message.includes('not found')) {
@@ -143,7 +150,9 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     const errorType = this.categorizeError(error)
     return (
       this.autoRetryCount < this.maxAutoRetries &&
-      (errorType === 'network' || errorType === 'timeout' || errorType === 'server')
+      (errorType === 'network' ||
+        errorType === 'timeout' ||
+        errorType === 'server')
     )
   }
 
@@ -152,9 +161,9 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     if (this.autoRetryCount >= this.maxAutoRetries) {
       return
     }
-    
+
     const backoffTime = Math.min(1000 * Math.pow(2, this.autoRetryCount), 5000)
-    this.autoRetryCount++  // Increment before scheduling
+    this.autoRetryCount++ // Increment before scheduling
     this.retryTimeoutId = setTimeout(() => {
       this.handleRetry()
     }, backoffTime)
@@ -170,7 +179,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
       if (this.props.onRetry) {
         await this.props.onRetry()
       }
-      
+
       // Reset error state after successful retry
       this.setState({
         hasError: false,
@@ -235,7 +244,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive" />
+                <AlertCircle className="text-destructive h-5 w-5" />
                 {operationName} Failed
               </span>
               <Badge variant={isOnline ? 'default' : 'secondary'}>
@@ -254,7 +263,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {this.getErrorMessage()}
             </p>
 
@@ -265,7 +274,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
             )}
 
             {retryCount >= maxRetries && (
-              <p className="text-sm font-medium text-destructive">
+              <p className="text-destructive text-sm font-medium">
                 Maximum retries reached
               </p>
             )}
@@ -275,7 +284,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
                 <summary className="cursor-pointer font-medium">
                   Error Details (dev only)
                 </summary>
-                <pre className="mt-2 overflow-auto rounded bg-muted p-2">
+                <pre className="bg-muted mt-2 overflow-auto rounded p-2">
                   {error?.stack || error?.message}
                 </pre>
               </details>
@@ -290,11 +299,13 @@ export class AsyncErrorBoundary extends Component<Props, State> {
                   size="sm"
                   className="gap-2"
                 >
-                  <RefreshCw className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`}
+                  />
                   {isRetrying ? 'Retrying...' : 'Retry'}
                 </Button>
               )}
-              
+
               {!isOnline && (
                 <Button
                   onClick={this.handleRefreshPage}
@@ -306,7 +317,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
                   Refresh Page
                 </Button>
               )}
-              
+
               <Button
                 onClick={this.handleReset}
                 variant="outline"

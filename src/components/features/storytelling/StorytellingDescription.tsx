@@ -309,7 +309,7 @@ const DESCRIPTION_TEMPLATES = {
       'Spacious lot ready for your growing family dreams',
       'Room to create the perfect family compound',
       'Build exactly what your family needs and wants',
-      'Investment in your family\'s future starts here',
+      "Investment in your family's future starts here",
     ],
     luxury: [
       'Premium lot in exclusive area for custom estate',
@@ -355,7 +355,7 @@ function seededRandom(seed: string): number {
   let hash = 0
   for (let i = 0; i < seed.length; i++) {
     const char = seed.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // Convert to 32bit integer
   }
   const normalized = Math.abs(hash) / 2147483647
@@ -363,7 +363,11 @@ function seededRandom(seed: string): number {
 }
 
 // Get deterministic random index based on property ID and context
-function getSeededIndex(propertyId: string, context: string, arrayLength: number): number {
+function getSeededIndex(
+  propertyId: string,
+  context: string,
+  arrayLength: number
+): number {
   const combinedSeed = `${propertyId}-${context}`
   const random = seededRandom(combinedSeed)
   return Math.floor(random * arrayLength)
@@ -540,7 +544,10 @@ function getLifestyleStory(
   return stories[index]
 }
 
-function getNeighborhoodPerks(property: Property, _neighborhood?: Neighborhood): string {
+function getNeighborhoodPerks(
+  property: Property,
+  _neighborhood?: Neighborhood
+): string {
   const perks: string[] = []
 
   if (_neighborhood?.walk_score && _neighborhood.walk_score > 80) {
@@ -569,7 +576,11 @@ function getFutureVisionTag(
   // Family potential
   if (property.bedrooms && property.bedrooms >= 3 && property.bathrooms >= 2) {
     const vision = FUTURE_VISION_TAGS.familyReady
-    const index = getSeededIndex(property.id, 'future-vision-family', vision.descriptions.length)
+    const index = getSeededIndex(
+      property.id,
+      'future-vision-family',
+      vision.descriptions.length
+    )
     return {
       tag: vision.tag,
       description: vision.descriptions[index],
@@ -579,7 +590,11 @@ function getFutureVisionTag(
   // Entertainment focus
   if (property.square_feet && property.square_feet > 1500) {
     const vision = FUTURE_VISION_TAGS.entertaining
-    const index = getSeededIndex(property.id, 'future-vision-entertainment', vision.descriptions.length)
+    const index = getSeededIndex(
+      property.id,
+      'future-vision-entertainment',
+      vision.descriptions.length
+    )
     return {
       tag: vision.tag,
       description: vision.descriptions[index],
@@ -589,7 +604,11 @@ function getFutureVisionTag(
   // Cozy romantic space
   if (property.bedrooms && property.bedrooms <= 2) {
     const vision = FUTURE_VISION_TAGS.romantic
-    const index = getSeededIndex(property.id, 'future-vision-romantic', vision.descriptions.length)
+    const index = getSeededIndex(
+      property.id,
+      'future-vision-romantic',
+      vision.descriptions.length
+    )
     return {
       tag: vision.tag,
       description: vision.descriptions[index],
@@ -598,7 +617,11 @@ function getFutureVisionTag(
 
   // Default retreat
   const vision = FUTURE_VISION_TAGS.retreat
-  const index = getSeededIndex(property.id, 'future-vision-retreat', vision.descriptions.length)
+  const index = getSeededIndex(
+    property.id,
+    'future-vision-retreat',
+    vision.descriptions.length
+  )
   return {
     tag: vision.tag,
     description: vision.descriptions[index],
@@ -612,7 +635,11 @@ function getDescription(
 ): string {
   // Return mutual like message first if applicable
   if (isMutualLike) {
-    const mutualIndex = getSeededIndex(property.id, 'mutual-like', MUTUAL_LIKE_MESSAGES.length)
+    const mutualIndex = getSeededIndex(
+      property.id,
+      'mutual-like',
+      MUTUAL_LIKE_MESSAGES.length
+    )
     return MUTUAL_LIKE_MESSAGES[mutualIndex]
   }
 
@@ -634,7 +661,11 @@ function getDescription(
     DESCRIPTION_TEMPLATES.single_family.starter
 
   // Choose a template description based on property ID
-  const index = getSeededIndex(property.id, `description-${propertyType}-${priceCategory}`, templates.length)
+  const index = getSeededIndex(
+    property.id,
+    `description-${propertyType}-${priceCategory}`,
+    templates.length
+  )
   return templates[index]
 }
 

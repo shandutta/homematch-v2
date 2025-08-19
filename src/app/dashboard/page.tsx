@@ -1,10 +1,8 @@
 import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl'
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary'
 import { loadDashboardData } from '@/lib/data/loader'
-// import { UserService } from '@/lib/services/users';  // Commented out as it's not currently used
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-// import { Session } from '@supabase/supabase-js';  // Commented out as it's not currently used
 
 interface DashboardPageProps {
   searchParams: {
@@ -24,26 +22,8 @@ export default async function DashboardPage({
     redirect('/login')
   }
 
-  // const userService = new UserService();
-
   try {
     const dashboardData = await loadDashboardData()
-    // const [userData, interactions, dashboardData] = await Promise.all([
-    //   userService.getUserProfile(user.id),
-    //   userService.getUserInteractions(user.id, 1000),
-    //   loadDashboardData(),
-    // ]);
-
-    // If user profile doesn't exist, create it (fallback for OAuth users)
-    // let finalUserData = userData;
-    // if (!userData) {
-    //   console.log('Creating user profile for OAuth user:', user.id);
-    //   finalUserData = await userService.createUserProfile({
-    //     id: user.id,
-    //     onboarding_completed: false,
-    //     preferences: {},
-    //   });
-    // }
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented
     // if (!finalUserData?.onboarding_completed) {
@@ -78,6 +58,21 @@ export default async function DashboardPage({
     )
   } catch (error) {
     console.error('Dashboard error:', error)
+
+    // Check if it's a database connection error
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isDatabaseError =
+      errorMessage.toLowerCase().includes('database') ||
+      errorMessage.toLowerCase().includes('connection') ||
+      errorMessage.toLowerCase().includes('econnrefused') ||
+      errorMessage.toLowerCase().includes('timeout')
+
+    if (isDatabaseError) {
+      // Throw a specific error that the error boundary can catch and handle
+      throw new Error('DATABASE_CONNECTION_ERROR: ' + errorMessage)
+    }
+
+    // For non-database errors, redirect to login as before
     redirect('/login')
   }
 }

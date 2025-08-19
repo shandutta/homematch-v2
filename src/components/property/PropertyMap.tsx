@@ -45,7 +45,7 @@ export function PropertyMap({
     try {
       // Parse coordinates using our utility function
       const coords = parsePostGISGeometry(property.coordinates)
-      
+
       if (!coords || !isValidLatLng(coords)) {
         setError('No valid coordinates available')
         setIsLoading(false)
@@ -160,7 +160,7 @@ export function PropertyMap({
   }
 
   return (
-    <SecureMapLoader 
+    <SecureMapLoader
       onError={(error) => {
         console.error('Map loader error:', error)
         setError('Failed to load mapping service')

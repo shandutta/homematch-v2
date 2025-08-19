@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
-import { MotionDiv, fadeInUp, normalTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  fadeInUp,
+  normalTransition,
+} from '@/components/ui/motion-components'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquareMore, Users, ArrowRight, X } from 'lucide-react'
@@ -67,7 +71,12 @@ export function DisputedPropertiesAlert({
         initial="initial"
         animate="animate"
         exit="exit"
-        transition={{ ...normalTransition, duration: 0.4, type: 'spring', stiffness: 300 }}
+        transition={{
+          ...normalTransition,
+          duration: 0.4,
+          type: 'spring',
+          stiffness: 300,
+        }}
         className={className}
       >
         <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg">

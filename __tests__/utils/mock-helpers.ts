@@ -18,14 +18,18 @@ export function mockSupabaseClient(overrides: any = {}) {
       signInWithOAuth: jest.fn(() => Promise.resolve({ error: null })),
       signUp: jest.fn(() => Promise.resolve({ error: null })),
       signOut: jest.fn(() => Promise.resolve({ error: null })),
-      getUser: jest.fn(() => Promise.resolve({ 
-        data: { user: null }, 
-        error: null 
-      })),
-      getSession: jest.fn(() => Promise.resolve({ 
-        data: { session: null }, 
-        error: null 
-      })),
+      getUser: jest.fn(() =>
+        Promise.resolve({
+          data: { user: null },
+          error: null,
+        })
+      ),
+      getSession: jest.fn(() =>
+        Promise.resolve({
+          data: { session: null },
+          error: null,
+        })
+      ),
       onAuthStateChange: jest.fn((_callback) => ({
         data: { subscription: { unsubscribe: jest.fn() } },
       })),
@@ -44,7 +48,7 @@ export function mockSupabaseClient(overrides: any = {}) {
     rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
     ...overrides,
   })
-  
+
   return client
 }
 
@@ -54,20 +58,24 @@ export function mockSupabaseClient(overrides: any = {}) {
 export function mockSupabaseServerClient(overrides: any = {}) {
   const client = (createApiClient as jest.Mock).mockReturnValue({
     auth: {
-      getUser: jest.fn(() => Promise.resolve({ 
-        data: { user: { id: 'test-user-id', email: 'test@example.com' } }, 
-        error: null 
-      })),
-      getSession: jest.fn(() => Promise.resolve({ 
-        data: { 
-          session: { 
-            user: { id: 'test-user-id', email: 'test@example.com' },
-            access_token: 'test-token',
-            refresh_token: 'test-refresh-token',
-          } 
-        }, 
-        error: null 
-      })),
+      getUser: jest.fn(() =>
+        Promise.resolve({
+          data: { user: { id: 'test-user-id', email: 'test@example.com' } },
+          error: null,
+        })
+      ),
+      getSession: jest.fn(() =>
+        Promise.resolve({
+          data: {
+            session: {
+              user: { id: 'test-user-id', email: 'test@example.com' },
+              access_token: 'test-token',
+              refresh_token: 'test-refresh-token',
+            },
+          },
+          error: null,
+        })
+      ),
       ...overrides.auth,
     },
     from: jest.fn((table: string) => ({
@@ -83,7 +91,7 @@ export function mockSupabaseServerClient(overrides: any = {}) {
     rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
     ...overrides,
   })
-  
+
   return client
 }
 
@@ -99,17 +107,20 @@ export function mockNextRouter(overrides: any = {}) {
     refresh: jest.fn(),
     prefetch: jest.fn(),
     ...overrides,
-  };
-  
-  (useRouter as jest.Mock).mockReturnValue(router)
-  
+  }
+
+  ;(useRouter as jest.Mock).mockReturnValue(router)
+
   return router
 }
 
 /**
  * Helper to mock authenticated user
  */
-export function mockAuthenticatedUser(userId = 'test-user-id', email = 'test@example.com') {
+export function mockAuthenticatedUser(
+  userId = 'test-user-id',
+  email = 'test@example.com'
+) {
   const user = {
     id: userId,
     email,
@@ -122,37 +133,37 @@ export function mockAuthenticatedUser(userId = 'test-user-id', email = 'test@exa
   // Update client mock
   const clientMock = createClient as jest.Mock
   const client = clientMock()
-  client.auth.getUser.mockResolvedValue({ 
-    data: { user }, 
-    error: null 
+  client.auth.getUser.mockResolvedValue({
+    data: { user },
+    error: null,
   })
-  client.auth.getSession.mockResolvedValue({ 
-    data: { 
-      session: { 
+  client.auth.getSession.mockResolvedValue({
+    data: {
+      session: {
         user,
         access_token: 'test-token',
         refresh_token: 'test-refresh-token',
-      } 
-    }, 
-    error: null 
+      },
+    },
+    error: null,
   })
 
   // Update server mock
   const serverMock = createApiClient as jest.Mock
   const server = serverMock()
-  server.auth.getUser.mockResolvedValue({ 
-    data: { user }, 
-    error: null 
+  server.auth.getUser.mockResolvedValue({
+    data: { user },
+    error: null,
   })
-  server.auth.getSession.mockResolvedValue({ 
-    data: { 
-      session: { 
+  server.auth.getSession.mockResolvedValue({
+    data: {
+      session: {
         user,
         access_token: 'test-token',
         refresh_token: 'test-refresh-token',
-      } 
-    }, 
-    error: null 
+      },
+    },
+    error: null,
   })
 
   return user
@@ -164,24 +175,24 @@ export function mockAuthenticatedUser(userId = 'test-user-id', email = 'test@exa
 export function mockUnauthenticatedUser() {
   const clientMock = createClient as jest.Mock
   const client = clientMock()
-  client.auth.getUser.mockResolvedValue({ 
-    data: { user: null }, 
-    error: new Error('Unauthorized') 
+  client.auth.getUser.mockResolvedValue({
+    data: { user: null },
+    error: new Error('Unauthorized'),
   })
-  client.auth.getSession.mockResolvedValue({ 
-    data: { session: null }, 
-    error: null 
+  client.auth.getSession.mockResolvedValue({
+    data: { session: null },
+    error: null,
   })
 
   const serverMock = createApiClient as jest.Mock
   const server = serverMock()
-  server.auth.getUser.mockResolvedValue({ 
-    data: { user: null }, 
-    error: new Error('Unauthorized') 
+  server.auth.getUser.mockResolvedValue({
+    data: { user: null },
+    error: new Error('Unauthorized'),
   })
-  server.auth.getSession.mockResolvedValue({ 
-    data: { session: null }, 
-    error: null 
+  server.auth.getSession.mockResolvedValue({
+    data: { session: null },
+    error: null,
   })
 }
 

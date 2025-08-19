@@ -24,7 +24,11 @@ describe('Button Component', () => {
     })
 
     test('spreads additional props', () => {
-      render(<Button data-testid="custom-button" aria-label="Custom button">Test</Button>)
+      render(
+        <Button data-testid="custom-button" aria-label="Custom button">
+          Test
+        </Button>
+      )
       const button = screen.getByTestId('custom-button')
       expect(button).toHaveAttribute('aria-label', 'Custom button')
     })
@@ -76,7 +80,12 @@ describe('Button Component', () => {
     test('renders prime variant with complex styling', () => {
       render(<Button variant="prime">Prime</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('relative', 'overflow-hidden', 'rounded-full', 'text-white')
+      expect(button).toHaveClass(
+        'relative',
+        'overflow-hidden',
+        'rounded-full',
+        'text-white'
+      )
     })
   })
 
@@ -148,10 +157,10 @@ describe('Button Component', () => {
       const user = userEvent.setup()
       const handleClick = jest.fn()
       render(<Button onClick={handleClick}>Click me</Button>)
-      
+
       const button = screen.getByRole('button')
       await user.click(button)
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1)
     })
 
@@ -159,17 +168,24 @@ describe('Button Component', () => {
       render(<Button disabled>Disabled Button</Button>)
       const button = screen.getByRole('button')
       expect(button).toBeDisabled()
-      expect(button).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50')
+      expect(button).toHaveClass(
+        'disabled:pointer-events-none',
+        'disabled:opacity-50'
+      )
     })
 
     test('prevents click when disabled', async () => {
       const user = userEvent.setup()
       const handleClick = jest.fn()
-      render(<Button disabled onClick={handleClick}>Disabled</Button>)
-      
+      render(
+        <Button disabled onClick={handleClick}>
+          Disabled
+        </Button>
+      )
+
       const button = screen.getByRole('button')
       await user.click(button)
-      
+
       expect(handleClick).not.toHaveBeenCalled()
     })
 
@@ -177,11 +193,11 @@ describe('Button Component', () => {
       const user = userEvent.setup()
       const handleClick = jest.fn()
       render(<Button onClick={handleClick}>Keyboard Button</Button>)
-      
+
       const button = screen.getByRole('button')
       button.focus()
       await user.keyboard('{Enter}')
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1)
     })
 
@@ -189,11 +205,11 @@ describe('Button Component', () => {
       const user = userEvent.setup()
       const handleClick = jest.fn()
       render(<Button onClick={handleClick}>Space Button</Button>)
-      
+
       const button = screen.getByRole('button')
       button.focus()
       await user.keyboard('{ }')
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1)
     })
   })
@@ -202,14 +218,20 @@ describe('Button Component', () => {
     test('has proper focus styles', () => {
       render(<Button>Focus Test</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('focus-visible:border-ring', 'focus-visible:ring-ring/50')
+      expect(button).toHaveClass(
+        'focus-visible:border-ring',
+        'focus-visible:ring-ring/50'
+      )
     })
 
     test('supports aria-invalid state', () => {
       render(<Button aria-invalid={true}>Invalid Button</Button>)
       const button = screen.getByRole('button')
       expect(button).toHaveAttribute('aria-invalid', 'true')
-      expect(button).toHaveClass('aria-invalid:ring-destructive/20', 'aria-invalid:border-destructive')
+      expect(button).toHaveClass(
+        'aria-invalid:ring-destructive/20',
+        'aria-invalid:border-destructive'
+      )
     })
 
     test('maintains outline focus for accessibility', () => {
@@ -225,16 +247,27 @@ describe('Button Component', () => {
           Visible text
         </Button>
       )
-      const button = screen.getByRole('button', { name: /screen reader only visible text/i })
+      const button = screen.getByRole('button', {
+        name: /screen reader only visible text/i,
+      })
       expect(button).toBeInTheDocument()
     })
   })
 
   describe('Variant Combinations', () => {
     test('combines variant and size correctly', () => {
-      render(<Button variant="primary" size="lg">Large Primary</Button>)
+      render(
+        <Button variant="primary" size="lg">
+          Large Primary
+        </Button>
+      )
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('bg-token-primary', 'text-white', 'min-h-[48px]', 'h-12')
+      expect(button).toHaveClass(
+        'bg-token-primary',
+        'text-white',
+        'min-h-[48px]',
+        'h-12'
+      )
     })
 
     test('applies custom className with variants', () => {
@@ -244,7 +277,11 @@ describe('Button Component', () => {
         </Button>
       )
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('bg-token-error', 'text-white', 'custom-spacing')
+      expect(button).toHaveClass(
+        'bg-token-error',
+        'text-white',
+        'custom-spacing'
+      )
     })
   })
 
@@ -276,7 +313,9 @@ describe('Button Component', () => {
     test('maintains proper button semantics with asChild', () => {
       render(
         <Button asChild>
-          <div role="button" tabIndex={0}>Div Button</div>
+          <div role="button" tabIndex={0}>
+            Div Button
+          </div>
         </Button>
       )
       const divButton = screen.getByRole('button', { name: /div button/i })

@@ -151,7 +151,7 @@ useEffect(() => {
 {
   /* TODO: Implement these pages */
 }
-<Link href="#" className="cursor-not-allowed opacity-50">
+;<Link href="#" className="cursor-not-allowed opacity-50">
   About Us
 </Link>
 ```
@@ -270,6 +270,7 @@ The landing page successfully delivers the "Tinder-for-houses" experience with a
 ## Analysis Methodology
 
 This analysis was conducted using:
+
 - **Ultra-thinking mode** for comprehensive issue detection
 - **Accessibility audits** with screen readers and keyboard navigation
 - **Performance profiling** with DevTools and Lighthouse

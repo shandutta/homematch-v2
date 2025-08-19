@@ -6,8 +6,10 @@ config({ path: '.env.test.local' })
 
 beforeAll(async () => {
   // Ensure dev server is running
-  console.log('🌐 E2E API tests require dev server running on http://localhost:3000')
-  
+  console.log(
+    '🌐 E2E API tests require dev server running on http://localhost:3000'
+  )
+
   // Check if server is accessible
   try {
     const response = await fetch('http://localhost:3000/api/health')

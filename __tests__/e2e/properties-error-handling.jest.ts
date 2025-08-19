@@ -28,7 +28,7 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         limit: jest.fn(),
         single: jest.fn(),
       }
-      
+
       // Make all methods return the mock itself for chaining
       mock.from.mockReturnValue(mock)
       mock.select.mockReturnValue(mock)
@@ -39,10 +39,10 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
       mock.order.mockReturnValue(mock)
       mock.limit.mockReturnValue(mock)
       mock.single.mockReturnValue(mock)
-      
+
       return mock
     }
-    
+
     mockSupabaseClient = createChainableMock()
 
     // Ensure both client and server creators return the same mock
@@ -62,13 +62,17 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
 
   describe('Database Connection Errors', () => {
     test('analyticsService should handle database connection failures', async () => {
-      mockSupabaseClient.select.mockRejectedValue(new Error('Connection timeout'))
+      mockSupabaseClient.select.mockRejectedValue(
+        new Error('Connection timeout')
+      )
 
       await expect(analyticsService.getPropertyStats()).rejects.toThrow()
     })
 
     test('geographicService should handle RPC connection failures', async () => {
-      mockSupabaseClient.rpc.mockRejectedValue(new Error('RPC connection failed'))
+      mockSupabaseClient.rpc.mockRejectedValue(
+        new Error('RPC connection failed')
+      )
 
       await expect(
         geographicService.getPropertiesWithinRadius(34.0522, -118.2437, 5)
@@ -76,7 +80,9 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
     })
 
     test('facade should propagate database connection errors', async () => {
-      mockSupabaseClient.select.mockRejectedValue(new Error('Database unavailable'))
+      mockSupabaseClient.select.mockRejectedValue(
+        new Error('Database unavailable')
+      )
 
       await expect(propertyService.getPropertyStats()).rejects.toThrow()
     })
@@ -97,7 +103,11 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
 
     test('geographicService should validate required radius parameter', async () => {
       await expect(
-        geographicService.getPropertiesWithinRadius(34.0522, -118.2437, null as any)
+        geographicService.getPropertiesWithinRadius(
+          34.0522,
+          -118.2437,
+          null as any
+        )
       ).rejects.toThrow()
     })
 
@@ -146,7 +156,11 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesWithinRadius(34.0522, -118.2437, 5)
+      const result = await geographicService.getPropertiesWithinRadius(
+        34.0522,
+        -118.2437,
+        5
+      )
 
       expect(result).toEqual([])
     })
@@ -168,7 +182,10 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         error: { message: 'Geocoding failed' },
       })
 
-      const result = await geographicService.getPropertiesNearAddress('Unknown Address', 2)
+      const result = await geographicService.getPropertiesNearAddress(
+        'Unknown Address',
+        2
+      )
 
       expect(result).toEqual([])
     })
@@ -177,9 +194,27 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
   describe('Malformed Data Handling', () => {
     test('analyticsService should handle properties with null values', async () => {
       const mockProperties = [
-        { price: 500000, bedrooms: 3, bathrooms: 2, square_feet: null, property_type: 'single_family' },
-        { price: null, bedrooms: 3, bathrooms: 2, square_feet: 1500, property_type: null },
-        { price: 600000, bedrooms: null, bathrooms: null, square_feet: 1600, property_type: 'condo' }
+        {
+          price: 500000,
+          bedrooms: 3,
+          bathrooms: 2,
+          square_feet: null,
+          property_type: 'single_family',
+        },
+        {
+          price: null,
+          bedrooms: 3,
+          bathrooms: 2,
+          square_feet: 1500,
+          property_type: null,
+        },
+        {
+          price: 600000,
+          bedrooms: null,
+          bathrooms: null,
+          square_feet: 1600,
+          property_type: 'condo',
+        },
       ]
 
       mockSupabaseClient.select.mockResolvedValue({
@@ -201,7 +236,9 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         error: null,
       })
 
-      const result = await geographicService.getCommuteAnalysis('prop-123', [{ lat: 34.0, lng: -118.0 }])
+      const result = await geographicService.getCommuteAnalysis('prop-123', [
+        { lat: 34.0, lng: -118.0 },
+      ])
 
       // Should still return result with fallback behavior
       expect(result).not.toBeNull()
@@ -210,8 +247,20 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
 
     test('analyticsService should handle edge case price calculations', async () => {
       const mockProperties = [
-        { price: 0, bedrooms: 1, bathrooms: 1, square_feet: 500, property_type: 'studio' },
-        { price: 1000000000, bedrooms: 10, bathrooms: 8, square_feet: 10000, property_type: 'mansion' }
+        {
+          price: 0,
+          bedrooms: 1,
+          bathrooms: 1,
+          square_feet: 500,
+          property_type: 'studio',
+        },
+        {
+          price: 1000000000,
+          bedrooms: 10,
+          bathrooms: 8,
+          square_feet: 10000,
+          property_type: 'mansion',
+        },
       ]
 
       mockSupabaseClient.select.mockResolvedValue({
@@ -231,10 +280,17 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
     test('geographicService should handle RPC function not found errors', async () => {
       mockSupabaseClient.rpc.mockResolvedValue({
         data: null,
-        error: { message: 'function get_properties_within_radius(lat double precision, lng double precision, radius_km double precision, result_limit integer) does not exist' },
+        error: {
+          message:
+            'function get_properties_within_radius(lat double precision, lng double precision, radius_km double precision, result_limit integer) does not exist',
+        },
       })
 
-      const result = await geographicService.getPropertiesWithinRadius(34.0522, -118.2437, 5)
+      const result = await geographicService.getPropertiesWithinRadius(
+        34.0522,
+        -118.2437,
+        5
+      )
 
       expect(result).toEqual([])
     })
@@ -257,7 +313,10 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
       })
 
       const result = await geographicService.getNearestAmenities(
-        34.0522, -118.2437, ['restaurant', 'school'], 2
+        34.0522,
+        -118.2437,
+        ['restaurant', 'school'],
+        2
       )
 
       expect(result).toHaveLength(2)
@@ -275,13 +334,17 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
       })
 
       const promises = Array.from({ length: 5 }, (_, i) =>
-        geographicService.getPropertiesWithinRadius(34.0522 + i * 0.01, -118.2437, 5)
+        geographicService.getPropertiesWithinRadius(
+          34.0522 + i * 0.01,
+          -118.2437,
+          5
+        )
       )
 
       const results = await Promise.all(promises)
 
       expect(results).toHaveLength(5)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toHaveLength(1)
         expect(result[0]).toHaveProperty('id', 'prop-1')
       })
@@ -294,10 +357,13 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'single_family'
+        property_type: 'single_family',
       }
 
-      mockSupabaseClient.single.mockResolvedValue({ data: mockProperty, error: null })
+      mockSupabaseClient.single.mockResolvedValue({
+        data: mockProperty,
+        error: null,
+      })
       mockSupabaseClient.limit.mockResolvedValue({ data: [], error: null })
 
       const promises = Array.from({ length: 3 }, (_, i) =>
@@ -307,7 +373,7 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
       const results = await Promise.all(promises)
 
       expect(results).toHaveLength(3)
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).not.toBeNull()
         expect(result).toHaveProperty('current_price', 500000)
       })
@@ -318,7 +384,7 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
     test('geographicService should respect result limits', async () => {
       const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
         id: `prop-${i}`,
-        distance_km: Math.random() * 10
+        distance_km: Math.random() * 10,
       }))
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -326,7 +392,12 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesWithinRadius(34.0522, -118.2437, 5, 50)
+      const result = await geographicService.getPropertiesWithinRadius(
+        34.0522,
+        -118.2437,
+        5,
+        50
+      )
 
       expect(result).toHaveLength(50)
     })
@@ -337,7 +408,9 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
         bedrooms: Math.floor(Math.random() * 5) + 1,
         bathrooms: Math.floor(Math.random() * 4) + 1,
         square_feet: 800 + Math.random() * 2000,
-        property_type: ['single_family', 'condo', 'townhome'][Math.floor(Math.random() * 3)]
+        property_type: ['single_family', 'condo', 'townhome'][
+          Math.floor(Math.random() * 3)
+        ],
       }))
 
       mockSupabaseClient.select.mockResolvedValue({
@@ -362,14 +435,15 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
 
       // Same point distance
       const samePointDistance = await geographicService.calculateDistance(
-        34.0522, -118.2437, 34.0522, -118.2437
+        34.0522,
+        -118.2437,
+        34.0522,
+        -118.2437
       )
       expect(samePointDistance).toBe(0)
 
       // Antipodal points (opposite sides of Earth)
-      const antipodal = await geographicService.calculateDistance(
-        0, 0, 0, 180
-      )
+      const antipodal = await geographicService.calculateDistance(0, 0, 0, 180)
       expect(antipodal).toBe(0) // Mocked, but would be ~20,000km in reality
     })
 
@@ -381,13 +455,17 @@ describe('Error Handling and Edge Cases Integration Tests', () => {
 
       // Very small radius
       const smallRadius = await geographicService.getPropertiesWithinRadius(
-        34.0522, -118.2437, 0.001
+        34.0522,
+        -118.2437,
+        0.001
       )
       expect(smallRadius).toEqual([])
 
       // Very large radius
       const largeRadius = await geographicService.getPropertiesWithinRadius(
-        34.0522, -118.2437, 1000
+        34.0522,
+        -118.2437,
+        1000
       )
       expect(largeRadius).toEqual([])
     })

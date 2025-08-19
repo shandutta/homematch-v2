@@ -24,9 +24,10 @@ const FALLBACK_IMAGES = [
   '/images/properties/house-3.svg',
 ]
 
-// Known broken Unsplash URLs that should be avoided
+// Known broken Unsplash URLs and unreliable image sources that should be avoided
 const BROKEN_IMAGE_PATTERNS = [
   'photo-1575517111478-7f6f2c59ebb0', // This specific image is consistently 404
+  'loremflickr.com', // LoremFlickr causes Next.js optimization 500 errors in test mode
   // Add more patterns as they're identified
 ]
 
@@ -62,6 +63,14 @@ export function PropertyImage({
       } else if (typeof src === 'string') {
         // Check if single string URL is known to be broken
         imageUrl = isKnownBrokenImage(src) ? undefined : src
+      }
+
+      // Double-check: if the URL is still a loremflickr URL, force fallback
+      if (imageUrl && imageUrl.includes('loremflickr.com')) {
+        console.warn(
+          `Blocking loremflickr URL from Next.js Image optimization: ${imageUrl}`
+        )
+        imageUrl = undefined
       }
 
       if (imageUrl) {

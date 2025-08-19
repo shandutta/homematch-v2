@@ -20,7 +20,18 @@ vi.mock('framer-motion', () => ({
 
 // Mock MotionDiv to be a simple div in tests
 vi.mock('@/components/ui/motion-components', () => ({
-  MotionDiv: ({ children, _whileHover, _initial, _animate, _transition, ...props }: any) => <div {...props}>{children}</div>,
+  MotionDiv: ({
+    children,
+    whileHover: _whileHover,
+    initial: _initial,
+    animate: _animate,
+    transition: _transition,
+    variants: _variants,
+    exit: _exit,
+    layout: _layout,
+    layoutId: _layoutId,
+    ...props
+  }: any) => <div {...props}>{children}</div>,
 }))
 
 vi.mock('next/image', () => ({
@@ -44,12 +55,12 @@ vi.mock('next/link', () => ({
 vi.mock('@/components/ui/property-image', () => ({
   PropertyImage: ({ src, alt, fill, width, height, ...props }: any) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img 
-      src={Array.isArray(src) ? src[0] : src || '/test-image.jpg'} 
-      alt={alt} 
-      width={fill ? '100%' : width} 
+    <img
+      src={Array.isArray(src) ? src[0] : src || '/test-image.jpg'}
+      alt={alt}
+      width={fill ? '100%' : width}
       height={fill ? '100%' : height}
-      {...props} 
+      {...props}
     />
   ),
 }))
@@ -207,7 +218,7 @@ describe('Couples Components Accessibility Tests', () => {
       const { container } = render(<MutualLikesSection userId="user-123" />)
 
       // Wait for error state
-      await screen.findByText('Couldn\'t load mutual likes')
+      await screen.findByText("Couldn't load mutual likes")
 
       const results = await axe(container)
       expect(results).toHaveNoViolations()

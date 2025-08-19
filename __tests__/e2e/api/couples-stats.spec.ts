@@ -19,14 +19,14 @@ const fetchJson = async (path: string, init?: RequestInit) => {
     },
     ...init,
   })
-  
+
   let body: any = {}
   try {
     body = await res.json()
   } catch {
     // non-JSON body
   }
-  
+
   return { status: res.status, body, headers: res.headers }
 }
 
@@ -42,7 +42,9 @@ const requireAuth = () => {
 describe('Integration: /api/couples/stats (authenticated)', () => {
   beforeAll(() => {
     if (!API_URL) {
-      throw new Error('TEST_API_URL environment variable is required for integration tests')
+      throw new Error(
+        'TEST_API_URL environment variable is required for integration tests'
+      )
     }
   })
 
@@ -66,10 +68,10 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
     if (status === 200) {
       expect(body.stats).toBeDefined()
       expect(typeof body.stats).toBe('object')
-      
+
       // Check that stats have expected structure
       const stats = body.stats
-      
+
       // Optional numeric fields that should be non-negative if present
       const numericFields = [
         'total_mutual_likes',
@@ -77,10 +79,10 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
         'total_interactions',
         'properties_viewed',
         'properties_liked',
-        'properties_passed'
+        'properties_passed',
       ]
-      
-      numericFields.forEach(field => {
+
+      numericFields.forEach((field) => {
         if (stats[field] !== undefined && stats[field] !== null) {
           expect(typeof stats[field]).toBe('number')
           expect(stats[field]).toBeGreaterThanOrEqual(0)
@@ -89,7 +91,7 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
 
       // Date fields should be valid ISO strings if present
       const dateFields = ['last_activity_at', 'created_at']
-      dateFields.forEach(field => {
+      dateFields.forEach((field) => {
         if (stats[field] !== undefined && stats[field] !== null) {
           expect(typeof stats[field]).toBe('string')
           expect(() => new Date(stats[field])).not.toThrow()
@@ -116,25 +118,30 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
   test('should return consistent stats across multiple requests', async () => {
     requireAuth()
 
-    const requests = Array.from({ length: 3 }, () => 
+    const requests = Array.from({ length: 3 }, () =>
       fetchJson('/api/couples/stats')
     )
     const responses = await Promise.all(requests)
 
     // All responses should have the same status
-    const statuses = responses.map(r => r.status)
+    const statuses = responses.map((r) => r.status)
     expect(new Set(statuses).size).toBe(1) // All should be the same
 
     // If successful, stats should be consistent
     if (responses[0].status === 200) {
-      const statsArray = responses.map(r => r.body.stats)
-      
+      const statsArray = responses.map((r) => r.body.stats)
+
       // Check that numeric stats are consistent (activity might increment, but core stats should be stable)
-      const stableFields = ['total_mutual_likes', 'properties_viewed', 'properties_liked', 'properties_passed']
-      stableFields.forEach(field => {
-        const values = statsArray.map(stats => stats[field])
+      const stableFields = [
+        'total_mutual_likes',
+        'properties_viewed',
+        'properties_liked',
+        'properties_passed',
+      ]
+      stableFields.forEach((field) => {
+        const values = statsArray.map((stats) => stats[field])
         const uniqueValues = new Set(values)
-        
+
         // Values should be consistent (allowing for some activity during test)
         expect(uniqueValues.size).toBeLessThanOrEqual(2)
       })
@@ -143,9 +150,9 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
 
   test('should reject non-GET methods', async () => {
     requireAuth()
-    
+
     const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
-    
+
     for (const method of methods) {
       const res = await fetch(`${API_URL}/api/couples/stats`, {
         method,
@@ -154,7 +161,7 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
           ...AUTH_HEADER,
         },
       })
-      
+
       expect(res.status).toBe(405)
     }
   })
@@ -203,7 +210,7 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
     const startTime = Date.now()
     const { status } = await fetchJson('/api/couples/stats')
     const endTime = Date.now()
-    
+
     expect([200, 404, 500]).toContain(status)
     expect(endTime - startTime).toBeLessThan(5000) // Should respond within 5 seconds
   })
@@ -215,16 +222,16 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
 
     if (status === 200) {
       const stats = body.stats
-      
+
       // Validate specific data types for known fields
       if (stats.total_mutual_likes !== undefined) {
         expect(Number.isInteger(stats.total_mutual_likes)).toBe(true)
       }
-      
+
       if (stats.activity_streak_days !== undefined) {
         expect(Number.isInteger(stats.activity_streak_days)).toBe(true)
       }
-      
+
       if (stats.last_activity_at !== undefined) {
         const date = new Date(stats.last_activity_at)
         expect(date.getTime()).not.toBeNaN()

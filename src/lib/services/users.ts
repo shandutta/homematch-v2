@@ -1,5 +1,3 @@
-// import { createClient as createServerClient } from '@/lib/supabase/server'
-// import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import {
   UserProfile,
   UserProfileInsert,
@@ -79,7 +77,10 @@ export class UserService extends BaseService {
           .single()
 
         if (error) {
-          this.handleSupabaseError(error, 'updating user profile', { userId, updates })
+          this.handleSupabaseError(error, 'updating user profile', {
+            userId,
+            updates,
+          })
         }
 
         return data
@@ -105,13 +106,19 @@ export class UserService extends BaseService {
           .single()
 
         if (error) {
-          this.handleSupabaseError(error, 'fetching user profile with household', { userId })
+          this.handleSupabaseError(
+            error,
+            'fetching user profile with household',
+            { userId }
+          )
         }
 
-        return data ? {
-          ...data,
-          household: data.household || undefined
-        } : null
+        return data
+          ? {
+              ...data,
+              household: data.household || undefined,
+            }
+          : null
       }
     )
   }

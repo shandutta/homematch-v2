@@ -13,7 +13,11 @@ import {
   Star,
 } from 'lucide-react'
 import Link from 'next/link'
-import { MotionDiv, scaleIn, normalTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  scaleIn,
+  normalTransition,
+} from '@/components/ui/motion-components'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 
 interface EmptyStateProps {
@@ -31,7 +35,12 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
           variants={scaleIn}
           initial="initial"
           animate="animate"
-          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
+          transition={{
+            ...normalTransition,
+            delay: 0.2,
+            type: 'spring',
+            stiffness: 200,
+          }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
@@ -103,7 +112,12 @@ export function WaitingForPartnerState({
           variants={scaleIn}
           initial="initial"
           animate="animate"
-          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
+          transition={{
+            ...normalTransition,
+            delay: 0.2,
+            type: 'spring',
+            stiffness: 200,
+          }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
@@ -188,7 +202,12 @@ export function NoMutualLikesState({
           variants={scaleIn}
           initial="initial"
           animate="animate"
-          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
+          transition={{
+            ...normalTransition,
+            delay: 0.2,
+            type: 'spring',
+            stiffness: 200,
+          }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">
@@ -307,7 +326,12 @@ export function NetworkErrorState({
           variants={scaleIn}
           initial="initial"
           animate="animate"
-          transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
+          transition={{
+            ...normalTransition,
+            delay: 0.2,
+            type: 'spring',
+            stiffness: 200,
+          }}
           className="mb-6"
         >
           <div className="relative mx-auto h-20 w-20">

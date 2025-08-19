@@ -8,7 +8,7 @@ export function useValidatedForm<TSchema extends z.ZodTypeAny>(
 ) {
   // Use onChange validation mode for better test compatibility
   const mode = 'onChange'
-  
+
   return useForm<z.infer<TSchema>>({
     resolver: zodResolver(schema),
     defaultValues,

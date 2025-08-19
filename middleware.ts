@@ -85,7 +85,7 @@ export async function middleware(request: NextRequest) {
 
   // Add security headers
   const response = supabaseResponse
-  
+
   // Security headers for protection against common attacks
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -95,21 +95,21 @@ export async function middleware(request: NextRequest) {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   )
-  
+
   // Content Security Policy (adjust based on your needs)
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-      "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data: https: blob:; " +
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com; " +
-      "frame-ancestors 'none';"
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: https: blob:; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com; " +
+        "frame-ancestors 'none';"
     )
   }
-  
+
   // Strict Transport Security (HSTS) for production
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(

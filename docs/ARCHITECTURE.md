@@ -1281,12 +1281,14 @@ Planned hooks for future implementation:
 #### Security Architecture
 
 **Before (Insecure)**:
+
 - Google Maps API key exposed in client-side JavaScript
 - Direct API calls from browser to Google Maps
 - No rate limiting or request validation
 - **Risk Level**: 🔴 Critical
 
 **After (Secure)**:
+
 - No client-side API key exposure
 - Server-side proxy for all Google Maps API calls
 - Rate limiting and request validation
@@ -1310,6 +1312,7 @@ Planned hooks for future implementation:
 #### Environment Configuration
 
 **Required Environment Variables**:
+
 ```bash
 # Server-side API key (Required)
 GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
@@ -1324,6 +1327,7 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
    - Enable only required APIs: Maps JavaScript API, Geocoding API, Places API
 
 2. **Set API Restrictions**:
+
    ```
    HTTP referrers (web sites):
    - https://yourdomain.com/*
@@ -1336,21 +1340,25 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
 #### Security Benefits
 
 **✅ API Key Protection**:
+
 - Server-side keys never exposed to browsers
 - IP-based restrictions in Google Cloud Console
 - No client-side key leakage in source code
 
 **✅ Rate Limiting**:
+
 - Server-side: 100 requests/minute per IP
 - Client-side: Request debouncing and caching
 - Protection against abuse and cost overruns
 
 **✅ Input Validation**:
+
 - Zod schemas for all API requests
 - Type safety throughout the application
 - Sanitized responses to prevent XSS
 
 **✅ Error Handling**:
+
 - Graceful degradation when Maps unavailable
 - User-friendly error messages
 - Comprehensive logging for debugging
@@ -1358,12 +1366,14 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
 #### Performance Optimizations
 
 **Caching Strategy**:
+
 - **Script Proxy**: 1-hour browser cache
 - **Geocoding**: No caching (results may change)
 - **Places Autocomplete**: 5-minute client-side cache
 - **Rate Limiting**: In-memory store with cleanup
 
 **Request Optimization**:
+
 - Debounced autocomplete (500ms delay)
 - Minimum 2-character input for autocomplete
 - Automatic cleanup of old cache entries
@@ -1373,10 +1383,11 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
 **Updating Existing Components**:
 
 1. **Replace direct Google Maps usage**:
+
    ```tsx
    // Before
    <Script src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}`} />
-   
+
    // After
    <SecureMapLoader>
      <YourMapComponent />
@@ -1384,22 +1395,24 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
    ```
 
 2. **Update API calls**:
+
    ```tsx
    // Before
    const geocoder = new google.maps.Geocoder()
    geocoder.geocode({ address }, callback)
-   
+
    // After
    const { geocodeAddress } = useSecureGoogleMaps()
    const results = await geocodeAddress(address)
    ```
 
 3. **Update autocomplete**:
+
    ```tsx
    // Before
    const service = new google.maps.places.AutocompleteService()
    service.getPlacePredictions({ input }, callback)
-   
+
    // After
    const { getPlacesPredictions } = useSecureGoogleMaps()
    const predictions = await getPlacesPredictions(input)
@@ -1424,6 +1437,7 @@ GOOGLE_MAPS_SERVER_API_KEY=your_server_restricted_api_key
 3. **Geocoding failures**: Validate address format, check API quotas in Cloud Console, review error responses in logs
 
 **Debug Mode**:
+
 ```bash
 # Enable debug logging
 NODE_ENV=development pnpm run dev

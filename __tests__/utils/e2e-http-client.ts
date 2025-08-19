@@ -1,6 +1,6 @@
 /**
  * E2E HTTP Client
- * 
+ *
  * Provides HTTP request utilities for true end-to-end testing.
  * Makes real HTTP requests to the dev server with authentication support.
  * Integrates with IntegrationTestHelper for proper auth setup.
@@ -40,26 +40,38 @@ export class E2EHttpClient {
    * Authenticate as a specific user
    * Uses optimized database helper if enabled for better performance
    */
-  async authenticateAs(email: string, password: string = 'testpassword123'): Promise<void> {
+  async authenticateAs(
+    email: string,
+    password: string = 'testpassword123'
+  ): Promise<void> {
     if (this.useOptimizedDb) {
       // Use optimized helper with connection pooling
-      const client = await optimizedDbHelper.getAuthenticatedClient(email, password)
-      const { data: { session }, error } = await client.auth.getSession()
-      
+      const client = await optimizedDbHelper.getAuthenticatedClient(
+        email,
+        password
+      )
+      const {
+        data: { session },
+        error,
+      } = await client.auth.getSession()
+
       if (error || !session) {
         throw new Error(`Failed to get session for ${email}: ${error?.message}`)
       }
-      
+
       this.authToken = session.access_token
     } else {
       // Use original helper
       const client = await this.helper.authenticateAs(email, password)
-      const { data: { session }, error } = await client.auth.getSession()
-      
+      const {
+        data: { session },
+        error,
+      } = await client.auth.getSession()
+
       if (error || !session) {
         throw new Error(`Failed to get session for ${email}: ${error?.message}`)
       }
-      
+
       this.authToken = session.access_token
     }
   }
@@ -67,40 +79,46 @@ export class E2EHttpClient {
   /**
    * Make an authenticated HTTP request
    */
-  async request(url: string, options: RequestOptions = {}): Promise<E2EResponse> {
+  async request(
+    url: string,
+    options: RequestOptions = {}
+  ): Promise<E2EResponse> {
     const { method = 'GET', headers = {}, body, authenticated = true } = options
-    
+
     const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...headers
+      ...headers,
     }
-    
+
     // Add auth header if authenticated and token exists
     if (authenticated && this.authToken) {
       requestHeaders['Authorization'] = `Bearer ${this.authToken}`
     }
-    
+
     const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`
-    
+
     const response = await fetch(fullUrl, {
       method,
       headers: requestHeaders,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
     })
-    
+
     return {
       status: response.status,
       headers: response.headers,
       json: () => response.json(),
       text: () => response.text(),
-      ok: response.ok
+      ok: response.ok,
     }
   }
 
   /**
    * Make an unauthenticated HTTP request
    */
-  async unauthenticatedRequest(url: string, options: Omit<RequestOptions, 'authenticated'> = {}): Promise<E2EResponse> {
+  async unauthenticatedRequest(
+    url: string,
+    options: Omit<RequestOptions, 'authenticated'> = {}
+  ): Promise<E2EResponse> {
     return this.request(url, { ...options, authenticated: false })
   }
 
@@ -111,11 +129,19 @@ export class E2EHttpClient {
     return this.request(url, { method: 'GET', authenticated })
   }
 
-  async post(url: string, body?: any, authenticated = true): Promise<E2EResponse> {
+  async post(
+    url: string,
+    body?: any,
+    authenticated = true
+  ): Promise<E2EResponse> {
     return this.request(url, { method: 'POST', body, authenticated })
   }
 
-  async put(url: string, body?: any, authenticated = true): Promise<E2EResponse> {
+  async put(
+    url: string,
+    body?: any,
+    authenticated = true
+  ): Promise<E2EResponse> {
     return this.request(url, { method: 'PUT', body, authenticated })
   }
 
@@ -123,7 +149,11 @@ export class E2EHttpClient {
     return this.request(url, { method: 'DELETE', authenticated })
   }
 
-  async patch(url: string, body?: any, authenticated = true): Promise<E2EResponse> {
+  async patch(
+    url: string,
+    body?: any,
+    authenticated = true
+  ): Promise<E2EResponse> {
     return this.request(url, { method: 'PATCH', body, authenticated })
   }
 

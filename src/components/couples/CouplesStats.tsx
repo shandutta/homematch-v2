@@ -11,7 +11,12 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { MotionDiv, scaleIn, slideInRight, normalTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  scaleIn,
+  slideInRight,
+  normalTransition,
+} from '@/components/ui/motion-components'
 import type { CouplesStats as CouplesStatsType } from '@/lib/services/couples'
 
 interface CouplesStatsProps {
@@ -24,13 +29,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
       <Card className="card-glassmorphism-style border-couples-accent/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <TrendingUp className="h-6 w-6 text-couples-accent" />
+            <TrendingUp className="text-couples-accent h-6 w-6" />
             Your Journey
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center">
-            <TrendingUp className="mx-auto mb-4 h-12 w-12 text-couples-accent/30" />
+            <TrendingUp className="text-couples-accent/30 mx-auto mb-4 h-12 w-12" />
             <p className="text-primary/60">
               Start exploring to see your relationship stats!
             </p>
@@ -53,7 +58,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
       <Card className="card-glassmorphism-style border-couples-accent/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <TrendingUp className="h-6 w-6 text-couples-accent" />
+            <TrendingUp className="text-couples-accent h-6 w-6" />
             Your Journey
           </CardTitle>
         </CardHeader>

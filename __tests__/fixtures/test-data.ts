@@ -8,6 +8,34 @@
  * - Easy maintenance of test data
  */
 
+/**
+ * Get worker-specific test user to prevent auth race conditions
+ * Each Playwright worker gets its own isolated test user
+ */
+export const getWorkerTestUser = (workerIndex: number = 0) => ({
+  id: `test-user-worker-${workerIndex}`,
+  email: `test-worker-${workerIndex}@example.com`,
+  password: 'testpassword123',
+  profile: {
+    id: `test-user-worker-${workerIndex}`,
+    household_id: `household-worker-${workerIndex}`,
+    onboarding_completed: true,
+    preferences: {
+      search_preferences: {
+        price_min: 100000,
+        price_max: 500000,
+        bedrooms_min: 2,
+        bedrooms_max: 4,
+      },
+      notification_settings: {
+        email_enabled: true,
+        push_enabled: true,
+        frequency: 'daily' as const,
+      },
+    },
+  },
+})
+
 export const TEST_USERS = {
   withHousehold: {
     id: 'test-user-1',

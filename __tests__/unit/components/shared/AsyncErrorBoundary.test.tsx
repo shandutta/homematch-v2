@@ -105,10 +105,10 @@ describe('AsyncErrorBoundary', () => {
     jest.clearAllMocks()
     jest.useFakeTimers()
     mockNavigator.onLine = true
-    
+
     // Re-setup analytics mocks after clearing - need fresh mock functions
     ;(window as any).gtag = mockGtag
-    
+
     // Create fresh Sentry mock with implementation after clearAllMocks
     const freshSentryMock = {
       withScope: jest.fn((callback) => {
@@ -121,7 +121,7 @@ describe('AsyncErrorBoundary', () => {
       captureException: jest.fn(),
     }
     ;(window as any).Sentry = freshSentryMock
-    
+
     // Update mockSentry reference to use the fresh mock
     Object.assign(mockSentry, freshSentryMock)
   })

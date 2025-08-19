@@ -1,92 +1,175 @@
 # CLAUDE.md
 
-Project context and guidelines for Claude Code when working with this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Environment
 
-- Start directory: `homematch-v2` (Git Bash shell)
-- Commands: Use `pnpm` for package management
-
-### Shell (Windows)
-
-Always run commands directly in Git Bash—never wrap them in `Bash()` or prefix with `bash`, as this triggers the `Files\Git\bin\bash.exe` path error.
-
-## Workflow Guidelines
-
-- **Plan first**: Write plans to `.claude/tasks/TASK_NAME.md`, get approval before implementing
-- **Update plans**: Document changes, mark tasks as completed, and handoff details as you work
-- **Think MVP**: Avoid over-planning, focus on essential functionality
-- **Research**: Use MCPs and Task tool for external knowledge/packages
-
-## Code Standards
-
-- **TypeScript**: Strict mode, proper typing, no `any` types
-- **Quality**: Always run `pnpm run lint` and `pnpm run type-check` after changes
-- **Style**: Prettier (no semicolons, single quotes, 2-space indent)
+- **Package Manager**: Use `pnpm` exclusively (specified in package.json)
+- **Node Version**: 20+ required for Next.js 15 compatibility
+- **Shell**: Git Bash on Windows (never wrap commands in `Bash()` or prefix with `bash`)
 
 ## Essential Commands
 
+### Development
+
 ```bash
-pnpm run dev           # Start development server
-pnpm run lint          # Lint and type-check
-pnpm run test          # Run test suite
-pnpm run db:migrate    # Apply database migrations
+pnpm run dev           # Start development server with Turbopack
 pnpm run build         # Production build
+pnpm run start         # Start production server
 ```
 
-## Project Structure
+### Code Quality
 
-```
-/app                   # Next.js App Router (pages, API routes)
-/lib                   # Business logic (auth, services, ML, API clients)
-  /supabase           # Database clients
-  /services           # Business logic
-  /schemas            # Validation schemas
-/components            # React components by feature
-/types                # TypeScript definitions
+```bash
+pnpm run check         # Run lint + type-check together
+pnpm run lint          # ESLint with auto-fix
+pnpm run type-check    # TypeScript compilation check
+pnpm run format        # Prettier formatting
 ```
 
-## Key Features
+### Testing
 
-1. **ML Scoring**: 3-phase system (cold-start → online-LR → LightGBM)
-2. **Households**: Multi-user property sharing
-3. **Geographic**: PostGIS polygon neighborhoods
-4. **NL Search**: AI-powered complex queries
-5. **Real Estate**: Zillow API integration
+```bash
+pnpm run test          # Run all test suites (unit + integration + e2e)
+pnpm run test:unit     # Jest unit tests (82/82 passing)
+pnpm run test:integration  # Vitest integration tests (36/36 passing)
+pnpm run test:e2e      # Playwright E2E tests
+pnpm run test:unit:watch   # Watch mode for unit tests
+```
 
-## Common Patterns
+### Database
 
-- API routes: `/app/api` → business logic in `/lib/services`
-- Validation: Zod schemas in `/lib/schemas`
-- Auth: Supabase RLS policies for data access
-- Data: Store ML scores in JSONB fields
-- Testing: Use auth helpers for protected routes
-- **Migrations**: When naming Supabase migrations, always prefix the file with the current system date and time in `YYYYMMDDHHMMSS` format.
+```bash
+pnpm dlx supabase@latest start    # Start local Supabase
+pnpm dlx supabase@latest stop     # Stop local Supabase
+pnpm run migrate       # Run custom migrations
+```
+
+### Performance
+
+```bash
+pnpm run perf:test     # Performance benchmarks
+pnpm run perf:lighthouse   # Lighthouse CI
+```
+
+## Architecture Overview
+
+This is a Next.js 15 + Supabase application with comprehensive testing and type safety.
+
+### Core Structure
+
+```
+src/
+├── app/                    # Next.js App Router (pages, API routes)
+│   ├── api/               # API routes (couples, properties, maps, etc.)
+│   ├── dashboard/         # Main app pages
+│   └── auth/              # Authentication pages
+├── components/            # React components organized by feature
+│   ├── features/          # Feature-specific components (auth, couples, etc.)
+│   ├── ui/               # shadcn/ui components
+│   └── shared/           # Shared utilities and error boundaries
+├── lib/
+│   ├── services/         # Business logic layer (properties, interactions, etc.)
+│   ├── schemas/          # Zod validation schemas
+│   ├── supabase/         # Database clients (client.ts, server.ts)
+│   └── utils/            # Utility functions
+├── hooks/                # Custom React hooks
+└── types/                # TypeScript definitions
+```
+
+### Key Features
+
+1. **Property Browsing**: Tinder-style swipe interface with real-time interactions
+2. **Couples Feature**: Multi-user property sharing and mutual likes
+3. **Geographic Search**: PostGIS-powered spatial queries
+4. **ML Scoring**: 3-phase recommendation system (planned)
+5. **Real Estate Data**: Zillow API integration
+
+## Development Patterns
+
+### API Architecture
+
+- **Routes**: `/app/api/*` → business logic in `/lib/services/*`
+- **Validation**: Zod schemas in `/lib/schemas/*` for all inputs/outputs
+- **Error Handling**: Consistent error responses with `lib/api/errors.ts`
+- **Rate Limiting**: Implemented via `lib/middleware/rateLimiter.ts`
+
+### Database Patterns
+
+- **Auth**: Supabase RLS policies control all data access
+- **Types**: Auto-generated from Supabase schema in `types/database.ts`
+- **Client Management**: Separate clients for server (`server.ts`) and client (`client.ts`)
+- **Migrations**: Prefix files with `YYYYMMDDHHMMSS` format
+
+### State Management
+
+- **Server State**: TanStack Query for API calls and caching
+- **Client State**: Zustand for lightweight local state
+- **Forms**: React Hook Form + Zod resolvers
+- **Real-time**: Supabase subscriptions for live updates
+
+### Testing Strategy
+
+- **Unit Tests**: Jest for components and utilities (`__tests__/unit/`)
+- **Integration Tests**: Vitest for API routes and database (`__tests__/integration/`)
+- **E2E Tests**: Playwright for user workflows (`__tests__/e2e/`)
+- **Fixtures**: Comprehensive test data in `__tests__/fixtures/`
+
+## Code Quality Standards
+
+### TypeScript
+
+- **Strict mode**: No `any` types allowed
+- **Validation**: Runtime validation with Zod for all external data
+- **Generated Types**: Use Supabase auto-generated types
+
+### Style Guide
+
+- **Formatting**: Prettier with no semicolons, single quotes, 2-space indent
+- **Components**: Feature-based organization, use shadcn/ui patterns
+- **Hooks**: Custom hooks in `/hooks` directory with `use` prefix
+- **Imports**: Absolute imports configured via tsconfig paths
+
+### Performance
+
+- **Monitoring**: Sentry integration for error tracking
+- **Analytics**: PostHog for user behavior
+- **Optimization**: Framer Motion for animations, lazy loading for components
 
 ## Environment Setup
 
-See [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) Step 2.1 for complete environment variable setup.
-**Quick start**: Set Supabase variables first, add external APIs as needed.
+### Required Variables
 
-### Supabase CLI (Windows)
+```bash
+# Supabase (required)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=REDACTED_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=REDACTED_SUPABASE_SERVICE_ROLE_KEY
 
-Use **only**  
-`pnpm dlx supabase@latest <subcommand>`  
-(e.g. `pnpm dlx supabase@latest start -x studio`)
-Never call `supabase …` or `pnpm exec supabase …`.
+# Optional APIs
+GOOGLE_MAPS_SERVER_API_KEY=REDACTED_GOOGLE_MAPS_API_KEY
+```
+
+See [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) for complete setup.
+
+### Supabase CLI Usage
+
+- **Always use**: `pnpm dlx supabase@latest <command>`
+- **Never use**: `supabase` or `pnpm exec supabase`
+- **Local development**: `pnpm dlx supabase@latest start -x studio`
 
 ## Documentation
 
-> **📚 Complete Guide**: See [`docs/README.md`](./docs/README.md) for comprehensive documentation index.
-
-### Essential References
-
-- **📋 Architecture**: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) - System design
-- **🚀 Implementation**: [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) - Setup guide
-- **🧪 Testing**: [`docs/TESTING.md`](./docs/TESTING.md) - Complete testing strategy
-- **⚙️ Workflows**: [`docs/DEVELOPMENT_WORKFLOWS.md`](./docs/DEVELOPMENT_WORKFLOWS.md) - Development processes
-- **🔧 API Reference**: [`docs/RAPIDAPI_ZILLOW.md`](./docs/RAPIDAPI_ZILLOW.md) - Zillow integration
+- **[Architecture](./docs/ARCHITECTURE.md)**: Complete system design and tech stack
+- **[Testing](./docs/TESTING.md)**: Comprehensive testing strategy and workflows
+- **[Setup Guide](./docs/SETUP_GUIDE.md)**: Environment setup and getting started
+- **[API Reference](./docs/RAPIDAPI_ZILLOW.md)**: External API integrations
+- **[Workflows](./docs/DEVELOPMENT_WORKFLOWS.md)**: Git workflows and processes
 
 ## Tech Stack
 
-Next.js 15, Supabase, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Inngest (background jobs)
+**Frontend**: Next.js 15, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Framer Motion
+**Backend**: Supabase (PostgreSQL + Auth + RLS), Inngest (background jobs)
+**State**: TanStack Query, Zustand, React Hook Form, Zod
+**Testing**: Jest, Vitest, Playwright, React Testing Library
+**Tools**: ESLint 9, Prettier, pnpm, Turbopack

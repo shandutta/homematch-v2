@@ -49,7 +49,11 @@ export function LoginForm() {
       }
     } catch (networkError) {
       // Handle network errors or other exceptions
-      setError(networkError instanceof Error ? networkError.message : 'Network error occurred')
+      setError(
+        networkError instanceof Error
+          ? networkError.message
+          : 'Network error occurred'
+      )
     } finally {
       setLoading(false)
     }
@@ -74,7 +78,7 @@ export function LoginForm() {
   return (
     <Card className="mx-auto w-full" data-testid="login-form">
       <CardHeader>
-        <CardTitle className="text-2xl text-center font-bold">
+        <CardTitle className="text-center text-2xl font-bold">
           {CouplesMessages.welcome.returning}
         </CardTitle>
       </CardHeader>
@@ -151,7 +155,7 @@ export function LoginForm() {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="text-xs relative flex justify-center uppercase">
+          <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background text-muted-foreground px-2">
               Or continue with
             </span>

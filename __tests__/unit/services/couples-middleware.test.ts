@@ -22,7 +22,7 @@ describe('CouplesMiddleware', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     // Setup default mocks
     mockCouplesService.checkPotentialMutualLike.mockResolvedValue({
       wouldBeMutual: false,
@@ -164,7 +164,7 @@ describe('CouplesMiddleware', () => {
 
     test('should handle error in checkPotentialMutualLike gracefully', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      
+
       mockCouplesService.checkPotentialMutualLike.mockRejectedValue(
         new Error('Database connection failed')
       )
@@ -190,7 +190,7 @@ describe('CouplesMiddleware', () => {
 
     test('should handle error in notifyInteraction gracefully', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      
+
       mockCouplesService.checkPotentialMutualLike.mockResolvedValue({
         wouldBeMutual: true,
         partnerUserId: 'partner-456',
@@ -220,12 +220,14 @@ describe('CouplesMiddleware', () => {
 
     test('should call both services in correct order', async () => {
       const callOrder: string[] = []
-      
-      mockCouplesService.checkPotentialMutualLike.mockImplementation(async () => {
-        callOrder.push('checkPotentialMutualLike')
-        return { wouldBeMutual: false }
-      })
-      
+
+      mockCouplesService.checkPotentialMutualLike.mockImplementation(
+        async () => {
+          callOrder.push('checkPotentialMutualLike')
+          return { wouldBeMutual: false }
+        }
+      )
+
       mockCouplesService.notifyInteraction.mockImplementation(async () => {
         callOrder.push('notifyInteraction')
       })
@@ -237,15 +239,18 @@ describe('CouplesMiddleware', () => {
         'like'
       )
 
-      expect(callOrder).toEqual(['checkPotentialMutualLike', 'notifyInteraction'])
+      expect(callOrder).toEqual([
+        'checkPotentialMutualLike',
+        'notifyInteraction',
+      ])
     })
 
     test('should handle multiple interaction types correctly', async () => {
       const interactionTypes = ['like', 'dislike', 'view', 'save', 'share']
-      
+
       for (const interactionType of interactionTypes) {
         jest.clearAllMocks()
-        
+
         mockCouplesService.checkPotentialMutualLike.mockResolvedValue({
           wouldBeMutual: true,
           partnerUserId: 'partner-456',
@@ -258,18 +263,16 @@ describe('CouplesMiddleware', () => {
           interactionType
         )
 
-        expect(mockCouplesService.checkPotentialMutualLike).toHaveBeenCalledWith(
-          mockSupabaseClient,
-          mockUserId,
-          mockPropertyId
-        )
+        expect(
+          mockCouplesService.checkPotentialMutualLike
+        ).toHaveBeenCalledWith(mockSupabaseClient, mockUserId, mockPropertyId)
         expect(mockCouplesService.notifyInteraction).toHaveBeenCalledWith(
           mockSupabaseClient,
           mockUserId,
           mockPropertyId,
           interactionType
         )
-        
+
         // Only 'like' should create mutual like
         expect(result.mutualLikeCreated).toBe(interactionType === 'like')
         expect(result.partnerUserId).toBe('partner-456')
@@ -297,7 +300,7 @@ describe('CouplesMiddleware', () => {
     test('should handle cache clearing errors gracefully', async () => {
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      
+
       mockCouplesService.clearHouseholdCache.mockImplementation(() => {
         throw new Error('Cache clear failed')
       })
@@ -330,9 +333,11 @@ describe('CouplesMiddleware', () => {
       )
 
       jest.clearAllMocks()
-      
+
       await CouplesMiddleware.onHouseholdChange(undefined as any)
-      expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(undefined)
+      expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(
+        undefined
+      )
       expect(consoleLogSpy).toHaveBeenCalledWith(
         '[CouplesMiddleware] Cleared cache for household: undefined'
       )
@@ -415,9 +420,15 @@ describe('CouplesMiddleware', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const errorMessage = 'Database connection failed'
-      mockCouplesService.getMutualLikes.mockRejectedValue(new Error(errorMessage))
-      mockCouplesService.getHouseholdActivity.mockRejectedValue(new Error(errorMessage))
-      mockCouplesService.getHouseholdStats.mockRejectedValue(new Error(errorMessage))
+      mockCouplesService.getMutualLikes.mockRejectedValue(
+        new Error(errorMessage)
+      )
+      mockCouplesService.getHouseholdActivity.mockRejectedValue(
+        new Error(errorMessage)
+      )
+      mockCouplesService.getHouseholdStats.mockRejectedValue(
+        new Error(errorMessage)
+      )
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, mockUserId)
 
@@ -438,37 +449,52 @@ describe('CouplesMiddleware', () => {
 
     test('should call all cache warming services in parallel', async () => {
       const callTimestamps: { service: string; timestamp: number }[] = []
-      
+
       mockCouplesService.getMutualLikes.mockImplementation(async () => {
-        callTimestamps.push({ service: 'getMutualLikes', timestamp: Date.now() })
-        await new Promise(resolve => setTimeout(resolve, 10))
+        callTimestamps.push({
+          service: 'getMutualLikes',
+          timestamp: Date.now(),
+        })
+        await new Promise((resolve) => setTimeout(resolve, 10))
         return []
       })
-      
+
       mockCouplesService.getHouseholdActivity.mockImplementation(async () => {
-        callTimestamps.push({ service: 'getHouseholdActivity', timestamp: Date.now() })
-        await new Promise(resolve => setTimeout(resolve, 10))
+        callTimestamps.push({
+          service: 'getHouseholdActivity',
+          timestamp: Date.now(),
+        })
+        await new Promise((resolve) => setTimeout(resolve, 10))
         return []
       })
-      
+
       mockCouplesService.getHouseholdStats.mockImplementation(async () => {
-        callTimestamps.push({ service: 'getHouseholdStats', timestamp: Date.now() })
-        await new Promise(resolve => setTimeout(resolve, 10))
+        callTimestamps.push({
+          service: 'getHouseholdStats',
+          timestamp: Date.now(),
+        })
+        await new Promise((resolve) => setTimeout(resolve, 10))
         return null
       })
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, mockUserId)
 
       // All calls should start at roughly the same time (within 5ms)
-      const startTimes = callTimestamps.map(call => call.timestamp)
+      const startTimes = callTimestamps.map((call) => call.timestamp)
       const maxTimeDiff = Math.max(...startTimes) - Math.min(...startTimes)
       expect(maxTimeDiff).toBeLessThan(5)
 
       // All services should have been called
       expect(callTimestamps).toHaveLength(3)
-      expect(callTimestamps.map(call => call.service)).toContain('getMutualLikes')
-      expect(callTimestamps.map(call => call.service)).toContain('getHouseholdActivity')
-      expect(callTimestamps.map(call => call.service)).toContain('getHouseholdStats')
+      expect(callTimestamps.map((call) => call.service)).toContain(
+        'getMutualLikes'
+      )
+      expect(callTimestamps.map((call) => call.service)).toContain(
+        'getHouseholdActivity'
+      )
+      expect(callTimestamps.map((call) => call.service)).toContain(
+        'getHouseholdStats'
+      )
     })
 
     test('should handle null or undefined user ID', async () => {
@@ -484,7 +510,7 @@ describe('CouplesMiddleware', () => {
       )
 
       jest.clearAllMocks()
-      
+
       await CouplesMiddleware.warmCache(mockSupabaseClient, undefined as any)
       expect(consoleLogSpy).toHaveBeenCalledWith(
         '[CouplesMiddleware] Warming cache for user: undefined'
@@ -513,7 +539,7 @@ describe('CouplesMiddleware', () => {
       expect(typeof CouplesMiddleware.onPropertyInteraction).toBe('function')
       expect(typeof CouplesMiddleware.onHouseholdChange).toBe('function')
       expect(typeof CouplesMiddleware.warmCache).toBe('function')
-      
+
       // Verify they can be called without instantiation
       expect(CouplesMiddleware.onPropertyInteraction).toBeDefined()
       expect(CouplesMiddleware.onHouseholdChange).toBeDefined()
@@ -549,12 +575,21 @@ describe('CouplesMiddleware', () => {
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
 
       // Test onPropertyInteraction error
-      mockCouplesService.checkPotentialMutualLike.mockRejectedValue(new Error('Test'))
-      await CouplesMiddleware.onPropertyInteraction(mockSupabaseClient, mockUserId, mockPropertyId, 'like')
-      
+      mockCouplesService.checkPotentialMutualLike.mockRejectedValue(
+        new Error('Test')
+      )
+      await CouplesMiddleware.onPropertyInteraction(
+        mockSupabaseClient,
+        mockUserId,
+        mockPropertyId,
+        'like'
+      )
+
       // Test onHouseholdChange error
       jest.clearAllMocks()
-      mockCouplesService.clearHouseholdCache.mockImplementation(() => { throw new Error('Test') })
+      mockCouplesService.clearHouseholdCache.mockImplementation(() => {
+        throw new Error('Test')
+      })
       await CouplesMiddleware.onHouseholdChange(mockHouseholdId)
 
       // Test warmCache error
@@ -564,7 +599,9 @@ describe('CouplesMiddleware', () => {
 
       // All error messages should start with [CouplesMiddleware]
       const errorCalls = consoleErrorSpy.mock.calls
-      expect(errorCalls.every(call => call[0].startsWith('[CouplesMiddleware]'))).toBe(true)
+      expect(
+        errorCalls.every((call) => call[0].startsWith('[CouplesMiddleware]'))
+      ).toBe(true)
 
       consoleErrorSpy.mockRestore()
       consoleLogSpy.mockRestore()

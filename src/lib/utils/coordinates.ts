@@ -1,6 +1,6 @@
 /**
  * Coordinate Utilities
- * 
+ *
  * Centralized utilities for handling coordinate parsing, conversion, and validation.
  * Provides type-safe functions for working with PostGIS geometry, Google Maps coordinates,
  * and various coordinate formats used throughout the application.
@@ -242,7 +242,9 @@ export function calculateBoundingBox(coordinates: LatLng[]): BoundingBox {
   // Validate all coordinates first
   coordinates.forEach((coord, index) => {
     if (!isValidLatLng(coord)) {
-      throw new Error(`Invalid coordinate at index ${index}: ${JSON.stringify(coord)}`)
+      throw new Error(
+        `Invalid coordinate at index ${index}: ${JSON.stringify(coord)}`
+      )
     }
   })
 
@@ -264,16 +266,22 @@ export function calculateBoundingBox(coordinates: LatLng[]): BoundingBox {
 /**
  * Expand bounding box by a given distance in kilometers
  */
-export function expandBoundingBox(bbox: BoundingBox, distanceKm: number): BoundingBox {
+export function expandBoundingBox(
+  bbox: BoundingBox,
+  distanceKm: number
+): BoundingBox {
   const validated = boundingBoxSchema.parse(bbox)
-  
+
   if (distanceKm <= 0) {
     throw new Error('Distance must be positive')
   }
 
   // Rough approximation: 1 degree ≈ 111 km
   const latOffset = distanceKm / 111
-  const lngOffset = distanceKm / (111 * Math.cos((validated.north + validated.south) / 2 * Math.PI / 180))
+  const lngOffset =
+    distanceKm /
+    (111 *
+      Math.cos((((validated.north + validated.south) / 2) * Math.PI) / 180))
 
   return boundingBoxSchema.parse({
     north: Math.min(90, validated.north + latOffset),
@@ -286,7 +294,10 @@ export function expandBoundingBox(bbox: BoundingBox, distanceKm: number): Boundi
 /**
  * Check if a coordinate is within a bounding box
  */
-export function isCoordinateInBounds(coord: LatLng, bbox: BoundingBox): boolean {
+export function isCoordinateInBounds(
+  coord: LatLng,
+  bbox: BoundingBox
+): boolean {
   if (!isValidLatLng(coord) || !isValidBoundingBox(bbox)) {
     return false
   }
@@ -302,7 +313,10 @@ export function isCoordinateInBounds(coord: LatLng, bbox: BoundingBox): boolean 
 /**
  * Check if two bounding boxes intersect
  */
-export function boundingBoxesIntersect(bbox1: BoundingBox, bbox2: BoundingBox): boolean {
+export function boundingBoxesIntersect(
+  bbox1: BoundingBox,
+  bbox2: BoundingBox
+): boolean {
   if (!isValidBoundingBox(bbox1) || !isValidBoundingBox(bbox2)) {
     return false
   }
@@ -368,7 +382,9 @@ export function calculateBearing(point1: LatLng, point2: LatLng): number {
   const lat2 = toRadians(point2.lat)
 
   const y = Math.sin(dLng) * Math.cos(lat2)
-  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng)
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng)
 
   const bearing = toDegrees(Math.atan2(y, x))
   return (bearing + 360) % 360 // Normalize to 0-360 degrees
@@ -377,7 +393,11 @@ export function calculateBearing(point1: LatLng, point2: LatLng): number {
 /**
  * Calculate destination point given start point, distance, and bearing
  */
-export function calculateDestination(start: LatLng, distanceKm: number, bearing: number): LatLng {
+export function calculateDestination(
+  start: LatLng,
+  distanceKm: number,
+  bearing: number
+): LatLng {
   if (!isValidLatLng(start)) {
     throw new Error('Invalid start coordinate')
   }
@@ -394,7 +414,8 @@ export function calculateDestination(start: LatLng, distanceKm: number, bearing:
   const bearingRad = toRadians(bearing)
 
   const lat2 = Math.asin(
-    Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearingRad)
+    Math.sin(lat1) * Math.cos(d) +
+      Math.cos(lat1) * Math.sin(d) * Math.cos(bearingRad)
   )
 
   const lng2 =
@@ -465,8 +486,11 @@ export function parseCoordinateString(coordString: string): LatLng | null {
 
   try {
     // Remove extra whitespace and split by comma
-    const parts = coordString.trim().split(',').map(part => part.trim())
-    
+    const parts = coordString
+      .trim()
+      .split(',')
+      .map((part) => part.trim())
+
     if (parts.length !== 2) {
       return null
     }
@@ -493,7 +517,8 @@ export function parseCoordinateString(coordString: string): LatLng | null {
 export function generateRandomCoordinate(bbox: BoundingBox): LatLng {
   const validated = boundingBoxSchema.parse(bbox)
 
-  const lat = validated.south + Math.random() * (validated.north - validated.south)
+  const lat =
+    validated.south + Math.random() * (validated.north - validated.south)
   const lng = validated.west + Math.random() * (validated.east - validated.west)
 
   return { lat, lng }
@@ -531,4 +556,3 @@ export function createCircularPolygon(
 
   return points
 }
-

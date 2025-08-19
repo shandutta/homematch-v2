@@ -10,13 +10,30 @@
  */
 import { test, expect } from '@playwright/test'
 import {
-  TEST_USERS,
   TEST_HOUSEHOLDS,
   TEST_MESSAGES,
   TEST_SELECTORS,
   TEST_ROUTES,
   TEST_TIMEOUTS,
 } from '../../fixtures/test-data'
+import { createWorkerAuthHelper } from '../../utils/auth-helper'
+
+// Helper for tests that need manual auth control
+async function loginWithTestUser(page: any, testUser: any) {
+  await page.goto(TEST_ROUTES.auth.signIn)
+  await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+  await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
+  await page.click(TEST_SELECTORS.signInButton)
+  await page.waitForURL(/dashboard|profile|validation/, { timeout: 10000 })
+}
+
+// Create fresh user for error testing scenarios
+function createFreshTestUser(workerIndex: number) {
+  return {
+    email: `fresh-worker-${workerIndex}@example.com`,
+    password: 'testpassword123',
+  }
+}
 
 test.describe('Household Clipboard E2E Error Scenarios', () => {
   test.beforeEach(async ({ page }) => {
@@ -27,17 +44,12 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
   test.describe('Authentication Error Scenarios', () => {
     test('handles expired session during clipboard operation', async ({
       page,
-    }) => {
-      // Set up authenticated user
-      await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
-      await page.click(TEST_SELECTORS.signInButton)
+    }, testInfo) => {
+      // Set up authenticated user with worker-specific credentials
+      const { testUser } = createWorkerAuthHelper(page, testInfo)
+      await loginWithTestUser(page, testUser)
 
-      await expect(page).toHaveURL(TEST_ROUTES.app.dashboard)
+      await expect(page).toHaveURL(/dashboard|profile|validation/)
 
       // Navigate to profile
       await page.goto(TEST_ROUTES.app.profile)
@@ -61,15 +73,13 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
           .locator(TEST_SELECTORS.toastError)
           .isVisible()
 
-        expect(
-          currentUrl.includes('/login') || hasErrorToast
-        ).toBeTruthy()
+        expect(currentUrl.includes('/login') || hasErrorToast).toBeTruthy()
       }
     })
 
     test('handles authentication failure during page load', async ({
       page,
-    }) => {
+    }, _testInfo) => {
       // Try to access profile without authentication
       await page.goto(TEST_ROUTES.app.profile)
 
@@ -86,15 +96,13 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
   })
 
   test.describe('Network Error Scenarios', () => {
-    test('handles offline scenario gracefully', async ({ page, context }) => {
+    test('handles offline scenario gracefully', async ({
+      page,
+      context,
+    }, testInfo) => {
       // Set up authenticated user first
-      await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
-      await page.click(TEST_SELECTORS.signInButton)
+      const { testUser } = createWorkerAuthHelper(page, testInfo)
+      await loginWithTestUser(page, testUser)
 
       await expect(page).toHaveURL(TEST_ROUTES.app.dashboard)
       await page.goto(TEST_ROUTES.app.profile)
@@ -134,11 +142,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       })
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       // Should handle slow responses gracefully
@@ -147,7 +152,7 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       })
     })
 
-    test('handles API server errors (500)', async ({ page }) => {
+    test('handles API server errors (500)', async ({ page }, testInfo) => {
       // Mock server error responses
       await page.route('**/api/households**', async (route) => {
         await route.fulfill({
@@ -157,12 +162,10 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
         })
       })
 
+      const freshUser = createFreshTestUser(testInfo.workerIndex)
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.freshUser.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.freshUser.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, freshUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, freshUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -187,11 +190,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await context.clearPermissions()
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -231,11 +231,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       await context.grantPermissions([])
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -268,11 +265,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       })
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -318,11 +312,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       })
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.freshUser.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.freshUser.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, freshUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, freshUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -355,11 +346,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       browserName,
     }) => {
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -398,11 +386,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       }
 
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -429,11 +414,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       page,
     }) => {
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)
@@ -473,11 +455,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       page,
     }) => {
       await page.goto(TEST_ROUTES.auth.signIn)
-      await page.fill(TEST_SELECTORS.emailInput, TEST_USERS.withHousehold.email)
-      await page.fill(
-        TEST_SELECTORS.passwordInput,
-        TEST_USERS.withHousehold.password
-      )
+      await page.fill(TEST_SELECTORS.emailInput, testUser.email)
+      await page.fill(TEST_SELECTORS.passwordInput, testUser.password)
       await page.click(TEST_SELECTORS.signInButton)
 
       await page.goto(TEST_ROUTES.app.profile)

@@ -107,12 +107,12 @@ describe('ProfilePageClient', () => {
       'active'
     )
     expect(screen.getByTestId('profile-form')).toBeInTheDocument()
-    
+
     // The household section should be in the DOM but hidden (inactive tab)
     const householdSection = screen.getByTestId('household-section')
     expect(householdSection).toBeInTheDocument()
     expect(householdSection).toHaveAttribute('hidden')
-    
+
     expect(screen.queryByTestId('activity-stats')).not.toBeInTheDocument()
   })
 
@@ -130,11 +130,11 @@ describe('ProfilePageClient', () => {
     await user.click(householdTab)
 
     expect(householdTab).toHaveAttribute('data-state', 'active')
-    
+
     // The household section should now be visible
     const householdSection = screen.getByTestId('household-section')
     expect(householdSection).not.toHaveAttribute('hidden')
-    
+
     // Profile form should be hidden
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
     expect(screen.queryByTestId('activity-stats')).not.toBeInTheDocument()

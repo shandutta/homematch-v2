@@ -20,7 +20,9 @@ test.describe('Couples Features E2E Tests', () => {
   })
 
   test.describe('Mutual Likes Section Integration', () => {
-    test('displays mutual likes section with proper loading states', async ({ page }) => {
+    test('displays mutual likes section with proper loading states', async ({
+      page,
+    }) => {
       // Navigate to dashboard (this will require authentication)
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
@@ -28,13 +30,13 @@ test.describe('Couples Features E2E Tests', () => {
       // Handle authentication redirect if needed
       if (page.url().includes('login') || page.url().includes('signin')) {
         console.log('Redirected to login - attempting test user authentication')
-        
+
         // Try to authenticate with test credentials
         const emailInput = page.locator('input[type="email"]').first()
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -48,12 +50,12 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-testid="mutual-likes"]',
         'section:has-text("mutual")',
         'section:has-text("both liked")',
-        '.mutual-likes'
+        '.mutual-likes',
       ]
 
       let mutualLikesSection
       for (const selector of mutualLikesSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           mutualLikesSection = page.locator(selector).first()
           break
         }
@@ -62,18 +64,18 @@ test.describe('Couples Features E2E Tests', () => {
       if (mutualLikesSection) {
         await expect(mutualLikesSection).toBeVisible()
         console.log('Mutual likes section found and visible')
-        
+
         // Check for loading states first
         const loadingSelectors = [
           '[data-testid="mutual-likes-loading"]',
           '[data-testid="loading"]',
           '.loading',
-          '.skeleton'
+          '.skeleton',
         ]
 
         for (const selector of loadingSelectors) {
           const loadingElement = page.locator(selector)
-          if (await loadingElement.count() > 0) {
+          if ((await loadingElement.count()) > 0) {
             console.log(`Loading state found: ${selector}`)
             // Wait for loading to complete
             await expect(loadingElement).not.toBeVisible({ timeout: 10000 })
@@ -81,17 +83,19 @@ test.describe('Couples Features E2E Tests', () => {
           }
         }
       } else {
-        console.log('Mutual likes section not found - might require couples setup or different user')
-        
+        console.log(
+          'Mutual likes section not found - might require couples setup or different user'
+        )
+
         // Check if we need to set up couples first
         const emptyStateSelectors = [
           '[data-testid="mutual-likes-empty"]',
           'text="No mutual likes yet"',
-          'text="Both liked properties will appear here"'
+          'text="Both liked properties will appear here"',
         ]
 
         for (const selector of emptyStateSelectors) {
-          if (await page.locator(selector).count() > 0) {
+          if ((await page.locator(selector).count()) > 0) {
             await expect(page.locator(selector).first()).toBeVisible()
             console.log('Empty state displayed correctly')
             break
@@ -110,7 +114,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -123,12 +127,12 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-testid="mutual-likes-list"]',
         '[data-testid="property-list"]',
         '.mutual-likes-list',
-        '.property-list'
+        '.property-list',
       ]
 
       let mutualLikesList
       for (const selector of listSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           mutualLikesList = page.locator(selector).first()
           break
         }
@@ -136,41 +140,43 @@ test.describe('Couples Features E2E Tests', () => {
 
       if (mutualLikesList) {
         await expect(mutualLikesList).toBeVisible()
-        
+
         // Check for property cards within the list
         const propertyCardSelectors = [
           '[data-testid="property-card"]',
           '.property-card',
-          '[data-property-id]'
+          '[data-property-id]',
         ]
 
         for (const selector of propertyCardSelectors) {
           const propertyCards = page.locator(selector)
-          if (await propertyCards.count() > 0) {
+          if ((await propertyCards.count()) > 0) {
             const firstCard = propertyCards.first()
             await expect(firstCard).toBeVisible()
-            
+
             // Check for property details
-            const addressElements = firstCard.locator('text=/\\d+.*street|avenue|blvd|road|drive/i')
-            if (await addressElements.count() > 0) {
+            const addressElements = firstCard.locator(
+              'text=/\\d+.*street|avenue|blvd|road|drive/i'
+            )
+            if ((await addressElements.count()) > 0) {
               await expect(addressElements.first()).toBeVisible()
               console.log('Property address displayed correctly')
             }
 
             const priceElements = firstCard.locator('text=/\\$\\d+/i')
-            if (await priceElements.count() > 0) {
+            if ((await priceElements.count()) > 0) {
               await expect(priceElements.first()).toBeVisible()
               console.log('Property price displayed correctly')
             }
 
             const bedroomElements = firstCard.locator('text=/\\d+.*bed/i')
-            if (await bedroomElements.count() > 0) {
+            if ((await bedroomElements.count()) > 0) {
               await expect(bedroomElements.first()).toBeVisible()
               console.log('Bedroom count displayed correctly')
             }
 
             const bathroomElements = firstCard.locator('text=/\\d+.*bath/i')
-            if (await bathroomElements.count() > 0) {
+            if ((await bathroomElements.count()) > 0) {
               await expect(bathroomElements.first()).toBeVisible()
               console.log('Bathroom count displayed correctly')
             }
@@ -179,10 +185,12 @@ test.describe('Couples Features E2E Tests', () => {
         }
       } else {
         console.log('No mutual likes list found - checking for empty state')
-        
+
         // Verify empty state is shown appropriately
-        const emptyStateIndicators = page.locator('text="No mutual likes", text="Both liked", text="empty"')
-        if (await emptyStateIndicators.count() > 0) {
+        const emptyStateIndicators = page.locator(
+          'text="No mutual likes", text="Both liked", text="empty"'
+        )
+        if ((await emptyStateIndicators.count()) > 0) {
           console.log('Empty state appropriately displayed')
         }
       }
@@ -198,7 +206,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -207,10 +215,10 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       // Simulate network error by intercepting API calls
-      await page.route('**/api/couples/mutual-likes', route => {
+      await page.route('**/api/couples/mutual-likes', (route) => {
         route.fulfill({
           status: 500,
-          body: JSON.stringify({ error: 'Server error' })
+          body: JSON.stringify({ error: 'Server error' }),
         })
       })
 
@@ -225,12 +233,12 @@ test.describe('Couples Features E2E Tests', () => {
         '[role="alert"]',
         'text="Failed to fetch"',
         'text="Error"',
-        '.error'
+        '.error',
       ]
 
       let errorFound = false
       for (const selector of errorSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           await expect(page.locator(selector).first()).toBeVisible()
           console.log(`Error state displayed correctly: ${selector}`)
           errorFound = true
@@ -239,14 +247,18 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       if (!errorFound) {
-        console.log('No specific error UI found - checking for graceful degradation')
+        console.log(
+          'No specific error UI found - checking for graceful degradation'
+        )
         // The app might just show empty state instead of explicit error
       }
     })
   })
 
   test.describe('Mutual Likes Badge Component', () => {
-    test('displays badge correctly when mutual likes exist', async ({ page }) => {
+    test('displays badge correctly when mutual likes exist', async ({
+      page,
+    }) => {
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
 
@@ -256,7 +268,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -270,15 +282,15 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-testid="mutual-badge"]',
         '.mutual-likes-badge',
         '.badge:has-text("mutual")',
-        '.badge:has-text("both")'
+        '.badge:has-text("both")',
       ]
 
       for (const selector of badgeSelectors) {
         const badges = page.locator(selector)
-        if (await badges.count() > 0) {
+        if ((await badges.count()) > 0) {
           const firstBadge = badges.first()
           await expect(firstBadge).toBeVisible()
-          
+
           // Check for count display
           const countText = await firstBadge.textContent()
           if (countText && /\d+/.test(countText)) {
@@ -289,7 +301,9 @@ test.describe('Couples Features E2E Tests', () => {
       }
     })
 
-    test('does not display badge when no mutual likes exist', async ({ page }) => {
+    test('does not display badge when no mutual likes exist', async ({
+      page,
+    }) => {
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
 
@@ -299,7 +313,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           // Use a different test user that might not have mutual likes
           await emailInput.fill('test-single-user@example.com')
           await passwordInput.fill('testpassword123')
@@ -311,16 +325,16 @@ test.describe('Couples Features E2E Tests', () => {
       // Check that badge is not shown when no mutual likes
       const badgeSelectors = [
         '[data-testid="mutual-likes-badge"]',
-        '.mutual-likes-badge'
+        '.mutual-likes-badge',
       ]
 
       for (const selector of badgeSelectors) {
         const badges = page.locator(selector)
-        if (await badges.count() > 0) {
+        if ((await badges.count()) > 0) {
           // If badge exists, it should either be hidden or show 0
           const firstBadge = badges.first()
           const isVisible = await firstBadge.isVisible().catch(() => false)
-          
+
           if (isVisible) {
             const countText = await firstBadge.textContent()
             if (countText && countText.includes('0')) {
@@ -335,7 +349,9 @@ test.describe('Couples Features E2E Tests', () => {
   })
 
   test.describe('Property Navigation Integration', () => {
-    test('allows navigation to property details from mutual likes', async ({ page }) => {
+    test('allows navigation to property details from mutual likes', async ({
+      page,
+    }) => {
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
 
@@ -345,7 +361,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -358,47 +374,51 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-property-link]',
         '[data-testid="property-link"]',
         '.property-card a',
-        'a[href*="/properties/"]'
+        'a[href*="/properties/"]',
       ]
 
       for (const selector of propertyLinkSelectors) {
         const propertyLinks = page.locator(selector)
-        if (await propertyLinks.count() > 0) {
+        if ((await propertyLinks.count()) > 0) {
           const firstLink = propertyLinks.first()
           await expect(firstLink).toBeVisible()
-          
+
           // Click the property link
           await firstLink.click()
           await page.waitForLoadState('domcontentloaded')
-          
+
           // Should navigate to property details page
           const currentUrl = page.url()
           if (currentUrl.includes('/properties/')) {
             console.log('Successfully navigated to property details')
-            
+
             // Check for property details elements
             const detailsSelectors = [
               'h1',
               '.property-title',
               '.property-address',
-              'text=/\\$\\d+/i'
+              'text=/\\$\\d+/i',
             ]
-            
+
             for (const detailSelector of detailsSelectors) {
-              if (await page.locator(detailSelector).count() > 0) {
+              if ((await page.locator(detailSelector).count()) > 0) {
                 await expect(page.locator(detailSelector).first()).toBeVisible()
                 break
               }
             }
           } else {
-            console.log('Navigation did not go to property details - checking current page')
+            console.log(
+              'Navigation did not go to property details - checking current page'
+            )
           }
           break
         }
       }
     })
 
-    test('shows mutual likes indicators on property pages', async ({ page }) => {
+    test('shows mutual likes indicators on property pages', async ({
+      page,
+    }) => {
       // Try to navigate directly to a property page
       await page.goto('/properties')
       await page.waitForLoadState('domcontentloaded')
@@ -409,7 +429,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -418,22 +438,24 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       // Look for property cards with mutual likes indicators
-      const propertyCards = page.locator('[data-testid="property-card"], .property-card')
-      if (await propertyCards.count() > 0) {
+      const propertyCards = page.locator(
+        '[data-testid="property-card"], .property-card'
+      )
+      if ((await propertyCards.count()) > 0) {
         const firstCard = propertyCards.first()
-        
+
         // Look for mutual likes indicators on the card
         const indicatorSelectors = [
           '[data-testid="mutual-likes-badge"]',
           '.mutual-likes-indicator',
           '.partner-liked',
           'text="Both liked"',
-          'text="Partner liked"'
+          'text="Partner liked"',
         ]
 
         for (const selector of indicatorSelectors) {
           const indicator = firstCard.locator(selector)
-          if (await indicator.count() > 0) {
+          if ((await indicator.count()) > 0) {
             await expect(indicator.first()).toBeVisible()
             console.log(`Mutual likes indicator found: ${selector}`)
             break
@@ -447,7 +469,7 @@ test.describe('Couples Features E2E Tests', () => {
     test('mutual likes section works on mobile viewport', async ({ page }) => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 })
-      
+
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
 
@@ -457,7 +479,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -466,10 +488,12 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       // Check that mutual likes section is visible and properly sized on mobile
-      const mutualLikesSection = page.locator('[data-testid="mutual-likes-section"], .mutual-likes-section').first()
-      if (await mutualLikesSection.count() > 0) {
+      const mutualLikesSection = page
+        .locator('[data-testid="mutual-likes-section"], .mutual-likes-section')
+        .first()
+      if ((await mutualLikesSection.count()) > 0) {
         await expect(mutualLikesSection).toBeVisible()
-        
+
         // Check that it fits within the mobile viewport
         const boundingBox = await mutualLikesSection.boundingBox()
         if (boundingBox) {
@@ -489,7 +513,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -504,17 +528,19 @@ test.describe('Couples Features E2E Tests', () => {
 
       // Check if we can reach interactive elements
       const focusedElement = page.locator(':focus')
-      if (await focusedElement.count() > 0) {
-        const tagName = await focusedElement.evaluate(el => el.tagName.toLowerCase())
+      if ((await focusedElement.count()) > 0) {
+        const tagName = await focusedElement.evaluate((el) =>
+          el.tagName.toLowerCase()
+        )
         const isInteractive = ['a', 'button', 'input'].includes(tagName)
-        
+
         if (isInteractive) {
           console.log(`Keyboard navigation working - focused on ${tagName}`)
-          
+
           // Try pressing Enter to activate
           await page.keyboard.press('Enter')
           await page.waitForTimeout(1000)
-          
+
           // Check if action was triggered
           const newUrl = page.url()
           console.log(`After Enter press: ${newUrl}`)
@@ -524,7 +550,9 @@ test.describe('Couples Features E2E Tests', () => {
   })
 
   test.describe('Real Data Integration', () => {
-    test('handles various property data formats correctly', async ({ page }) => {
+    test('handles various property data formats correctly', async ({
+      page,
+    }) => {
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
 
@@ -534,7 +562,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -543,29 +571,39 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       // Check for different property data formats and pricing displays
-      const propertyCards = page.locator('[data-testid="property-card"], .property-card')
-      
-      if (await propertyCards.count() > 0) {
+      const propertyCards = page.locator(
+        '[data-testid="property-card"], .property-card'
+      )
+
+      if ((await propertyCards.count()) > 0) {
         for (let i = 0; i < Math.min(3, await propertyCards.count()); i++) {
           const card = propertyCards.nth(i)
-          
+
           // Check for various price formats ($500k, $1.2M, $450,000)
-          const priceElements = card.locator('text=/\\$[\\d,]+k?|\\$[\\d.]+M|\\$[\\d,]+/i')
-          if (await priceElements.count() > 0) {
+          const priceElements = card.locator(
+            'text=/\\$[\\d,]+k?|\\$[\\d.]+M|\\$[\\d,]+/i'
+          )
+          if ((await priceElements.count()) > 0) {
             const priceText = await priceElements.first().textContent()
             console.log(`Property ${i + 1} price format: ${priceText}`)
           }
-          
+
           // Check for bedroom/bathroom variations (3 beds, 2.5 baths, etc.)
-          const bedBathElements = card.locator('text=/\\d+\\.?\\d*\\s*(bed|bath)/i')
-          if (await bedBathElements.count() > 0) {
+          const bedBathElements = card.locator(
+            'text=/\\d+\\.?\\d*\\s*(bed|bath)/i'
+          )
+          if ((await bedBathElements.count()) > 0) {
             const bedBathTexts = await bedBathElements.allTextContents()
-            console.log(`Property ${i + 1} bed/bath: ${bedBathTexts.join(', ')}`)
+            console.log(
+              `Property ${i + 1} bed/bath: ${bedBathTexts.join(', ')}`
+            )
           }
-          
+
           // Check for square footage if displayed
-          const sqftElements = card.locator('text=/\\d+,?\\d*\\s*(sq\\s?ft|sqft)/i')
-          if (await sqftElements.count() > 0) {
+          const sqftElements = card.locator(
+            'text=/\\d+,?\\d*\\s*(sq\\s?ft|sqft)/i'
+          )
+          if ((await sqftElements.count()) > 0) {
             const sqftText = await sqftElements.first().textContent()
             console.log(`Property ${i + 1} sqft: ${sqftText}`)
           }
@@ -577,7 +615,7 @@ test.describe('Couples Features E2E Tests', () => {
 
     test('handles loading to data transition smoothly', async ({ page }) => {
       await page.goto('/dashboard')
-      
+
       // Handle auth redirect immediately
       if (page.url().includes('login') || page.url().includes('signin')) {
         await page.waitForLoadState('domcontentloaded')
@@ -585,7 +623,7 @@ test.describe('Couples Features E2E Tests', () => {
         const passwordInput = page.locator('input[type="password"]').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
-        if (await emailInput.count() > 0) {
+        if ((await emailInput.count()) > 0) {
           await emailInput.fill('test-couples-user@example.com')
           await passwordInput.fill('testpassword123')
           await submitButton.click()
@@ -599,17 +637,19 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-testid="mutual-likes-loading"]',
         '[data-testid="loading"]',
         '.loading',
-        '.skeleton'
+        '.skeleton',
       ]
 
       let foundLoading = false
       for (const selector of loadingSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           console.log(`Loading state found: ${selector}`)
           foundLoading = true
-          
+
           // Wait for loading to disappear
-          await expect(page.locator(selector)).not.toBeVisible({ timeout: 10000 })
+          await expect(page.locator(selector)).not.toBeVisible({
+            timeout: 10000,
+          })
           break
         }
       }
@@ -623,12 +663,12 @@ test.describe('Couples Features E2E Tests', () => {
         '[data-testid="mutual-likes-list"]',
         '[data-testid="mutual-likes-empty"]',
         '.mutual-likes-list',
-        'text="No mutual likes"'
+        'text="No mutual likes"',
       ]
 
       let contentFound = false
       for (const selector of contentSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           await expect(page.locator(selector).first()).toBeVisible()
           console.log(`Content displayed: ${selector}`)
           contentFound = true
@@ -637,7 +677,9 @@ test.describe('Couples Features E2E Tests', () => {
       }
 
       if (!contentFound) {
-        console.log('No specific mutual likes content found - checking general page state')
+        console.log(
+          'No specific mutual likes content found - checking general page state'
+        )
       }
     })
   })

@@ -11,30 +11,30 @@ import { withRateLimit } from '@/lib/middleware/rateLimiter'
 
 /**
  * GET /api/couples/mutual-likes
- * 
+ *
  * Retrieves all properties that have been liked by multiple household members
- * 
+ *
  * @param {NextRequest} request - The incoming request object
  * @query {string} [includeProperties=true] - Whether to include full property details
- * 
+ *
  * @returns {Promise<NextResponse>} JSON response with mutual likes data
  * @returns {200} Success - Returns array of mutual likes with optional property details
  * @returns {401} Unauthorized - User is not authenticated
  * @returns {500} Internal Server Error - Failed to fetch mutual likes
- * 
- * @description 
+ *
+ * @description
  * This endpoint fetches all properties that have been liked by 2 or more household members.
  * It uses the CouplesService which implements caching and optimized database queries.
  * Property details can be optionally included to reduce client-side API calls.
- * 
+ *
  * @complexity O(n) where n is the number of mutual likes
  * @performance Cached responses return in <100ms, fresh queries in 200-500ms
  * @callsTo CouplesService.getMutualLikes, supabase.from('properties')
- * 
+ *
  * @example
  * // Fetch mutual likes with property details
  * GET /api/couples/mutual-likes?includeProperties=true
- * 
+ *
  * // Response
  * {
  *   "mutualLikes": [

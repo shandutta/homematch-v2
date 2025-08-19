@@ -72,9 +72,8 @@ export function SwipeDemo() {
                   : '—',
           }))
         if (!cancelled) setProperties(mapped)
-      } catch (error) {
+      } catch (_error) {
         // Silent fail; keep empty - this is expected for marketing demo
-        console.debug('Failed to fetch marketing properties:', error)
       }
     }
     void fetchData()
@@ -156,7 +155,10 @@ export function SwipeDemo() {
           </div>
         </MotionDiv>
 
-        <div className="relative mx-auto mt-4 w-full sm:mt-6" style={{ maxWidth: '32rem' }}>
+        <div
+          className="relative mx-auto mt-4 w-full sm:mt-6"
+          style={{ maxWidth: '32rem' }}
+        >
           {/* Removed "Love it / Nah" prompt to reduce confusion */}
 
           {/* Card Container */}
@@ -198,7 +200,10 @@ export function SwipeDemo() {
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
-                onDragEnd={(_e: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) => {
+                onDragEnd={(
+                  _e: MouseEvent | TouchEvent | PointerEvent,
+                  { offset, velocity }: PanInfo
+                ) => {
                   const swipe = Math.abs(offset.x) * velocity.x
                   if (swipe < -10000) {
                     handleSwipe('left')
@@ -285,9 +290,7 @@ export function SwipeDemo() {
                         aria-label="Pass on this property"
                       >
                         <X className="h-4 w-4" strokeWidth={2.5} />
-                        <span className="text-sm font-medium">
-                          Pass
-                        </span>
+                        <span className="text-sm font-medium">Pass</span>
                       </MotionButton>
 
                       <MotionButton
@@ -300,10 +303,11 @@ export function SwipeDemo() {
                         onClick={() => handleSwipe('right')}
                         aria-label="Love this property"
                       >
-                        <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
-                        <span className="text-sm font-medium">
-                          Love
-                        </span>
+                        <Heart
+                          className="h-4 w-4 fill-current"
+                          strokeWidth={0}
+                        />
+                        <span className="text-sm font-medium">Love</span>
                       </MotionButton>
                     </div>
                   </div>

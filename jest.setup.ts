@@ -61,8 +61,7 @@ console.error = (...args) => {
   if (
     args[0] &&
     args[0].includes &&
-    (args[0].includes('concurrent rendering') ||
-      args[0].includes('flushSync'))
+    (args[0].includes('concurrent rendering') || args[0].includes('flushSync'))
   ) {
     return
   }
@@ -84,7 +83,7 @@ jest.mock('framer-motion', () => {
   return {
     motion: {
       div: 'div',
-      span: 'span', 
+      span: 'span',
       section: 'section',
       article: 'article',
       h1: 'h1',
@@ -92,14 +91,14 @@ jest.mock('framer-motion', () => {
       h3: 'h3',
       p: 'p',
       ul: 'ul',
-      li: 'li'
+      li: 'li',
     },
     AnimatePresence: ({ children }) => children,
     useScroll: () => ({ scrollY: { get: () => 0 } }),
     useTransform: () => 0,
     useMotionValue: (initial) => ({ get: () => initial, set: jest.fn() }),
     useAnimation: () => ({ start: jest.fn(), stop: jest.fn() }),
-    useInView: () => false
+    useInView: () => false,
   }
 })
 
@@ -130,22 +129,26 @@ if (!global.React) {
 beforeEach(() => {
   jest.clearAllMocks()
   jest.restoreAllMocks()
-  
+
   // Re-setup Canvas mocks after restoreAllMocks clears them
-  HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation((contextType) => {
-    if (contextType === '2d') {
-      return {
-        createLinearGradient: jest.fn().mockReturnValue({
-          addColorStop: jest.fn(),
-        }),
-        fillRect: jest.fn(),
-        fillStyle: null,
+  HTMLCanvasElement.prototype.getContext = jest
+    .fn()
+    .mockImplementation((contextType) => {
+      if (contextType === '2d') {
+        return {
+          createLinearGradient: jest.fn().mockReturnValue({
+            addColorStop: jest.fn(),
+          }),
+          fillRect: jest.fn(),
+          fillStyle: null,
+        }
       }
-    }
-    return null
-  })
-  
-  HTMLCanvasElement.prototype.toDataURL = jest.fn().mockReturnValue('data:image/png;base64,mockDataURL')
+      return null
+    })
+
+  HTMLCanvasElement.prototype.toDataURL = jest
+    .fn()
+    .mockReturnValue('data:image/png;base64,mockDataURL')
 })
 
 afterEach(() => {

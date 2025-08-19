@@ -48,6 +48,13 @@ export class DashboardErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const error = this.state.error
+      const isDatabaseError =
+        error?.message.includes('DATABASE_CONNECTION_ERROR') ||
+        error?.message.toLowerCase().includes('database') ||
+        error?.message.toLowerCase().includes('connection') ||
+        error?.message.toLowerCase().includes('server error')
+
       return (
         this.props.fallback || (
           <div className="container mx-auto px-4 py-8">
@@ -55,13 +62,16 @@ export class DashboardErrorBoundary extends Component<Props, State> {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle className="text-destructive h-5 w-5" />
-                  Something went wrong
+                  {isDatabaseError
+                    ? 'Database Connection Error'
+                    : 'Something went wrong'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  We encountered an error while loading your dashboard. Please
-                  try refreshing the page.
+                  {isDatabaseError
+                    ? 'We are experiencing database connection issues. Please try again in a few moments.'
+                    : 'We encountered an error while loading your dashboard. Please try refreshing the page.'}
                 </p>
                 <div className="flex gap-2">
                   <Button onClick={this.handleReset} variant="default">

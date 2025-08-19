@@ -1,16 +1,16 @@
 /**
  * Generic RPC Wrapper Utility
- * 
+ *
  * Provides a reusable, type-safe wrapper for Supabase RPC function calls.
  * Reduces code duplication and standardizes error handling across services.
- * 
+ *
  * Features:
  * - Type-safe RPC calls with proper parameter and return type inference
  * - Standardized error handling with operation context
  * - Optional caching support with configurable TTL
  * - Logging and debugging support
  * - Fallback value handling for different return types
- * 
+ *
  * @example Basic Usage
  * ```typescript
  * // Instead of this repetitive pattern:
@@ -20,7 +20,7 @@
  *   this.handleSupabaseError(error, 'getPropertiesWithinRadius', { params })
  * }
  * return data || []
- * 
+ *
  * // Use this concise wrapper:
  * return callArrayRPC(
  *   supabase,
@@ -33,15 +33,15 @@
  *   }
  * )
  * ```
- * 
+ *
  * @example Usage Patterns
  * ```typescript
  * // For arrays (automatically returns [] on error):
  * const properties = await callArrayRPC(supabase, 'get_properties_in_bounds', params, options)
- * 
+ *
  * // For single objects (automatically returns null on error):
  * const result = await callSingleRPC(supabase, 'get_neighborhood_stats', params, options)
- * 
+ *
  * // For numbers with custom fallback:
  * const score = await callNumericRPC(supabase, 'get_walkability_score', params, {
  *   ...options,
@@ -52,10 +52,10 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import { 
-  createTypedRPC, 
+import {
+  createTypedRPC,
   type TypedSupabaseRPC,
-  type RPCResponse 
+  type RPCResponse,
 } from '@/lib/services/supabase-rpc-types'
 import { LRUCache } from 'lru-cache'
 
@@ -114,24 +114,30 @@ function handleRPCError(
   const errorContext = {
     function: functionName,
     params,
-    ...context
+    ...context,
   }
 
   // Check if it's a Supabase error with proper structure
   if (error && typeof error === 'object' && 'message' in error) {
-    const supabaseError = error as { message: string; code?: string; details?: string }
-    
+    const supabaseError = error as {
+      message: string
+      code?: string
+      details?: string
+    }
+
     // Log the error for debugging
     console.error(`[RPC Error] ${operation}:`, {
       function: functionName,
       error: supabaseError.message,
       code: supabaseError.code,
       details: supabaseError.details,
-      context: errorContext
+      context: errorContext,
     })
 
     // Create a structured error
-    const structuredError = new Error(`${operation} failed: ${supabaseError.message}`) as Error & {
+    const structuredError = new Error(
+      `${operation} failed: ${supabaseError.message}`
+    ) as Error & {
       code?: string
       details?: string
       context?: Record<string, unknown>
@@ -147,10 +153,12 @@ function handleRPCError(
   console.error(`[RPC Error] ${operation}:`, {
     function: functionName,
     error: errorMessage,
-    context: errorContext
+    context: errorContext,
   })
 
-  const structuredError = new Error(`${operation} failed: ${errorMessage}`) as Error & {
+  const structuredError = new Error(
+    `${operation} failed: ${errorMessage}`
+  ) as Error & {
     context?: Record<string, unknown>
   }
   structuredError.context = errorContext
@@ -166,7 +174,10 @@ function handleRPCError(
  */
 function generateCacheKey(functionName: string, params: unknown): string {
   try {
-    const paramsStr = JSON.stringify(params, Object.keys(params as object).sort())
+    const paramsStr = JSON.stringify(
+      params,
+      Object.keys(params as object).sort()
+    )
     return `rpc:${functionName}:${Buffer.from(paramsStr).toString('base64').slice(0, 32)}`
   } catch {
     // Fallback for non-serializable params
@@ -207,27 +218,31 @@ function setCachedResult<T>(cacheKey: string, result: T, ttl?: number): void {
 export async function callRPC<
   TFunctionName extends keyof TypedSupabaseRPC,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
-  TReturn
+  TReturn,
 >(
   supabase: SupabaseClient<Database>,
   functionName: TFunctionName,
   params: TParams,
   options: RPCWrapperOptions<TReturn>
 ): Promise<TReturn> {
-  const { operation, fallbackValue, cache, errorContext, enableLogging } = options
+  const { operation, fallbackValue, cache, errorContext, enableLogging } =
+    options
 
   // Generate cache key if caching is enabled
   let cacheKey: string | undefined
   if (cache?.enabled) {
-    cacheKey = cache.keyFn 
+    cacheKey = cache.keyFn
       ? cache.keyFn(functionName as string, params)
       : generateCacheKey(functionName as string, params)
-    
+
     // Check cache first
     const cached = getCachedResult<TReturn>(cacheKey)
     if (cached !== undefined) {
       if (enableLogging) {
-        console.debug(`[RPC Cache Hit] ${operation}:`, { function: functionName, params })
+        console.debug(`[RPC Cache Hit] ${operation}:`, {
+          function: functionName,
+          params,
+        })
       }
       return cached
     }
@@ -236,17 +251,28 @@ export async function callRPC<
   try {
     // Log the call if debugging is enabled
     if (enableLogging) {
-      console.debug(`[RPC Call] ${operation}:`, { function: functionName, params })
+      console.debug(`[RPC Call] ${operation}:`, {
+        function: functionName,
+        params,
+      })
     }
 
     // Create typed RPC client and call function
     const rpc = createTypedRPC(supabase)
-    const rpcFunction = rpc[functionName] as (params: TParams) => Promise<RPCResponse<TReturn>>
+    const rpcFunction = rpc[functionName] as (
+      params: TParams
+    ) => Promise<RPCResponse<TReturn>>
     const { data, error } = await rpcFunction(params)
 
     // Handle RPC errors
     if (error) {
-      handleRPCError(error, operation, functionName as string, params, errorContext)
+      handleRPCError(
+        error,
+        operation,
+        functionName as string,
+        params,
+        errorContext
+      )
     }
 
     // Use fallback if data is null/undefined
@@ -258,7 +284,10 @@ export async function callRPC<
     }
 
     if (enableLogging) {
-      console.debug(`[RPC Success] ${operation}:`, { function: functionName, resultType: typeof result })
+      console.debug(`[RPC Success] ${operation}:`, {
+        function: functionName,
+        resultType: typeof result,
+      })
     }
 
     return result
@@ -269,7 +298,13 @@ export async function callRPC<
     }
 
     // Handle unexpected errors
-    handleRPCError(error, operation, functionName as string, params, errorContext)
+    handleRPCError(
+      error,
+      operation,
+      functionName as string,
+      params,
+      errorContext
+    )
   }
 }
 
@@ -284,7 +319,7 @@ export async function callRPC<
 export async function callArrayRPC<
   TFunctionName extends keyof TypedSupabaseRPC,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
-  TReturn extends unknown[]
+  TReturn extends unknown[],
 >(
   supabase: SupabaseClient<Database>,
   functionName: TFunctionName,
@@ -293,7 +328,7 @@ export async function callArrayRPC<
 ): Promise<TReturn> {
   return callRPC(supabase, functionName, params, {
     ...options,
-    fallbackValue: [] as unknown as TReturn
+    fallbackValue: [] as unknown as TReturn,
   })
 }
 
@@ -304,7 +339,7 @@ export async function callArrayRPC<
 export async function callSingleRPC<
   TFunctionName extends keyof TypedSupabaseRPC,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
-  TReturn
+  TReturn,
 >(
   supabase: SupabaseClient<Database>,
   functionName: TFunctionName,
@@ -313,7 +348,7 @@ export async function callSingleRPC<
 ): Promise<TReturn | null> {
   return callRPC(supabase, functionName, params, {
     ...options,
-    fallbackValue: null as TReturn | null
+    fallbackValue: null as TReturn | null,
   })
 }
 
@@ -322,16 +357,18 @@ export async function callSingleRPC<
  */
 export async function callNumericRPC<
   TFunctionName extends keyof TypedSupabaseRPC,
-  TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0]
+  TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
   supabase: SupabaseClient<Database>,
   functionName: TFunctionName,
   params: TParams,
-  options: Omit<RPCWrapperOptions<number>, 'fallbackValue'> & { fallbackValue?: number }
+  options: Omit<RPCWrapperOptions<number>, 'fallbackValue'> & {
+    fallbackValue?: number
+  }
 ): Promise<number> {
   return callRPC(supabase, functionName, params, {
     ...options,
-    fallbackValue: options.fallbackValue ?? 0
+    fallbackValue: options.fallbackValue ?? 0,
   })
 }
 
@@ -354,9 +391,17 @@ export async function callBatchRPC(
 ): Promise<unknown[]> {
   const promises = calls.map(async ({ functionName, params, options }) => {
     try {
-      return await callRPC(supabase, functionName, params as Parameters<TypedSupabaseRPC[keyof TypedSupabaseRPC]>[0], options)
+      return await callRPC(
+        supabase,
+        functionName,
+        params as Parameters<TypedSupabaseRPC[keyof TypedSupabaseRPC]>[0],
+        options
+      )
     } catch (error) {
-      console.warn(`Batch RPC call failed for ${functionName as string}:`, error)
+      console.warn(
+        `Batch RPC call failed for ${functionName as string}:`,
+        error
+      )
       return options.fallbackValue
     }
   })
@@ -380,9 +425,11 @@ export function clearRPCCache(): void {
  */
 export function clearRPCCachePattern(pattern: string): void {
   const keys = Array.from(rpcCache.keys())
-  keys.filter(key => key.toString().includes(pattern)).forEach(key => {
-    rpcCache.delete(key)
-  })
+  keys
+    .filter((key) => key.toString().includes(pattern))
+    .forEach((key) => {
+      rpcCache.delete(key)
+    })
 }
 
 /**
@@ -396,6 +443,6 @@ export function getRPCCacheStats(): {
   return {
     size: rpcCache.size,
     max: rpcCache.max,
-    calculatedSize: rpcCache.calculatedSize
+    calculatedSize: rpcCache.calculatedSize,
   }
 }

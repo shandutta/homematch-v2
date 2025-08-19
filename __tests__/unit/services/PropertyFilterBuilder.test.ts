@@ -8,41 +8,45 @@ describe('PropertyFilterBuilder', () => {
 
   beforeEach(() => {
     filterBuilder = new PropertyFilterBuilder()
-    
+
     // Create a comprehensive mock query object that tracks all applied filters
     mockQuery = {
-      appliedFilters: [] as Array<{ method: string; column: string; value: any }>,
-      gte: function(column: string, value: any) {
+      appliedFilters: [] as Array<{
+        method: string
+        column: string
+        value: any
+      }>,
+      gte: function (column: string, value: any) {
         this.appliedFilters.push({ method: 'gte', column, value })
         return this
       },
-      lte: function(column: string, value: any) {
+      lte: function (column: string, value: any) {
         this.appliedFilters.push({ method: 'lte', column, value })
         return this
       },
-      eq: function(column: string, value: any) {
+      eq: function (column: string, value: any) {
         this.appliedFilters.push({ method: 'eq', column, value })
         return this
       },
-      in: function(column: string, value: any[]) {
+      in: function (column: string, value: any[]) {
         this.appliedFilters.push({ method: 'in', column, value })
         return this
       },
-      contains: function(column: string, value: any) {
+      contains: function (column: string, value: any) {
         this.appliedFilters.push({ method: 'contains', column, value })
         return this
-      }
+      },
     }
   })
 
   describe('Filter Rule Configuration', () => {
     test('should have all required filter rules configured', () => {
       const rules = filterBuilder.getFilterRules()
-      
+
       expect(rules).toHaveLength(16) // All filter rules from original conditionals
-      
+
       // Verify all expected filter keys are configured
-      const filterKeys = rules.map(rule => rule.filterKey)
+      const filterKeys = rules.map((rule) => rule.filterKey)
       expect(filterKeys).toContain('price_min')
       expect(filterKeys).toContain('price_max')
       expect(filterKeys).toContain('bedrooms_min')
@@ -63,19 +67,23 @@ describe('PropertyFilterBuilder', () => {
 
     test('should have correct operations for each filter type', () => {
       const rules = filterBuilder.getFilterRules()
-      
+
       // Range filters should use gte/lte
-      const priceMinRule = rules.find(r => r.filterKey === 'price_min')
+      const priceMinRule = rules.find((r) => r.filterKey === 'price_min')
       expect(priceMinRule?.operation).toBe('gte')
-      
-      const priceMaxRule = rules.find(r => r.filterKey === 'price_max')
+
+      const priceMaxRule = rules.find((r) => r.filterKey === 'price_max')
       expect(priceMaxRule?.operation).toBe('lte')
-      
+
       // Array filters should use 'in'
-      const propertyTypesRule = rules.find(r => r.filterKey === 'property_types')
+      const propertyTypesRule = rules.find(
+        (r) => r.filterKey === 'property_types'
+      )
       expect(propertyTypesRule?.operation).toBe('in')
-      
-      const neighborhoodsRule = rules.find(r => r.filterKey === 'neighborhoods')
+
+      const neighborhoodsRule = rules.find(
+        (r) => r.filterKey === 'neighborhoods'
+      )
       expect(neighborhoodsRule?.operation).toBe('in')
     })
   })
@@ -86,7 +94,7 @@ describe('PropertyFilterBuilder', () => {
         price_min: 100000,
         price_max: 500000,
         bedrooms_min: 2,
-        bathrooms_max: 3
+        bathrooms_max: 3,
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -95,22 +103,22 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'gte',
         column: 'price',
-        value: 100000
+        value: 100000,
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'lte',
         column: 'price',
-        value: 500000
+        value: 500000,
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'gte',
         column: 'bedrooms',
-        value: 2
+        value: 2,
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'lte',
         column: 'bathrooms',
-        value: 3
+        value: 3,
       })
     })
 
@@ -118,7 +126,7 @@ describe('PropertyFilterBuilder', () => {
       const filters: PropertyFilters = {
         property_types: ['single_family', 'condo'],
         neighborhoods: ['uuid-1', 'uuid-2'],
-        listing_status: ['active', 'pending']
+        listing_status: ['active', 'pending'],
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -127,23 +135,23 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
         column: 'property_type',
-        value: ['single_family', 'condo']
+        value: ['single_family', 'condo'],
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
         column: 'neighborhood_id',
-        value: ['uuid-1', 'uuid-2']
+        value: ['uuid-1', 'uuid-2'],
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
         column: 'listing_status',
-        value: ['active', 'pending']
+        value: ['active', 'pending'],
       })
     })
 
     test('should apply amenities filter with contains operation', () => {
       const filters: PropertyFilters = {
-        amenities: ['pool', 'gym', 'parking']
+        amenities: ['pool', 'gym', 'parking'],
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -153,17 +161,17 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'contains',
         column: 'amenities',
-        value: ['pool']
+        value: ['pool'],
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'contains',
         column: 'amenities',
-        value: ['gym']
+        value: ['gym'],
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'contains',
         column: 'amenities',
-        value: ['parking']
+        value: ['parking'],
       })
     })
 
@@ -172,7 +180,7 @@ describe('PropertyFilterBuilder', () => {
         price_min: 100000,
         price_max: undefined, // Should be skipped
         bedrooms_min: undefined, // Should be skipped
-        bathrooms_max: 3
+        bathrooms_max: 3,
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -181,12 +189,12 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'gte',
         column: 'price',
-        value: 100000
+        value: 100000,
       })
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'lte',
         column: 'bathrooms',
-        value: 3
+        value: 3,
       })
     })
 
@@ -194,7 +202,7 @@ describe('PropertyFilterBuilder', () => {
       const filters: PropertyFilters = {
         property_types: [], // Should be skipped
         neighborhoods: ['uuid-1'], // Should be applied
-        amenities: [] // Should be skipped
+        amenities: [], // Should be skipped
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -203,7 +211,7 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toContainEqual({
         method: 'in',
         column: 'neighborhood_id',
-        value: ['uuid-1']
+        value: ['uuid-1'],
       })
     })
 
@@ -220,7 +228,7 @@ describe('PropertyFilterBuilder', () => {
         amenities: ['pool'],
         year_built_min: 2000,
         parking_spots_min: 2,
-        listing_status: ['active']
+        listing_status: ['active'],
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -231,7 +239,7 @@ describe('PropertyFilterBuilder', () => {
 
     test('should maintain query chainability', () => {
       const filters: PropertyFilters = {
-        price_min: 100000
+        price_min: 100000,
       }
 
       const result = filterBuilder.applyFilters(mockQuery, filters)
@@ -248,7 +256,7 @@ describe('PropertyFilterBuilder', () => {
       filterBuilder.addFilterRule({
         filterKey: 'property_types' as keyof PropertyFilters, // Reusing existing key for simplicity
         column: 'custom_column',
-        operation: 'eq'
+        operation: 'eq',
       })
 
       expect(filterBuilder.getFilterRules()).toHaveLength(initialRulesCount + 1)
@@ -261,7 +269,7 @@ describe('PropertyFilterBuilder', () => {
 
       const rules = filterBuilder.getFilterRules()
       expect(rules).toHaveLength(initialRulesCount - 1)
-      expect(rules.find(r => r.filterKey === 'price_min')).toBeUndefined()
+      expect(rules.find((r) => r.filterKey === 'price_min')).toBeUndefined()
     })
   })
 
@@ -285,7 +293,7 @@ describe('PropertyFilterBuilder', () => {
         lot_size_max: 10000,
         parking_spots_min: 1,
         listing_status: ['active'],
-        amenities: ['pool', 'garage']
+        amenities: ['pool', 'garage'],
       }
 
       filterBuilder.applyFilters(mockQuery, filters)
@@ -294,7 +302,9 @@ describe('PropertyFilterBuilder', () => {
       expect(mockQuery.appliedFilters).toHaveLength(18)
 
       // Verify all original conditional filters are applied
-      const methods = mockQuery.appliedFilters.map(f => `${f.method}:${f.column}`)
+      const methods = mockQuery.appliedFilters.map(
+        (f) => `${f.method}:${f.column}`
+      )
       expect(methods).toContain('gte:price')
       expect(methods).toContain('lte:price')
       expect(methods).toContain('gte:bedrooms')

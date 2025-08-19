@@ -4,7 +4,8 @@
  */
 
 import { test, expect, Page } from '@playwright/test'
-import { TEST_USERS, TEST_ROUTES, TEST_TIMEOUTS } from '../fixtures/test-data'
+import { TEST_ROUTES } from '../fixtures/test-data'
+import { createWorkerAuthHelper } from '../utils/auth-helper'
 
 // Helper function to simulate network failures
 async function simulateNetworkFailure(page: Page, pattern: string) {
@@ -23,7 +24,7 @@ async function checkForErrorUI(
   }
 ) {
   let foundError = false
-  
+
   // Check for heading
   if (options.headingText) {
     for (const text of options.headingText) {
@@ -38,7 +39,7 @@ async function checkForErrorUI(
       }
     }
   }
-  
+
   // Check for message
   if (options.messageText) {
     for (const text of options.messageText) {
@@ -53,7 +54,7 @@ async function checkForErrorUI(
       }
     }
   }
-  
+
   // Check for buttons
   if (options.buttonText) {
     for (const text of options.buttonText) {
@@ -68,15 +69,15 @@ async function checkForErrorUI(
       }
     }
   }
-  
+
   return foundError
 }
 
 test.describe('Error Boundary User Flows', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page, context }, testInfo) => {
     // Clear cookies and auth state
     await context.clearCookies()
-    
+
     // Mock console to catch errors
     await page.addInitScript(() => {
       window.capturedErrors = []
@@ -95,26 +96,12 @@ test.describe('Error Boundary User Flows', () => {
         originalLog(...args)
       }
     })
-    
-    // Login with test user
-    await page.goto(TEST_ROUTES.auth.signIn)
-    await page.waitForLoadState('domcontentloaded')
-    
-    const emailInput = await page.locator('input[type="email"]').first()
-    await emailInput.fill(TEST_USERS.withHousehold.email)
-    
-    const passwordInput = await page.locator('input[type="password"]').first()
-    await passwordInput.fill(TEST_USERS.withHousehold.password)
-    
-    const submitButton = await page.locator('button[type="submit"]').first()
-    await Promise.all([
-      page.waitForNavigation({
-        timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'domcontentloaded'
-      }).catch(() => {}),
-      submitButton.click()
-    ])
-    
+
+    // Use worker-specific authentication to prevent race conditions
+    const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
+    await auth.login(testUser)
+    await auth.verifyAuthenticated()
+
     // Wait for React hydration
     await page.waitForTimeout(1000)
   })
@@ -135,15 +122,15 @@ test.describe('Error Boundary User Flows', () => {
         '[data-testid="dashboard"]',
         'text=/dashboard/i',
         'main',
-        '[role="main"]'
+        '[role="main"]',
       ]
-      
+
       let dashboardLoaded = false
       for (const selector of dashboardSelectors) {
         try {
           const element = await page.waitForSelector(selector, {
             timeout: 3000,
-            state: 'visible'
+            state: 'visible',
           })
           if (element) {
             dashboardLoaded = true
@@ -158,20 +145,20 @@ test.describe('Error Boundary User Flows', () => {
       const hasError = await checkForErrorUI(page, {
         headingText: ['Something went wrong', 'Error', 'Oops'],
         messageText: ['encountered an error', 'try again', 'refresh'],
-        buttonText: ['Try Again', 'Refresh', 'Reload']
+        buttonText: ['Try Again', 'Refresh', 'Reload'],
       })
 
       // Either dashboard loads or error boundary shows - both are valid
       expect(dashboardLoaded || hasError).toBe(true)
-      
+
       // If error boundary is shown, try recovery
       if (hasError) {
         const retryButtonSelectors = [
           'button:has-text("Try Again")',
           'button:has-text("Refresh")',
-          'button:has-text("Reload")'
+          'button:has-text("Reload")',
         ]
-        
+
         for (const selector of retryButtonSelectors) {
           try {
             const button = await page.locator(selector).first()
@@ -187,12 +174,10 @@ test.describe('Error Boundary User Flows', () => {
       }
     })
 
-    test('isolates API failures from main UI', async ({
-      page,
-    }) => {
+    test('isolates API failures from main UI', async ({ page }) => {
       // Simulate API failures
       await simulateNetworkFailure(page, '**/api/properties**')
-      
+
       await page.goto(TEST_ROUTES.app.dashboard)
       await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
@@ -203,9 +188,9 @@ test.describe('Error Boundary User Flows', () => {
         '[role="navigation"]',
         'header',
         '.navigation',
-        '.navbar'
+        '.navbar',
       ]
-      
+
       let navigationFound = false
       for (const selector of navigationSelectors) {
         try {
@@ -225,16 +210,16 @@ test.describe('Error Boundary User Flows', () => {
         const profileLinkSelectors = [
           'a:has-text("Profile")',
           '[href*="profile"]',
-          'button:has-text("Profile")'
+          'button:has-text("Profile")',
         ]
-        
+
         for (const selector of profileLinkSelectors) {
           try {
             const link = await page.locator(selector).first()
             if (await link.isVisible()) {
               await link.click()
               await page.waitForTimeout(2000)
-              
+
               const url = page.url()
               if (url.includes('profile')) {
                 // Successfully navigated despite API failure
@@ -267,9 +252,9 @@ test.describe('Error Boundary User Flows', () => {
         'button:has-text("Retry")',
         'button:has-text("Try Again")',
         'button:has-text("Refresh")',
-        'button:has-text("Reload")'
+        'button:has-text("Reload")',
       ]
-      
+
       for (const selector of retrySelectors) {
         try {
           const button = await page.locator(selector).first()
@@ -288,9 +273,9 @@ test.describe('Error Boundary User Flows', () => {
         '[data-testid="property-card"]',
         '.property-card',
         'main',
-        '[role="main"]'
+        '[role="main"]',
       ]
-      
+
       let _contentVisible = false
       for (const selector of contentSelectors) {
         try {
@@ -303,7 +288,7 @@ test.describe('Error Boundary User Flows', () => {
           continue
         }
       }
-      
+
       // Test passes if content is visible after recovery attempt
     })
   })
@@ -320,9 +305,9 @@ test.describe('Error Boundary User Flows', () => {
         '.property-card',
         '[class*="property"]',
         'text=/no properties/i',
-        'text=/start searching/i'
+        'text=/start searching/i',
       ]
-      
+
       let foundProperties = false
       for (const selector of propertySelectors) {
         try {
@@ -358,13 +343,8 @@ test.describe('Error Boundary User Flows', () => {
       await page.waitForTimeout(2000)
 
       // UI should remain stable despite partial failures
-      const uiStableSelectors = [
-        'nav',
-        'header',
-        'main',
-        '[role="main"]'
-      ]
-      
+      const uiStableSelectors = ['nav', 'header', 'main', '[role="main"]']
+
       let uiStable = false
       for (const selector of uiStableSelectors) {
         try {
@@ -383,27 +363,33 @@ test.describe('Error Boundary User Flows', () => {
   })
 
   test.describe('Authentication Error Scenarios', () => {
-    test('handles authentication errors gracefully', async ({ page, context }) => {
+    test('handles authentication errors gracefully', async ({
+      page,
+      context,
+    }) => {
       // Clear auth to simulate auth error
       await context.clearCookies()
-      
+
       // Try to access protected route
       await page.goto(TEST_ROUTES.app.dashboard)
       await page.waitForTimeout(2000)
 
       // Should redirect to login or show auth error
       const url = page.url()
-      const isOnAuthPage = url.includes('signin') || 
-                          url.includes('login') || 
-                          url.includes('auth')
-      
+      const isOnAuthPage =
+        url.includes('signin') || url.includes('login') || url.includes('auth')
+
       if (!isOnAuthPage) {
         // Check for auth error message
         const authErrorFound = await checkForErrorUI(page, {
-          messageText: ['not authenticated', 'please sign in', 'login required'],
-          buttonText: ['Sign In', 'Login']
+          messageText: [
+            'not authenticated',
+            'please sign in',
+            'login required',
+          ],
+          buttonText: ['Sign In', 'Login'],
         })
-        
+
         expect(isOnAuthPage || authErrorFound).toBe(true)
       } else {
         expect(isOnAuthPage).toBe(true)
@@ -413,20 +399,19 @@ test.describe('Error Boundary User Flows', () => {
     test('handles session expiry gracefully', async ({ page }) => {
       await page.goto(TEST_ROUTES.app.dashboard)
       await page.waitForLoadState('domcontentloaded')
-      
+
       // Simulate session expiry by clearing cookies mid-session
       await page.context().clearCookies()
-      
+
       // Try to interact with the page
       await page.reload()
       await page.waitForTimeout(2000)
-      
+
       // Should redirect to login
       const url = page.url()
-      const redirectedToAuth = url.includes('signin') || 
-                              url.includes('login') || 
-                              url.includes('auth')
-      
+      const redirectedToAuth =
+        url.includes('signin') || url.includes('login') || url.includes('auth')
+
       expect(redirectedToAuth).toBe(true)
     })
   })
@@ -435,7 +420,7 @@ test.describe('Error Boundary User Flows', () => {
     test('provides clear recovery options for errors', async ({ page }) => {
       // Simulate an error condition
       await simulateNetworkFailure(page, '**/api/**')
-      
+
       await page.goto(TEST_ROUTES.app.dashboard)
       await page.waitForTimeout(3000)
 
@@ -445,9 +430,9 @@ test.describe('Error Boundary User Flows', () => {
         'button:has-text("Refresh")',
         'button:has-text("Go Back")',
         'a:has-text("Home")',
-        'a:has-text("Dashboard")'
+        'a:has-text("Dashboard")',
       ]
-      
+
       let foundRecoveryOption = false
       for (const selector of recoveryOptions) {
         try {
@@ -463,7 +448,10 @@ test.describe('Error Boundary User Flows', () => {
 
       // Should provide at least one recovery option
       // or successfully load despite the error
-      const pageLoaded = await page.locator('main').isVisible().catch(() => false)
+      const pageLoaded = await page
+        .locator('main')
+        .isVisible()
+        .catch(() => false)
       expect(foundRecoveryOption || pageLoaded).toBe(true)
     })
   })

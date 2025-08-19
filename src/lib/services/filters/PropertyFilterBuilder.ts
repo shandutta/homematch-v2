@@ -23,7 +23,7 @@ export interface FilterRule {
 
 /**
  * Declarative filter builder for property search queries
- * 
+ *
  * Replaces repetitive conditional logic with a clean, maintainable configuration system.
  * Maintains 100% backward compatibility with existing search behavior.
  */
@@ -36,40 +36,52 @@ export class PropertyFilterBuilder {
       // Price range filters
       { filterKey: 'price_min', column: 'price', operation: 'gte' },
       { filterKey: 'price_max', column: 'price', operation: 'lte' },
-      
+
       // Bedroom range filters
       { filterKey: 'bedrooms_min', column: 'bedrooms', operation: 'gte' },
       { filterKey: 'bedrooms_max', column: 'bedrooms', operation: 'lte' },
-      
+
       // Bathroom range filters
       { filterKey: 'bathrooms_min', column: 'bathrooms', operation: 'gte' },
       { filterKey: 'bathrooms_max', column: 'bathrooms', operation: 'lte' },
-      
+
       // Square feet range filters
       { filterKey: 'square_feet_min', column: 'square_feet', operation: 'gte' },
       { filterKey: 'square_feet_max', column: 'square_feet', operation: 'lte' },
-      
+
       // Year built range filters
       { filterKey: 'year_built_min', column: 'year_built', operation: 'gte' },
       { filterKey: 'year_built_max', column: 'year_built', operation: 'lte' },
-      
+
       // Lot size range filters
       { filterKey: 'lot_size_min', column: 'lot_size_sqft', operation: 'gte' },
       { filterKey: 'lot_size_max', column: 'lot_size_sqft', operation: 'lte' },
-      
+
       // Parking spots minimum filter
-      { filterKey: 'parking_spots_min', column: 'parking_spots', operation: 'gte' },
-      
+      {
+        filterKey: 'parking_spots_min',
+        column: 'parking_spots',
+        operation: 'gte',
+      },
+
       // Array-based filters
       { filterKey: 'property_types', column: 'property_type', operation: 'in' },
-      { filterKey: 'neighborhoods', column: 'neighborhood_id', operation: 'in' },
-      { filterKey: 'listing_status', column: 'listing_status', operation: 'in' },
+      {
+        filterKey: 'neighborhoods',
+        column: 'neighborhood_id',
+        operation: 'in',
+      },
+      {
+        filterKey: 'listing_status',
+        column: 'listing_status',
+        operation: 'in',
+      },
     ]
   }
 
   /**
    * Apply all applicable filters to a Supabase query
-   * 
+   *
    * @param query - The base Supabase query to filter
    * @param filters - The filter criteria to apply
    * @returns The filtered query with all applicable filters applied
@@ -97,7 +109,7 @@ export class PropertyFilterBuilder {
 
   /**
    * Apply a single filter rule to the query
-   * 
+   *
    * @private
    */
   private applyFilter(
@@ -124,21 +136,21 @@ export class PropertyFilterBuilder {
     switch (rule.operation) {
       case 'gte':
         return query.gte(rule.column, value)
-      
+
       case 'lte':
         return query.lte(rule.column, value)
-      
+
       case 'eq':
         return query.eq(rule.column, value)
-      
+
       case 'in': {
         const arrayValue = value as unknown[]
         return query.in(rule.column, arrayValue)
       }
-      
+
       case 'contains':
         return query.contains(rule.column, value)
-      
+
       default: {
         // TypeScript exhaustiveness check
         const _exhaustive: never = rule.operation
@@ -149,7 +161,7 @@ export class PropertyFilterBuilder {
 
   /**
    * Get all configured filter rules (useful for testing and debugging)
-   * 
+   *
    * @returns Array of all filter rules
    */
   getFilterRules(): readonly FilterRule[] {
@@ -158,7 +170,7 @@ export class PropertyFilterBuilder {
 
   /**
    * Add a new filter rule dynamically
-   * 
+   *
    * @param rule - The filter rule to add
    */
   addFilterRule(rule: FilterRule): void {
@@ -167,11 +179,13 @@ export class PropertyFilterBuilder {
 
   /**
    * Remove a filter rule by filter key
-   * 
+   *
    * @param filterKey - The filter key to remove
    */
   removeFilterRule(filterKey: keyof PropertyFilters): void {
-    const index = this.filterRules.findIndex(rule => rule.filterKey === filterKey)
+    const index = this.filterRules.findIndex(
+      (rule) => rule.filterKey === filterKey
+    )
     if (index !== -1) {
       this.filterRules.splice(index, 1)
     }

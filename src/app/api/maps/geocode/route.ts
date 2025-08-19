@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Rate limiting by IP
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await apiRateLimiter.check(clientIP)
-    
+
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
-    
+
     if (!serverApiKey) {
       return NextResponse.json(
         { error: 'Geocoding service unavailable' },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const parsed = geocodeRequestSchema.safeParse(body)
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request parameters', details: parsed.error.issues },
@@ -85,11 +85,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (bounds) {
-      params.append('bounds', `${bounds.south},${bounds.west}|${bounds.north},${bounds.east}`)
+      params.append(
+        'bounds',
+        `${bounds.south},${bounds.west}|${bounds.north},${bounds.east}`
+      )
     }
 
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${params}`
-    
+
     const response = await fetch(geocodeUrl)
     const data = await response.json()
 
@@ -104,7 +107,10 @@ export async function POST(request: NextRequest) {
     const results: GeocodeResult[] = (data as GoogleGeocodeResponse).results
       .filter((result: GoogleGeocodeResult) => {
         // Validate coordinates before returning
-        const coords = { lat: result.geometry.location.lat, lng: result.geometry.location.lng }
+        const coords = {
+          lat: result.geometry.location.lat,
+          lng: result.geometry.location.lng,
+        }
         return isValidLatLng(coords)
       })
       .map((result: GoogleGeocodeResult) => ({

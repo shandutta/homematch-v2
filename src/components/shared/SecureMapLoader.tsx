@@ -21,13 +21,17 @@ let loadPromise: Promise<void> | null = null
  * 4. Provides loading state management
  * 5. No client-side API key exposure
  */
-export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderProps) {
+export function SecureMapLoader({
+  children,
+  onLoad,
+  onError,
+}: SecureMapLoaderProps) {
   const [isLoaded, setIsLoaded] = useState(isGoogleMapsLoaded)
   const [error, setError] = useState<Error | null>(null)
 
   const startSecureMapLoad = useCallback(async () => {
     isGoogleMapsLoading = true
-    
+
     try {
       // Create promise for this loading attempt
       loadPromise = new Promise<void>((resolve, reject) => {
@@ -53,11 +57,11 @@ export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderPr
         script.src = '/api/maps/proxy-script'
         script.async = true
         script.defer = true
-        
+
         script.onload = () => {
           // Script loaded successfully
         }
-        
+
         script.onerror = () => {
           isGoogleMapsLoading = false
           const error = new Error('Failed to load Google Maps script')
@@ -72,7 +76,8 @@ export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderPr
       await loadPromise
     } catch (err) {
       isGoogleMapsLoading = false
-      const error = err instanceof Error ? err : new Error('Unknown error loading maps')
+      const error =
+        err instanceof Error ? err : new Error('Unknown error loading maps')
       setError(error)
       onError?.(error)
     }
@@ -110,19 +115,19 @@ export function SecureMapLoader({ children, onLoad, onError }: SecureMapLoaderPr
   if (error) {
     return <MapErrorFallback error={error.message} />
   }
-  
+
   if (isLoaded) {
     return <>{children}</>
   }
-  
+
   return <MapLoadingFallback />
 }
 
 function MapLoadingFallback() {
   return (
-    <div className="flex items-center justify-center h-32 w-full bg-gray-100 rounded-lg">
+    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-gray-100">
       <div className="flex items-center space-x-2">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
         <span className="text-sm text-gray-600">Loading map...</span>
       </div>
     </div>
@@ -131,9 +136,9 @@ function MapLoadingFallback() {
 
 function MapErrorFallback({ error }: { error: string }) {
   return (
-    <div className="flex items-center justify-center h-32 w-full bg-gray-100 rounded-lg">
+    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-gray-100">
       <div className="text-center">
-        <div className="text-red-500 text-sm mb-1">⚠️ Map Unavailable</div>
+        <div className="mb-1 text-sm text-red-500">⚠️ Map Unavailable</div>
         <div className="text-xs text-gray-600">{error}</div>
       </div>
     </div>
@@ -157,9 +162,7 @@ export function useGoogleMapsLoader() {
     }
 
     if (isGoogleMapsLoading && loadPromise) {
-      loadPromise
-        .then(() => setIsLoaded(true))
-        .catch(setError)
+      loadPromise.then(() => setIsLoaded(true)).catch(setError)
     }
   }, [])
 

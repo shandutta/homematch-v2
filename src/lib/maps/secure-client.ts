@@ -62,13 +62,13 @@ export class SecureGeocodeClient {
     // Client-side rate limiting
     const now = Date.now()
     const timeSinceLastRequest = now - this.lastRequest
-    
+
     if (timeSinceLastRequest < this.RATE_LIMIT_MS) {
-      await new Promise(resolve => 
+      await new Promise((resolve) =>
         setTimeout(resolve, this.RATE_LIMIT_MS - timeSinceLastRequest)
       )
     }
-    
+
     this.lastRequest = Date.now()
 
     try {
@@ -100,14 +100,19 @@ export class SecureGeocodeClient {
 export class SecurePlacesClient {
   private static lastRequest = 0
   private static readonly RATE_LIMIT_MS = 500 // 2 requests per second max
-  private static cache = new Map<string, { data: PlacePrediction[], timestamp: number }>()
+  private static cache = new Map<
+    string,
+    { data: PlacePrediction[]; timestamp: number }
+  >()
   private static readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
-  static async autocomplete(request: PlacesAutocompleteRequest): Promise<PlacePrediction[]> {
+  static async autocomplete(
+    request: PlacesAutocompleteRequest
+  ): Promise<PlacePrediction[]> {
     // Check cache first
     const cacheKey = JSON.stringify(request)
     const cached = this.cache.get(cacheKey)
-    
+
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data
     }
@@ -115,13 +120,13 @@ export class SecurePlacesClient {
     // Client-side rate limiting
     const now = Date.now()
     const timeSinceLastRequest = now - this.lastRequest
-    
+
     if (timeSinceLastRequest < this.RATE_LIMIT_MS) {
-      await new Promise(resolve => 
+      await new Promise((resolve) =>
         setTimeout(resolve, this.RATE_LIMIT_MS - timeSinceLastRequest)
       )
     }
-    
+
     this.lastRequest = Date.now()
 
     try {
@@ -139,7 +144,7 @@ export class SecurePlacesClient {
       }
 
       const data = await response.json()
-      
+
       // Cache the result
       this.cache.set(cacheKey, {
         data: data.predictions,
@@ -161,13 +166,13 @@ export class SecurePlacesClient {
   private static cleanCache() {
     const now = Date.now()
     const toDelete: string[] = []
-    
+
     for (const [key, value] of this.cache.entries()) {
       if (now - value.timestamp > this.CACHE_TTL) {
         toDelete.push(key)
       }
     }
-    
-    toDelete.forEach(key => this.cache.delete(key))
+
+    toDelete.forEach((key) => this.cache.delete(key))
   }
 }

@@ -41,7 +41,11 @@ describe('Card Components', () => {
     })
 
     test('forwards all div props', () => {
-      render(<Card data-testid="card-test" role="region">Content</Card>)
+      render(
+        <Card data-testid="card-test" role="region">
+          Content
+        </Card>
+      )
       const card = screen.getByTestId('card-test')
       expect(card).toHaveAttribute('role', 'region')
     })
@@ -77,7 +81,9 @@ describe('Card Components', () => {
         </CardHeader>
       )
       const header = screen.getByText('Header content').parentElement
-      expect(header).toHaveClass('has-data-[slot=card-action]:grid-cols-[1fr_auto]')
+      expect(header).toHaveClass(
+        'has-data-[slot=card-action]:grid-cols-[1fr_auto]'
+      )
     })
   })
 
@@ -198,8 +204,12 @@ describe('Card Components', () => {
       expect(screen.getByText('Test Card')).toBeInTheDocument()
       expect(screen.getByText('This is a test card')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Action' })).toBeInTheDocument()
-      expect(screen.getByText('This is the main content of the card.')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Footer Button' })).toBeInTheDocument()
+      expect(
+        screen.getByText('This is the main content of the card.')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Footer Button' })
+      ).toBeInTheDocument()
     })
 
     test('maintains proper header layout with action', () => {
@@ -215,7 +225,7 @@ describe('Card Components', () => {
 
       const header = screen.getByText('Title with Action').parentElement
       const actionContainer = screen.getByText('Action').parentElement
-      
+
       expect(header).toContainElement(actionContainer)
       expect(actionContainer).toHaveAttribute('data-slot', 'card-action')
     })
@@ -223,13 +233,13 @@ describe('Card Components', () => {
     test('works without optional components', () => {
       render(
         <Card>
-          <CardContent>
-            Simple card with just content
-          </CardContent>
+          <CardContent>Simple card with just content</CardContent>
         </Card>
       )
 
-      expect(screen.getByText('Simple card with just content')).toBeInTheDocument()
+      expect(
+        screen.getByText('Simple card with just content')
+      ).toBeInTheDocument()
     })
 
     test('supports nested complex content', () => {
@@ -271,7 +281,7 @@ describe('Card Components', () => {
 
       const card = screen.getByRole('article')
       expect(card).toHaveAttribute('aria-labelledby', 'card-title')
-      
+
       const title = screen.getByText('Accessible Card')
       expect(title).toHaveAttribute('id', 'card-title')
     })
@@ -282,14 +292,14 @@ describe('Card Components', () => {
           <CardHeader>
             <CardTitle>Semantic Card</CardTitle>
           </CardHeader>
-          <CardContent>
-            Main content area
-          </CardContent>
+          <CardContent>Main content area</CardContent>
         </Card>
       )
 
       // Check that the structure allows for proper screen reader navigation
-      const card = screen.getByText('Semantic Card').closest('[data-slot="card"]')
+      const card = screen
+        .getByText('Semantic Card')
+        .closest('[data-slot="card"]')
       expect(card).toBeInTheDocument()
     })
   })
@@ -300,7 +310,9 @@ describe('Card Components', () => {
         <Card className="custom-card">
           <CardHeader className="custom-header">
             <CardTitle className="custom-title">Title</CardTitle>
-            <CardDescription className="custom-description">Description</CardDescription>
+            <CardDescription className="custom-description">
+              Description
+            </CardDescription>
             <CardAction className="custom-action">Action</CardAction>
           </CardHeader>
           <CardContent className="custom-content">Content</CardContent>
@@ -308,8 +320,12 @@ describe('Card Components', () => {
         </Card>
       )
 
-      expect(screen.getByText('Title').closest('[data-slot="card"]')).toHaveClass('custom-card')
-      expect(screen.getByText('Title').closest('[data-slot="card-header"]')).toHaveClass('custom-header')
+      expect(
+        screen.getByText('Title').closest('[data-slot="card"]')
+      ).toHaveClass('custom-card')
+      expect(
+        screen.getByText('Title').closest('[data-slot="card-header"]')
+      ).toHaveClass('custom-header')
       expect(screen.getByText('Title')).toHaveClass('custom-title')
       expect(screen.getByText('Description')).toHaveClass('custom-description')
       expect(screen.getByText('Action')).toHaveClass('custom-action')
@@ -324,7 +340,9 @@ describe('Card Components', () => {
         </Card>
       )
 
-      const card = screen.getByText('Styled content').closest('[data-slot="card"]')
+      const card = screen
+        .getByText('Styled content')
+        .closest('[data-slot="card"]')
       expect(card).toHaveStyle('background-color: rgb(255, 0, 0)')
     })
   })

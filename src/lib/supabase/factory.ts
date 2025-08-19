@@ -1,6 +1,6 @@
 /**
  * Unified Supabase Client Factory
- * 
+ *
  * Consolidates all Supabase client creation patterns into a single,
  * environment-aware factory that maintains backward compatibility.
  */
@@ -10,10 +10,10 @@ import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import { 
-  ClientContext, 
-  ClientConfig, 
-  ISupabaseClientFactory 
+import {
+  ClientContext,
+  ClientConfig,
+  ISupabaseClientFactory,
 } from '@/lib/services/interfaces'
 
 /**
@@ -23,36 +23,38 @@ import {
 export class SupabaseClientFactory implements ISupabaseClientFactory {
   private static instance: SupabaseClientFactory
   private clientCache = new Map<string, SupabaseClient<Database>>()
-  
+
   private constructor() {}
-  
+
   static getInstance(): SupabaseClientFactory {
     if (!SupabaseClientFactory.instance) {
       SupabaseClientFactory.instance = new SupabaseClientFactory()
     }
     return SupabaseClientFactory.instance
   }
-  
+
   /**
    * Main entry point for creating Supabase clients
    * Automatically detects context if not specified
-*/  async createClient(config?: ClientConfig): Promise<SupabaseClient<Database>> {
+   */ async createClient(
+    config?: ClientConfig
+  ): Promise<SupabaseClient<Database>> {
     const context = config?.context || this.detectContext()
     const cacheKey = this.getCacheKey(context, config)
-    
+
     // Return cached client for stateless contexts
     if (this.shouldCache(context) && this.clientCache.has(cacheKey)) {
       return this.clientCache.get(cacheKey)!
     }
-    
+
     let client: SupabaseClient<Database>
-    
+
     switch (context) {
       case ClientContext.BROWSER:
         client = this.createBrowserClient()
         break
       case ClientContext.SERVER:
-client = await this.createServerClient()
+        client = await this.createServerClient()
         break
       case ClientContext.API:
         client = this.createApiClient(config?.request)
@@ -63,15 +65,15 @@ client = await this.createServerClient()
       default:
         throw new Error(`Unknown client context: ${context}`)
     }
-    
+
     // Cache appropriate clients
     if (this.shouldCache(context)) {
       this.clientCache.set(cacheKey, client)
     }
-    
+
     return client
   }
-  
+
   /**
    * Browser client for client-side operations
    * Same as current client.ts implementation
@@ -82,7 +84,7 @@ client = await this.createServerClient()
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
   }
-  
+
   /**
    * Server client for Server Components and server contexts
    * Based on current server.ts createClient() implementation
@@ -92,7 +94,7 @@ client = await this.createServerClient()
     // For now, we'll handle this in the consumer
     throw new Error('Use createServerClient() for async server contexts')
   }
-  
+
   /**
    * Async server client for Server Components
    * Handles cookies and headers properly
@@ -100,11 +102,11 @@ client = await this.createServerClient()
   async createServerClient(): Promise<SupabaseClient<Database>> {
     const cookieStore = await cookies()
     const headerStore = await headers()
-    
+
     // Check for Authorization header (for API routes)
     const authHeader = headerStore.get('authorization')
     const bearerToken = authHeader?.replace('Bearer ', '')
-    
+
     return createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -146,7 +148,7 @@ client = await this.createServerClient()
       }
     )
   }
-  
+
   /**
    * API client for API routes with request context
    * Based on current server.ts createApiClient() implementation
@@ -154,10 +156,10 @@ client = await this.createServerClient()
   private createApiClient(request?: NextRequest): SupabaseClient<Database> {
     let authHeader: string | null = null
     let cookieData: { name: string; value: string }[] = []
-    
+
     if (request) {
       authHeader = request.headers.get('authorization')
-      
+
       const cookieStr = request.headers.get('cookie')
       if (cookieStr) {
         cookieData = cookieStr
@@ -169,9 +171,9 @@ client = await this.createServerClient()
           .filter((c) => c.name && c.value)
       }
     }
-    
+
     const bearerToken = authHeader?.replace('Bearer ', '')
-    
+
     return createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -200,7 +202,7 @@ client = await this.createServerClient()
       }
     )
   }
-  
+
   /**
    * Service role client for administrative operations
    * Based on current server.ts createServiceClient() implementation
@@ -217,7 +219,7 @@ client = await this.createServerClient()
       }
     )
   }
-  
+
   /**
    * Detects the appropriate client context based on environment
    */
@@ -226,54 +228,56 @@ client = await this.createServerClient()
     if (typeof window !== 'undefined') {
       return ClientContext.BROWSER
     }
-    
+
     // Server-side environment
     // Additional detection logic could be added here based on:
     // - Request headers
     // - Environment variables
     // - Execution context
-    
+
     return ClientContext.SERVER
   }
-  
+
   /**
    * Generates cache key for client instances
    */
   private getCacheKey(context: ClientContext, config?: ClientConfig): string {
-const parts: string[] = [context]
-    
+    const parts: string[] = [context]
+
     if (config?.authToken) {
       parts.push(`auth:${config.authToken.slice(0, 8)}`)
     }
-    
+
     if (config?.request) {
       parts.push(`req:${config.request.url}`)
     }
-    
+
     return parts.join('|')
   }
-  
+
   /**
    * Determines if client should be cached
    */
   private shouldCache(context: ClientContext): boolean {
-    return context === ClientContext.BROWSER || context === ClientContext.SERVICE
+    return (
+      context === ClientContext.BROWSER || context === ClientContext.SERVICE
+    )
   }
-  
+
   /**
    * Clears client cache (useful for testing)
    */
   clearCache(): void {
     this.clientCache.clear()
   }
-  
+
   /**
    * Gets cache statistics (useful for monitoring)
    */
   getCacheStats(): { size: number; keys: string[] } {
     return {
       size: this.clientCache.size,
-      keys: Array.from(this.clientCache.keys())
+      keys: Array.from(this.clientCache.keys()),
     }
   }
 }
@@ -286,16 +290,20 @@ const parts: string[] = [context]
  * Drop-in replacement for existing createClient() calls
  * Maintains exact same API for backward compatibility
  */
-export async function createClient(config?: ClientConfig): Promise<SupabaseClient<Database>> {
+export async function createClient(
+  config?: ClientConfig
+): Promise<SupabaseClient<Database>> {
   const factory = SupabaseClientFactory.getInstance()
-return await factory.createClient(config)
+  return await factory.createClient(config)
 }
 
 /**
  * Async server client helper
  * For gradual migration from existing server.ts usage
  */
-export async function createServerClientCompat(): Promise<SupabaseClient<Database>> {
+export async function createServerClientCompat(): Promise<
+  SupabaseClient<Database>
+> {
   const factory = SupabaseClientFactory.getInstance()
   return factory.createServerClient()
 }
@@ -304,11 +312,13 @@ export async function createServerClientCompat(): Promise<SupabaseClient<Databas
  * API client helper
  * For gradual migration from existing API route patterns
  */
-export async function createApiClientCompat(request?: NextRequest): Promise<SupabaseClient<Database>> {
+export async function createApiClientCompat(
+  request?: NextRequest
+): Promise<SupabaseClient<Database>> {
   const factory = SupabaseClientFactory.getInstance()
-return await factory.createClient({
+  return await factory.createClient({
     context: ClientContext.API,
-    request
+    request,
   })
 }
 
@@ -316,10 +326,12 @@ return await factory.createClient({
  * Service client helper
  * For gradual migration from existing service client usage
  */
-export async function createServiceClientCompat(): Promise<SupabaseClient<Database>> {
+export async function createServiceClientCompat(): Promise<
+  SupabaseClient<Database>
+> {
   const factory = SupabaseClientFactory.getInstance()
-return await factory.createClient({
-    context: ClientContext.SERVICE
+  return await factory.createClient({
+    context: ClientContext.SERVICE,
   })
 }
 
@@ -331,9 +343,11 @@ return await factory.createClient({
  * Feature flag aware client factory
  * Allows gradual rollout of new factory
  */
-export async function createClientWithFeatureFlag(config?: ClientConfig): Promise<SupabaseClient<Database>> {
+export async function createClientWithFeatureFlag(
+  config?: ClientConfig
+): Promise<SupabaseClient<Database>> {
   const useNewFactory = process.env.FEATURE_UNIFIED_CLIENT_FACTORY === 'true'
-  
+
   if (!useNewFactory) {
     // Fall back to original implementations
     if (typeof window !== 'undefined') {
@@ -347,8 +361,8 @@ export async function createClientWithFeatureFlag(config?: ClientConfig): Promis
       throw new Error('Feature flag fallback not fully implemented')
     }
   }
-  
-return await createClient(config)
+
+  return await createClient(config)
 }
 
 // ============================================================================
@@ -360,15 +374,17 @@ return await createClient(config)
  */
 export class MockSupabaseClientFactory implements ISupabaseClientFactory {
   private mockClient: SupabaseClient<Database>
-  
+
   constructor(mockClient: SupabaseClient<Database>) {
     this.mockClient = mockClient
   }
-  
-  async createClient(_config?: ClientConfig): Promise<SupabaseClient<Database>> {
+
+  async createClient(
+    _config?: ClientConfig
+  ): Promise<SupabaseClient<Database>> {
     return this.mockClient
   }
-  
+
   getInstance(): ISupabaseClientFactory {
     return this
   }
@@ -377,6 +393,8 @@ export class MockSupabaseClientFactory implements ISupabaseClientFactory {
 /**
  * Creates a test-friendly factory
  */
-export function createTestFactory(mockClient: SupabaseClient<Database>): MockSupabaseClientFactory {
+export function createTestFactory(
+  mockClient: SupabaseClient<Database>
+): MockSupabaseClientFactory {
   return new MockSupabaseClientFactory(mockClient)
 }

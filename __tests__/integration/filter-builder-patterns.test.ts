@@ -7,7 +7,7 @@ import { Property, PropertyInsert } from '@/types/database'
 describe('Filter Builder Patterns Integration Tests', () => {
   let propertyService: PropertyService
   let testProperties: Property[] = []
-  
+
   beforeAll(async () => {
     await setupTestDatabase()
     const clientFactory = createTestClientFactory()
@@ -22,12 +22,12 @@ describe('Filter Builder Patterns Integration Tests', () => {
     // Clean up test properties after each test to prevent accumulation
     const clientFactory = createTestClientFactory()
     const supabase = await clientFactory.createClient()
-    
+
     const { error } = await supabase
       .from('properties')
       .delete()
       .like('address', '%Filter Test%')
-    
+
     if (error) {
       console.warn('Failed to clean up test properties:', error)
     }
@@ -37,18 +37,18 @@ describe('Filter Builder Patterns Integration Tests', () => {
     // Use the test client factory directly for proper cleanup
     const clientFactory = createTestClientFactory()
     const supabase = await clientFactory.createClient()
-    
+
     // Clean ALL existing test properties that match our pattern
     // First, delete any existing properties with "Filter Test" in the address
     const { error: deleteError } = await supabase
       .from('properties')
       .delete()
       .like('address', '%Filter Test%')
-    
+
     if (deleteError) {
       console.warn('Failed to delete existing test properties:', deleteError)
     }
-    
+
     // Reset the testProperties array
     testProperties = []
 
@@ -63,13 +63,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2.5,
         square_feet: 1800,
-        property_type: 'single_family',
+        property_type: 'house',
         listing_status: 'active',
         year_built: 2020,
         lot_size_sqft: 5000,
         parking_spots: 2,
         amenities: ['pool', 'garage', 'garden'],
-        is_active: true
+        is_active: true,
       },
       {
         address: '200 Filter Test Ave',
@@ -80,13 +80,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 4,
         bathrooms: 3,
         square_feet: 2200,
-        property_type: 'single_family',
+        property_type: 'house',
         listing_status: 'active',
         year_built: 2018,
         lot_size_sqft: 7000,
         parking_spots: 3,
         amenities: ['pool', 'gym', 'office'],
-        is_active: true
+        is_active: true,
       },
       {
         address: '300 Filter Test Blvd',
@@ -103,7 +103,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
         lot_size_sqft: 2000,
         parking_spots: 1,
         amenities: ['gym', 'concierge'],
-        is_active: true
+        is_active: true,
       },
       {
         address: '400 Filter Test Dr',
@@ -114,13 +114,13 @@ describe('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 5,
         bathrooms: 4,
         square_feet: 3000,
-        property_type: 'townhome',
+        property_type: 'townhouse',
         listing_status: 'active',
         year_built: 2021,
         lot_size_sqft: 3000,
         parking_spots: 2,
         amenities: ['pool', 'garage', 'patio', 'fireplace'],
-        is_active: true
+        is_active: true,
       },
       {
         address: '500 Filter Test Ct',
@@ -137,8 +137,8 @@ describe('Filter Builder Patterns Integration Tests', () => {
         lot_size_sqft: 1500,
         parking_spots: 1,
         amenities: ['laundry'],
-        is_active: true
-      }
+        is_active: true,
+      },
     ]
 
     for (const propertyData of properties) {
@@ -150,157 +150,169 @@ describe('Filter Builder Patterns Integration Tests', () => {
   describe('Price Range Filtering', () => {
     test('should filter by minimum price only', async () => {
       const result = await propertyService.searchProperties({
-        filters: { price_min: 600000 }
+        filters: { price_min: 600000 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.price >= 600000)).toBe(true)
+      expect(result.properties.every((p) => p.price >= 600000)).toBe(true)
     })
 
     test('should filter by maximum price only', async () => {
       const result = await propertyService.searchProperties({
-        filters: { price_max: 500000 }
+        filters: { price_max: 500000 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.price <= 500000)).toBe(true)
+      expect(result.properties.every((p) => p.price <= 500000)).toBe(true)
     })
 
     test('should filter by price range (min and max)', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           price_min: 400000,
-          price_max: 800000
-        }
+          price_max: 800000,
+        },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.price >= 400000 && p.price <= 800000)).toBe(true)
+      expect(
+        result.properties.every((p) => p.price >= 400000 && p.price <= 800000)
+      ).toBe(true)
     })
 
     test('should handle edge case where min equals max', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           price_min: 500000,
-          price_max: 500000
-        }
+          price_max: 500000,
+        },
       })
 
-      expect(result.properties.every(p => p.price === 500000)).toBe(true)
+      expect(result.properties.every((p) => p.price === 500000)).toBe(true)
     })
   })
 
   describe('Bedroom and Bathroom Filtering', () => {
     test('should filter by minimum bedrooms', async () => {
       const result = await propertyService.searchProperties({
-        filters: { bedrooms_min: 3 }
+        filters: { bedrooms_min: 3 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.bedrooms >= 3)).toBe(true)
+      expect(result.properties.every((p) => p.bedrooms >= 3)).toBe(true)
     })
 
     test('should filter by maximum bedrooms', async () => {
       const result = await propertyService.searchProperties({
-        filters: { bedrooms_max: 3 }
+        filters: { bedrooms_max: 3 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.bedrooms <= 3)).toBe(true)
+      expect(result.properties.every((p) => p.bedrooms <= 3)).toBe(true)
     })
 
     test('should filter by bedroom range', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           bedrooms_min: 2,
-          bedrooms_max: 4
-        }
+          bedrooms_max: 4,
+        },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.bedrooms >= 2 && p.bedrooms <= 4)).toBe(true)
+      expect(
+        result.properties.every((p) => p.bedrooms >= 2 && p.bedrooms <= 4)
+      ).toBe(true)
     })
 
     test('should filter by minimum bathrooms with decimal values', async () => {
       const result = await propertyService.searchProperties({
-        filters: { bathrooms_min: 2.5 }
+        filters: { bathrooms_min: 2.5 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.bathrooms >= 2.5)).toBe(true)
+      expect(result.properties.every((p) => p.bathrooms >= 2.5)).toBe(true)
     })
 
     test('should filter by bathroom range', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           bathrooms_min: 2,
-          bathrooms_max: 3
-        }
+          bathrooms_max: 3,
+        },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.bathrooms >= 2 && p.bathrooms <= 3)).toBe(true)
+      expect(
+        result.properties.every((p) => p.bathrooms >= 2 && p.bathrooms <= 3)
+      ).toBe(true)
     })
   })
 
   describe('Square Footage Filtering', () => {
     test('should filter by minimum square feet', async () => {
       const result = await propertyService.searchProperties({
-        filters: { square_feet_min: 1500 }
+        filters: { square_feet_min: 1500 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.square_feet >= 1500)).toBe(true)
+      expect(result.properties.every((p) => p.square_feet >= 1500)).toBe(true)
     })
 
     test('should filter by maximum square feet', async () => {
       const result = await propertyService.searchProperties({
-        filters: { square_feet_max: 2000 }
+        filters: { square_feet_max: 2000 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.square_feet <= 2000)).toBe(true)
+      expect(result.properties.every((p) => p.square_feet <= 2000)).toBe(true)
     })
 
     test('should filter by square feet range', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           square_feet_min: 1000,
-          square_feet_max: 2000
-        }
+          square_feet_max: 2000,
+        },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.square_feet >= 1000 && p.square_feet <= 2000
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) => p.square_feet >= 1000 && p.square_feet <= 2000
+        )
+      ).toBe(true)
     })
   })
 
   describe('Property Type Filtering', () => {
     test('should filter by single property type', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['single_family'] }
+        filters: { property_types: ['house'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.property_type === 'single_family')).toBe(true)
+      expect(result.properties.every((p) => p.property_type === 'house')).toBe(
+        true
+      )
     })
 
     test('should filter by multiple property types', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['single_family', 'condo'] }
+        filters: { property_types: ['house', 'condo'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        ['single_family', 'condo'].includes(p.property_type)
-      )).toBe(true)
+      expect(
+        result.properties.every((p) =>
+          ['house', 'condo'].includes(p.property_type)
+        )
+      ).toBe(true)
     })
 
     test('should return empty results for non-existent property type', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['non_existent_type'] }
+        filters: { property_types: ['non_existent_type'] },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -311,133 +323,150 @@ describe('Filter Builder Patterns Integration Tests', () => {
   describe('Year Built Filtering', () => {
     test('should filter by minimum year built', async () => {
       const result = await propertyService.searchProperties({
-        filters: { year_built_min: 2018 }
+        filters: { year_built_min: 2018 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.year_built >= 2018)).toBe(true)
+      expect(result.properties.every((p) => p.year_built >= 2018)).toBe(true)
     })
 
     test('should filter by maximum year built', async () => {
       const result = await propertyService.searchProperties({
-        filters: { year_built_max: 2015 }
+        filters: { year_built_max: 2015 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.year_built <= 2015)).toBe(true)
+      expect(result.properties.every((p) => p.year_built <= 2015)).toBe(true)
     })
 
     test('should filter by year built range', async () => {
       const result = await propertyService.searchProperties({
-        filters: { 
+        filters: {
           year_built_min: 2015,
-          year_built_max: 2020
-        }
+          year_built_max: 2020,
+        },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.year_built >= 2015 && p.year_built <= 2020
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) => p.year_built >= 2015 && p.year_built <= 2020
+        )
+      ).toBe(true)
     })
   })
 
   describe('Lot Size Filtering', () => {
     test('should filter by minimum lot size', async () => {
       const result = await propertyService.searchProperties({
-        filters: { lot_size_min: 4000 }
+        filters: { lot_size_min: 4000 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.lot_size_sqft && p.lot_size_sqft >= 4000
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) => p.lot_size_sqft && p.lot_size_sqft >= 4000
+        )
+      ).toBe(true)
     })
 
     test('should filter by maximum lot size', async () => {
       const result = await propertyService.searchProperties({
-        filters: { lot_size_max: 6000 }
+        filters: { lot_size_max: 6000 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        !p.lot_size_sqft || p.lot_size_sqft <= 6000
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) => !p.lot_size_sqft || p.lot_size_sqft <= 6000
+        )
+      ).toBe(true)
     })
 
     test('should handle properties with null lot size', async () => {
       const result = await propertyService.searchProperties({
-        filters: { lot_size_min: 1000 }
+        filters: { lot_size_min: 1000 },
       })
 
       // Should only return properties with lot_size_sqft values
-      expect(result.properties.every(p => p.lot_size_sqft !== null)).toBe(true)
+      expect(result.properties.every((p) => p.lot_size_sqft !== null)).toBe(
+        true
+      )
     })
   })
 
   describe('Parking Spots Filtering', () => {
     test('should filter by minimum parking spots', async () => {
       const result = await propertyService.searchProperties({
-        filters: { parking_spots_min: 2 }
+        filters: { parking_spots_min: 2 },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.parking_spots && p.parking_spots >= 2
-      )).toBe(true)
+      expect(
+        result.properties.every((p) => p.parking_spots && p.parking_spots >= 2)
+      ).toBe(true)
     })
   })
 
   describe('Listing Status Filtering', () => {
     test('should filter by single listing status', async () => {
       const result = await propertyService.searchProperties({
-        filters: { listing_status: ['active'] }
+        filters: { listing_status: ['active'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => p.listing_status === 'active')).toBe(true)
+      expect(
+        result.properties.every((p) => p.listing_status === 'active')
+      ).toBe(true)
     })
 
     test('should filter by multiple listing statuses', async () => {
       const result = await propertyService.searchProperties({
-        filters: { listing_status: ['active', 'pending'] }
+        filters: { listing_status: ['active', 'pending'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        ['active', 'pending'].includes(p.listing_status)
-      )).toBe(true)
+      expect(
+        result.properties.every((p) =>
+          ['active', 'pending'].includes(p.listing_status)
+        )
+      ).toBe(true)
     })
   })
 
   describe('Amenities Filtering', () => {
     test('should filter by single amenity', async () => {
       const result = await propertyService.searchProperties({
-        filters: { amenities: ['pool'] }
+        filters: { amenities: ['pool'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.amenities && p.amenities.includes('pool')
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) => p.amenities && p.amenities.includes('pool')
+        )
+      ).toBe(true)
     })
 
     test('should filter by multiple amenities (AND logic)', async () => {
       const result = await propertyService.searchProperties({
-        filters: { amenities: ['pool', 'garage'] }
+        filters: { amenities: ['pool', 'garage'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every(p => 
-        p.amenities && 
-        p.amenities.includes('pool') && 
-        p.amenities.includes('garage')
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) =>
+            p.amenities &&
+            p.amenities.includes('pool') &&
+            p.amenities.includes('garage')
+        )
+      ).toBe(true)
     })
 
     test('should return empty results for non-existent amenity', async () => {
       const result = await propertyService.searchProperties({
-        filters: { amenities: ['non_existent_amenity'] }
+        filters: { amenities: ['non_existent_amenity'] },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -454,34 +483,40 @@ describe('Filter Builder Patterns Integration Tests', () => {
           bedrooms_max: 4,
           bathrooms_min: 2,
           square_feet_min: 1200,
-          property_types: ['single_family', 'townhome'],
+          property_types: ['house', 'townhouse'],
           year_built_min: 2015,
           parking_spots_min: 2,
           listing_status: ['active'],
-          amenities: ['pool']
-        }
+          amenities: ['pool'],
+        },
       })
 
       // Should apply all filters correctly
-      expect(result.properties.every(p => 
-        p.price >= 400000 && p.price <= 800000 &&
-        p.bedrooms >= 2 && p.bedrooms <= 4 &&
-        p.bathrooms >= 2 &&
-        p.square_feet >= 1200 &&
-        ['single_family', 'townhome'].includes(p.property_type) &&
-        p.year_built >= 2015 &&
-        p.parking_spots >= 2 &&
-        p.listing_status === 'active' &&
-        p.amenities && p.amenities.includes('pool')
-      )).toBe(true)
+      expect(
+        result.properties.every(
+          (p) =>
+            p.price >= 400000 &&
+            p.price <= 800000 &&
+            p.bedrooms >= 2 &&
+            p.bedrooms <= 4 &&
+            p.bathrooms >= 2 &&
+            p.square_feet >= 1200 &&
+            ['house', 'townhouse'].includes(p.property_type) &&
+            p.year_built >= 2015 &&
+            p.parking_spots >= 2 &&
+            p.listing_status === 'active' &&
+            p.amenities &&
+            p.amenities.includes('pool')
+        )
+      ).toBe(true)
     })
 
     test('should handle conflicting filters gracefully', async () => {
       const result = await propertyService.searchProperties({
         filters: {
           price_min: 900000,
-          price_max: 100000 // Max less than min
-        }
+          price_max: 100000, // Max less than min
+        },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -493,8 +528,8 @@ describe('Filter Builder Patterns Integration Tests', () => {
         filters: {
           price_min: 999999999, // Impossibly high price
           bedrooms_min: 100,
-          bathrooms_min: 50
-        }
+          bathrooms_min: 50,
+        },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -510,16 +545,20 @@ describe('Filter Builder Patterns Integration Tests', () => {
           price_max: undefined,
           bedrooms_min: undefined,
           property_types: undefined,
-          amenities: undefined
-        }
+          amenities: undefined,
+        },
       })
 
       // Should return properties when filters are undefined
       // Check that test properties are included in the results
-      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
-      const testPropertyIds = testProperties.map(p => p.id)
-      const resultPropertyIds = result.properties.map(p => p.id)
-      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(result.properties.length).toBeGreaterThanOrEqual(
+        testProperties.length
+      )
+      const testPropertyIds = testProperties.map((p) => p.id)
+      const resultPropertyIds = result.properties.map((p) => p.id)
+      const includesAllTestProperties = testPropertyIds.every((id) =>
+        resultPropertyIds.includes(id)
+      )
       expect(includesAllTestProperties).toBe(true)
     })
 
@@ -528,16 +567,20 @@ describe('Filter Builder Patterns Integration Tests', () => {
         filters: {
           price_min: null as any,
           bedrooms_min: null as any,
-          property_types: null as any
-        }
+          property_types: null as any,
+        },
       })
 
       // Should return properties when filters are null
       // Check that test properties are included in the results
-      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
-      const testPropertyIds = testProperties.map(p => p.id)
-      const resultPropertyIds = result.properties.map(p => p.id)
-      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(result.properties.length).toBeGreaterThanOrEqual(
+        testProperties.length
+      )
+      const testPropertyIds = testProperties.map((p) => p.id)
+      const resultPropertyIds = result.properties.map((p) => p.id)
+      const includesAllTestProperties = testPropertyIds.every((id) =>
+        resultPropertyIds.includes(id)
+      )
       expect(includesAllTestProperties).toBe(true)
     })
 
@@ -546,16 +589,20 @@ describe('Filter Builder Patterns Integration Tests', () => {
         filters: {
           property_types: [],
           amenities: [],
-          listing_status: []
-        }
+          listing_status: [],
+        },
       })
 
       // Should return properties when array filters are empty
       // Check that test properties are included in the results
-      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
-      const testPropertyIds = testProperties.map(p => p.id)
-      const resultPropertyIds = result.properties.map(p => p.id)
-      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(result.properties.length).toBeGreaterThanOrEqual(
+        testProperties.length
+      )
+      const testPropertyIds = testProperties.map((p) => p.id)
+      const resultPropertyIds = result.properties.map((p) => p.id)
+      const includesAllTestProperties = testPropertyIds.every((id) =>
+        resultPropertyIds.includes(id)
+      )
       expect(includesAllTestProperties).toBe(true)
     })
 
@@ -568,16 +615,20 @@ describe('Filter Builder Patterns Integration Tests', () => {
           square_feet_min: 0,
           year_built_min: 0,
           lot_size_min: 0,
-          parking_spots_min: 0
-        }
+          parking_spots_min: 0,
+        },
       })
 
       // Should treat zero as a valid filter value
       // Check that test properties are included in the results
-      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
-      const testPropertyIds = testProperties.map(p => p.id)
-      const resultPropertyIds = result.properties.map(p => p.id)
-      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(result.properties.length).toBeGreaterThanOrEqual(
+        testProperties.length
+      )
+      const testPropertyIds = testProperties.map((p) => p.id)
+      const resultPropertyIds = result.properties.map((p) => p.id)
+      const includesAllTestProperties = testPropertyIds.every((id) =>
+        resultPropertyIds.includes(id)
+      )
       expect(includesAllTestProperties).toBe(true)
     })
 
@@ -585,16 +636,20 @@ describe('Filter Builder Patterns Integration Tests', () => {
       const result = await propertyService.searchProperties({
         filters: {
           price_min: -1000,
-          bedrooms_min: -5
-        }
+          bedrooms_min: -5,
+        },
       })
 
       // Should still apply filters even with negative values
       // Check that test properties are included in the results
-      expect(result.properties.length).toBeGreaterThanOrEqual(testProperties.length)
-      const testPropertyIds = testProperties.map(p => p.id)
-      const resultPropertyIds = result.properties.map(p => p.id)
-      const includesAllTestProperties = testPropertyIds.every(id => resultPropertyIds.includes(id))
+      expect(result.properties.length).toBeGreaterThanOrEqual(
+        testProperties.length
+      )
+      const testPropertyIds = testProperties.map((p) => p.id)
+      const resultPropertyIds = result.properties.map((p) => p.id)
+      const includesAllTestProperties = testPropertyIds.every((id) =>
+        resultPropertyIds.includes(id)
+      )
       expect(includesAllTestProperties).toBe(true)
     })
   })
@@ -602,9 +657,9 @@ describe('Filter Builder Patterns Integration Tests', () => {
   describe('Filter Query Building Performance', () => {
     test('should build efficient queries with minimal filters', async () => {
       const startTime = Date.now()
-      
+
       const result = await propertyService.searchProperties({
-        filters: { price_min: 500000 }
+        filters: { price_min: 500000 },
       })
 
       const endTime = Date.now()
@@ -617,7 +672,7 @@ describe('Filter Builder Patterns Integration Tests', () => {
 
     test('should build efficient queries with maximum filters', async () => {
       const startTime = Date.now()
-      
+
       const result = await propertyService.searchProperties({
         filters: {
           price_min: 100000,
@@ -628,15 +683,15 @@ describe('Filter Builder Patterns Integration Tests', () => {
           bathrooms_max: 10,
           square_feet_min: 500,
           square_feet_max: 10000,
-          property_types: ['single_family', 'condo', 'townhome'],
+          property_types: ['house', 'condo', 'townhouse'],
           year_built_min: 1900,
           year_built_max: 2025,
           lot_size_min: 0,
           lot_size_max: 50000,
           parking_spots_min: 0,
           listing_status: ['active', 'pending', 'sold'],
-          amenities: ['pool', 'garage', 'gym']
-        }
+          amenities: ['pool', 'garage', 'gym'],
+        },
       })
 
       const endTime = Date.now()

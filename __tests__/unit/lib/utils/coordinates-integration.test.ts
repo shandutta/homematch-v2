@@ -20,7 +20,7 @@ describe('Coordinate Utilities Integration', () => {
       }
 
       const result = parsePostGISGeometry(postGISPoint)
-      
+
       expect(result).toEqual({
         lat: 37.7749,
         lng: -122.4194,
@@ -31,9 +31,9 @@ describe('Coordinate Utilities Integration', () => {
     it('should handle coordinate arrays from legacy data', () => {
       // Some legacy data might be stored as arrays
       const coordinateArray = [-122.4194, 37.7749]
-      
+
       const result = parsePostGISGeometry(coordinateArray)
-      
+
       expect(result).toEqual({
         lat: 37.7749,
         lng: -122.4194,
@@ -46,16 +46,16 @@ describe('Coordinate Utilities Integration', () => {
         lat: 37.7749,
         lng: -122.4194,
       }
-      
+
       const result = parsePostGISGeometry(latLngObject)
-      
+
       expect(result).toEqual(latLngObject)
     })
 
     it('should convert to GeoJSON for PostGIS insertion', () => {
       const coords = { lat: 37.7749, lng: -122.4194 }
       const geoJSON = latLngToGeoJSON(coords)
-      
+
       expect(geoJSON).toEqual({
         type: 'Point',
         coordinates: [-122.4194, 37.7749], // GeoJSON format: [lng, lat]
@@ -71,7 +71,7 @@ describe('Coordinate Utilities Integration', () => {
     it('should work with bounding box normalization', () => {
       // Legacy bounding box format
       const legacyBounds = {
-        northEast: { lat: 40.7128, lng: -74.0060 },
+        northEast: { lat: 40.7128, lng: -74.006 },
         southWest: { lat: 37.7749, lng: -122.4194 },
       }
 
@@ -89,18 +89,18 @@ describe('Coordinate Utilities Integration', () => {
       }
 
       const normalized = normalizeBounds(legacyBounds)
-      
+
       expect(normalized).toEqual({
         north: 40.7128,
         south: 37.7749,
-        east: -74.0060,
+        east: -74.006,
         west: -122.4194,
       })
     })
 
     it('should calculate distances correctly for real locations', () => {
       const sanFrancisco = { lat: 37.7749, lng: -122.4194 }
-      const newYork = { lat: 40.7128, lng: -74.0060 }
+      const newYork = { lat: 40.7128, lng: -74.006 }
 
       const distance = calculateDistance(sanFrancisco, newYork)
 
@@ -122,7 +122,9 @@ describe('Coordinate Utilities Integration', () => {
     it('should handle malformed data gracefully', () => {
       expect(parsePostGISGeometry({ type: 'Point' })).toBe(null) // Missing coordinates
       expect(parsePostGISGeometry({ coordinates: [] })).toBe(null) // Missing type
-      expect(parsePostGISGeometry({ type: 'Point', coordinates: [1] })).toBe(null) // Invalid coordinates
+      expect(parsePostGISGeometry({ type: 'Point', coordinates: [1] })).toBe(
+        null
+      ) // Invalid coordinates
       expect(parsePostGISGeometry({})).toBe(null) // Empty object
       expect(parsePostGISGeometry('invalid string')).toBe(null) // Invalid type
     })

@@ -15,14 +15,14 @@ const fetchJson = async (path: string, init?: RequestInit) => {
     },
     ...init,
   })
-  
+
   let body: any = {}
   try {
     body = await res.json()
   } catch {
     // non-JSON body
   }
-  
+
   return { status: res.status, body, headers: res.headers }
 }
 
@@ -40,7 +40,9 @@ type MarketingCard = {
 describe('Integration: /api/properties/marketing', () => {
   beforeAll(() => {
     if (!API_URL) {
-      throw new Error('TEST_API_URL environment variable is required for integration tests')
+      throw new Error(
+        'TEST_API_URL environment variable is required for integration tests'
+      )
     }
   })
 
@@ -62,12 +64,12 @@ describe('Integration: /api/properties/marketing', () => {
       body.forEach((card: MarketingCard) => {
         expect(card).toBeDefined()
         expect(typeof card).toBe('object')
-        
+
         // Required fields
         expect(typeof card.zpid).toBe('string')
         expect(card.zpid.length).toBeGreaterThan(0)
         expect(typeof card.address).toBe('string')
-        
+
         // Optional fields that can be null
         expect([null, 'string'].includes(typeof card.imageUrl)).toBe(true)
         expect([null, 'number'].includes(typeof card.price)).toBe(true)
@@ -132,8 +134,10 @@ describe('Integration: /api/properties/marketing', () => {
 
     if (body.length > 0) {
       // In development or with proper data, should prefer cards with images
-      const cardsWithImages = body.filter((card: MarketingCard) => card.imageUrl !== null)
-      
+      const cardsWithImages = body.filter(
+        (card: MarketingCard) => card.imageUrl !== null
+      )
+
       // If there are any cards with images, they should be prioritized
       if (cardsWithImages.length > 0) {
         cardsWithImages.forEach((card: MarketingCard) => {
@@ -150,10 +154,10 @@ describe('Integration: /api/properties/marketing', () => {
 
     body.forEach((card: MarketingCard) => {
       expect(typeof card.address).toBe('string')
-      
+
       // Address should not be empty
       expect(card.address.length).toBeGreaterThan(0)
-      
+
       // Should not have double commas or leading/trailing commas
       expect(card.address).not.toContain(',,')
       expect(card.address).not.toMatch(/^,/)
@@ -163,13 +167,13 @@ describe('Integration: /api/properties/marketing', () => {
 
   test('should handle concurrent requests efficiently', async () => {
     const startTime = Date.now()
-    
+
     // Make multiple concurrent requests
-    const requests = Array.from({ length: 3 }, () => 
+    const requests = Array.from({ length: 3 }, () =>
       fetchJson('/api/properties/marketing')
     )
     const responses = await Promise.all(requests)
-    
+
     const endTime = Date.now()
     const duration = endTime - startTime
 
@@ -185,7 +189,7 @@ describe('Integration: /api/properties/marketing', () => {
 
   test('should reject non-GET methods', async () => {
     const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
-    
+
     for (const method of methods) {
       const res = await fetch(`${API_URL}/api/properties/marketing`, {
         method,
@@ -193,7 +197,7 @@ describe('Integration: /api/properties/marketing', () => {
           'content-type': 'application/json',
         },
       })
-      
+
       // Should return 405 Method Not Allowed
       expect(res.status).toBe(405)
     }
@@ -210,7 +214,7 @@ describe('Integration: /api/properties/marketing', () => {
     body.forEach((card: MarketingCard) => {
       expect(card.zpid).toBeDefined()
       expect(card.address).toBeDefined()
-      
+
       // Fallback cards might have different zpid patterns
       if (card.zpid.startsWith('fallback-')) {
         expect(card.address).toBe('Coming soon')
@@ -225,21 +229,21 @@ describe('Integration: /api/properties/marketing', () => {
 
   test('should maintain consistent response times', async () => {
     const times: number[] = []
-    
+
     // Make several sequential requests to measure consistency
     for (let i = 0; i < 3; i++) {
       const start = Date.now()
       const { status } = await fetchJson('/api/properties/marketing')
       const end = Date.now()
-      
+
       expect(status).toBe(200)
       times.push(end - start)
     }
 
     // Calculate average and check that no request is dramatically slower
     const average = times.reduce((a, b) => a + b, 0) / times.length
-    
-    times.forEach(time => {
+
+    times.forEach((time) => {
       // No single request should be more than 3x the average (unless average is very small)
       expect(time).toBeLessThan(Math.max(average * 3, 5000))
     })

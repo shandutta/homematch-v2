@@ -32,10 +32,22 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'loremflickr.com',
+        pathname: '/**',
+      },
     ],
-    // optional tuning for responsive images
+    // Optional tuning for responsive images
     deviceSizes: [320, 420, 768, 1024, 1200, 1600],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Disable optimization for unreliable external sources during testing or development
+    unoptimized:
+      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+      process.env.NODE_ENV === 'development',
+    // Handle image loading errors gracefully
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // Skip linting during test builds

@@ -3,7 +3,12 @@
 import Link from 'next/link'
 import { Heart, Eye, X, Settings, User, Menu } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
-import { MotionDiv, fadeIn, slideInRight, fastTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  fadeIn,
+  slideInRight,
+  fastTransition,
+} from '@/components/ui/motion-components'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import {
   DropdownMenu,
@@ -124,7 +129,7 @@ export function Header() {
               {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button 
+                  <button
                     className="p-token-sm text-token-primary-light transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95"
                     data-testid="user-menu"
                   >

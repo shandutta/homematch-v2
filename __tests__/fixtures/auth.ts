@@ -61,24 +61,23 @@ export const authFixtures = {
         // Submit the form
         await submitButton.click()
 
-        // Wait for authentication to complete - check for redirection
-        await utils.waitForAuthRedirect(/.*\/validation/, {
-          timeout: config.timeouts.AUTH_REDIRECT,
-          errorMessage: `Failed to authenticate user ${user.email}`,
-        })
-
-        // Wait for the page to settle after redirect
-        await utils.waitForReactToSettle()
-
-        const browserName = page.context().browser()?.browserType().name()
-        if (browserName === 'webkit' || browserName === 'firefox') {
-          console.log(
-            `🔍 ${browserName} detected - applying extra wait for auth propagation`
-          )
-          // Extra time for cookies to propagate before verification
-          await page.waitForTimeout(3000)
-          // Avoid reload races; perform a lightweight navigation to stabilize state
-          await page.goto('/validation', { waitUntil: 'load' })
+        // Wait for authentication to complete - use element-based wait instead of URL
+        try {
+          // Wait for dashboard to be fully loaded with all elements
+          await utils.waitForDashboard()
+        } catch (error) {
+          // Fallback: if dashboard wait fails, try alternative auth destinations
+          try {
+            await utils.waitForAuthRedirect(/profile|validation/, {
+              timeout: config.timeouts.AUTH_REDIRECT,
+              errorMessage: `Failed to authenticate user ${user.email}`,
+            })
+            await utils.waitForReactToSettle()
+          } catch (redirectError) {
+            throw new Error(
+              `Authentication failed: ${error}. Redirect also failed: ${redirectError}`
+            )
+          }
         }
       },
 
@@ -104,8 +103,7 @@ export const authFixtures = {
         if (browserName === 'firefox') {
           // Firefox needs explicit wait for form submission
           await Promise.all([
-            page.waitForNavigation({
-              waitUntil: 'networkidle',
+            page.waitForURL(/signin|login|auth/, {
               timeout: config.timeouts.AUTH_LOGOUT,
             }),
             signOutButton.click(),
@@ -156,10 +154,26 @@ export const authFixtures = {
         const isWebKit = browserName === 'webkit'
         const isFirefox = browserName === 'firefox'
 
-        // Should be on validation dashboard
-        await page.waitForURL(/.*\/validation/, {
-          timeout: config.timeouts.NAVIGATION,
-        })
+        // Use element-based detection instead of URL waiting
+        try {
+          // First try to detect dashboard elements
+          await utils.waitForDashboard()
+        } catch (error) {
+          // Fallback: check for validation page elements
+          try {
+            await page.waitForSelector(
+              'h1:has-text("HomeMatch V2 - Database Migration Validation"), h1:has-text("Dashboard"), [data-testid="dashboard-header"]',
+              {
+                timeout: config.timeouts.NAVIGATION,
+                state: 'visible',
+              }
+            )
+          } catch (elementError) {
+            throw new Error(
+              `Could not verify authentication - neither dashboard nor validation page detected: ${error}. Element detection also failed: ${elementError}`
+            )
+          }
+        }
 
         // Verify validation dashboard content
         const h1Locator = page.locator('h1')

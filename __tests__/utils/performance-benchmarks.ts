@@ -15,9 +15,9 @@ export interface PerformanceMetric {
 }
 
 export interface PerformanceThresholds {
-  maxDuration?: number        // Maximum allowed duration in ms
-  maxMemory?: number          // Maximum memory usage in MB
-  percentile95?: number       // 95th percentile target
+  maxDuration?: number // Maximum allowed duration in ms
+  maxMemory?: number // Maximum memory usage in MB
+  percentile95?: number // 95th percentile target
   degradationThreshold?: number // Allowed performance degradation %
 }
 
@@ -47,13 +47,17 @@ export class PerformanceBenchmark {
   private currentTest: string = ''
 
   constructor(reportDir?: string) {
-    this.reportDir = reportDir || path.join(process.cwd(), '__tests__', 'reports', 'performance')
+    this.reportDir =
+      reportDir ||
+      path.join(process.cwd(), '__tests__', 'reports', 'performance')
   }
 
   /**
    * Start a performance measurement
    */
-  startMeasure(name: string): (metadata?: Record<string, any>) => PerformanceMetric {
+  startMeasure(
+    name: string
+  ): (metadata?: Record<string, any>) => PerformanceMetric {
     const startTime = performance.now()
     const startMemory = process.memoryUsage()
 
@@ -112,8 +116,8 @@ export class PerformanceBenchmark {
    * Calculate statistics from metrics
    */
   private calculateStats(metrics: PerformanceMetric[]) {
-    const durations = metrics.map(m => m.duration).sort((a, b) => a - b)
-    const memories = metrics.map(m => m.memory.heapUsed / 1024 / 1024) // Convert to MB
+    const durations = metrics.map((m) => m.duration).sort((a, b) => a - b)
+    const memories = metrics.map((m) => m.memory.heapUsed / 1024 / 1024) // Convert to MB
 
     return {
       mean: durations.reduce((a, b) => a + b, 0) / durations.length,
@@ -137,15 +141,21 @@ export class PerformanceBenchmark {
     const failures: string[] = []
 
     if (thresholds.maxDuration && stats.max > thresholds.maxDuration) {
-      failures.push(`Max duration ${stats.max.toFixed(2)}ms exceeds threshold ${thresholds.maxDuration}ms`)
+      failures.push(
+        `Max duration ${stats.max.toFixed(2)}ms exceeds threshold ${thresholds.maxDuration}ms`
+      )
     }
 
     if (thresholds.maxMemory && stats.memoryPeak > thresholds.maxMemory) {
-      failures.push(`Peak memory ${stats.memoryPeak.toFixed(2)}MB exceeds threshold ${thresholds.maxMemory}MB`)
+      failures.push(
+        `Peak memory ${stats.memoryPeak.toFixed(2)}MB exceeds threshold ${thresholds.maxMemory}MB`
+      )
     }
 
     if (thresholds.percentile95 && stats.p95 > thresholds.percentile95) {
-      failures.push(`95th percentile ${stats.p95.toFixed(2)}ms exceeds threshold ${thresholds.percentile95}ms`)
+      failures.push(
+        `95th percentile ${stats.p95.toFixed(2)}ms exceeds threshold ${thresholds.percentile95}ms`
+      )
     }
 
     return {
@@ -161,7 +171,7 @@ export class PerformanceBenchmark {
     testName: string,
     thresholds: PerformanceThresholds = {}
   ): Promise<BenchmarkReport> {
-    const testMetrics = this.metrics.filter(m => m.name.startsWith(testName))
+    const testMetrics = this.metrics.filter((m) => m.name.startsWith(testName))
     const stats = this.calculateStats(testMetrics)
     const validation = this.validateThresholds(testMetrics, thresholds)
 
@@ -194,13 +204,15 @@ export class PerformanceBenchmark {
     degradationThreshold: number = 10
   ): Promise<{ passed: boolean; comparison: any }> {
     const baselinePath = path.join(this.reportDir, `${testName}_baseline.json`)
-    
+
     try {
       const baselineContent = await fs.readFile(baselinePath, 'utf-8')
       const baseline = JSON.parse(baselineContent) as BenchmarkReport
-      
+
       const currentStats = this.calculateStats(currentMetrics)
-      const degradation = ((currentStats.mean - baseline.summary.mean) / baseline.summary.mean) * 100
+      const degradation =
+        ((currentStats.mean - baseline.summary.mean) / baseline.summary.mean) *
+        100
 
       return {
         passed: degradation <= degradationThreshold,
@@ -223,10 +235,13 @@ export class PerformanceBenchmark {
   /**
    * Save baseline metrics
    */
-  async saveBaseline(testName: string, metrics: PerformanceMetric[]): Promise<void> {
+  async saveBaseline(
+    testName: string,
+    metrics: PerformanceMetric[]
+  ): Promise<void> {
     await this.ensureReportDir()
     const baselinePath = path.join(this.reportDir, `${testName}_baseline.json`)
-    
+
     const report: BenchmarkReport = {
       testName,
       metrics,
@@ -309,7 +324,11 @@ export class PerformanceTestUtils {
    */
   static async runSuite(
     suiteName: string,
-    tests: Array<{ name: string; test: () => Promise<any>; threshold?: PerformanceThresholds }>,
+    tests: Array<{
+      name: string
+      test: () => Promise<any>
+      threshold?: PerformanceThresholds
+    }>,
     iterations: number = 10
   ): Promise<BenchmarkReport[]> {
     const benchmark = new PerformanceBenchmark()
@@ -317,10 +336,10 @@ export class PerformanceTestUtils {
 
     for (const { name, test, threshold } of tests) {
       console.log(`Running ${name} (${iterations} iterations)...`)
-      
+
       // Warm-up run
       await test()
-      
+
       // Actual test runs
       for (let i = 0; i < iterations; i++) {
         await benchmark.measure(`${suiteName}/${name}`, test, {
@@ -335,9 +354,14 @@ export class PerformanceTestUtils {
       reports.push(report)
 
       if (!report.passed) {
-        console.warn(`❌ ${name} failed performance thresholds:`, report.failures)
+        console.warn(
+          `❌ ${name} failed performance thresholds:`,
+          report.failures
+        )
       } else {
-        console.log(`✅ ${name} passed (mean: ${report.summary.mean.toFixed(2)}ms)`)
+        console.log(
+          `✅ ${name} passed (mean: ${report.summary.mean.toFixed(2)}ms)`
+        )
       }
     }
 
@@ -349,7 +373,11 @@ export class PerformanceTestUtils {
  * Jest matchers for performance assertions
  */
 export const performanceMatchers = {
-  toBeWithinDuration(received: number, expected: number, tolerance: number = 100) {
+  toBeWithinDuration(
+    received: number,
+    expected: number,
+    tolerance: number = 100
+  ) {
     const pass = received <= expected + tolerance
     return {
       pass,
@@ -377,20 +405,26 @@ export const performanceMatchers = {
  * Performance monitoring decorator
  */
 export function measurePerformance(thresholds?: PerformanceThresholds) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
     const originalMethod = descriptor.value
     const benchmark = new PerformanceBenchmark()
 
     descriptor.value = async function (...args: any[]) {
-      const { result, metric } = await benchmark.measure(
-        propertyKey,
-        () => originalMethod.apply(this, args)
+      const { result, metric } = await benchmark.measure(propertyKey, () =>
+        originalMethod.apply(this, args)
       )
 
       if (thresholds) {
         const validation = benchmark.validateThresholds([metric], thresholds)
         if (!validation.passed) {
-          console.warn(`Performance threshold violations in ${propertyKey}:`, validation.failures)
+          console.warn(
+            `Performance threshold violations in ${propertyKey}:`,
+            validation.failures
+          )
         }
       }
 

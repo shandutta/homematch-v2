@@ -27,18 +27,17 @@ describe('Couples Frontend Integration', () => {
       },
     })
     vi.clearAllMocks()
-    
+
     // Setup default mock implementations
     const { useCouples } = await import('@/hooks/useCouples')
     const { useCouplesFeatures } = await import('@/hooks/useCouplesFeatures')
-    
+
     ;(useCouples as any).mockReturnValue({
       mutualLikes: [],
       householdActivity: [],
       isLoading: false,
       error: null,
     })
-    
     ;(useCouplesFeatures as any).mockReturnValue({
       mutualLikesCount: 0,
       recentActivity: [],

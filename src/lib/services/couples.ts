@@ -234,10 +234,8 @@ export class CouplesService {
       }
 
       // Fetch from database using RPC
-      const { data: mutualLikesData, error } = await this.fetchMutualLikesFromRPC(
-        supabase,
-        householdId
-      )
+      const { data: mutualLikesData, error } =
+        await this.fetchMutualLikesFromRPC(supabase, householdId)
 
       if (error) {
         console.error('[CouplesService] Error fetching mutual likes:', error)
@@ -473,11 +471,14 @@ export class CouplesService {
       // Fetch data and prepare mutual likes lookup
       const [activities, mutualPropertyIds] = await Promise.all([
         this.fetchHouseholdActivityData(supabase, householdId, limit, offset),
-        this.getMutualPropertyIds(supabase, userId)
+        this.getMutualPropertyIds(supabase, userId),
       ])
 
       // Transform and cache the result
-      const result = this.transformHouseholdActivityData(activities, mutualPropertyIds)
+      const result = this.transformHouseholdActivityData(
+        activities,
+        mutualPropertyIds
+      )
       this.handleActivityCache(cacheKey, result, householdId, startTime)
 
       return result
@@ -607,7 +608,7 @@ export class CouplesService {
    * @param {SupabaseClient} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the user considering the like
    * @param {string} propertyId - The unique identifier of the property
-   * @returns {Promise<{ wouldBeMutual: boolean; partnerUserId?: string }>} 
+   * @returns {Promise<{ wouldBeMutual: boolean; partnerUserId?: string }>}
    * Object indicating if mutual like would be created and which partner liked it
    * @complexity O(1) - Single database query
    * @description Pre-checks if an interaction would result in a mutual like,

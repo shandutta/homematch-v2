@@ -11,10 +11,13 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'json', 'html'],
   reporters: [
     'default',
-    ['jest-junit', {
-      outputDirectory: './test-reports',
-      outputName: 'junit.xml',
-    }],
+    [
+      'jest-junit',
+      {
+        outputDirectory: './test-reports',
+        outputName: 'junit.xml',
+      },
+    ],
   ],
   // Disable watch mode in CI
   watchman: false,

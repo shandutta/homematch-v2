@@ -4,7 +4,12 @@ import { Component, ReactNode, ErrorInfo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Heart, RefreshCw, AlertTriangle } from 'lucide-react'
-import { MotionDiv, fadeInUp, scaleIn, normalTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  fadeInUp,
+  scaleIn,
+  normalTransition,
+} from '@/components/ui/motion-components'
 
 interface Props {
   children: ReactNode
@@ -59,7 +64,12 @@ export class CouplesErrorBoundary extends Component<Props, State> {
                 variants={scaleIn}
                 initial="initial"
                 animate="animate"
-                transition={{ ...normalTransition, delay: 0.2, type: 'spring', stiffness: 200 }}
+                transition={{
+                  ...normalTransition,
+                  delay: 0.2,
+                  type: 'spring',
+                  stiffness: 200,
+                }}
                 className="mb-4"
               >
                 <div className="relative mx-auto h-16 w-16">

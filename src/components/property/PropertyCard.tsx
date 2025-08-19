@@ -64,7 +64,10 @@ export function PropertyCard({
   // Use images array from property - PropertyImage component handles fallbacks
 
   return (
-    <div className="bg-card rounded-token-xl shadow-token-lg duration-token-normal ease-token-out hover:shadow-token-xl relative h-full w-full overflow-hidden transition-all" data-testid="property-card">
+    <div
+      className="bg-card rounded-token-xl shadow-token-lg duration-token-normal ease-token-out hover:shadow-token-xl relative h-full w-full overflow-hidden transition-all"
+      data-testid="property-card"
+    >
       {/* Property Image */}
       <div className="relative h-1/2 w-full">
         <PropertyImage
@@ -81,7 +84,10 @@ export function PropertyCard({
 
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
-          <Badge className="bg-token-background-primary/95 p-token-md text-token-lg text-token-secondary-900 shadow-token-md font-bold backdrop-blur-sm" data-testid="property-price">
+          <Badge
+            className="bg-token-background-primary/95 p-token-md text-token-lg text-token-secondary-900 shadow-token-md font-bold backdrop-blur-sm"
+            data-testid="property-price"
+          >
             {formatPrice(property.price)}
           </Badge>
         </div>
@@ -124,7 +130,10 @@ export function PropertyCard({
       {/* Property Details */}
       <div className="p-token-lg h-1/2">
         <div className="mb-token-md">
-          <h3 className="text-foreground text-token-xl font-bold" data-testid="property-address">
+          <h3
+            className="text-foreground text-token-xl font-bold"
+            data-testid="property-address"
+          >
             {property.address}
           </h3>
           <p className="text-muted-foreground text-token-sm">

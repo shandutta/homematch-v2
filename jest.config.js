@@ -31,9 +31,7 @@ module.exports = {
   maxWorkers: process.platform === 'win32' ? 2 : '50%', // Allow 2 workers on Windows for better performance
   workerIdleMemoryLimit: '1GB',
   transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
-  testMatch: [
-    '**/__tests__/unit/**/*.(test|spec).(js|jsx|ts|tsx)'
-  ],
+  testMatch: ['**/__tests__/unit/**/*.(test|spec).(js|jsx|ts|tsx)'],
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/homematch-original-analysis/',
