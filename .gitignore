@@ -1,5 +1,12 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# All hidden folders and files (starting with .)
+# Exceptions are explicitly allowed below with !pattern
+.*/*
+!.github/
+!.vscode/
+.*/
+
 # dependencies
 /node_modules
 /.pnp
@@ -37,9 +44,6 @@ helper_scripts
 # env files (can opt-in for committing if needed)
 # Note: Some .env files like .env.example are committed for documentation
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -58,21 +62,11 @@ homematch-original-analysis/
 # Browser logs & screenshots
 __tests__/browser_screenshots
 
-# Claude AI local settings and tasks
-.claude/
-.mcp*
-.playwright-mcp/
-.performance-reports/
-
 # Server logs
 dev-server.log
 
 # Migration reports
 migration-report-*.md
-
-# Kimi Files
-.kimi/
-.generated_images/
 
 # Supabase binaries (platform-specific downloads)
 supabase.exe
@@ -84,7 +78,6 @@ supabase-cli.tar.gz
 # Test artifacts
 test-results/
 playwright-report/
-playwright/.cache/
 __tests__/reports/performance/
 
 # Additional OS files
@@ -93,8 +86,6 @@ ehthumbs.db
 Desktop.ini
 
 # Editor-specific files beyond workspace
-.idea/
-.vscode/settings.json
 *.swp
 *~
 *.swo
@@ -102,11 +93,8 @@ Desktop.ini
 # Temporary files
 *.tmp
 *.temp
-.tmp/
 temp/
-.images/
 v1-reference/
-.test-auth-token
 
 # Log files from scripts
 logs/
@@ -115,7 +103,6 @@ npm-debug.log*
 
 # Build artifacts
 dist/
-.turbo/
 
 # Zen MCP Server
 zen-mcp-server/

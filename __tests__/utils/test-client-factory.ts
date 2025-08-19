@@ -1,6 +1,6 @@
 /**
  * Test Client Factory for Integration Tests
- * 
+ *
  * Provides a consistent client factory that uses the service role key
  * to bypass RLS policies during testing. This allows integration tests
  * to create data without authentication context issues.
@@ -15,7 +15,7 @@ import type { ISupabaseClientFactory } from '@/lib/services/interfaces'
  */
 export class TestSupabaseClientFactory implements ISupabaseClientFactory {
   private client = createClient()
-  
+
   async createClient() {
     return this.client
   }
@@ -28,7 +28,7 @@ export class TestSupabaseClientFactory implements ISupabaseClientFactory {
 export function createTestClientFactory() {
   const client = createClient()
   return {
-    createClient: async () => client
+    createClient: async () => client,
   }
 }
 

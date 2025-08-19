@@ -9,13 +9,13 @@
  */
 import { test, expect } from '@playwright/test'
 import {
-  TEST_USERS,
   TEST_HOUSEHOLDS,
   TEST_MESSAGES,
   TEST_SELECTORS,
   TEST_ROUTES,
-  TEST_TIMEOUTS,
+  TEST_USERS,
 } from '../fixtures/test-data'
+import { createWorkerAuthHelper } from '../utils/auth-helper'
 
 // Browser-specific clipboard helpers
 async function grantClipboardPermissions(context: any, browserName: string) {
@@ -24,7 +24,7 @@ async function grantClipboardPermissions(context: any, browserName: string) {
     console.log('Skipping clipboard permissions for WebKit (not supported)')
     return
   }
-  
+
   try {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   } catch (error) {
@@ -32,24 +32,29 @@ async function grantClipboardPermissions(context: any, browserName: string) {
   }
 }
 
-async function readClipboard(page: any, browserName: string): Promise<string | null> {
+async function readClipboard(
+  page: any,
+  browserName: string
+): Promise<string | null> {
   if (browserName === 'webkit') {
     // WebKit has limited clipboard API support in tests
     console.log('Clipboard read not supported in WebKit tests')
     return null
   }
-  
+
   try {
     const available = await page.evaluate(() => {
-      return typeof navigator.clipboard !== 'undefined' && 
-             typeof navigator.clipboard.readText === 'function'
+      return (
+        typeof navigator.clipboard !== 'undefined' &&
+        typeof navigator.clipboard.readText === 'function'
+      )
     })
-    
+
     if (!available) {
       console.log('Clipboard API not available')
       return null
     }
-    
+
     return await page.evaluate(() => navigator.clipboard.readText())
   } catch (error) {
     console.log(`Could not read clipboard: ${error}`)
@@ -58,44 +63,25 @@ async function readClipboard(page: any, browserName: string): Promise<string | n
 }
 
 test.describe('Household Clipboard Functionality', () => {
-  test.beforeEach(async ({ page, context, browserName }) => {
+  test.beforeEach(async ({ page, context, browserName }, testInfo) => {
     // Grant clipboard permissions for testing (browser-specific)
     await grantClipboardPermissions(context, browserName)
-    
+
     // Clear cookies to start fresh
     await context.clearCookies()
 
-    // Navigate to sign in page
-    await page.goto(TEST_ROUTES.auth.signIn)
-    await page.waitForLoadState('domcontentloaded')
-    
-    // Sign in with test user - use flexible selectors
-    const emailInput = await page.locator('input[type="email"]').first()
-    await emailInput.fill(TEST_USERS.withHousehold.email)
-    
-    const passwordInput = await page.locator('input[type="password"]').first()
-    await passwordInput.fill(TEST_USERS.withHousehold.password)
-    
-    const submitButton = await page.locator('button[type="submit"]').first()
-    
-    // Click and wait for navigation
-    await Promise.all([
-      page.waitForNavigation({
-        timeout: TEST_TIMEOUTS.navigation,
-        waitUntil: 'domcontentloaded'
-      }).catch(() => {}),
-      submitButton.click()
-    ])
-    
-    // Wait for React hydration
-    await page.waitForTimeout(1000)
-    
+    // Use worker-specific authentication to prevent race conditions
+    const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
+    await auth.login(testUser)
+    await auth.verifyAuthenticated()
+
     // Verify we're authenticated (flexible check)
     const url = page.url()
-    const isAuthenticated = url.includes('/dashboard') || 
-                           url.includes('/validation') || 
-                           url.includes('/profile')
-    
+    const isAuthenticated =
+      url.includes('/dashboard') ||
+      url.includes('/validation') ||
+      url.includes('/profile')
+
     if (!isAuthenticated) {
       throw new Error(`Failed to authenticate, current URL: ${url}`)
     }
@@ -103,6 +89,7 @@ test.describe('Household Clipboard Functionality', () => {
 
   test('copies household code to clipboard when copy button is clicked', async ({
     page,
+    browserName,
   }) => {
     // Navigate to profile page
     await page.goto(TEST_ROUTES.app.profile)
@@ -114,15 +101,15 @@ test.describe('Household Clipboard Functionality', () => {
       TEST_SELECTORS.copyButton,
       '[data-testid="copy-household-code"]',
       'button:has-text("Copy")',
-      'button[aria-label*="copy" i]'
+      'button[aria-label*="copy" i]',
     ]
-    
+
     let hasHousehold = false
     for (const selector of copyButtonSelectors) {
       try {
         const element = await page.waitForSelector(selector, {
           timeout: 2000,
-          state: 'visible'
+          state: 'visible',
         })
         if (element) {
           hasHousehold = true
@@ -138,37 +125,37 @@ test.describe('Household Clipboard Functionality', () => {
       const nameInputSelectors = [
         TEST_SELECTORS.householdNameInput,
         'input[name="householdName"]',
-        'input[placeholder*="household" i]'
+        'input[placeholder*="household" i]',
       ]
-      
+
       let nameInput = null
       for (const selector of nameInputSelectors) {
         try {
           nameInput = await page.waitForSelector(selector, {
             timeout: 2000,
-            state: 'visible'
+            state: 'visible',
           })
           if (nameInput) break
         } catch (_e) {
           continue
         }
       }
-      
+
       if (nameInput) {
         await nameInput.fill(TEST_HOUSEHOLDS.test.name)
-        
+
         // Find and click create button
         const createButtonSelectors = [
           TEST_SELECTORS.createButton,
           'button:has-text("Create")',
-          'button[type="submit"]'
+          'button[type="submit"]',
         ]
-        
+
         for (const selector of createButtonSelectors) {
           try {
             const button = await page.waitForSelector(selector, {
               timeout: 2000,
-              state: 'visible'
+              state: 'visible',
             })
             if (button) {
               await button.click()
@@ -188,14 +175,14 @@ test.describe('Household Clipboard Functionality', () => {
       try {
         copyButton = await page.waitForSelector(selector, {
           timeout: 3000,
-          state: 'visible'
+          state: 'visible',
         })
         if (copyButton) break
       } catch (_e) {
         continue
       }
     }
-    
+
     if (!copyButton) {
       // Skip test if we can't find copy button
       console.log('Could not find copy button, skipping test')
@@ -208,15 +195,15 @@ test.describe('Household Clipboard Functionality', () => {
       '[data-testid="household-id"]',
       '.household-id',
       'code:has-text("hh_")',
-      'span:has-text("hh_")'
+      'span:has-text("hh_")',
     ]
-    
+
     let householdId = null
     for (const selector of householdIdSelectors) {
       try {
         const element = await page.waitForSelector(selector, {
           timeout: 2000,
-          state: 'visible'
+          state: 'visible',
         })
         if (element) {
           householdId = await element.textContent()
@@ -244,14 +231,14 @@ test.describe('Household Clipboard Functionality', () => {
       TEST_SELECTORS.toastSuccess,
       '[data-testid="toast-success"]',
       '.toast-success',
-      'text=/copied|success/i'
+      'text=/copied|success/i',
     ]
-    
+
     for (const selector of successSelectors) {
       try {
         await page.waitForSelector(selector, {
           timeout: 3000,
-          state: 'visible'
+          state: 'visible',
         })
         break // Found success indicator
       } catch (_e) {
@@ -272,15 +259,15 @@ test.describe('Household Clipboard Functionality', () => {
     const copyButtonSelectors = [
       TEST_SELECTORS.copyButton,
       '[data-testid="copy-household-code"]',
-      'button:has-text("Copy")'
+      'button:has-text("Copy")',
     ]
-    
+
     let copyButton = null
     for (const selector of copyButtonSelectors) {
       try {
         copyButton = await page.waitForSelector(selector, {
           timeout: 3000,
-          state: 'visible'
+          state: 'visible',
         })
         if (copyButton) break
       } catch (_e) {
@@ -290,19 +277,23 @@ test.describe('Household Clipboard Functionality', () => {
 
     if (!copyButton) {
       // Try to create household if needed
-      const nameInput = await page.locator('input[name="householdName"]').first()
+      const nameInput = await page
+        .locator('input[name="householdName"]')
+        .first()
       if (await nameInput.isVisible()) {
         await nameInput.fill(TEST_HOUSEHOLDS.test.name)
-        const createButton = await page.locator('button:has-text("Create")').first()
+        const createButton = await page
+          .locator('button:has-text("Create")')
+          .first()
         await createButton.click()
         await page.waitForTimeout(2000)
-        
+
         // Try to find copy button again
         for (const selector of copyButtonSelectors) {
           try {
             copyButton = await page.waitForSelector(selector, {
               timeout: 2000,
-              state: 'visible'
+              state: 'visible',
             })
             if (copyButton) break
           } catch (_e) {
@@ -311,7 +302,7 @@ test.describe('Household Clipboard Functionality', () => {
         }
       }
     }
-    
+
     if (!copyButton) {
       console.log(`Copy button not found in ${browserName}, skipping`)
       return
@@ -359,15 +350,15 @@ test.describe('Household Clipboard Functionality', () => {
     const copyButtonSelectors = [
       TEST_SELECTORS.copyButton,
       '[data-testid="copy-household-code"]',
-      'button:has-text("Copy")'
+      'button:has-text("Copy")',
     ]
-    
+
     let copyButton = null
     for (const selector of copyButtonSelectors) {
       try {
         copyButton = await page.waitForSelector(selector, {
           timeout: 3000,
-          state: 'visible'
+          state: 'visible',
         })
         if (copyButton) break
       } catch (_e) {
@@ -378,18 +369,22 @@ test.describe('Household Clipboard Functionality', () => {
     if (!copyButton) {
       // Try to create household
       try {
-        const nameInput = await page.locator('input[name="householdName"]').first()
+        const nameInput = await page
+          .locator('input[name="householdName"]')
+          .first()
         await nameInput.fill(TEST_HOUSEHOLDS.test.name)
-        const createButton = await page.locator('button:has-text("Create")').first()
+        const createButton = await page
+          .locator('button:has-text("Create")')
+          .first()
         await createButton.click()
         await page.waitForTimeout(2000)
-        
+
         // Find copy button again
         for (const selector of copyButtonSelectors) {
           try {
             copyButton = await page.waitForSelector(selector, {
               timeout: 2000,
-              state: 'visible'
+              state: 'visible',
             })
             if (copyButton) break
           } catch (_e) {
@@ -400,7 +395,7 @@ test.describe('Household Clipboard Functionality', () => {
         console.log('Could not create household')
       }
     }
-    
+
     if (!copyButton) {
       console.log('Copy button not found, skipping test')
       return
@@ -414,15 +409,15 @@ test.describe('Household Clipboard Functionality', () => {
     const feedbackSelectors = [
       TEST_SELECTORS.toastSuccess,
       'text=/copied|success/i',
-      '[role="alert"]'
+      '[role="alert"]',
     ]
-    
+
     let _foundFeedback = false
     for (const selector of feedbackSelectors) {
       try {
         await page.waitForSelector(selector, {
           timeout: 3000,
-          state: 'visible'
+          state: 'visible',
         })
         _foundFeedback = true
         break
@@ -430,7 +425,7 @@ test.describe('Household Clipboard Functionality', () => {
         continue
       }
     }
-    
+
     // Test passes if button was clickable (permissions don't prevent click)
     expect(copyButton).toBeTruthy()
   })
@@ -509,7 +504,10 @@ test.describe('Household Clipboard Functionality', () => {
     ).toBeVisible()
   })
 
-  test('clipboard content persists after navigation', async ({ page, browserName }) => {
+  test('clipboard content persists after navigation', async ({
+    page,
+    browserName,
+  }) => {
     await page.goto('/profile')
     await page.waitForLoadState('domcontentloaded')
 

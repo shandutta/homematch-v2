@@ -222,65 +222,67 @@ describe('SignupForm', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(createClient as jest.Mock).mockReturnValue(mockSupabaseClient)
-    
+
     // Re-create the useValidatedForm mock after clearAllMocks
-    ;(useValidatedForm as jest.Mock).mockImplementation((schema, defaultValues) => {
-      const mockForm = {
-        control: {
-          register: jest.fn(),
-          unregister: jest.fn(),
-          getFieldState: jest.fn(),
-          _names: {
-            array: new Set(),
-            mount: new Set(),
-            unMount: new Set(),
-            watch: new Set(),
-            focus: '',
-            watchAll: false,
+    ;(useValidatedForm as jest.Mock).mockImplementation(
+      (schema, defaultValues) => {
+        const mockForm = {
+          control: {
+            register: jest.fn(),
+            unregister: jest.fn(),
+            getFieldState: jest.fn(),
+            _names: {
+              array: new Set(),
+              mount: new Set(),
+              unMount: new Set(),
+              watch: new Set(),
+              focus: '',
+              watchAll: false,
+            },
+            _subjects: {
+              watch: { next: jest.fn(), subscribe: jest.fn() },
+              array: { next: jest.fn(), subscribe: jest.fn() },
+              state: { next: jest.fn(), subscribe: jest.fn() },
+            },
+            _getWatch: jest.fn(),
+            _formValues: defaultValues || {},
+            _defaultValues: defaultValues || {},
           },
-          _subjects: {
-            watch: { next: jest.fn(), subscribe: jest.fn() },
-            array: { next: jest.fn(), subscribe: jest.fn() },
-            state: { next: jest.fn(), subscribe: jest.fn() },
+          handleSubmit: (fn: any) => (e: any) => {
+            e?.preventDefault?.()
+            return fn(validSignupData)
           },
-          _getWatch: jest.fn(),
-          _formValues: defaultValues || {},
-          _defaultValues: defaultValues || {},
-        },
-        handleSubmit: (fn: any) => (e: any) => {
-          e?.preventDefault?.()
-          return fn(validSignupData)
-        },
-        formState: {
-          isValid: true,
-          errors: {},
-          isDirty: false,
-          isSubmitted: false,
-          isSubmitting: false,
-          isValidating: false,
-          isLoading: false,
-          submitCount: 0,
-          dirtyFields: {},
-          touchedFields: {},
-          validatingFields: {},
-          defaultValues: defaultValues || {},
-        },
-        setValue: jest.fn(),
-        watch: jest.fn(),
-        reset: jest.fn(),
-        getValues: jest.fn(() => defaultValues || {}),
-        getFieldState: jest.fn(() => ({
-          invalid: false,
-          isDirty: false,
-          isTouched: false,
-        })),
-        trigger: jest.fn(),
-        setError: jest.fn(),
-        clearErrors: jest.fn(),
-        setFocus: jest.fn(),
+          formState: {
+            isValid: true,
+            errors: {},
+            isDirty: false,
+            isSubmitted: false,
+            isSubmitting: false,
+            isValidating: false,
+            isLoading: false,
+            submitCount: 0,
+            dirtyFields: {},
+            touchedFields: {},
+            validatingFields: {},
+            defaultValues: defaultValues || {},
+          },
+          setValue: jest.fn(),
+          watch: jest.fn(),
+          reset: jest.fn(),
+          getValues: jest.fn(() => defaultValues || {}),
+          getFieldState: jest.fn(() => ({
+            invalid: false,
+            isDirty: false,
+            isTouched: false,
+          })),
+          trigger: jest.fn(),
+          setError: jest.fn(),
+          clearErrors: jest.fn(),
+          setFocus: jest.fn(),
+        }
+        return mockForm
       }
-      return mockForm
-    })
+    )
   })
 
   test('renders signup form with all elements', () => {

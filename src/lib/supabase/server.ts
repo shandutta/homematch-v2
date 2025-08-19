@@ -121,11 +121,11 @@ export async function createServiceClient() {
   // Check if caller is authorized to use service role
   // This should be enhanced based on your specific authorization requirements
   const isAuthorized = await checkServiceRoleAuthorization()
-  
+
   if (!isAuthorized) {
     throw new Error('Unauthorized access to service role client')
   }
-  
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -146,9 +146,9 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
     const {
       data: { user },
     } = await client.auth.getUser()
-    
+
     if (!user) return false
-    
+
     // Check if user has admin role
     // This is a placeholder - implement your actual admin check logic
     const { data: profile } = await client
@@ -156,7 +156,7 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
       .select('role')
       .eq('id', user.id)
       .single()
-    
+
     // Only allow service role for admin users
     // Adjust this based on your authorization model
     return profile?.role === 'admin'

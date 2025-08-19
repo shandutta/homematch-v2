@@ -3,11 +3,7 @@
     "id": "performance_testing_1755317313605",
     "name": "performance_testing",
     "description": "Large dataset for performance and load testing",
-    "tables": [
-      "user_profiles",
-      "properties",
-      "user_property_interactions"
-    ],
+    "tables": ["user_profiles", "properties", "user_property_interactions"],
     "recordCounts": {
       "user_profiles": 2,
       "properties": 116,
@@ -70,10 +66,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.2476,
-            37.8124
-          ]
+          "coordinates": [-122.2476, 37.8124]
         }
       },
       {
@@ -110,10 +103,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4256,
-            37.7687
-          ]
+          "coordinates": [-122.4256, 37.7687]
         }
       },
       {
@@ -150,10 +140,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.2416,
-            37.8586
-          ]
+          "coordinates": [-122.2416, 37.8586]
         }
       },
       {
@@ -190,10 +177,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.3893,
-            37.7707
-          ]
+          "coordinates": [-122.3893, 37.7707]
         }
       },
       {
@@ -230,10 +214,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.2524,
-            37.8465
-          ]
+          "coordinates": [-122.2524, 37.8465]
         }
       },
       {
@@ -270,10 +251,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4386,
-            37.7886
-          ]
+          "coordinates": [-122.4386, 37.7886]
         }
       },
       {
@@ -310,10 +288,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4008,
-            37.7611
-          ]
+          "coordinates": [-122.4008, 37.7611]
         }
       },
       {
@@ -350,10 +325,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4324,
-            37.7886
-          ]
+          "coordinates": [-122.4324, 37.7886]
         }
       },
       {
@@ -390,10 +362,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4194,
-            37.7615
-          ]
+          "coordinates": [-122.4194, 37.7615]
         }
       },
       {
@@ -430,10 +399,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4636,
-            37.7565
-          ]
+          "coordinates": [-122.4636, 37.7565]
         }
       },
       {
@@ -470,10 +436,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4221,
-            37.7952
-          ]
+          "coordinates": [-122.4221, 37.7952]
         }
       },
       {
@@ -510,10 +473,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.4047,
-            37.7748
-          ]
+          "coordinates": [-122.4047, 37.7748]
         }
       },
       {
@@ -550,10 +510,7 @@
               "name": "EPSG:4326"
             }
           },
-          "coordinates": [
-            -122.273,
-            37.8715
-          ]
+          "coordinates": [-122.273, 37.8715]
         }
       },
       {
@@ -876,9 +833,7 @@
         "bathrooms": 4,
         "square_feet": 539,
         "property_type": "single_family",
-        "images": [
-          "https://loremflickr.com/3908/984/house?lock=5904643994886"
-        ],
+        "images": ["https://loremflickr.com/3908/984/house?lock=5904643994886"],
         "description": "Vulnus utpote hic aeternus adflicto unde thesis tego vulnero beatae. Ustilo blandior asperiores talus totam vesco. Conitor vindico carus alienus cognomen trepide bos sono ubi.",
         "neighborhood_id": null,
         "amenities": [],

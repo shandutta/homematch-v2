@@ -109,23 +109,30 @@ Support dark and light modes. Maintain sufficient contrast ratios (>4.5:1) for t
 HomeMatch uses a comprehensive design token system with 226 tokens achieving 85% coverage. The system includes semantic tokens for consistent theming across components.
 
 #### Marketing Semantic Tokens (8 tokens)
+
 ```css
 --color-marketing-text-primary: #1f2937;
---color-marketing-text-secondary: #6b7280; 
+--color-marketing-text-secondary: #6b7280;
 --color-marketing-error: #ef4444;
 --color-marketing-error-bg: #fef2f2;
---gradient-marketing-primary: linear-gradient(to bottom right, #021A44, #063A9E);
---gradient-marketing-card: linear-gradient(to bottom right, #021A44, #063A9E);
+--gradient-marketing-primary: linear-gradient(
+  to bottom right,
+  #021a44,
+  #063a9e
+);
+--gradient-marketing-card: linear-gradient(to bottom right, #021a44, #063a9e);
 --bg-marketing-glass: rgba(255, 255, 255, 0.05);
 --border-marketing-glass: rgba(255, 255, 255, 0.2);
 ```
 
 **Utility Classes:**
+
 - `.text-marketing-primary`, `.text-marketing-secondary`, `.text-marketing-error`
 - `.bg-marketing-error`, `.bg-gradient-marketing-primary`, `.bg-gradient-marketing-card`
 - `.bg-marketing-glass`, `.border-marketing-glass`
 
 #### Couples Theme Tokens (7 tokens)
+
 ```css
 --color-couples-primary: #ec4899;
 --color-couples-secondary: #8b5cf6;
@@ -133,15 +140,21 @@ HomeMatch uses a comprehensive design token system with 226 tokens achieving 85%
 --color-couples-success: #22c55e;
 --color-couples-warning: #f59e0b;
 --color-couples-info: #eab308;
---gradient-couples-mutual: linear-gradient(to right, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
+--gradient-couples-mutual: linear-gradient(
+  to right,
+  rgba(236, 72, 153, 0.2),
+  rgba(139, 92, 246, 0.2)
+);
 ```
 
 **Utility Classes:**
+
 - `.text-couples-*` for all color variants
 - `.bg-couples-primary`, `.bg-couples-secondary`, `.bg-couples-accent`
 - `.bg-gradient-couples-mutual`, `.border-couples-primary`
 
 #### Glassmorphism Enhancement Tokens (5 tokens)
+
 ```css
 --blur-glassmorphism-sm: 4px;
 --blur-glassmorphism-md: 8px;
@@ -151,12 +164,14 @@ HomeMatch uses a comprehensive design token system with 226 tokens achieving 85%
 ```
 
 **Utility Classes:**
+
 - `.blur-glass-sm`, `.blur-glass-md`, `.blur-glass-lg`
 - `.glass-subtle`, `.glass-strong` (combined opacity + blur effects)
 
 ### Token Usage Guidelines
 
 #### Marketing Components
+
 ```css
 .marketing-hero {
   background: var(--gradient-marketing-primary);
@@ -165,6 +180,7 @@ HomeMatch uses a comprehensive design token system with 226 tokens achieving 85%
 ```
 
 #### Couples Functionality
+
 ```css
 .couples-card {
   background: var(--gradient-couples-mutual);
@@ -173,6 +189,7 @@ HomeMatch uses a comprehensive design token system with 226 tokens achieving 85%
 ```
 
 #### Enhanced Glassmorphism
+
 ```css
 .glass-card {
   background-color: rgba(255, 255, 255, var(--opacity-glass-subtle));
@@ -181,6 +198,7 @@ HomeMatch uses a comprehensive design token system with 226 tokens achieving 85%
 ```
 
 ### Design Token Coverage
+
 - **Total Tokens**: 226 tokens
 - **Coverage**: 85% (target achieved)
 - **Categories**: Marketing, Couples, Glassmorphism, Core UI
@@ -228,6 +246,7 @@ A React component that generates personalized, emotional descriptions and lifest
    - Smooth fade-in transitions
 
 **Props Interface**:
+
 ```typescript
 interface StorytellingDescriptionProps {
   property: Property
@@ -238,6 +257,7 @@ interface StorytellingDescriptionProps {
 ```
 
 **Usage**:
+
 ```tsx
 <StorytellingDescription
   property={property}
@@ -247,28 +267,33 @@ interface StorytellingDescriptionProps {
 ```
 
 **Integration**: The StorytellingDescription component is integrated into the existing PropertyCard component at:
+
 - **Location**: `src/components/property/PropertyCard.tsx`
 - **Position**: Between property details grid and existing description
 - **Logic**: Automatically detects mutual likes using the `useMutualLikes` hook
 
 **Example Outputs**:
+
 - **Starter Home**: "Perfect starter home where your love story begins" + Tags: "Love Nest", "Cozy Retreat"
 - **Family Home**: "Room to grow, laugh, and create lifelong memories" + Tags: "Family Haven", "Work from Home Ready", "Pet Paradise"
 - **Luxury Property**: "Elegant retreat for the refined couple" + Tags: "Entertainer's Dream", "Urban Oasis", "Love Nest"
 - **Mutual Like**: "Both hearts say yes to this special place" (with heart icon) + Enhanced pink gradient styling
 
 **Dependencies**:
+
 - `framer-motion`: For smooth animations
 - `lucide-react`: For lifestyle tag icons
 - Existing UI components (`Badge`)
 
 **Performance Considerations**:
+
 - Randomized descriptions to avoid repetition
 - Maximum 3 lifestyle tags to prevent UI clutter
 - Lightweight component with minimal re-renders
 - Proper memoization through React functional components
 
 **Accessibility**:
+
 - Semantic HTML structure
 - ARIA-friendly badge components
 - Keyboard navigation support
@@ -281,6 +306,7 @@ interface StorytellingDescriptionProps {
 #### Features
 
 **🎯 Advanced Swipe Physics**:
+
 - **Spring animations** with realistic physics using framer-motion
 - **Velocity-based throw** animations for natural card movement
 - **Rubber-band effect** at boundaries to prevent over-swiping
@@ -288,6 +314,7 @@ interface StorytellingDescriptionProps {
 - **Card scaling** during drag for visual feedback
 
 **📱 Haptic Feedback (Mobile)**:
+
 - **Light haptic** on drag start
 - **Medium haptic** when crossing decision threshold
 - **Success haptic** on completed like/pass actions
@@ -295,6 +322,7 @@ interface StorytellingDescriptionProps {
 - **Fallback mechanisms** for devices without haptic support
 
 **🎨 Visual Feedback**:
+
 - **Decision overlays** showing "LIKE" (green) and "PASS" (red)
 - **Opacity transitions** based on swipe distance
 - **Shadow changes** during drag for depth perception
@@ -302,23 +330,27 @@ interface StorytellingDescriptionProps {
 - **Gradient overlays** for decision areas
 
 **📚 Card Stack Behavior**:
+
 - **Depth visualization** showing next 2-3 cards behind current
 - **Scale and opacity** differences for visual depth
 - **Smooth transitions** when cards are swiped away
 - **Performance optimized** with proper z-indexing
 
 **↩️ Undo Functionality**:
+
 - **Undo button** appears when history exists
 - **State management** for swipe history
 - **Visual confirmation** of undo actions
 
 **⚡ Performance Optimizations**:
+
 - **Hardware acceleration** with transform3d and will-change hints
 - **RequestAnimationFrame** for smooth 60fps animations
 - **Efficient re-renders** with React.memo and useCallback
 - **Memory management** with proper cleanup
 
 **🆕 First-Time User Experience**:
+
 - **Swipe hints** with subtle animations on first load
 - **Auto-dismiss** hints after first interaction
 - **Accessibility support** with keyboard navigation
@@ -368,11 +400,13 @@ function PropertySwiper() {
 #### Architecture
 
 **Hook System**:
+
 - **`useSwipePhysics`** - Handles all swipe physics and animations
 - **`useHapticFeedback`** - Manages cross-platform haptic feedback
 - **Custom motion values** for smooth transforms and transitions
 
 **Component Structure**:
+
 ```
 SwipeablePropertyCard/
 ├── Card Stack (Background cards)
@@ -385,6 +419,7 @@ SwipeablePropertyCard/
 ```
 
 **Animation System**:
+
 - **Transform-based** animations for performance
 - **Spring physics** for realistic motion
 - **Staggered animations** for card stack depth
@@ -393,6 +428,7 @@ SwipeablePropertyCard/
 #### Customization
 
 **Physics Constants** (adjust in `useSwipePhysics.ts`):
+
 ```ts
 const SWIPE_THRESHOLD = 100 // Distance to trigger action
 const SWIPE_VELOCITY_THRESHOLD = 500 // Velocity to trigger action
@@ -400,6 +436,7 @@ const RUBBER_BAND_FACTOR = 0.3 // Boundary resistance
 ```
 
 **Visual Design** (customize in component):
+
 ```ts
 const STACK_DEPTH = 3 // Number of background cards
 const STACK_SCALE_FACTOR = 0.05 // Scale reduction per card
@@ -407,6 +444,7 @@ const STACK_OPACITY_FACTOR = 0.3 // Opacity reduction per card
 ```
 
 **Haptic Patterns** (modify in `haptic-feedback.ts`):
+
 ```ts
 // Custom vibration patterns
 success: () => vibrate([5, 20, 5]) // Short-long-short pattern
@@ -448,28 +486,33 @@ warning: () => vibrate([5, 25, 5]) // Medium pattern
 #### Features
 
 **Type-Safe Coordinate Handling**:
+
 - **LatLng** objects with validation
 - **CoordinateTuple** arrays `[longitude, latitude]`
 - **GeoJSONPoint** format for PostGIS
 - **BoundingBox** operations with validation
 
 **PostGIS Integration**:
+
 - Parse PostGIS geometry to lat/lng coordinates
 - Convert between GeoJSON and LatLng formats
 - Handle multiple coordinate formats from database
 
 **Distance & Bearing Calculations**:
+
 - Great circle distance using Haversine formula
 - Bearing calculations between points
 - Destination point from bearing and distance
 
 **Bounding Box Operations**:
+
 - Calculate bounding boxes from coordinate arrays
 - Expand bounding boxes by distance
 - Check coordinate containment and intersection
 - Get bounding box centers
 
 **Validation & Error Handling**:
+
 - Comprehensive coordinate validation
 - Type-safe error handling
 - Input sanitization and bounds checking
@@ -477,6 +520,7 @@ warning: () => vibrate([5, 25, 5]) // Medium pattern
 #### Usage Examples
 
 **Basic Coordinate Parsing**:
+
 ```typescript
 import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
 
@@ -492,23 +536,28 @@ if (isValidLatLng(coords)) {
 ```
 
 **Distance Calculations**:
+
 ```typescript
 import { calculateDistance } from '@/lib/utils/coordinates'
 
 const sanFrancisco = { lat: 37.7749, lng: -122.4194 }
-const newYork = { lat: 40.7128, lng: -74.0060 }
+const newYork = { lat: 40.7128, lng: -74.006 }
 
 const distance = calculateDistance(sanFrancisco, newYork)
 // Result: ~4139 km
 ```
 
 **Bounding Box Operations**:
+
 ```typescript
-import { calculateBoundingBox, expandBoundingBox } from '@/lib/utils/coordinates'
+import {
+  calculateBoundingBox,
+  expandBoundingBox,
+} from '@/lib/utils/coordinates'
 
 const locations = [
   { lat: 37.7749, lng: -122.4194 },
-  { lat: 40.7128, lng: -74.0060 }
+  { lat: 40.7128, lng: -74.006 },
 ]
 
 const bbox = calculateBoundingBox(locations)
@@ -516,6 +565,7 @@ const expandedBbox = expandBoundingBox(bbox, 50) // Expand by 50km
 ```
 
 **GeoJSON Conversion**:
+
 ```typescript
 import { latLngToGeoJSON, geoJSONToLatLng } from '@/lib/utils/coordinates'
 
@@ -530,34 +580,42 @@ const backToCoords = geoJSONToLatLng(geoJSON)
 #### Integration with Services
 
 **Geographic Service Updates**: The `GeographicService` has been updated to use the coordinate utilities:
+
 - **PostGIS geometry parsing** using `parsePostGISGeometry()`
 - **Coordinate validation** using `isValidLatLng()`
 - **Distance calculations** using `calculateDistance()`
 - **Bounding box normalization** for legacy format support
 
 **Component Updates**: Components using coordinates have been updated:
+
 - **PropertyMap** component uses `parsePostGISGeometry()` for safe coordinate extraction
 - **Geocoding API** uses validation functions for result filtering
 
 #### Validation & Error Handling
 
 **Coordinate Validation**:
+
 ```typescript
-import { isValidLatitude, isValidLongitude, isValidLatLng } from '@/lib/utils/coordinates'
+import {
+  isValidLatitude,
+  isValidLongitude,
+  isValidLatLng,
+} from '@/lib/utils/coordinates'
 
 // Individual validation
-isValidLatitude(37.7749)   // true
-isValidLatitude(91)        // false
+isValidLatitude(37.7749) // true
+isValidLatitude(91) // false
 
-isValidLongitude(-122.4194) // true  
-isValidLongitude(-181)      // false
+isValidLongitude(-122.4194) // true
+isValidLongitude(-181) // false
 
 // Combined validation
 isValidLatLng({ lat: 37.7749, lng: -122.4194 }) // true
-isValidLatLng({ lat: 91, lng: -122.4194 })      // false
+isValidLatLng({ lat: 91, lng: -122.4194 }) // false
 ```
 
 **Error Handling**: The utilities handle errors gracefully:
+
 - **Null/undefined inputs** return `null` safely
 - **Invalid coordinate values** throw descriptive errors
 - **Malformed geometry** logs warnings and returns `null`
@@ -566,20 +624,23 @@ isValidLatLng({ lat: 91, lng: -122.4194 })      // false
 #### API Reference
 
 **Core Functions**:
+
 - `parsePostGISGeometry(geometry)` - Parse PostGIS geometry to LatLng
-- `latLngToGeoJSON(coords)` - Convert LatLng to GeoJSON Point  
+- `latLngToGeoJSON(coords)` - Convert LatLng to GeoJSON Point
 - `geoJSONToLatLng(geoJSON)` - Convert GeoJSON Point to LatLng
 - `calculateDistance(point1, point2)` - Calculate distance in km
 - `calculateBearing(point1, point2)` - Calculate bearing in degrees
 - `calculateDestination(start, distance, bearing)` - Calculate destination point
 
 **Validation Functions**:
+
 - `isValidLatitude(lat)` - Validate latitude value
-- `isValidLongitude(lng)` - Validate longitude value  
+- `isValidLongitude(lng)` - Validate longitude value
 - `isValidLatLng(coords)` - Validate coordinate object
 - `isValidBoundingBox(bbox)` - Validate bounding box
 
 **Utility Functions**:
+
 - `toRadians(degrees)` - Convert degrees to radians
 - `toDegrees(radians)` - Convert radians to degrees
 - `roundCoordinates(coords, decimals)` - Round coordinates
@@ -587,6 +648,7 @@ isValidLatLng({ lat: 91, lng: -122.4194 })      // false
 - `parseCoordinateString(str)` - Parse coordinate string
 
 **Types**:
+
 - `LatLng` - `{ lat: number; lng: number }`
 - `CoordinateTuple` - `[number, number]` (longitude, latitude)
 - `GeoJSONPoint` - GeoJSON Point geometry

@@ -9,7 +9,7 @@
  * If you run a dev server in CI for integration tests, set TEST_API_URL (e.g., http://localhost:3000)
  * and a valid TEST_AUTH_TOKEN for Authorization header (Bearer).
  */
-import { describe, it, expect  } from 'vitest'
+import { describe, it, expect } from 'vitest'
 /* eslint-env jest, browser */ // Provide DOM lib globals (RequestInit) and Jest globals without disabling rules
 
 const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'

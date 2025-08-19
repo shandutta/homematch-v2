@@ -43,8 +43,8 @@ async function fetchMarketingCards(): Promise<MarketingCard[]> {
       return data.filter((c) => c?.zpid && typeof c?.imageUrl === 'string')
     }
     return []
-  } catch (error) {
-    console.debug('Failed to fetch marketing cards:', error)
+  } catch (_error) {
+    // Silently fail and return empty array for marketing demo
     return []
   }
 }
@@ -239,9 +239,7 @@ function PropertyCard({
 
           {/* Price Tag - More prominent display */}
           <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
-            <p className="text-xl font-bold text-gray-900">
-              {property.price}
-            </p>
+            <p className="text-xl font-bold text-gray-900">{property.price}</p>
           </div>
 
           {/* Like/Pass Indicators — improved spacing and sizing */}
@@ -257,9 +255,7 @@ function PropertyCard({
               }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
-              <span className="text-sm font-semibold tracking-wide">
-                LIKED
-              </span>
+              <span className="text-sm font-semibold tracking-wide">LIKED</span>
             </div>
           </MotionDiv>
 
@@ -287,7 +283,7 @@ function PropertyCard({
             aria-hidden="true"
             style={{ opacity: matchOpacity }}
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white shadow-token-xl blur-glass-sm">
+            <span className="shadow-token-xl blur-glass-sm inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-sm font-semibold text-white">
               <Heart className="h-4 w-4 fill-current" />
               It&#39;s a Match!
             </span>
@@ -555,7 +551,7 @@ export function PhoneMockup() {
   return (
     <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
       {/* Professional Device Frame */}
-      <div className="relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] shadow-token-2xl ring-1 ring-white/60 blur-glass-md ring-inset">
+      <div className="shadow-token-2xl blur-glass-md relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] ring-1 ring-white/60 ring-inset">
         {/* Bezel/Inner border */}
         <div
           className="pointer-events-none absolute inset-0 rounded-[3rem] ring-1 ring-black/5"
@@ -631,21 +627,61 @@ export function PhoneMockup() {
             {/* Status icons area - battery, wifi, signal */}
             <div className="flex items-center gap-1">
               {/* Signal bars */}
-              <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor" className="opacity-90">
+              <svg
+                width="15"
+                height="10"
+                viewBox="0 0 15 10"
+                fill="currentColor"
+                className="opacity-90"
+              >
                 <rect x="0" y="6" width="2.5" height="4" rx="0.5" />
                 <rect x="4" y="4" width="2.5" height="6" rx="0.5" />
                 <rect x="8" y="2" width="2.5" height="8" rx="0.5" />
                 <rect x="12" y="0" width="2.5" height="10" rx="0.5" />
               </svg>
               {/* WiFi icon */}
-              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" className="opacity-90">
+              <svg
+                width="14"
+                height="10"
+                viewBox="0 0 14 10"
+                fill="currentColor"
+                className="opacity-90"
+              >
                 <path d="M7 2.5c2.5 0 4.5 1 6 2.5l-1.5 1.5c-1-1-2.5-1.5-4.5-1.5s-3.5.5-4.5 1.5L1 5C2.5 3.5 4.5 2.5 7 2.5zM7 6c1.5 0 2.5.5 3.5 1.5L9 9c-.5-.5-1-1-2-1s-1.5.5-2 1L3.5 7.5C4.5 6.5 5.5 6 7 6z" />
               </svg>
               {/* Battery icon */}
-              <svg width="22" height="10" viewBox="0 0 22 10" fill="none" className="opacity-90">
-                <rect x="0.5" y="1.5" width="18" height="7" rx="1.5" stroke="currentColor" strokeWidth="0.8" />
-                <rect x="2" y="3" width="15" height="4" rx="0.5" fill="currentColor" />
-                <rect x="19" y="3.5" width="2" height="3" rx="0.5" fill="currentColor" />
+              <svg
+                width="22"
+                height="10"
+                viewBox="0 0 22 10"
+                fill="none"
+                className="opacity-90"
+              >
+                <rect
+                  x="0.5"
+                  y="1.5"
+                  width="18"
+                  height="7"
+                  rx="1.5"
+                  stroke="currentColor"
+                  strokeWidth="0.8"
+                />
+                <rect
+                  x="2"
+                  y="3"
+                  width="15"
+                  height="4"
+                  rx="0.5"
+                  fill="currentColor"
+                />
+                <rect
+                  x="19"
+                  y="3.5"
+                  width="2"
+                  height="3"
+                  rx="0.5"
+                  fill="currentColor"
+                />
               </svg>
             </div>
           </div>

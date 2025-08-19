@@ -5,6 +5,7 @@ A comprehensive guide to the GitHub Actions CI/CD pipeline for integration testi
 ## Quick Start Guide
 
 ### For Developers
+
 ```bash
 # Setup CI environment locally
 pnpm run ci:setup
@@ -23,6 +24,7 @@ pnpm run ci:validate:rls
 ```
 
 ### NPM Scripts Added
+
 ```bash
 # CI Setup and Validation
 pnpm run ci:setup          # Setup CI environment
@@ -41,6 +43,7 @@ pnpm run ci:validate:rls      # Test RLS policies
 ## Overview
 
 This CI pipeline sets up a complete testing environment with:
+
 - **Real Supabase database** (local instance)
 - **Database migrations and schema validation**
 - **Test data factory** for realistic test scenarios
@@ -65,9 +68,11 @@ This CI pipeline sets up a complete testing environment with:
 ## Files Created
 
 ### 1. GitHub Actions Workflow
+
 **File**: `.github/workflows/integration-tests.yml`
 
 **Features**:
+
 - Sets up Ubuntu environment with Node.js 20 and pnpm
 - Installs and configures Supabase CLI
 - Creates isolated test database environment
@@ -77,11 +82,13 @@ This CI pipeline sets up a complete testing environment with:
 - Provides PR comments with test results
 
 ### 2. Database Setup Script
+
 **File**: `scripts/ci-test-setup.sh`
 
 **Purpose**: Prepares CI environment for integration testing
 
 **What it does**:
+
 - Creates test directories and configuration files
 - Validates Node.js, pnpm, and Supabase CLI installations
 - Sets up environment variables for testing
@@ -89,9 +96,11 @@ This CI pipeline sets up a complete testing environment with:
 - Configures Jest and Vitest for CI execution
 
 ### 3. Environment Configuration
+
 **File**: `.env.ci`
 
 **Contains**:
+
 - Local Supabase connection details
 - Test API keys (non-functional)
 - Feature flags and test configuration
@@ -101,6 +110,7 @@ This CI pipeline sets up a complete testing environment with:
 ### 4. Utility Scripts
 
 **Created by setup script**:
+
 - `scripts/validate-db-schema.js` - Validates database schema
 - `scripts/test-rls-policies.js` - Tests Row Level Security policies
 - `scripts/health-check.js` - Project health validation
@@ -161,6 +171,7 @@ CODECOV_TOKEN=your-codecov-token
 ## Test Categories
 
 ### Integration Tests
+
 - **Database operations** with real connections
 - **API endpoint testing** with actual HTTP calls
 - **Service layer testing** with real dependencies
@@ -168,6 +179,7 @@ CODECOV_TOKEN=your-codecov-token
 - **Geographic queries** with PostGIS functions
 
 ### Performance Tests
+
 - **Database query performance**
 - **API response time validation**
 - **Memory usage monitoring**
@@ -175,6 +187,7 @@ CODECOV_TOKEN=your-codecov-token
 - **Resource utilization tracking**
 
 ### Security Tests
+
 - **Row Level Security (RLS) policy validation**
 - **Authentication boundary testing**
 - **Data access control verification**
@@ -186,6 +199,7 @@ CODECOV_TOKEN=your-codecov-token
 ### Supabase Configuration
 
 The pipeline uses local Supabase with:
+
 - **PostgreSQL 15** with PostGIS extensions
 - **Port 54321** for API server
 - **Port 54322** for direct database connection
@@ -203,9 +217,11 @@ The pipeline uses local Supabase with:
 ## Test Data Strategy
 
 ### Test Data Factory
+
 **File**: `__tests__/utils/test-data-factory.ts`
 
 **Capabilities**:
+
 - Creates realistic test users with profiles
 - Generates households with multiple members
 - Creates properties with geographic distribution
@@ -216,6 +232,7 @@ The pipeline uses local Supabase with:
 ### Test Isolation
 
 Each test suite uses:
+
 - **Unique test data** created per test
 - **Automatic cleanup** after test completion
 - **Database transactions** for rollback capability
@@ -224,18 +241,21 @@ Each test suite uses:
 ## Coverage and Reporting
 
 ### Coverage Collection
+
 - **Line coverage**: Tracks code execution
 - **Branch coverage**: Validates decision paths
 - **Function coverage**: Ensures all functions tested
 - **Statement coverage**: Verifies statement execution
 
 ### Artifacts Generated
+
 - **Test results**: JSON and XML reports
 - **Coverage reports**: LCOV, HTML, and JSON formats
 - **Performance metrics**: Response times and resource usage
 - **Debug logs**: Supabase and application logs
 
 ### Codecov Integration
+
 - Automatic upload of coverage data
 - PR comments with coverage changes
 - Coverage badges and trend analysis
@@ -244,12 +264,14 @@ Each test suite uses:
 ## Performance Optimization
 
 ### Pipeline Optimizations
+
 - **Parallel job execution** for different test types
 - **Cached dependencies** using pnpm cache
 - **Optimized Docker images** for faster startup
 - **Resource limits** to prevent timeout issues
 
 ### Test Optimizations
+
 - **Concurrent test execution** where safe
 - **Shared database instance** across related tests
 - **Minimal test data creation** for speed
@@ -258,13 +280,16 @@ Each test suite uses:
 ## Monitoring and Debugging
 
 ### Health Checks
+
 - **Database connectivity** validation
 - **API endpoint** availability checks
 - **Service status** monitoring
 - **Resource usage** tracking
 
 ### Debug Information
+
 On test failures, the pipeline collects:
+
 - **Supabase service logs**
 - **Docker container status**
 - **Application error logs**
@@ -274,6 +299,7 @@ On test failures, the pipeline collects:
 ### Troubleshooting Common Issues
 
 #### Database Connection Failures
+
 ```bash
 # Check Supabase status
 supabase status
@@ -286,6 +312,7 @@ netstat -tlnp | grep 54321
 ```
 
 #### Migration Failures
+
 ```bash
 # Reset database
 supabase db reset --force
@@ -298,6 +325,7 @@ supabase db lint
 ```
 
 #### Test Timeout Issues
+
 ```bash
 # Increase timeout in test files
 # jest.setTimeout(30000)
@@ -312,13 +340,16 @@ SELECT * FROM pg_stat_activity;
 ## Security Considerations
 
 ### Local Test Keys
+
 The pipeline uses **local Supabase test keys** that are:
+
 - ✅ Safe to commit to version control
 - ✅ Only valid for local development
 - ✅ Not connected to production services
 - ✅ Automatically rotated by Supabase CLI
 
 ### Production Considerations
+
 - Use GitHub Secrets for real API keys
 - Never commit production credentials
 - Validate RLS policies in every test run
@@ -327,12 +358,14 @@ The pipeline uses **local Supabase test keys** that are:
 ## Maintenance
 
 ### Regular Updates
+
 - **Supabase CLI**: Update to latest stable version
 - **Node.js**: Keep aligned with production environment
 - **Dependencies**: Regular security updates
 - **Test data**: Refresh test scenarios periodically
 
 ### Monitoring
+
 - **Test execution time**: Watch for performance degradation
 - **Success rate**: Monitor for flaky tests
 - **Resource usage**: Ensure efficient resource utilization
@@ -341,14 +374,18 @@ The pipeline uses **local Supabase test keys** that are:
 ## Integration with Development Workflow
 
 ### Branch Protection Rules
+
 Configure GitHub branch protection to:
+
 - Require integration tests to pass
 - Require up-to-date branches
 - Require review from CODEOWNERS
 - Prevent force pushes to main
 
 ### Pre-commit Hooks
+
 The pipeline integrates with pre-commit hooks:
+
 ```bash
 # Format code
 pnpm run format
@@ -361,7 +398,9 @@ pnpm run type-check
 ```
 
 ### Local Development
+
 Developers can run the same tests locally:
+
 ```bash
 # Setup local environment
 ./scripts/ci-test-setup.sh
@@ -377,6 +416,7 @@ pnpm exec vitest run __tests__/integration/database/
 ## Best Practices
 
 ### Test Writing
+
 - Use the test data factory for consistent data
 - Clean up test data after each test
 - Use descriptive test names and descriptions
@@ -384,6 +424,7 @@ pnpm exec vitest run __tests__/integration/database/
 - Include performance assertions where relevant
 
 ### Database Testing
+
 - Test with realistic data volumes
 - Validate database constraints
 - Test concurrent access scenarios
@@ -391,6 +432,7 @@ pnpm exec vitest run __tests__/integration/database/
 - Test migration rollbacks
 
 ### CI/CD Optimization
+
 - Keep test execution time under 10 minutes
 - Use parallel execution judiciously
 - Cache dependencies aggressively
@@ -400,6 +442,7 @@ pnpm exec vitest run __tests__/integration/database/
 ## Future Enhancements
 
 ### Planned Improvements
+
 - **Multi-database testing** (PostgreSQL versions)
 - **Cross-browser E2E integration**
 - **Load testing integration**
@@ -407,6 +450,7 @@ pnpm exec vitest run __tests__/integration/database/
 - **Automated dependency updates**
 
 ### Integration Opportunities
+
 - **Slack/Discord notifications** for test results
 - **JIRA integration** for issue tracking
 - **Deployment automation** on test success

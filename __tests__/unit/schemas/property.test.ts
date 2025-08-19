@@ -127,7 +127,12 @@ describe('Property Schema Validation', () => {
     })
 
     test('should validate property type enums and constraints', () => {
-      const validPropertyTypes = ['single_family', 'condo', 'townhome', 'multi_family']
+      const validPropertyTypes = [
+        'single_family',
+        'condo',
+        'townhome',
+        'multi_family',
+      ]
 
       validPropertyTypes.forEach((type) => {
         const property = {

@@ -1,6 +1,6 @@
 /**
  * Integration Test Helper
- * 
+ *
  * Provides utilities for setting up test data with proper RLS handling.
  * Uses service role client for data setup to bypass RLS restrictions,
  * then returns authenticated client for actual testing.
@@ -59,18 +59,22 @@ export class IntegrationTestHelper {
    * Creates an authenticated client for the given user
    * This client respects RLS policies and should be used for actual API testing
    */
-  async authenticateAs(email: string, password: string): Promise<SupabaseClient> {
+  async authenticateAs(
+    email: string,
+    password: string
+  ): Promise<SupabaseClient> {
     const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
     const supabaseKey =
       process.env.SUPABASE_ANON_KEY ||
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ'
 
     this.authenticatedClient = createClient(supabaseUrl, supabaseKey)
-    
-    const { data, error } = await this.authenticatedClient.auth.signInWithPassword({
-      email,
-      password
-    })
+
+    const { data, error } =
+      await this.authenticatedClient.auth.signInWithPassword({
+        email,
+        password,
+      })
 
     if (error) {
       throw new Error(`Failed to authenticate as ${email}: ${error.message}`)
@@ -78,7 +82,7 @@ export class IntegrationTestHelper {
 
     this.currentUser = {
       id: data.user!.id,
-      email: data.user!.email!
+      email: data.user!.email!,
     }
 
     return this.authenticatedClient
@@ -110,7 +114,9 @@ export class IntegrationTestHelper {
       .in('id', householdData.userIds)
 
     if (profileError) {
-      throw new Error(`Failed to link users to household: ${profileError.message}`)
+      throw new Error(
+        `Failed to link users to household: ${profileError.message}`
+      )
     }
 
     // Get user details
@@ -119,12 +125,12 @@ export class IntegrationTestHelper {
       .select('id')
       .eq('household_id', household.id)
 
-    const members = profiles?.map(p => ({ id: p.id, email: '' })) || []
+    const members = profiles?.map((p) => ({ id: p.id, email: '' })) || []
 
     return {
       id: household.id,
       name: household.name,
-      members
+      members,
     }
   }
 
@@ -158,21 +164,24 @@ export class IntegrationTestHelper {
    * Gets test users that were created by setup-test-users-admin.js
    */
   async getTestUser(email: string): Promise<TestUser> {
-    const { data: users, error } = await this.serviceClient.auth.admin.listUsers()
-    
+    const { data: users, error } =
+      await this.serviceClient.auth.admin.listUsers()
+
     if (error) {
       throw new Error(`Failed to list users: ${error.message}`)
     }
 
-    const user = users.users.find(u => u.email === email)
-    
+    const user = users.users.find((u) => u.email === email)
+
     if (!user) {
-      throw new Error(`Test user ${email} not found. Run setup-test-users-admin.js first.`)
+      throw new Error(
+        `Test user ${email} not found. Run setup-test-users-admin.js first.`
+      )
     }
 
     return {
       id: user.id,
-      email: user.email!
+      email: user.email!,
     }
   }
 
@@ -180,16 +189,16 @@ export class IntegrationTestHelper {
    * Cleans up test data after tests complete
    * Runs all registered cleanup tasks plus default cleanup
    */
-  async cleanup(options?: { 
+  async cleanup(options?: {
     deleteInteractions?: boolean
     deleteProperties?: boolean
-    deleteHouseholds?: boolean 
+    deleteHouseholds?: boolean
   }): Promise<void> {
     const opts = {
       deleteInteractions: true,
       deleteProperties: true,
       deleteHouseholds: true,
-      ...options
+      ...options,
     }
 
     // Run custom cleanup tasks first

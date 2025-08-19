@@ -1,6 +1,6 @@
 /**
  * Centralized Error Handling for Services
- * 
+ *
  * Provides standardized error classes and utilities for consistent
  * error handling across all service layers.
  */
@@ -12,7 +12,7 @@ export abstract class ServiceError extends Error {
   public readonly code: string
   public readonly context?: Record<string, unknown>
   public readonly timestamp: Date
-  
+
   constructor(
     message: string,
     code: string,
@@ -23,13 +23,13 @@ export abstract class ServiceError extends Error {
     this.code = code
     this.context = context
     this.timestamp = new Date()
-    
+
     // Maintain proper stack trace for debugging
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor)
     }
   }
-  
+
   /**
    * Converts error to a structured object for logging/monitoring
    */
@@ -40,7 +40,7 @@ export abstract class ServiceError extends Error {
       code: this.code,
       context: this.context,
       timestamp: this.timestamp.toISOString(),
-      stack: this.stack
+      stack: this.stack,
     }
   }
 }
@@ -122,9 +122,9 @@ export class NetworkError extends ServiceError {
  */
 export enum ErrorSeverity {
   LOW = 'low',
-  MEDIUM = 'medium', 
+  MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
@@ -135,22 +135,22 @@ export interface ErrorHandlingConfig {
    * Whether to enable new error handling (feature flag)
    */
   enabled: boolean
-  
+
   /**
    * Whether to log errors to console (backward compatibility)
    */
   logToConsole: boolean
-  
+
   /**
    * Whether to preserve legacy error messages
    */
   preserveLegacyMessages: boolean
-  
+
   /**
    * Whether to throw errors or return null/empty arrays
    */
   throwErrors: boolean
-  
+
   /**
    * Custom logger function
    */
@@ -166,7 +166,7 @@ export const DEFAULT_ERROR_CONFIG: ErrorHandlingConfig = {
   logToConsole: true,
   preserveLegacyMessages: true,
   throwErrors: false, // Return null/[] for backward compatibility
-  logger: undefined
+  logger: undefined,
 }
 
 /**
@@ -178,7 +178,9 @@ let globalErrorConfig: ErrorHandlingConfig = { ...DEFAULT_ERROR_CONFIG }
 /**
  * Updates global error handling configuration
  */
-export function setErrorHandlingConfig(config: Partial<ErrorHandlingConfig>): void {
+export function setErrorHandlingConfig(
+  config: Partial<ErrorHandlingConfig>
+): void {
   globalErrorConfig = { ...globalErrorConfig, ...config }
 }
 
@@ -192,31 +194,57 @@ export function getErrorHandlingConfig(): ErrorHandlingConfig {
 /**
  * Maps common Supabase error codes to our error types
  */
-export function mapSupabaseError(error: unknown, operation: string, context?: Record<string, unknown>): ServiceError {
+export function mapSupabaseError(
+  error: unknown,
+  operation: string,
+  context?: Record<string, unknown>
+): ServiceError {
   const errorCode = (error as { code?: string })?.code
-  const errorMessage = (error as { message?: string })?.message || 'Unknown database error'
-  
+  const errorMessage =
+    (error as { message?: string })?.message || 'Unknown database error'
+
   switch (errorCode) {
     case 'PGRST116':
-      return new NotFoundError(`Resource not found during ${operation}`, { ...context, supabaseError: error })
-    
+      return new NotFoundError(`Resource not found during ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     case '23505': // unique_violation
-      return new ValidationError(`Duplicate entry during ${operation}`, { ...context, supabaseError: error })
-    
+      return new ValidationError(`Duplicate entry during ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     case '23503': // foreign_key_violation
-      return new ValidationError(`Invalid reference during ${operation}`, { ...context, supabaseError: error })
-    
+      return new ValidationError(`Invalid reference during ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     case '23514': // check_violation
-      return new ValidationError(`Data validation failed during ${operation}`, { ...context, supabaseError: error })
-    
+      return new ValidationError(`Data validation failed during ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     case '42501': // insufficient_privilege
-      return new AuthError(`Insufficient permissions for ${operation}`, { ...context, supabaseError: error })
-    
+      return new AuthError(`Insufficient permissions for ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     case 'PGRST103': // insufficient RLS
-      return new AuthError(`Access denied for ${operation}`, { ...context, supabaseError: error })
-    
+      return new AuthError(`Access denied for ${operation}`, {
+        ...context,
+        supabaseError: error,
+      })
+
     default:
-      return new DatabaseError(`Database error during ${operation}: ${errorMessage}`, { ...context, supabaseError: error })
+      return new DatabaseError(
+        `Database error during ${operation}: ${errorMessage}`,
+        { ...context, supabaseError: error }
+      )
   }
 }
 
@@ -225,12 +253,12 @@ export function mapSupabaseError(error: unknown, operation: string, context?: Re
  */
 export function logErrorLegacy(operation: string, error: unknown): void {
   const config = getErrorHandlingConfig()
-  
+
   if (config.logToConsole) {
     // Maintain exact same console.error format as before
     console.error(`Error ${operation}:`, error)
   }
-  
+
   // If custom logger is configured, use it too
   if (config.logger && error instanceof ServiceError) {
     config.logger(error)
@@ -242,30 +270,29 @@ export function logErrorLegacy(operation: string, error: unknown): void {
  * Returns null for single items, empty array for collections
  */
 export function handleErrorLegacy<T>(
-  operation: string, 
-  error: unknown, 
+  operation: string,
+  error: unknown,
   returnType: 'single' | 'array' = 'single'
 ): T | null | T[] {
   const config = getErrorHandlingConfig()
-  
+
   // Log error for backward compatibility
   logErrorLegacy(operation, error)
-  
+
   // If new error handling is disabled, use legacy behavior
   if (!config.enabled) {
-    return returnType === 'array' ? [] as T[] : null
+    return returnType === 'array' ? ([] as T[]) : null
   }
-  
+
   // Map to standardized error
-  const serviceError = error instanceof ServiceError 
-    ? error 
-    : mapSupabaseError(error, operation)
-  
+  const serviceError =
+    error instanceof ServiceError ? error : mapSupabaseError(error, operation)
+
   // If configured to throw, re-throw the error
   if (config.throwErrors) {
     throw serviceError
   }
-  
+
   // Otherwise return appropriate default value
-  return returnType === 'array' ? [] as T[] : null
+  return returnType === 'array' ? ([] as T[]) : null
 }

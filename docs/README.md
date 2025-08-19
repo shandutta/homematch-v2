@@ -6,20 +6,20 @@ This directory contains **12 core documents** plus 4 task management files, orga
 
 ## Quick Navigation
 
-| Document                                           | Purpose                            | Contains                                                           |
-| -------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
-| **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**             | Development setup & project status | Environment setup, dependencies, configuration, getting started    |
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)**           | Complete system architecture       | Tech stack, database, security patterns, API reference, custom hooks |
-| **[REFACTORING_ARCHITECTURE.md](./REFACTORING_ARCHITECTURE.md)** | PropertyService refactoring guide | Implementation status, migration strategy, performance metrics    |
-| **[TESTING.md](./TESTING.md)**                     | Testing & development workflows    | Unit/integration/E2E testing, git workflows, debugging, deployment |
-| **[PERFORMANCE.md](./PERFORMANCE.md)**             | Performance optimization guide     | Core Web Vitals, monitoring, testing, optimization strategies      |
-| **[STYLE_GUIDE.md](./STYLE_GUIDE.md)**             | UI/UX design & component guidelines | Design system, component development, accessibility standards      |
-| **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)**   | Code quality & analysis reports    | Landing page analysis, performance assessments, best practices    |
-| **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)**     | External API integration           | Zillow API endpoints, authentication, data sync                    |
-| **[DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)** | Development processes     | Git workflows, code review, testing procedures                     |
-| **[CI_INTEGRATION_TESTS.md](./CI_INTEGRATION_TESTS.md)** | CI/CD testing integration    | Continuous integration, test automation, deployment validation     |
-| **[REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md)** | Refactoring overview         | High-level refactoring status and completed improvements           |
-| **README.md** (this file)                          | Documentation index                | Quick navigation and getting started                               |
+| Document                                                         | Purpose                             | Contains                                                             |
+| ---------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**                           | Development setup & project status  | Environment setup, dependencies, configuration, getting started      |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)**                         | Complete system architecture        | Tech stack, database, security patterns, API reference, custom hooks |
+| **[REFACTORING_ARCHITECTURE.md](./REFACTORING_ARCHITECTURE.md)** | PropertyService refactoring guide   | Implementation status, migration strategy, performance metrics       |
+| **[TESTING.md](./TESTING.md)**                                   | Testing & development workflows     | Unit/integration/E2E testing, git workflows, debugging, deployment   |
+| **[PERFORMANCE.md](./PERFORMANCE.md)**                           | Performance optimization guide      | Core Web Vitals, monitoring, testing, optimization strategies        |
+| **[STYLE_GUIDE.md](./STYLE_GUIDE.md)**                           | UI/UX design & component guidelines | Design system, component development, accessibility standards        |
+| **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)**                 | Code quality & analysis reports     | Landing page analysis, performance assessments, best practices       |
+| **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)**                   | External API integration            | Zillow API endpoints, authentication, data sync                      |
+| **[DEVELOPMENT_WORKFLOWS.md](./DEVELOPMENT_WORKFLOWS.md)**       | Development processes               | Git workflows, code review, testing procedures                       |
+| **[CI_INTEGRATION_TESTS.md](./CI_INTEGRATION_TESTS.md)**         | CI/CD testing integration           | Continuous integration, test automation, deployment validation       |
+| **[REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md)**           | Refactoring overview                | High-level refactoring status and completed improvements             |
+| **README.md** (this file)                                        | Documentation index                 | Quick navigation and getting started                                 |
 
 ## Getting Started Paths
 

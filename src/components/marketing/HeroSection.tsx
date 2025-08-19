@@ -9,10 +9,12 @@ import { PhoneMockup } from './PhoneMockup'
 import { ParallaxStarsCanvas } from './ParallaxStarsCanvas'
 
 export function HeroSection() {
-  const [viewportHeight, setViewportHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 1000)
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 1000
+  )
   const [scrollOpacity, setScrollOpacity] = useState(1)
   const [scrollY, setScrollY] = useState(0)
-  
+
   // Update viewport height on mount and resize
   useEffect(() => {
     const updateHeight = () => {
@@ -23,34 +25,35 @@ export function HeroSection() {
     window.addEventListener('resize', updateHeight)
     return () => window.removeEventListener('resize', updateHeight)
   }, [])
-  
+
   // Handle scroll for responsive fade
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       setScrollY(currentScrollY)
-      
+
       // Calculate responsive fade ranges based on viewport height
       // For shorter viewports (landscape), fade happens earlier
       // For taller viewports (portrait), fade happens later
-      const fadeStartPoint = viewportHeight * 0.4 // Start fade at 40% of viewport height  
+      const fadeStartPoint = viewportHeight * 0.4 // Start fade at 40% of viewport height
       const fadeEndPoint = viewportHeight * 0.75 // End fade at 75% of viewport height (even faster fade)
-      
+
       let newOpacity = 1
       if (currentScrollY > fadeStartPoint) {
         // Calculate fade between start and end points
-        const fadeProgress = (currentScrollY - fadeStartPoint) / (fadeEndPoint - fadeStartPoint)
+        const fadeProgress =
+          (currentScrollY - fadeStartPoint) / (fadeEndPoint - fadeStartPoint)
         newOpacity = Math.max(0, 1 - fadeProgress)
       }
-      
+
       setScrollOpacity(newOpacity)
     }
-    
+
     handleScroll() // Initial call
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [viewportHeight])
-  
+
   const y = scrollY * 0.1 // Simple parallax effect
 
   return (
@@ -59,9 +62,7 @@ export function HeroSection() {
       data-testid="hero"
     >
       {/* Deeper Navy Gradient Background */}
-      <div
-        className="absolute inset-0 bg-gradient-marketing-primary"
-      />
+      <div className="bg-gradient-marketing-primary absolute inset-0" />
 
       {/* Foreground vignette to push stars into background */}
       <MotionDiv
@@ -78,7 +79,7 @@ export function HeroSection() {
 
       {/* Content Container */}
       <div className="relative z-10 flex min-h-screen items-center">
-        <div className="container mx-auto px-8 sm:px-4 py-16 sm:py-14 md:py-16">
+        <div className="container mx-auto px-8 py-16 sm:px-4 sm:py-14 md:py-16">
           <MotionDiv
             className="grid gap-16 sm:gap-12 lg:grid-cols-2 lg:items-center"
             style={{ opacity: scrollOpacity }}
@@ -86,7 +87,7 @@ export function HeroSection() {
             {/* Text Content */}
             <div className="sm:pl-4" style={{ maxWidth: '42rem' }}>
               <MotionH1
-                className="text-4xl font-black leading-tight text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
+                className="text-4xl leading-tight font-black text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -99,7 +100,7 @@ export function HeroSection() {
               </MotionH1>
 
               <MotionP
-                className="mt-5 sm:mt-4 text-base leading-relaxed text-white/80 sm:text-lg md:text-xl"
+                className="mt-5 text-base leading-relaxed text-white/80 sm:mt-4 sm:text-lg md:text-xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
@@ -110,30 +111,41 @@ export function HeroSection() {
               </MotionP>
 
               <MotionDiv
-                className="mt-8 sm:mt-6 flex flex-col gap-4 sm:gap-3 sm:flex-row max-w-full"
+                className="mt-8 flex max-w-full flex-col gap-4 sm:mt-6 sm:flex-row sm:gap-3"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
               >
                 {/* Primary CTA - Premium Magnetic Effect */}
-                <Button variant="prime" size="lg" asChild className="group relative px-4 py-3 sm:px-8 sm:py-4 overflow-visible w-full sm:w-auto">
+                <Button
+                  variant="prime"
+                  size="lg"
+                  asChild
+                  className="group relative w-full overflow-visible px-4 py-3 sm:w-auto sm:px-8 sm:py-4"
+                >
                   <Link
                     href="/signup"
                     aria-label="Start Swiping"
                     data-cta="dopamine-hero"
-                    className="relative inline-flex items-center justify-center w-full sm:w-auto"
+                    className="relative inline-flex w-full items-center justify-center sm:w-auto"
                   >
                     {/* Animated gradient background on hover */}
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl" aria-hidden="true" />
-                    
+                    <span
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl"
+                      aria-hidden="true"
+                    />
+
                     {/* Button text with enhanced glow */}
                     <span className="relative z-10 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]">
                       Get started
                     </span>
-                    
+
                     {/* Pulse ring animation on hover */}
-                    <span className="absolute inset-0 rounded-full ring-2 ring-white/0 transition-all duration-500 group-hover:ring-white/20 group-hover:ring-offset-4 group-hover:ring-offset-transparent" aria-hidden="true" />
-                    
+                    <span
+                      className="absolute inset-0 rounded-full ring-2 ring-white/0 transition-all duration-500 group-hover:ring-white/20 group-hover:ring-offset-4 group-hover:ring-offset-transparent"
+                      aria-hidden="true"
+                    />
+
                     <span
                       aria-hidden
                       className="pointer-events-none absolute inset-0"
@@ -205,7 +217,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="group relative border-2 border-white/20 bg-white/5 px-4 py-3 sm:px-8 sm:py-4 text-sm sm:text-base font-medium text-white backdrop-blur-md transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-white/10 w-full sm:w-auto"
+                  className="group relative w-full border-2 border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white backdrop-blur-md transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-white/10 sm:w-auto sm:px-8 sm:py-4 sm:text-base"
                   asChild
                 >
                   <Link href="/login" className="relative w-full sm:w-auto">
@@ -213,7 +225,10 @@ export function HeroSection() {
                       Log in
                     </span>
                     {/* Subtle glow effect on hover */}
-                    <span className="absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100 blur-xl bg-white/10" aria-hidden="true" />
+                    <span
+                      className="absolute inset-0 rounded-lg bg-white/10 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100"
+                      aria-hidden="true"
+                    />
                   </Link>
                 </Button>
               </MotionDiv>

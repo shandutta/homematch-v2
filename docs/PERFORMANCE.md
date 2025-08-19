@@ -18,38 +18,38 @@ HomeMatch v2 includes comprehensive performance monitoring, testing, and optimiz
 
 ### Lighthouse Scores
 
-| Category           | Target  | Description                 |
-| ------------------ | ------- | --------------------------- |
-| Performance        | ≥75/100 | Speed and optimization      |
-| Accessibility      | ≥90/100 | WCAG 2.1 AA compliance     |
-| Best Practices     | ≥90/100 | Security & modern practices |
-| SEO                | ≥90/100 | Search optimization         |
+| Category       | Target  | Description                 |
+| -------------- | ------- | --------------------------- |
+| Performance    | ≥75/100 | Speed and optimization      |
+| Accessibility  | ≥90/100 | WCAG 2.1 AA compliance      |
+| Best Practices | ≥90/100 | Security & modern practices |
+| SEO            | ≥90/100 | Search optimization         |
 
 ### Page-Specific Budgets
 
 - **Homepage**: LCP <2.5s, FID <100ms, CLS <0.1
-- **Dashboard**: LCP <3s (complex content), FID <100ms, CLS <0.1  
+- **Dashboard**: LCP <3s (complex content), FID <100ms, CLS <0.1
 - **Couples Page**: LCP <2.8s, FID <100ms, CLS <0.15 (animations)
 - **Property Details**: LCP <2.5s, FID <100ms, CLS <0.1
 
 ### Resource Budgets
 
-| Resource Type | Budget | Current | Notes                    |
-| ------------- | ------ | ------- | ------------------------ |
-| JavaScript    | <300KB | TBD     | Main bundle (gzipped)    |
-| CSS           | <50KB  | TBD     | Styles (gzipped)         |
-| Images        | <1MB   | TBD     | Per page total           |
-| Fonts         | <100KB | TBD     | Subset and preload       |
+| Resource Type | Budget | Current | Notes                 |
+| ------------- | ------ | ------- | --------------------- |
+| JavaScript    | <300KB | TBD     | Main bundle (gzipped) |
+| CSS           | <50KB  | TBD     | Styles (gzipped)      |
+| Images        | <1MB   | TBD     | Per page total        |
+| Fonts         | <100KB | TBD     | Subset and preload    |
 
 ### API Response Time Targets
 
-| Endpoint                     | P50   | P95   | P99    | Description           |
-| ---------------------------- | ----- | ----- | ------ | --------------------- |
-| Auth/Login                   | 200ms | 500ms | 1000ms | Authentication        |
-| Properties List              | 300ms | 800ms | 1500ms | Search results        |
-| Property Details             | 250ms | 600ms | 1200ms | Single property       |
-| Couples Mutual Likes         | 400ms | 900ms | 1800ms | Shared preferences    |
-| User Dashboard               | 500ms | 1200ms| 2000ms | Aggregated data       |
+| Endpoint             | P50   | P95    | P99    | Description        |
+| -------------------- | ----- | ------ | ------ | ------------------ |
+| Auth/Login           | 200ms | 500ms  | 1000ms | Authentication     |
+| Properties List      | 300ms | 800ms  | 1500ms | Search results     |
+| Property Details     | 250ms | 600ms  | 1200ms | Single property    |
+| Couples Mutual Likes | 400ms | 900ms  | 1800ms | Shared preferences |
+| User Dashboard       | 500ms | 1200ms | 2000ms | Aggregated data    |
 
 ## 🔧 Performance Testing
 
@@ -59,7 +59,7 @@ HomeMatch v2 includes comprehensive performance monitoring, testing, and optimiz
 # Run comprehensive benchmark
 pnpm run perf:benchmark
 
-# Establish baseline metrics  
+# Establish baseline metrics
 pnpm run perf:baseline
 
 # Run Lighthouse CI
@@ -107,7 +107,7 @@ npx webpack-bundle-analyzer .next/static/chunks/*.js
 ### Performance Test Cases
 
 1. **Cold Page Load**: First visit performance
-2. **Warm Page Load**: Cached resources performance  
+2. **Warm Page Load**: Cached resources performance
 3. **Navigation Speed**: Client-side route changes
 4. **Form Interactions**: User input responsiveness
 5. **Search Performance**: Query execution time
@@ -124,6 +124,7 @@ pnpm run perf:monitor
 ```
 
 This provides:
+
 - Real-time Core Web Vitals tracking
 - Bundle size monitoring
 - API response time tracking
@@ -135,13 +136,13 @@ This provides:
 
 ```typescript
 // Automatic Core Web Vitals collection
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
 
-getCLS(console.log);
-getFID(console.log);  
-getFCP(console.log);
-getLCP(console.log);
-getTTFB(console.log);
+getCLS(console.log)
+getFID(console.log)
+getFCP(console.log)
+getLCP(console.log)
+getTTFB(console.log)
 ```
 
 #### Real User Monitoring (RUM)
@@ -153,8 +154,9 @@ getTTFB(console.log);
 ### Performance Alerts
 
 Set up alerts for:
+
 - LCP > 3s (critical)
-- FID > 200ms (warning)  
+- FID > 200ms (warning)
 - CLS > 0.15 (warning)
 - API response > 2s (critical)
 - Bundle size > 400KB (warning)
@@ -164,21 +166,25 @@ Set up alerts for:
 ### Frontend Optimizations
 
 #### 1. Code Splitting
+
 - Route-based splitting with Next.js App Router
 - Component-level lazy loading
 - Third-party library code splitting
 
 #### 2. Image Optimization
+
 - Next.js Image component with WebP/AVIF
 - Responsive images with multiple sizes
 - Image preloading for critical content
 
 #### 3. Font Optimization
+
 - Google Fonts with `font-display: swap`
 - Font subsetting for reduced file size
 - Preload critical fonts
 
 #### 4. CSS Optimization
+
 - Tailwind CSS purging unused styles
 - Critical CSS inlining
 - CSS-in-JS optimization
@@ -186,16 +192,19 @@ Set up alerts for:
 ### Backend Optimizations
 
 #### 1. Database Performance
+
 - Query optimization with indexes
 - Connection pooling
 - Read replicas for heavy queries
 
 #### 2. Caching Strategy
+
 - Redis caching for API responses
 - CDN caching for static assets
 - Browser caching with proper headers
 
 #### 3. API Optimization
+
 - Request batching and deduplication
 - Pagination for large datasets
 - Compression (gzip/brotli)
@@ -203,10 +212,12 @@ Set up alerts for:
 ### Infrastructure Optimizations
 
 #### 1. Edge Computing
+
 - Vercel Edge Functions for geo-distributed logic
 - Edge caching with ISR (Incremental Static Regeneration)
 
 #### 2. Asset Delivery
+
 - CDN distribution via Vercel
 - Image optimization pipeline
 - Font optimization and delivery
@@ -216,26 +227,29 @@ Set up alerts for:
 **Last Updated**: January 2025  
 **Environment**: Development
 
-| Metric | Status | Notes |
-|--------|---------|-------|
+| Metric                 | Status     | Notes                            |
+| ---------------------- | ---------- | -------------------------------- |
 | Lighthouse Performance | ⏳ Pending | CI configured, awaiting baseline |
-| Core Web Vitals | ⏳ Pending | Monitoring setup in progress |
-| Bundle Size | ⏳ Pending | Analysis tools configured |
-| API Performance | ⏳ Pending | Load testing planned |
+| Core Web Vitals        | ⏳ Pending | Monitoring setup in progress     |
+| Bundle Size            | ⏳ Pending | Analysis tools configured        |
+| API Performance        | ⏳ Pending | Load testing planned             |
 
 ### Performance Roadmap
 
 **Phase 1** (Week 1-2):
+
 - Establish baseline measurements
 - Configure monitoring and alerts
 - Implement critical optimizations
 
 **Phase 2** (Week 3-4):
+
 - Bundle size optimization
 - Image loading improvements
 - API response optimization
 
 **Phase 3** (Week 5-6):
+
 - Advanced caching strategies
 - Edge computing implementation
 - Performance regression testing
@@ -245,6 +259,7 @@ Set up alerts for:
 ### ✅ Implemented Optimizations
 
 #### Image Optimization
+
 - **Next.js Image Component**: Automatic optimization, lazy loading, and WebP conversion
 - **Blur Placeholders**: Custom blur data URIs for smooth loading transitions
 - **Priority Loading**: Critical images loaded with `priority` flag
@@ -252,23 +267,27 @@ Set up alerts for:
 - **SVG Assets**: Lightweight vector graphics for property mockups
 
 #### Font Optimization
+
 - **Google Fonts**: Inter and Plus Jakarta Sans loaded with `font-display: swap`
 - **Preload**: Critical fonts preloaded for faster rendering
 - **CSS Variables**: Font families accessible via CSS custom properties
 
 #### JavaScript Optimization
+
 - **Code Splitting**: Components loaded only when needed
 - **Framer Motion**: Efficient animations with reduced bundle impact
 - **Tree Shaking**: Unused code eliminated during build
 - **React 18**: Concurrent features for better performance
 
 #### CSS Optimization
+
 - **Tailwind CSS**: Purged unused styles, optimized output
 - **Critical CSS**: Above-the-fold styles inlined
 - **CSS-in-JS**: Scoped styles with runtime optimization
 - **Custom Properties**: Efficient theme variable system
 
 #### Accessibility & UX
+
 - **Reduced Motion**: `prefers-reduced-motion` support for animations
 - **Semantic HTML**: Proper structure for screen readers
 - **Focus Management**: Keyboard navigation support
@@ -277,6 +296,7 @@ Set up alerts for:
 ### 📊 Landing Page Metrics
 
 #### Expected Results
+
 ```
 Lighthouse Score: 95-100
 LCP: 1.2-1.8s (Target: <2.5s) ✅
@@ -285,6 +305,7 @@ CLS: 0.02-0.05 (Target: <0.1) ✅
 ```
 
 #### Bundle Analysis
+
 ```
 JavaScript Bundle: ~180KB (gzipped)
 CSS Bundle: ~45KB (gzipped)
@@ -295,12 +316,14 @@ Fonts: ~120KB (2 families, Latin subset)
 ### 🔧 Runtime Optimizations
 
 #### Framer Motion
+
 - **Reduced Motion**: Animations disabled for users who prefer reduced motion
 - **GPU Acceleration**: Transform3d and opacity animations
 - **Layout Animations**: Efficient layout shift animations
 - **Gesture Recognition**: Optimized drag and swipe interactions
 
 #### Image Loading Strategy
+
 ```typescript
 // PhoneMockup & SwipeDemo
 <Image
@@ -316,6 +339,7 @@ Fonts: ~120KB (2 families, Latin subset)
 ```
 
 #### Animation Performance
+
 ```typescript
 // ParallaxStars - Optimized scroll animations
 const starY = useTransform(
@@ -328,12 +352,14 @@ const starY = useTransform(
 ### 📱 Mobile Performance
 
 #### Responsive Design
+
 - **Mobile-First**: Tailwind CSS mobile-first approach
 - **Touch Optimization**: Proper touch targets (44px minimum)
 - **Viewport Meta**: Optimized viewport configuration
 - **Progressive Enhancement**: Core functionality works without JavaScript
 
 #### Network Optimization
+
 - **Resource Hints**: Preload, prefetch, and preconnect
 - **Compression**: Gzip/Brotli compression enabled
 - **CDN Ready**: Assets optimized for CDN delivery

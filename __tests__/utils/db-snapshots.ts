@@ -35,7 +35,9 @@ export class DatabaseSnapshotManager {
 
   constructor(client?: SupabaseClient, snapshotDir?: string) {
     this.client = client || createClient()
-    this.snapshotDir = snapshotDir || path.join(process.cwd(), '__tests__', 'snapshots', 'database')
+    this.snapshotDir =
+      snapshotDir ||
+      path.join(process.cwd(), '__tests__', 'snapshots', 'database')
   }
 
   /**
@@ -51,10 +53,16 @@ export class DatabaseSnapshotManager {
 
   /**
    * Create a snapshot of specified tables
+   * Note: We only snapshot database tables, not auth.users
    */
   async createSnapshot(
     name: string,
-    tables: string[] = ['user_profiles', 'properties', 'households', 'user_property_interactions'],
+    tables: string[] = [
+      'user_profiles',
+      'properties',
+      'households',
+      'user_property_interactions',
+    ],
     description: string = ''
   ): Promise<SnapshotMetadata> {
     await this.ensureSnapshotDir()
@@ -109,7 +117,7 @@ export class DatabaseSnapshotManager {
     const snapshotPath = path.join(this.snapshotDir, `${snapshotId}.json`)
     const snapshotContent = await fs.readFile(snapshotPath, 'utf-8')
     const snapshot = JSON.parse(snapshotContent) as SnapshotData
-    
+
     this.currentSnapshot = snapshot
     return snapshot
   }
@@ -119,16 +127,15 @@ export class DatabaseSnapshotManager {
    */
   async restoreSnapshot(snapshotId: string): Promise<void> {
     const snapshot = await this.loadSnapshot(snapshotId)
-    
-    // Complete clearing order including all referenced tables
+
+    // Complete clearing order for database tables (auth.users handled separately)
     const clearOrder = [
       'user_property_interactions',
-      'household_members', 
+      'household_members',
       'property_images',
       'properties',
       'households',
       'user_profiles',
-      'users', // Add missing public.users table
     ]
 
     // Clear existing data with proper deletion strategy
@@ -139,7 +146,7 @@ export class DatabaseSnapshotManager {
           .from(table)
           .delete()
           .gte('created_at', '1900-01-01') // Match all records with a date condition
-        
+
         if (error && !error.message?.includes('does not exist')) {
           if (process.env.DEBUG_SNAPSHOTS) {
             console.debug(`Warning clearing table ${table}:`, error.message)
@@ -153,17 +160,16 @@ export class DatabaseSnapshotManager {
       }
     }
 
-    // Restore data in proper dependency order (NOT reversed)
+    // Restore data in proper dependency order (auth.users managed separately)
     const restoreOrder = [
-      'users',           // Must be first (referenced by user_profiles)
-      'user_profiles',   // References users
-      'households',      // Independent table
-      'properties',      // Independent table  
+      'user_profiles', // References auth.users (managed by auth triggers)
+      'households', // Independent table
+      'properties', // Independent table
       'property_images', // References properties
       'household_members', // References households and user_profiles
-      'user_property_interactions', // References users, properties, households
+      'user_property_interactions', // References auth.users (via user_id), properties, households
     ]
-    
+
     for (const table of restoreOrder) {
       const tableData = snapshot.data[table]
       if (tableData && tableData.length > 0) {
@@ -172,29 +178,36 @@ export class DatabaseSnapshotManager {
           const batchSize = 100
           for (let i = 0; i < tableData.length; i += batchSize) {
             const batch = tableData.slice(i, i + batchSize)
-            
+
             // Use upsert to handle conflicts gracefully
             const { error } = await (this.client as any)
               .from(table)
-              .upsert(batch, { 
+              .upsert(batch, {
                 onConflict: 'id',
-                ignoreDuplicates: false 
+                ignoreDuplicates: false,
               })
-            
+
             if (error) {
               if (process.env.DEBUG_SNAPSHOTS) {
-                console.debug(`Failed to restore batch for table ${table}:`, error.message)
+                console.debug(
+                  `Failed to restore batch for table ${table}:`,
+                  error.message
+                )
               }
               // Try individual inserts as fallback
               for (const record of batch) {
                 try {
-                  await (this.client as any)
-                    .from(table)
-                    .upsert(record, { onConflict: 'id', ignoreDuplicates: true })
+                  await (this.client as any).from(table).upsert(record, {
+                    onConflict: 'id',
+                    ignoreDuplicates: true,
+                  })
                 } catch (recordError) {
                   // Silent failure for individual records
                   if (process.env.DEBUG_SNAPSHOTS) {
-                    console.debug(`Failed to restore record in ${table}:`, recordError)
+                    console.debug(
+                      `Failed to restore record in ${table}:`,
+                      recordError
+                    )
                   }
                 }
               }
@@ -214,7 +227,7 @@ export class DatabaseSnapshotManager {
    */
   async listSnapshots(): Promise<SnapshotMetadata[]> {
     await this.ensureSnapshotDir()
-    
+
     const files = await fs.readdir(this.snapshotDir)
     const snapshots: SnapshotMetadata[] = []
 
@@ -227,8 +240,9 @@ export class DatabaseSnapshotManager {
       }
     }
 
-    return snapshots.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    return snapshots.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }
 
@@ -254,7 +268,7 @@ export class DatabaseSnapshotManager {
         .order('created_at', { ascending: true })
 
       const snapshotData = snapshot.data[table]
-      
+
       diff[table] = {
         added: currentData?.length || 0 - snapshotData.length,
         snapshot: snapshotData.length,
@@ -306,15 +320,29 @@ export class TestScenarioSnapshots {
    */
   async createCouplesDisputeSnapshot(): Promise<SnapshotMetadata> {
     const scenario = await this.factory.createCouplesScenario()
-    
+
     // Add disputed properties (one likes, other dislikes)
     const disputedProperty = await this.factory.createProperty()
-    await this.factory.createInteraction(scenario.users[0].id, disputedProperty.id, 'like')
-    await this.factory.createInteraction(scenario.users[1].id, disputedProperty.id, 'dislike')
+    await this.factory.createInteraction(
+      scenario.users[0].id,
+      disputedProperty.id,
+      'like'
+    )
+    await this.factory.createInteraction(
+      scenario.users[1].id,
+      disputedProperty.id,
+      'dislike'
+    )
 
     return await this.manager.createSnapshot(
       'couples_disputes',
-      ['user_profiles', 'households', 'household_members', 'properties', 'user_property_interactions'],
+      [
+        'user_profiles',
+        'households',
+        'household_members',
+        'properties',
+        'user_property_interactions',
+      ],
       'Couples with mutual likes and disputed properties'
     )
   }
@@ -324,15 +352,27 @@ export class TestScenarioSnapshots {
    */
   async createGeographicSnapshot(): Promise<SnapshotMetadata> {
     // Create properties in different neighborhoods
-    const _seattleProperties = await this.factory.createGeographicProperties(5, 47.6062, -122.3321)
-    const _bellevueProperties = await this.factory.createGeographicProperties(5, 47.6101, -122.2015)
-    const _tacomaProperties = await this.factory.createGeographicProperties(5, 47.2529, -122.4443)
+    const _seattleProperties = await this.factory.createGeographicProperties(
+      5,
+      47.6062,
+      -122.3321
+    )
+    const _bellevueProperties = await this.factory.createGeographicProperties(
+      5,
+      47.6101,
+      -122.2015
+    )
+    const _tacomaProperties = await this.factory.createGeographicProperties(
+      5,
+      47.2529,
+      -122.4443
+    )
 
     // Create users with location preferences
     const _seattleUser = await this.factory.createUser({
       preferences: { preferred_cities: ['Seattle'] } as any,
     })
-    
+
     const _bellevueUser = await this.factory.createUser({
       preferences: { preferred_cities: ['Bellevue'] } as any,
     })
@@ -370,7 +410,7 @@ export class TestScenarioSnapshots {
     const users = await Promise.all(
       Array.from({ length: 50 }, () => this.factory.createUser())
     )
-    
+
     const properties = await Promise.all(
       Array.from({ length: 100 }, () => this.factory.createProperty())
     )
@@ -378,9 +418,10 @@ export class TestScenarioSnapshots {
     // Create random interactions
     for (let i = 0; i < 500; i++) {
       const randomUser = users[Math.floor(Math.random() * users.length)]
-      const randomProperty = properties[Math.floor(Math.random() * properties.length)]
+      const randomProperty =
+        properties[Math.floor(Math.random() * properties.length)]
       const interactionType = Math.random() > 0.5 ? 'like' : 'dislike'
-      
+
       await this.factory.createInteraction(
         randomUser.id,
         randomProperty.id,
@@ -400,9 +441,14 @@ export class TestScenarioSnapshots {
    */
   async listScenarios(): Promise<SnapshotMetadata[]> {
     const snapshots = await this.manager.listSnapshots()
-    return snapshots.filter(s => 
-      ['new_user_journey', 'couples_disputes', 'geographic_search', 'ml_training_data', 'performance_testing']
-        .includes(s.name.split('_')[0])
+    return snapshots.filter((s) =>
+      [
+        'new_user_journey',
+        'couples_disputes',
+        'geographic_search',
+        'ml_training_data',
+        'performance_testing',
+      ].includes(s.name.split('_')[0])
     )
   }
 }
@@ -411,18 +457,22 @@ export class TestScenarioSnapshots {
  * Test decorator for using snapshots
  */
 export function withSnapshot(snapshotName: string) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
     const originalMethod = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
       const manager = new DatabaseSnapshotManager()
-      
+
       // Restore snapshot before test
       await manager.restoreSnapshot(snapshotName)
-      
+
       // Run test
       const result = await originalMethod.apply(this, args)
-      
+
       // Optionally clean up or save state
       return result
     }
@@ -437,7 +487,7 @@ export function withSnapshot(snapshotName: string) {
 export async function setupSnapshotTest(snapshotName: string) {
   const manager = new DatabaseSnapshotManager()
   await manager.restoreSnapshot(snapshotName)
-  
+
   return {
     manager,
     factory: new TestDataFactory(),

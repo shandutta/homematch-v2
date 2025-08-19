@@ -2,7 +2,7 @@
 
 /**
  * Refactoring Safety Net Test Runner
- * 
+ *
  * This script runs comprehensive tests to ensure safe refactoring of:
  * - PropertyService (560-line service class)
  * - Error handling patterns (19 duplicate patterns)
@@ -18,21 +18,21 @@ const COVERAGE_THRESHOLDS = {
   statements: 85,
   branches: 80,
   functions: 85,
-  lines: 85
+  lines: 85,
 }
 
 const REFACTORING_TARGET_FILES = [
   'src/lib/services/properties.ts',
   'src/lib/services/interactions.ts',
   'src/lib/supabase/server.ts',
-  'src/lib/supabase/client.ts'
+  'src/lib/supabase/client.ts',
 ]
 
 const SAFETY_NET_TESTS = [
   '__tests__/integration/services/properties-integration.test.ts',
   '__tests__/integration/error-handling-patterns.test.ts',
   '__tests__/integration/filter-builder-patterns.test.ts',
-  '__tests__/integration/supabase-client-patterns.test.ts'
+  '__tests__/integration/supabase-client-patterns.test.ts',
 ]
 
 // Performance benchmarks for refactoring validation (currently unused)
@@ -70,7 +70,7 @@ function checkFileExists(filePath) {
 
 async function validateRefactoringTargets() {
   console.log('\n🎯 Validating Refactoring Target Files...')
-  
+
   for (const file of REFACTORING_TARGET_FILES) {
     if (!checkFileExists(file)) {
       throw new Error(`Refactoring target file missing: ${file}`)
@@ -81,7 +81,7 @@ async function validateRefactoringTargets() {
 
 async function validateSafetyNetTests() {
   console.log('\n🛡️ Validating Safety Net Tests...')
-  
+
   for (const test of SAFETY_NET_TESTS) {
     if (!checkFileExists(test)) {
       throw new Error(`Safety net test missing: ${test}`)
@@ -92,14 +92,14 @@ async function validateSafetyNetTests() {
 
 async function runSafetyNetTests() {
   console.log('\n🧪 Running Safety Net Tests...')
-  
+
   try {
     // Run each safety net test individually for detailed reporting
     for (const test of SAFETY_NET_TESTS) {
       console.log(`\n🔬 Running: ${path.basename(test)}`)
       await runCommand(`pnpm exec jest "${test}" --verbose`)
     }
-    
+
     console.log('\n✅ All safety net tests passed!')
     return true
   } catch (error) {
@@ -110,35 +110,37 @@ async function runSafetyNetTests() {
 
 async function checkCoverageThresholds() {
   console.log('\n📊 Checking Coverage Thresholds...')
-  
+
   try {
     // Run coverage for refactoring target files
-    const coverageCommand = `pnpm exec jest ${REFACTORING_TARGET_FILES.map(f => `--collectCoverageFrom="${f}"`).join(' ')} --coverage --coverageReporters=json-summary --passWithNoTests`
-    
+    const coverageCommand = `pnpm exec jest ${REFACTORING_TARGET_FILES.map((f) => `--collectCoverageFrom="${f}"`).join(' ')} --coverage --coverageReporters=json-summary --passWithNoTests`
+
     await runCommand(coverageCommand)
-    
+
     // Parse coverage report
     const coverageFile = 'coverage/coverage-summary.json'
     if (fs.existsSync(coverageFile)) {
       const coverage = JSON.parse(fs.readFileSync(coverageFile, 'utf8'))
-      
+
       const overallCoverage = coverage.total
       let passed = true
-      
+
       for (const [metric, threshold] of Object.entries(COVERAGE_THRESHOLDS)) {
         const actual = overallCoverage[metric].pct
         const status = actual >= threshold ? '✅' : '❌'
-        console.log(`${status} ${metric}: ${actual}% (threshold: ${threshold}%)`)
-        
+        console.log(
+          `${status} ${metric}: ${actual}% (threshold: ${threshold}%)`
+        )
+
         if (actual < threshold) {
           passed = false
         }
       }
-      
+
       if (!passed) {
         throw new Error('Coverage thresholds not met')
       }
-      
+
       console.log('\n✅ All coverage thresholds met!')
       return true
     } else {
@@ -153,7 +155,7 @@ async function checkCoverageThresholds() {
 
 async function runPerformanceBenchmarks() {
   console.log('\n⚡ Running Performance Benchmarks...')
-  
+
   try {
     // Create a simple performance test
     const perfTestScript = `
@@ -179,10 +181,10 @@ async function runPerformanceBenchmarks() {
       
       benchmark().catch(console.error)
     `
-    
+
     // Write temporary performance test
     fs.writeFileSync('temp-perf-test.js', perfTestScript)
-    
+
     try {
       await runCommand('node temp-perf-test.js')
       console.log('\n✅ Performance benchmarks completed!')
@@ -192,7 +194,7 @@ async function runPerformanceBenchmarks() {
         fs.unlinkSync('temp-perf-test.js')
       }
     }
-    
+
     return true
   } catch (error) {
     console.error('\n❌ Performance benchmarks failed!')
@@ -205,7 +207,7 @@ async function runPerformanceBenchmarks() {
 
 async function generateSafetyReport() {
   console.log('\n📋 Generating Safety Report...')
-  
+
   const report = {
     timestamp: new Date().toISOString(),
     refactoringTargets: REFACTORING_TARGET_FILES,
@@ -217,22 +219,22 @@ async function generateSafetyReport() {
       'Coverage thresholds are met for critical refactoring areas',
       'Error handling patterns are validated',
       'Filter builder functionality is comprehensively tested',
-      'Supabase client patterns have regression protection'
-    ]
+      'Supabase client patterns have regression protection',
+    ],
   }
-  
+
   const reportPath = '__tests__/reports/refactoring-safety-report.json'
-  
+
   // Ensure reports directory exists
   const reportsDir = path.dirname(reportPath)
   if (!fs.existsSync(reportsDir)) {
     fs.mkdirSync(reportsDir, { recursive: true })
   }
-  
+
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2))
-  
+
   console.log(`✅ Safety report generated: ${reportPath}`)
-  
+
   // Also create a human-readable summary
   const summaryPath = '__tests__/reports/refactoring-safety-summary.md'
   const summary = `# Refactoring Safety Report
@@ -244,17 +246,19 @@ Generated: ${report.timestamp}
 ## Validated Components
 
 ### Refactoring Targets
-${REFACTORING_TARGET_FILES.map(file => `- ✅ ${file}`).join('\n')}
+${REFACTORING_TARGET_FILES.map((file) => `- ✅ ${file}`).join('\n')}
 
 ### Safety Net Tests
-${SAFETY_NET_TESTS.map(test => `- ✅ ${path.basename(test)}`).join('\n')}
+${SAFETY_NET_TESTS.map((test) => `- ✅ ${path.basename(test)}`).join('\n')}
 
 ### Coverage Thresholds
-${Object.entries(COVERAGE_THRESHOLDS).map(([metric, threshold]) => `- ${metric}: ${threshold}%`).join('\n')}
+${Object.entries(COVERAGE_THRESHOLDS)
+  .map(([metric, threshold]) => `- ${metric}: ${threshold}%`)
+  .join('\n')}
 
 ## Recommendations
 
-${report.recommendations.map(rec => `- ${rec}`).join('\n')}
+${report.recommendations.map((rec) => `- ${rec}`).join('\n')}
 
 ## Next Steps
 
@@ -276,26 +280,26 @@ npm run test:integration
 npm run test:safety-net
 \`\`\`
 `
-  
+
   fs.writeFileSync(summaryPath, summary)
   console.log(`✅ Summary report generated: ${summaryPath}`)
-  
+
   return report
 }
 
 async function main() {
   console.log('🚀 Refactoring Safety Net Validation')
   console.log('=====================================')
-  
+
   try {
     await validateRefactoringTargets()
     await validateSafetyNetTests()
     await runSafetyNetTests()
     await checkCoverageThresholds()
     await runPerformanceBenchmarks()
-    
+
     const report = await generateSafetyReport()
-    
+
     console.log('\n🎉 SAFETY NET VALIDATION COMPLETE')
     console.log('=================================')
     console.log(`Status: ${report.status}`)
@@ -305,7 +309,7 @@ async function main() {
     console.log('2. Keep all safety net tests passing during refactoring')
     console.log('3. Run integration tests frequently during development')
     console.log('4. Validate final results with full test suite')
-    
+
     process.exit(0)
   } catch (error) {
     console.error('\n💥 SAFETY NET VALIDATION FAILED')
@@ -317,7 +321,7 @@ async function main() {
     console.error('2. Improve test coverage where needed')
     console.error('3. Address any performance issues')
     console.error('4. Re-run this validation script')
-    
+
     process.exit(1)
   }
 }
@@ -330,5 +334,5 @@ module.exports = {
   runSafetyNetTests,
   checkCoverageThresholds,
   runPerformanceBenchmarks,
-  generateSafetyReport
+  generateSafetyReport,
 }

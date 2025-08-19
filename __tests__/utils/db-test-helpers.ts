@@ -33,7 +33,7 @@ export async function withTransaction<T>(
  */
 export async function resetTestDatabase() {
   const client = createClient()
-  
+
   // Clear test data in order (respecting foreign keys)
   const tables = [
     'user_property_interactions',
@@ -46,10 +46,7 @@ export async function resetTestDatabase() {
   for (const table of tables) {
     // Only delete test data (e.g., emails ending with .test)
     if (table === 'user_profiles') {
-      await client
-        .from(table)
-        .delete()
-        .eq('id', 'test-user-id') // Adjust cleanup logic as needed
+      await client.from(table).delete().eq('id', 'test-user-id') // Adjust cleanup logic as needed
     } else {
       // For other tables, you might want more specific cleanup logic
       // This is a placeholder - adjust based on your needs
@@ -61,17 +58,19 @@ export async function resetTestDatabase() {
  * Wait for database changes to propagate (for eventual consistency)
  */
 export async function waitForDatabase(ms: number = 100): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
  * Create a test database client with specific user authentication
  */
-export async function createAuthenticatedClient(_userId: string): Promise<SupabaseClient> {
+export async function createAuthenticatedClient(
+  _userId: string
+): Promise<SupabaseClient> {
   // This would normally create a client with a specific user's JWT
   // For testing, we'll use the service role client
   const client = createClient()
-  
+
   // You could enhance this to actually create JWTs for testing
   // For now, it returns the standard client
   return client
@@ -107,7 +106,7 @@ export class TestDatabaseQueries {
       .eq('household_id', householdId)
 
     if (error) throw error
-    const userIds = data.map(m => m.id)
+    const userIds = data.map((m) => m.id)
 
     // Get properties liked by all users
     const { data: interactions, error: interactionError } = await this.client
@@ -120,7 +119,7 @@ export class TestDatabaseQueries {
 
     // Group by property and count unique users
     const propertyLikes = new Map<string, Set<string>>()
-    interactions.forEach(i => {
+    interactions.forEach((i) => {
       if (!propertyLikes.has(i.property_id)) {
         propertyLikes.set(i.property_id, new Set())
       }
@@ -138,13 +137,20 @@ export class TestDatabaseQueries {
   /**
    * Get properties within a geographic radius
    */
-  async getPropertiesNearLocation(lat: number, lng: number, radiusMiles: number = 10) {
+  async getPropertiesNearLocation(
+    lat: number,
+    lng: number,
+    radiusMiles: number = 10
+  ) {
     // Using PostGIS functions via RPC
-    const { data, error } = await (this.client as any).rpc('get_properties_within_radius', {
-      center_lat: lat,
-      center_lng: lng,
-      radius_miles: radiusMiles,
-    })
+    const { data, error } = await (this.client as any).rpc(
+      'get_properties_within_radius',
+      {
+        center_lat: lat,
+        center_lng: lng,
+        radius_miles: radiusMiles,
+      }
+    )
 
     if (error) {
       // Fallback to basic lat/lng filtering if RPC doesn't exist
@@ -191,7 +197,7 @@ export class TestDatabaseQueries {
 
     const seen = new Set<string>()
     const duplicates = []
-    householdMembers?.forEach(m => {
+    householdMembers?.forEach((m) => {
       const key = `${m.household_id}-${m.id}`
       if (seen.has(key)) {
         duplicates.push(key)
@@ -222,19 +228,19 @@ export class TestDatabaseAssertions {
    */
   async assertExists(table: string, conditions: Record<string, any>) {
     let query = (this.client as any).from(table).select('id')
-    
+
     Object.entries(conditions).forEach(([key, value]) => {
       query = query.eq(key, value)
     })
 
     const { data, error } = await query.single()
-    
+
     if (error || !data) {
       throw new Error(
         `Expected record in ${table} with conditions ${JSON.stringify(conditions)} to exist`
       )
     }
-    
+
     return true
   }
 
@@ -243,28 +249,34 @@ export class TestDatabaseAssertions {
    */
   async assertNotExists(table: string, conditions: Record<string, any>) {
     let query = (this.client as any).from(table).select('id')
-    
+
     Object.entries(conditions).forEach(([key, value]) => {
       query = query.eq(key, value)
     })
 
     const { data } = await query
-    
+
     if (data && data.length > 0) {
       throw new Error(
         `Expected no records in ${table} with conditions ${JSON.stringify(conditions)}`
       )
     }
-    
+
     return true
   }
 
   /**
    * Assert record count matches expected
    */
-  async assertCount(table: string, expectedCount: number, conditions?: Record<string, any>) {
-    let query = (this.client as any).from(table).select('id', { count: 'exact' })
-    
+  async assertCount(
+    table: string,
+    expectedCount: number,
+    conditions?: Record<string, any>
+  ) {
+    let query = (this.client as any)
+      .from(table)
+      .select('id', { count: 'exact' })
+
     if (conditions) {
       Object.entries(conditions).forEach(([key, value]) => {
         query = query.eq(key, value)
@@ -272,15 +284,15 @@ export class TestDatabaseAssertions {
     }
 
     const { data: _data, count, error } = await query
-    
+
     if (error) throw error
-    
+
     if (count !== expectedCount) {
       throw new Error(
         `Expected ${expectedCount} records in ${table}, but found ${count}`
       )
     }
-    
+
     return true
   }
 }

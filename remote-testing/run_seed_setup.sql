@@ -1,4 +1,4 @@
--- Remote Testing Seed Setup (Manual SQL - not part of migrations)
+. Do t-- Remote Testing Seed Setup (Manual SQL - not part of migrations)
 -- Place: remote-testing/run_seed_setup.sql
 -- Purpose: Create a dedicated testing role, seed and cleanup RPCs, and minimal RLS allowances (optional)
 -- Execute manually in Supabase SQL Editor for your REMOTE testing project.

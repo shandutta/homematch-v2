@@ -1,12 +1,14 @@
--- Migration: 20250804053305_create_interaction_summary_fn.sql
--- Purpose: Record hardened version of get_user_interaction_summary to align local history with remote.
--- Note: Mirrors the SQL that is live on remote (hardened search_path, LANGUAGE sql, STABLE).
+-- Migration: 20250801213500_create_interaction_summary_fn.sql
+-- This function aggregates interaction counts for a given user and is used by GET /api/interactions?type=summary
 
-CREATE OR REPLACE FUNCTION public.get_user_interaction_summary(p_user_id uuid)
-RETURNS TABLE(interaction_type text, count bigint)
+-- Ensure schema exists
+CREATE SCHEMA IF NOT EXISTS public;
+
+-- Create or replace function
+CREATE OR REPLACE FUNCTION public.get_user_interaction_summary(p_user_id UUID)
+RETURNS TABLE(interaction_type TEXT, count BIGINT)
 LANGUAGE sql
 STABLE
-SET search_path = pg_catalog, public
 AS $$
   SELECT interaction_type, COUNT(*)::bigint AS count
   FROM public.user_property_interactions
@@ -15,7 +17,8 @@ AS $$
   ORDER BY interaction_type
 $$;
 
-GRANT EXECUTE ON FUNCTION public.get_user_interaction_summary(uuid) TO authenticated;
+-- Grant execution rights to authenticated role
+GRANT EXECUTE ON FUNCTION public.get_user_interaction_summary(UUID) TO authenticated;
 
-COMMENT ON FUNCTION public.get_user_interaction_summary(uuid)
-IS 'Aggregates interaction counts by type for the specified user_id. Hardened with fixed search_path (pg_catalog, public) and LANGUAGE sql, STABLE.';
+-- Optional comments for documentation
+COMMENT ON FUNCTION public.get_user_interaction_summary(UUID) IS 'Aggregates interaction counts by type for the specified user_id.';

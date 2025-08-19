@@ -4,10 +4,12 @@ import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
 const placesAutocompleteSchema = z.object({
   input: z.string().min(1).max(100),
-  location: z.object({
-    lat: z.number(),
-    lng: z.number(),
-  }).optional(),
+  location: z
+    .object({
+      lat: z.number(),
+      lng: z.number(),
+    })
+    .optional(),
   radius: z.number().min(1).max(50000).optional(),
   types: z.array(z.string()).optional(),
   strictbounds: z.boolean().optional(),
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Rate limiting by IP (more restrictive for Places API due to cost)
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await apiRateLimiter.check(clientIP)
-    
+
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
-    
+
     if (!serverApiKey) {
       return NextResponse.json(
         { error: 'Places service unavailable' },
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const parsed = placesAutocompleteSchema.safeParse(body)
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request parameters', details: parsed.error.issues },
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params}`
-    
+
     const response = await fetch(autocompleteUrl)
     const data = await response.json()
 
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
       if (data.status === 'ZERO_RESULTS') {
         return NextResponse.json({ predictions: [] })
       }
-      
+
       return NextResponse.json(
         { error: 'Places autocomplete failed', status: data.status },
         { status: 400 }
@@ -124,7 +126,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Return sanitized predictions
-    const predictions: PlacePrediction[] = (data as GooglePlacesResponse).predictions.map((prediction: GooglePlacePrediction) => ({
+    const predictions: PlacePrediction[] = (
+      data as GooglePlacesResponse
+    ).predictions.map((prediction: GooglePlacePrediction) => ({
       description: prediction.description,
       place_id: prediction.place_id,
       types: prediction.types,

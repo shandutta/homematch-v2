@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart, RefreshCw } from 'lucide-react'
-import { MotionDiv, scaleIn, fadeInUp, slideInRight } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  scaleIn,
+  fadeInUp,
+  slideInRight,
+} from '@/components/ui/motion-components'
 import { Button } from '@/components/ui/button'
 import { CouplesMutualLikesSection } from './CouplesMutualLikesSection'
 import { CouplesActivityFeed } from './CouplesActivityFeed'

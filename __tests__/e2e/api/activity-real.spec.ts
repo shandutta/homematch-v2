@@ -4,8 +4,15 @@
  */
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { createClient } from '@/lib/supabase/standalone'
-import { TestDataFactory, cleanupAllTestData } from '../../utils/test-data-factory'
-import { TestDatabaseQueries, TestDatabaseAssertions, waitForDatabase } from '../../utils/db-test-helpers'
+import {
+  TestDataFactory,
+  cleanupAllTestData,
+} from '../../utils/test-data-factory'
+import {
+  TestDatabaseQueries,
+  TestDatabaseAssertions,
+  waitForDatabase,
+} from '../../utils/db-test-helpers'
 
 // Use real API endpoint via Next.js test server
 const API_BASE = process.env.TEST_API_URL || 'http://localhost:3000'
@@ -26,7 +33,7 @@ describe('Real Integration: Couples Activity API', () => {
 
     // Create test scenario once for all tests
     _testScenario = await factory.createCouplesScenario()
-    
+
     // In a real app, you'd generate a JWT for the test user
     // For now, we'll use a mock token or skip auth in test environment
     authToken = process.env.TEST_AUTH_TOKEN || 'test-token'
@@ -46,23 +53,26 @@ describe('Real Integration: Couples Activity API', () => {
     test('should return household activity for authenticated user', async () => {
       // Create fresh test data for this test
       const scenario = await factory.createCouplesScenario()
-      
+
       try {
         // Make real API call
-        const response = await fetch(`${API_BASE}/api/couples/activity?limit=10`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'x-test-user-id': scenario.users[0].id, // Test header to override auth in test mode
-          },
-        })
+        const response = await fetch(
+          `${API_BASE}/api/couples/activity?limit=10`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              'x-test-user-id': scenario.users[0].id, // Test header to override auth in test mode
+            },
+          }
+        )
 
         // Verify response
         expect(response.status).toBe(200)
-        
+
         const data = await response.json()
         expect(data).toHaveProperty('activity')
         expect(Array.isArray(data.activity)).toBe(true)
-        
+
         // Verify activity includes interactions from both users
         const userIds = data.activity.map((a: any) => a.user_id)
         expect(userIds).toContain(scenario.users[0].id)
@@ -79,7 +89,7 @@ describe('Real Integration: Couples Activity API', () => {
       const properties = await Promise.all(
         Array.from({ length: 15 }, () => factory.createProperty())
       )
-      
+
       // Create interactions for pagination testing
       for (const property of properties) {
         await factory.createInteraction(user.id, property.id, 'like')
@@ -160,12 +170,12 @@ describe('Real Integration: Couples Activity API', () => {
         })
 
         const data = await response.json()
-        
+
         // Find the mutual like activity
         const mutualLikeActivity = data.activity.find(
           (a: any) => a.property_id === property.id
         )
-        
+
         expect(mutualLikeActivity).toBeDefined()
         expect(mutualLikeActivity.is_mutual_like).toBe(true)
         expect(mutualLikeActivity.liked_by_count).toBe(2)
@@ -178,7 +188,7 @@ describe('Real Integration: Couples Activity API', () => {
   describe('Error Handling', () => {
     test('should return 401 for unauthenticated requests', async () => {
       const response = await fetch(`${API_BASE}/api/couples/activity`)
-      
+
       expect(response.status).toBe(401)
       const data = await response.json()
       expect(data.error).toBeDefined()
@@ -186,7 +196,7 @@ describe('Real Integration: Couples Activity API', () => {
 
     test('should return 405 for non-GET methods', async () => {
       const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
-      
+
       for (const method of methods) {
         const response = await fetch(`${API_BASE}/api/couples/activity`, {
           method,
@@ -194,7 +204,7 @@ describe('Real Integration: Couples Activity API', () => {
             'Content-Type': 'application/json',
           },
         })
-        
+
         expect(response.status).toBe(405)
       }
     })
@@ -213,7 +223,7 @@ describe('Real Integration: Couples Activity API', () => {
           }
         )
         expect(response1.status).toBe(200) // Should use default limit
-        
+
         // Negative offset
         const response2 = await fetch(
           `${API_BASE}/api/couples/activity?offset=-10`,
@@ -242,7 +252,7 @@ describe('Real Integration: Couples Activity API', () => {
         })
 
         const data = await response.json()
-        
+
         // Should include performance metadata
         expect(data.metadata).toBeDefined()
         expect(data.metadata.timestamp).toBeDefined()
@@ -260,7 +270,7 @@ describe('Real Integration: Couples Activity API', () => {
 
       try {
         // Make concurrent requests
-        const requests = users.map(user =>
+        const requests = users.map((user) =>
           fetch(`${API_BASE}/api/couples/activity`, {
             headers: {
               'x-test-user-id': user.id,
@@ -269,15 +279,15 @@ describe('Real Integration: Couples Activity API', () => {
         )
 
         const responses = await Promise.all(requests)
-        
+
         // All should succeed
-        responses.forEach(response => {
+        responses.forEach((response) => {
           expect(response.status).toBe(200)
         })
 
         // Check response times are reasonable
-        const data = await Promise.all(responses.map(r => r.json()))
-        data.forEach(d => {
+        const data = await Promise.all(responses.map((r) => r.json()))
+        data.forEach((d) => {
           expect(d.metadata.duration_ms).toBeLessThan(1000) // Should be under 1 second
         })
       } finally {

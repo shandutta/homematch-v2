@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   useInteractionSummary,
   useRecordInteraction,
@@ -53,36 +53,52 @@ export function EnhancedDashboardPageImpl({
   // Enhanced couples interaction with celebration support
   const couplesInteraction = useCouplesInteraction()
 
-  const handleDecision = (propertyId: string, type: InteractionType) => {
-    // 1. Optimistically remove the card from the UI
-    setProperties((prev) => prev.filter((p) => p.id !== propertyId))
+  const handleDecision = useCallback(
+    (propertyId: string, type: InteractionType) => {
+      // 1. Optimistically remove the card from the UI
+      setProperties((prev) => prev.filter((p) => p.id !== propertyId))
 
-    // 2. Optimistically update the summary stats
-    const currentSummary = optimisticSummary || summary
-    if (currentSummary) {
-      const newSummary = { ...currentSummary }
-      if (type === 'liked') newSummary.liked++
-      if (type === 'skip') newSummary.passed++
-      // A decision on a card implies it has been viewed.
-      // A separate "viewed" event should be fired when a card becomes active.
-      // For now, we can increment viewed on any decision.
-      newSummary.viewed++
-      setOptimisticSummary(newSummary)
-    }
+      // 2. Optimistically update the summary stats
+      const currentSummary = optimisticSummary || summary
+      if (currentSummary) {
+        const newSummary = { ...currentSummary }
+        if (type === 'liked') newSummary.liked++
+        if (type === 'skip') newSummary.passed++
+        // A decision on a card implies it has been viewed.
+        // A separate "viewed" event should be fired when a card becomes active.
+        // For now, we can increment viewed on any decision.
+        newSummary.viewed++
+        setOptimisticSummary(newSummary)
+      }
 
-    // 3. Use couples interaction if user is in a household, otherwise regular interaction
-    if (userId) {
-      couplesInteraction.recordInteraction({ propertyId, type })
-    } else {
-      recordInteraction({ propertyId, type })
-    }
-  }
+      // 3. Use couples interaction if user is in a household, otherwise regular interaction
+      if (userId) {
+        couplesInteraction.recordInteraction({ propertyId, type })
+      } else {
+        recordInteraction({ propertyId, type })
+      }
+    },
+    [optimisticSummary, summary, userId, couplesInteraction, recordInteraction]
+  )
 
-  // Use the optimistic summary if it exists, otherwise fall back to the fetched server state.
-  const displaySummary = optimisticSummary || summary
+  // Memoize computed values to prevent unnecessary recalculations
+  const displaySummary = useMemo(
+    () => optimisticSummary || summary,
+    [optimisticSummary, summary]
+  )
+  const propertiesLoading = useMemo(
+    () => properties.length === 0 && summaryIsLoading,
+    [properties.length, summaryIsLoading]
+  )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="dashboard-content">
+      <h1
+        className="mb-6 text-3xl font-bold text-white"
+        data-testid="dashboard-header"
+      >
+        Dashboard
+      </h1>
       <DashboardStats summary={displaySummary} isLoading={summaryIsLoading} />
 
       {/* Add MutualLikesSection if userId is available */}
@@ -93,6 +109,7 @@ export function EnhancedDashboardPageImpl({
         onDecision={handleDecision}
         celebrationTrigger={couplesInteraction.celebrationTrigger}
         onClearCelebration={couplesInteraction.clearCelebration}
+        isLoading={propertiesLoading}
       />
     </div>
   )

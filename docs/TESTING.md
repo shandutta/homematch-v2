@@ -32,7 +32,7 @@ HomeMatch V2 implements a comprehensive 4-tier testing strategy:
 ### Test Results Summary
 
 - **Unit Tests**: 849/849 passing (100% success rate) ✅
-- **Integration Tests**: 36/36 passing (100% success rate) 
+- **Integration Tests**: 36/36 passing (100% success rate)
 - **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
 - **PostGIS Migration**: Safe conversion preserving 2,176 spatial data points
 
@@ -1183,6 +1183,7 @@ For creating design variations and UI iterations:
 #### 1. **Brittle Selectors** → **Stable data-testid Attributes**
 
 **Problem**: Tests breaking when text or styling changes
+
 ```tsx
 // ❌ Brittle - breaks when text changes
 expect(screen.getByText('Sign In')).toBeInTheDocument()
@@ -1190,6 +1191,7 @@ expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
 ```
 
 **Solution**: Stable test identifiers independent of content
+
 ```tsx
 // ✅ Stable - independent of styling and text changes
 expect(screen.getByTestId('signin-button')).toBeInTheDocument()
@@ -1199,13 +1201,17 @@ expect(screen.getByTestId('google-signin-button')).toBeInTheDocument()
 #### 2. **Excessive Mocking** → **Realistic Integration Tests**
 
 **Problem**: Over-mocked tests that validate mocks, not real behavior
+
 ```tsx
 // ❌ Over-mocked - tests mocks, not real behavior
-jest.mock('next/server', () => ({ /* complex mock setup */ }))
+jest.mock('next/server', () => ({
+  /* complex mock setup */
+}))
 expect(mockResponse.json()).toEqual(mockData) // Tests mock returns mock
 ```
 
 **Solution**: Minimal mocking of only external dependencies
+
 ```tsx
 // ✅ Minimal mocking - only external services
 jest.mock('@/lib/supabase/client') // External service
@@ -1216,6 +1222,7 @@ jest.mock('next/navigation') // External router
 #### 3. **Timing Dependencies** → **Proper Async Patterns**
 
 **Problem**: Arbitrary timeouts causing flaky tests
+
 ```tsx
 // ❌ Brittle - arbitrary timeouts
 setTimeout(() => resolve({ error: null }), 200)
@@ -1223,6 +1230,7 @@ await waitFor(() => expect(element).toBeInTheDocument(), { timeout: 3000 })
 ```
 
 **Solution**: Wait for actual state changes and conditions
+
 ```tsx
 // ✅ Reliable - wait for actual state changes
 await waitFor(() => expect(screen.getByText('456 Oak Ave')).toBeInTheDocument())
@@ -1232,6 +1240,7 @@ expect(screen.queryByText('123 Main St')).not.toBeInTheDocument()
 #### 4. **Poor Test Isolation** → **Clean State Management**
 
 **Problem**: State leakage between tests
+
 ```tsx
 // ❌ State leakage between tests
 beforeEach(() => {
@@ -1240,6 +1249,7 @@ beforeEach(() => {
 ```
 
 **Solution**: Complete isolation with test utilities
+
 ```tsx
 // ✅ Complete isolation
 import { setupTestIsolation } from '@/__tests__/utils/test-isolation'
@@ -1292,12 +1302,12 @@ New utilities in `__tests__/utils/test-isolation.ts`:
 // Before - Brittle and over-mocked
 test('old brittle test', async () => {
   mockEverything()
-  
+
   render(<Component />)
-  
+
   const button = screen.getByRole('button', { name: /complicated regex/i })
   await user.click(button)
-  
+
   setTimeout(() => {
     expect(screen.getByText('Some Text')).toBeInTheDocument()
   }, 500)
@@ -1307,12 +1317,12 @@ test('old brittle test', async () => {
 test('improved reliable test', async () => {
   // Only mock external dependencies
   mockSupabaseClient.mockReturnValue(mockAuth)
-  
+
   render(<Component />)
-  
+
   const button = screen.getByTestId('action-button')
   await user.click(button)
-  
+
   await waitFor(() => {
     expect(screen.getByTestId('success-message')).toBeInTheDocument()
   })
@@ -1337,16 +1347,19 @@ test('improved reliable test', async () => {
 ### Testing Categories
 
 #### 1. Unit Tests
+
 - Test individual functions/components in isolation
 - Mock all external dependencies
 - Focus on business logic and edge cases
 
 #### 2. Integration Tests
+
 - Test component interactions and user flows
 - Mock only external services (APIs, databases)
 - Test real form validation, state management
 
 #### 3. E2E Tests
+
 - Test complete user journeys across the app
 - Minimal mocking - use test databases if needed
 - Focus on critical business workflows
@@ -1356,21 +1369,25 @@ test('improved reliable test', async () => {
 ### Critical Refactoring Targets
 
 #### 1. PropertyService (560 lines)
+
 - **Location**: `src/lib/services/properties.ts`
 - **Issues**: Large monolithic class with multiple responsibilities
 - **Coverage**: Now 85%+ with comprehensive integration tests
 
 #### 2. Error Handling Patterns (19 duplicates)
+
 - **Pattern**: Consistent error handling across services
 - **Issues**: Duplicate error handling logic, inconsistent error responses
 - **Coverage**: All error scenarios tested with consistent behavior validation
 
 #### 3. Filter Builder Logic (13 repetitive conditionals)
+
 - **Pattern**: Property search filtering in `searchProperties` method
 - **Issues**: Repetitive conditional logic for filter application
 - **Coverage**: All filter combinations tested with edge cases
 
 #### 4. Supabase Client Patterns (3 implementations)
+
 - **Components**: Server client, browser client, API client patterns
 - **Issues**: Different client creation patterns, inconsistent configuration
 - **Coverage**: All client patterns tested for consistency and reliability
@@ -1395,6 +1412,7 @@ __tests__/
 ### Safety Net Commands
 
 #### Core Safety Net Commands
+
 ```bash
 # Full safety net validation (run before refactoring)
 pnpm run test:safety-net
@@ -1411,6 +1429,7 @@ pnpm run test:supabase-patterns
 ```
 
 #### Development Workflow Commands
+
 ```bash
 # Before starting refactoring
 pnpm run test:safety-net
@@ -1426,12 +1445,14 @@ pnpm run test
 ### Coverage Requirements
 
 #### Minimum Coverage Thresholds
+
 - **Statements**: 85%
 - **Branches**: 80%
 - **Functions**: 85%
 - **Lines**: 85%
 
 #### Current Coverage Status
+
 - ✅ **PropertyService**: 85%+ (up from 12.69%)
 - ✅ **Error Handling**: 100% of patterns covered
 - ✅ **Filter Builder**: 100% of conditionals covered
@@ -1440,6 +1461,7 @@ pnpm run test
 ### Performance Benchmarks
 
 #### Baseline Performance Targets
+
 - **PropertyService.searchProperties**: < 500ms
 - **PropertyService.getProperty**: < 100ms
 - **PropertyService.createProperty**: < 200ms
@@ -1448,6 +1470,7 @@ pnpm run test
 ### Validation Pipeline
 
 #### Automated Safety Checks
+
 The `refactoring-safety-net.js` script performs:
 
 1. **File Validation**: Ensures all refactoring targets exist
@@ -1457,6 +1480,7 @@ The `refactoring-safety-net.js` script performs:
 5. **Report Generation**: Creates safety validation reports
 
 #### Exit Criteria
+
 - ✅ All safety net tests pass
 - ✅ Coverage thresholds met
 - ✅ Performance benchmarks within limits

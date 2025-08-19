@@ -29,7 +29,12 @@ module.exports = {
           cpuSlowdownMultiplier: 4,
         },
         // Enable more audits
-        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        onlyCategories: [
+          'performance',
+          'accessibility',
+          'best-practices',
+          'seo',
+        ],
         skipAudits: ['uses-http2'], // Skip HTTP/2 check for localhost
       },
     },
@@ -70,26 +75,26 @@ module.exports = {
         'no-vulnerable-libraries': 'error',
         'uses-passive-event-listeners': 'warn',
         'uses-rel-preconnect': 'warn',
-        
+
         // HomeMatch-specific performance targets
         'server-response-time': ['warn', { maxNumericValue: 600 }], // 600ms TTFB
-        'interactive': ['error', { maxNumericValue: 5000 }], // 5s TTI
+        interactive: ['error', { maxNumericValue: 5000 }], // 5s TTI
         'max-potential-fid': ['error', { maxNumericValue: 250 }], // 250ms max FID
-        
+
         // Mobile performance (when testing mobile preset)
-        'viewport': 'error',
+        viewport: 'error',
         'tap-targets': 'warn',
-        
+
         // Image optimization
         'uses-optimized-images': 'warn',
         'uses-webp-images': 'warn',
         'image-aspect-ratio': 'warn',
-        
+
         // JavaScript performance
         'unused-javascript': ['warn', { maxNumericValue: 100000 }], // 100KB unused JS
         'bootup-time': ['warn', { maxNumericValue: 4000 }], // 4s JS execution
         'mainthread-work-breakdown': ['warn', { maxNumericValue: 4000 }], // 4s main thread
-        
+
         // Network performance
         'network-rtt': ['warn', { maxNumericValue: 150 }],
         'network-server-latency': ['warn', { maxNumericValue: 500 }],

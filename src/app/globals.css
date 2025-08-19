@@ -5,18 +5,18 @@
 
 @theme inline {
   /* Max width values for Tailwind v4 */
-  --max-width-xs: 20rem;    /* 320px */
-  --max-width-sm: 24rem;    /* 384px */
-  --max-width-md: 28rem;    /* 448px */
-  --max-width-lg: 32rem;    /* 512px */
-  --max-width-xl: 36rem;    /* 576px */
-  --max-width-2xl: 42rem;   /* 672px */
-  --max-width-3xl: 48rem;   /* 768px */
-  --max-width-4xl: 56rem;   /* 896px */
-  --max-width-5xl: 64rem;   /* 1024px */
-  --max-width-6xl: 72rem;   /* 1152px */
-  --max-width-7xl: 80rem;   /* 1280px */
-  
+  --max-width-xs: 20rem; /* 320px */
+  --max-width-sm: 24rem; /* 384px */
+  --max-width-md: 28rem; /* 448px */
+  --max-width-lg: 32rem; /* 512px */
+  --max-width-xl: 36rem; /* 576px */
+  --max-width-2xl: 42rem; /* 672px */
+  --max-width-3xl: 48rem; /* 768px */
+  --max-width-4xl: 56rem; /* 896px */
+  --max-width-5xl: 64rem; /* 1024px */
+  --max-width-6xl: 72rem; /* 1152px */
+  --max-width-7xl: 80rem; /* 1280px */
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -143,8 +143,12 @@
   --color-marketing-text-secondary: #6b7280;
   --color-marketing-error: #ef4444;
   --color-marketing-error-bg: #fef2f2;
-  --gradient-marketing-primary: linear-gradient(to bottom right, #021A44, #063A9E);
-  --gradient-marketing-card: linear-gradient(to bottom right, #021A44, #063A9E);
+  --gradient-marketing-primary: linear-gradient(
+    to bottom right,
+    #021a44,
+    #063a9e
+  );
+  --gradient-marketing-card: linear-gradient(to bottom right, #021a44, #063a9e);
   --bg-marketing-glass: rgba(255, 255, 255, 0.05);
   --border-marketing-glass: rgba(255, 255, 255, 0.2);
 
@@ -155,7 +159,11 @@
   --color-couples-success: #22c55e;
   --color-couples-warning: #f59e0b;
   --color-couples-info: #eab308;
-  --gradient-couples-mutual: linear-gradient(to right, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
+  --gradient-couples-mutual: linear-gradient(
+    to right,
+    rgba(236, 72, 153, 0.2),
+    rgba(139, 92, 246, 0.2)
+  );
 
   /* Glassmorphism Enhancement - Group 3 (5 tokens) */
   --blur-glassmorphism-sm: 4px;
@@ -303,7 +311,6 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -312,7 +319,12 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
   }
 }

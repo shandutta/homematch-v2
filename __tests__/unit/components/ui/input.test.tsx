@@ -170,10 +170,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleFocus = jest.fn()
       render(<Input onFocus={handleFocus} />)
-      
+
       const input = screen.getByRole('textbox')
       await user.click(input)
-      
+
       expect(handleFocus).toHaveBeenCalledTimes(1)
       expect(input).toHaveFocus()
     })
@@ -182,11 +182,11 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleBlur = jest.fn()
       render(<Input onBlur={handleBlur} />)
-      
+
       const input = screen.getByRole('textbox')
       await user.click(input)
       await user.tab()
-      
+
       expect(handleBlur).toHaveBeenCalledTimes(1)
     })
   })
@@ -233,10 +233,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleChange = jest.fn()
       render(<Input disabled onChange={handleChange} />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, 'test')
-      
+
       expect(handleChange).not.toHaveBeenCalled()
       expect(input).toHaveValue('')
     })
@@ -246,10 +246,10 @@ describe('Input Component', () => {
     test('handles text input', async () => {
       const user = userEvent.setup()
       render(<Input />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, 'Hello, World!')
-      
+
       expect(input).toHaveValue('Hello, World!')
     })
 
@@ -257,10 +257,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleChange = jest.fn()
       render(<Input onChange={handleChange} />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, 'test')
-      
+
       expect(handleChange).toHaveBeenCalledTimes(4) // Once per character
     })
 
@@ -269,8 +269,8 @@ describe('Input Component', () => {
       const TestControlled = () => {
         const [value, setValue] = React.useState('')
         return (
-          <Input 
-            value={value} 
+          <Input
+            value={value}
             onChange={(e) => setValue(e.target.value)}
             data-testid="controlled-input"
           />
@@ -278,20 +278,20 @@ describe('Input Component', () => {
       }
 
       render(<TestControlled />)
-      
+
       const input = screen.getByTestId('controlled-input')
       await user.type(input, 'controlled')
-      
+
       expect(input).toHaveValue('controlled')
     })
 
     test('supports keyboard navigation', async () => {
       const user = userEvent.setup()
       render(<Input />)
-      
+
       const input = screen.getByRole('textbox')
       await user.tab()
-      
+
       expect(input).toHaveFocus()
     })
   })
@@ -311,12 +311,12 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleChange = jest.fn()
       render(<Input type="file" onChange={handleChange} />)
-      
+
       const input = document.querySelector('input[type="file"]')
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
-      
+
       await user.upload(input!, file)
-      
+
       expect(handleChange).toHaveBeenCalled()
     })
 
@@ -364,7 +364,7 @@ describe('Input Component', () => {
           <div id="error-message">This field is required</div>
         </div>
       )
-      
+
       const input = screen.getByRole('textbox')
       expect(input).toHaveAttribute('aria-describedby', 'error-message')
     })
@@ -377,10 +377,10 @@ describe('Input Component', () => {
           <Input placeholder="Second input" />
         </div>
       )
-      
+
       await user.tab()
       expect(screen.getByPlaceholderText('First input')).toHaveFocus()
-      
+
       await user.tab()
       expect(screen.getByPlaceholderText('Second input')).toHaveFocus()
     })
@@ -397,10 +397,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const longText = 'a'.repeat(100) // Reduced length to avoid timeout
       render(<Input />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, longText)
-      
+
       expect(input).toHaveValue(longText)
     })
 
@@ -408,10 +408,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const specialText = 'test@example.com'
       render(<Input />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, specialText)
-      
+
       expect(input).toHaveValue(specialText)
     })
 
@@ -419,10 +419,10 @@ describe('Input Component', () => {
       const user = userEvent.setup()
       const handleChange = jest.fn()
       render(<Input onChange={handleChange} />)
-      
+
       const input = screen.getByRole('textbox')
       await user.type(input, 'test')
-      
+
       expect(input).toHaveValue('test')
       expect(handleChange).toHaveBeenCalledTimes(4)
     })
@@ -441,7 +441,7 @@ describe('Input Component', () => {
           data-testid="props-test"
         />
       )
-      
+
       const input = screen.getByTestId('props-test')
       expect(input).toHaveAttribute('id', 'test-input')
       expect(input).toHaveAttribute('name', 'testInput')

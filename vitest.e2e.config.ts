@@ -3,13 +3,8 @@ import path from 'path'
 
 export default defineConfig({
   test: {
-    include: [
-      '__tests__/e2e/api/**/*.{test,spec}.{js,jsx,ts,tsx}',
-    ],
-    exclude: [
-      '**/node_modules/**',
-      '**/*.skip.*',
-    ],
+    include: ['__tests__/e2e/api/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/*.skip.*'],
     environment: 'node', // API tests don't need jsdom
     globals: true,
     setupFiles: ['./vitest.e2e.setup.ts'],

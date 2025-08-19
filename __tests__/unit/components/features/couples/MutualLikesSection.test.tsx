@@ -629,7 +629,9 @@ describe('MutualLikesSection Component', () => {
       const { container } = render(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        const cardElement = container.querySelector('[data-testid="mutual-likes-list"]')
+        const cardElement = container.querySelector(
+          '[data-testid="mutual-likes-list"]'
+        )
         expect(cardElement).toBeInTheDocument()
         expect(cardElement).toHaveAttribute('style')
       })

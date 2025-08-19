@@ -1,6 +1,7 @@
-import { describe, test, expect, beforeAll, beforeEach  } from 'vitest'
+import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
+import { createAuthenticatedClient } from '../utils/test-users'
 
 /**
  * Test household management functionality end-to-end
@@ -53,44 +54,52 @@ describe('Household Functionality Tests', () => {
     test('should have households table with correct schema', async () => {
       if (!supabase) return
 
-      let schemaAccessible = false
       let tableAccessible = false
+      let _schemaValid = false
 
       try {
-        // Try to query the households table structure
-        const { error } = await supabase
-          .from('information_schema.columns')
-          .select('column_name, data_type, is_nullable')
-          .eq('table_name', 'households')
-          .eq('table_schema', 'public')
-
-        schemaAccessible = !error || !error.message.includes('does not exist')
-
-        if (error && !error.message.includes('does not exist')) {
-          console.warn('Could not query households schema:', error)
-        }
-
-        // If households table exists, verify we can interact with it
+        // Test if households table exists and is accessible
         const { error: queryError } = await supabase
           .from('households')
-          .select('id')
+          .select('id, name, created_at')
           .limit(1)
 
-        tableAccessible = !queryError || queryError.code === 'PGRST116' || !queryError.message.includes('does not exist')
+        // Table is accessible if query succeeds or returns "no rows" (PGRST116)
+        tableAccessible = !queryError || queryError.code === 'PGRST116'
 
-        if (
-          queryError &&
-          queryError.code !== 'PGRST116' &&
-          !queryError.message.includes('does not exist')
-        ) {
+        if (queryError && queryError.code !== 'PGRST116') {
           console.warn('Households table query error:', queryError)
+        } else {
+          console.log('✅ Households table is accessible')
+          _schemaValid = true // If we can query specific columns, schema is valid
+        }
+
+        // Additional test: try to create a minimal household record to verify write access
+        if (tableAccessible) {
+          const testId = `test-schema-${Date.now()}`
+          const { error: insertError } = await supabase
+            .from('households')
+            .insert({
+              id: testId,
+              name: 'Schema Test',
+              created_at: new Date().toISOString(),
+            })
+
+          if (!insertError) {
+            // Clean up test record
+            await supabase.from('households').delete().eq('id', testId)
+            console.log('✅ Households table write access verified')
+          } else if (insertError.code === 'PGRST116') {
+            // PGRST116 means no rows affected, which is fine for schema validation
+            console.log('✅ Households table schema validated')
+          }
         }
       } catch (error) {
         console.warn('Could not test households table structure:', error)
       }
 
-      // Test passes if we can access schema information or table (graceful degradation)
-      expect(schemaAccessible || tableAccessible).toBe(true)
+      // Test passes if table is accessible with valid schema
+      expect(tableAccessible).toBe(true)
     })
 
     test('should have user_profiles table with household relationship', async () => {
@@ -142,10 +151,16 @@ describe('Household Functionality Tests', () => {
           .delete()
           .in('id', [testUserId1, testUserId2])
 
-        await supabase
-          .from('users')
-          .delete()
-          .in('id', [testUserId1, testUserId2])
+        // Clean up auth users using Admin API (Supabase best practice)
+        try {
+          await supabase.auth.admin.deleteUser(testUserId1)
+          await supabase.auth.admin.deleteUser(testUserId2)
+        } catch (authError: any) {
+          // Ignore if users don't exist
+          if (!authError.message?.includes('not found')) {
+            console.warn('Auth user cleanup warning:', authError)
+          }
+        }
 
         const { error } = await supabase
           .from('households')
@@ -164,45 +179,30 @@ describe('Household Functionality Tests', () => {
       if (!supabase) return
 
       try {
-        // First, create users entries (prerequisite for user_profiles FK)
-        const users = [
-          {
-            id: testUserId1,
-            email: `testuser1-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: testUserId2,
-            email: `testuser2-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]
+        // Use predefined test users instead of creating new ones
+        const { user: user1 } = await createAuthenticatedClient(0)
+        const { user: user2 } = await createAuthenticatedClient(1)
 
-        const { data: usersData, error: usersError } = await supabase
-          .from('users')
-          .upsert(users)
-          .select()
+        console.log('✅ Using predefined test users')
 
-        if (usersError) {
-          console.warn('Users creation failed:', usersError)
-          return // Skip test if users can't be created
-        }
-        
-        console.log('✅ Users created successfully:', usersData?.length || 0)
-        
-        // Verify users were actually created
-        const { data: verifyUsers, error: verifyError } = await supabase
-          .from('users')
-          .select('id, email')
-          .in('id', [testUserId1, testUserId2])
-          
+        // Verify user profiles exist (they should be created by setup script)
+        const { data: verifyProfiles, error: verifyError } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .in('id', [user1.id, user2.id])
+
         if (verifyError) {
-          console.warn('Users verification failed:', verifyError)
+          console.warn('User profiles verification failed:', verifyError)
         } else {
-          console.log('✅ Users verified in database:', verifyUsers?.length || 0)
+          console.log(
+            '✅ User profiles verified in database:',
+            verifyProfiles?.length || 0
+          )
         }
+
+        // Use the authenticated test users
+        const actualUserId1 = user1.id
+        const actualUserId2 = user2.id
 
         // Create a household (if households table exists)
         const householdData = {
@@ -220,37 +220,38 @@ describe('Household Functionality Tests', () => {
           console.warn('Could not create household:', householdError)
           return // Skip test if household creation fails
         }
-        
-        console.log('✅ Household created successfully:', householdResult?.length || 0)
 
-        // Now create user profiles with household association
-        const userProfiles = [
-          {
-            id: testUserId1,
-            household_id: testHouseholdId,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: testUserId2,
-            household_id: testHouseholdId,
-            created_at: new Date().toISOString(),
-          },
-        ]
+        console.log(
+          '✅ Household created successfully:',
+          householdResult?.length || 0
+        )
 
-        const { data: profiles, error: profilesError } = await supabase
+        // Update existing user profiles with household association
+        // (profiles should already exist from auth trigger)
+        const { data: profile1, error: profile1Error } = await supabase
           .from('user_profiles')
-          .upsert(userProfiles)
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId1)
           .select()
+          .single()
 
-        if (profilesError) {
-          console.warn('Could not create user profiles:', profilesError)
+        const { data: profile2, error: profile2Error } = await supabase
+          .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId2)
+          .select()
+          .single()
+
+        if (profile1Error || profile2Error) {
+          console.warn(
+            'Could not update user profiles:',
+            profile1Error || profile2Error
+          )
           return
         }
 
-        expect(profiles).toHaveLength(2)
-        profiles.forEach((profile: any) => {
-          expect(profile.household_id).toBe(testHouseholdId)
-        })
+        expect(profile1.household_id).toBe(testHouseholdId)
+        expect(profile2.household_id).toBe(testHouseholdId)
       } catch (error) {
         console.warn('Could not test household creation:', error)
       }
@@ -260,58 +261,45 @@ describe('Household Functionality Tests', () => {
       if (!supabase) return
 
       try {
-        // First, create users entries
-        const users = [
-          {
-            id: testUserId1,
-            email: `testuser1-members-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: testUserId2,
-            email: `testuser2-members-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]
+        // Use predefined test users instead of creating new ones
+        const { user: user1 } = await createAuthenticatedClient(2) // Use worker users for this test
+        const { user: user2 } = await createAuthenticatedClient(3)
 
-        const { error: usersError } = await supabase.from('users').upsert(users)
-        if (usersError && !(usersError.message || '').includes('does not exist')) {
-          console.warn('Could not create users for members test:', usersError)
-        }
+        console.log('✅ Using predefined test users for members test')
+
+        // Use actual user IDs for the rest of the test
+        const actualUserId1 = user1.id
+        const actualUserId2 = user2.id
 
         // Create household first
         const { error: householdError } = await supabase
           .from('households')
-          .upsert([{
-            id: testHouseholdId,
-            name: 'Test Household for Members',
-            created_at: new Date().toISOString(),
-          }])
+          .upsert([
+            {
+              id: testHouseholdId,
+              name: 'Test Household for Members',
+              created_at: new Date().toISOString(),
+            },
+          ])
 
         if (householdError) {
-          console.warn('Could not create household for members test:', householdError)
+          console.warn(
+            'Could not create household for members test:',
+            householdError
+          )
           return // Skip test if household creation fails
         }
 
-        // Set up test data
-        const userProfiles = [
-          {
-            id: testUserId1,
-            household_id: testHouseholdId,
-          },
-          {
-            id: testUserId2,
-            household_id: testHouseholdId,
-          },
-        ]
+        // Update existing user profiles with household association
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId1)
 
-        const { error: profilesError } = await supabase.from('user_profiles').upsert(userProfiles)
-        if (profilesError) {
-          console.warn('Could not create user profiles for members test:', profilesError)
-          return // Skip test if profiles creation fails
-        }
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId2)
 
         // Query household members
         const { data: members, error } = await supabase
@@ -325,8 +313,8 @@ describe('Household Functionality Tests', () => {
         }
 
         expect(members).toHaveLength(2)
-        expect(members.map((m: any) => m.id)).toContain(testUserId1)
-        expect(members.map((m: any) => m.id)).toContain(testUserId2)
+        expect(members.map((m: any) => m.id)).toContain(actualUserId1)
+        expect(members.map((m: any) => m.id)).toContain(actualUserId2)
       } catch (error) {
         console.warn('Could not test household member lookup:', error)
       }
@@ -360,10 +348,16 @@ describe('Household Functionality Tests', () => {
           .delete()
           .in('id', [testUserId1, testUserId2])
 
-        await supabase
-          .from('users')
-          .delete()
-          .in('id', [testUserId1, testUserId2])
+        // Clean up auth users using Admin API
+        try {
+          await supabase.auth.admin.deleteUser(testUserId1)
+          await supabase.auth.admin.deleteUser(testUserId2)
+        } catch (authError: any) {
+          // Ignore if users don't exist
+          if (!authError.message?.includes('not found')) {
+            console.warn('Auth user cleanup warning:', authError)
+          }
+        }
       } catch (error) {
         console.warn('Could not clean up interaction test data:', error)
       }
@@ -373,87 +367,85 @@ describe('Household Functionality Tests', () => {
       if (!supabase) return
 
       try {
-        // First, create users entries
-        const users = [
-          {
-            id: testUserId1,
-            email: `testuser1-interactions-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: testUserId2,
-            email: `testuser2-interactions-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]
+        // Use predefined test users instead of creating new ones
+        const { user: user1 } = await createAuthenticatedClient(4) // Use different worker users for this test
+        const { user: user2 } = await createAuthenticatedClient(5)
 
-        const { error: usersError } = await supabase.from('users').upsert(users)
-        if (usersError && !(usersError.message || '').includes('does not exist')) {
-          console.warn('Could not create users for interactions test:', usersError)
-        }
+        console.log('✅ Using predefined test users for interactions test')
+
+        // Use actual user IDs
+        const actualUserId1 = user1.id
+        const actualUserId2 = user2.id
 
         // Create household first
         const { error: householdError } = await supabase
           .from('households')
-          .upsert([{
-            id: testHouseholdId,
-            name: 'Test Household for Interactions',
-            created_at: new Date().toISOString(),
-          }])
+          .upsert([
+            {
+              id: testHouseholdId,
+              name: 'Test Household for Interactions',
+              created_at: new Date().toISOString(),
+            },
+          ])
 
         if (householdError) {
-          console.warn('Could not create household for interactions test:', householdError)
+          console.warn(
+            'Could not create household for interactions test:',
+            householdError
+          )
           return // Skip test if household creation fails
         }
 
-        // Set up test data
-        await supabase.from('user_profiles').upsert([
-          {
-            id: testUserId1,
-            household_id: testHouseholdId,
-          },
-          {
-            id: testUserId2,
-            household_id: testHouseholdId,
-          },
-        ])
+        // Update user profiles with household association
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId1)
 
-        const { error: propertiesError } = await supabase.from('properties').upsert([
-          {
-            id: testPropertyId1,
-            address: '123 Test St',
-            city: 'Test City',
-            state: 'TS',
-            zip_code: '12345',
-            price: 500000,
-            bedrooms: 3,
-            bathrooms: 2,
-            square_feet: 1500,
-            property_type: 'single_family',
-            listing_status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: testPropertyId2,
-            address: '456 Test Ave',
-            city: 'Test City',
-            state: 'TS',
-            zip_code: '12346',
-            price: 750000,
-            bedrooms: 4,
-            bathrooms: 3,
-            square_feet: 2000,
-            property_type: 'single_family',
-            listing_status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        
-        if (propertiesError && !(propertiesError.message || '').includes('does not exist')) {
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId2)
+
+        const { error: propertiesError } = await supabase
+          .from('properties')
+          .upsert([
+            {
+              id: testPropertyId1,
+              address: '123 Test St',
+              city: 'Test City',
+              state: 'TS',
+              zip_code: '12345',
+              price: 500000,
+              bedrooms: 3,
+              bathrooms: 2,
+              square_feet: 1500,
+              property_type: 'house',
+              listing_status: 'active',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: testPropertyId2,
+              address: '456 Test Ave',
+              city: 'Test City',
+              state: 'TS',
+              zip_code: '12346',
+              price: 750000,
+              bedrooms: 4,
+              bathrooms: 3,
+              square_feet: 2000,
+              property_type: 'house',
+              listing_status: 'active',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ])
+
+        if (
+          propertiesError &&
+          !(propertiesError.message || '').includes('does not exist')
+        ) {
           console.warn('Could not create properties:', propertiesError)
           return // Skip interaction tests if properties fail
         }
@@ -461,21 +453,21 @@ describe('Household Functionality Tests', () => {
         // Create interactions
         const interactions = [
           {
-            user_id: testUserId1,
+            user_id: actualUserId1,
             property_id: testPropertyId1,
             household_id: testHouseholdId,
             interaction_type: 'like',
             created_at: new Date().toISOString(),
           },
           {
-            user_id: testUserId2,
+            user_id: actualUserId2,
             property_id: testPropertyId1,
             household_id: testHouseholdId,
             interaction_type: 'like',
             created_at: new Date().toISOString(),
           },
           {
-            user_id: testUserId1,
+            user_id: actualUserId1,
             property_id: testPropertyId2,
             household_id: testHouseholdId,
             interaction_type: 'dislike',
@@ -523,61 +515,62 @@ describe('Household Functionality Tests', () => {
       let successfulInteractions = 0
 
       try {
-        // First, create users entry
-        const { error: usersError } = await supabase.from('users').upsert([
-          {
-            id: testUserId1,
-            email: `testuser1-types-${Date.now()}@example.com`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        if (usersError && !(usersError.message || '').includes('does not exist')) {
-          console.warn('Could not create users for types test:', usersError)
-        }
+        // Use predefined test user instead of creating new one
+        const { user } = await createAuthenticatedClient(6) // Use another worker user for this test
+
+        console.log('✅ Using predefined test user for types test')
+
+        // Use actual user ID
+        const actualUserId = user.id
 
         // Create household first
         const { error: householdError } = await supabase
           .from('households')
-          .upsert([{
-            id: testHouseholdId,
-            name: 'Test Household for Types',
-            created_at: new Date().toISOString(),
-          }])
+          .upsert([
+            {
+              id: testHouseholdId,
+              name: 'Test Household for Types',
+              created_at: new Date().toISOString(),
+            },
+          ])
 
         if (householdError) {
-          console.warn('Could not create household for types test:', householdError)
+          console.warn(
+            'Could not create household for types test:',
+            householdError
+          )
           return // Skip test if household creation fails
         }
 
         await supabase
           .from('user_profiles')
+          .update({ household_id: testHouseholdId })
+          .eq('id', actualUserId)
+
+        const { error: propertyError } = await supabase
+          .from('properties')
           .upsert([
             {
-              id: testUserId1,
-              household_id: testHouseholdId,
-              },
+              id: testPropertyId1,
+              address: '123 Test St',
+              city: 'Test City',
+              state: 'TS',
+              zip_code: '12345',
+              price: 500000,
+              bedrooms: 3,
+              bathrooms: 2,
+              square_feet: 1500,
+              property_type: 'house',
+              listing_status: 'active',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
           ])
 
-        const { error: propertyError } = await supabase.from('properties').upsert([
-          {
-            id: testPropertyId1,
-            address: '123 Test St',
-            city: 'Test City',
-            state: 'TS',
-            zip_code: '12345',
-            price: 500000,
-            bedrooms: 3,
-            bathrooms: 2,
-            square_feet: 1500,
-            property_type: 'single_family',
-            listing_status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        
-        if (propertyError && !(propertyError.message || '').includes('does not exist')) {
+        if (
+          propertyError &&
+          !(propertyError.message || '').includes('does not exist')
+        ) {
           console.warn('Could not create property:', propertyError)
           return // Skip interaction tests if property fails
         }
@@ -589,7 +582,7 @@ describe('Household Functionality Tests', () => {
           const { error } = await supabase
             .from('user_property_interactions')
             .insert({
-              user_id: testUserId1,
+              user_id: actualUserId,
               property_id: testPropertyId1,
               household_id: testHouseholdId,
               interaction_type: type,
@@ -632,8 +625,16 @@ describe('Household Functionality Tests', () => {
           .eq('user_id', testUserId)
 
         await supabase.from('user_profiles').delete().eq('id', testUserId)
-        
-        await supabase.from('users').delete().eq('id', testUserId)
+
+        // Clean up auth user using Admin API
+        try {
+          await supabase.auth.admin.deleteUser(testUserId)
+        } catch (authError: any) {
+          // Ignore if user doesn't exist
+          if (!authError.message?.includes('not found')) {
+            console.warn('Auth user cleanup warning:', authError)
+          }
+        }
       } catch (error) {
         console.warn('Could not clean up integrity test data:', error)
       }

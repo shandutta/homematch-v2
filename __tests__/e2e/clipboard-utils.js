@@ -14,7 +14,7 @@ async function grantClipboardPermissions(context, browserName) {
     console.log('Skipping clipboard permissions for WebKit (not supported)')
     return
   }
-  
+
   try {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   } catch (error) {
@@ -27,9 +27,11 @@ async function grantClipboardPermissions(context, browserName) {
  */
 async function isClipboardAvailable(page) {
   return await page.evaluate(() => {
-    return typeof navigator.clipboard !== 'undefined' && 
-           typeof navigator.clipboard.readText === 'function' &&
-           typeof navigator.clipboard.writeText === 'function'
+    return (
+      typeof navigator.clipboard !== 'undefined' &&
+      typeof navigator.clipboard.readText === 'function' &&
+      typeof navigator.clipboard.writeText === 'function'
+    )
   })
 }
 
@@ -42,14 +44,14 @@ async function readClipboard(page, browserName) {
     console.log('Clipboard read not supported in WebKit tests')
     return null
   }
-  
+
   try {
     const available = await isClipboardAvailable(page)
     if (!available) {
       console.log('Clipboard API not available')
       return null
     }
-    
+
     return await page.evaluate(() => navigator.clipboard.readText())
   } catch (error) {
     console.log(`Could not read clipboard: ${error}`)
@@ -60,5 +62,5 @@ async function readClipboard(page, browserName) {
 module.exports = {
   grantClipboardPermissions,
   isClipboardAvailable,
-  readClipboard
+  readClipboard,
 }

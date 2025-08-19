@@ -1,0 +1,20 @@
+-- Fix schema synchronization between user_profiles FK constraints and trigger logic
+-- Root cause: Foreign key constraints not properly aligned with trigger execution order
+
+-- TODO(human) - Implement the fix for schema synchronization
+-- 
+-- The issue is that the user_profiles table FK constraints may not be aligned
+-- with what the handle_new_user trigger is trying to populate.
+-- 
+-- Steps to consider:
+-- 1. Verify current FK constraints on user_profiles table
+-- 2. Ensure the trigger populates the referenced table first
+-- 3. Make sure FK constraints point to the correct table
+-- 4. Test that the trigger can successfully create both records
+--
+-- Current trigger (from 20250816050000) tries to:
+-- - Insert into users table first
+-- - Then insert into user_profiles
+-- 
+-- But FK constraints may still be pointing to auth.users instead of users table.
+-- This causes the 23503 foreign key violation error during profile creation.

@@ -1,10 +1,12 @@
 # HomeMatch V2 - Master Task List
-*Consolidated from all task files*
-*Last Updated: January 2025*
+
+_Consolidated from all task files_
+_Last Updated: January 2025_
 
 ## 🔴 CRITICAL/BLOCKING (Must Fix Before Deployment)
 
 ### Test Suite Issues
+
 - [ ] Fix 3 remaining test failures
   - Files: MutualLikesSection.test.tsx, SwipeContainer.test.tsx, couples API route test
   - Impact: Prevents confident deployment
@@ -21,6 +23,7 @@
 ## 🟡 HIGH PRIORITY (Next 48 Hours)
 
 ### Design System Integration
+
 - [ ] Expand design token system usage (currently used in couples page only)
   - File: src/lib/styles/design-tokens.ts
   - Current: Used in couples page components
@@ -33,12 +36,14 @@
   - Time: 2-3 hours
 
 ### Mobile & Responsiveness
+
 - [ ] Verify mobile responsiveness on actual devices
   - Components: All major components (basic responsiveness already working)
   - Breakpoints: 320px, 768px, 1024px, 1440px
   - Time: 2-3 hours
 
 ### Couples Features Polish
+
 - [ ] Polish couples features final 10%
   - Status: 90% complete and fully functional
   - Components: MutualLikesSection, PropertySwiper (already working)
@@ -48,6 +53,7 @@
 ## 🟢 MEDIUM PRIORITY (Week 2)
 
 ### Feature Enhancements
+
 - [ ] Add property card storytelling with lifestyle descriptions
   - Example: "Perfect for morning coffee on the balcony"
   - Time: 4-5 hours
@@ -69,6 +75,7 @@
   - Time: 4-6 hours
 
 ### Testing & Quality
+
 - [ ] Implement E2E tests for auth flows
   - Coverage: Login, signup, password reset
   - Time: 6-8 hours
@@ -84,6 +91,7 @@
 ## 🔵 LOW PRIORITY (Week 3+)
 
 ### Polish & Documentation
+
 - [ ] Add micro-interactions and delightful animations
   - Examples: Card hover effects, button feedback
   - Time: 4-6 hours
@@ -103,6 +111,7 @@
 ## ✅ COMPLETED ITEMS
 
 ### Recently Completed (January 2025)
+
 - [x] **Couples Demo Data** - Complete seed data with 4 households, 13 properties, 64 interactions
 - [x] **Homepage Rendering Crisis Fix** - CSS custom properties migration
 - [x] **Landing Page Implementation** - Core marketing components
@@ -120,7 +129,8 @@
 - [x] Resolve PreferencesSection.test.tsx (no longer skipped)
 
 ### Previously Completed
-- [x] Implement landing page core components  
+
+- [x] Implement landing page core components
 - [x] Migrate to Tailwind v4
 - [x] Add basic glass morphism effects
 - [x] Implement Framer Motion animations
@@ -132,6 +142,7 @@
 ## 📊 Progress Metrics
 
 ### Overall Completion
+
 - **Critical Issues**: 0/3 remaining (was 4, fixed 1)
 - **High Priority**: 1/4 partial (design tokens in use)
 - **Medium Priority**: 0/8 (0%)
@@ -139,6 +150,7 @@
 - **Total**: 21/35 tasks completed (60%)
 
 ### Component Status
+
 - **Landing Page**: 95% complete
 - **UX Improvements**: 85% functional
 - **Couples Features**: 90% complete (fully functional, needs polish)
@@ -150,12 +162,14 @@
 ## 🚦 Dependencies & Blockers
 
 ### Critical Path
+
 1. Fix 3 remaining test failures (blocks confident deployment)
 2. Expand design token integration (improves UI consistency)
 3. Verify mobile on actual devices (confirms production readiness)
 4. Add performance benchmarks (ensures quality)
 
 ### Resource Requirements
+
 - **Developer Time**: ~120-150 hours total
 - **Testing Time**: ~40 hours
 - **Review Time**: ~20 hours
@@ -164,6 +178,7 @@
 ## 📈 Success Criteria
 
 ### Technical KPIs
+
 - Linting errors: 0 ✅ ACHIEVED
 - TypeScript errors: 0 ✅ ACHIEVED
 - Design token usage: 100% (currently 30%)
@@ -171,6 +186,7 @@
 - Core Web Vitals: All green
 
 ### User Experience KPIs
+
 - Mobile responsiveness: 100% (needs device verification)
 - Couples features: Fully functional ✅ 90% ACHIEVED
 - Loading time: <3s on 3G
@@ -179,18 +195,21 @@
 ## 🎯 Recommended Execution Order
 
 ### Sprint 1 (Immediate - Next 2-3 Days)
+
 1. Fix 3 remaining test failures
 2. Add error boundary testing
 3. Add performance benchmarks
 4. Polish couples features final 10%
 
 ### Sprint 2 (Week 1)
+
 1. Expand design token usage to all components
 2. Replace emoji icons with Lucide
 3. Verify mobile on actual devices
 4. Optimize Core Web Vitals
 
 ### Sprint 3 (Week 2)
+
 1. Feature enhancements (storytelling, haptic feedback)
 2. Advanced testing (E2E, visual regression)
 3. Accessibility audit
@@ -201,8 +220,9 @@
 ## 📋 Archived Technical Specifications
 
 For detailed implementation specifications, see:
+
 - **Dashboard Implementation**: See archived dashboard-refinement-plan.md for comprehensive technical details
 - **Design System Upgrade**: See archived design-system-upgrade-plan.md for token system details
 - **Unit Test Strategy**: See archived unit-test-coverage-plan.md for TDD approach
 
-*This master task list consolidates work from all previous task documents and provides the current actionable roadmap for HomeMatch V2 development.*
+_This master task list consolidates work from all previous task documents and provides the current actionable roadmap for HomeMatch V2 development._

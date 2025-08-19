@@ -40,7 +40,7 @@ export function setupTestIsolation() {
  * Utility for tests that need to wait for async operations
  */
 export async function waitForAsync(ms: number = 0) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**

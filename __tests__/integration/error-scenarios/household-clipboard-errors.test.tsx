@@ -47,14 +47,13 @@ describe('HouseholdSection Error Scenarios', () => {
     vi.clearAllMocks()
 
     const { UserServiceClient } = await import('@/lib/services/users-client')
-    
+
     // Set up default mocks using the imported mocked functions
     mockCreateHousehold = vi
       .fn()
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = vi.fn().mockResolvedValue(true)
     mockLeaveHousehold = vi.fn().mockResolvedValue(true)
-    
     ;(UserServiceClient.createHousehold as any) = mockCreateHousehold
     ;(UserServiceClient.joinHousehold as any) = mockJoinHousehold
     ;(UserServiceClient.leaveHousehold as any) = mockLeaveHousehold
@@ -123,7 +122,7 @@ describe('HouseholdSection Error Scenarios', () => {
       render(<HouseholdSection profile={profileWithHousehold} />)
 
       const copyButton = screen.getByTestId('copy-household-code')
-      
+
       // Test should not throw unhandled errors
       await expect(async () => {
         await user.click(copyButton)
@@ -454,7 +453,7 @@ describe('HouseholdSection Error Scenarios', () => {
 
       // Test passes if no unhandled promise rejections or memory leaks occur
       expect.assertions(0) // Explicitly test for "no crashes" behavior
-      
+
       // Should not cause memory leaks or unhandled promise rejections
       // (This would show up in test output or CI)
     })

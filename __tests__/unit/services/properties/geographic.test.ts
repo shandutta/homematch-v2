@@ -27,16 +27,16 @@ describe('GeographicService', () => {
         eq: jest.fn(),
         single: jest.fn(),
       }
-      
+
       // Make all methods return the mock itself for chaining
       mock.from.mockReturnValue(mock)
       mock.select.mockReturnValue(mock)
       mock.eq.mockReturnValue(mock)
       mock.single.mockReturnValue(mock)
-      
+
       return mock
     }
-    
+
     mockSupabaseClient = createChainableMock()
 
     // Ensure both client and server creators return the same mock
@@ -56,7 +56,7 @@ describe('GeographicService', () => {
     test('should return properties within radius successfully', async () => {
       const mockProperties = [
         { id: 'prop-1', address: '123 Test St', distance_km: 2.5 },
-        { id: 'prop-2', address: '456 Test Ave', distance_km: 1.8 }
+        { id: 'prop-2', address: '456 Test Ave', distance_km: 1.8 },
       ]
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -64,15 +64,23 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesWithinRadius(34.0522, -118.2437, 5, 10)
+      const result = await geographicService.getPropertiesWithinRadius(
+        34.0522,
+        -118.2437,
+        5,
+        10
+      )
 
       expect(result).toEqual(mockProperties)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_within_radius', {
-        center_lat: 34.0522,
-        center_lng: -118.2437,
-        radius_km: 5,
-        result_limit: 10
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_within_radius',
+        {
+          center_lat: 34.0522,
+          center_lng: -118.2437,
+          radius_km: 5,
+          result_limit: 10,
+        }
+      )
     })
 
     test('should handle errors gracefully', async () => {
@@ -82,7 +90,11 @@ describe('GeographicService', () => {
       })
 
       // Use different coordinates to avoid cache collision
-      const result = await geographicService.getPropertiesWithinRadius(34.0600, -118.2500, 3)
+      const result = await geographicService.getPropertiesWithinRadius(
+        34.06,
+        -118.25,
+        3
+      )
 
       expect(result).toEqual([])
     })
@@ -98,11 +110,11 @@ describe('GeographicService', () => {
     test('should return properties within bounds successfully', async () => {
       const bounds = {
         northEast: { lat: 34.1, lng: -118.2 },
-        southWest: { lat: 34.0, lng: -118.3 }
+        southWest: { lat: 34.0, lng: -118.3 },
       }
       const mockProperties = [
         { id: 'prop-1', address: '123 Test St' },
-        { id: 'prop-2', address: '456 Test Ave' }
+        { id: 'prop-2', address: '456 Test Ave' },
       ]
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -113,13 +125,16 @@ describe('GeographicService', () => {
       const result = await geographicService.getPropertiesInBounds(bounds, 50)
 
       expect(result).toEqual(mockProperties)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_in_bounds', {
-        north_lat: 34.1,
-        south_lat: 34.0,
-        east_lng: -118.2,
-        west_lng: -118.3,
-        result_limit: 50
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_in_bounds',
+        {
+          north_lat: 34.1,
+          south_lat: 34.0,
+          east_lng: -118.2,
+          west_lng: -118.3,
+          result_limit: 50,
+        }
+      )
     })
   })
 
@@ -132,15 +147,23 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.calculateDistance(34.0522, -118.2437, 34.1522, -118.1437)
+      const result = await geographicService.calculateDistance(
+        34.0522,
+        -118.2437,
+        34.1522,
+        -118.1437
+      )
 
       expect(result).toBe(expectedDistance)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_distance', {
-        lat1: 34.0522,
-        lng1: -118.2437,
-        lat2: 34.1522,
-        lng2: -118.1437
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'calculate_distance',
+        {
+          lat1: 34.0522,
+          lng1: -118.2437,
+          lat2: 34.1522,
+          lng2: -118.1437,
+        }
+      )
     })
 
     test('should return null on error', async () => {
@@ -150,7 +173,12 @@ describe('GeographicService', () => {
       })
 
       // Use different coordinates to avoid cache collision
-      const result = await geographicService.calculateDistance(34.0700, -118.2600, 34.1700, -118.1600)
+      const result = await geographicService.calculateDistance(
+        34.07,
+        -118.26,
+        34.17,
+        -118.16
+      )
 
       expect(result).toBe(null) // Legacy error handling returns null
     })
@@ -165,13 +193,19 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getWalkabilityScore(34.0522, -118.2437)
+      const result = await geographicService.getWalkabilityScore(
+        34.0522,
+        -118.2437
+      )
 
       expect(result).toBe(expectedScore)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_walkability_score', {
-        center_lat: 34.0522,
-        center_lng: -118.2437
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_walkability_score',
+        {
+          center_lat: 34.0522,
+          center_lng: -118.2437,
+        }
+      )
     })
 
     test('should return null on RPC error', async () => {
@@ -181,7 +215,7 @@ describe('GeographicService', () => {
       })
 
       // Use different coordinates to avoid cache collision
-      const result = await geographicService.getWalkabilityScore(34.0500, -118.2400)
+      const result = await geographicService.getWalkabilityScore(34.05, -118.24)
 
       expect(result).toBe(null) // Legacy error handling returns null
     })
@@ -201,7 +235,7 @@ describe('GeographicService', () => {
       expect(result).toBe(expectedScore)
       expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_transit_score', {
         center_lat: 34.0522,
-        center_lng: -118.2437
+        center_lng: -118.2437,
       })
     })
 
@@ -219,7 +253,14 @@ describe('GeographicService', () => {
 
   describe('getPropertiesNearAddress', () => {
     test('should handle geocoding and return nearby properties', async () => {
-      const mockGeocode = [{ latitude: 34.0522, longitude: -118.2437, formatted_address: '123 Test St', confidence: 0.9 }]
+      const mockGeocode = [
+        {
+          latitude: 34.0522,
+          longitude: -118.2437,
+          formatted_address: '123 Test St',
+          confidence: 0.9,
+        },
+      ]
       const mockProperties = [{ id: 'prop-1', address: '456 Nearby St' }]
 
       // Mock geocode call first, then properties call
@@ -227,18 +268,24 @@ describe('GeographicService', () => {
         .mockResolvedValueOnce({ data: mockGeocode, error: null })
         .mockResolvedValueOnce({ data: mockProperties, error: null })
 
-      const result = await geographicService.getPropertiesNearAddress('123 Test Street, LA', 2)
+      const result = await geographicService.getPropertiesNearAddress(
+        '123 Test Street, LA',
+        2
+      )
 
       expect(result).toEqual(mockProperties)
       expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('geocode_address', {
-        address_text: '123 Test Street, LA'
+        address_text: '123 Test Street, LA',
       })
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_within_radius', {
-        center_lat: 34.0522,
-        center_lng: -118.2437,
-        radius_km: 2,
-        result_limit: 50
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_within_radius',
+        {
+          center_lat: 34.0522,
+          center_lng: -118.2437,
+          radius_km: 2,
+          result_limit: 50,
+        }
+      )
     })
 
     test('should return empty array when geocoding fails', async () => {
@@ -247,7 +294,10 @@ describe('GeographicService', () => {
         error: { message: 'Geocoding failed' },
       })
 
-      const result = await geographicService.getPropertiesNearAddress('Unknown Address', 2)
+      const result = await geographicService.getPropertiesNearAddress(
+        'Unknown Address',
+        2
+      )
 
       expect(result).toEqual([])
     })
@@ -257,7 +307,7 @@ describe('GeographicService', () => {
     test('should return properties along route', async () => {
       const waypoints = [
         { lat: 34.0522, lng: -118.2437 },
-        { lat: 34.0622, lng: -118.2337 }
+        { lat: 34.0622, lng: -118.2337 },
       ]
       const mockProperties = [{ id: 'prop-1', address: '123 Route St' }]
 
@@ -266,13 +316,19 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesAlongRoute(waypoints, 1)
+      const result = await geographicService.getPropertiesAlongRoute(
+        waypoints,
+        1
+      )
 
       expect(result).toEqual(mockProperties)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_along_route', {
-        waypoints,
-        corridor_width_km: 1
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_along_route',
+        {
+          waypoints,
+          corridor_width_km: 1,
+        }
+      )
     })
   })
 
@@ -280,14 +336,14 @@ describe('GeographicService', () => {
     test('should return geographic density analysis', async () => {
       const bounds = {
         northEast: { lat: 34.1, lng: -118.2 },
-        southWest: { lat: 34.0, lng: -118.3 }
+        southWest: { lat: 34.0, lng: -118.3 },
       }
       const mockDensity = {
         total_properties: 50,
         avg_price: 500000,
         price_density: [
-          { lat: 34.05, lng: -118.25, price: 450000, density_score: 75 }
-        ]
+          { lat: 34.05, lng: -118.25, price: 450000, density_score: 75 },
+        ],
       }
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -298,13 +354,16 @@ describe('GeographicService', () => {
       const result = await geographicService.getGeographicDensity(bounds, 0.01)
 
       expect(result).toEqual(mockDensity)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_geographic_density', {
-        north_lat: 34.1,
-        south_lat: 34.0,
-        east_lng: -118.2,
-        west_lng: -118.3,
-        grid_size_deg: 0.01
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_geographic_density',
+        {
+          north_lat: 34.1,
+          south_lat: 34.0,
+          east_lng: -118.2,
+          west_lng: -118.3,
+          grid_size_deg: 0.01,
+        }
+      )
     })
 
     test('should return null on error', async () => {
@@ -316,7 +375,7 @@ describe('GeographicService', () => {
       // Use different bounds to avoid cache collision
       const bounds = {
         northEast: { lat: 34.2, lng: -118.1 },
-        southWest: { lat: 34.1, lng: -118.4 }
+        southWest: { lat: 34.1, lng: -118.4 },
       }
 
       const result = await geographicService.getGeographicDensity(bounds, 0.02)
@@ -329,7 +388,7 @@ describe('GeographicService', () => {
     test('should return properties sorted by distance', async () => {
       const mockProperties = [
         { id: 'prop-1', address: '123 Close St', distance_km: 1.2 },
-        { id: 'prop-2', address: '456 Far St', distance_km: 3.8 }
+        { id: 'prop-2', address: '456 Far St', distance_km: 3.8 },
       ]
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -337,17 +396,25 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesByDistance(34.0522, -118.2437, 5, 10)
+      const result = await geographicService.getPropertiesByDistance(
+        34.0522,
+        -118.2437,
+        5,
+        10
+      )
 
       expect(result).toHaveLength(2)
       expect(result[0]).toHaveProperty('property')
       expect(result[0]).toHaveProperty('distance_km', 1.2)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_by_distance', {
-        center_lat: 34.0522,
-        center_lng: -118.2437,
-        max_distance_km: 5,
-        result_limit: 10
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_by_distance',
+        {
+          center_lat: 34.0522,
+          center_lng: -118.2437,
+          max_distance_km: 5,
+          result_limit: 10,
+        }
+      )
     })
   })
 
@@ -355,10 +422,17 @@ describe('GeographicService', () => {
     test('should return property clusters for mapping', async () => {
       const bounds = {
         northEast: { lat: 34.1, lng: -118.2 },
-        southWest: { lat: 34.0, lng: -118.3 }
+        southWest: { lat: 34.0, lng: -118.3 },
       }
       const mockClusters = [
-        { lat: 34.05, lng: -118.25, count: 12, avg_price: 500000, min_price: 400000, max_price: 600000 }
+        {
+          lat: 34.05,
+          lng: -118.25,
+          count: 12,
+          avg_price: 500000,
+          min_price: 400000,
+          max_price: 600000,
+        },
       ]
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -369,13 +443,16 @@ describe('GeographicService', () => {
       const result = await geographicService.getPropertyClusters(bounds, 12)
 
       expect(result).toEqual(mockClusters)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_property_clusters', {
-        north_lat: 34.1,
-        south_lat: 34.0,
-        east_lng: -118.2,
-        west_lng: -118.3,
-        zoom_level: 12
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_property_clusters',
+        {
+          north_lat: 34.1,
+          south_lat: 34.0,
+          east_lng: -118.2,
+          west_lng: -118.3,
+          zoom_level: 12,
+        }
+      )
     })
   })
 
@@ -385,7 +462,7 @@ describe('GeographicService', () => {
         { lat: 34.0, lng: -118.3 },
         { lat: 34.1, lng: -118.3 },
         { lat: 34.1, lng: -118.2 },
-        { lat: 34.0, lng: -118.2 }
+        { lat: 34.0, lng: -118.2 },
       ]
       const mockProperties = [{ id: 'prop-1', address: '123 Polygon St' }]
 
@@ -394,13 +471,19 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getPropertiesInPolygon(polygon, 100)
+      const result = await geographicService.getPropertiesInPolygon(
+        polygon,
+        100
+      )
 
       expect(result).toEqual(mockProperties)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('get_properties_in_polygon', {
-        polygon_points: polygon,
-        result_limit: 100
-      })
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        'get_properties_in_polygon',
+        {
+          polygon_points: polygon,
+          result_limit: 100,
+        }
+      )
     })
   })
 
@@ -409,16 +492,24 @@ describe('GeographicService', () => {
       const amenityTypes = ['restaurant', 'school', 'park']
 
       // The error is caught by executeArrayQuery and legacy error handler returns []
-      const result = await geographicService.getNearestAmenities(34.0522, -118.2437, amenityTypes, 2)
-      
+      const result = await geographicService.getNearestAmenities(
+        34.0522,
+        -118.2437,
+        amenityTypes,
+        2
+      )
+
       expect(result).toEqual([])
     })
 
     test('should return empty array on RPC errors', async () => {
       const amenityTypes = ['restaurant']
-      
+
       // Mock isRPCImplemented to return true temporarily
-      const mockIsRPCImplemented = jest.spyOn(supabaseRpcTypes, 'isRPCImplemented')
+      const mockIsRPCImplemented = jest.spyOn(
+        supabaseRpcTypes,
+        'isRPCImplemented'
+      )
       mockIsRPCImplemented.mockReturnValue(true)
 
       mockSupabaseClient.rpc.mockResolvedValue({
@@ -427,8 +518,13 @@ describe('GeographicService', () => {
       })
 
       // The error is caught by executeArrayQuery and legacy error handler returns []
-      const result = await geographicService.getNearestAmenities(34.0522, -118.2437, amenityTypes, 2)
-      
+      const result = await geographicService.getNearestAmenities(
+        34.0522,
+        -118.2437,
+        amenityTypes,
+        2
+      )
+
       expect(result).toEqual([])
 
       // Restore original implementation
@@ -440,11 +536,14 @@ describe('GeographicService', () => {
     test('should analyze commute to destinations', async () => {
       const destinations = [
         { lat: 34.1, lng: -118.2 },
-        { lat: 34.0, lng: -118.3 }
+        { lat: 34.0, lng: -118.3 },
       ]
 
       // Mock coordinate parsing utility
-      const mockParsePostGISGeometry = jest.spyOn(coordinatesUtils, 'parsePostGISGeometry')
+      const mockParsePostGISGeometry = jest.spyOn(
+        coordinatesUtils,
+        'parsePostGISGeometry'
+      )
       mockParsePostGISGeometry.mockReturnValue({ lat: 34.0522, lng: -118.2437 })
 
       // Mock property query
@@ -453,7 +552,10 @@ describe('GeographicService', () => {
         error: null,
       })
 
-      const result = await geographicService.getCommuteAnalysis('prop-123', destinations)
+      const result = await geographicService.getCommuteAnalysis(
+        'prop-123',
+        destinations
+      )
 
       expect(result).not.toBeNull()
       expect(result).toHaveProperty('property_id', 'prop-123')
@@ -470,14 +572,20 @@ describe('GeographicService', () => {
         error: { message: 'Property not found' },
       })
 
-      const result = await geographicService.getCommuteAnalysis('nonexistent', [])
+      const result = await geographicService.getCommuteAnalysis(
+        'nonexistent',
+        []
+      )
 
       expect(result).toBeNull()
     })
 
     test('should return null for properties with invalid coordinates', async () => {
       // Mock coordinate parsing utility to return null
-      const mockParsePostGISGeometry = jest.spyOn(coordinatesUtils, 'parsePostGISGeometry')
+      const mockParsePostGISGeometry = jest.spyOn(
+        coordinatesUtils,
+        'parsePostGISGeometry'
+      )
       mockParsePostGISGeometry.mockReturnValue(null)
 
       // Mock property query
@@ -487,8 +595,11 @@ describe('GeographicService', () => {
       })
 
       // The error is caught by executeQuery and legacy error handler returns null
-      const result = await geographicService.getCommuteAnalysis('prop-invalid', [])
-      
+      const result = await geographicService.getCommuteAnalysis(
+        'prop-invalid',
+        []
+      )
+
       expect(result).toBe(null)
 
       // Restore the mock
@@ -500,7 +611,12 @@ describe('GeographicService', () => {
     test('should generate isochrone analysis', async () => {
       const travelTimes = [15, 30, 45]
 
-      const result = await geographicService.getIsochroneAnalysis(34.0522, -118.2437, travelTimes, 'driving')
+      const result = await geographicService.getIsochroneAnalysis(
+        34.0522,
+        -118.2437,
+        travelTimes,
+        'driving'
+      )
 
       expect(result).not.toBeNull()
       expect(result).toHaveProperty('center_location')
@@ -511,7 +627,12 @@ describe('GeographicService', () => {
     })
 
     test('should handle different transport modes', async () => {
-      const result = await geographicService.getIsochroneAnalysis(34.0522, -118.2437, [30], 'walking')
+      const result = await geographicService.getIsochroneAnalysis(
+        34.0522,
+        -118.2437,
+        [30],
+        'walking'
+      )
 
       expect(result).not.toBeNull()
       expect((result as any).transport_mode).toBe('walking')

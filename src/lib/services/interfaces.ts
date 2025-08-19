@@ -1,15 +1,15 @@
 /**
  * Service Interfaces and Contracts
- * 
+ *
  * Provides type definitions and contracts for all service layer components.
  * Enables dependency injection and testing.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { 
-  Property, 
-  PropertyInsert, 
-  PropertyUpdate, 
+import type {
+  Property,
+  PropertyInsert,
+  PropertyUpdate,
   PropertyWithNeighborhood,
   Neighborhood,
   NeighborhoodInsert,
@@ -22,8 +22,9 @@ import type {
   HouseholdUpdate,
   UserPropertyInteraction,
   UserPropertyInteractionInsert,
-SavedSearch,  SavedSearchInsert,
-  SavedSearchUpdate
+  SavedSearch,
+  SavedSearchInsert,
+  SavedSearchUpdate,
 } from '@/types/database'
 import type { PropertySearch } from '@/lib/schemas/property'
 import type { Database } from '@/types/database'
@@ -45,12 +46,12 @@ export interface IBaseService {
    * Validates that required parameters are provided
    */
   validateRequired(params: Record<string, unknown>): void
-  
+
   /**
    * Sanitizes input data to prevent injection attacks
    */
   sanitizeInput<T>(input: T): T
-  
+
   /**
    * Executes a database query with standardized error handling
    */
@@ -65,9 +66,14 @@ export interface IBaseService {
  */
 export interface IPropertyCrudService extends IBaseService {
   getProperty(propertyId: string): Promise<Property | null>
-  getPropertyWithNeighborhood(propertyId: string): Promise<PropertyWithNeighborhood | null>
+  getPropertyWithNeighborhood(
+    propertyId: string
+  ): Promise<PropertyWithNeighborhood | null>
   createProperty(property: PropertyInsert): Promise<Property | null>
-  updateProperty(propertyId: string, updates: PropertyUpdate): Promise<Property | null>
+  updateProperty(
+    propertyId: string,
+    updates: PropertyUpdate
+  ): Promise<Property | null>
   deleteProperty(propertyId: string): Promise<boolean>
   getPropertiesByZpid(zpid: string): Promise<Property | null>
   getPropertiesByHash(hash: string): Promise<Property | null>
@@ -88,10 +94,25 @@ export interface PropertySearchResult {
  */
 export interface IPropertySearchService extends IBaseService {
   searchProperties(searchParams: PropertySearch): Promise<PropertySearchResult>
-  getPropertiesByNeighborhood(neighborhoodId: string, limit?: number): Promise<Property[]>
-  getPropertiesWithinRadius(latitude: number, longitude: number, radiusKm: number): Promise<Property[]>
-  getPropertiesInNeighborhood(neighborhoodName: string, city: string, state: string): Promise<Property[]>
-  getPropertyStats(): Promise<{ total: number; active: number; avgPrice: number }>
+  getPropertiesByNeighborhood(
+    neighborhoodId: string,
+    limit?: number
+  ): Promise<Property[]>
+  getPropertiesWithinRadius(
+    latitude: number,
+    longitude: number,
+    radiusKm: number
+  ): Promise<Property[]>
+  getPropertiesInNeighborhood(
+    neighborhoodName: string,
+    city: string,
+    state: string
+  ): Promise<Property[]>
+  getPropertyStats(): Promise<{
+    total: number
+    active: number
+    avgPrice: number
+  }>
 }
 
 /**
@@ -99,8 +120,13 @@ export interface IPropertySearchService extends IBaseService {
  */
 export interface INeighborhoodService extends IBaseService {
   getNeighborhood(neighborhoodId: string): Promise<Neighborhood | null>
-  createNeighborhood(neighborhood: NeighborhoodInsert): Promise<Neighborhood | null>
-  updateNeighborhood(neighborhoodId: string, updates: NeighborhoodUpdate): Promise<Neighborhood | null>
+  createNeighborhood(
+    neighborhood: NeighborhoodInsert
+  ): Promise<Neighborhood | null>
+  updateNeighborhood(
+    neighborhoodId: string,
+    updates: NeighborhoodUpdate
+  ): Promise<Neighborhood | null>
   getNeighborhoodsByCity(city: string, state: string): Promise<Neighborhood[]>
   getNeighborhoodsByMetroArea(metroArea: string): Promise<Neighborhood[]>
   searchNeighborhoods(query: string): Promise<Neighborhood[]>
@@ -112,8 +138,13 @@ export interface INeighborhoodService extends IBaseService {
 export interface IUserService extends IBaseService {
   getUserProfile(userId: string): Promise<UserProfile | null>
   createUserProfile(profile: UserProfileInsert): Promise<UserProfile | null>
-  updateUserProfile(userId: string, updates: UserProfileUpdate): Promise<UserProfile | null>
-  getUserProfileWithHousehold(userId: string): Promise<UserProfile & { household?: Household | null }>
+  updateUserProfile(
+    userId: string,
+    updates: UserProfileUpdate
+  ): Promise<UserProfile | null>
+  getUserProfileWithHousehold(
+    userId: string
+  ): Promise<UserProfile & { household?: Household | null }>
 }
 
 /**
@@ -122,7 +153,10 @@ export interface IUserService extends IBaseService {
 export interface IHouseholdService extends IBaseService {
   createHousehold(household: HouseholdInsert): Promise<Household | null>
   getHousehold(householdId: string): Promise<Household | null>
-  updateHousehold(householdId: string, updates: HouseholdUpdate): Promise<Household | null>
+  updateHousehold(
+    householdId: string,
+    updates: HouseholdUpdate
+  ): Promise<Household | null>
   getHouseholdMembers(householdId: string): Promise<UserProfile[]>
 }
 
@@ -130,10 +164,20 @@ export interface IHouseholdService extends IBaseService {
  * User interactions interface
  */
 export interface IInteractionService extends IBaseService {
-  recordInteraction(interaction: UserPropertyInteractionInsert): Promise<UserPropertyInteraction | null>
-  getUserPropertyInteractions(userId: string, limit?: number): Promise<UserPropertyInteraction[]>
-  getPropertyInteractions(propertyId: string): Promise<UserPropertyInteraction[]>
-  getUserPropertyInteractionsByType(userId: string, interactionType: string): Promise<UserPropertyInteraction[]>
+  recordInteraction(
+    interaction: UserPropertyInteractionInsert
+  ): Promise<UserPropertyInteraction | null>
+  getUserPropertyInteractions(
+    userId: string,
+    limit?: number
+  ): Promise<UserPropertyInteraction[]>
+  getPropertyInteractions(
+    propertyId: string
+  ): Promise<UserPropertyInteraction[]>
+  getUserPropertyInteractionsByType(
+    userId: string,
+    interactionType: string
+  ): Promise<UserPropertyInteraction[]>
 }
 
 /**
@@ -142,28 +186,31 @@ export interface IInteractionService extends IBaseService {
 export interface ISavedSearchService extends IBaseService {
   createSavedSearch(search: SavedSearchInsert): Promise<SavedSearch | null>
   getSavedSearches(userId: string): Promise<SavedSearch[]>
-  updateSavedSearch(searchId: string, updates: SavedSearchUpdate): Promise<SavedSearch | null>
+  updateSavedSearch(
+    searchId: string,
+    updates: SavedSearchUpdate
+  ): Promise<SavedSearch | null>
   deleteSavedSearch(searchId: string): Promise<boolean>
 }
 
 /**
  * Comprehensive property service interface (facade pattern)
  */
-export interface IPropertyService extends 
-  IPropertyCrudService,
-  IPropertySearchService,
-  INeighborhoodService {
+export interface IPropertyService
+  extends IPropertyCrudService,
+    IPropertySearchService,
+    INeighborhoodService {
   // Inherits all methods from the component interfaces
 }
 
 /**
  * Comprehensive user service interface
  */
-export interface IUserServiceFull extends 
-  IUserService,
-  IHouseholdService,
-  IInteractionService,
-  ISavedSearchService {
+export interface IUserServiceFull
+  extends IUserService,
+    IHouseholdService,
+    IInteractionService,
+    ISavedSearchService {
   // Inherits all methods from the component interfaces
 }
 
@@ -185,7 +232,11 @@ export interface IServiceMethodContext {
 export interface IServiceMetrics {
   recordMethodCall(context: IServiceMethodContext): void
   recordMethodSuccess(context: IServiceMethodContext, duration: number): void
-  recordMethodError(context: IServiceMethodContext, error: Error, duration: number): void
+  recordMethodError(
+    context: IServiceMethodContext,
+    error: Error,
+    duration: number
+  ): void
 }
 
 /**
@@ -213,7 +264,7 @@ export enum ClientContext {
   BROWSER = 'browser',
   SERVER = 'server',
   API = 'api',
-  SERVICE = 'service'
+  SERVICE = 'service',
 }
 
 export interface ClientConfig {
@@ -253,6 +304,6 @@ export interface IErrorHandler {
     methodName: string,
     args?: unknown[]
   ): ServiceError
-  
+
   getDefaultReturn<T>(expectedType?: T): T
 }

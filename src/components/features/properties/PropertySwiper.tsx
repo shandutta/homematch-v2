@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react'
 import { Heart, Users } from 'lucide-react'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType } from '@/types/app'
@@ -8,12 +8,24 @@ import { SwipeablePropertyCard } from '@/components/properties/SwipeableProperty
 import { useRenderPerformance } from '@/lib/utils/client-performance'
 import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { useMutualLikes } from '@/hooks/useCouples'
-import {
-  FloatingHearts,
-  SuccessConfetti,
-  SparkleEffect,
-} from '@/components/couples/CouplesMicroInteractions'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
+
+// Lazy load heavy animation components
+const FloatingHearts = lazy(() =>
+  import('@/components/couples/CouplesMicroInteractions').then((m) => ({
+    default: m.FloatingHearts,
+  }))
+)
+const SuccessConfetti = lazy(() =>
+  import('@/components/couples/CouplesMicroInteractions').then((m) => ({
+    default: m.SuccessConfetti,
+  }))
+)
+const SparkleEffect = lazy(() =>
+  import('@/components/couples/CouplesMicroInteractions').then((m) => ({
+    default: m.SparkleEffect,
+  }))
+)
 
 interface PropertySwiperProps {
   properties: Property[]
@@ -46,6 +58,12 @@ export function PropertySwiper({
   const [swipeHistory, setSwipeHistory] = useState<
     Array<{ propertyId: string; type: InteractionType }>
   >([])
+
+  // Memoize mutual likes computation to avoid recalculation on every render
+  const mutualLikesSet = useMemo(
+    () => new Set(mutualLikes.map((ml) => ml.property_id)),
+    [mutualLikes]
+  )
 
   // Handle decision with state management
   const handleDecision = useCallback(
@@ -104,33 +122,45 @@ export function PropertySwiper({
   // Check if the current property is mutually liked for showing helper text
   const currentProperty = properties[currentIndex]
   const currentIsMutuallyLiked =
-    currentProperty &&
-    mutualLikes.some((ml) => ml.property_id === currentProperty.id)
+    currentProperty && mutualLikesSet.has(currentProperty.id)
 
   return (
     <div className="relative">
-      {/* Celebration animations */}
-      <FloatingHearts
-        trigger={celebrationTrigger?.type === 'mutual-like'}
-        count={8}
-      />
-
-      <SuccessConfetti trigger={celebrationTrigger?.type === 'milestone'} />
-
-      <SparkleEffect active={currentIsMutuallyLiked}>
-        <SwipeablePropertyCard
-          properties={properties}
-          currentIndex={currentIndex}
-          onDecision={handleDecision}
-          onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
-          showHints={showSwipeHints && currentIndex === 0}
-          className={
-            currentIsMutuallyLiked
-              ? 'transform-gpu shadow-2xl ring-2 shadow-pink-500/25 ring-pink-400/20 ring-offset-2 ring-offset-transparent'
-              : ''
-          }
+      {/* Lazy-loaded celebration animations */}
+      <Suspense fallback={null}>
+        <FloatingHearts
+          trigger={celebrationTrigger?.type === 'mutual-like'}
+          count={8}
         />
-      </SparkleEffect>
+        <SuccessConfetti trigger={celebrationTrigger?.type === 'milestone'} />
+      </Suspense>
+
+      <Suspense
+        fallback={
+          <SwipeablePropertyCard
+            properties={properties}
+            currentIndex={currentIndex}
+            onDecision={handleDecision}
+            onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
+            showHints={showSwipeHints && currentIndex === 0}
+          />
+        }
+      >
+        <SparkleEffect active={currentIsMutuallyLiked}>
+          <SwipeablePropertyCard
+            properties={properties}
+            currentIndex={currentIndex}
+            onDecision={handleDecision}
+            onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
+            showHints={showSwipeHints && currentIndex === 0}
+            className={
+              currentIsMutuallyLiked
+                ? 'transform-gpu shadow-2xl ring-2 shadow-pink-500/25 ring-pink-400/20 ring-offset-2 ring-offset-transparent'
+                : ''
+            }
+          />
+        </SparkleEffect>
+      </Suspense>
 
       {/* Helper text for mutually liked properties */}
       {currentIsMutuallyLiked && (

@@ -11,7 +11,7 @@ declare global {
     gtag?: GtagFunction
     Sentry?: SentryHub
     posthog?: PostHogFunction
-    
+
     // Performance monitoring
     __REACT_HYDRATION_TIME__?: number
     webVitals?: {
@@ -22,7 +22,7 @@ declare global {
       onTTFB?: (metric: unknown) => void
       onINP?: (metric: unknown) => void
     }
-    
+
     // Note: Google Maps types are declared in google-maps.ts
   }
 }

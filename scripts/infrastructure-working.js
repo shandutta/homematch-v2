@@ -178,7 +178,7 @@ class WorkingInfrastructure {
   async waitForServicesReady() {
     const maxAttempts = 30
     const delayMs = 2000
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         // First check if containers are running
@@ -186,36 +186,39 @@ class WorkingInfrastructure {
           'docker ps --filter name=supabase --format "{{.Names}}"',
           { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }
         )
-        
+
         const runningContainers = containers
           .trim()
           .split('\n')
           .filter((name) => name)
-        
+
         if (runningContainers.length === 0) {
           throw new Error('No Supabase containers running')
         }
-        
+
         // Use timeout with curl to prevent hanging
         const services = [
           'http://127.0.0.1:54321/rest/v1/',
-          'http://127.0.0.1:54321/auth/v1/health'
+          'http://127.0.0.1:54321/auth/v1/health',
         ]
-        
+
         let allReady = true
         for (const service of services) {
           try {
             // Use timeout flag and max-time to prevent hanging
-            execSync(`curl -s -f --connect-timeout 2 --max-time 5 "${service}" > nul 2>&1`, { 
-              stdio: 'ignore',
-              timeout: 6000 // 6 second timeout for the command itself
-            })
+            execSync(
+              `curl -s -f --connect-timeout 2 --max-time 5 "${service}" > nul 2>&1`,
+              {
+                stdio: 'ignore',
+                timeout: 6000, // 6 second timeout for the command itself
+              }
+            )
           } catch {
             allReady = false
             break
           }
         }
-        
+
         if (allReady) {
           await this.log(`All services ready after ${attempt} attempts`)
           return true
@@ -229,9 +232,12 @@ class WorkingInfrastructure {
           return false
         }
         if (attempt % 5 === 0) {
-          await this.log(`Still waiting for services... (attempt ${attempt}/${maxAttempts})`, 'progress')
+          await this.log(
+            `Still waiting for services... (attempt ${attempt}/${maxAttempts})`,
+            'progress'
+          )
         }
-        await new Promise(resolve => setTimeout(resolve, delayMs))
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
       }
     }
   }
@@ -241,11 +247,14 @@ class WorkingInfrastructure {
 
     try {
       await this.runSupabaseCommand('db reset')
-      
+
       // Wait for all services to be ready after container restart
-      await this.log('Waiting for services to be ready after reset...', 'progress')
+      await this.log(
+        'Waiting for services to be ready after reset...',
+        'progress'
+      )
       await this.waitForServicesReady()
-      
+
       await this.log('Supabase database reset successfully')
       return true
     } catch (error) {

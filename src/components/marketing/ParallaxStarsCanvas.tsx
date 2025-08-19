@@ -33,7 +33,7 @@ export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -61,7 +61,9 @@ export function ParallaxStarsCanvas({ className, starCount = 320 }: Props) {
       const stars: Star[] = []
       const layers = [0, 1, 2] // far, mid, near
       // Reduce star count by 70% on mobile for better performance and less visual clutter
-      const responsiveStarCount = isMobile ? Math.floor(starCount * 0.3) : starCount
+      const responsiveStarCount = isMobile
+        ? Math.floor(starCount * 0.3)
+        : starCount
       for (let i = 0; i < responsiveStarCount; i++) {
         const layer = layers[Math.floor(Math.random() * layers.length)]
         // radius by layer: near bigger

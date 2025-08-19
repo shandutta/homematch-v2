@@ -26,15 +26,15 @@ describe('Error Handling Patterns Integration Tests', () => {
     beforeEach(async () => {
       // Create test client with service role (bypasses RLS)
       testClient = createClient()
-      
+
       // Create client factory that returns our test client
       const clientFactory = createTestClientFactory()
       propertyService = new PropertyService(clientFactory)
-      
+
       // Get existing test user (from setup-test-users-admin.js)
       const factory = getTestDataFactory(testClient)
       _testUser = await factory.getTestUser('test1@example.com')
-      
+
       // Reset created properties list
       createdPropertyIds = []
     })
@@ -54,9 +54,9 @@ describe('Error Handling Patterns Integration Tests', () => {
     test('should handle Supabase connection errors gracefully', async () => {
       // Mock Supabase to simulate network failure
       const originalGetSupabase = (propertyService as any).getSupabase
-      ;(propertyService as any).getSupabase = vi.fn().mockRejectedValue(
-        new Error('Network connection failed')
-      )
+      ;(propertyService as any).getSupabase = vi
+        .fn()
+        .mockRejectedValue(new Error('Network connection failed'))
 
       const result = await propertyService.getProperty(randomUUID())
       expect(result).toBeNull()
@@ -73,13 +73,15 @@ describe('Error Handling Patterns Integration Tests', () => {
         city: 'Test City',
         state: 'CA',
         zip_code: '90210',
-        property_type: 'single_family',
+        property_type: 'house',
         listing_status: 'active',
-        is_active: true
+        is_active: true,
       } as any
 
       // The new validation system throws validation errors for invalid data
-      await expect(propertyService.createProperty(invalidPropertyData)).rejects.toThrow('Bedrooms must be between 0 and 20')
+      await expect(
+        propertyService.createProperty(invalidPropertyData)
+      ).rejects.toThrow('Bedrooms must be between 0 and 20')
     })
 
     test('should handle database constraint violations', async () => {
@@ -87,7 +89,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       const testRunId = Date.now()
       const randomId = Math.random().toString(36).substr(2, 9)
       const uniqueZpid = `unique-zpid-${testRunId}-${randomId}`
-      
+
       const propertyData = {
         address: '123 Unique Street',
         city: 'Test City',
@@ -97,24 +99,25 @@ describe('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'single_family',
+        property_type: 'house',
         listing_status: 'active',
         is_active: true,
-        zpid: uniqueZpid
+        zpid: uniqueZpid,
       }
 
       // Create first property
       const firstProperty = await propertyService.createProperty(propertyData)
       expect(firstProperty).toBeTruthy()
-      
+
       // Track for cleanup
       if (firstProperty) {
         createdPropertyIds.push(firstProperty.id)
       }
 
       // Try to create duplicate with same zpid (should fail gracefully if constraint exists)
-      const duplicateProperty = await propertyService.createProperty(propertyData)
-      
+      const duplicateProperty =
+        await propertyService.createProperty(propertyData)
+
       // The test behavior depends on whether a unique constraint exists on zpid
       // If constraint exists: should return null
       // If no constraint: may return property (indicating no constraint in current schema)
@@ -131,7 +134,7 @@ describe('Error Handling Patterns Integration Tests', () => {
     test('should handle RLS (Row Level Security) violations', async () => {
       // This test simulates what happens when RLS blocks access
       const _supabase = await createClient()
-      
+
       // Mock the client to simulate RLS denial
       const mockFrom = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
@@ -139,16 +142,19 @@ describe('Error Handling Patterns Integration Tests', () => {
             eq: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
                 data: null,
-                error: { code: 'PGRST116', message: 'Row Level Security policy violation' }
-              })
-            })
-          })
-        })
+                error: {
+                  code: 'PGRST116',
+                  message: 'Row Level Security policy violation',
+                },
+              }),
+            }),
+          }),
+        }),
       })
 
       const originalGetSupabase = (propertyService as any).getSupabase
       ;(propertyService as any).getSupabase = vi.fn().mockResolvedValue({
-        from: mockFrom
+        from: mockFrom,
       })
 
       const result = await propertyService.getProperty(randomUUID())
@@ -163,18 +169,21 @@ describe('Error Handling Patterns Integration Tests', () => {
       timeoutError.name = 'TimeoutError'
 
       // Mock the search service directly since facade delegates to it
-      const originalSearchMethod = propertyService.searchService.searchProperties
-      propertyService.searchService.searchProperties = vi.fn().mockRejectedValue(timeoutError)
+      const originalSearchMethod =
+        propertyService.searchService.searchProperties
+      propertyService.searchService.searchProperties = vi
+        .fn()
+        .mockRejectedValue(timeoutError)
 
       const result = await propertyService.searchProperties({
-        filters: { price_min: 100000 }
+        filters: { price_min: 100000 },
       })
 
       expect(result).toEqual({
         properties: [],
         total: 0,
         page: 1,
-        limit: 20
+        limit: 20,
       })
 
       // Restore original method
@@ -193,14 +202,14 @@ describe('Error Handling Patterns Integration Tests', () => {
                     id: 'valid-id',
                     address: null, // Corrupted data
                     price: undefined, // Missing data
-                    corrupted_json_field: '{"invalid": json}' // Invalid JSON
+                    corrupted_json_field: '{"invalid": json}', // Invalid JSON
                   },
-                  error: null
-                })
-              })
-            })
-          })
-        })
+                  error: null,
+                }),
+              }),
+            }),
+          }),
+        }),
       })
 
       const result = await propertyService.getProperty(randomUUID())
@@ -220,12 +229,14 @@ describe('Error Handling Patterns Integration Tests', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 500,
-        text: vi.fn().mockResolvedValue('Internal Server Error')
+        text: vi.fn().mockResolvedValue('Internal Server Error'),
       }) as any
 
       await expect(
         InteractionService.recordInteraction('property-id', 'like')
-      ).rejects.toThrow('Failed to record interaction (500): Internal Server Error')
+      ).rejects.toThrow(
+        'Failed to record interaction (500): Internal Server Error'
+      )
 
       // Restore original fetch
       global.fetch = originalFetch
@@ -233,13 +244,13 @@ describe('Error Handling Patterns Integration Tests', () => {
 
     test('should handle network timeouts', async () => {
       const originalFetch = global.fetch
-      global.fetch = vi.fn().mockRejectedValue(
-        new Error('Network timeout')
-      ) as any
+      global.fetch = vi
+        .fn()
+        .mockRejectedValue(new Error('Network timeout')) as any
 
-      await expect(
-        InteractionService.getInteractionSummary()
-      ).rejects.toThrow('Network timeout')
+      await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
+        'Network timeout'
+      )
 
       // Restore original fetch
       global.fetch = originalFetch
@@ -251,13 +262,13 @@ describe('Error Handling Patterns Integration Tests', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({
           // Invalid response structure - missing required fields
-          invalid: 'response'
-        })
+          invalid: 'response',
+        }),
       }) as any
 
-      await expect(
-        InteractionService.getInteractionSummary()
-      ).rejects.toThrow('Invalid summary payload')
+      await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
+        'Invalid summary payload'
+      )
 
       // Restore original fetch
       global.fetch = originalFetch
@@ -268,12 +279,16 @@ describe('Error Handling Patterns Integration Tests', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 400,
-        text: vi.fn().mockResolvedValue('Invalid cursor parameter')
+        text: vi.fn().mockResolvedValue('Invalid cursor parameter'),
       }) as any
 
       await expect(
-        InteractionService.getInteractions('viewed', { cursor: 'invalid-cursor' })
-      ).rejects.toThrow('Failed to fetch interactions (400): Invalid cursor parameter')
+        InteractionService.getInteractions('viewed', {
+          cursor: 'invalid-cursor',
+        })
+      ).rejects.toThrow(
+        'Failed to fetch interactions (400): Invalid cursor parameter'
+      )
 
       // Restore original fetch
       global.fetch = originalFetch
@@ -285,7 +300,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       const testClient = createClient()
       const clientFactory = { createClient: async () => testClient }
       const propertyService = new PropertyService(clientFactory)
-      
+
       // Test scenario: Property creation fails, should not leave orphaned data
       const originalGetSupabase = (propertyService as any).getSupabase
       let callCount = 0
@@ -299,11 +314,11 @@ describe('Error Handling Patterns Integration Tests', () => {
                 select: vi.fn().mockReturnValue({
                   single: vi.fn().mockResolvedValue({
                     data: { id: 'temp-id', address: '123 Test St' },
-                    error: null
-                  })
-                })
-              })
-            })
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
           })
         } else {
           // Subsequent calls fail
@@ -320,16 +335,16 @@ describe('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'single_family',
+        property_type: 'house',
         listing_status: 'active',
-        is_active: true
+        is_active: true,
       }
 
       const result = await propertyService.createProperty(propertyData)
-      
+
       // Should handle the failure gracefully
       expect(result).toBeTruthy() // First operation succeeded
-      
+
       // Restore original method
       ;(propertyService as any).getSupabase = originalGetSupabase
     })
@@ -340,7 +355,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       const testClient = createClient()
       const clientFactory = { createClient: async () => testClient }
       const propertyService = new PropertyService(clientFactory)
-      
+
       // All these operations should return null on error, not throw
       const getResult = await propertyService.getProperty('non-existent')
       expect(getResult).toBeNull()
@@ -348,7 +363,10 @@ describe('Error Handling Patterns Integration Tests', () => {
       const createResult = await propertyService.createProperty({} as any)
       expect(createResult).toBeNull()
 
-      const updateResult = await propertyService.updateProperty('non-existent', {})
+      const updateResult = await propertyService.updateProperty(
+        'non-existent',
+        {}
+      )
       expect(updateResult).toBeNull()
     })
 
@@ -356,7 +374,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       const testClient = createClient()
       const clientFactory = { createClient: async () => testClient }
       const propertyService = new PropertyService(clientFactory)
-      
+
       // Delete operations should return false on error, not throw
       const deleteResult = await propertyService.deleteProperty('non-existent')
       expect(typeof deleteResult).toBe('boolean')
@@ -367,22 +385,23 @@ describe('Error Handling Patterns Integration Tests', () => {
       const testClient = createClient()
       const clientFactory = { createClient: async () => testClient }
       const propertyService = new PropertyService(clientFactory)
-      
+
       // Mock the search service directly since facade delegates to it
-      const originalSearchMethod = propertyService.searchService.searchProperties
-      propertyService.searchService.searchProperties = vi.fn().mockRejectedValue(
-        new Error('Database error')
-      )
+      const originalSearchMethod =
+        propertyService.searchService.searchProperties
+      propertyService.searchService.searchProperties = vi
+        .fn()
+        .mockRejectedValue(new Error('Database error'))
 
       const searchResult = await propertyService.searchProperties({
-        filters: { price_min: 100000 }
+        filters: { price_min: 100000 },
       })
 
       expect(searchResult).toEqual({
         properties: [],
         total: 0,
         page: 1,
-        limit: 20
+        limit: 20,
       })
 
       // Restore original method
@@ -406,12 +425,12 @@ describe('Error Handling Patterns Integration Tests', () => {
               eq: vi.fn().mockReturnValue({
                 single: vi.fn().mockResolvedValue({
                   data: null,
-                  error: { message: 'Test error', code: 'TEST_ERROR' }
-                })
-              })
-            })
-          })
-        })
+                  error: { message: 'Test error', code: 'TEST_ERROR' },
+                }),
+              }),
+            }),
+          }),
+        }),
       })
 
       await propertyService.getProperty(randomUUID())
@@ -420,7 +439,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error getProperty:',
         expect.objectContaining({
-          code: 'DATABASE_ERROR'
+          code: 'DATABASE_ERROR',
         })
       )
 
@@ -436,17 +455,23 @@ describe('Error Handling Patterns Integration Tests', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       // Mock the CRUD service's getSupabase method to simulate database error
-      const originalGetSupabase = (propertyService.crudService as any).getSupabase
-      ;(propertyService.crudService as any).getSupabase = vi.fn().mockResolvedValue({
-        from: vi.fn().mockReturnValue({
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'Update failed', details: 'Constraint violation' }
-            })
-          })
+      const originalGetSupabase = (propertyService.crudService as any)
+        .getSupabase
+      ;(propertyService.crudService as any).getSupabase = vi
+        .fn()
+        .mockResolvedValue({
+          from: vi.fn().mockReturnValue({
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: null,
+                error: {
+                  message: 'Update failed',
+                  details: 'Constraint violation',
+                },
+              }),
+            }),
+          }),
         })
-      })
 
       await propertyService.deleteProperty(randomUUID())
 
@@ -454,7 +479,7 @@ describe('Error Handling Patterns Integration Tests', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Error deleteProperty:',
         expect.objectContaining({
-          code: 'DATABASE_ERROR'
+          code: 'DATABASE_ERROR',
         })
       )
 

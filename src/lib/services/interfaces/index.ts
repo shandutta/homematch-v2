@@ -1,6 +1,6 @@
 /**
  * Service Interface Contracts for HomeMatch v2 Backend Refactoring
- * 
+ *
  * These interfaces define the contracts for the decomposed PropertyService
  * ensuring backward compatibility and clear separation of concerns.
  */
@@ -28,7 +28,9 @@ import type { NextRequest } from 'next/server'
  */
 export interface IPropertyCrudService {
   getProperty(id: string): Promise<Property | null>
-  getPropertyWithNeighborhood(id: string): Promise<PropertyWithNeighborhood | null>
+  getPropertyWithNeighborhood(
+    id: string
+  ): Promise<PropertyWithNeighborhood | null>
   createProperty(property: PropertyInsert): Promise<Property | null>
   updateProperty(id: string, updates: PropertyUpdate): Promise<Property | null>
   deleteProperty(id: string): Promise<boolean>
@@ -42,7 +44,10 @@ export interface IPropertyCrudService {
  */
 export interface IPropertySearchService {
   searchProperties(params: PropertySearch): Promise<PropertySearchResult>
-  getPropertiesByNeighborhood(neighborhoodId: string, limit?: number): Promise<Property[]>
+  getPropertiesByNeighborhood(
+    neighborhoodId: string,
+    limit?: number
+  ): Promise<Property[]>
 }
 
 /**
@@ -51,8 +56,13 @@ export interface IPropertySearchService {
  */
 export interface INeighborhoodService {
   getNeighborhood(id: string): Promise<Neighborhood | null>
-  createNeighborhood(neighborhood: NeighborhoodInsert): Promise<Neighborhood | null>
-  updateNeighborhood(id: string, updates: NeighborhoodUpdate): Promise<Neighborhood | null>
+  createNeighborhood(
+    neighborhood: NeighborhoodInsert
+  ): Promise<Neighborhood | null>
+  updateNeighborhood(
+    id: string,
+    updates: NeighborhoodUpdate
+  ): Promise<Neighborhood | null>
   getNeighborhoodsByCity(city: string, state: string): Promise<Neighborhood[]>
   getNeighborhoodsByMetroArea(metroArea: string): Promise<Neighborhood[]>
   searchNeighborhoods(searchTerm: string): Promise<Neighborhood[]>
@@ -64,7 +74,9 @@ export interface INeighborhoodService {
  */
 export interface IPropertyAnalyticsService {
   getPropertyStats(): Promise<PropertyStats | null>
-  getNeighborhoodStats(neighborhoodId: string): Promise<NeighborhoodStats | null>
+  getNeighborhoodStats(
+    neighborhoodId: string
+  ): Promise<NeighborhoodStats | null>
 }
 
 /**
@@ -72,13 +84,38 @@ export interface IPropertyAnalyticsService {
  * Handles: PostGIS queries, radius searches, spatial relationships
  */
 export interface IGeographicService {
-  getPropertiesWithinRadius(lat: number, lng: number, radiusKm: number, limit?: number): Promise<Property[]>
-  getPropertiesInBounds(bounds: BoundingBox, limit?: number): Promise<Property[]>
-  getPropertiesNearAddress(address: string, radiusKm: number): Promise<Property[]>
-  calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): Promise<number>
-  getPropertiesAlongRoute(waypoints: Array<{lat: number; lng: number}>, corridorWidth: number): Promise<Property[]>
-  getGeographicDensity(bounds: BoundingBox, gridSize: number): Promise<GeographicStats>
-  getCommuteAnalysis(propertyId: string, destinations: Array<{lat: number; lng: number}>): Promise<Record<string, unknown> | null>
+  getPropertiesWithinRadius(
+    lat: number,
+    lng: number,
+    radiusKm: number,
+    limit?: number
+  ): Promise<Property[]>
+  getPropertiesInBounds(
+    bounds: BoundingBox,
+    limit?: number
+  ): Promise<Property[]>
+  getPropertiesNearAddress(
+    address: string,
+    radiusKm: number
+  ): Promise<Property[]>
+  calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ): Promise<number>
+  getPropertiesAlongRoute(
+    waypoints: Array<{ lat: number; lng: number }>,
+    corridorWidth: number
+  ): Promise<Property[]>
+  getGeographicDensity(
+    bounds: BoundingBox,
+    gridSize: number
+  ): Promise<GeographicStats>
+  getCommuteAnalysis(
+    propertyId: string,
+    destinations: Array<{ lat: number; lng: number }>
+  ): Promise<Record<string, unknown> | null>
   getWalkabilityScore(lat: number, lng: number): Promise<number>
   getTransitScore(lat: number, lng: number): Promise<number>
 }
@@ -137,7 +174,7 @@ export enum ClientContext {
   BROWSER = 'browser',
   SERVER = 'server',
   API = 'api',
-  SERVICE = 'service'
+  SERVICE = 'service',
 }
 
 export interface ClientConfig {
@@ -182,7 +219,7 @@ export interface IErrorHandler {
     methodName: string,
     args?: unknown[]
   ): ServiceError
-  
+
   getDefaultReturn<T>(expectedType?: T): T
 }
 
@@ -202,13 +239,12 @@ export interface IBaseService {
  * Main PropertyService interface that combines all specialized services
  * This maintains backward compatibility with the existing PropertyService
  */
-export interface IPropertyService extends 
-  IPropertyCrudService,
-  IPropertySearchService,
-  INeighborhoodService,
-  IPropertyAnalyticsService,
-  IGeographicService {
-  
+export interface IPropertyService
+  extends IPropertyCrudService,
+    IPropertySearchService,
+    INeighborhoodService,
+    IPropertyAnalyticsService,
+    IGeographicService {
   // Additional facade-specific methods if needed
   readonly crudService: IPropertyCrudService
   readonly searchService: IPropertySearchService
@@ -222,12 +258,24 @@ export interface IPropertyService extends
 // ============================================================================
 
 export interface IServiceFactory {
-  createPropertyService(clientFactory?: ISupabaseClientFactory): IPropertyService
-  createPropertyCrudService(clientFactory?: ISupabaseClientFactory): IPropertyCrudService
-  createPropertySearchService(clientFactory?: ISupabaseClientFactory): IPropertySearchService
-  createNeighborhoodService(clientFactory?: ISupabaseClientFactory): INeighborhoodService
-  createPropertyAnalyticsService(clientFactory?: ISupabaseClientFactory): IPropertyAnalyticsService
-  createGeographicService(clientFactory?: ISupabaseClientFactory): IGeographicService
+  createPropertyService(
+    clientFactory?: ISupabaseClientFactory
+  ): IPropertyService
+  createPropertyCrudService(
+    clientFactory?: ISupabaseClientFactory
+  ): IPropertyCrudService
+  createPropertySearchService(
+    clientFactory?: ISupabaseClientFactory
+  ): IPropertySearchService
+  createNeighborhoodService(
+    clientFactory?: ISupabaseClientFactory
+  ): INeighborhoodService
+  createPropertyAnalyticsService(
+    clientFactory?: ISupabaseClientFactory
+  ): IPropertyAnalyticsService
+  createGeographicService(
+    clientFactory?: ISupabaseClientFactory
+  ): IGeographicService
 }
 
 // ============================================================================
@@ -248,7 +296,7 @@ export interface MigrationConfig {
 }
 
 // ============================================================================
-// FILTER BUILDER INTERFACES  
+// FILTER BUILDER INTERFACES
 // ============================================================================
 
 export interface FilterConfig {
@@ -277,5 +325,9 @@ export interface ServiceTestConfig {
 export interface ITestableService {
   configure(config: ServiceTestConfig): void
   resetMocks(): void
-  getMockCallHistory(): Array<{ method: string; args: unknown[]; result: unknown }>
+  getMockCallHistory(): Array<{
+    method: string
+    args: unknown[]
+    result: unknown
+  }>
 }

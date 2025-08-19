@@ -89,12 +89,12 @@ export class PropertyErrorBoundary extends Component<Props, State> {
         <Card className="mx-auto max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive" />
+              <AlertCircle className="text-destructive h-5 w-5" />
               Property Load Error
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {isNetworkError
                 ? 'Connection issue loading this property. Please check your internet connection and try again.'
                 : 'Unable to load property details. Please try again.'}
@@ -105,14 +105,14 @@ export class PropertyErrorBoundary extends Component<Props, State> {
                 <summary className="cursor-pointer font-medium">
                   Error Details (dev only)
                 </summary>
-                <pre className="mt-2 overflow-auto rounded bg-muted p-2">
+                <pre className="bg-muted mt-2 overflow-auto rounded p-2">
                   {error?.stack || error?.message}
                 </pre>
               </details>
             )}
 
             {retryCount >= maxRetries && (
-              <p className="text-sm font-medium text-destructive">
+              <p className="text-destructive text-sm font-medium">
                 Maximum retries reached
               </p>
             )}
@@ -126,7 +126,9 @@ export class PropertyErrorBoundary extends Component<Props, State> {
                   className="gap-2"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry {maxRetries - retryCount > 0 && `(${maxRetries - retryCount} left)`}
+                  Retry{' '}
+                  {maxRetries - retryCount > 0 &&
+                    `(${maxRetries - retryCount} left)`}
                 </Button>
               )}
               <Button

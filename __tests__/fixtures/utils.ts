@@ -166,7 +166,9 @@ export const utilsFixtures = {
             })
           } catch (_error) {
             // Ignore errors if page doesn't support storage yet
-            console.log('Note: Could not clear storage - page may not be loaded yet')
+            console.log(
+              'Note: Could not clear storage - page may not be loaded yet'
+            )
           }
         }
 
@@ -198,10 +200,10 @@ export const utilsFixtures = {
       async waitForReactToSettle() {
         // Wait for React to finish rendering
         await page.waitForLoadState('networkidle')
-        
+
         // Additional wait for React hydration
         await page.waitForTimeout(500)
-        
+
         // Wait for any pending React updates
         await page.evaluate(() => {
           return new Promise((resolve) => {
@@ -218,9 +220,11 @@ export const utilsFixtures = {
       async waitForFormValidation() {
         // Wait for form validation to complete
         await page.waitForTimeout(config.timeouts.FORM_VALIDATION)
-        
+
         // Check for any validation errors
-        const errorElements = await page.locator('.error, .invalid, [aria-invalid="true"]').count()
+        const errorElements = await page
+          .locator('.error, .invalid, [aria-invalid="true"]')
+          .count()
         if (errorElements > 0) {
           // Give extra time for error messages to render
           await page.waitForTimeout(200)
@@ -242,7 +246,7 @@ export const utilsFixtures = {
           } catch (error) {
             lastError = error as Error
             console.warn(`Navigation attempt ${i + 1} failed:`, error)
-            
+
             if (i < maxRetries - 1) {
               await page.waitForTimeout(1000 * (i + 1)) // Exponential backoff
             }
@@ -259,9 +263,9 @@ export const utilsFixtures = {
             try {
               const supabase = (window as any)?.supabase
               if (!supabase?.auth?.getSession) return false
-              
+
               const { data } = await supabase.auth.getSession()
-              return !!(data?.session)
+              return !!data?.session
             } catch {
               return false
             }
@@ -284,6 +288,130 @@ export const utilsFixtures = {
           await page.waitForURL(expectedUrl, { timeout })
         } catch (error) {
           throw new Error(`${errorMessage}: ${error}`)
+        }
+      },
+
+      async waitForDashboard(options: { timeout?: number } = {}) {
+        const timeout = options.timeout ?? config.timeouts.PAGE_LOAD
+
+        try {
+          // Wait for navigation to complete first
+          await page.waitForLoadState('networkidle', { timeout })
+
+          // Then wait for dashboard-specific elements to be visible
+          await page.waitForSelector(
+            '[data-testid="dashboard-header"], h1:has-text("Dashboard"), [data-testid="dashboard-stats"], .dashboard-content',
+            {
+              timeout,
+              state: 'visible',
+            }
+          )
+
+          // Wait for React to settle after navigation
+          await this.waitForReactToSettle()
+
+          // Ensure we're actually on a dashboard page
+          const isDashboard = await page.evaluate(() => {
+            return (
+              window.location.pathname.includes('/dashboard') ||
+              document.querySelector(
+                '[data-testid="dashboard-header"], h1:has-text("Dashboard"), [data-testid="dashboard-stats"]'
+              ) !== null
+            )
+          })
+
+          if (!isDashboard) {
+            throw new Error('Not on dashboard page after waiting')
+          }
+        } catch (error) {
+          throw new Error(`Failed to load dashboard: ${error}`)
+        }
+      },
+
+      async simulateSlowNetwork(delayMs: number = 1000) {
+        // Intercept API calls and add artificial delay
+        await page.route('**/api/**', async (route: any) => {
+          await new Promise((resolve) => setTimeout(resolve, delayMs))
+          route.continue()
+        })
+      },
+
+      async simulateApiError(
+        endpoint: string,
+        errorCode: number = 500,
+        errorMessage?: string
+      ) {
+        const responseBody =
+          errorMessage ||
+          (errorCode >= 500
+            ? 'DATABASE_CONNECTION_ERROR: Server error'
+            : 'API Error')
+
+        await page.route(`**${endpoint}**`, async (route: any) => {
+          await route.fulfill({
+            status: errorCode,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              error: responseBody,
+              message: responseBody,
+            }),
+          })
+        })
+      },
+
+      async simulateDatabaseError() {
+        // Simulate database connection errors for various endpoints
+        const databaseErrorResponse = {
+          error: 'DATABASE_CONNECTION_ERROR: Connection to database failed',
+          message: 'DATABASE_CONNECTION_ERROR: Connection to database failed',
+        }
+
+        // Intercept all API routes that might hit the database
+        await page.route('**/api/dashboard/**', async (route: any) => {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify(databaseErrorResponse),
+          })
+        })
+
+        await page.route('**/api/properties/**', async (route: any) => {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify(databaseErrorResponse),
+          })
+        })
+
+        await page.route('**/api/interactions/**', async (route: any) => {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify(databaseErrorResponse),
+          })
+        })
+      },
+
+      async clearNetworkInterception() {
+        // Clear all network route handlers
+        await page.unroute('**/*')
+      },
+
+      async waitForLoadingState(options: { timeout?: number } = {}) {
+        const timeout = options.timeout ?? 5000
+
+        try {
+          // Wait for any loading indicator to appear
+          await page.waitForSelector(
+            '[role="status"], .skeleton, [aria-busy="true"], .loading',
+            {
+              timeout,
+              state: 'visible',
+            }
+          )
+        } catch (_error) {
+          // Loading state might be too brief or not present
+          console.log('Loading state not detected - data may load immediately')
         }
       },
     }

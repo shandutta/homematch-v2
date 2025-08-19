@@ -24,12 +24,19 @@ const RATE_LIMIT_TIERS = {
     duration: 60 * 15, // 5 attempts per 15 minutes
     blockDuration: 60 * 30, // Block for 30 minutes on failure
   },
+  testing: {
+    points: 1000,
+    duration: 60, // 1000 requests per minute for testing
+    blockDuration: 5, // Block for 5 seconds only
+  },
 } as const
 
 // Create rate limiter instances
 const rateLimiters = new Map<string, RateLimiterMemory>()
 
-function getRateLimiter(tier: keyof typeof RATE_LIMIT_TIERS): RateLimiterMemory {
+function getRateLimiter(
+  tier: keyof typeof RATE_LIMIT_TIERS
+): RateLimiterMemory {
   const key = tier
   if (!rateLimiters.has(key)) {
     const config = RATE_LIMIT_TIERS[tier]
@@ -73,6 +80,13 @@ export async function rateLimit(
   request: NextRequest,
   tier: keyof typeof RATE_LIMIT_TIERS = 'standard'
 ): Promise<NextResponse | null> {
+  // Use testing tier during test mode
+  if (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    tier = 'testing'
+  }
   try {
     const clientId = await getClientIdentifier(request)
     const rateLimiter = getRateLimiter(tier)
@@ -84,9 +98,12 @@ export async function rateLimit(
     return null
   } catch (rateLimiterRes: unknown) {
     // Rate limit exceeded
-    const res = rateLimiterRes as { msBeforeNext?: number; remainingPoints?: number }
+    const res = rateLimiterRes as {
+      msBeforeNext?: number
+      remainingPoints?: number
+    }
     const retryAfter = Math.round(res.msBeforeNext || 60000 / 1000) || 60
-    
+
     return NextResponse.json(
       {
         error: 'Too Many Requests',
@@ -119,25 +136,24 @@ export async function withRateLimit(
     if (rateLimitResponse) {
       return rateLimitResponse
     }
-    
+
     // Execute handler with proper error handling
     try {
       return await handler()
     } catch (handlerError) {
       console.error('[withRateLimit] Handler error:', handlerError)
-      
+
       // Check if it's an auth error (common pattern)
       if (handlerError instanceof Error) {
-        if (handlerError.message.includes('Unauthorized') || 
-            handlerError.message.includes('auth') ||
-            handlerError.message.includes('token')) {
-          return NextResponse.json(
-            { error: 'Unauthorized' },
-            { status: 401 }
-          )
+        if (
+          handlerError.message.includes('Unauthorized') ||
+          handlerError.message.includes('auth') ||
+          handlerError.message.includes('token')
+        ) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
       }
-      
+
       // Return generic 500 for other errors
       return NextResponse.json(
         { error: 'Internal Server Error' },
@@ -146,12 +162,15 @@ export async function withRateLimit(
     }
   } catch (rateLimitError) {
     console.error('[withRateLimit] Rate limit error:', rateLimitError)
-    
+
     // If rate limiting itself fails, allow the request but log the error
     try {
       return await handler()
     } catch (handlerError) {
-      console.error('[withRateLimit] Handler error after rate limit failure:', handlerError)
+      console.error(
+        '[withRateLimit] Handler error after rate limit failure:',
+        handlerError
+      )
       return NextResponse.json(
         { error: 'Internal Server Error' },
         { status: 500 }
@@ -176,7 +195,10 @@ export async function authRateLimit(
     return null
   } catch (rateLimiterRes: unknown) {
     // Auth rate limit exceeded - potential brute force attempt
-    const res = rateLimiterRes as { msBeforeNext?: number; remainingPoints?: number }
+    const res = rateLimiterRes as {
+      msBeforeNext?: number
+      remainingPoints?: number
+    }
     const retryAfter = Math.round((res.msBeforeNext || 1800000) / 1000) || 1800
 
     // Log potential security incident

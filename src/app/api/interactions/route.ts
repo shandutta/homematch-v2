@@ -46,10 +46,7 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       // Not fatal; insert might still succeed if no matching row existed
-      console.warn(
-        'Warning deleting previous interaction:',
-        deleteError.message
-      )
+      // Log warning silently for debugging
     }
 
     // Insert the new interaction
@@ -64,7 +61,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('Insert interaction failed:', insertError)
       return NextResponse.json(
         { error: 'Failed to record interaction' },
         { status: 500 }

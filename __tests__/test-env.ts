@@ -12,47 +12,47 @@ export const setupTestEnvironment = () => {
     ...originalEnv,
     // Node environment
     NODE_ENV: 'test',
-    
+
     // App URLs
     NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
     APP_URL: 'http://localhost:3000',
-    
+
     // Supabase configuration
     NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key-for-testing-only',
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key-for-testing-only',
-    
+
     // Google Maps
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: 'test-google-maps-key',
     GOOGLE_MAPS_API_KEY: 'test-google-maps-key-server',
-    
+
     // Zillow/RapidAPI
     RAPIDAPI_KEY: 'test-rapidapi-key',
     RAPIDAPI_HOST: 'zillow-com1.p.rapidapi.com',
-    
+
     // Analytics (optional)
     NEXT_PUBLIC_GA_MEASUREMENT_ID: 'G-TEST123456',
     NEXT_PUBLIC_POSTHOG_KEY: 'test-posthog-key',
     NEXT_PUBLIC_POSTHOG_HOST: 'https://app.posthog.com',
-    
+
     // Feature flags
     NEXT_PUBLIC_ENABLE_ANALYTICS: 'false',
     NEXT_PUBLIC_ENABLE_SENTRY: 'false',
     NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING: 'false',
-    
+
     // Test-specific flags
     IS_TEST_ENV: 'true',
     SUPPRESS_TEST_WARNINGS: 'true',
-    
+
     // Database (for integration tests)
     DATABASE_URL: 'postgresql://postgres:postgres@localhost:54322/postgres',
-    
+
     // Redis (if used)
     REDIS_URL: 'redis://localhost:6379',
-    
+
     // Rate limiting
     RATE_LIMIT_ENABLED: 'false',
-    
+
     // Logging
     LOG_LEVEL: 'error', // Reduce noise in tests
   }
@@ -71,13 +71,13 @@ export const validateTestEnvironment = () => {
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   ]
-  
-  const missing = required.filter(key => !process.env[key])
-  
+
+  const missing = required.filter((key) => !process.env[key])
+
   if (missing.length > 0) {
     console.warn(`Missing test environment variables: ${missing.join(', ')}`)
   }
-  
+
   return missing.length === 0
 }
 
@@ -92,7 +92,7 @@ export const mockEnvironment = (overrides: Record<string, string>) => {
 export const suppressConsoleWarnings = () => {
   const originalWarn = console.warn
   const originalError = console.error
-  
+
   beforeAll(() => {
     console.warn = jest.fn((message, ...args) => {
       // Only show warnings that aren't test-related noise
@@ -105,7 +105,7 @@ export const suppressConsoleWarnings = () => {
         originalWarn(message, ...args)
       }
     })
-    
+
     console.error = jest.fn((message, ...args) => {
       // Filter out expected test errors
       if (
@@ -117,7 +117,7 @@ export const suppressConsoleWarnings = () => {
       }
     })
   })
-  
+
   afterAll(() => {
     console.warn = originalWarn
     console.error = originalError
@@ -133,9 +133,10 @@ export const testTimeout = {
 
 // Export test utilities
 export const testUtils = {
-  waitForNextTick: () => new Promise(resolve => process.nextTick(resolve)),
-  waitForTimeout: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
-  flushPromises: () => new Promise(resolve => setImmediate(resolve)),
+  waitForNextTick: () => new Promise((resolve) => process.nextTick(resolve)),
+  waitForTimeout: (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms)),
+  flushPromises: () => new Promise((resolve) => setImmediate(resolve)),
 }
 
 // Auto-setup for all tests

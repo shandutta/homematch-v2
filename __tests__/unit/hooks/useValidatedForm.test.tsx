@@ -17,11 +17,11 @@ import { useValidatedForm } from '@/hooks/useValidatedForm'
  * This file intentionally tests only the aspects of the hook that can be
  * reliably tested in isolation (e.g., initialization, default values, basic operations).
  *
- * The validation logic, real-time error handling, and form state management 
- * (isDirty, isTouched) of React Hook Form are tightly coupled to the DOM and 
- * component lifecycle. Therefore, comprehensive testing for these features is 
+ * The validation logic, real-time error handling, and form state management
+ * (isDirty, isTouched) of React Hook Form are tightly coupled to the DOM and
+ * component lifecycle. Therefore, comprehensive testing for these features is
  * delegated to component-level integration tests where the hook is used, such as
- * LoginForm.test.tsx. This aligns with React Hook Form's recommended testing 
+ * LoginForm.test.tsx. This aligns with React Hook Form's recommended testing
  * practices and ensures our tests are robust and meaningful.
  *
  * WHAT IS TESTED HERE:
@@ -182,7 +182,9 @@ describe('useValidatedForm', () => {
 
   describe('optional and nullable fields', () => {
     test('should handle optional fields correctly', () => {
-      const { result } = renderHook(() => useValidatedForm(optionalFieldsSchema))
+      const { result } = renderHook(() =>
+        useValidatedForm(optionalFieldsSchema)
+      )
 
       act(() => {
         result.current.setValue('required', 'test')
@@ -196,7 +198,9 @@ describe('useValidatedForm', () => {
     })
 
     test('should handle nullable fields correctly', () => {
-      const { result } = renderHook(() => useValidatedForm(optionalFieldsSchema))
+      const { result } = renderHook(() =>
+        useValidatedForm(optionalFieldsSchema)
+      )
 
       act(() => {
         result.current.setValue('required', 'test')
@@ -209,7 +213,9 @@ describe('useValidatedForm', () => {
     })
 
     test('should apply default values from schema', () => {
-      const { result } = renderHook(() => useValidatedForm(optionalFieldsSchema))
+      const { result } = renderHook(() =>
+        useValidatedForm(optionalFieldsSchema)
+      )
 
       act(() => {
         result.current.setValue('required', 'test')
@@ -272,9 +278,9 @@ describe('useValidatedForm', () => {
     })
   })
 
-  // NOTE: Error handling, form state management (isDirty, isTouched), and 
-  // real-time validation are intentionally not tested here as they require 
-  // DOM events and component lifecycle. These behaviors are comprehensively 
+  // NOTE: Error handling, form state management (isDirty, isTouched), and
+  // real-time validation are intentionally not tested here as they require
+  // DOM events and component lifecycle. These behaviors are comprehensively
   // tested through component integration tests like LoginForm.test.tsx.
 
   describe('watch functionality', () => {

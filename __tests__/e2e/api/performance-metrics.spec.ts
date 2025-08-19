@@ -14,14 +14,14 @@ const fetchJson = async (path: string, init?: RequestInit) => {
     },
     ...init,
   })
-  
+
   let body: any = {}
   try {
     body = await res.json()
   } catch {
     // non-JSON body
   }
-  
+
   return { status: res.status, body, headers: res.headers }
 }
 
@@ -68,7 +68,9 @@ const createValidMetricsPayload = (overrides?: any) => ({
 describe('Integration: /api/performance/metrics', () => {
   beforeAll(() => {
     if (!API_URL) {
-      throw new Error('TEST_API_URL environment variable is required for integration tests')
+      throw new Error(
+        'TEST_API_URL environment variable is required for integration tests'
+      )
     }
   })
 
@@ -80,7 +82,7 @@ describe('Integration: /api/performance/metrics', () => {
   describe('POST /api/performance/metrics', () => {
     test('should accept valid metrics payload', async () => {
       const payload = createValidMetricsPayload()
-      
+
       const { status, body } = await fetchJson('/api/performance/metrics', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -247,14 +249,16 @@ describe('Integration: /api/performance/metrics', () => {
       expect(body).toHaveProperty('total')
       expect(body).toHaveProperty('metrics')
       expect(body).toHaveProperty('aggregates')
-      
+
       expect(typeof body.total).toBe('number')
       expect(Array.isArray(body.metrics)).toBe(true)
       expect(typeof body.aggregates).toBe('object')
     })
 
     test('should filter by page parameter', async () => {
-      const { status, body } = await fetchJson('/api/performance/metrics?page=dashboard')
+      const { status, body } = await fetchJson(
+        '/api/performance/metrics?page=dashboard'
+      )
 
       expect(status).toBe(200)
       expect(body).toHaveProperty('total')
@@ -263,7 +267,9 @@ describe('Integration: /api/performance/metrics', () => {
     })
 
     test('should filter by metric parameter', async () => {
-      const { status, body } = await fetchJson('/api/performance/metrics?metric=lcp')
+      const { status, body } = await fetchJson(
+        '/api/performance/metrics?metric=lcp'
+      )
 
       expect(status).toBe(200)
       expect(body).toHaveProperty('total')
@@ -272,7 +278,9 @@ describe('Integration: /api/performance/metrics', () => {
     })
 
     test('should filter by rating parameter', async () => {
-      const { status, body } = await fetchJson('/api/performance/metrics?rating=poor')
+      const { status, body } = await fetchJson(
+        '/api/performance/metrics?rating=poor'
+      )
 
       expect(status).toBe(200)
       expect(body).toHaveProperty('total')
@@ -281,7 +289,9 @@ describe('Integration: /api/performance/metrics', () => {
     })
 
     test('should handle multiple query parameters', async () => {
-      const { status, body } = await fetchJson('/api/performance/metrics?page=dashboard&metric=lcp&rating=good')
+      const { status, body } = await fetchJson(
+        '/api/performance/metrics?page=dashboard&metric=lcp&rating=good'
+      )
 
       expect(status).toBe(200)
       expect(body).toHaveProperty('total')
@@ -290,7 +300,9 @@ describe('Integration: /api/performance/metrics', () => {
     })
 
     test('should return empty results for non-matching filters', async () => {
-      const { status, body } = await fetchJson('/api/performance/metrics?page=non-existent-page')
+      const { status, body } = await fetchJson(
+        '/api/performance/metrics?page=non-existent-page'
+      )
 
       expect(status).toBe(200)
       expect(body.total).toBeDefined()
@@ -316,7 +328,7 @@ describe('Integration: /api/performance/metrics', () => {
       const { status, body } = await fetchJson('/api/performance/metrics')
 
       expect(status).toBe(200)
-      
+
       if (Object.keys(body.aggregates).length > 0) {
         Object.values(body.aggregates).forEach((aggregate: any) => {
           expect(aggregate).toHaveProperty('count')
@@ -350,7 +362,7 @@ describe('Integration: /api/performance/metrics', () => {
   describe('Method validation', () => {
     test('should reject unsupported methods', async () => {
       const methods = ['PUT', 'DELETE', 'PATCH']
-      
+
       for (const method of methods) {
         const res = await fetch(`${API_URL}/api/performance/metrics`, {
           method,
@@ -358,7 +370,7 @@ describe('Integration: /api/performance/metrics', () => {
             'content-type': 'application/json',
           },
         })
-        
+
         expect(res.status).toBe(405)
       }
     })
@@ -367,7 +379,7 @@ describe('Integration: /api/performance/metrics', () => {
   describe('Error handling', () => {
     test('should handle concurrent POST requests', async () => {
       const payload = createValidMetricsPayload()
-      
+
       const requests = Array.from({ length: 5 }, () =>
         fetchJson('/api/performance/metrics', {
           method: 'POST',
@@ -385,7 +397,7 @@ describe('Integration: /api/performance/metrics', () => {
 
     test('should respond within reasonable time', async () => {
       const payload = createValidMetricsPayload()
-      
+
       const startTime = Date.now()
       const { status } = await fetchJson('/api/performance/metrics', {
         method: 'POST',

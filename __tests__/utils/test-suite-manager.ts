@@ -1,6 +1,6 @@
 /**
  * Test Suite Manager
- * 
+ *
  * Coordinates test suite execution with optimized database management.
  * Implements suite-level optimizations to minimize expensive operations.
  */
@@ -30,10 +30,10 @@ export class TestSuiteManager {
     }
 
     console.log('🔧 Initializing optimized test suite...')
-    
+
     // Initialize optimized database session
     await optimizedDbHelper.initializeSession()
-    
+
     this.suiteInitialized = true
     console.log('✅ Test suite initialized with optimized database session')
   }
@@ -45,9 +45,9 @@ export class TestSuiteManager {
     if (!this.suiteInitialized) {
       await this.initializeSuite()
     }
-    
+
     this.testCount++
-    
+
     // No expensive operations needed per test
     // Database connections are pooled and reused
   }
@@ -69,13 +69,13 @@ export class TestSuiteManager {
     }
 
     console.log(`🧹 Cleaning up test suite after ${this.testCount} tests...`)
-    
+
     // Final cleanup and close connections
     await optimizedDbHelper.closeSession()
-    
+
     this.suiteInitialized = false
     this.testCount = 0
-    
+
     console.log('✅ Test suite cleanup complete')
   }
 

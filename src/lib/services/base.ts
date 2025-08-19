@@ -1,6 +1,6 @@
 /**
  * Base Service Class
- * 
+ *
  * Provides common functionality for all service classes including
  * standardized error handling, validation, and database operations.
  */
@@ -9,24 +9,30 @@ import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
-import type { IBaseService, ISupabaseClientFactory, ClientConfig } from './interfaces'
-import { 
+import type {
+  IBaseService,
+  ISupabaseClientFactory,
+  ClientConfig,
+} from './interfaces'
+import {
   ValidationError,
   handleErrorLegacy,
   mapSupabaseError,
   getErrorHandlingConfig,
-  type ErrorHandlingConfig
+  type ErrorHandlingConfig,
 } from './errors'
 
 /**
  * Default Supabase client factory
  */
 export class DefaultSupabaseClientFactory implements ISupabaseClientFactory {
-  async createClient(_config?: ClientConfig): Promise<SupabaseClient<Database>> {
+  async createClient(
+    _config?: ClientConfig
+  ): Promise<SupabaseClient<Database>> {
     if (typeof window === 'undefined') {
-return await createServerClient()
+      return await createServerClient()
     }
-return await createBrowserClient()
+    return await createBrowserClient()
   }
 }
 
@@ -36,30 +42,32 @@ return await createBrowserClient()
 export abstract class BaseService implements IBaseService {
   protected readonly clientFactory: ISupabaseClientFactory
   protected readonly config: ErrorHandlingConfig
-  
+
   constructor(clientFactory?: ISupabaseClientFactory) {
     this.clientFactory = clientFactory || new DefaultSupabaseClientFactory()
     this.config = getErrorHandlingConfig()
   }
-  
+
   /**
    * Gets a Supabase client instance
    */
   protected async getSupabase(): Promise<SupabaseClient<Database>> {
     return this.clientFactory.createClient()
   }
-  
+
   /**
    * Validates that required parameters are provided
    */
   validateRequired(params: Record<string, unknown>): void {
     for (const [key, value] of Object.entries(params)) {
       if (value === undefined || value === null || value === '') {
-        throw new ValidationError(`Missing required parameter: ${key}`, { params })
+        throw new ValidationError(`Missing required parameter: ${key}`, {
+          params,
+        })
       }
     }
   }
-  
+
   /**
    * Sanitizes input data to prevent injection attacks
    */
@@ -67,31 +75,34 @@ export abstract class BaseService implements IBaseService {
     if (input === null || input === undefined) {
       return input
     }
-    
+
     if (typeof input === 'string') {
       // Basic SQL injection prevention
       return input.replace(/['"`;\\]/g, '') as T
     }
-    
+
     if (Array.isArray(input)) {
-      return input.map(item => this.sanitizeInput(item)) as T
+      return input.map((item) => this.sanitizeInput(item)) as T
     }
-    
+
     if (typeof input === 'object') {
       const sanitized = {} as Record<string, unknown>
       for (const [key, value] of Object.entries(input)) {
         // Skip potentially dangerous keys
-        if (key.toLowerCase().includes('script') || key.toLowerCase().includes('sql')) {
+        if (
+          key.toLowerCase().includes('script') ||
+          key.toLowerCase().includes('sql')
+        ) {
           continue
         }
         sanitized[key] = this.sanitizeInput(value)
       }
       return sanitized as T
     }
-    
+
     return input
   }
-  
+
   /**
    * Executes a database query with standardized error handling
    * Maintains backward compatibility while providing new error infrastructure
@@ -109,7 +120,7 @@ export abstract class BaseService implements IBaseService {
       return handleErrorLegacy<T>(operation, error) as T
     }
   }
-  
+
   /**
    * Executes a query that returns a single item (Property, User, etc.)
    * Returns null on error for backward compatibility
@@ -125,7 +136,7 @@ export abstract class BaseService implements IBaseService {
       return handleErrorLegacy<T>(operation, error, 'single') as T | null
     }
   }
-  
+
   /**
    * Executes a query that returns an array of items
    * Returns empty array on error for backward compatibility
@@ -141,7 +152,7 @@ export abstract class BaseService implements IBaseService {
       return handleErrorLegacy<T>(operation, error, 'array') as T[]
     }
   }
-  
+
   /**
    * Executes a query that returns a boolean result
    * Returns false on error for backward compatibility
@@ -158,26 +169,37 @@ export abstract class BaseService implements IBaseService {
       return false
     }
   }
-  
+
   /**
    * Handles Supabase errors and converts them to ServiceErrors
    */
-  protected handleSupabaseError(error: unknown, operation: string, context?: Record<string, unknown>): never {
+  protected handleSupabaseError(
+    error: unknown,
+    operation: string,
+    context?: Record<string, unknown>
+  ): never {
     const serviceError = mapSupabaseError(error, operation, context)
     throw serviceError
   }
-  
+
   /**
    * Checks if error is a "not found" error
    */
   protected isNotFoundError(error: unknown): boolean {
-    return typeof error === 'object' && error !== null && (error as { code?: string }).code === 'PGRST116'
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      (error as { code?: string }).code === 'PGRST116'
+    )
   }
-  
+
   /**
    * Logs operation for debugging (in development)
    */
-  protected logOperation(operation: string, params?: Record<string, unknown>): void {
+  protected logOperation(
+    operation: string,
+    params?: Record<string, unknown>
+  ): void {
     if (process.env.NODE_ENV === 'development') {
       console.debug(`[${this.constructor.name}] ${operation}`, params)
     }
@@ -198,7 +220,7 @@ export function withErrorHandling<T extends unknown[], R>(
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = async function (...args: T): Promise<R> {
       try {
         return await originalMethod.apply(this, args)
@@ -209,15 +231,15 @@ export function withErrorHandling<T extends unknown[], R>(
           error,
           returnType as 'single' | 'array'
         )
-        
+
         if (returnType === 'boolean') {
           return false as R
         }
-        
+
         return result as R
       }
     }
-    
+
     return descriptor
   }
 }
@@ -232,14 +254,14 @@ export function logMethodCall() {
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = async function (...args: unknown[]) {
       if (process.env.NODE_ENV === 'development') {
         console.debug(`[${target.constructor.name}] ${propertyKey}`, args)
       }
       return originalMethod.apply(this, args)
     }
-    
+
     return descriptor
   }
 }
@@ -254,7 +276,7 @@ export function validateParams(requiredParams: string[]) {
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value
-    
+
     descriptor.value = function (...args: unknown[]) {
       // Simple validation for first argument if it's an object
       if (args.length > 0 && typeof args[0] === 'object') {
@@ -265,10 +287,10 @@ export function validateParams(requiredParams: string[]) {
           }
         }
       }
-      
+
       return originalMethod.apply(this, args)
     }
-    
+
     return descriptor
   }
 }
@@ -295,11 +317,11 @@ export class LegacyServiceAdapter {
           error,
           returnType as 'single' | 'array'
         )
-        
+
         if (returnType === 'boolean') {
           return false as R
         }
-        
+
         return result as R
       }
     }

@@ -120,7 +120,10 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
           <CardContent className="space-y-6">
             <div>
               <p className="text-primary/40 mb-2 text-sm">Household Name</p>
-              <p className="text-primary-foreground text-xl" data-testid="household-name">
+              <p
+                className="text-primary-foreground text-xl"
+                data-testid="household-name"
+              >
                 {profile.household.name}
               </p>
             </div>
@@ -128,7 +131,10 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             <div>
               <p className="text-primary/40 mb-2 text-sm">Household Code</p>
               <div className="flex items-center gap-2">
-                <code className="bg-primary/30 text-primary/60 rounded px-3 py-1 text-sm" data-testid="household-id">
+                <code
+                  className="bg-primary/30 text-primary/60 rounded px-3 py-1 text-sm"
+                  data-testid="household-id"
+                >
                   {profile.household.id}
                 </code>
                 <Button

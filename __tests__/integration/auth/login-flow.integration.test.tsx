@@ -20,7 +20,7 @@ describe('Login Flow Integration', () => {
   const mockPush = vi.fn()
   const mockSignInWithPassword = vi.fn()
   const mockSignInWithOAuth = vi.fn()
-  
+
   const mockUseRouter = vi.mocked(useRouter)
   const mockCreateClient = vi.mocked(createClient)
 
@@ -30,17 +30,17 @@ describe('Login Flow Integration', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks()
-    
+
     // Reset mock implementations with default behavior
-    mockSignInWithPassword.mockResolvedValue({ 
-      data: { user: null, session: null }, 
-      error: null 
+    mockSignInWithPassword.mockResolvedValue({
+      data: { user: null, session: null },
+      error: null,
     })
-    mockSignInWithOAuth.mockResolvedValue({ 
-      data: { url: null }, 
-      error: null 
+    mockSignInWithOAuth.mockResolvedValue({
+      data: { url: null },
+      error: null,
     })
-    
+
     // Setup router mock with custom push handler
     mockUseRouter.mockReturnValue({
       push: mockPush,
@@ -50,7 +50,7 @@ describe('Login Flow Integration', () => {
       refresh: vi.fn(),
       prefetch: vi.fn(),
     })
-    
+
     // Setup Supabase client with custom auth handlers
     mockCreateClient.mockReturnValue({
       auth: {

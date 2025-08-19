@@ -28,7 +28,15 @@ export const propertySchema = z.object({
   square_feet: z.number().min(0).nullable(),
   // Tight enum per domain decision - matches production database schema
   property_type: z
-    .enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other'])
+    .enum([
+      'single_family',
+      'condo',
+      'townhome',
+      'multi_family',
+      'manufactured',
+      'land',
+      'other',
+    ])
     .nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
@@ -148,7 +156,17 @@ export const propertyFiltersSchema = z.object({
   square_feet_min: z.number().min(0).optional(),
   square_feet_max: z.number().min(0).optional(),
   property_types: z
-    .array(z.enum(['single_family', 'condo', 'townhome', 'multi_family', 'manufactured', 'land', 'other']))
+    .array(
+      z.enum([
+        'single_family',
+        'condo',
+        'townhome',
+        'multi_family',
+        'manufactured',
+        'land',
+        'other',
+      ])
+    )
     .optional(),
   neighborhoods: z.array(z.string().uuid()).optional(),
   amenities: z.array(z.string()).optional(),
@@ -202,9 +220,9 @@ export const propertySearchSchema = z.object({
 })
 
 // Re-export coordinate utilities for backward compatibility
-export { 
+export {
   latLngSchema as coordinatesSchema,
-  boundingBoxSchema 
+  boundingBoxSchema,
 } from '@/lib/utils/coordinates'
 
 // Export types
@@ -225,4 +243,7 @@ export type PropertyPagination = z.infer<typeof propertyPaginationSchema>
 export type PropertySearch = z.infer<typeof propertySearchSchema>
 
 // Re-export coordinate types for backward compatibility
-export type { LatLng as Coordinates, BoundingBox } from '@/lib/utils/coordinates'
+export type {
+  LatLng as Coordinates,
+  BoundingBox,
+} from '@/lib/utils/coordinates'

@@ -1,6 +1,6 @@
 /**
  * Legacy PropertyService export for backward compatibility
- * 
+ *
  * This file maintains existing import paths while delegating to the new
  * facade-based implementation. All functionality has been moved to
  * specialized services under src/lib/services/properties/

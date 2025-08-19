@@ -103,9 +103,7 @@ describe('LoginForm', () => {
     expect(screen.getByTestId('google-signin-button')).toBeInTheDocument()
 
     // Still check critical text content for user-facing validation
-    expect(
-      screen.getByText('Welcome back')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Welcome back')).toBeInTheDocument()
     expect(screen.getByText('Or continue with')).toBeInTheDocument()
   })
 

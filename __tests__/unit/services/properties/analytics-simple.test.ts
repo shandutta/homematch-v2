@@ -64,9 +64,27 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
   describe('getPropertyStats', () => {
     test('should calculate comprehensive property statistics', async () => {
       const mockProperties = [
-        { price: 500000, bedrooms: 3, bathrooms: 2, square_feet: 1500, property_type: 'single_family' },
-        { price: 700000, bedrooms: 4, bathrooms: 3, square_feet: 2000, property_type: 'single_family' },
-        { price: 300000, bedrooms: 2, bathrooms: 1, square_feet: 1000, property_type: 'condo' }
+        {
+          price: 500000,
+          bedrooms: 3,
+          bathrooms: 2,
+          square_feet: 1500,
+          property_type: 'single_family',
+        },
+        {
+          price: 700000,
+          bedrooms: 4,
+          bathrooms: 3,
+          square_feet: 2000,
+          property_type: 'single_family',
+        },
+        {
+          price: 300000,
+          bedrooms: 2,
+          bathrooms: 1,
+          square_feet: 1000,
+          property_type: 'condo',
+        },
       ]
 
       // Mock the final promise resolution
@@ -85,8 +103,8 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
         avg_bathrooms: 2.0, // (2 + 3 + 1) / 3 = 2.0
         avg_square_feet: 1500, // (1500 + 2000 + 1000) / 3
         property_type_distribution: {
-          'single_family': 2,
-          'condo': 1
+          single_family: 2,
+          condo: 1,
         },
       })
     })
@@ -157,8 +175,18 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
   describe('getMarketTrends', () => {
     test('should return market trends successfully', async () => {
       const mockTrends = [
-        { period: '2024-01', avg_price: 500000, total_listings: 100, price_change_percent: 2.5 },
-        { period: '2024-02', avg_price: 510000, total_listings: 95, price_change_percent: 2.0 },
+        {
+          period: '2024-01',
+          avg_price: 500000,
+          total_listings: 100,
+          price_change_percent: 2.5,
+        },
+        {
+          period: '2024-02',
+          avg_price: 510000,
+          total_listings: 95,
+          price_change_percent: 2.0,
+        },
       ]
 
       mockRPC.get_market_trends.mockResolvedValue({
@@ -171,7 +199,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
       expect(result).toEqual(mockTrends)
       expect(mockRPC.get_market_trends).toHaveBeenCalledWith({
         timeframe: 'monthly',
-        months_back: 12
+        months_back: 12,
       })
     })
 
@@ -184,13 +212,13 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
       await analyticsService.getMarketTrends('weekly')
       expect(mockRPC.get_market_trends).toHaveBeenCalledWith({
         timeframe: 'weekly',
-        months_back: 3
+        months_back: 3,
       })
 
       await analyticsService.getMarketTrends('quarterly')
       expect(mockRPC.get_market_trends).toHaveBeenCalledWith({
         timeframe: 'quarterly',
-        months_back: 24
+        months_back: 24,
       })
     })
   })
@@ -200,7 +228,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
       const mockVelocity = {
         avg_days_on_market: 25.5,
         total_sold: 42,
-        velocity_score: 75
+        velocity_score: 75,
       }
 
       mockRPC.get_market_velocity.mockResolvedValue({
@@ -212,7 +240,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
 
       expect(result).toEqual(mockVelocity)
       expect(mockRPC.get_market_velocity).toHaveBeenCalledWith({
-        target_neighborhood_id: 'neigh-123'
+        target_neighborhood_id: 'neigh-123',
       })
     })
 
@@ -227,7 +255,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
       expect(result).toEqual({
         avg_days_on_market: 0,
         total_sold: 0,
-        velocity_score: 0
+        velocity_score: 0,
       })
     })
   })
@@ -240,16 +268,31 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1600,
-        property_type: 'single_family'
+        property_type: 'single_family',
       }
 
       const mockComparables = [
-        { id: 'comp-1', price: 520000, bedrooms: 3, bathrooms: 2, square_feet: 1550 },
-        { id: 'comp-2', price: 580000, bedrooms: 3, bathrooms: 2, square_feet: 1650 }
+        {
+          id: 'comp-1',
+          price: 520000,
+          bedrooms: 3,
+          bathrooms: 2,
+          square_feet: 1550,
+        },
+        {
+          id: 'comp-2',
+          price: 580000,
+          bedrooms: 3,
+          bathrooms: 2,
+          square_feet: 1650,
+        },
       ]
 
       // Mock property query
-      mockSupabaseClient.single.mockResolvedValueOnce({ data: mockProperty, error: null })
+      mockSupabaseClient.single.mockResolvedValueOnce({
+        data: mockProperty,
+        error: null,
+      })
 
       // Mock comparables query
       mockSupabaseClient.limit.mockResolvedValue({
@@ -274,7 +317,8 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
         error: { message: 'Property not found' },
       })
 
-      const result = await analyticsService.analyzePropertyPricing('nonexistent')
+      const result =
+        await analyticsService.analyzePropertyPricing('nonexistent')
 
       expect(result).toBeNull()
     })
@@ -291,7 +335,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
 
       expect(createTypedRPC).toHaveBeenCalledWith(mockSupabaseClient)
       expect(mockRPC.get_neighborhood_stats).toHaveBeenCalledWith({
-        neighborhood_uuid: 'test-id'
+        neighborhood_uuid: 'test-id',
       })
     })
 
@@ -305,7 +349,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
 
       expect(mockRPC.get_property_market_comparisons).toHaveBeenCalledWith({
         target_property_id: 'prop-123',
-        radius_km: 5
+        radius_km: 5,
       })
     })
 
@@ -320,7 +364,7 @@ describe('PropertyAnalyticsService - Core Functionality', () => {
       expect(mockRPC.get_similar_properties).toHaveBeenCalledWith({
         target_property_id: 'prop-123',
         radius_km: 5,
-        result_limit: 10
+        result_limit: 10,
       })
     })
   })

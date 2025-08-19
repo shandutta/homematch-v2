@@ -6,24 +6,31 @@ import { createClient } from '@/lib/supabase/standalone'
 import { cleanupAllTestData } from '../utils/test-data-factory'
 
 let supabaseClient: ReturnType<typeof createClient> | null = null
+let clientInitialized = false
 
 /**
  * Setup test database with clean state
  */
 export async function setupTestDatabase() {
   try {
+    // Reuse existing client to prevent multiple GoTrueClient instances
+    if (clientInitialized && supabaseClient) {
+      return supabaseClient
+    }
+
     // Create Supabase client for tests
     supabaseClient = createClient()
-    
+    clientInitialized = true
+
     // Verify connection
     const { data: _data, error } = await supabaseClient
       .from('user_profiles')
       .select('count', { count: 'exact', head: true })
-    
+
     if (error) {
       console.warn('Database connection check failed:', error.message)
     }
-    
+
     console.log('✅ Test database connection established')
     return supabaseClient
   } catch (error) {
@@ -39,7 +46,7 @@ export async function cleanupTestDatabase() {
   try {
     // Clean up test data factory records
     await cleanupAllTestData()
-    
+
     console.log('✅ Test database cleaned up')
   } catch (error) {
     console.error('❌ Failed to cleanup test database:', error)
@@ -52,7 +59,9 @@ export async function cleanupTestDatabase() {
  */
 export function getTestDatabaseClient() {
   if (!supabaseClient) {
-    throw new Error('Test database not initialized. Call setupTestDatabase() first.')
+    throw new Error(
+      'Test database not initialized. Call setupTestDatabase() first.'
+    )
   }
   return supabaseClient
 }
@@ -63,4 +72,14 @@ export function getTestDatabaseClient() {
 export async function resetTestDatabase() {
   await cleanupTestDatabase()
   await setupTestDatabase()
+}
+
+/**
+ * Get shared test client - prevents multiple GoTrueClient instances
+ */
+export async function getSharedTestClient() {
+  if (!clientInitialized || !supabaseClient) {
+    return await setupTestDatabase()
+  }
+  return supabaseClient
 }

@@ -14,7 +14,12 @@ import {
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PropertyImage } from '@/components/ui/property-image'
-import { MotionDiv, slideInRight, scaleIn, normalTransition } from '@/components/ui/motion-components'
+import {
+  MotionDiv,
+  slideInRight,
+  scaleIn,
+  normalTransition,
+} from '@/components/ui/motion-components'
 import { formatPrice } from '@/lib/utils/formatting'
 import { formatDistanceToNow } from 'date-fns'
 import type { HouseholdActivity } from '@/lib/services/couples'
@@ -50,7 +55,7 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
       <Card className="card-glassmorphism-style border-couples-secondary/20">
         <CardHeader>
           <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Activity className="h-6 w-6 text-couples-secondary" />
+            <Activity className="text-couples-secondary h-6 w-6" />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -61,7 +66,7 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <Activity className="h-16 w-16 text-couples-secondary/30" />
+                <Activity className="text-couples-secondary/30 h-16 w-16" />
               </MotionDiv>
             </div>
             <h3 className="text-primary-foreground mb-2 text-xl font-semibold">
@@ -155,10 +160,10 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
                               initial="initial"
                               animate="animate"
                               transition={normalTransition}
-                              className="flex items-center gap-1 rounded-full bg-gradient-couples-mutual px-2 py-0.5"
+                              className="bg-gradient-couples-mutual flex items-center gap-1 rounded-full px-2 py-0.5"
                             >
-                              <Sparkles className="h-3 w-3 text-couples-primary" />
-                              <span className="text-xs font-semibold text-couples-primary">
+                              <Sparkles className="text-couples-primary h-3 w-3" />
+                              <span className="text-couples-primary text-xs font-semibold">
                                 Mutual!
                               </span>
                             </MotionDiv>
