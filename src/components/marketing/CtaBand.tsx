@@ -45,16 +45,35 @@ export function CtaBand() {
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            {/* Bottom CTA uses the reusable prime variant (brand blue ring, dark fill) */}
-            <Button variant="prime" size="xl" asChild>
+            {/* Match hero primary CTA behavior: white text, scale + background shift on hover */}
+            <Button
+              variant="prime"
+              size="lg"
+              asChild
+              className="group relative overflow-visible px-4 py-3 sm:px-8 sm:py-4"
+            >
               <Link
                 href="/signup"
                 aria-label="Start Swiping"
-                className="relative inline-flex items-center justify-center"
+                className="relative inline-flex w-full items-center justify-center sm:w-auto"
+                data-cta="dopamine-cta-band"
               >
-                <span className="relative z-10 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+                {/* Animated gradient background on hover */}
+                <span
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl"
+                  aria-hidden="true"
+                />
+
+                {/* Button text with enhanced glow (white by prime variant) */}
+                <span className="relative z-10 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]">
                   Start Swiping
                 </span>
+
+                {/* Subtle pulse ring on hover */}
+                <span
+                  className="absolute inset-0 rounded-full ring-2 ring-white/0 transition-all duration-500 group-hover:ring-white/20 group-hover:ring-offset-4 group-hover:ring-offset-transparent"
+                  aria-hidden="true"
+                />
               </Link>
             </Button>
 
