@@ -60,7 +60,7 @@ export function CtaBand() {
               >
                 {/* Animated gradient background on hover */}
                 <span
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl"
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-90 group-hover:blur-lg"
                   aria-hidden="true"
                 />
 
@@ -71,7 +71,7 @@ export function CtaBand() {
 
                 {/* Subtle pulse ring on hover */}
                 <span
-                  className="absolute inset-0 rounded-full ring-2 ring-white/0 transition-all duration-500 group-hover:ring-white/20 group-hover:ring-offset-4 group-hover:ring-offset-transparent"
+                  className="absolute inset-0 rounded-full ring-1 ring-white/0 transition-all duration-500 group-hover:ring-white/15 group-hover:ring-offset-2 group-hover:ring-offset-transparent"
                   aria-hidden="true"
                 />
               </Link>

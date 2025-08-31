@@ -69,7 +69,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/signup"
-                  className="p-token-sm transition-token-colors inline-block min-h-[44px] hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Get Started
                 </Link>
@@ -77,7 +77,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/login"
-                  className="p-token-sm transition-token-colors inline-block min-h-[44px] hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Sign In
                 </Link>
