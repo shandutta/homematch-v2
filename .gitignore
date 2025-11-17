@@ -106,3 +106,5 @@ dist/
 
 # Zen MCP Server
 zen-mcp-server/
+.vercel
+.env*.local
