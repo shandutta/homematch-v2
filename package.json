@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "db:reset": "supabase start && supabase db reset",
-    "dev": "node scripts/kill-port.js 3000 && next dev --turbopack",
+    "dev": "node scripts/kill-port.js 3000 && next dev --turbopack --hostname 127.0.0.1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
