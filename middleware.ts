@@ -21,17 +21,24 @@ export async function middleware(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const isPkceCookie = name.endsWith('code-verifier')
+            const sharedOptions = {
               ...options,
-              // Enhanced cookie configuration for cross-browser compatibility
-              httpOnly: true, // SECURITY: Prevent XSS
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax', // Better cross-browser compatibility than 'strict'
-              maxAge: 60 * 60 * 24 * 7, // 7 days
-              path: '/',
+              maxAge: options?.maxAge ?? 60 * 60 * 24 * 7,
+              path: options?.path ?? '/',
+              sameSite: options?.sameSite ?? 'lax',
+              secure:
+                typeof options?.secure === 'boolean'
+                  ? options.secure
+                  : process.env.NODE_ENV === 'production',
+            }
+
+            supabaseResponse.cookies.set(name, value, {
+              ...sharedOptions,
+              httpOnly: isPkceCookie ? false : true, // PKCE cookie must be JS-readable
             })
-          )
+          })
         },
       },
       auth: {

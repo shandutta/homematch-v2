@@ -8,10 +8,15 @@ import { Property } from '@/lib/schemas/property'
 import { UserPreferences } from '@/lib/schemas/user'
 
 /**
- * Interaction types aligned to DB: user_property_interactions.interaction_type
- * UI "pass" maps to "skip" in DB.
+ * Interaction types used in the UI layer (e.g., query params, hooks, components).
+ * Convert to DB values via lib/utils/interaction-type helpers before persisting.
  */
 export type InteractionType = 'viewed' | 'liked' | 'skip'
+
+/**
+ * Raw interaction values stored in user_property_interactions.
+ */
+export type DbInteractionType = 'view' | 'like' | 'skip' | 'dislike'
 
 /**
  * Represents a user interaction with a property.

@@ -5,6 +5,7 @@ import {
   useMutation,
   useQueryClient,
   useInfiniteQuery,
+  type InfiniteData,
 } from '@tanstack/react-query'
 import { InteractionService } from '@/lib/services/interactions'
 import { InteractionType, InteractionSummary, PageResponse } from '@/types/app'
@@ -17,6 +18,15 @@ export const interactionKeys = {
   summaries: () => [...interactionKeys.all, 'summary'] as const,
   lists: () => [...interactionKeys.all, 'list'] as const,
   list: (type: InteractionType) => [...interactionKeys.lists(), type] as const,
+}
+
+export const summaryKeyForInteraction: Record<
+  InteractionType,
+  keyof InteractionSummary
+> = {
+  liked: 'liked',
+  viewed: 'viewed',
+  skip: 'passed',
 }
 
 /**
@@ -57,20 +67,14 @@ export function useRecordInteraction() {
       )
 
       // Optimistically update
-      if (previousSummary) {
+      const summaryKey = summaryKeyForInteraction[type]
+
+      if (previousSummary && summaryKey) {
         queryClient.setQueryData<InteractionSummary>(
           interactionKeys.summaries(),
           {
             ...previousSummary,
-            viewed: previousSummary.viewed + 1,
-            liked:
-              type === 'liked'
-                ? previousSummary.liked + 1
-                : previousSummary.liked,
-            passed:
-              type === 'skip'
-                ? previousSummary.passed + 1
-                : previousSummary.passed,
+            [summaryKey]: previousSummary[summaryKey] + 1,
           }
         )
       }
@@ -91,6 +95,78 @@ export function useRecordInteraction() {
     // Always refetch after error or success
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
+    },
+  })
+}
+
+/**
+ * Deletes an interaction (e.g., remove from liked list) and updates cached data.
+ */
+export function useDeleteInteraction(type: InteractionType) {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    unknown,
+    Error,
+    { propertyId: string },
+    {
+      previousSummary?: InteractionSummary
+      previousList?: InfiniteData<PageResponse<Property>>
+    }
+  >({
+    mutationFn: ({ propertyId }) =>
+      InteractionService.deleteInteraction(propertyId),
+    onMutate: async ({ propertyId }) => {
+      await queryClient.cancelQueries({ queryKey: interactionKeys.summaries() })
+      await queryClient.cancelQueries({ queryKey: interactionKeys.list(type) })
+
+      const previousSummary = queryClient.getQueryData<InteractionSummary>(
+        interactionKeys.summaries()
+      )
+      const previousList = queryClient.getQueryData<
+        InfiniteData<PageResponse<Property>>
+      >(interactionKeys.list(type))
+
+      if (previousSummary) {
+        const summaryKey = summaryKeyForInteraction[type]
+        queryClient.setQueryData<InteractionSummary>(
+          interactionKeys.summaries(),
+          {
+            ...previousSummary,
+            [summaryKey]: Math.max(previousSummary[summaryKey] - 1, 0),
+          }
+        )
+      }
+
+      if (previousList) {
+        queryClient.setQueryData(interactionKeys.list(type), {
+          ...previousList,
+          pages: previousList.pages.map((page) => ({
+            ...page,
+            items: page.items.filter((property) => property.id !== propertyId),
+          })),
+        })
+      }
+
+      return { previousSummary, previousList }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousSummary) {
+        queryClient.setQueryData(
+          interactionKeys.summaries(),
+          context.previousSummary
+        )
+      }
+      if (context?.previousList) {
+        queryClient.setQueryData(
+          interactionKeys.list(type),
+          context.previousList
+        )
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
+      queryClient.invalidateQueries({ queryKey: interactionKeys.list(type) })
     },
   })
 }

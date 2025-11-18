@@ -169,4 +169,37 @@ describe('InteractionService', () => {
       ).rejects.toThrow('Failed to fetch interactions (400): Bad request')
     })
   })
+
+  describe('deleteInteraction', () => {
+    test('success: sends DELETE with body', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+      } as any)
+
+      await InteractionService.deleteInteraction('prop-1')
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/interactions',
+        expect.objectContaining({
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)
+      expect(body).toEqual({ propertyId: 'prop-1' })
+    })
+
+    test('error: throws on non-2xx response', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        text: async () => 'Forbidden',
+      } as any)
+
+      await expect(
+        InteractionService.deleteInteraction('prop-2')
+      ).rejects.toThrow('Failed to delete interaction (403): Forbidden')
+    })
+  })
 })

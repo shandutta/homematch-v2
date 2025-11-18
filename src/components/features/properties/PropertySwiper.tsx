@@ -1,6 +1,14 @@
 'use client'
 
-import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react'
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+} from 'react'
 import { Heart, Users } from 'lucide-react'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType } from '@/types/app'
@@ -39,6 +47,7 @@ interface PropertySwiperProps {
     count?: number
   } | null
   onClearCelebration?: () => void
+  onView?: (propertyId: string) => void
 }
 
 export function PropertySwiper({
@@ -48,6 +57,7 @@ export function PropertySwiper({
   showSwipeHints = true,
   celebrationTrigger,
   onClearCelebration: _onClearCelebration,
+  onView,
 }: PropertySwiperProps) {
   // Performance monitoring
   useRenderPerformance('PropertySwiper')
@@ -58,6 +68,7 @@ export function PropertySwiper({
   const [swipeHistory, setSwipeHistory] = useState<
     Array<{ propertyId: string; type: InteractionType }>
   >([])
+  const viewedRef = useRef(new Set<string>())
 
   // Memoize mutual likes computation to avoid recalculation on every render
   const mutualLikesSet = useMemo(
@@ -95,6 +106,18 @@ export function PropertySwiper({
     // For now, we just handle the UI state
   }, [swipeHistory, currentIndex])
 
+  // Check if the current property is mutually liked for showing helper text
+  const currentProperty = properties[currentIndex]
+  const currentIsMutuallyLiked =
+    currentProperty && mutualLikesSet.has(currentProperty.id)
+
+  useEffect(() => {
+    if (!currentProperty || !onView) return
+    if (viewedRef.current.has(currentProperty.id)) return
+    viewedRef.current.add(currentProperty.id)
+    onView(currentProperty.id)
+  }, [currentProperty, onView])
+
   if (isLoading) {
     return (
       <div className="relative mx-auto h-[600px] w-full max-w-md">
@@ -118,11 +141,6 @@ export function PropertySwiper({
       </div>
     )
   }
-
-  // Check if the current property is mutually liked for showing helper text
-  const currentProperty = properties[currentIndex]
-  const currentIsMutuallyLiked =
-    currentProperty && mutualLikesSet.has(currentProperty.id)
 
   return (
     <div className="relative">

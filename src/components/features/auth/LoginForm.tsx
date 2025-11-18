@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/form'
 import { Loader2 } from 'lucide-react'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
+import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
@@ -65,7 +66,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || location.origin}/auth/callback`,
+        redirectTo: buildBrowserRedirectUrl(),
       },
     })
 

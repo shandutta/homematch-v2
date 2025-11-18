@@ -38,6 +38,7 @@ interface StorytellingDescriptionProps {
   className?: string
   showNeighborhoodPerks?: boolean
   showFutureVision?: boolean
+  showLifestyleTags?: boolean
   variant?: 'full' | 'compact' | 'minimal'
 }
 
@@ -676,6 +677,7 @@ export function StorytellingDescription({
   className = '',
   showNeighborhoodPerks = true,
   showFutureVision = true,
+  showLifestyleTags = true,
   variant = 'full',
 }: StorytellingDescriptionProps) {
   const description = getDescription(property, neighborhood, isMutualLike)
@@ -723,24 +725,44 @@ export function StorytellingDescription({
           {description}
         </p>
 
-        {/* Top 2 Lifestyle Tags */}
-        <div className="flex flex-wrap gap-1">
-          {lifestyleTags.slice(0, 2).map((tag, _index) => {
-            const tagConfig = LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
-            const IconComponent = tagConfig.icon
+        {/* Future vision tag - show as subtle pill when enabled */}
+        {futureVision && (
+          <div className="rounded-token-2xl shadow-token-sm border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60">
+            <div className="flex items-start gap-2">
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
+              <div>
+                <p className="text-[11px] font-semibold tracking-[0.2em] text-blue-700 uppercase">
+                  {futureVision.tag}
+                </p>
+                <p className="text-[11px] leading-snug text-slate-600">
+                  {futureVision.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
-            return (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className={`${tagConfig.color} text-token-xs flex items-center gap-1 px-2 py-0.5`}
-              >
-                <IconComponent className="h-2.5 w-2.5" />
-                {tag}
-              </Badge>
-            )
-          })}
-        </div>
+        {/* Top 2 Lifestyle Tags */}
+        {showLifestyleTags && lifestyleTags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {lifestyleTags.slice(0, 2).map((tag, _index) => {
+              const tagConfig =
+                LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
+              const IconComponent = tagConfig.icon
+
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className={`${tagConfig.color} text-token-xs flex items-center gap-1 px-2 py-0.5`}
+                >
+                  <IconComponent className="h-2.5 w-2.5" />
+                  {tag}
+                </Badge>
+              )
+            })}
+          </div>
+        )}
       </MotionDiv>
     )
   }
@@ -827,40 +849,42 @@ export function StorytellingDescription({
       )}
 
       {/* Lifestyle Tags */}
-      <MotionDiv
-        className="flex flex-wrap gap-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.6 }}
-      >
-        {lifestyleTags.map((tag, _index) => {
-          const tagConfig = LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
-          const IconComponent = tagConfig.icon
+      {showLifestyleTags && lifestyleTags.length > 0 && (
+        <MotionDiv
+          className="flex flex-wrap gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+        >
+          {lifestyleTags.map((tag, _index) => {
+            const tagConfig = LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
+            const IconComponent = tagConfig.icon
 
-          return (
-            <MotionDiv
-              key={tag}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: 0.3,
-                delay: 0.7 + _index * 0.1,
-                type: 'spring',
-                stiffness: 200,
-              }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <Badge
-                variant="secondary"
-                className={`${tagConfig.color} text-token-xs flex cursor-default items-center gap-1 px-2 py-1 font-medium transition-all hover:shadow-sm`}
+            return (
+              <MotionDiv
+                key={tag}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.3,
+                  delay: 0.7 + _index * 0.1,
+                  type: 'spring',
+                  stiffness: 200,
+                }}
+                whileHover={{ scale: 1.05 }}
               >
-                <IconComponent className="h-3 w-3" />
-                {tag}
-              </Badge>
-            </MotionDiv>
-          )
-        })}
-      </MotionDiv>
+                <Badge
+                  variant="secondary"
+                  className={`${tagConfig.color} text-token-xs flex cursor-default items-center gap-1 px-2 py-1 font-medium transition-all hover:shadow-sm`}
+                >
+                  <IconComponent className="h-3 w-3" />
+                  {tag}
+                </Badge>
+              </MotionDiv>
+            )
+          })}
+        </MotionDiv>
+      )}
     </MotionDiv>
   )
 }

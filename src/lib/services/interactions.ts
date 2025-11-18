@@ -63,4 +63,16 @@ export const InteractionService = {
     }
     return (await res.json()) as PageResponse<T>
   },
+
+  async deleteInteraction(propertyId: string): Promise<void> {
+    const res = await fetch('/api/interactions', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ propertyId }),
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`Failed to delete interaction (${res.status}): ${text}`)
+    }
+  },
 }

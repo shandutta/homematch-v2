@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from './server'
+import { buildServerRedirectUrl } from '@/lib/utils/server-url'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -59,15 +60,12 @@ export async function signOut() {
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
-
-  // Use NEXT_PUBLIC_APP_URL which should be set in Vercel env variables
-  // Deployment trigger: 2025-07-31 16:56 UTC
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const redirectTo = await buildServerRedirectUrl()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${siteUrl}/auth/callback`,
+      redirectTo,
     },
   })
 

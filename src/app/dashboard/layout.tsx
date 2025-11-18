@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="gradient-grid-bg flex min-h-screen flex-col text-white">
       <Header />
-      <main className="container mx-auto flex-grow px-4 py-8">
+      <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
         <QueryClientProvider client={queryClient}>
           <ErrorBoundary>{children}</ErrorBoundary>
         </QueryClientProvider>

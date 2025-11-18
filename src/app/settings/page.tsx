@@ -27,7 +27,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="gradient-grid-bg min-h-screen">
+    <div className="gradient-grid-bg dark min-h-screen">
       <SettingsPageClient user={user} profile={profile!} />
     </div>
   )

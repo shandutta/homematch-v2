@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Loader2 } from 'lucide-react'
+import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
 
 export function SignupForm() {
   const [loading, setLoading] = useState(false)
@@ -38,7 +39,7 @@ export function SignupForm() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || location.origin}/auth/callback`,
+        emailRedirectTo: buildBrowserRedirectUrl(),
       },
     })
 
@@ -57,7 +58,7 @@ export function SignupForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || location.origin}/auth/callback`,
+        redirectTo: buildBrowserRedirectUrl(),
       },
     })
 
