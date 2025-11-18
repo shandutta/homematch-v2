@@ -44,7 +44,13 @@ export const paginatedResponseSchema = z.object({
 })
 
 // Interaction API schemas
-export const interactionTypeSchema = z.enum(['like', 'dislike', 'skip', 'view'])
+const dbInteractionTypeSchema = z.enum(['like', 'dislike', 'skip', 'view'])
+const uiInteractionTypeSchema = z.enum(['liked', 'viewed', 'skip'])
+
+export const interactionTypeSchema = z.union([
+  dbInteractionTypeSchema,
+  uiInteractionTypeSchema,
+])
 
 export const createInteractionRequestSchema = z.object({
   propertyId: z.string().uuid(),
@@ -77,6 +83,10 @@ export const interactionListResponseSchema = z.object({
     })
   ),
   nextCursor: z.string().nullable(),
+})
+
+export const interactionDeleteRequestSchema = z.object({
+  propertyId: z.string().uuid(),
 })
 
 // Property API schemas
@@ -160,6 +170,9 @@ export type CreateInteractionRequest = z.infer<
 export type InteractionSummary = z.infer<typeof interactionSummarySchema>
 export type InteractionListResponse = z.infer<
   typeof interactionListResponseSchema
+>
+export type DeleteInteractionRequest = z.infer<
+  typeof interactionDeleteRequestSchema
 >
 
 export type PropertySearchQuery = z.infer<typeof propertySearchQuerySchema>

@@ -222,6 +222,7 @@ export function SwipeContainer({
                   <PropertyCard
                     property={property}
                     neighborhood={neighborhood}
+                    imagePriority={isTopCard}
                   />
 
                   {/* Swipe Decision Overlays - Only on top card */}

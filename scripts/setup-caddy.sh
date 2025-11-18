@@ -39,7 +39,13 @@ sudo tee /etc/caddy/Caddyfile >/dev/null <<EOF
 
 ${DOMAIN} {
   encode zstd gzip
-  reverse_proxy ${BACKEND_HOST}:${BACKEND_PORT}
+  reverse_proxy ${BACKEND_HOST}:${BACKEND_PORT} {
+    header_up Host {http.request.host}
+    header_up X-Real-IP {http.request.remote}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Forwarded-Host {http.request.host}
+    header_up X-Forwarded-Proto {http.request.scheme}
+  }
 }
 EOF
 

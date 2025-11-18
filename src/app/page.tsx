@@ -51,9 +51,9 @@ export default async function LandingPage() {
     import('@/components/marketing/CtaBand'),
   ])
 
-  // If user is already authenticated, redirect to validation page
+  // If user is already authenticated, send them straight to the dashboard
   if (user) {
-    redirect('/validation')
+    redirect('/dashboard')
   }
 
   return (

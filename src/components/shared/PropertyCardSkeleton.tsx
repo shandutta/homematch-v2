@@ -4,7 +4,7 @@ export function PropertyCardSkeleton() {
   return (
     <div className="card-glassmorphism-style h-full w-full" aria-busy="true">
       {/* Image skeleton */}
-      <Skeleton className="h-64 w-full rounded-t-xl bg-white/10" />0
+      <Skeleton className="h-64 w-full rounded-t-xl bg-white/10" />
       {/* Content skeleton */}
       <div className="space-y-4 p-6">
         {/* Price */}

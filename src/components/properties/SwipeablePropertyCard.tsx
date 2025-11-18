@@ -209,7 +209,7 @@ export function SwipeablePropertyCard({
           whileTap={{ scale: 0.98 }}
         >
           <div className="relative h-full w-full transform-gpu">
-            <PropertyCard property={currentProperty} />
+            <PropertyCard property={currentProperty} imagePriority />
 
             {/* Decision Overlays */}
             <AnimatePresence>

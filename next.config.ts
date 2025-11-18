@@ -11,8 +11,39 @@ try {
   withBundleAnalyzer = (config: any) => config
 }
 
+const normalizeOriginHost = (value?: string | null) => {
+  if (!value) return undefined
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+  try {
+    const parsed = new URL(trimmed)
+    return parsed.hostname
+  } catch {
+    return trimmed
+      .replace(/\/$/, '')
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*$/, '')
+  }
+}
+
+const allowedDevOrigins = [
+  normalizeOriginHost(process.env.NEXT_PUBLIC_APP_URL),
+  ...(process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS
+    ? process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS.split(',').map((origin) =>
+        normalizeOriginHost(origin)
+      )
+    : []),
+]
+  .filter(Boolean)
+  .map((origin) => origin!.toLowerCase()) as string[]
+
 const nextConfig: NextConfig = {
   /* config options here */
+  ...(allowedDevOrigins.length
+    ? {
+        allowedDevOrigins,
+      }
+    : {}),
 
   // Allow external Zillow image hosts for next/image
   images: {

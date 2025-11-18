@@ -9,49 +9,49 @@ export class HapticFeedback {
 
   // Check if haptic feedback is available
   static get isAvailable(): boolean {
-    return this.isSupported || this.isIOSSupported
+    return HapticFeedback.isSupported || HapticFeedback.isIOSSupported
   }
 
   // Light haptic feedback - for drag start, button hover
   static light(): void {
-    this.vibrate([5])
-    this.triggerIOSHaptic('light')
+    HapticFeedback.vibrate([5])
+    HapticFeedback.triggerIOSHaptic('light')
   }
 
   // Medium haptic feedback - for threshold crossing
   static medium(): void {
-    this.vibrate([10])
-    this.triggerIOSHaptic('medium')
+    HapticFeedback.vibrate([10])
+    HapticFeedback.triggerIOSHaptic('medium')
   }
 
   // Heavy haptic feedback - for strong interactions
   static heavy(): void {
-    this.vibrate([20])
-    this.triggerIOSHaptic('heavy')
+    HapticFeedback.vibrate([20])
+    HapticFeedback.triggerIOSHaptic('heavy')
   }
 
   // Success haptic feedback - for completed actions
   static success(): void {
-    this.vibrate([5, 20, 5])
-    this.triggerIOSHaptic('success')
+    HapticFeedback.vibrate([5, 20, 5])
+    HapticFeedback.triggerIOSHaptic('success')
   }
 
   // Error haptic feedback - for failed actions
   static error(): void {
-    this.vibrate([10, 50, 10, 50, 10])
-    this.triggerIOSHaptic('error')
+    HapticFeedback.vibrate([10, 50, 10, 50, 10])
+    HapticFeedback.triggerIOSHaptic('error')
   }
 
   // Warning haptic feedback - for warnings
   static warning(): void {
-    this.vibrate([5, 25, 5])
-    this.triggerIOSHaptic('warning')
+    HapticFeedback.vibrate([5, 25, 5])
+    HapticFeedback.triggerIOSHaptic('warning')
   }
 
   // Selection haptic feedback - for selections and taps
   static selection(): void {
-    this.vibrate([3])
-    this.triggerIOSHaptic('selection')
+    HapticFeedback.vibrate([3])
+    HapticFeedback.triggerIOSHaptic('selection')
   }
 
   // Impact haptic feedback with variable intensity
@@ -61,18 +61,18 @@ export class HapticFeedback {
       medium: [10],
       heavy: [20],
     }
-    this.vibrate(patterns[intensity])
-    this.triggerIOSHaptic(intensity)
+    HapticFeedback.vibrate(patterns[intensity])
+    HapticFeedback.triggerIOSHaptic(intensity)
   }
 
   // Custom vibration pattern
   static custom(pattern: number[]): void {
-    this.vibrate(pattern)
+    HapticFeedback.vibrate(pattern)
   }
 
   // Internal vibration method
   private static vibrate(pattern: number | number[]): void {
-    if (!this.isSupported) return
+    if (!HapticFeedback.isSupported) return
 
     try {
       navigator.vibrate(pattern)
@@ -116,14 +116,14 @@ export class HapticFeedback {
             .requestPermission()
             .then((permission: string) => {
               if (permission === 'granted') {
-                this.triggerMotionHaptic(type)
+                HapticFeedback.triggerMotionHaptic(type)
               }
             })
             .catch(() => {
               // Permission denied or not available
             })
         } else {
-          this.triggerMotionHaptic(type)
+          HapticFeedback.triggerMotionHaptic(type)
         }
       } catch (error) {
         console.debug('Device motion haptic not available:', error)
@@ -150,7 +150,7 @@ export class HapticFeedback {
       gainNode.connect(audioContext.destination)
 
       // Configure based on haptic type
-      const config = this.getHapticConfig(type)
+      const config = HapticFeedback.getHapticConfig(type)
       oscillator.frequency.setValueAtTime(
         config.frequency,
         audioContext.currentTime

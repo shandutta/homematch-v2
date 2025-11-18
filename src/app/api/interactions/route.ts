@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { InteractionType } from '@/types/app'
+import { DbInteractionType } from '@/types/app'
 import { Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import {
   createInteractionRequestSchema,
+  interactionDeleteRequestSchema,
   interactionSummarySchema,
   paginationQuerySchema,
 } from '@/lib/schemas/api'
+import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import {
+  getDbFiltersForInteractionType,
+  mapInteractionTypeToDb,
+  normalizeInteractionType,
+} from '@/lib/utils/interaction-type'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +43,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { propertyId, type } = parsed.data
+    const normalizedType = normalizeInteractionType(type)
+
+    if (!normalizedType) {
+      return ApiErrorHandler.badRequest('Invalid interaction type')
+    }
+
+    const dbInteractionType = mapInteractionTypeToDb(normalizedType)
 
     // Clear any previous interaction for this user/property to enforce a single definitive state
     const { error: deleteError } = await supabase
@@ -55,7 +68,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.id,
         property_id: propertyId,
-        interaction_type: type,
+        interaction_type: dbInteractionType,
       })
       .select()
       .single()
@@ -88,20 +101,18 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const queryParams = {
       type: searchParams.get('type'),
-      cursor: searchParams.get('cursor'),
-      limit: searchParams.get('limit'),
+      cursor: searchParams.get('cursor') ?? undefined,
+      limit: searchParams.get('limit') ?? undefined,
     }
 
-    const type = queryParams.type as InteractionType | 'summary' | null
-
-    if (!type) {
+    if (!queryParams.type) {
       return NextResponse.json(
         { error: 'Missing type query parameter' },
         { status: 400 }
       )
     }
 
-    if (type === 'summary') {
+    if (queryParams.type === 'summary') {
       // Aggregate counts grouped by interaction_type for current user
       // Supabase JS doesn't support SQL GROUP BY directly via .group().
       // Use RPC to aggregate counts per type for the current user.
@@ -122,18 +133,22 @@ export async function GET(request: NextRequest) {
 
       // Define the expected shape of the RPC response for type safety
       type InteractionSummaryRow = {
-        interaction_type: InteractionType
+        interaction_type: DbInteractionType
         count: number
       }
       const typedData = data as InteractionSummaryRow[] | null
 
+      const countFor = (...interactionTypes: DbInteractionType[]) => {
+        if (!typedData) return 0
+        return typedData
+          .filter((row) => interactionTypes.includes(row.interaction_type))
+          .reduce((total, row) => total + row.count, 0)
+      }
+
       const summaryData = {
-        liked:
-          typedData?.find((d) => d.interaction_type === 'liked')?.count ?? 0,
-        passed:
-          typedData?.find((d) => d.interaction_type === 'skip')?.count ?? 0,
-        viewed:
-          typedData?.find((d) => d.interaction_type === 'viewed')?.count ?? 0,
+        liked: countFor('like'),
+        passed: countFor('skip', 'dislike'),
+        viewed: countFor('view'),
       }
 
       // Validate response against schema
@@ -141,7 +156,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(validatedSummary)
     }
 
-    if (!['viewed', 'liked', 'skip'].includes(type)) {
+    const type = normalizeInteractionType(queryParams.type)
+
+    if (!type) {
       return NextResponse.json(
         { error: 'Invalid type parameter' },
         { status: 400 }
@@ -153,6 +170,7 @@ export async function GET(request: NextRequest) {
       limit: queryParams.limit || '12',
     })
     const { cursor, limit } = paginationQuery
+    const dbInteractionFilters = getDbFiltersForInteractionType(type)
 
     // Join interactions -> properties for the current user
     // Note: selecting nested properties requires a foreign key relationship in Supabase
@@ -165,9 +183,14 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq('user_id', user.id)
-      .eq('interaction_type', type)
       .order('created_at', { ascending: false })
       .limit(limit)
+
+    if (dbInteractionFilters.length === 1) {
+      query = query.eq('interaction_type', dbInteractionFilters[0])
+    } else {
+      query = query.in('interaction_type', dbInteractionFilters)
+    }
 
     if (cursor) {
       // Use created_at cursor pagination (fetch rows older than cursor)
@@ -188,13 +211,16 @@ export async function GET(request: NextRequest) {
     // Supabase returns the joined table as an array, even for a to-one relationship.
     type InteractionWithProperty = {
       created_at: string
-      property: Property[] | null // It's an array
+      property: Property | Property[] | null
     }
     const typedData = data as InteractionWithProperty[] | null
 
     // Flatten the structure: take the first property from the array.
     const items = (typedData ?? [])
-      .map((row) => (row.property ? row.property[0] : null))
+      .map((row) => {
+        if (!row.property) return null
+        return Array.isArray(row.property) ? row.property[0] : row.property
+      })
       .filter(Boolean)
 
     const nextCursor =
@@ -207,5 +233,46 @@ export async function GET(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 }
     )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return ApiErrorHandler.unauthorized()
+    }
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      body = null
+    }
+
+    const parsed = interactionDeleteRequestSchema.safeParse(body)
+    if (!parsed.success) {
+      return ApiErrorHandler.fromZodError(parsed.error)
+    }
+
+    const { propertyId } = parsed.data
+
+    const { error } = await supabase
+      .from('user_property_interactions')
+      .delete()
+      .match({ user_id: user.id, property_id: propertyId })
+
+    if (error) {
+      return ApiErrorHandler.serverError('Failed to delete interaction', error)
+    }
+
+    return ApiErrorHandler.success({ deleted: true })
+  } catch (err) {
+    return ApiErrorHandler.serverError('Failed to delete interaction', err)
   }
 }

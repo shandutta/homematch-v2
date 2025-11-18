@@ -6,9 +6,9 @@ import {
   useRecordInteraction,
 } from '@/hooks/useInteractions'
 import { useCouplesInteraction } from '@/hooks/useCouplesInteractions'
-import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
 import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
+import { DashboardPropertyGrid } from '@/components/features/dashboard/DashboardPropertyGrid'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
@@ -64,10 +64,6 @@ export function EnhancedDashboardPageImpl({
         const newSummary = { ...currentSummary }
         if (type === 'liked') newSummary.liked++
         if (type === 'skip') newSummary.passed++
-        // A decision on a card implies it has been viewed.
-        // A separate "viewed" event should be fired when a card becomes active.
-        // For now, we can increment viewed on any decision.
-        newSummary.viewed++
         setOptimisticSummary(newSummary)
       }
 
@@ -79,6 +75,17 @@ export function EnhancedDashboardPageImpl({
       }
     },
     [optimisticSummary, summary, userId, couplesInteraction, recordInteraction]
+  )
+
+  const handlePropertyView = useCallback(
+    (propertyId: string) => {
+      if (userId) {
+        couplesInteraction.recordInteraction({ propertyId, type: 'viewed' })
+      } else {
+        recordInteraction({ propertyId, type: 'viewed' })
+      }
+    },
+    [userId, couplesInteraction, recordInteraction]
   )
 
   // Memoize computed values to prevent unnecessary recalculations
@@ -101,16 +108,24 @@ export function EnhancedDashboardPageImpl({
       </h1>
       <DashboardStats summary={displaySummary} isLoading={summaryIsLoading} />
 
-      {/* Add MutualLikesSection if userId is available */}
-      {userId && <MutualLikesSection userId={userId} className="w-full" />}
-
-      <PropertySwiper
+      <DashboardPropertyGrid
         properties={properties}
         onDecision={handleDecision}
-        celebrationTrigger={couplesInteraction.celebrationTrigger}
-        onClearCelebration={couplesInteraction.clearCelebration}
         isLoading={propertiesLoading}
+        celebrationTrigger={couplesInteraction.celebrationTrigger}
+        onView={handlePropertyView}
       />
+
+      {/* Add MutualLikesSection if userId is available */}
+      {userId && (
+        <>
+          <MutualLikesSection userId={userId} className="w-full" />
+          <div
+            className="pointer-events-none mt-8 mb-1 h-px w-full bg-gradient-to-r from-transparent via-white/25 to-transparent"
+            aria-hidden="true"
+          />
+        </>
+      )}
     </div>
   )
 }

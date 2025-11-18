@@ -1,16 +1,18 @@
 import Link from 'next/link'
+import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
   return (
     <header className="absolute top-0 z-50 w-full">
       {/* Align header content with hero container and text column */}
-      <nav className="container mx-auto flex items-center justify-between px-6 py-6 sm:px-4 sm:py-8">
+      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-6 sm:py-8">
         <Link
           href="/"
-          className="text-xl font-bold text-white sm:ml-4 sm:text-2xl"
+          className="rounded-xl px-3 py-2 text-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
           style={{ fontFamily: 'var(--font-heading)' }}
+          aria-label="HomeMatch - Go to homepage"
         >
-          HomeMatch
+          <HomeMatchLogo size="sm" textClassName="text-white" />
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-6">

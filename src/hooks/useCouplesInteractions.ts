@@ -5,6 +5,10 @@ import { InteractionService } from '@/lib/services/interactions'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { toast } from '@/lib/utils/toast'
 import { useEffect, useState } from 'react'
+import {
+  interactionKeys,
+  summaryKeyForInteraction,
+} from '@/hooks/useInteractions'
 
 /**
  * Enhanced interaction hook that checks for mutual likes and provides celebrations
@@ -62,27 +66,22 @@ export function useCouplesInteraction() {
 
     // Optimistic update
     onMutate: async ({ type }) => {
-      await queryClient.cancelQueries({ queryKey: ['interactions', 'summary'] })
+      await queryClient.cancelQueries({
+        queryKey: interactionKeys.summaries(),
+      })
 
-      const previousSummary = queryClient.getQueryData<InteractionSummary>([
-        'interactions',
-        'summary',
-      ])
+      const previousSummary = queryClient.getQueryData<InteractionSummary>(
+        interactionKeys.summaries()
+      )
 
-      if (previousSummary) {
+      const summaryKey = summaryKeyForInteraction[type]
+
+      if (previousSummary && summaryKey) {
         queryClient.setQueryData<InteractionSummary>(
-          ['interactions', 'summary'],
+          interactionKeys.summaries(),
           {
             ...previousSummary,
-            viewed: previousSummary.viewed + 1,
-            liked:
-              type === 'liked'
-                ? previousSummary.liked + 1
-                : previousSummary.liked,
-            passed:
-              type === 'skip'
-                ? previousSummary.passed + 1
-                : previousSummary.passed,
+            [summaryKey]: previousSummary[summaryKey] + 1,
           }
         )
       }
@@ -131,7 +130,7 @@ export function useCouplesInteraction() {
     onError: (err, variables, context) => {
       if (context?.previousSummary) {
         queryClient.setQueryData(
-          ['interactions', 'summary'],
+          interactionKeys.summaries(),
           context.previousSummary
         )
       }
@@ -141,7 +140,7 @@ export function useCouplesInteraction() {
 
     // Always refetch after error or success
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['interactions', 'summary'] })
+      queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
     },
   })
 
