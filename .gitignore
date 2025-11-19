@@ -107,6 +107,9 @@ npm-debug.log*
 # Build artifacts
 dist/
 
+# Corepack cache (used by cron auto-commit)
+.corepack-cache/
+
 # Zen MCP Server
 zen-mcp-server/
 

@@ -2,6 +2,8 @@
 
 ## Project Structure & Module Organization
 
+## Small change for testing Cron job
+
 - Source: `src/` — App Router in `src/app`, UI in `src/components`, domain logic in `src/lib`, shared types in `src/types`.
 - Tests: `__tests__/` — unit, integration, e2e, plus fixtures/factories/utils.
 - Tooling/ops: `scripts/` (automation), `supabase/` (migrations/local config), `public/` (assets), `.github/workflows/` (CI).
