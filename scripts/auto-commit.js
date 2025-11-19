@@ -65,7 +65,8 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
     process.exit(1)
   }
 
-  const model = process.env.AUTO_COMMIT_MODEL || 'openrouter/gpt-oss-20b'
+  const model =
+    process.env.AUTO_COMMIT_MODEL || 'openai/gpt-oss-20b:free'
   const payload = {
     model,
     max_tokens: 80,
