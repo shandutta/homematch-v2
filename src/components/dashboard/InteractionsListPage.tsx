@@ -1,15 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  useInfiniteInteractions,
+  interactionKeys,
   useDeleteInteraction,
+  useInfiniteInteractions,
+  useRecordInteraction,
 } from '@/hooks/useInteractions'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { HeartOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Heart, HeartOff } from 'lucide-react'
 
 interface InteractionsListPageProps {
   type: InteractionType
@@ -23,7 +26,12 @@ export function InteractionsListPage({
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useInfiniteInteractions(type)
   const deleteInteraction = useDeleteInteraction(type)
+  const recordInteraction = useRecordInteraction()
+  const queryClient = useQueryClient()
   const [pendingPropertyId, setPendingPropertyId] = useState<string | null>(
+    null
+  )
+  const [pendingDecisionId, setPendingDecisionId] = useState<string | null>(
     null
   )
 
@@ -58,40 +66,109 @@ export function InteractionsListPage({
             {properties.map((property) => {
               const isRemoving =
                 pendingPropertyId === property.id && deleteInteraction.isPending
+              const isMutatingDecision =
+                pendingDecisionId === property.id && recordInteraction.isPending
+
+              const invalidateLists = (decision: 'liked' | 'skip') => {
+                queryClient.invalidateQueries({
+                  queryKey: interactionKeys.list(type),
+                })
+                queryClient.invalidateQueries({
+                  queryKey: interactionKeys.list(decision),
+                })
+              }
+
+              const handleDecision = (
+                propertyId: string,
+                decision: 'liked' | 'skip'
+              ) => {
+                setPendingDecisionId(propertyId)
+                recordInteraction.mutate(
+                  { propertyId, type: decision },
+                  {
+                    onSettled: () => {
+                      setPendingDecisionId((prev) =>
+                        prev === propertyId ? null : prev
+                      )
+                      invalidateLists(decision)
+                    },
+                  }
+                )
+              }
+
+              const renderFloatingAction = () => {
+                if (type === 'liked') {
+                  return (
+                    <button
+                      type="button"
+                      aria-label="Remove from likes"
+                      className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+                      disabled={isRemoving}
+                      onClick={() => {
+                        setPendingPropertyId(property.id)
+                        deleteInteraction.mutate(
+                          { propertyId: property.id },
+                          {
+                            onSettled: () => {
+                              setPendingPropertyId((prev) =>
+                                prev === property.id ? null : prev
+                              )
+                            },
+                          }
+                        )
+                      }}
+                    >
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
+                        <HeartOff className="h-6 w-6" strokeWidth={2.25} />
+                      </div>
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                        {isRemoving ? 'Removing...' : 'Remove from likes'}
+                      </span>
+                    </button>
+                  )
+                }
+
+                if (type === 'skip') {
+                  return (
+                    <button
+                      type="button"
+                      aria-label="Like this home"
+                      className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+                      disabled={isMutatingDecision}
+                      onClick={() => handleDecision(property.id, 'liked')}
+                    >
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
+                        <Heart className="h-6 w-6" strokeWidth={2.25} />
+                      </div>
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                        {isMutatingDecision ? 'Adding...' : 'Like this home'}
+                      </span>
+                    </button>
+                  )
+                }
+
+                return null
+              }
+
               return (
                 <div key={property.id}>
                   <PropertyCard
                     property={property}
-                    floatingAction={
-                      type === 'liked' ? (
-                        <button
-                          type="button"
-                          aria-label="Remove from likes"
-                          className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
-                          disabled={isRemoving}
-                          onClick={() => {
-                            setPendingPropertyId(property.id)
-                            deleteInteraction.mutate(
-                              { propertyId: property.id },
-                              {
-                                onSettled: () => {
-                                  setPendingPropertyId((prev) =>
-                                    prev === property.id ? null : prev
-                                  )
-                                },
-                              }
+                    showMap={false}
+                    showStory={type !== 'skip'}
+                    storyVariant="tagline"
+                    onDecision={
+                      type === 'viewed'
+                        ? (propertyId, decision) => {
+                            if (decision === 'viewed') return
+                            handleDecision(
+                              propertyId,
+                              decision as 'liked' | 'skip'
                             )
-                          }}
-                        >
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
-                            <HeartOff className="h-6 w-6" strokeWidth={2.25} />
-                          </div>
-                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
-                            {isRemoving ? 'Removing...' : 'Remove from likes'}
-                          </span>
-                        </button>
-                      ) : null
+                          }
+                        : undefined
                     }
+                    floatingAction={renderFloatingAction()}
                   />
                 </div>
               )

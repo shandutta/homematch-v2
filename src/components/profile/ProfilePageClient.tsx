@@ -83,9 +83,9 @@ export function ProfilePageClient({
   ]
 
   return (
-    <div className="text-primary-foreground min-h-screen pb-16">
+    <div className="min-h-screen bg-[#030c24] pb-16 text-white">
       <section
-        className="relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#081735] via-[#050f23] to-[#020814]"
+        className="bg-primary/10 relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#081735] via-[#050f23] to-[#020814] backdrop-blur-md"
         data-testid="profile-header"
       >
         <div
@@ -98,7 +98,7 @@ export function ProfilePageClient({
             className="inline-flex w-fit items-center gap-2 text-sm text-white/70 transition hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to dashboard
+            Back to Dashboard
           </Link>
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-4">
@@ -134,7 +134,7 @@ export function ProfilePageClient({
                   variant="outline"
                   className="border-white/30 bg-white/5 px-6 text-white hover:bg-white/10"
                 >
-                  Open settings
+                  Settings
                 </Button>
               </Link>
               <Link href="/dashboard/liked">
@@ -163,179 +163,181 @@ export function ProfilePageClient({
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-10">
-        <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-          <div className="space-y-6">
-            <Card className="card-glassmorphism-style">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <UserIcon className="h-5 w-5" />
-                  Profile snapshot
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-4">
-                  {[
-                    {
-                      label: 'Primary email',
-                      value: user.email ?? 'Not provided',
-                      icon: Mail,
-                      muted: false,
-                    },
-                    {
-                      label: 'Phone number',
-                      value: phoneNumber || 'Add your phone number',
-                      icon: Phone,
-                      muted: !phoneNumber,
-                    },
-                  ].map((item) => {
-                    const Icon = item.icon
-                    return (
-                      <div
-                        key={item.label}
-                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3"
-                      >
-                        <div className="rounded-2xl bg-white/10 p-2 text-white/80">
-                          <Icon className="h-4 w-4" />
+      <div className="bg-slate-50 text-slate-900">
+        <div className="container mx-auto px-4 py-10">
+          <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
+            <div className="space-y-6">
+              <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
+                    <UserIcon className="h-5 w-5 text-slate-500" />
+                    Profile snapshot
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="space-y-4">
+                    {[
+                      {
+                        label: 'Primary email',
+                        value: user.email ?? 'Not provided',
+                        icon: Mail,
+                        muted: false,
+                      },
+                      {
+                        label: 'Phone number',
+                        value: phoneNumber || 'Add your phone number',
+                        icon: Phone,
+                        muted: !phoneNumber,
+                      },
+                    ].map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <div
+                          key={item.label}
+                          className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"
+                        >
+                          <div className="rounded-2xl bg-white p-2 text-slate-500">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                              {item.label}
+                            </p>
+                            <p
+                              className={`text-sm ${
+                                item.muted ? 'text-slate-400' : 'text-slate-900'
+                              }`}
+                            >
+                              {item.value}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs tracking-wide text-white/50 uppercase">
-                            {item.label}
-                          </p>
-                          <p
-                            className={`text-sm ${
-                              item.muted ? 'text-white/50' : 'text-white'
-                            }`}
-                          >
-                            {item.value}
-                          </p>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveTab('profile')}
-                  className="w-full border-white/30 bg-white/5 text-white hover:bg-white/10"
-                >
-                  Edit profile details
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="card-glassmorphism-style">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Users className="h-5 w-5" />
-                  Collaboration
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm text-white/70">
-                <p>
-                  {hasHousehold
-                    ? 'You are sharing preferences with your household.'
-                    : 'Invite a partner or family member to collaborate on decisions.'}
-                </p>
-                {hasHousehold ? (
-                  <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                    <p className="text-xs tracking-wide text-white/50 uppercase">
-                      Household
-                    </p>
-                    <p className="text-lg font-semibold text-white">
-                      {profile.household?.name}
-                    </p>
-                    <p className="mt-3 text-xs tracking-wide text-white/50 uppercase">
-                      Join code
-                    </p>
-                    <p className="font-mono text-sm text-cyan-200">
-                      {profile.household?.id}
-                    </p>
+                      )
+                    })}
                   </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-4 text-white/60">
-                    Create or join a household to unlock mutual likes and shared
-                    timelines.
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-3">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setActiveTab('household')}
-                    className="flex-1 border-white/30 bg-white/5 text-white hover:bg-white/10"
+                    onClick={() => setActiveTab('profile')}
+                    className="w-full border-slate-200 text-slate-700 hover:bg-slate-100"
                   >
-                    Manage household
+                    Edit profile details
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setActiveTab('activity')}
-                    className="flex-1 border-white/30 bg-white/5 text-white hover:bg-white/10"
-                  >
-                    View activity
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
 
-          <div>
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="space-y-6"
-            >
-              <TabsList className="flex w-full flex-wrap gap-2 rounded-2xl bg-white/5 p-1 text-white/60">
-                <TabsTrigger
-                  value="profile"
-                  className="min-w-[140px] rounded-2xl px-4 py-2 text-sm data-[state=active]:!bg-white data-[state=active]:!text-[#0a1224] data-[state=active]:shadow-lg"
-                >
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  Profile
-                </TabsTrigger>
-                <TabsTrigger
-                  value="household"
-                  className="min-w-[140px] rounded-2xl px-4 py-2 text-sm data-[state=active]:!bg-white data-[state=active]:!text-[#0a1224] data-[state=active]:shadow-lg"
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Household
-                </TabsTrigger>
-                <TabsTrigger
-                  value="activity"
-                  className="min-w-[140px] rounded-2xl px-4 py-2 text-sm data-[state=active]:!bg-white data-[state=active]:!text-[#0a1224] data-[state=active]:shadow-lg"
-                >
-                  <Activity className="mr-2 h-4 w-4" />
-                  Activity
-                </TabsTrigger>
-              </TabsList>
+              <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
+                    <Users className="h-5 w-5 text-slate-500" />
+                    Collaboration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm text-slate-600">
+                  <p>
+                    {hasHousehold
+                      ? 'You are sharing preferences with your household.'
+                      : 'Invite a partner or family member to collaborate on decisions.'}
+                  </p>
+                  {hasHousehold ? (
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                        Household
+                      </p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {profile.household?.name}
+                      </p>
+                      <p className="mt-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                        Join code
+                      </p>
+                      <p className="font-mono text-sm text-slate-800">
+                        {profile.household?.id}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-500">
+                      Create or join a household to unlock mutual likes and
+                      shared timelines.
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab('household')}
+                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    >
+                      Manage household
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setActiveTab('activity')}
+                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    >
+                      View activity
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-              <TabsContent value="profile" className="space-y-6">
-                <Card className="card-glassmorphism-style">
-                  <CardHeader>
-                    <CardTitle className="text-primary-foreground text-2xl">
-                      Profile Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ProfileForm user={user} profile={profile} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="household"
+            <div>
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
                 className="space-y-6"
-                data-testid="household-section"
               >
-                <HouseholdSection profile={profile} />
-              </TabsContent>
+                <TabsList className="flex w-full flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-1 text-slate-500 shadow-sm">
+                  <TabsTrigger
+                    value="profile"
+                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
+                  >
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    Profile
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="household"
+                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    Household
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="activity"
+                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
+                  >
+                    <Activity className="mr-2 h-4 w-4" />
+                    Activity
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="activity" className="space-y-6">
-                <ActivityStats summary={activitySummary} />
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="profile" className="space-y-6">
+                  <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="text-2xl text-slate-900">
+                        Profile Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ProfileForm user={user} profile={profile} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent
+                  value="household"
+                  className="space-y-6"
+                  data-testid="household-section"
+                >
+                  <HouseholdSection profile={profile} />
+                </TabsContent>
+
+                <TabsContent value="activity" className="space-y-6">
+                  <ActivityStats summary={activitySummary} />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </div>

@@ -211,6 +211,7 @@ describe('Dialog Components', () => {
           </DialogTrigger>
           <DialogContent className="custom-dialog">
             <DialogTitle>Custom Dialog</DialogTitle>
+            <DialogDescription>Custom dialog description.</DialogDescription>
           </DialogContent>
         </Dialog>
       )
@@ -284,6 +285,7 @@ describe('Dialog Components', () => {
           <DialogContent>
             <DialogHeader className="custom-header">
               <DialogTitle>Custom Header</DialogTitle>
+              <DialogDescription>Header description</DialogDescription>
             </DialogHeader>
           </DialogContent>
         </Dialog>
@@ -606,6 +608,9 @@ describe('Dialog Components', () => {
           </DialogTrigger>
           <DialogContent>
             <DialogTitle>Complex Dialog</DialogTitle>
+            <DialogDescription>
+              Dialog supporting multiple inputs.
+            </DialogDescription>
             <div>
               <input placeholder="Text input" />
               <select>
@@ -647,6 +652,9 @@ describe('Dialog Components', () => {
           </DialogTrigger>
           <DialogContent>
             <DialogTitle>Custom Close Dialog</DialogTitle>
+            <DialogDescription>
+              Dialog demonstrating custom close handling.
+            </DialogDescription>
             <button onClick={customCloseHandler}>Custom Close</button>
           </DialogContent>
         </Dialog>

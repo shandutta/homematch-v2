@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { Neighborhood } from '@/lib/schemas/property'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +19,8 @@ import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
+import { PropertyMap } from '@/components/property/PropertyMap'
+import { cn } from '@/lib/utils'
 
 interface PropertyCardProps {
   property: Property
@@ -27,6 +29,10 @@ interface PropertyCardProps {
   imagePriority?: boolean
   actions?: ReactNode
   floatingAction?: ReactNode
+  showStory?: boolean
+  storyVariant?: 'tagline' | 'futureVision'
+  showMap?: boolean
+  enableDetailsToggle?: boolean
 }
 
 function buildZillowUrl(property: Property): string {
@@ -46,8 +52,13 @@ export function PropertyCard({
   imagePriority = false,
   actions,
   floatingAction,
+  showStory = true,
+  storyVariant = 'tagline',
+  showMap = true,
+  enableDetailsToggle = false,
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
+  const hasMapCoordinates = Boolean(property.coordinates)
 
   // Check if this property is a mutual like
   const isMutualLike = mutualLikes.some(
@@ -73,6 +84,10 @@ export function PropertyCard({
     return value.toFixed(1).replace(/\.0$/, '')
   }
 
+  const formattedBeds = formatCount(property.bedrooms)
+  const formattedBaths = formatCount(property.bathrooms)
+  const formattedSqft = formatSquareFeet(property.square_feet)
+
   const propertyStats: Array<{
     icon: LucideIcon
     label: string
@@ -80,20 +95,46 @@ export function PropertyCard({
   }> = [
     {
       icon: Bed,
-      label: 'Bedrooms',
-      value: formatCount(property.bedrooms),
+      label: 'Beds',
+      value: formattedBeds,
     },
     {
       icon: Bath,
-      label: 'Bathrooms',
-      value: formatCount(property.bathrooms),
+      label: 'Baths',
+      value: formattedBaths,
     },
     {
       icon: Square,
       label: 'Sq Ft',
-      value: formatSquareFeet(property.square_feet),
+      value: formattedSqft,
     },
   ]
+
+  const shouldShowStory = showStory
+  const shouldShowMap = showMap && hasMapCoordinates
+
+  const availableDetailViews = useMemo(() => {
+    return [
+      shouldShowStory ? 'story' : null,
+      shouldShowMap ? 'map' : null,
+    ].filter(Boolean) as Array<'story' | 'map'>
+  }, [shouldShowMap, shouldShowStory])
+
+  const [detailView, setDetailView] = useState<'story' | 'map' | null>(null)
+
+  useEffect(() => {
+    if (!enableDetailsToggle || availableDetailViews.length <= 1) {
+      setDetailView(null)
+      return
+    }
+
+    setDetailView((prev) => {
+      if (prev && availableDetailViews.includes(prev)) {
+        return prev
+      }
+      return availableDetailViews[0]!
+    })
+  }, [availableDetailViews, enableDetailsToggle])
 
   // Use images array from property - PropertyImage component handles fallbacks
 
@@ -188,12 +229,12 @@ export function PropertyCard({
                 <div className="bg-token-primary/10 text-token-primary flex h-9 w-9 items-center justify-center rounded-full">
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="min-w-0 leading-tight">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                    {label}
+                  </p>
                   <p className="text-foreground text-lg leading-tight font-semibold">
                     {value}
-                  </p>
-                  <p className="text-[10px] font-semibold tracking-[0.18em] text-slate-500 uppercase">
-                    {label}
                   </p>
                 </div>
               </div>
@@ -201,17 +242,58 @@ export function PropertyCard({
           ))}
         </div>
 
+        {enableDetailsToggle && availableDetailViews.length > 1 && (
+          <div className="mt-token-lg flex gap-2">
+            {availableDetailViews.map((view) => (
+              <button
+                key={view}
+                type="button"
+                className={cn(
+                  'flex-1 rounded-full border px-4 py-2 text-sm font-semibold transition-colors',
+                  detailView === view
+                    ? 'border-token-primary bg-token-primary/10 text-token-primary'
+                    : 'border-white/20 bg-white/5 text-white/70 hover:text-white'
+                )}
+                onClick={() => setDetailView(view)}
+              >
+                {view === 'story' ? 'HomeMatch story' : 'Neighborhood map'}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Storytelling Description */}
-        <div className="mt-token-md mb-token-sm">
-          <StorytellingDescription
-            property={property}
-            neighborhood={neighborhood}
-            isMutualLike={isMutualLike}
-            variant="compact"
-            showLifestyleTags={false}
-            showFutureVision
-          />
-        </div>
+        {(!enableDetailsToggle && shouldShowStory) ||
+        (enableDetailsToggle &&
+          (availableDetailViews.length === 1
+            ? availableDetailViews[0] === 'story'
+            : detailView === 'story')) ? (
+          <div className="mt-token-md">
+            <StorytellingDescription
+              property={property}
+              neighborhood={neighborhood}
+              isMutualLike={isMutualLike}
+              variant="compact"
+              showLifestyleTags={false}
+              showFutureVision={storyVariant === 'futureVision'}
+            />
+          </div>
+        ) : null}
+
+        {(!enableDetailsToggle && shouldShowMap) ||
+        (enableDetailsToggle &&
+          (availableDetailViews.length === 1
+            ? availableDetailViews[0] === 'map'
+            : detailView === 'map')) ? (
+          shouldShowMap ? (
+            <div className="mt-token-md">
+              <PropertyMap
+                property={property}
+                className="rounded-token-xl h-40 w-full border border-white/15"
+              />
+            </div>
+          ) : null
+        ) : null}
 
         {actions && (
           <div className="pt-token-md mt-auto border-t border-white/5">

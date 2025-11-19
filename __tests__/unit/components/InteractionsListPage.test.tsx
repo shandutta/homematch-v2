@@ -6,9 +6,13 @@ import { InteractionsListPage } from '@/components/dashboard/InteractionsListPag
 import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
 
 // Mock the hook used by the component
-jest.mock('@/hooks/useInteractions', () => ({
-  useInfiniteInteractions: jest.fn(),
-}))
+jest.mock('@/hooks/useInteractions', () => {
+  const actual = jest.requireActual('@/hooks/useInteractions')
+  return {
+    ...actual,
+    useInfiniteInteractions: jest.fn(),
+  }
+})
 
 import { useInfiniteInteractions as mockedUseInfiniteInteractions } from '@/hooks/useInteractions'
 const mockedUseInfinite = mockedUseInfiniteInteractions as unknown as jest.Mock

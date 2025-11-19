@@ -1,5 +1,6 @@
 import { PropertyService } from '@/lib/services/properties'
 import { Property, Neighborhood } from '@/types/database'
+import { PropertyFilters } from '@/lib/schemas/property'
 
 export interface DashboardData {
   properties: Property[]
@@ -13,19 +14,87 @@ export interface DashboardData {
   }
 }
 
+interface DashboardPreferences {
+  priceRange?: [number, number]
+  bedrooms?: number
+  bathrooms?: number
+  propertyTypes?: Record<string, boolean>
+  mustHaves?: Record<string, boolean>
+  searchRadius?: number
+}
+
 export async function loadDashboardData(
   options: {
     limit?: number
     offset?: number
     withScoring?: boolean
+    userPreferences?: Record<string, any> | null
   } = {}
 ): Promise<DashboardData> {
-  const { limit = 20, offset = 0, withScoring = true } = options
+  const {
+    limit = 20,
+    offset = 0,
+    withScoring = true,
+    userPreferences,
+  } = options
   const propertyService = new PropertyService()
+
+  const filters: PropertyFilters = {}
+
+  if (userPreferences) {
+    const prefs = userPreferences as DashboardPreferences
+
+    if (prefs.priceRange) {
+      filters.price_min = prefs.priceRange[0]
+      filters.price_max = prefs.priceRange[1]
+    }
+
+    if (prefs.bedrooms) {
+      filters.bedrooms_min = prefs.bedrooms
+    }
+
+    if (prefs.bathrooms) {
+      filters.bathrooms_min = prefs.bathrooms
+    }
+
+    if (prefs.propertyTypes) {
+      const typeMapping: Record<string, string> = {
+        house: 'single_family',
+        townhouse: 'townhome',
+        condo: 'condo',
+      }
+      const selectedTypes = Object.entries(prefs.propertyTypes)
+        .filter(([_, selected]) => selected)
+        .map(([type]) => typeMapping[type] || type)
+        .filter(Boolean)
+
+      if (selectedTypes.length > 0) {
+        // @ts-expect-error - Type mapping might produce strings not in the strict enum, but valid for DB query
+        filters.property_types = selectedTypes
+      }
+    }
+
+    if (prefs.mustHaves) {
+      const amenityMapping: Record<string, string> = {
+        parking: 'Parking',
+        pool: 'Pool',
+        gym: 'Gym',
+        petFriendly: 'Pet Friendly',
+      }
+      const selectedAmenities = Object.entries(prefs.mustHaves)
+        .filter(([_, selected]) => selected)
+        .map(([amenity]) => amenityMapping[amenity] || amenity)
+
+      if (selectedAmenities.length > 0) {
+        filters.amenities = selectedAmenities
+      }
+    }
+  }
 
   try {
     const [{ properties, total }, neighborhoods] = await Promise.all([
       propertyService.searchProperties({
+        filters,
         pagination: { limit, page: offset / limit + 1 },
       }),
       propertyService.getNeighborhoodsByCity('San Francisco', 'CA'),

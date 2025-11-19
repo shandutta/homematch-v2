@@ -5,6 +5,9 @@ import {
   Household,
   HouseholdInsert,
   HouseholdUpdate,
+  HouseholdInvitation,
+  HouseholdInvitationInsert,
+  HouseholdInvitationUpdate,
   UserPropertyInteraction,
   UserPropertyInteractionInsert,
   SavedSearch,
@@ -200,6 +203,105 @@ export class UserService extends BaseService {
 
   async leaveHousehold(userId: string): Promise<UserProfile | null> {
     return this.updateUserProfile(userId, { household_id: null })
+  }
+
+  async getHouseholdInvitations(
+    householdId: string
+  ): Promise<HouseholdInvitation[]> {
+    return this.executeArrayQuery(
+      'fetching household invitations',
+      async (supabase) => {
+        const { data, error } = await supabase
+          .from('household_invitations')
+          .select('*')
+          .eq('household_id', householdId)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          this.handleSupabaseError(error, 'fetching household invitations', {
+            householdId,
+          })
+        }
+
+        return data || []
+      }
+    )
+  }
+
+  async createHouseholdInvitation(
+    invite: HouseholdInvitationInsert
+  ): Promise<HouseholdInvitation | null> {
+    return this.executeSingleQuery(
+      'creating household invitation',
+      async (supabase) => {
+        const sanitizedInvite = this.sanitizeInput(invite)
+        const { data, error } = await supabase
+          .from('household_invitations')
+          .insert(sanitizedInvite)
+          .select()
+          .single()
+
+        if (error) {
+          this.handleSupabaseError(error, 'creating household invitation', {
+            invite,
+          })
+        }
+
+        return data
+      }
+    )
+  }
+
+  async updateHouseholdInvitation(
+    invitationId: string,
+    updates: HouseholdInvitationUpdate
+  ): Promise<HouseholdInvitation | null> {
+    return this.executeSingleQuery(
+      'updating household invitation',
+      async (supabase) => {
+        const sanitizedUpdates = this.sanitizeInput(updates)
+        const { data, error } = await supabase
+          .from('household_invitations')
+          .update(sanitizedUpdates)
+          .eq('id', invitationId)
+          .select()
+          .single()
+
+        if (error) {
+          this.handleSupabaseError(error, 'updating household invitation', {
+            invitationId,
+            updates,
+          })
+        }
+
+        return data
+      }
+    )
+  }
+
+  async getHouseholdInvitationByToken(
+    token: string
+  ): Promise<HouseholdInvitation | null> {
+    return this.executeSingleQuery(
+      'fetching household invitation by token',
+      async (supabase) => {
+        const { data, error } = await supabase
+          .from('household_invitations')
+          .select('*')
+          .eq('token', token)
+          .single()
+
+        if (error) {
+          this.handleSupabaseError(
+            error,
+            'fetching household invitation by token',
+            { token }
+          )
+        }
+
+        return data
+      }
+    )
   }
 
   // User Property Interactions

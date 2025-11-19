@@ -7,6 +7,8 @@ import {
   UserProfileUpdate,
   Household,
   HouseholdInsert,
+  HouseholdInvitation,
+  HouseholdInvitationInsert,
   SavedSearch,
   SavedSearchUpdate,
 } from '@/types/database'
@@ -92,6 +94,62 @@ export class UserServiceClient {
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
     return this.updateProfile(userId, { household_id: null })
+  }
+
+  // Household invitations
+  static async getHouseholdInvitations(
+    householdId: string
+  ): Promise<HouseholdInvitation[]> {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('household_invitations')
+      .select('*')
+      .eq('household_id', householdId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to load invites: ${error.message}`)
+    }
+
+    return data || []
+  }
+
+  static async createHouseholdInvitation(
+    invite: Omit<
+      HouseholdInvitationInsert,
+      'status' | 'token' | 'created_at' | 'expires_at' | 'id'
+    >
+  ): Promise<HouseholdInvitation> {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('household_invitations')
+      .insert(invite)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to create invite: ${error.message}`)
+    }
+
+    return data
+  }
+
+  static async revokeHouseholdInvitation(
+    inviteId: string
+  ): Promise<HouseholdInvitation> {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('household_invitations')
+      .update({ status: 'revoked' })
+      .eq('id', inviteId)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to revoke invite: ${error.message}`)
+    }
+
+    return data
   }
 
   // Alias for compatibility

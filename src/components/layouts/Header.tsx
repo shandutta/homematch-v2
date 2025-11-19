@@ -85,17 +85,17 @@ export function Header() {
     {
       href: '/dashboard/liked',
       icon: Heart,
-      label: 'Review favorites',
+      label: 'Our Favorites',
     },
     {
-      href: '/dashboard/passed',
+      href: '/dashboard/viewed',
       icon: History,
-      label: 'Passed listings',
+      label: 'Explored',
     },
     {
       href: '/couples',
       icon: HeartHandshake,
-      label: 'Couples journey',
+      label: 'Our Journey',
     },
   ]
 
@@ -103,7 +103,7 @@ export function Header() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 border-b backdrop-blur-md transition-colors duration-300',
+          'bg-primary/10 sticky top-0 z-50 border-b backdrop-blur-md transition-colors duration-300',
           isScrolled
             ? 'border-white/15 bg-[#07132b]/85 shadow-[0_8px_30px_rgba(6,12,33,0.45)]'
             : 'bg-token-primary-dark/10 border-token-primary/20'
@@ -131,7 +131,7 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     className="p-token-md transition-token-colors hover:bg-token-primary/20 rounded-token-md focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                    aria-label={`${link.label} properties`}
+                    aria-label={link.label}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="hidden lg:inline">{link.label}</span>
@@ -166,7 +166,7 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="border-token-primary/20 bg-token-primary-dark/95 w-48 backdrop-blur-md"
+                  className="border-token-primary/25 w-48 bg-[rgba(7,19,43,0.94)] shadow-[0_20px_45px_rgba(4,8,24,0.55)] backdrop-blur-xl"
                   sideOffset={8}
                   alignOffset={-4}
                 >

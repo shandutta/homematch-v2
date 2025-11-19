@@ -72,27 +72,25 @@ export function AccountSection({ user }: AccountSectionProps) {
         </Alert>
       )}
 
-      <Card className="card-glassmorphism-style">
+      <Card className="card-glassmorphism-style border-white/10">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
+          <CardTitle className="flex items-center gap-2 text-2xl font-semibold text-white">
             <Shield className="h-6 w-6" />
             Account Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-primary/40 mb-1 text-sm">Email Address</p>
-            <p className="text-primary-foreground">{user.email}</p>
+            <p className="mb-1 text-sm text-white/60">Email Address</p>
+            <p className="text-white">{user.email}</p>
           </div>
           <div>
-            <p className="text-primary/40 mb-1 text-sm">Account ID</p>
-            <p className="text-primary-foreground font-mono text-sm">
-              {user.id}
-            </p>
+            <p className="mb-1 text-sm text-white/60">Account ID</p>
+            <p className="font-mono text-sm text-white">{user.id}</p>
           </div>
           <div>
-            <p className="text-primary/40 mb-1 text-sm">Account Created</p>
-            <p className="text-primary-foreground">
+            <p className="mb-1 text-sm text-white/60">Account Created</p>
+            <p className="text-white">
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -103,31 +101,31 @@ export function AccountSection({ user }: AccountSectionProps) {
             </p>
           </div>
           <div>
-            <p className="text-primary/40 mb-1 text-sm">
+            <p className="mb-1 text-sm text-white/60">
               Authentication Provider
             </p>
-            <p className="text-primary-foreground capitalize">
+            <p className="text-white capitalize">
               {user.app_metadata?.provider || 'Email'}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="card-glassmorphism-style">
+      <Card className="card-glassmorphism-style border-white/10">
         <CardHeader>
-          <CardTitle className="text-primary-foreground text-xl">
+          <CardTitle className="text-xl font-semibold text-white">
             Session Management
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-primary/40 text-sm">
+          <p className="text-sm text-white/70">
             Sign out from your current session on this device.
           </p>
           <Button
             onClick={handleSignOut}
             disabled={loading}
             variant="outline"
-            className="border-primary/20 text-primary/60 hover:bg-primary/20 hover:text-primary-foreground w-full"
+            className="w-full border-white/20 text-white hover:bg-white/10"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
@@ -135,9 +133,9 @@ export function AccountSection({ user }: AccountSectionProps) {
         </CardContent>
       </Card>
 
-      <Card className="card-glassmorphism-style border-destructive/20">
+      <Card className="card-glassmorphism-style border-destructive/40">
         <CardHeader>
-          <CardTitle className="text-primary-foreground text-xl">
+          <CardTitle className="text-xl font-semibold text-red-200">
             Danger Zone
           </CardTitle>
         </CardHeader>
@@ -154,7 +152,7 @@ export function AccountSection({ user }: AccountSectionProps) {
             onClick={handleDeleteAccount}
             disabled={loading}
             variant="outline"
-            className="border-destructive/20 hover:bg-destructive/10 w-full text-red-400 hover:text-red-300"
+            className="border-destructive/40 hover:bg-destructive/10 w-full bg-transparent text-red-300"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete Account

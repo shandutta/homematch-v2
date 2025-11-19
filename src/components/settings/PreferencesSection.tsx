@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,9 +24,11 @@ interface PreferencesSectionProps {
   profile: UserProfile
 }
 
+type PropertyTypeKey = 'house' | 'condo' | 'townhouse'
+type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
+
 export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   const userService = UserServiceClient
-  // Define local preferences type for UI-specific preferences
   type LocalPreferences = UserPreferences & {
     priceRange?: [number, number]
     bedrooms?: number
@@ -36,7 +38,10 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
     searchRadius?: number
   }
 
-  const preferences = (profile.preferences || {}) as LocalPreferences
+  const preferences = useMemo(
+    () => (profile.preferences || {}) as LocalPreferences,
+    [profile.preferences]
+  )
 
   const [loading, setLoading] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>(
@@ -44,14 +49,16 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   )
   const [bedrooms, setBedrooms] = useState(preferences.bedrooms || 2)
   const [bathrooms, setBathrooms] = useState(preferences.bathrooms || 2)
-  const [propertyTypes, setPropertyTypes] = useState(
+  const [propertyTypes, setPropertyTypes] = useState<
+    Record<PropertyTypeKey, boolean>
+  >(
     preferences.propertyTypes || {
       house: true,
       condo: true,
       townhouse: true,
     }
   )
-  const [mustHaves, setMustHaves] = useState(
+  const [mustHaves, setMustHaves] = useState<Record<MustHaveKey, boolean>>(
     preferences.mustHaves || {
       parking: false,
       pool: false,
@@ -62,6 +69,47 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   const [searchRadius, setSearchRadius] = useState(
     preferences.searchRadius || 10
   )
+
+  const propertyTypeOptions: Array<{
+    key: PropertyTypeKey
+    label: string
+    helper: string
+  }> = [
+    {
+      key: 'house',
+      label: 'Single Family Home',
+      helper: 'Detached homes & standalone properties',
+    },
+    {
+      key: 'condo',
+      label: 'Condo/Apartment',
+      helper: 'Condo towers & multi-family buildings',
+    },
+    {
+      key: 'townhouse',
+      label: 'Townhouse',
+      helper: 'Attached homes with multiple floors',
+    },
+  ]
+
+  const mustHaveOptions: Array<{
+    key: MustHaveKey
+    label: string
+    helper: string
+  }> = [
+    { key: 'parking', label: 'Parking', helper: 'Garage or assigned space' },
+    { key: 'pool', label: 'Pool', helper: 'Community or private pool access' },
+    {
+      key: 'gym',
+      label: 'Gym/Fitness Center',
+      helper: 'On-site fitness amenities',
+    },
+    {
+      key: 'petFriendly',
+      label: 'Pet Friendly',
+      helper: 'Allows pets and has pet amenities',
+    },
+  ]
 
   const savePreferences = async () => {
     setLoading(true)
@@ -86,42 +134,52 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   }
 
   return (
-    <div className="space-y-token-lg">
-      <Card className="card-glassmorphism-style">
+    <div className="space-y-6">
+      <Card className="card-glassmorphism-style border-white/10">
         <CardHeader>
-          <CardTitle className="text-token-2xl text-primary-foreground">
+          <CardTitle className="text-2xl font-semibold text-white">
             Search Preferences
           </CardTitle>
+          <p className="text-sm text-white/70">
+            Adjust budget, rooms, and distance limits. These settings power your
+            discovery feed instantly.
+          </p>
         </CardHeader>
-        <CardContent className="space-y-token-lg">
-          {/* Price Range */}
-          <div className="space-y-token-sm">
-            <Label className="text-primary/40">
-              Price Range: ${priceRange[0].toLocaleString()} - $
-              {priceRange[1].toLocaleString()}
-            </Label>
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/70">
+              <Label className="text-white/80">
+                Price Range: ${priceRange[0].toLocaleString()} - $
+                {priceRange[1].toLocaleString()}
+              </Label>
+              <span className="text-xs text-white/50">
+                Drag both handles to narrow your match budget
+              </span>
+            </div>
             <Slider
               value={priceRange}
               onValueChange={(value) =>
                 setPriceRange(value as [number, number])
               }
-              min={0}
+              min={50000}
               max={2000000}
-              step={50000}
-              className="[&_[role=slider]]:bg-primary"
+              step={25000}
+              className="[&_[role=slider]]:bg-white"
             />
           </div>
 
-          {/* Bedrooms and Bathrooms */}
-          <div className="gap-token-md grid grid-cols-2">
-            <div className="space-y-token-sm">
-              <Label className="text-primary/40">Minimum Bedrooms</Label>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <Label className="text-white/80">Minimum Bedrooms</Label>
               <Select
                 value={bedrooms.toString()}
                 onValueChange={(v) => setBedrooms(Number(v))}
               >
-                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
-                  <SelectValue />
+                <SelectTrigger
+                  className="w-full border-white/20 bg-white/5 text-white"
+                  aria-label="Minimum Bedrooms"
+                >
+                  <SelectValue placeholder="Select bedrooms" />
                 </SelectTrigger>
                 <SelectContent>
                   {[1, 2, 3, 4, 5].map((num) => (
@@ -133,14 +191,17 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
               </Select>
             </div>
 
-            <div className="space-y-token-sm">
-              <Label className="text-primary/40">Minimum Bathrooms</Label>
+            <div className="space-y-3">
+              <Label className="text-white/80">Minimum Bathrooms</Label>
               <Select
                 value={bathrooms.toString()}
                 onValueChange={(v) => setBathrooms(Number(v))}
               >
-                <SelectTrigger className="border-primary/20 bg-background/10 text-primary-foreground">
-                  <SelectValue />
+                <SelectTrigger
+                  className="w-full border-white/20 bg-white/5 text-white"
+                  aria-label="Minimum Bathrooms"
+                >
+                  <SelectValue placeholder="Select bathrooms" />
                 </SelectTrigger>
                 <SelectContent>
                   {[1, 1.5, 2, 2.5, 3, 3.5, 4].map((num) => (
@@ -153,100 +214,131 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
             </div>
           </div>
 
-          {/* Search Radius */}
-          <div className="space-y-token-sm">
-            <Label className="text-primary/40">
-              Search Radius: {searchRadius} miles
-            </Label>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/70">
+              <Label className="text-white/80">
+                Search Radius: {searchRadius}{' '}
+                {searchRadius === 1 ? 'mile' : 'miles'}
+              </Label>
+              <span className="text-xs text-white/50">
+                Higher radius expands nearby cities and suburbs
+              </span>
+            </div>
             <Slider
               value={[searchRadius]}
-              onValueChange={([v]) => setSearchRadius(v)}
+              onValueChange={([value]) => setSearchRadius(value)}
               min={1}
               max={50}
               step={1}
-              className="[&_[role=slider]]:bg-primary"
+              className="[&_[role=slider]]:bg-white"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="card-glassmorphism-style">
-        <CardHeader>
-          <CardTitle className="text-token-xl text-primary-foreground">
-            Property Types
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-token-md">
-          {Object.entries({
-            house: 'Single Family Home',
-            condo: 'Condo/Apartment',
-            townhouse: 'Townhouse',
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <Label htmlFor={key} className="text-primary/40 cursor-pointer">
-                {label}
-              </Label>
-              <Switch
-                id={key}
-                checked={propertyTypes[key]}
-                onCheckedChange={(checked) =>
-                  setPropertyTypes({ ...propertyTypes, [key]: checked })
-                }
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="card-glassmorphism-style">
-        <CardHeader>
-          <CardTitle className="text-token-xl text-primary-foreground">
-            Must-Have Features
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-token-md">
-          {Object.entries({
-            parking: 'Parking',
-            pool: 'Pool',
-            gym: 'Gym/Fitness Center',
-            petFriendly: 'Pet Friendly',
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <Label
-                htmlFor={`must-${key}`}
-                className="text-primary/40 cursor-pointer"
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="card-glassmorphism-style border-white/10">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-white">
+              Property Types
+            </CardTitle>
+            <p className="text-sm text-white/70">
+              Choose the building styles that suit your lifestyle.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {propertyTypeOptions.map(({ key, label, helper }) => (
+              <div
+                key={key}
+                className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
               >
-                {label}
-              </Label>
-              <Switch
-                id={`must-${key}`}
-                checked={mustHaves[key]}
-                onCheckedChange={(checked) =>
-                  setMustHaves({ ...mustHaves, [key]: checked })
-                }
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={key}
+                    className="cursor-pointer text-sm font-medium text-white"
+                  >
+                    {label}
+                  </Label>
+                  <p className="text-xs text-white/60">{helper}</p>
+                </div>
+                <Switch
+                  id={key}
+                  checked={Boolean(propertyTypes[key])}
+                  onCheckedChange={(checked) =>
+                    setPropertyTypes((prev) => ({ ...prev, [key]: checked }))
+                  }
+                  aria-label={`Toggle ${label}`}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
-      <Button
-        onClick={savePreferences}
-        disabled={loading}
-        className="bg-primary text-primary-foreground hover:bg-primary w-full"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          <>
-            <Save className="mr-2 h-4 w-4" />
-            Save Preferences
-          </>
-        )}
-      </Button>
+        <Card className="card-glassmorphism-style border-white/10">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-white">
+              Must-have Features
+            </CardTitle>
+            <p className="text-sm text-white/70">
+              Lock specific amenities so we only surface qualifying homes.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {mustHaveOptions.map(({ key, label, helper }) => (
+              <div
+                key={key}
+                className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
+              >
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`must-${key}`}
+                    className="cursor-pointer text-sm font-medium text-white"
+                  >
+                    {label}
+                  </Label>
+                  <p className="text-xs text-white/60">{helper}</p>
+                </div>
+                <Switch
+                  id={`must-${key}`}
+                  checked={Boolean(mustHaves[key])}
+                  onCheckedChange={(checked) =>
+                    setMustHaves((prev) => ({ ...prev, [key]: checked }))
+                  }
+                  aria-label={`Toggle ${label}`}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80 shadow-inner backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-base font-semibold">Save and sync</p>
+          <p className="text-sm text-white/60">
+            Updating preferences immediately refreshes dashboard matches and
+            saved searches.
+          </p>
+        </div>
+        <Button
+          onClick={savePreferences}
+          disabled={loading}
+          variant="primary"
+          className="px-8 md:w-auto"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Preferences
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

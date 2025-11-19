@@ -123,12 +123,7 @@ export default [
     settings: { react: { version: 'detect' } },
   },
   {
-    files: [
-      '**/*.js',
-      '*.config.{js,ts,mjs}',
-      'scripts/**/*',
-      'jest.setup.js',
-    ],
+    files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*', 'jest.setup.js'],
     languageOptions: {
       globals: {
         ...globals.node,
