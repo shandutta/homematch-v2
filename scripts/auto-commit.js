@@ -109,11 +109,14 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
 
   try {
     await ensureFetch()
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    })
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      }
+    )
 
     if (!response.ok) {
       const body = await response.text()
@@ -132,7 +135,10 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
 
     return message.replace(/^"|"$/g, '')
   } catch (error) {
-    console.error('Failed to fetch commit message from OpenRouter:', error.message)
+    console.error(
+      'Failed to fetch commit message from OpenRouter:',
+      error.message
+    )
     process.exit(1)
   }
 }
