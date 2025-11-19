@@ -91,7 +91,14 @@ export function DashboardPropertyGrid({
             onView={onView}
             className="h-[520px]"
           >
-            <PropertyCard property={property} onDecision={onDecision} />
+            <PropertyCard
+              property={property}
+              onDecision={onDecision}
+              showStory
+              storyVariant="futureVision"
+              showMap
+              enableDetailsToggle
+            />
           </PropertyViewTracker>
         ))}
       </div>

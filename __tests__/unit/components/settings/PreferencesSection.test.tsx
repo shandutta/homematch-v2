@@ -1,11 +1,15 @@
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PreferencesSection } from '@/components/settings/PreferencesSection'
-import { UserService } from '@/lib/services/users'
+import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 
 // Mock dependencies
-jest.mock('@/lib/services/users')
+jest.mock('@/lib/services/users-client', () => ({
+  UserServiceClient: {
+    updateUserProfile: jest.fn(),
+  },
+}))
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -39,22 +43,45 @@ const mockProfile = {
   },
 } as any
 
+beforeAll(() => {
+  class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  ;(global as any).ResizeObserver = ResizeObserverMock
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {}
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {}
+  }
+})
+
 describe('PreferencesSection', () => {
   let mockUpdateUserProfile: jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUpdateUserProfile = jest.fn().mockResolvedValue(true)
-    ;(UserService as jest.Mock).mockImplementation(() => ({
-      updateUserProfile: mockUpdateUserProfile,
-    }))
+    mockUpdateUserProfile = jest
+      .spyOn(UserServiceClient, 'updateUserProfile')
+      .mockResolvedValue(true as any)
+  })
+
+  afterEach(() => {
+    mockUpdateUserProfile.mockRestore()
   })
 
   it('renders all preference controls with initial values', () => {
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
     // Price range
-    expect(screen.getByText(/price range: \$300,000 - \$700,000/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/price range: \$300,000 - \$700,000/i)
+    ).toBeInTheDocument()
 
     // Bedrooms and bathrooms
     expect(screen.getByText('3+ Bedrooms')).toBeInTheDocument()
@@ -79,7 +106,9 @@ describe('PreferencesSection', () => {
     const profileWithoutPrefs = { ...mockProfile, preferences: {} }
     render(<PreferencesSection user={mockUser} profile={profileWithoutPrefs} />)
 
-    expect(screen.getByText(/price range: \$200,000 - \$800,000/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/price range: \$200,000 - \$800,000/i)
+    ).toBeInTheDocument()
     expect(screen.getByText('2+ Bedrooms')).toBeInTheDocument()
     expect(screen.getByText('2+ Bathrooms')).toBeInTheDocument()
     expect(screen.getByText('Search Radius: 10 miles')).toBeInTheDocument()
@@ -89,7 +118,9 @@ describe('PreferencesSection', () => {
     const user = userEvent.setup()
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
-    const bedroomsSelect = screen.getByLabelText('Minimum Bedrooms')
+    const bedroomsSelect = screen.getByRole('combobox', {
+      name: 'Minimum Bedrooms',
+    })
     await user.click(bedroomsSelect)
     await user.click(screen.getByText('4+ Bedrooms'))
 
@@ -109,7 +140,9 @@ describe('PreferencesSection', () => {
     const user = userEvent.setup()
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
-    const bathroomsSelect = screen.getByLabelText('Minimum Bathrooms')
+    const bathroomsSelect = screen.getByRole('combobox', {
+      name: 'Minimum Bathrooms',
+    })
     await user.click(bathroomsSelect)
     await user.click(screen.getByText('2.5+ Bathrooms'))
 
@@ -186,7 +219,9 @@ describe('PreferencesSection', () => {
     await user.click(saveButton)
 
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Preferences saved successfully')
+      expect(toast.success).toHaveBeenCalledWith(
+        'Preferences saved successfully'
+      )
     })
   })
 
@@ -205,7 +240,9 @@ describe('PreferencesSection', () => {
 
   it('shows loading state while saving', async () => {
     const user = userEvent.setup()
-    mockUpdateUserProfile.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+    mockUpdateUserProfile.mockImplementation(
+      () => new Promise((resolve) => setTimeout(resolve, 100))
+    )
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
     const saveButton = screen.getByRole('button', { name: /save preferences/i })

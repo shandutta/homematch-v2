@@ -3,6 +3,7 @@ import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBou
 import { loadDashboardData } from '@/lib/data/loader'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { UserService } from '@/lib/services/users'
 
 interface DashboardPageProps {
   searchParams: {
@@ -23,7 +24,11 @@ export default async function DashboardPage({
   }
 
   try {
-    const dashboardData = await loadDashboardData()
+    const userService = new UserService()
+    const userProfile = await userService.getUserProfile(user.id)
+    const dashboardData = await loadDashboardData({
+      userPreferences: userProfile?.preferences as Record<string, any> | null,
+    })
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented
     // if (!finalUserData?.onboarding_completed) {

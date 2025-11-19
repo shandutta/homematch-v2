@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import React from 'react'
+import { useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,17 +22,19 @@ export function NotificationsSection({
   profile,
 }: NotificationsSectionProps) {
   const userService = UserServiceClient
-
-  // Define specific notification types for strong typing
   type NotificationPreferences = {
     email?: Record<string, boolean>
     push?: Record<string, boolean>
     sms?: Record<string, boolean>
   }
 
-  const preferences = (profile.preferences || {}) as UserPreferences & {
-    notifications?: NotificationPreferences
-  }
+  const preferences = useMemo(
+    () =>
+      (profile.preferences || {}) as UserPreferences & {
+        notifications?: NotificationPreferences
+      },
+    [profile.preferences]
+  )
   const notifications = preferences.notifications || {}
 
   const [loading, setLoading] = useState(false)
@@ -78,140 +81,193 @@ export function NotificationsSection({
     }
   }
 
+  const notificationGroups: Array<{
+    key: 'email' | 'push' | 'sms'
+    title: string
+    icon: React.ReactElement
+    description: string
+    options: Array<{ key: string; label: string; helper: string }>
+  }> = [
+    {
+      key: 'email',
+      title: 'Email Notifications',
+      icon: <Mail className="h-6 w-6 text-white/80" />,
+      description: `Sent to ${user.email}`,
+      options: [
+        {
+          key: 'newMatches',
+          label: 'New property matches',
+          helper: 'Emails when fresh inventory matches your filters',
+        },
+        {
+          key: 'priceDrops',
+          label: 'Price drops',
+          helper: 'We alert you if saved homes lower their price',
+        },
+        {
+          key: 'savedSearches',
+          label: 'Saved search updates',
+          helper: 'Daily digest for saved dashboards',
+        },
+        {
+          key: 'weeklyDigest',
+          label: 'Weekly digest',
+          helper: 'One email summarizing the week',
+        },
+      ],
+    },
+    {
+      key: 'push',
+      title: 'Push Notifications',
+      icon: <Bell className="h-5 w-5 text-white/80" />,
+      description: 'Instant nudges on your devices',
+      options: [
+        {
+          key: 'newMatches',
+          label: 'New matches',
+          helper: 'Be first to know when inventory hits your filters',
+        },
+        {
+          key: 'priceDrops',
+          label: 'Price drops',
+          helper: 'Live alerts as prices fall on liked homes',
+        },
+        {
+          key: 'messages',
+          label: 'Household messages',
+          helper: 'Updates from roommates or partners',
+        },
+      ],
+    },
+    {
+      key: 'sms',
+      title: 'SMS Notifications',
+      icon: <Smartphone className="h-5 w-5 text-white/80" />,
+      description: 'High-signal texts for urgent updates',
+      options: [
+        {
+          key: 'urgentAlerts',
+          label: 'Urgent alerts',
+          helper: 'Time-sensitive recommendations and drops',
+        },
+        {
+          key: 'viewingReminders',
+          label: 'Viewing reminders',
+          helper: 'Day-of reminders for scheduled tours',
+        },
+      ],
+    },
+  ]
+
+  const renderSwitch = (
+    group: 'email' | 'push' | 'sms',
+    optionKey: string,
+    label: string,
+    helper: string
+  ) => {
+    const stateMap =
+      group === 'email'
+        ? emailNotifications
+        : group === 'push'
+          ? pushNotifications
+          : smsNotifications
+
+    const setter =
+      group === 'email'
+        ? setEmailNotifications
+        : group === 'push'
+          ? setPushNotifications
+          : setSmsNotifications
+
+    return (
+      <div
+        key={`${group}-${optionKey}`}
+        className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
+      >
+        <div className="space-y-1">
+          <Label
+            htmlFor={`${group}-${optionKey}`}
+            className="cursor-pointer text-sm font-medium text-white"
+          >
+            {label}
+          </Label>
+          <p className="text-xs text-white/60">{helper}</p>
+        </div>
+        <Switch
+          id={`${group}-${optionKey}`}
+          checked={Boolean(stateMap[optionKey])}
+          onCheckedChange={(checked) =>
+            setter((prev) => ({
+              ...prev,
+              [optionKey]: checked,
+            }))
+          }
+          aria-label={`Toggle ${label}`}
+        />
+      </div>
+    )
+  }
+
+  const smsNeedsNumber =
+    smsNotifications.urgentAlerts || smsNotifications.viewingReminders
+
   return (
     <div className="space-y-6">
-      <Card className="card-glassmorphism-style">
-        <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-2xl">
-            <Mail className="h-6 w-6" />
-            Email Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-primary/40 text-sm">
-            Notifications will be sent to:{' '}
-            <span className="text-primary-foreground">{user.email}</span>
-          </p>
-          {Object.entries({
-            newMatches: 'New property matches',
-            priceDrops: 'Price drops on liked properties',
-            savedSearches: 'Updates on saved searches',
-            weeklyDigest: 'Weekly property digest',
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <Label
-                htmlFor={`email-${key}`}
-                className="text-primary/40 cursor-pointer"
-              >
-                {label}
-              </Label>
-              <Switch
-                id={`email-${key}`}
-                checked={emailNotifications[key]}
-                onCheckedChange={(checked) =>
-                  setEmailNotifications({
-                    ...emailNotifications,
-                    [key]: checked,
-                  })
-                }
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="card-glassmorphism-style">
-        <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Bell className="h-5 w-5" />
-            Push Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-primary/40 text-sm">
-            Get instant notifications on your device
-          </p>
-          {Object.entries({
-            newMatches: 'New property matches',
-            priceDrops: 'Price drops',
-            messages: 'Messages from household members',
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <Label
-                htmlFor={`push-${key}`}
-                className="text-primary/40 cursor-pointer"
-              >
-                {label}
-              </Label>
-              <Switch
-                id={`push-${key}`}
-                checked={pushNotifications[key]}
-                onCheckedChange={(checked) =>
-                  setPushNotifications({ ...pushNotifications, [key]: checked })
-                }
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="card-glassmorphism-style">
-        <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
-            <Smartphone className="h-5 w-5" />
-            SMS Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-primary/40 text-sm">
-            Get text messages for important alerts
-          </p>
-          {Object.entries({
-            urgentAlerts: 'Urgent property alerts',
-            viewingReminders: 'Property viewing reminders',
-          }).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between">
-              <Label
-                htmlFor={`sms-${key}`}
-                className="text-primary/40 cursor-pointer"
-              >
-                {label}
-              </Label>
-              <Switch
-                id={`sms-${key}`}
-                checked={smsNotifications[key]}
-                onCheckedChange={(checked) =>
-                  setSmsNotifications({ ...smsNotifications, [key]: checked })
-                }
-              />
-            </div>
-          ))}
-          {(smsNotifications.urgentAlerts ||
-            smsNotifications.viewingReminders) && (
-            <p className="text-primary/60/60 text-xs">
-              Note: Phone number required in your profile for SMS notifications
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Button
-        onClick={saveNotifications}
-        disabled={loading}
-        className="bg-primary text-primary-foreground hover:bg-primary w-full"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          <>
-            <Save className="mr-2 h-4 w-4" />
-            Save Notification Preferences
-          </>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {notificationGroups.map(
+          ({ key, title, icon, description, options }) => (
+            <Card
+              key={key}
+              className="card-glassmorphism-style border-white/10"
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  {icon}
+                  <span className="text-xl font-semibold">{title}</span>
+                </CardTitle>
+                <p className="text-sm text-white/70">{description}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {options.map((option) =>
+                  renderSwitch(key, option.key, option.label, option.helper)
+                )}
+                {key === 'sms' && smsNeedsNumber && (
+                  <p className="text-xs text-white/60">
+                    Add a phone number in your profile to receive SMS alerts.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )
         )}
-      </Button>
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80 shadow-inner backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-base font-semibold">Alert preferences</p>
+          <p className="text-sm text-white/60">
+            Mix channels to match your responsiveness. We’ll only message you
+            when the toggles above are on.
+          </p>
+        </div>
+        <Button
+          onClick={saveNotifications}
+          disabled={loading}
+          className="text-primary bg-white font-semibold hover:bg-white/90 md:w-auto"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Notification Preferences
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

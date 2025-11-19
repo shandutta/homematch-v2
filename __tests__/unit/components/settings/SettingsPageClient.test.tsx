@@ -203,7 +203,8 @@ describe('SettingsPageClient', () => {
     // Check for header styling using testid
     const header = screen.getByTestId('settings-header')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('backdrop-blur-md', 'border-b')
+    expect(header).toHaveClass('border-white/10')
+    expect(header).toHaveClass('shadow-token-xl')
 
     // Check for tab styling - update to match actual rendered classes
     const tabsList = screen.getByRole('tablist')

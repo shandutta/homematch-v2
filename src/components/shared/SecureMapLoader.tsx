@@ -13,6 +13,14 @@ let isGoogleMapsLoaded = false
 let isGoogleMapsLoading = false
 let loadPromise: Promise<void> | null = null
 
+// Test helper to reset loader state safely between unit tests
+export function __resetSecureMapLoaderStateForTests() {
+  if (process.env.NODE_ENV !== 'test') return
+  isGoogleMapsLoaded = false
+  isGoogleMapsLoading = false
+  loadPromise = null
+}
+
 /**
  * Secure Google Maps loader component that:
  * 1. Loads Google Maps script through secure server proxy

@@ -84,8 +84,7 @@ describe('ProfilePageClient', () => {
 
     // Header elements
     expect(screen.getByText('My Profile')).toBeInTheDocument()
-    expect(screen.getByText('Back to Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(screen.getByText(/Back to dashboard/i)).toBeInTheDocument()
 
     // Tab navigation
     expect(screen.getByRole('tab', { name: /profile/i })).toBeInTheDocument()
@@ -220,17 +219,16 @@ describe('ProfilePageClient', () => {
     // Check for main container classes
     expect(container.firstChild).toHaveClass(
       'min-h-screen',
-      'text-primary-foreground'
+      'bg-[#030c24]',
+      'text-white'
     )
 
-    // Check for header styling - use attribute selector for classes with special characters
-    const header = container.querySelector('[class*="bg-primary"]')
+    const header = screen.getByTestId('profile-header')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('backdrop-blur-md', 'border-b')
+    expect(header).toHaveClass('border-b')
 
-    // Check for tab styling - update to match actual rendered classes
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('border', 'bg-primary/20')
+    expect(tabsList).toHaveClass('border', 'bg-white')
   })
 
   it('handles profile without household', () => {

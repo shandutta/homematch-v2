@@ -23,6 +23,9 @@ describe('HouseholdSection', () => {
   let mockCreateHousehold: jest.Mock
   let mockJoinHousehold: jest.Mock
   let mockLeaveHousehold: jest.Mock
+  let mockGetInvites: jest.Mock
+  let mockCreateInvite: jest.Mock
+  let mockRevokeInvite: jest.Mock
   let originalClipboard: Clipboard
 
   beforeAll(() => {
@@ -57,9 +60,20 @@ describe('HouseholdSection', () => {
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = jest.fn().mockResolvedValue(true)
     mockLeaveHousehold = jest.fn().mockResolvedValue(true)
+    mockGetInvites = jest.fn().mockResolvedValue([])
+    mockCreateInvite = jest.fn().mockResolvedValue({
+      id: 'invite-1',
+      status: 'pending',
+    })
+    mockRevokeInvite = jest.fn().mockResolvedValue(true)
     ;(UserServiceClient.createHousehold as jest.Mock) = mockCreateHousehold
     ;(UserServiceClient.joinHousehold as jest.Mock) = mockJoinHousehold
     ;(UserServiceClient.leaveHousehold as jest.Mock) = mockLeaveHousehold
+    ;(UserServiceClient.getHouseholdInvitations as jest.Mock) = mockGetInvites
+    ;(UserServiceClient.createHouseholdInvitation as jest.Mock) =
+      mockCreateInvite
+    ;(UserServiceClient.revokeHouseholdInvitation as jest.Mock) =
+      mockRevokeInvite
   })
 
   describe('without household', () => {
@@ -186,7 +200,7 @@ describe('HouseholdSection', () => {
         screen.getByText(TEST_USERS.withHousehold.profile.household.id)
       ).toBeInTheDocument()
       expect(
-        screen.getByText(/share this code with family members/i)
+        screen.getByText(/share this code or send an invitation link/i)
       ).toBeInTheDocument()
     })
 
@@ -205,6 +219,67 @@ describe('HouseholdSection', () => {
       expect(toast.success).toHaveBeenCalledWith(
         TEST_MESSAGES.clipboard.success
       )
+    })
+
+    it('loads existing invitations', async () => {
+      const invite = {
+        id: 'invite-1',
+        invited_email: 'partner@example.com',
+        invited_name: 'Partner',
+        status: 'pending',
+        expires_at: new Date().toISOString(),
+      }
+      mockGetInvites.mockResolvedValueOnce([invite])
+      render(<HouseholdSection profile={profileWithHousehold} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(invite.invited_email)).toBeInTheDocument()
+      })
+    })
+
+    it('sends a new invitation', async () => {
+      const user = userEvent.setup()
+      render(<HouseholdSection profile={profileWithHousehold} />)
+
+      const emailInput = screen.getByTestId('invite-email-input')
+      const sendButton = screen.getByTestId('send-invite-button')
+
+      await user.type(emailInput, 'partner@example.com')
+      await user.click(sendButton)
+
+      await waitFor(() => {
+        expect(mockCreateInvite).toHaveBeenCalledWith({
+          household_id: TEST_USERS.withHousehold.profile.household.id,
+          invited_email: 'partner@example.com',
+          invited_name: null,
+          invited_by: TEST_USERS.withHousehold.id,
+          message: null,
+        })
+        expect(toast.success).toHaveBeenCalledWith('Invitation sent')
+      })
+    })
+
+    it('revokes an invitation', async () => {
+      const user = userEvent.setup()
+      mockGetInvites.mockResolvedValueOnce([
+        {
+          id: 'invite-1',
+          invited_email: 'partner@example.com',
+          invited_name: 'Partner',
+          status: 'pending',
+          expires_at: new Date().toISOString(),
+        },
+      ])
+      global.confirm = jest.fn().mockReturnValue(true)
+
+      render(<HouseholdSection profile={profileWithHousehold} />)
+
+      const revokeButton = await screen.findByRole('button', {
+        name: /revoke/i,
+      })
+      await user.click(revokeButton)
+
+      expect(mockRevokeInvite).toHaveBeenCalledWith('invite-1')
     })
 
     it('leaves household with confirmation', async () => {

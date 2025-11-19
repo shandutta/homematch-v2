@@ -23,8 +23,7 @@ export const setupTestEnvironment = () => {
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key-for-testing-only',
 
     // Google Maps
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: 'test-google-maps-key',
-    GOOGLE_MAPS_API_KEY: 'test-google-maps-key-server',
+    GOOGLE_MAPS_SERVER_API_KEY: 'test-google-maps-key-server',
 
     // Zillow/RapidAPI
     RAPIDAPI_KEY: 'test-rapidapi-key',

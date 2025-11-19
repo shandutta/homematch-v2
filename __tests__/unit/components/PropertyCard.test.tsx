@@ -49,14 +49,23 @@ const mockProperty: Property = {
   zpid: '12345678',
 }
 
+const getStatValueByLabel = (label: string) => {
+  const labelElement = screen.getByText(label, { selector: 'p' })
+  const valueElement = labelElement.nextElementSibling as HTMLElement | null
+  if (!valueElement) {
+    throw new Error(`Value element for ${label} stat not found`)
+  }
+  return valueElement
+}
+
 describe('PropertyCard Component', () => {
   test('should render property details correctly', () => {
     render(<PropertyCard property={mockProperty} />)
     expect(screen.getByText('123 Main St')).toBeDefined()
     expect(screen.getByText('$500,000')).toBeDefined()
-    expect(screen.getByText(/3 beds/)).toBeDefined()
-    expect(screen.getByText(/2 baths/)).toBeDefined()
-    expect(screen.getByText(/1,500 sqft/)).toBeDefined()
+    expect(getStatValueByLabel('Beds')).toHaveTextContent('3')
+    expect(getStatValueByLabel('Baths')).toHaveTextContent('2')
+    expect(getStatValueByLabel('Sq Ft')).toHaveTextContent('1,500')
   })
 
   test('should render Zillow link with correct href', () => {

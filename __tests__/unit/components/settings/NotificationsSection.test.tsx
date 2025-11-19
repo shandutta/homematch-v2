@@ -69,10 +69,7 @@ describe('NotificationsSection', () => {
   test('displays user email', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    expect(
-      screen.getByText(/Notifications will be sent to:/)
-    ).toBeInTheDocument()
-    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByText(/Sent to test@example.com/i)).toBeInTheDocument()
   })
 
   test('renders all email notification options', () => {
@@ -84,9 +81,9 @@ describe('NotificationsSection', () => {
       .closest('.card-glassmorphism-style')
 
     expect(emailSection).toHaveTextContent('New property matches')
-    expect(emailSection).toHaveTextContent('Price drops on liked properties')
-    expect(emailSection).toHaveTextContent('Updates on saved searches')
-    expect(emailSection).toHaveTextContent('Weekly property digest')
+    expect(emailSection).toHaveTextContent('Price drops')
+    expect(emailSection).toHaveTextContent('Saved search updates')
+    expect(emailSection).toHaveTextContent('Weekly digest')
   })
 
   test('renders all push notification options', () => {
@@ -95,27 +92,23 @@ describe('NotificationsSection', () => {
     const pushSection = screen
       .getByText('Push Notifications')
       .closest('.card-glassmorphism-style')
-    expect(pushSection).toHaveTextContent('New property matches')
+    expect(pushSection).toHaveTextContent('New matches')
     expect(pushSection).toHaveTextContent('Price drops')
-    expect(pushSection).toHaveTextContent('Messages from household members')
+    expect(pushSection).toHaveTextContent('Household messages')
   })
 
   test('renders all SMS notification options', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    expect(screen.getByLabelText('Urgent property alerts')).toBeInTheDocument()
-    expect(
-      screen.getByLabelText('Property viewing reminders')
-    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Urgent alerts')).toBeInTheDocument()
+    expect(screen.getByLabelText('Viewing reminders')).toBeInTheDocument()
   })
 
   test('toggles email notifications', async () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const weeklyDigestSwitch = screen.getByRole('switch', {
-      name: 'Weekly property digest',
-    })
+    const weeklyDigestSwitch = screen.getByLabelText('Weekly digest')
     expect(weeklyDigestSwitch).not.toBeChecked()
 
     await user.click(weeklyDigestSwitch)
@@ -126,9 +119,7 @@ describe('NotificationsSection', () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const newMatchesSwitch = screen.getAllByRole('switch', {
-      name: 'New property matches',
-    })[1]
+    const newMatchesSwitch = screen.getByLabelText('New matches')
     expect(newMatchesSwitch).not.toBeChecked()
 
     await user.click(newMatchesSwitch)
@@ -139,9 +130,7 @@ describe('NotificationsSection', () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const urgentAlertsSwitch = screen.getByRole('switch', {
-      name: 'Urgent property alerts',
-    })
+    const urgentAlertsSwitch = screen.getByLabelText('Urgent alerts')
     expect(urgentAlertsSwitch).not.toBeChecked()
 
     await user.click(urgentAlertsSwitch)
@@ -153,18 +142,18 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Initially no note
-    expect(screen.queryByText(/Phone number required/)).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/Add a phone number in your profile/i)
+    ).not.toBeInTheDocument()
 
     // Enable SMS notification
-    const urgentAlertsSwitch = screen.getByRole('switch', {
-      name: 'Urgent property alerts',
-    })
+    const urgentAlertsSwitch = screen.getByLabelText('Urgent alerts')
     await user.click(urgentAlertsSwitch)
 
     // Note should appear
     expect(
       screen.getByText(
-        /Phone number required in your profile for SMS notifications/
+        /Add a phone number in your profile to receive SMS alerts/i
       )
     ).toBeInTheDocument()
   })
@@ -176,9 +165,7 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Toggle a switch
-    const weeklyDigestSwitch = screen.getByRole('switch', {
-      name: 'Weekly property digest',
-    })
+    const weeklyDigestSwitch = screen.getByLabelText('Weekly digest')
     await user.click(weeklyDigestSwitch)
 
     // Click save
@@ -260,7 +247,7 @@ describe('NotificationsSection', () => {
       .getByText('Email Notifications')
       .closest('.card-glassmorphism-style')
     expect(emailSection).toHaveTextContent('New property matches')
-    expect(emailSection).toHaveTextContent('Weekly property digest')
+    expect(emailSection).toHaveTextContent('Weekly digest')
 
     // Check that all sections are rendered
     expect(screen.getByText('Push Notifications')).toBeInTheDocument()
@@ -285,15 +272,9 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Toggle switches in different categories
-    const emailSwitch = screen.getByRole('switch', {
-      name: 'Weekly property digest',
-    })
-    const pushSwitch = screen.getAllByRole('switch', {
-      name: 'New property matches',
-    })[1]
-    const smsSwitch = screen.getByRole('switch', {
-      name: 'Urgent property alerts',
-    })
+    const emailSwitch = screen.getByLabelText('Weekly digest')
+    const pushSwitch = screen.getByLabelText('New matches')
+    const smsSwitch = screen.getByLabelText('Urgent alerts')
 
     await user.click(emailSwitch)
     await user.click(pushSwitch)

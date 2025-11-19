@@ -38,6 +38,73 @@ export type Database = {
         }
         Relationships: []
       }
+      household_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string | null
+          expires_at: string
+          household_id: string
+          id: string
+          invited_by: string
+          invited_email: string
+          invited_name: string | null
+          message: string | null
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string | null
+          expires_at?: string
+          household_id: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          invited_name?: string | null
+          message?: string | null
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string | null
+          expires_at?: string
+          household_id?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          invited_name?: string | null
+          message?: string | null
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'household_invitations_accepted_by_fkey'
+            columns: ['accepted_by']
+            isOneToOne: false
+            referencedRelation: 'user_profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'household_invitations_household_id_fkey'
+            columns: ['household_id']
+            isOneToOne: false
+            referencedRelation: 'households'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'household_invitations_invited_by_fkey'
+            columns: ['invited_by']
+            isOneToOne: false
+            referencedRelation: 'user_profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       neighborhoods: {
         Row: {
           bounds: unknown | null
@@ -386,6 +453,7 @@ export type TablesUpdate<
 // Core table types for easy access
 export type UserProfile = Tables<'user_profiles'>
 export type Household = Tables<'households'>
+export type HouseholdInvitation = Tables<'household_invitations'>
 export type Neighborhood = Tables<'neighborhoods'>
 export type Property = Tables<'properties'>
 export type UserPropertyInteraction = Tables<'user_property_interactions'>
@@ -394,6 +462,7 @@ export type SavedSearch = Tables<'saved_searches'>
 // Insert types
 export type UserProfileInsert = TablesInsert<'user_profiles'>
 export type HouseholdInsert = TablesInsert<'households'>
+export type HouseholdInvitationInsert = TablesInsert<'household_invitations'>
 export type NeighborhoodInsert = TablesInsert<'neighborhoods'>
 export type PropertyInsert = TablesInsert<'properties'>
 export type UserPropertyInteractionInsert =
@@ -403,6 +472,7 @@ export type SavedSearchInsert = TablesInsert<'saved_searches'>
 // Update types
 export type UserProfileUpdate = TablesUpdate<'user_profiles'>
 export type HouseholdUpdate = TablesUpdate<'households'>
+export type HouseholdInvitationUpdate = TablesUpdate<'household_invitations'>
 export type NeighborhoodUpdate = TablesUpdate<'neighborhoods'>
 export type PropertyUpdate = TablesUpdate<'properties'>
 export type UserPropertyInteractionUpdate =

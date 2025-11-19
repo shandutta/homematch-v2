@@ -96,14 +96,12 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             name="display_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-token-primary-light">
-                  Display Name
-                </FormLabel>
+                <FormLabel className="text-slate-600">Display Name</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="Enter your display name"
-                    className="border-token-primary-light bg-background/10 text-primary-foreground placeholder:text-token-primary-light/60"
+                    className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                   />
                 </FormControl>
                 <FormMessage className="text-token-error-light" />
@@ -116,15 +114,13 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-token-primary-light">
-                  Phone Number
-                </FormLabel>
+                <FormLabel className="text-slate-600">Phone Number</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="tel"
                     placeholder="(123) 456-7890"
-                    className="border-token-primary-light bg-background/10 text-primary-foreground placeholder:text-token-primary-light/60"
+                    className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                   />
                 </FormControl>
                 <FormMessage className="text-token-error-light" />
@@ -134,11 +130,9 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         </div>
 
         <div>
-          <p className="text-token-sm text-token-primary-light mb-2">Email</p>
-          <p className="text-primary-foreground">{user.email}</p>
-          <p className="text-token-xs text-token-primary-light/60 mt-1">
-            Email cannot be changed
-          </p>
+          <p className="mb-2 text-sm font-medium text-slate-600">Email</p>
+          <p className="text-slate-900">{user.email}</p>
+          <p className="mt-1 text-xs text-slate-500">Email cannot be changed</p>
         </div>
 
         <FormField
@@ -146,13 +140,13 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-token-primary-light">Bio</FormLabel>
+              <FormLabel className="text-slate-600">Bio</FormLabel>
               <FormControl>
                 <textarea
                   {...field}
                   rows={4}
                   placeholder="Tell us a bit about yourself..."
-                  className="rounded-token-md border-token-primary-light bg-background/10 p-token-md text-primary-foreground placeholder:text-token-primary-light/60 focus:ring-token-primary w-full resize-none border focus:border-transparent focus:ring-2 focus:outline-none"
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 focus:outline-none"
                 />
               </FormControl>
               <FormMessage className="text-token-error-light" />
@@ -163,7 +157,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         <Button
           type="submit"
           disabled={loading}
-          className="bg-token-primary text-primary-foreground hover:bg-token-primary-dark"
+          className="bg-slate-900 text-white hover:bg-slate-800"
         >
           {loading ? (
             <>
