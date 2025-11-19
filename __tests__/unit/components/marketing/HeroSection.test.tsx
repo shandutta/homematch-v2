@@ -175,7 +175,10 @@ describe('HeroSection', () => {
 
     const primaryCTA = screen.getByText('Start matching').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
-    expect(primaryCTA).toHaveAttribute('aria-label', 'Start matching with HomeMatch')
+    expect(primaryCTA).toHaveAttribute(
+      'aria-label',
+      'Start matching with HomeMatch'
+    )
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 

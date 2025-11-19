@@ -326,7 +326,9 @@ export class AuthHelper {
 
     await Promise.all([
       this.page
-        .waitForURL(isLoggedOutDestination, { timeout: TEST_TIMEOUTS.navigation })
+        .waitForURL(isLoggedOutDestination, {
+          timeout: TEST_TIMEOUTS.navigation,
+        })
         .catch(() => {}),
       logoutButton.click(),
     ])

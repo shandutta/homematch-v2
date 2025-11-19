@@ -3,11 +3,7 @@
 import { useRef } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import {
-  MotionDiv,
-  MotionH2,
-  MotionP,
-} from '@/components/ui/motion-components'
+import { MotionDiv, MotionH2, MotionP } from '@/components/ui/motion-components'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, MapPin, Radar, ShieldCheck, Heart } from 'lucide-react'
 
@@ -25,8 +21,7 @@ const storyBeats = [
   },
   {
     title: 'See the neighborhood',
-    description:
-      'A mini map and quick chips keep location context in view.',
+    description: 'A mini map and quick chips keep location context in view.',
     accent: 'Street-level clarity',
   },
 ]
@@ -38,9 +33,9 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
     offset: ['start end', 'end start'],
   })
 
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.97, 1.05, 1.1])
-  const lift = useTransform(scrollYProgress, [0, 1], [30, -120])
-  const tilt = useTransform(scrollYProgress, [0, 1], [0, -6])
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.98, 1.02, 1.05])
+  const lift = useTransform(scrollYProgress, [0, 1], [12, -60])
+  const tilt = useTransform(scrollYProgress, [0, 1], [0, 0]) // keep steady, no tilt
   const glowOpacity = useTransform(scrollYProgress, [0, 1], [0.3, 0.8])
   const accentDrift = useTransform(scrollYProgress, [0, 1], [0, -60])
   const progress = useTransform(scrollYProgress, [0, 1], ['18%', '100%'])
@@ -66,7 +61,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
             Made for couples
           </Badge>
           <Badge variant="outline" className="border-blue-200 text-blue-700">
-            Scroll to see more
+            Peek at the dashboard flow
           </Badge>
         </div>
 
@@ -88,23 +83,23 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                 <div className="relative z-10 h-full p-6 sm:p-7">
                   <div className="flex items-center justify-between rounded-2xl border border-slate-100/70 bg-white/70 px-4 py-3 shadow-lg shadow-slate-300/30 backdrop-blur">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <p className="text-xs font-semibold tracking-[0.18em] text-slate-500 uppercase">
                         Live preview
                       </p>
                       <p className="text-lg font-semibold text-slate-900">
-                        See more as you scroll
+                        Peek at your dashboard flow
                       </p>
                     </div>
                     <Badge className="bg-emerald-100 text-emerald-700">
                       <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                      Moves with you
+                      Live view
                     </Badge>
                   </div>
 
                   <div className="mt-5 rounded-3xl border border-slate-100/70 bg-white/80 p-4 shadow-xl shadow-slate-400/20 backdrop-blur">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        <p className="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">
                           Listing · San Francisco
                         </p>
                         <p className="text-xl font-semibold text-slate-900">
@@ -121,15 +116,15 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-3">
                       {[
-                        { label: 'Match score', value: '97%' },
+                        { label: 'Mutual likes', value: '12' },
                         { label: 'Commute', value: '18 min' },
-                        { label: 'Walkable', value: '92' },
+                        { label: 'Saved tours', value: '3' },
                       ].map((item) => (
                         <div
                           key={item.label}
                           className="rounded-2xl border border-slate-100 bg-white/90 px-3 py-3 text-sm font-semibold text-slate-900 shadow-sm"
                         >
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
                             {item.label}
                           </p>
                           <p className="text-lg">{item.value}</p>
@@ -140,7 +135,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div className="rounded-3xl border border-slate-100/80 bg-white/80 p-4 shadow-lg shadow-slate-400/20 backdrop-blur">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">
                         <MapPin className="h-3.5 w-3.5 text-sky-500" />
                         Neighborhood micro-map
                       </div>
@@ -148,7 +143,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                         <div className="relative h-full w-full overflow-hidden rounded-2xl">
                           <div className="absolute inset-6 rounded-full bg-gradient-to-br from-sky-500/20 via-white to-indigo-500/10 blur-3xl" />
                           <div className="absolute inset-[10px] rounded-2xl border border-dashed border-slate-200/80" />
-                          <div className="absolute left-6 top-6 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]" />
+                          <div className="absolute top-6 left-6 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]" />
                           <div className="absolute right-8 bottom-8 h-3 w-3 rounded-full bg-sky-500 shadow-[0_0_0_6px_rgba(56,189,248,0.25)]" />
                           <div className="absolute inset-x-6 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
                         </div>
@@ -159,11 +154,11 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                       style={{ y: accentDrift }}
                       className="rounded-3xl border border-indigo-100/70 bg-gradient-to-br from-indigo-600 via-blue-500 to-sky-400 p-4 text-white shadow-xl shadow-indigo-400/30 backdrop-blur"
                     >
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+                      <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-white/70 uppercase">
                         <Radar className="h-4 w-4" />
                         Stay in sync
                       </div>
-                      <p className="mt-2 text-lg font-semibold leading-tight">
+                      <p className="mt-2 text-lg leading-tight font-semibold">
                         Likes and saves stay synced for both of you.
                       </p>
                       <p className="mt-1 text-sm text-white/85">
@@ -180,13 +175,13 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
           <div className="space-y-10 lg:pl-4">
             <div className="max-w-xl space-y-4">
               <MotionH2
-                className="text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl"
+                className="text-3xl leading-tight font-semibold sm:text-4xl md:text-5xl"
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
               >
-                See more with every scroll
+                See how your dashboard breathes
               </MotionH2>
               <MotionP
                 className="text-lg text-slate-600 sm:text-xl"
@@ -195,8 +190,8 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.05 }}
               >
-                Listings, maps, and quick facts glide together so you can stay
-                focused on how each place feels.
+                Watch a real card from your feed—photos, scores, and nearby context
+                stay together without hopping around.
               </MotionP>
               <div className="h-1.5 w-full rounded-full bg-slate-200/80">
                 <MotionDiv
@@ -214,7 +209,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.3 }}
-                  className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-sm shadow-slate-200/80 backdrop-blur hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md transition"
+                  className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-sm shadow-slate-200/80 backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 rounded-2xl bg-slate-900 p-2 text-white">
