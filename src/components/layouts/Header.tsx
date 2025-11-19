@@ -24,21 +24,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { signOut } from '@/lib/supabase/actions'
+import { useState, useEffect, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
-  const router = useRouter()
-  const supabase = createClient()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isSigningOut, startTransition] = useTransition()
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+  const handleSignOut = () => {
+    startTransition(async () => {
+      try {
+        await signOut()
+      } catch (error) {
+        console.error('Sign out failed', error)
+      }
+    })
   }
 
   const toggleMobileMenu = () => {
@@ -191,6 +194,7 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-token-primary/20" />
                   <DropdownMenuItem
+                    disabled={isSigningOut}
                     onClick={handleSignOut}
                     className="p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center text-white/80 hover:text-white"
                     data-testid="logout-button"
@@ -300,6 +304,7 @@ export function Header() {
                       handleSignOut()
                       closeMobileMenu()
                     }}
+                    disabled={isSigningOut}
                     className="rounded-token-lg p-token-md transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] w-full touch-manipulation items-center space-x-3 text-left text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
                     type="button"
                     data-testid="logout-button"

@@ -120,6 +120,9 @@ export function ProfilePageClient({
                     <Badge className="border-white/30 bg-white/10 text-white/80">
                       {hasHousehold ? 'Household synced' : 'No household yet'}
                     </Badge>
+                    <Badge className="border-white/30 bg-emerald-500/15 text-emerald-100">
+                      Supabase sync live
+                    </Badge>
                   </div>
                 </div>
               </div>

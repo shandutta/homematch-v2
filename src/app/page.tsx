@@ -43,12 +43,16 @@ export default async function LandingPage() {
     { Footer },
     { HowItWorks },
     { CtaBand },
+    { ScrollZoomShowcase },
+    { AdMonetizationMockup },
   ] = await Promise.all([
     import('@/components/marketing/FeatureGrid'),
     import('@/components/marketing/SwipeDemo'),
     import('@/components/marketing/Footer'),
     import('@/components/marketing/HowItWorks'),
     import('@/components/marketing/CtaBand'),
+    import('@/components/marketing/ScrollZoomShowcase'),
+    import('@/components/marketing/AdMonetizationMockup'),
   ])
 
   // If user is already authenticated, send them straight to the dashboard
@@ -60,6 +64,7 @@ export default async function LandingPage() {
     <>
       <Header />
       <HeroSection />
+      <ScrollZoomShowcase className="mt-20 sm:mt-24" />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks + SwipeDemo */}
       <section className="relative isolate">
@@ -97,6 +102,7 @@ export default async function LandingPage() {
         <SwipeDemo />
       </section>
 
+      <AdMonetizationMockup />
       <CtaBand />
       <Footer />
     </>

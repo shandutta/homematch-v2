@@ -311,11 +311,22 @@ export class AuthHelper {
       throw new Error('Could not find logout button')
     }
 
+    const isLoggedOutDestination = (url: URL | string) => {
+      const parsedUrl = url instanceof URL ? url : new URL(url)
+      const path = parsedUrl.pathname
+
+      return (
+        path === '/' ||
+        path === '' ||
+        path.includes('signin') ||
+        path.includes('login') ||
+        path.startsWith('/auth')
+      )
+    }
+
     await Promise.all([
       this.page
-        .waitForURL(/signin|login|auth/, {
-          timeout: TEST_TIMEOUTS.navigation,
-        })
+        .waitForURL(isLoggedOutDestination, { timeout: TEST_TIMEOUTS.navigation })
         .catch(() => {}),
       logoutButton.click(),
     ])

@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { MapPin, Loader2 } from 'lucide-react'
-import { SecureMapLoader } from '@/components/shared/SecureMapLoader'
+import {
+  SecureMapLoader,
+  useGoogleMapsLoader,
+} from '@/components/shared/SecureMapLoader'
 import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
 
 import type {
@@ -31,28 +34,31 @@ export function PropertyMap({
   const mapRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mapsReady, setMapsReady] = useState(false)
+
+  const parsedCoords = useMemo(
+    () => parsePostGISGeometry(property.coordinates),
+    [property.coordinates]
+  )
+  const hasValidCoordinates =
+    Boolean(parsedCoords) && isValidLatLng(parsedCoords!)
+
+  // Listen for global maps script load (for cases where another map loaded first)
+  const { isLoaded: isGoogleLoaded, error: loaderError } =
+    useGoogleMapsLoader()
 
   useEffect(() => {
+    if (!hasValidCoordinates) return
     if (!mapRef.current) return
+    if (!mapsReady && !isGoogleLoaded) return
+    if (!window.google?.maps) return
 
-    // Check if Google Maps is loaded
-    if (!window.google?.maps) {
-      setError('Google Maps not loaded')
-      setIsLoading(false)
-      return
-    }
+    setIsLoading(true)
+    setError(null)
 
     try {
-      // Parse coordinates using our utility function
-      const coords = parsePostGISGeometry(property.coordinates)
+      const coords = parsedCoords!
 
-      if (!coords || !isValidLatLng(coords)) {
-        setError('No valid coordinates available')
-        setIsLoading(false)
-        return
-      }
-
-      // Create map with proper typing
       const map = new window.google.maps.Map(mapRef.current, {
         center: coords,
         zoom,
@@ -75,7 +81,6 @@ export function PropertyMap({
         fullscreenControl: false,
       })
 
-      // Add marker
       if (showMarker) {
         const marker = new window.google.maps.Marker({
           position: coords,
@@ -95,7 +100,6 @@ export function PropertyMap({
           },
         })
 
-        // Add info window
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div class="p-3 max-w-xs">
@@ -117,32 +121,25 @@ export function PropertyMap({
       setIsLoading(false)
     } catch (err) {
       console.error('Error loading map:', err)
-      setError('Failed to load map')
+      const fallbackMessage =
+        err instanceof Error ? err.message : 'Failed to load map'
+      setError(fallbackMessage)
       setIsLoading(false)
     }
   }, [
-    property.coordinates,
-    zoom,
-    showMarker,
+    hasValidCoordinates,
+    isGoogleLoaded,
+    mapsReady,
+    parsedCoords,
     property.address,
     property.city,
     property.price,
     property.state,
+    showMarker,
+    zoom,
   ])
 
-  if (isLoading) {
-    return (
-      <div
-        className={`relative h-32 w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !property.coordinates) {
+  if (!hasValidCoordinates) {
     return (
       <div
         className={`relative h-32 w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}
@@ -150,9 +147,7 @@ export function PropertyMap({
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
-            <p className="text-xs text-gray-600">
-              {error || 'Map unavailable'}
-            </p>
+            <p className="text-xs text-gray-600">Map unavailable</p>
           </div>
         </div>
       </div>
@@ -161,17 +156,52 @@ export function PropertyMap({
 
   return (
     <SecureMapLoader
-      onError={(error) => {
-        console.error('Map loader error:', error)
-        setError('Failed to load mapping service')
+      onLoad={() => {
+        setMapsReady(true)
+        setError(null)
+      }}
+      onError={(loadError) => {
+        console.error('Map loader error:', loadError)
+        const message =
+          loadError instanceof Error
+            ? loadError.message
+            : 'Failed to load mapping service'
+        setError(message)
         setIsLoading(false)
       }}
     >
       <div
-        ref={mapRef}
-        className={`h-32 w-full rounded-lg border ${className}`}
+        className={`relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
         style={{ minHeight: '128px' }}
-      />
+      >
+        <div ref={mapRef} className="absolute inset-0 rounded-lg" />
+
+        {(isLoading || !mapsReady) && !error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+          </div>
+        )}
+
+        {loaderError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+              <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
+              <p className="text-xs text-gray-600">
+                {loaderError.message ?? 'Map unavailable'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+              <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
+              <p className="text-xs text-gray-600">{error}</p>
+            </div>
+          </div>
+        )}
+      </div>
     </SecureMapLoader>
   )
 }

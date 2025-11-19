@@ -40,17 +40,25 @@ describe('HeroSection', () => {
 
     // Check description
     expect(
-      screen.getByText(
-        /House hunting just became your favorite couples activity/
-      )
+      screen.getByText(/sleeker, cinematic homepage with scroll-based zoom/i)
     ).toBeInTheDocument()
 
     // Check CTAs
-    expect(screen.getByText('Get started')).toBeInTheDocument()
-    expect(screen.getByText('Log in')).toBeInTheDocument()
+    expect(screen.getByText('Start matching')).toBeInTheDocument()
+    expect(screen.getByText('See your feed')).toBeInTheDocument()
+
+    // Feature chips
+    expect(
+      screen.getByText('Built for couples & households')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Supabase-backed profile + settings sync')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Mini maps without leaving the feed')
+    ).toBeInTheDocument()
 
     // Check mockup components
-    expect(screen.getByTestId('phone-mockup')).toBeInTheDocument()
     expect(screen.getByTestId('parallax-stars')).toBeInTheDocument()
   })
 
@@ -61,54 +69,65 @@ describe('HeroSection', () => {
 
   test('primary CTA links to signup', () => {
     render(<HeroSection />)
-    const primaryCTA = screen.getByText('Get started').closest('a')
+    const primaryCTA = screen.getByText('Start matching').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
-    expect(primaryCTA).toHaveAttribute('data-cta', 'dopamine-hero')
   })
 
   test('secondary CTA links to login', () => {
     render(<HeroSection />)
-    const secondaryCTA = screen.getByText('Log in').closest('a')
+    const secondaryCTA = screen.getByText('See your feed').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
   test('renders gradient background', () => {
     render(<HeroSection />)
 
-    // Check for gradient background div with Tailwind class
+    // Check for gradient background layer
     const gradientDiv = screen
       .getByTestId('hero')
-      .querySelector('.bg-gradient-marketing-primary')
+      .querySelector('[class*="bg-gradient-to-b from-white/10"]')
     expect(gradientDiv).toBeInTheDocument()
-    expect(gradientDiv).toHaveClass('bg-gradient-marketing-primary')
   })
 
   test('renders vignette overlay', () => {
     render(<HeroSection />)
 
-    // Check for vignette overlay
-    const vignetteDiv = screen
+    const overlayWrapper = screen
       .getByTestId('hero')
-      .querySelector('div[style*="radial-gradient"]')
-    expect(vignetteDiv).toBeInTheDocument()
+      .querySelector('.pointer-events-none')
+
+    const vignetteDiv = Array.from(overlayWrapper?.children ?? []).find(
+      (child) =>
+        (child as HTMLElement).className.includes(
+          'bg-[radial-gradient(circle_at_50%_120%'
+        )
+    )
+
+    expect(vignetteDiv).toBeTruthy()
   })
 
   test('button variants are applied correctly', () => {
     render(<HeroSection />)
 
-    const primaryButton = screen.getByText('Get started').closest('a')
-    const secondaryButton = screen.getByText('Log in').closest('a')
+    const primaryButton = screen.getByText('Start matching').closest('a')
+    const secondaryButton = screen.getByText('See your feed').closest('a')
 
-    // Check button classes - responsive design tokens
-    expect(primaryButton).toHaveClass('sm:px-8', 'sm:py-4')
-    expect(secondaryButton).toHaveClass('border-2', 'sm:px-8', 'sm:py-4')
+    expect(primaryButton).toHaveClass('rounded-full', 'px-9', 'py-7')
+    expect(secondaryButton).toHaveClass(
+      'border-white/30',
+      'hover:bg-white/10',
+      'text-white'
+    )
   })
 
   test('responsive grid layout is applied', () => {
     render(<HeroSection />)
 
     const gridContainer = screen.getByTestId('hero').querySelector('.grid')
-    expect(gridContainer).toHaveClass('lg:grid-cols-2', 'lg:items-center')
+    expect(gridContainer).toHaveClass(
+      'lg:grid-cols-[1.05fr,0.95fr]',
+      'lg:items-center'
+    )
   })
 
   test('text content has correct styling classes', () => {
@@ -118,19 +137,20 @@ describe('HeroSection', () => {
     const heading = screen.getByRole('heading', { level: 1 })
     expect(heading).toHaveClass(
       'text-4xl',
+      'font-black',
+      'leading-[1.05]',
       'sm:text-5xl',
       'md:text-6xl',
-      'lg:text-7xl',
-      'xl:text-8xl',
-      'text-white'
+      'lg:text-7xl'
     )
 
-    const description = screen.getByText(/House hunting/)
+    const description = screen.getByText(/sleeker, cinematic homepage/i)
     expect(description).toHaveClass(
-      'text-base',
-      'sm:text-lg',
-      'md:text-xl',
-      'text-white/80'
+      'max-w-2xl',
+      'text-lg',
+      'leading-relaxed',
+      'text-white/80',
+      'sm:text-xl'
     )
   })
 
@@ -138,28 +158,37 @@ describe('HeroSection', () => {
     render(<HeroSection />)
 
     const ctaContainer = screen
-      .getByText('Get started')
+      .getByText('Start matching')
       .closest('a')?.parentElement
-    expect(ctaContainer).toHaveClass('flex', 'flex-col', 'sm:flex-row')
+    expect(ctaContainer).toHaveClass(
+      'flex',
+      'flex-col',
+      'sm:flex-row',
+      'sm:items-center',
+      'gap-4',
+      'sm:gap-3'
+    )
   })
 
   test('accessibility attributes are present', () => {
     render(<HeroSection />)
 
-    const primaryCTA = screen.getByText('Get started').closest('a')
-    expect(primaryCTA).toHaveAttribute('aria-label', 'Start Swiping')
-
-    const particlesHost = primaryCTA?.querySelector('#particles-host')
-    expect(particlesHost).toHaveAttribute('aria-hidden', 'true')
+    const primaryCTA = screen.getByText('Start matching').closest('a')
+    expect(primaryCTA).toHaveAttribute('href', '/signup')
+    expect(primaryCTA).toHaveAttribute('aria-label', 'Start matching with HomeMatch')
+    expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 
-  test('script tag for particle animation is included', () => {
+  test('feature chips render as a grid', () => {
     render(<HeroSection />)
 
-    const scriptContent = document.querySelector('script')?.innerHTML
-    expect(scriptContent).toContain('burst')
-    expect(scriptContent).toContain('particles-host')
-    expect(scriptContent).toContain('mousedown')
-    expect(scriptContent).toContain('touchstart')
+    const chipGrid = screen
+      .getByText('Built for couples & households')
+      .closest('.grid')
+    const chips = chipGrid?.querySelectorAll('[class*="rounded-2xl"]')
+
+    expect(chipGrid).toHaveClass('grid')
+    expect(chipGrid).toHaveClass('sm:grid-cols-2')
+    expect(chips).toHaveLength(3)
   })
 })
