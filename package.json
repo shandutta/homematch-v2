@@ -64,7 +64,8 @@
     "ci:test:api": "cross-env NODE_ENV=test pnpm exec vitest run __tests__/integration/api/",
     "ci:validate:schema": "node scripts/validate-db-schema.js",
     "ci:validate:rls": "node scripts/test-rls-policies.js",
-    "ci:health": "node scripts/health-check.js"
+    "ci:health": "node scripts/health-check.js",
+    "auto:commit": "node scripts/auto-commit.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
