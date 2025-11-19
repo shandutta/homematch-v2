@@ -26,6 +26,7 @@ export default [
       '.next-test/**/*',
       'out/**/*',
       'dist/**/*',
+      '.corepack-cache/**/*',
       'homematch-original-analysis/**/*',
       'node_modules/**/*',
       '.pnpm-store/**/*',
