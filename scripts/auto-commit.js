@@ -40,8 +40,8 @@ const hasChanges = () => {
 const getCommitContext = () => {
   try {
     const shortStatus = run('git status --short')
-    const diffStat = run('git diff --stat')
-    const diff = run('git diff')
+    const diffStat = run('git diff --stat HEAD')
+    const diff = run('git diff HEAD')
     return { shortStatus, diffStat, diff }
   } catch (error) {
     console.error('Failed to collect git diff context:', error.message)
@@ -66,7 +66,7 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
   }
 
   const model =
-    process.env.AUTO_COMMIT_MODEL || 'openai/gpt-oss-20b:free'
+    process.env.AUTO_COMMIT_MODEL || 'google/gemini-2.0-flash-exp:free'
   const payload = {
     model,
     max_tokens: 80,
@@ -75,7 +75,7 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
       {
         role: 'system',
         content:
-          'You generate concise Conventional Commit titles (max 65 characters).',
+          'You generate concise, **lowercase** Conventional Commit titles (max 65 characters).',
       },
       {
         role: 'user',
@@ -131,6 +131,7 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
       data?.choices?.[0]?.message?.content?.split('\n')[0]?.trim() ?? ''
 
     if (!message) {
+      console.error('OpenRouter response data:', JSON.stringify(data, null, 2))
       throw new Error('OpenRouter returned an empty commit message.')
     }
 

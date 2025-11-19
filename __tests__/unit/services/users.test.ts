@@ -76,6 +76,19 @@ describe('UserService Unit Tests', () => {
       expect(mockSupabaseClient.single).toHaveBeenCalled()
     })
 
+    test('should return null when a user profile is not found', async () => {
+      mockSupabaseClient.single.mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+
+      const result = await userService.getUserProfile('missing-user')
+
+      expect(result).toBeNull()
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith('id', 'missing-user')
+    })
+
     test('should update a user profile', async () => {
       const userId = 'user-123'
       const updates = { onboarding_completed: true }
@@ -95,6 +108,19 @@ describe('UserService Unit Tests', () => {
       expect(mockSupabaseClient.eq).toHaveBeenCalledWith('id', userId)
       expect(mockSupabaseClient.select).toHaveBeenCalled()
       expect(mockSupabaseClient.single).toHaveBeenCalled()
+    })
+
+    test('should return null when fetching user profile with household if not found', async () => {
+      mockSupabaseClient.single.mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST116' },
+      })
+
+      const result = await userService.getUserProfileWithHousehold('missing')
+
+      expect(result).toBeNull()
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith('id', 'missing')
     })
   })
 
