@@ -15,11 +15,13 @@ import { Loader2, Save, Mail, Bell, Smartphone } from 'lucide-react'
 interface NotificationsSectionProps {
   user: User
   profile: UserProfile
+  onProfileUpdate?: (profile: UserProfile) => void
 }
 
 export function NotificationsSection({
   user,
   profile,
+  onProfileUpdate,
 }: NotificationsSectionProps) {
   const userService = UserServiceClient
   type NotificationPreferences = {
@@ -63,7 +65,7 @@ export function NotificationsSection({
   const saveNotifications = async () => {
     setLoading(true)
     try {
-      await userService.updateUserProfile(user.id, {
+      const updatedProfile = await userService.updateUserProfile(user.id, {
         preferences: {
           ...preferences,
           notifications: {
@@ -73,6 +75,9 @@ export function NotificationsSection({
           },
         },
       })
+      if (updatedProfile && onProfileUpdate) {
+        onProfileUpdate(updatedProfile)
+      }
       toast.success('Notification preferences saved')
     } catch (_error) {
       toast.error('Failed to save notification preferences')

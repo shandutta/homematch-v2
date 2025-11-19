@@ -22,12 +22,17 @@ import { Loader2, Save } from 'lucide-react'
 interface PreferencesSectionProps {
   user: User
   profile: UserProfile
+  onProfileUpdate?: (profile: UserProfile) => void
 }
 
 type PropertyTypeKey = 'house' | 'condo' | 'townhouse'
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
 
-export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
+export function PreferencesSection({
+  user,
+  profile,
+  onProfileUpdate,
+}: PreferencesSectionProps) {
   const userService = UserServiceClient
   type LocalPreferences = UserPreferences & {
     priceRange?: [number, number]
@@ -114,7 +119,7 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
   const savePreferences = async () => {
     setLoading(true)
     try {
-      await userService.updateUserProfile(user.id, {
+      const updatedProfile = await userService.updateUserProfile(user.id, {
         preferences: {
           ...preferences,
           priceRange,
@@ -125,6 +130,9 @@ export function PreferencesSection({ user, profile }: PreferencesSectionProps) {
           searchRadius,
         },
       })
+      if (updatedProfile && onProfileUpdate) {
+        onProfileUpdate(updatedProfile)
+      }
       toast.success('Preferences saved successfully')
     } catch (_error) {
       toast.error('Failed to save preferences')

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '../supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { signOut as serverSignOut } from '../supabase/actions'
 
 export interface UseAuthResult {
   user: User | null
@@ -36,8 +37,9 @@ export function useAuth(): UseAuthResult {
   }, [supabase.auth])
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
+    try {
+      await serverSignOut()
+    } catch (error) {
       console.error('Sign out error:', error)
     }
   }

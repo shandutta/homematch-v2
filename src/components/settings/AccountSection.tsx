@@ -5,9 +5,9 @@ import { User } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { signOut } from '@/lib/supabase/actions'
 import { LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react'
+import { useTransition } from 'react'
 
 interface AccountSectionProps {
   user: User
@@ -16,22 +16,20 @@ interface AccountSectionProps {
 export function AccountSection({ user }: AccountSectionProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
-  const supabase = createClient()
+  const [isSigningOut, startTransition] = useTransition()
 
-  const handleSignOut = async () => {
-    setLoading(true)
+  const handleSignOut = () => {
     setError(null)
+    setLoading(true)
 
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      router.push('/login')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign out')
-    } finally {
-      setLoading(false)
-    }
+    startTransition(async () => {
+      try {
+        await signOut()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to sign out')
+        setLoading(false)
+      }
+    })
   }
 
   const handleDeleteAccount = async () => {
@@ -123,7 +121,7 @@ export function AccountSection({ user }: AccountSectionProps) {
           </p>
           <Button
             onClick={handleSignOut}
-            disabled={loading}
+            disabled={loading || isSigningOut}
             variant="outline"
             className="w-full border-white/20 text-white hover:bg-white/10"
           >

@@ -29,6 +29,7 @@ interface SettingsPageClientProps {
 
 export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
   const [activeTab, setActiveTab] = useState('preferences')
+  const [profileState, setProfileState] = useState(profile)
   type PreferencesSnapshot = UserPreferences & {
     priceRange?: [number, number]
     bedrooms?: number
@@ -44,8 +45,8 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
   }
 
   const preferences = useMemo(
-    () => (profile.preferences || {}) as PreferencesSnapshot,
-    [profile.preferences]
+    () => (profileState.preferences || {}) as PreferencesSnapshot,
+    [profileState.preferences]
   )
   const priceRange = preferences.priceRange || [200000, 800000]
   const searchRadius = preferences.searchRadius || 10
@@ -107,6 +108,10 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
       icon: SlidersHorizontal,
     },
   ]
+
+  const handleProfileUpdate = (updated: UserProfile) => {
+    setProfileState(updated)
+  }
 
   return (
     <div className="text-primary-foreground min-h-screen pb-8">
@@ -202,7 +207,11 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
               className="relative z-20 mt-6 space-y-6"
             >
               <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <PreferencesSection user={user} profile={profile} />
+                <PreferencesSection
+                  user={user}
+                  profile={profileState}
+                  onProfileUpdate={handleProfileUpdate}
+                />
               </div>
             </TabsContent>
 
@@ -211,7 +220,11 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
               className="relative z-20 mt-6 space-y-6"
             >
               <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <NotificationsSection user={user} profile={profile} />
+                <NotificationsSection
+                  user={user}
+                  profile={profileState}
+                  onProfileUpdate={handleProfileUpdate}
+                />
               </div>
             </TabsContent>
 
