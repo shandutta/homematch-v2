@@ -44,8 +44,7 @@ export function PropertyMap({
     Boolean(parsedCoords) && isValidLatLng(parsedCoords!)
 
   // Listen for global maps script load (for cases where another map loaded first)
-  const { isLoaded: isGoogleLoaded, error: loaderError } =
-    useGoogleMapsLoader()
+  const { isLoaded: isGoogleLoaded, error: loaderError } = useGoogleMapsLoader()
 
   useEffect(() => {
     if (!hasValidCoordinates) return

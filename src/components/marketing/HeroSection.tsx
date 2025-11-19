@@ -4,11 +4,7 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import { useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import {
-  MotionDiv,
-  MotionH1,
-  MotionP,
-} from '@/components/ui/motion-components'
+import { MotionDiv, MotionH1, MotionP } from '@/components/ui/motion-components'
 import { ParallaxStarsCanvas } from './ParallaxStarsCanvas'
 import { ShieldCheck, MapPin, Zap, Heart } from 'lucide-react'
 
@@ -19,7 +15,11 @@ export function HeroSection() {
     offset: ['start start', 'end start'],
   })
 
-  const previewScale = useTransform(scrollYProgress, [0, 0.7, 1], [1, 1.06, 1.12])
+  const previewScale = useTransform(
+    scrollYProgress,
+    [0, 0.7, 1],
+    [1, 1.06, 1.12]
+  )
   const previewLift = useTransform(scrollYProgress, [0, 1], [0, -120])
   const glowOpacity = useTransform(scrollYProgress, [0, 1], [0.4, 0.8])
   const starFade = useTransform(scrollYProgress, [0, 1], [1, 0.45])
@@ -48,12 +48,12 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto px-4 pb-28 pt-20 sm:pb-32 sm:pt-24 lg:pt-28">
+        <div className="container mx-auto px-4 pt-20 pb-28 sm:pt-24 sm:pb-32 lg:pt-28">
           <div className="grid gap-12 sm:gap-14 lg:grid-cols-[1.05fr,0.95fr] lg:items-center">
             <div className="space-y-6 sm:space-y-8">
               <div className="space-y-4">
                 <MotionH1
-                  className="text-4xl font-black leading-[1.05] sm:text-5xl md:text-6xl lg:text-7xl"
+                  className="text-4xl leading-[1.05] font-black sm:text-5xl md:text-6xl lg:text-7xl"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -66,8 +66,8 @@ export function HeroSection() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.08, ease: 'easeOut' }}
                 >
-                  Swipe through real listings together, save the ones you both like,
-                  and keep the search fun instead of stressful.
+                  Swipe through real listings together, save the ones you both
+                  like, and keep the search fun instead of stressful.
                 </MotionP>
               </div>
 
@@ -113,7 +113,10 @@ export function HeroSection() {
               >
                 {[
                   { icon: ShieldCheck, text: 'Built for couples & households' },
-                  { icon: MapPin, text: 'See nearby spots without leaving the page' },
+                  {
+                    icon: MapPin,
+                    text: 'See nearby spots without leaving the page',
+                  },
                   { icon: Zap, text: 'Real listings with quick swipes' },
                   { icon: Heart, text: 'Favorites sync across your devices' },
                 ].map(({ icon: Icon, text }) => (
@@ -143,14 +146,14 @@ export function HeroSection() {
                 <div className="relative z-10 h-full p-6 sm:p-7">
                   <div className="flex items-center justify-between rounded-3xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white/80 shadow-lg shadow-cyan-500/20 backdrop-blur">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                      <p className="text-[11px] font-semibold tracking-[0.18em] text-white/60 uppercase">
                         Live preview
                       </p>
                       <p className="text-lg font-semibold text-white">
                         Pacific Heights · $2.45M
                       </p>
                     </div>
-                    <div className="rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-100">
+                    <div className="rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-emerald-100 uppercase">
                       Mutual like
                     </div>
                   </div>
@@ -158,7 +161,7 @@ export function HeroSection() {
                   <div className="mt-5 rounded-3xl border border-white/15 bg-white/10 p-4 shadow-inner shadow-cyan-500/10">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/50">
+                        <p className="text-xs font-semibold tracking-[0.16em] text-white/50 uppercase">
                           Listing · San Francisco
                         </p>
                         <p className="text-xl font-semibold text-white">
@@ -183,7 +186,7 @@ export function HeroSection() {
                           key={item.label}
                           className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-semibold text-white/90"
                         >
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">
+                          <p className="text-[11px] font-semibold tracking-[0.14em] text-white/50 uppercase">
                             {item.label}
                           </p>
                           <p className="text-lg">{item.value}</p>
@@ -194,7 +197,7 @@ export function HeroSection() {
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                      <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
                         <MapPin className="h-3.5 w-3.5 text-sky-300" />
                         Neighborhood micro-map
                       </div>
@@ -202,7 +205,7 @@ export function HeroSection() {
                         <div className="relative h-full w-full overflow-hidden rounded-2xl">
                           <div className="absolute inset-6 rounded-full bg-gradient-to-br from-sky-500/30 via-white to-indigo-500/20 blur-3xl" />
                           <div className="absolute inset-[10px] rounded-2xl border border-dashed border-white/20" />
-                          <div className="absolute left-6 top-6 h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]" />
+                          <div className="absolute top-6 left-6 h-3 w-3 rounded-full bg-emerald-300 shadow-[0_0_0_6px_rgba(16,185,129,0.25)]" />
                           <div className="absolute right-8 bottom-8 h-3 w-3 rounded-full bg-sky-400 shadow-[0_0_0_6px_rgba(56,189,248,0.3)]" />
                         </div>
                       </div>
@@ -211,14 +214,15 @@ export function HeroSection() {
                       </p>
                     </div>
                     <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                      <p className="text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
                         Stress-free search
                       </p>
                       <p className="mt-2 text-lg font-semibold text-white">
                         Save the favorites you both agree on
                       </p>
                       <p className="mt-1 text-sm text-white/70">
-                        Keep everything in one place—likes, matches, and tour ideas.
+                        Keep everything in one place—likes, matches, and tour
+                        ideas.
                       </p>
                     </div>
                   </div>
@@ -226,9 +230,9 @@ export function HeroSection() {
 
                 <MotionDiv
                   style={{ y: floatingY }}
-                  className="absolute -left-12 top-10 hidden max-w-[220px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-blue-500/20 backdrop-blur lg:block"
+                  className="absolute top-10 -left-12 hidden max-w-[220px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-blue-500/20 backdrop-blur lg:block"
                 >
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                  <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
                     <Zap className="h-3.5 w-3.5" />
                     Smooth scroll
                   </div>
@@ -241,12 +245,13 @@ export function HeroSection() {
                   style={{ y: floatingY }}
                   className="absolute -right-8 bottom-10 hidden max-w-[200px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-emerald-500/20 backdrop-blur lg:block"
                 >
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
+                  <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     Profile safe
                   </div>
                   <p className="mt-2 text-sm leading-relaxed">
-                    Your saved homes and likes stay between you and your household.
+                    Your saved homes and likes stay between you and your
+                    household.
                   </p>
                 </MotionDiv>
               </MotionDiv>

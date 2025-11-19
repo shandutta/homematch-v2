@@ -40,7 +40,7 @@ function renderPreview(preview: AdPreview) {
   if (preview === 'leaderboard') {
     return (
       <div className="mt-4 rounded-xl border border-sky-200/80 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-4 shadow-[0_18px_45px_-25px_rgba(6,58,158,0.45)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.18em] text-sky-700 uppercase">
           <span>Sponsored partner (mock)</span>
           <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-800">
             Blends with header
@@ -72,7 +72,7 @@ function renderPreview(preview: AdPreview) {
         </div>
         <div className="rounded-xl border border-dashed border-amber-300 bg-gradient-to-r from-amber-50 via-white to-amber-50 p-4 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-amber-900">
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] uppercase tracking-wide text-amber-900">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] tracking-wide text-amber-900 uppercase">
               Sponsored
             </span>
             <span className="text-[11px] text-amber-700">Responsive</span>
@@ -98,14 +98,14 @@ function renderPreview(preview: AdPreview) {
         <div className="h-28 rounded-2xl bg-gradient-to-b from-slate-100 via-white to-slate-50" />
         <div className="absolute inset-x-3 bottom-3 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/80 p-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-emerald-900">
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] uppercase tracking-wide">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] tracking-wide uppercase">
               Sponsored
             </span>
             <span className="text-[11px] text-emerald-700">Dismissible</span>
           </div>
           <div className="mt-2 h-8 rounded-lg bg-emerald-100/80" />
         </div>
-        <div className="absolute left-3 right-3 top-3 h-[14px] rounded-full bg-gray-100" />
+        <div className="absolute top-3 right-3 left-3 h-[14px] rounded-full bg-gray-100" />
       </div>
     </div>
   )
@@ -148,7 +148,7 @@ export function AdMonetizationMockup() {
           className="max-w-3xl"
         >
           <p
-            className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700"
+            className="text-sm font-semibold tracking-[0.2em] text-sky-700 uppercase"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Sponsored moments
@@ -180,7 +180,7 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="h-full border-gray-200 bg-white/90 shadow-token-md backdrop-blur">
+                <Card className="shadow-token-md h-full border-gray-200 bg-white/90 backdrop-blur">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-800">
@@ -193,7 +193,7 @@ export function AdMonetizationMockup() {
                         >
                           {concept.title}
                         </h3>
-                        <p className="text-xs uppercase tracking-[0.18em] text-gray-500">
+                        <p className="text-xs tracking-[0.18em] text-gray-500 uppercase">
                           {concept.placement}
                         </p>
                       </div>
@@ -223,7 +223,7 @@ export function AdMonetizationMockup() {
           transition={{ delay: 0.12 }}
           className="mt-10"
         >
-          <Card className="border-gray-200 bg-white/90 shadow-token-md backdrop-blur">
+          <Card className="shadow-token-md border-gray-200 bg-white/90 backdrop-blur">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-sm font-semibold tracking-[0.16em] text-gray-700">
