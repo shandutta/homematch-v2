@@ -87,33 +87,33 @@ async function setupIntegrationTests() {
         } else {
           // Linux/WSL2: Try to start Docker service or provide WSL2 guidance
           try {
-            execSync('sudo systemctl start docker', { stdio: 'pipe' })
-          } catch {
+            // Check if we're in WSL2
             try {
-              execSync('sudo service docker start', { stdio: 'pipe' })
-            } catch {
-              // Check if we're in WSL2
-              try {
-                const wslCheck = execSync('cat /proc/version', {
-                  encoding: 'utf8',
-                })
-                if (
-                  wslCheck.includes('microsoft') ||
-                  wslCheck.includes('WSL')
-                ) {
-                  if (process.env.DEBUG_TEST_SETUP) {
-                    console.debug(
-                      '🐧 WSL2 detected - Docker Desktop integration required'
-                    )
-                    console.debug(
-                      '   Please start Docker Desktop on Windows and enable WSL2 integration'
-                    )
-                  }
+              const wslCheck = execSync('cat /proc/version', {
+                encoding: 'utf8',
+              })
+              if (
+                wslCheck.includes('microsoft') ||
+                wslCheck.includes('WSL')
+              ) {
+                if (process.env.DEBUG_TEST_SETUP) {
+                  console.debug(
+                    '🐧 WSL2 detected - Docker Desktop integration required'
+                  )
+                  console.debug(
+                    '   Please start Docker Desktop on Windows and enable WSL2 integration'
+                  )
                 }
-              } catch {
-                // Not WSL2, regular Linux
+              } else {
+                console.debug('🐧 Linux detected - Please ensure Docker daemon is running')
+                console.debug('   Run: sudo systemctl start docker (if applicable)')
               }
+            } catch {
+              // Not WSL2, regular Linux
+              console.debug('🐧 Linux detected - Please ensure Docker daemon is running')
             }
+          } catch (e) {
+             // Ignore errors
           }
         }
 
