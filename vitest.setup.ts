@@ -2,6 +2,64 @@
 import { config } from 'dotenv'
 import '@testing-library/jest-dom'
 
+// Provide a minimal localStorage/sessionStorage implementation when Node's
+// experimental storage API is unavailable or missing core methods.
+if (
+  typeof globalThis.localStorage === 'undefined' ||
+  typeof globalThis.localStorage.clear !== 'function'
+) {
+  class MemoryStorage implements Storage {
+    private store = new Map<string, string>()
+
+    get length(): number {
+      return this.store.size
+    }
+
+    clear(): void {
+      this.store.clear()
+    }
+
+    getItem(key: string): string | null {
+      const value = this.store.get(key)
+      return typeof value === 'undefined' ? null : value
+    }
+
+    key(index: number): string | null {
+      const keys = Array.from(this.store.keys())
+      return keys[index] ?? null
+    }
+
+    removeItem(key: string): void {
+      this.store.delete(key)
+    }
+
+    setItem(key: string, value: string): void {
+      this.store.set(key, String(value))
+    }
+  }
+  const createStorage = () => new MemoryStorage()
+
+  if (typeof globalThis.Storage === 'undefined') {
+    Object.defineProperty(globalThis, 'Storage', {
+      value: MemoryStorage,
+      configurable: true,
+      writable: true,
+    })
+  }
+
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: createStorage(),
+    configurable: true,
+    writable: true,
+  })
+
+  Object.defineProperty(globalThis, 'sessionStorage', {
+    value: createStorage(),
+    configurable: true,
+    writable: true,
+  })
+}
+
 // Mock canvas API for image-blur tests
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: () => {
