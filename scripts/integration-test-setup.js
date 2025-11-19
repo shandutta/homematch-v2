@@ -92,10 +92,7 @@ async function setupIntegrationTests() {
               const wslCheck = execSync('cat /proc/version', {
                 encoding: 'utf8',
               })
-              if (
-                wslCheck.includes('microsoft') ||
-                wslCheck.includes('WSL')
-              ) {
+              if (wslCheck.includes('microsoft') || wslCheck.includes('WSL')) {
                 if (process.env.DEBUG_TEST_SETUP) {
                   console.debug(
                     '🐧 WSL2 detected - Docker Desktop integration required'
@@ -105,15 +102,21 @@ async function setupIntegrationTests() {
                   )
                 }
               } else {
-                console.debug('🐧 Linux detected - Please ensure Docker daemon is running')
-                console.debug('   Run: sudo systemctl start docker (if applicable)')
+                console.debug(
+                  '🐧 Linux detected - Please ensure Docker daemon is running'
+                )
+                console.debug(
+                  '   Run: sudo systemctl start docker (if applicable)'
+                )
               }
             } catch {
               // Not WSL2, regular Linux
-              console.debug('🐧 Linux detected - Please ensure Docker daemon is running')
+              console.debug(
+                '🐧 Linux detected - Please ensure Docker daemon is running'
+              )
             }
-          } catch (e) {
-             // Ignore errors
+          } catch {
+            // Ignore errors when checking the Linux environment
           }
         }
 

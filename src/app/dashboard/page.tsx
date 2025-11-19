@@ -1,6 +1,6 @@
 import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl'
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary'
-import { loadDashboardData } from '@/lib/data/loader'
+import { loadDashboardData, type DashboardPreferences } from '@/lib/data/loader'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
@@ -27,7 +27,7 @@ export default async function DashboardPage({
     const userService = new UserService()
     const userProfile = await userService.getUserProfile(user.id)
     const dashboardData = await loadDashboardData({
-      userPreferences: userProfile?.preferences as Record<string, any> | null,
+      userPreferences: userProfile?.preferences as DashboardPreferences | null,
     })
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented

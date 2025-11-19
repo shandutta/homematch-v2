@@ -55,6 +55,9 @@ homematch-v2.code-workspace
 .env.local
 .env.vercel
 .env.test.local
+# Environment Variables
+.vercel
+.env*
 
 # Old Code
 homematch-original-analysis/
@@ -65,7 +68,7 @@ __tests__/browser_screenshots
 # Server logs
 dev-server.log
 
-# Migration reports
+# Migration Data
 migration-report-*.md
 
 # Supabase binaries (platform-specific downloads)
@@ -106,5 +109,13 @@ dist/
 
 # Zen MCP Server
 zen-mcp-server/
-.vercel
-.env*
+
+# AI Coding Agent Configs
+.vercel/*
+.next/*
+.images/*
+.github/*
+.open
+
+# Miscellaneous Stuff
+.performance-reports/*

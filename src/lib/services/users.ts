@@ -34,6 +34,9 @@ export class UserService extends BaseService {
           .single()
 
         if (error) {
+          if (this.isNotFoundError(error)) {
+            return null
+          }
           this.handleSupabaseError(error, 'fetching user profile', { userId })
         }
 
@@ -109,6 +112,9 @@ export class UserService extends BaseService {
           .single()
 
         if (error) {
+          if (this.isNotFoundError(error)) {
+            return null
+          }
           this.handleSupabaseError(
             error,
             'fetching user profile with household',

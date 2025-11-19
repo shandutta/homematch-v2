@@ -14,7 +14,7 @@ export interface DashboardData {
   }
 }
 
-interface DashboardPreferences {
+export interface DashboardPreferences {
   priceRange?: [number, number]
   bedrooms?: number
   bathrooms?: number
@@ -28,7 +28,7 @@ export async function loadDashboardData(
     limit?: number
     offset?: number
     withScoring?: boolean
-    userPreferences?: Record<string, any> | null
+    userPreferences?: DashboardPreferences | null
   } = {}
 ): Promise<DashboardData> {
   const {
@@ -42,7 +42,7 @@ export async function loadDashboardData(
   const filters: PropertyFilters = {}
 
   if (userPreferences) {
-    const prefs = userPreferences as DashboardPreferences
+    const prefs = userPreferences
 
     if (prefs.priceRange) {
       filters.price_min = prefs.priceRange[0]
