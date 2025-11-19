@@ -12,7 +12,7 @@ This repository now contains a helper script that can automatically stage, summa
 | Variable             | Required | Description                                                 |
 | -------------------- | -------- | ----------------------------------------------------------- |
 | `OPENROUTER_API_KEY` | ✅       | API key used to call OpenRouter.                            |
-| `AUTO_COMMIT_MODEL`  | ❌       | Override model name (defaults to `openrouter/gpt-oss-20b`). |
+| `AUTO_COMMIT_MODEL`  | ❌       | Override model name (defaults to `openai/gpt-oss-20b:free`). |
 | `AUTO_COMMIT_PUSH`   | ❌       | Set to `false` to skip `git push` (default pushes).         |
 | `OPENROUTER_REFERER` | ❌       | Optional Referer header recommended by OpenRouter.          |
 | `OPENROUTER_TITLE`   | ❌       | Optional Title header recommended by OpenRouter.            |
