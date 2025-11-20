@@ -530,9 +530,7 @@ describe('SignupForm', () => {
           emailRedirectTo: expect.stringContaining('/auth/callback'),
         },
       })
-      expect(
-        screen.getByText(/verification email resent/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/verification email resent/i)).toBeInTheDocument()
     })
   })
 })
