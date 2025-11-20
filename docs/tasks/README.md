@@ -1,10 +1,10 @@
-# Tasks Directory - HomeMatch V2
+# Tasks Directory - HomeMatch
 
 _Consolidated task management and project tracking_
 
 ## 📋 Overview
 
-This directory contains all consolidated task documentation for HomeMatch V2 development. All task files from `/docs/tasks` and `/.claude/tasks` have been merged into this organized structure.
+This directory contains all consolidated task documentation for HomeMatch development. All task files from `/docs/tasks` and `/.claude/tasks` have been merged into this organized structure.
 
 ## 📁 Current Files
 
@@ -53,24 +53,26 @@ Large technical specification documents have been archived but key information p
 
 ## 📈 Current Status Summary
 
-### 🔴 Critical Issues (3)
+_Snapshot from internal tracking; review and refresh as goals move._
 
-- Test suite failures (3 remaining)
-- Performance benchmarks needed
-- Error boundary testing missing
+### 🔴 Critical focus
 
-### 🟡 High Priority (4)
+- Get remaining test failures green and keep CI stable
+- Add performance benchmarks for key flows
+- Expand error boundary coverage
+
+### 🟡 High priority
 
 - Design token system expansion
 - Mobile device verification
-- Lucide icon replacement
-- Couples features polish (final 10%)
+- Replace legacy icons with Lucide equivalents
+- Polish couples collaboration UX
 
-### ✅ Major Completions
+### ✅ Recent wins
 
-- 90% couples functionality working
-- Homepage and landing page complete
-- TypeScript and linting errors resolved (0 errors)
+- Couples-focused flows largely implemented
+- Homepage and landing experience live
+- TypeScript and linting tracked in CI and kept clean per PR
 - Comprehensive test data created
 
 ## 🔄 Workflow Integration
@@ -121,4 +123,4 @@ Before marking any task complete:
 ---
 
 _Last Updated: January 2025_  
-_This directory represents the current source of truth for all HomeMatch V2 development tasks and priorities._
+_This directory represents the current source of truth for HomeMatch development tasks and priorities._

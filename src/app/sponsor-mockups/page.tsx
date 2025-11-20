@@ -12,19 +12,17 @@ export const metadata: Metadata = {
 export default function SponsorMockupsPage() {
   return (
     <>
-      <div className="relative isolate min-h-screen bg-[#0b1426]">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#030712] via-[#0a1a3d] to-[#0b1426]" />
-          <div className="absolute inset-0 bg-[radial-gradient(1200px_620px_at_20%_10%,rgba(56,189,248,0.16),transparent_55%),radial-gradient(1200px_620px_at_80%_0%,rgba(14,165,233,0.12),transparent_55%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.65),rgba(255,255,255,0)_45%)]" />
-        </div>
+      <div className="min-h-screen bg-[#f7f9fc] text-slate-900">
+        <div className="relative overflow-hidden bg-gradient-to-b from-[#050913] via-[#0c1a33] to-[#0f2744]">
+          <div className="pointer-events-none absolute inset-0 opacity-60">
+            <div className="absolute inset-0 bg-[radial-gradient(1400px_720px_at_20%_10%,rgba(56,189,248,0.18),transparent_60%),radial-gradient(1400px_720px_at_80%_-5%,rgba(14,165,233,0.14),transparent_60%)]" />
+          </div>
 
-        <Header />
+          <Header />
 
-        <main className="relative">
-          <section className="mx-auto max-w-6xl px-4 pt-24 pb-10 text-white sm:px-6 sm:pt-28 sm:pb-12 lg:px-8">
+          <section className="mx-auto max-w-6xl px-4 pt-24 pb-16 text-white sm:px-6 sm:pt-28 sm:pb-20 lg:px-8">
             <div className="max-w-3xl space-y-4">
-              <p className="text-sm font-semibold tracking-[0.22em] text-white/80 uppercase">
+              <p className="text-sm font-semibold tracking-[0.18em] text-white/80 uppercase">
                 Preview
               </p>
               <h1
@@ -43,11 +41,10 @@ export default function SponsorMockupsPage() {
             </div>
           </section>
 
-          <div className="relative bg-[#f3f6fb]">
-            <div className="pointer-events-none absolute inset-x-0 -top-16 h-28 bg-gradient-to-b from-[#0b1426] via-[#0b1426]/35 to-transparent" />
-            <AdMonetizationMockup />
-          </div>
-        </main>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#0f2744]/40 to-[#f7f9fc]" />
+        </div>
+
+        <AdMonetizationMockup />
       </div>
       <Footer />
     </>

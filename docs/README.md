@@ -1,6 +1,6 @@
-# HomeMatch V2 Documentation Hub
+# HomeMatch Documentation Hub
 
-> **Consolidated Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch V2.
+> **Consolidated Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch.
 
 This directory contains **12 core documents** plus 4 task management files, organized by topic and purpose. Use this index to quickly find the information you need.
 
@@ -46,23 +46,24 @@ This directory contains **12 core documents** plus 4 task management files, orga
 ## Current Project Status
 
 **Last Updated**: January 2025  
-**Status**: Production Ready with Advanced Features
+**Status**: Active development — dashboard/auth/real-time features are working; search, ML ranking, and collaboration depth are in progress.
 
-### ✅ Production Ready
+### ✅ Working now
 
-- **Core Features**: Property browsing, swiping, couples collaboration
-- **Database**: Supabase with PostGIS, RLS policies, real-time updates
+- **Core Features**: Property browsing, swiping, and couples collaboration basics
+- **Database**: Supabase with PostGIS, RLS policies, and real-time updates
 - **Authentication**: Complete auth flow with household management
 - **UI/UX**: Modern design with Framer Motion animations
-- **Testing**: Comprehensive test suite with 80%+ coverage
+- **Testing**: Jest, Vitest, and Playwright suites configured (see `docs/TESTING.md` for coverage and setup)
 - **Performance**: Optimized for Core Web Vitals compliance
 
-### 🚀 Advanced Features
+### 🚧 In progress
 
-- **ML Scoring**: 3-phase property matching system
-- **Real-time Sync**: Couples collaboration with live updates
-- **Geographic Search**: PostGIS spatial queries
+- **Property Search**: Filters, sorting, and richer browsing controls
+- **ML Scoring**: Multi-phase recommendation pipeline
+- **Real-time Sync**: Deeper collaboration with live updates
 - **Natural Language**: AI-powered search capabilities
+- **Marketing**: Landing page and onboarding refinements
 
 ## Document Overview
 

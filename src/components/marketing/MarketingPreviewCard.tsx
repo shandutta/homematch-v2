@@ -2,25 +2,29 @@
 
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import { Bed, Bath, MapPin, Heart, X } from 'lucide-react'
+import { Bed, Bath, MapPin, Heart, X, ShieldCheck } from 'lucide-react'
 import React from 'react'
 
 interface MarketingPreviewCardProps {
   className?: string
+  showOverlays?: boolean
 }
 
-export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
+export function MarketingPreviewCard({
+  className,
+  showOverlays = false,
+}: MarketingPreviewCardProps) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)]',
+        'relative overflow-hidden rounded-[24px] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.14)]',
         className
       )}
     >
       <div className="relative aspect-[4/3]">
         <Image
-          src="https://images.unsplash.com/photo-1423655156442-ccc11daa4e99?auto=format&fit=crop&w=1400&q=80"
-          alt="Sample property exterior"
+          src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80"
+          alt="Sample property interior"
           fill
           sizes="(max-width: 768px) 100vw, 540px"
           className="object-cover"
@@ -28,17 +32,56 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
         <div className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-lg font-bold text-slate-900 shadow-md">
-          $1,295,000
+          $975,000
         </div>
       </div>
+
+      {showOverlays && (
+        <div className="pointer-events-none absolute inset-0">
+          {[
+            {
+              title: 'Built for couples',
+              copy: 'Stay in sync on likes, tours, and moves.',
+              icon: ShieldCheck,
+              className: 'left-4 top-4',
+            },
+            {
+              title: 'Nearby in one view',
+              copy: 'Peek at parks and cafés without leaving the card.',
+              icon: MapPin,
+              className: 'right-4 top-16',
+            },
+            {
+              title: 'Real listings, quick swipes',
+              copy: 'Decide together in one tap.',
+              icon: Heart,
+              className: 'left-4 bottom-20',
+            },
+          ].map(({ title, copy, icon: Icon, className: pos }) => (
+            <div
+              key={title}
+              className={cn(
+                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/60 bg-white/92 p-3 text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur-lg',
+                pos
+              )}
+            >
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">
+                <Icon className="h-4 w-4 text-sky-500" />
+                {title}
+              </div>
+              <p className="text-sm text-slate-800">{copy}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4 p-6 pb-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">
-            Listing · San Francisco
+            Listing · Lake Merritt
           </p>
           <h3 className="text-xl font-semibold text-slate-900">
-            55 Dolores St #5A, San Francisco, CA 94103
+            1200 Lakeview Dr, Oakland, CA 94610
           </h3>
         </div>
 

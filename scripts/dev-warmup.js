@@ -209,7 +209,9 @@ async function main() {
     devProcess = startDevServer()
     devProcessRef = devProcess
   } else {
-    console.log('WARMUP_START_DEV=false, assuming dev server is already running...')
+    console.log(
+      'WARMUP_START_DEV=false, assuming dev server is already running...'
+    )
   }
 
   console.log(
@@ -227,7 +229,9 @@ async function main() {
   }
 
   if (devProcess) {
-    console.log('Warmup complete; dev server is still running. Press Ctrl+C to stop.')
+    console.log(
+      'Warmup complete; dev server is still running. Press Ctrl+C to stop.'
+    )
     await new Promise((resolve) => {
       devProcess.on('exit', resolve)
     })

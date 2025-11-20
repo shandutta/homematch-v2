@@ -1,6 +1,6 @@
-# HomeMatch V2 Playwright Fixtures
+# HomeMatch Playwright Fixtures
 
-This directory contains Playwright fixtures that provide reusable test utilities for HomeMatch V2 E2E tests. The fixtures architecture eliminates circular dependency issues while maintaining all functionality from the previous helper-based approach.
+This directory contains Playwright fixtures that provide reusable test utilities for HomeMatch E2E tests. The fixtures architecture eliminates circular dependency issues while maintaining all functionality from the previous helper-based approach.
 
 ## 🎯 **Architecture Overview**
 
