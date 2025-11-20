@@ -16,8 +16,12 @@ export function HeroSection() {
     offset: ['start start', 'end start'],
   })
 
-  const previewScale = useTransform(scrollYProgress, [0, 0.7, 1], [1, 1.03, 1.06])
-  const previewLift = useTransform(scrollYProgress, [0, 1], [0, -70])
+  const previewScale = useTransform(
+    scrollYProgress,
+    [0, 0.7, 1],
+    [1, 1.03, 1.06]
+  )
+  const previewLift = useTransform(scrollYProgress, [0, 1], [0, -50])
   const glowOpacity = useTransform(scrollYProgress, [0, 1], [0.4, 0.8])
   const starFade = useTransform(scrollYProgress, [0, 1], [1, 0.45])
   const floatingY = useTransform(scrollYProgress, [0, 1], [0, -30])
@@ -45,7 +49,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto px-4 pt-20 pb-24 sm:pt-24 sm:pb-28 lg:pt-28 max-w-6xl">
+        <div className="container mx-auto max-w-6xl px-4 pt-20 pb-24 sm:pt-24 sm:pb-28 lg:pt-28">
           <div className="grid gap-10 sm:gap-12 lg:grid-cols-[1.05fr,0.95fr] lg:items-center">
             <div className="space-y-6 sm:space-y-8">
               <div className="space-y-4">
@@ -63,8 +67,8 @@ export function HeroSection() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.08, ease: 'easeOut' }}
                 >
-                  Swipe through real listings together, save the ones you both like,
-                  and keep the search fun instead of stressful.
+                  Swipe through real listings together, save the ones you both
+                  like, and keep the search fun instead of stressful.
                 </MotionP>
               </div>
 
@@ -110,7 +114,10 @@ export function HeroSection() {
               >
                 {[
                   { icon: ShieldCheck, text: 'Built for couples & households' },
-                  { icon: MapPin, text: 'See nearby spots without leaving the page' },
+                  {
+                    icon: MapPin,
+                    text: 'See nearby spots without leaving the page',
+                  },
                   { icon: Zap, text: 'Real listings with quick swipes' },
                   { icon: Heart, text: 'Favorites sync across your devices' },
                 ].map(({ icon: Icon, text }) => (
@@ -136,7 +143,7 @@ export function HeroSection() {
 
                 <MotionDiv
                   style={{ y: floatingY }}
-                  className="absolute -left-12 top-10 hidden max-w-[220px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-blue-500/20 backdrop-blur lg:block"
+                  className="absolute top-10 -left-12 hidden max-w-[220px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-blue-500/20 backdrop-blur lg:block"
                 >
                   <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
                     <Zap className="h-3.5 w-3.5" />

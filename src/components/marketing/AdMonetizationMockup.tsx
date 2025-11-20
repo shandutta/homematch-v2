@@ -39,25 +39,25 @@ const adConcepts = [
 function renderPreview(preview: AdPreview) {
   if (preview === 'leaderboard') {
     return (
-      <div className="mt-4 rounded-xl border border-sky-200/80 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-4 shadow-[0_18px_45px_-25px_rgba(6,58,158,0.45)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.18em] text-sky-700 uppercase">
-          <span>Sponsored partner (mock)</span>
+      <div className="rounded-lg border border-sky-100/80 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-3 shadow-[0_18px_45px_-28px_rgba(6,58,158,0.45)]">
+        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-sky-800 uppercase">
+          <span>Example header slot</span>
           <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-800">
-            Blends with header
+            Sponsored
           </span>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-sky-300 bg-white/70 px-4 py-3 text-gray-800 backdrop-blur">
+        <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed border-sky-200 bg-white/75 px-4 py-3 text-gray-800 backdrop-blur">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-800">
               Ad
             </div>
             <div>
               <p className="text-sm font-semibold">Partner message + CTA</p>
-              <p className="text-xs text-gray-500">Sits below the main CTA</p>
+              <p className="text-xs text-gray-500">Sits under hero/search</p>
             </div>
           </div>
-          <span className="rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold text-white">
-            Sponsored
+          <span className="rounded-full bg-sky-500/90 px-3 py-1 text-xs font-semibold text-white">
+            Soft glow
           </span>
         </div>
       </div>
@@ -66,18 +66,18 @@ function renderPreview(preview: AdPreview) {
 
   if (preview === 'inline') {
     return (
-      <div className="mt-4 space-y-3">
-        <div className="rounded-lg bg-slate-100 p-3 text-xs text-slate-500">
+      <div className="space-y-3">
+        <div className="rounded-lg bg-slate-100 p-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           Property card
         </div>
-        <div className="rounded-xl border border-dashed border-amber-300 bg-gradient-to-r from-amber-50 via-white to-amber-50 p-4 shadow-sm">
+        <div className="rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-amber-50 p-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-amber-900">
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] tracking-wide text-amber-900 uppercase">
               Sponsored
             </span>
-            <span className="text-[11px] text-amber-700">Responsive</span>
+            <span className="text-[11px] text-amber-700">Matches cards</span>
           </div>
-          <div className="mt-3 rounded-lg border border-amber-200 bg-white/80 p-3">
+          <div className="mt-2 rounded-lg border border-amber-200 bg-white/85 p-3">
             <div className="h-3 w-24 rounded-full bg-amber-200" />
             <div className="mt-2 grid grid-cols-[2fr,1fr] gap-2">
               <div className="h-16 rounded-md bg-amber-50" />
@@ -85,7 +85,7 @@ function renderPreview(preview: AdPreview) {
             </div>
           </div>
         </div>
-        <div className="rounded-lg bg-slate-100 p-3 text-xs text-slate-500">
+        <div className="rounded-lg bg-slate-100 p-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           Property card
         </div>
       </div>
@@ -93,10 +93,10 @@ function renderPreview(preview: AdPreview) {
   }
 
   return (
-    <div className="mt-4 flex justify-center">
-      <div className="relative w-[220px] rounded-[28px] border border-gray-200 bg-white/90 p-3 shadow-[0_20px_55px_-35px_rgba(0,0,0,0.45)]">
+    <div className="flex justify-center">
+      <div className="relative w-[220px] rounded-[24px] border border-emerald-100 bg-white/92 p-3 shadow-[0_18px_45px_-30px_rgba(0,0,0,0.35)]">
         <div className="h-28 rounded-2xl bg-gradient-to-b from-slate-100 via-white to-slate-50" />
-        <div className="absolute inset-x-3 bottom-3 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/80 p-3 shadow-sm">
+        <div className="absolute inset-x-3 bottom-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/85 p-3 shadow-sm">
           <div className="flex items-center justify-between text-xs font-semibold text-emerald-900">
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] tracking-wide uppercase">
               Sponsored
@@ -105,7 +105,7 @@ function renderPreview(preview: AdPreview) {
           </div>
           <div className="mt-2 h-8 rounded-lg bg-emerald-100/80" />
         </div>
-        <div className="absolute top-3 right-3 left-3 h-[14px] rounded-full bg-gray-100" />
+        <div className="absolute left-3 right-3 top-3 h-[14px] rounded-full bg-gray-100" />
       </div>
     </div>
   )
@@ -113,7 +113,7 @@ function renderPreview(preview: AdPreview) {
 
 export function AdMonetizationMockup() {
   return (
-    <section className="relative overflow-hidden py-12 sm:py-14">
+    <section className="relative overflow-hidden py-10 sm:py-12">
       <div
         className="pointer-events-none absolute inset-0 -z-10"
         aria-hidden
@@ -140,7 +140,7 @@ export function AdMonetizationMockup() {
         }}
       />
 
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <MotionDiv
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -180,36 +180,44 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="shadow-token-md h-full border-gray-200 bg-white/90 backdrop-blur">
+                <Card className="group h-full rounded-2xl border border-slate-200 bg-white/95 shadow-token-md backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-token-lg">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-800">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-800 ring-1 ring-sky-100">
                         <Icon className="h-5 w-5" />
                       </div>
                       <div>
                         <h3
-                          className="text-lg font-semibold text-gray-900"
+                          className="text-xl font-semibold text-gray-900"
                           style={{ fontFamily: 'var(--font-heading)' }}
                         >
                           {concept.title}
                         </h3>
-                        <p className="text-xs tracking-[0.18em] text-gray-500 uppercase">
+                        <p className="text-sm text-gray-500">
                           {concept.placement}
                         </p>
                       </div>
                     </div>
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 shadow-inner">
                       {concept.badge}
                     </span>
                   </div>
                   <p
-                    className="mt-3 text-sm text-gray-600"
+                    className="mt-3 text-base text-gray-600"
                     style={{ fontFamily: 'var(--font-body)' }}
                   >
                     {concept.description}
                   </p>
 
-                  {renderPreview(concept.preview)}
+                  <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+                    <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      <span>Example placement</span>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-700">
+                        Sponsored
+                      </span>
+                    </div>
+                    <div className="mt-3">{renderPreview(concept.preview)}</div>
+                  </div>
                 </Card>
               </MotionDiv>
             )

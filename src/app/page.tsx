@@ -37,14 +37,19 @@ export default async function LandingPage() {
   } = await supabase.auth.getUser()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
-  const [{ FeatureGrid }, { SwipeDemo }, { Footer }, { HowItWorks }, { CtaBand }] =
-    await Promise.all([
-      import('@/components/marketing/FeatureGrid'),
-      import('@/components/marketing/SwipeDemo'),
-      import('@/components/marketing/Footer'),
-      import('@/components/marketing/HowItWorks'),
-      import('@/components/marketing/CtaBand'),
-    ])
+  const [
+    { FeatureGrid },
+    { SwipeDemo },
+    { Footer },
+    { HowItWorks },
+    { CtaBand },
+  ] = await Promise.all([
+    import('@/components/marketing/FeatureGrid'),
+    import('@/components/marketing/SwipeDemo'),
+    import('@/components/marketing/Footer'),
+    import('@/components/marketing/HowItWorks'),
+    import('@/components/marketing/CtaBand'),
+  ])
 
   // If user is already authenticated, send them straight to the dashboard
   if (user) {
