@@ -25,9 +25,9 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [lastEmail, setLastEmail] = useState<string | null>(null)
-  const [resendStatus, setResendStatus] = useState<
-    'idle' | 'sending' | 'sent'
-  >('idle')
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent'>(
+    'idle'
+  )
   const [resendError, setResendError] = useState<string | null>(null)
   const supabase = createClient()
 

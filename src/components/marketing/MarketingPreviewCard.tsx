@@ -1,17 +1,30 @@
 'use client'
 
 import Image from 'next/image'
+import { useRef } from 'react'
+import { useScroll, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Bed, Bath, MapPin, Heart, X, ShieldCheck } from 'lucide-react'
-import React from 'react'
+import { MotionDiv } from '@/components/ui/motion-components'
 
 interface MarketingPreviewCardProps {
   className?: string
 }
 
 export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
+  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ['start end', 'end start'],
+  })
+
+  const couplesShift = useTransform(scrollYProgress, [0, 1], [0, -14])
+  const spotsShift = useTransform(scrollYProgress, [0, 1], [0, -8])
+  const listingsShift = useTransform(scrollYProgress, [0, 1], [0, -18])
+
   return (
     <div
+      ref={cardRef}
       className={cn(
         'relative overflow-hidden rounded-[24px] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.14)]',
         className
@@ -38,33 +51,38 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               copy: 'Stay in sync on likes, tours, and moves.',
               icon: ShieldCheck,
               className: 'left-3 top-3',
+              shift: couplesShift,
             },
             {
               title: 'See nearby spots',
               copy: 'Peek at parks and cafés without leaving the card.',
               icon: MapPin,
               className: 'right-3 top-12',
+              shift: spotsShift,
             },
             {
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'left-3 bottom-14',
+              className: 'left-3 bottom-20',
+              shift: listingsShift,
             },
-          ].map(({ title, copy, icon: Icon, className: pos }) => (
-            <div
+          ].map(({ title, copy, icon: Icon, className: pos, shift }) => (
+            <MotionDiv
               key={title}
               className={cn(
-                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/60 bg-white/90 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-lg',
+                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/50 bg-white/80 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl',
                 pos
               )}
+              style={{ y: shift }}
+              transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
               <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-slate-600 uppercase">
                 <Icon className="h-4 w-4 text-sky-500" />
                 {title}
               </div>
               <p className="text-sm text-slate-800">{copy}</p>
-            </div>
+            </MotionDiv>
           ))}
         </div>
       </div>

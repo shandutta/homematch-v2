@@ -63,7 +63,8 @@ export function SponsoredFeedAd({ slotId, className }: Props) {
 
       {showPlaceholder && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-50 text-center text-sm text-slate-500">
-          Set NEXT_PUBLIC_ADSENSE_CLIENT and NEXT_PUBLIC_ADSENSE_FEED_SLOT to load the sponsored feed ad.
+          Set NEXT_PUBLIC_ADSENSE_CLIENT and NEXT_PUBLIC_ADSENSE_FEED_SLOT to
+          load the sponsored feed ad.
         </div>
       )}
     </div>

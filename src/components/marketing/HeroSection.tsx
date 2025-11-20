@@ -3,10 +3,10 @@
 import { useRef } from 'react'
 import Link from 'next/link'
 import { useScroll, useTransform } from 'framer-motion'
+import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MotionDiv, MotionH1, MotionP } from '@/components/ui/motion-components'
 import { ParallaxStarsCanvas } from './ParallaxStarsCanvas'
-import { ShieldCheck, MapPin, Zap, Heart } from 'lucide-react'
 import { MarketingPreviewCard } from './MarketingPreviewCard'
 
 export function HeroSection() {
@@ -103,31 +103,6 @@ export function HeroSection() {
                 >
                   <Link href="/login">Resume your search</Link>
                 </Button>
-              </MotionDiv>
-
-              <MotionDiv
-                className="grid gap-3 sm:grid-cols-2"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-              >
-                {[
-                  { icon: ShieldCheck, text: 'Built for couples & households' },
-                  {
-                    icon: MapPin,
-                    text: 'See nearby spots without leaving the page',
-                  },
-                  { icon: Zap, text: 'Real listings with quick swipes' },
-                  { icon: Heart, text: 'Favorites sync across your devices' },
-                ].map(({ icon: Icon, text }) => (
-                  <div
-                    key={text}
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/85 backdrop-blur-sm"
-                  >
-                    <Icon className="h-4 w-4 text-sky-300" />
-                    <span>{text}</span>
-                  </div>
-                ))}
               </MotionDiv>
             </div>
 
