@@ -11,7 +11,12 @@ import { createClient } from '@supabase/supabase-js'
 import { createAuthenticatedClient } from '../utils/test-users'
 import { randomUUID } from 'crypto'
 
-describe('Couples Service Integration Tests', () => {
+const skipHeavy =
+  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
+  process.env.SKIP_HEAVY_TESTS === 'true'
+const describeOrSkip = skipHeavy ? describe.skip : describe
+
+describeOrSkip('Couples Service Integration Tests', () => {
   let supabase: any
   let testHouseholdId: string
   let testPropertyIds: string[]

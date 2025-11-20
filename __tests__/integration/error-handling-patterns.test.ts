@@ -8,7 +8,12 @@ import { getTestDataFactory } from '../utils/test-data-factory'
 import { createTestClientFactory } from '../utils/test-client-factory'
 import { randomUUID } from 'crypto'
 
-describe('Error Handling Patterns Integration Tests', () => {
+const skipHeavy =
+  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
+  process.env.SKIP_HEAVY_TESTS === 'true'
+const describeOrSkip = skipHeavy ? describe.skip : describe
+
+describeOrSkip('Error Handling Patterns Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDatabase()
   })
