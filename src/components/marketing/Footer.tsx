@@ -191,7 +191,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-token-xl pt-token-xl sm:mt-token-2xl sm:pt-token-2xl border-t border-white/10 text-center">
+        <div className="mt-token-xl pt-6 sm:mt-token-2xl sm:pt-2 border-t border-white/10 text-center">
           <p
             className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/60"
             style={{ fontFamily: 'var(--font-body)' }}

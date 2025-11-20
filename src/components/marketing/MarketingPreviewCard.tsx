@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import { useRef } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Bed, Bath, MapPin, Heart, X, ShieldCheck } from 'lucide-react'
@@ -12,19 +11,14 @@ interface MarketingPreviewCardProps {
 }
 
 export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
-  const cardRef = useRef<HTMLDivElement | null>(null)
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ['start end', 'end start'],
-  })
+  const { scrollY } = useScroll()
 
-  const couplesShift = useTransform(scrollYProgress, [0, 1], [0, -14])
-  const spotsShift = useTransform(scrollYProgress, [0, 1], [0, -8])
-  const listingsShift = useTransform(scrollYProgress, [0, 1], [0, -18])
+  const couplesShift = useTransform(scrollY, [0, 600], [18, -48])
+  const spotsShift = useTransform(scrollY, [0, 600], [12, -36])
+  const listingsShift = useTransform(scrollY, [0, 600], [22, -58])
 
   return (
     <div
-      ref={cardRef}
       className={cn(
         'relative overflow-hidden rounded-[24px] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.14)]',
         className
