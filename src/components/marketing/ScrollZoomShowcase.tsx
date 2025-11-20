@@ -36,7 +36,6 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
 
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.99, 1.01, 1.03])
   const lift = useTransform(scrollYProgress, [0, 1], [6, -30])
-  const glowOpacity = useTransform(scrollYProgress, [0, 1], [0.25, 0.7])
   const progress = useTransform(scrollYProgress, [0, 1], ['20%', '100%'])
 
   return (
@@ -69,17 +68,9 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
             <div className="lg:sticky lg:top-16">
               <MotionDiv
                 style={{ scale, y: lift }}
-                className="relative mx-auto w-full max-w-[560px] overflow-hidden rounded-[32px] border border-slate-200/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.14)]"
+                className="relative mx-auto w-full max-w-[540px]"
               >
-                <MotionDiv
-                  style={{ opacity: glowOpacity }}
-                  className="absolute inset-0 bg-[radial-gradient(900px_680px_at_50%_10%,rgba(56,189,248,0.12),transparent),radial-gradient(620px_520px_at_30%_60%,rgba(99,102,241,0.12),transparent)]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/30 to-white/0" />
-                <div className="absolute inset-[1px] rounded-[30px] border border-white/40" />
-                <div className="relative z-10 p-4 sm:p-6">
-                  <MarketingPreviewCard />
-                </div>
+                <MarketingPreviewCard showOverlays />
               </MotionDiv>
             </div>
           </div>

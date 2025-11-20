@@ -39,13 +39,11 @@ export default async function LandingPage() {
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
   const [
     { FeatureGrid },
-    { SwipeDemo },
     { Footer },
     { HowItWorks },
     { CtaBand },
   ] = await Promise.all([
     import('@/components/marketing/FeatureGrid'),
-    import('@/components/marketing/SwipeDemo'),
     import('@/components/marketing/Footer'),
     import('@/components/marketing/HowItWorks'),
     import('@/components/marketing/CtaBand'),
@@ -94,7 +92,6 @@ export default async function LandingPage() {
 
         <FeatureGrid />
         <HowItWorks />
-        <SwipeDemo />
       </section>
       <CtaBand />
       <Footer />

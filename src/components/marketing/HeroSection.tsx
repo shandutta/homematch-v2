@@ -135,11 +135,9 @@ export function HeroSection() {
             <div className="relative">
               <MotionDiv
                 style={{ scale: previewScale, y: previewLift }}
-                className="relative mx-auto aspect-[4/5] w-full max-w-[520px] overflow-hidden"
+                className="relative mx-auto w-full max-w-[540px]"
               >
-                <div className="relative z-10 h-full rounded-[28px] border border-white/10 bg-white/90 p-3 shadow-[0_30px_70px_rgba(0,0,0,0.25)]">
-                  <MarketingPreviewCard />
-                </div>
+                <MarketingPreviewCard showOverlays />
 
                 <MotionDiv
                   style={{ y: floatingY }}

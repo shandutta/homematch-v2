@@ -34,29 +34,26 @@ describe('HeroSection', () => {
     // Check main heading by role
     const heading = screen.getByRole('heading', { level: 1 })
     expect(heading).toBeInTheDocument()
-    expect(heading.textContent).toContain('Swipe.')
-    expect(heading.textContent).toContain('Match.')
-    expect(heading.textContent).toContain('Move In.')
+    expect(heading.textContent).toContain('Find the home you both love.')
 
     // Check description
     expect(
-      screen.getByText(/sleeker, cinematic homepage with scroll-based zoom/i)
+      screen.getByText(/Swipe through real listings together/i)
     ).toBeInTheDocument()
 
     // Check CTAs
     expect(screen.getByText('Start matching')).toBeInTheDocument()
-    expect(screen.getByText('See your feed')).toBeInTheDocument()
+    expect(screen.getByText('Resume your search')).toBeInTheDocument()
 
     // Feature chips
     expect(
       screen.getByText('Built for couples & households')
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Supabase-backed profile + settings sync')
+      screen.getByText('See nearby spots without leaving the page')
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('Mini maps without leaving the feed')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Real listings with quick swipes')).toBeInTheDocument()
+    expect(screen.getByText('Favorites sync across your devices')).toBeInTheDocument()
 
     // Check mockup components
     expect(screen.getByTestId('parallax-stars')).toBeInTheDocument()
@@ -75,7 +72,7 @@ describe('HeroSection', () => {
 
   test('secondary CTA links to login', () => {
     render(<HeroSection />)
-    const secondaryCTA = screen.getByText('See your feed').closest('a')
+    const secondaryCTA = screen.getByText('Resume your search').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
@@ -110,12 +107,13 @@ describe('HeroSection', () => {
     render(<HeroSection />)
 
     const primaryButton = screen.getByText('Start matching').closest('a')
-    const secondaryButton = screen.getByText('See your feed').closest('a')
+    const secondaryButton = screen.getByText('Resume your search').closest('a')
 
     expect(primaryButton).toHaveClass('rounded-full', 'px-9', 'py-7')
     expect(secondaryButton).toHaveClass(
       'border-white/30',
       'hover:bg-white/10',
+      'bg-white/5',
       'text-white'
     )
   })
@@ -144,7 +142,7 @@ describe('HeroSection', () => {
       'lg:text-7xl'
     )
 
-    const description = screen.getByText(/sleeker, cinematic homepage/i)
+    const description = screen.getByText(/Swipe through real listings together/i)
     expect(description).toHaveClass(
       'max-w-2xl',
       'text-lg',
@@ -165,7 +163,7 @@ describe('HeroSection', () => {
       'flex-col',
       'sm:flex-row',
       'sm:items-center',
-      'gap-4',
+      'gap-3',
       'sm:gap-3'
     )
   })
@@ -192,6 +190,6 @@ describe('HeroSection', () => {
 
     expect(chipGrid).toHaveClass('grid')
     expect(chipGrid).toHaveClass('sm:grid-cols-2')
-    expect(chips).toHaveLength(3)
+    expect(chips).toHaveLength(4)
   })
 })
