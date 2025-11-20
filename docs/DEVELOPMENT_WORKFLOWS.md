@@ -1,6 +1,6 @@
 # Development Workflows
 
-This guide consolidates development workflow utilities and procedures for HomeMatch V2.
+This guide consolidates development workflow utilities and procedures for HomeMatch.
 
 ## Git Workflows
 
@@ -223,4 +223,4 @@ pnpm test:unit -- --verbose  # Detailed output
 
 ---
 
-_This document consolidates development workflows from various utility scripts and provides a comprehensive reference for HomeMatch V2 development processes._
+_This document consolidates development workflows from various utility scripts and provides a comprehensive reference for HomeMatch development processes._

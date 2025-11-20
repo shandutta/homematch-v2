@@ -1,4 +1,4 @@
-# HomeMatch V2 - Master Task List
+# HomeMatch - Master Task List
 
 _Consolidated from all task files_
 _Last Updated: January 2025_
@@ -225,4 +225,4 @@ For detailed implementation specifications, see:
 - **Design System Upgrade**: See archived design-system-upgrade-plan.md for token system details
 - **Unit Test Strategy**: See archived unit-test-coverage-plan.md for TDD approach
 
-_This master task list consolidates work from all previous task documents and provides the current actionable roadmap for HomeMatch V2 development._
+_This master task list consolidates work from all previous task documents and provides the current actionable roadmap for HomeMatch development._

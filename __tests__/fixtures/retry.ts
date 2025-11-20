@@ -1,5 +1,5 @@
 /**
- * Retry fixture for HomeMatch V2 E2E tests
+ * Retry fixture for HomeMatch E2E tests
  * Provides retry logic and error handling utilities
  */
 

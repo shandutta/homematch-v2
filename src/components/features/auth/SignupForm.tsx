@@ -18,11 +18,17 @@ import {
 } from '@/components/ui/form'
 import { Loader2 } from 'lucide-react'
 import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
+import Link from 'next/link'
 
 export function SignupForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [lastEmail, setLastEmail] = useState<string | null>(null)
+  const [resendStatus, setResendStatus] = useState<
+    'idle' | 'sending' | 'sent'
+  >('idle')
+  const [resendError, setResendError] = useState<string | null>(null)
   const supabase = createClient()
 
   const form = useValidatedForm(SignupSchema, {
@@ -46,6 +52,9 @@ export function SignupForm() {
     if (error) {
       setError(error.message)
     } else {
+      setLastEmail(data.email)
+      setResendStatus('idle')
+      setResendError(null)
       setSuccess(true)
     }
 
@@ -68,16 +77,75 @@ export function SignupForm() {
     }
   }
 
+  const handleResendVerification = async () => {
+    if (!lastEmail) {
+      setResendError('Enter your email above first.')
+      return
+    }
+
+    setResendError(null)
+    setResendStatus('sending')
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: lastEmail,
+      options: {
+        emailRedirectTo: buildBrowserRedirectUrl(),
+      },
+    })
+
+    if (error) {
+      setResendError(error.message)
+      setResendStatus('idle')
+    } else {
+      setResendStatus('sent')
+    }
+  }
+
   if (success) {
     return (
       <Card className="mx-auto w-full max-w-md">
-        <CardContent className="pt-6">
+        <CardContent className="space-y-4 pt-6">
           <Alert>
             <AlertDescription>
-              Check your email for a verification link to complete your account
-              setup.
+              {lastEmail
+                ? `Check ${lastEmail} for a verification link to complete your account setup.`
+                : 'Check your email for a verification link to complete your account setup.'}{' '}
+              If it does not arrive within a minute, you can resend it below.
             </AlertDescription>
           </Alert>
+
+          {resendError && (
+            <Alert variant="destructive">
+              <AlertDescription>{resendError}</AlertDescription>
+            </Alert>
+          )}
+
+          {resendStatus === 'sent' && !resendError && (
+            <Alert>
+              <AlertDescription>
+                Verification email resent. Check your inbox or spam folder.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleResendVerification}
+              disabled={resendStatus === 'sending'}
+            >
+              {resendStatus === 'sending' && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Resend verification email
+            </Button>
+
+            <Button variant="secondary" className="w-full" asChild>
+              <Link href="/login">Return to login</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )

@@ -24,7 +24,6 @@ export function HeroSection() {
   const previewLift = useTransform(scrollYProgress, [0, 1], [0, -50])
   const glowOpacity = useTransform(scrollYProgress, [0, 1], [0.4, 0.8])
   const starFade = useTransform(scrollYProgress, [0, 1], [1, 0.45])
-  const floatingY = useTransform(scrollYProgress, [0, 1], [0, -30])
 
   return (
     <section
@@ -137,20 +136,7 @@ export function HeroSection() {
                 style={{ scale: previewScale, y: previewLift }}
                 className="relative mx-auto w-full max-w-[540px]"
               >
-                <MarketingPreviewCard showOverlays />
-
-                <MotionDiv
-                  style={{ y: floatingY }}
-                  className="absolute top-10 -left-12 hidden max-w-[220px] rounded-3xl border border-white/20 bg-white/10 p-4 text-sm text-white/80 shadow-xl shadow-blue-500/20 backdrop-blur lg:block"
-                >
-                  <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">
-                    <Zap className="h-3.5 w-3.5" />
-                    Smooth scroll
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed">
-                    Gradual lift as you browse—calm, not flashy.
-                  </p>
-                </MotionDiv>
+                <MarketingPreviewCard />
               </MotionDiv>
             </div>
           </div>
