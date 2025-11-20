@@ -9,6 +9,19 @@ const path = require('path')
 const fs = require('fs')
 const { createClient } = require('@supabase/supabase-js')
 
+const supabaseUrl =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+  console.error(
+    'Missing Supabase configuration. Ensure SUPABASE_URL, SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY), and SUPABASE_SERVICE_ROLE_KEY are set via environment (.env.prod/.env.test.local).'
+  )
+  process.exit(1)
+}
+
 async function setupE2ETests() {
   console.log('🔧 Setting up E2E test environment...\n')
 
@@ -31,10 +44,9 @@ async function setupE2ETests() {
 
         // Quick health check using Node's fetch
         try {
-          const response = await fetch('http://127.0.0.1:54321/rest/v1/', {
+          const response = await fetch(`${supabaseUrl}/rest/v1/`, {
             headers: {
-              apikey:
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ',
+              apikey: supabaseAnonKey,
             },
           })
 
@@ -102,10 +114,6 @@ async function setupE2ETests() {
 
     // Step 4: Generate proper auth token by signing in as test user
     console.log('\n4️⃣  Generating authentication token...')
-
-    const supabaseUrl = 'http://127.0.0.1:54321'
-    const supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ'
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

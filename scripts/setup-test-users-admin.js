@@ -6,18 +6,33 @@
 const { createClient } = require('@supabase/supabase-js')
 const dotenv = require('dotenv')
 const path = require('path')
+const fs = require('fs')
 
-// Load test environment variables
-dotenv.config({ path: path.join(__dirname, '..', '.env.test.local') })
+// Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
+const envLocalPath = path.join(__dirname, '..', '.env.local')
+const envTestPath = path.join(__dirname, '..', '.env.test.local')
+dotenv.config({ path: envLocalPath })
+if (fs.existsSync(envTestPath)) {
+  dotenv.config({ path: envTestPath })
+}
 
-const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.pmctc3-i5D7PRVq4HOXcXDZ0Er3mrC8a2W7yIa5jePI'
+let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+let isLocalSupabase =
+  supabaseUrl.includes('127.0.0.1') ||
+  supabaseUrl.includes('localhost') ||
+  supabaseUrl.includes('supabase.local') ||
+  supabaseUrl.startsWith('http://local-')
 
 if (!supabaseServiceKey) {
-  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found in .env.test.local')
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found. Add it to .env.local.')
   process.exit(1)
+}
+
+if (!isLocalSupabase && process.env.DEBUG_TEST_SETUP) {
+  console.debug(
+    'ℹ️  Running test user setup against non-local Supabase (ALLOW_REMOTE_SUPABASE assumed).'
+  )
 }
 
 // Create admin client with service role key and RLS bypass

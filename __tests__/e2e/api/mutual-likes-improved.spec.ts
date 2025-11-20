@@ -63,7 +63,8 @@ describe('E2E Improved: /api/couples/mutual-likes', () => {
       const response = await client.request('/api/couples/mutual-likes', {
         headers: {
           Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjF9.invalid',
+            process.env.TEST_INVALID_JWT ||
+            'Bearer dummy-invalid-jwt-for-testing',
         },
         authenticated: false,
       })

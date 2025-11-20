@@ -30,16 +30,28 @@ dotenv.config({
 // Ensure we're in test mode
 process.env.NODE_ENV = 'test'
 
+const supabaseUrl =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  'http://127.0.0.1:54321'
+
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseAnonKey || !supabaseServiceRoleKey) {
+  throw new Error(
+    'Missing Supabase keys for test server. Set SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY (see .env.prod)'
+  )
+}
+
 // Force test environment variables to override any existing ones
 // This is critical because .env.local might contain production values
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.tQwoQ-dh_iOZ9Hp4dXWtu12rIUbyaXU2G0_SBoWKZJo'
-process.env.SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.tQwoQ-dh_iOZ9Hp4dXWtu12rIUbyaXU2G0_SBoWKZJo'
-process.env.SUPABASE_SERVICE_ROLE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.pmctc3-i5D7PRVq4HOXcXDZ0Er3mrC8a2W7yIa5jePI'
+process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+process.env.SUPABASE_URL = supabaseUrl
+process.env.SUPABASE_ANON_KEY = supabaseAnonKey
+process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 
 // Override any production environment variables
 delete process.env.POSTGRES_URL
@@ -61,14 +73,11 @@ const testEnv = {
   NODE_ENV: 'test',
   NEXT_PUBLIC_TEST_MODE: 'true',
   // Supabase test configuration
-  NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
-  NEXT_PUBLIC_SUPABASE_ANON_KEY:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.tQwoQ-dh_iOZ9Hp4dXWtu12rIUbyaXU2G0_SBoWKZJo',
-  SUPABASE_URL: 'http://127.0.0.1:54321',
-  SUPABASE_ANON_KEY:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.tQwoQ-dh_iOZ9Hp4dXWtu12rIUbyaXU2G0_SBoWKZJo',
-  SUPABASE_SERVICE_ROLE_KEY:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.pmctc3-i5D7PRVq4HOXcXDZ0Er3mrC8a2W7yIa5jePI',
+  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
+  SUPABASE_URL: supabaseUrl,
+  SUPABASE_ANON_KEY: supabaseAnonKey,
+  SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,
 }
 
 // Remove production environment variables from the test environment

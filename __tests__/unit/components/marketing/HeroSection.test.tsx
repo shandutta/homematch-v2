@@ -45,19 +45,10 @@ describe('HeroSection', () => {
     expect(screen.getByText('Start matching')).toBeInTheDocument()
     expect(screen.getByText('Resume your search')).toBeInTheDocument()
 
-    // Feature chips
-    expect(
-      screen.getByText('Built for couples & households')
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('See nearby spots without leaving the page')
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Real listings with quick swipes')
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Favorites sync across your devices')
-    ).toBeInTheDocument()
+    // Preview highlight copy
+    expect(screen.getByText('Built for couples')).toBeInTheDocument()
+    expect(screen.getByText('See nearby spots')).toBeInTheDocument()
+    expect(screen.getByText(/Real listings, quick swipes/i)).toBeInTheDocument()
 
     // Check mockup components
     expect(screen.getByTestId('parallax-stars')).toBeInTheDocument()
@@ -186,16 +177,15 @@ describe('HeroSection', () => {
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 
-  test('feature chips render as a grid', () => {
+  test('renders preview card details', () => {
     render(<HeroSection />)
 
-    const chipGrid = screen
-      .getByText('Built for couples & households')
-      .closest('.grid')
-    const chips = chipGrid?.querySelectorAll('[class*="rounded-2xl"]')
-
-    expect(chipGrid).toHaveClass('grid')
-    expect(chipGrid).toHaveClass('sm:grid-cols-2')
-    expect(chips).toHaveLength(4)
+    expect(screen.getByAltText('Sample property interior')).toBeInTheDocument()
+    expect(screen.getByText('Listing · Lake Merritt')).toBeInTheDocument()
+    expect(
+      screen.getByText('1200 Lakeview Dr, Oakland, CA 94610')
+    ).toBeInTheDocument()
+    expect(screen.getByText('3 beds')).toBeInTheDocument()
+    expect(screen.getByText('Love')).toBeInTheDocument()
   })
 })

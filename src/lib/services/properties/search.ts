@@ -261,6 +261,14 @@ export class PropertySearchService
   async searchPropertiesText(query: string, limit = 20): Promise<Property[]> {
     this.validateRequired({ query })
 
+    // Sanitize query to prevent PostgREST filter injection
+    // Remove special characters that could alter the query structure
+    const sanitizedQuery = query.replace(/[(),]/g, ' ').trim()
+
+    if (!sanitizedQuery) {
+      return []
+    }
+
     return this.executeArrayQuery('searchPropertiesText', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
@@ -273,10 +281,10 @@ export class PropertySearchService
         .eq('is_active', true)
         .or(
           `
-            address.ilike.%${query}%,
-            description.ilike.%${query}%,
-            neighborhood.name.ilike.%${query}%,
-            neighborhood.city.ilike.%${query}%
+            address.ilike.%${sanitizedQuery}%,
+            description.ilike.%${sanitizedQuery}%,
+            neighborhood.name.ilike.%${sanitizedQuery}%,
+            neighborhood.city.ilike.%${sanitizedQuery}%
           `
         )
         .order('created_at', { ascending: false })
@@ -284,7 +292,7 @@ export class PropertySearchService
 
       if (error) {
         this.handleSupabaseError(error, 'searchPropertiesText', {
-          query,
+          query: sanitizedQuery,
           limit,
         })
       }

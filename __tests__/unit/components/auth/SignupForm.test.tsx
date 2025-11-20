@@ -326,7 +326,11 @@ describe('SignupForm', () => {
 
     // Check success message is displayed
     expect(
-      screen.getByText(/check your email for a verification link/i)
+      screen.getByText(
+        (content) =>
+          content.includes(validSignupData.email) &&
+          /verification link/i.test(content)
+      )
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /resend verification email/i })
@@ -425,7 +429,9 @@ describe('SignupForm', () => {
 
     // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument()
+      expect(
+        screen.getByText((content) => content.includes(validSignupData.email))
+      ).toBeInTheDocument()
     })
   })
 
@@ -473,7 +479,9 @@ describe('SignupForm', () => {
         screen.queryByDisplayValue(validSignupData.password)
       ).not.toBeInTheDocument()
       // Success message should be shown
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument()
+      expect(
+        screen.getByText((content) => content.includes(validSignupData.email))
+      ).toBeInTheDocument()
     })
   })
 

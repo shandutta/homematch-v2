@@ -44,39 +44,39 @@ mkdir -p coverage
 mkdir -p performance-reports
 mkdir -p benchmark-results
 
-# Create test environment configuration
+# Create test environment configuration (pull secrets from environment variables)
 log "🔧 Setting up test environment configuration..."
-cat > .env.ci << 'EOF'
+cat > .env.ci << EOF
 # CI Test Environment Configuration
 NODE_ENV=test
 CI=true
 
 # Test Database Configuration
-SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+SUPABASE_URL=${SUPABASE_URL:-http://127.0.0.1:54321}
+NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL:-http://127.0.0.1:54321}}
+SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}}
+NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
 
 # Application Configuration
-BASE_URL=http://localhost:3000
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=test-secret-for-ci
+BASE_URL=${BASE_URL:-http://localhost:3000}
+NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-test-secret-for-ci}
 
-# External API Configuration (test keys)
-ZILLOW_API_KEY=test-zillow-key
-GOOGLE_MAPS_API_KEY=test-google-maps-key
-OPENAI_API_KEY=test-openai-key
+# External API Configuration (provide via env to avoid hardcoding secrets)
+ZILLOW_API_KEY=${ZILLOW_API_KEY:-}
+GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:-}
+OPENAI_API_KEY=${OPENAI_API_KEY:-}
 
 # Performance and Monitoring
-PERFORMANCE_MONITORING_ENABLED=false
-SENTRY_DSN=
-POSTHOG_API_KEY=
+PERFORMANCE_MONITORING_ENABLED=${PERFORMANCE_MONITORING_ENABLED:-false}
+SENTRY_DSN=${SENTRY_DSN:-}
+POSTHOG_API_KEY=${POSTHOG_API_KEY:-}
 
 # Test Configuration
-TEST_TIMEOUT=30000
-TEST_PARALLEL=true
-TEST_COVERAGE=true
+TEST_TIMEOUT=${TEST_TIMEOUT:-30000}
+TEST_PARALLEL=${TEST_PARALLEL:-true}
+TEST_COVERAGE=${TEST_COVERAGE:-true}
 EOF
 
 # Copy to .env.test.local for compatibility

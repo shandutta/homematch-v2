@@ -58,14 +58,14 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'left-3 bottom-20',
+              className: 'left-3 bottom-22',
               shift: listingsShift,
             },
           ].map(({ title, copy, icon: Icon, className: pos, shift }) => (
             <MotionDiv
               key={title}
               className={cn(
-                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/50 bg-white/80 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl',
+                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/50 bg-white/55 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl',
                 pos
               )}
               style={{ y: shift }}

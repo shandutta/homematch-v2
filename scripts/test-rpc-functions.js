@@ -12,9 +12,14 @@ const { createClient } = require('@supabase/supabase-js')
 // Use local Supabase instance
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321'
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.tQwoQ-dh_iOZ9Hp4dXWtu12rIUbyaXU2G0_SBoWKZJo'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseKey) {
+  console.error(
+    '❌ Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Set it via .env.prod/.env.test.local before running RPC checks.'
+  )
+  process.exit(1)
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 

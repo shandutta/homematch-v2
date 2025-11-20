@@ -304,12 +304,12 @@ E2E tests use `.env.test.local` for configuration:
 ```env
 # Supabase Configuration (Local)
 SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_ANON_KEY=<your_supabase_anon_key>
+SUPABASE_SERVICE_ROLE_KEY=<your_supabase_service_role_key>
 
 # Client-side environment variables (required for Next.js)
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_supabase_anon_key>
 
 # Test User Credentials
 TEST_USER_1_EMAIL=test1@example.com

@@ -15,7 +15,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
@@ -31,6 +37,11 @@ const UpdateSchema = z.object({
     .string()
     .min(8, 'Password must be at least 8 characters')
     .max(64, 'Password must be at most 64 characters'),
+})
+
+const VerifySchema = z.object({
+  email: z.string().email('Enter a valid email address'),
+  token: z.string().min(3, 'Enter the code from your email'),
 })
 
 const parseFragmentTokens = () => {
@@ -56,30 +67,53 @@ export function ResetPasswordForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [sessionReady, setSessionReady] = useState(false)
+  const [needsCodeEntry, setNeedsCodeEntry] = useState(false)
 
   const requestForm = useValidatedForm(RequestSchema, { email: '' })
   const updateForm = useValidatedForm(UpdateSchema, { password: '' })
+  const verifyForm = useValidatedForm(VerifySchema, { email: '', token: '' })
 
   useEffect(() => {
     const maybeCode = searchParams.get('code')
+    const recoveryToken = searchParams.get('token')
+    const recoveryType = searchParams.get('type')
     const fragmentTokens = parseFragmentTokens()
 
-    if (!maybeCode && !fragmentTokens) return
+    if (
+      !maybeCode &&
+      !(recoveryToken && recoveryType === 'recovery') &&
+      !fragmentTokens
+    )
+      return
 
     const hydrateSession = async () => {
       setPhase('reset')
       setLoading(true)
       setError(null)
       setSuccess(null)
+      setNeedsCodeEntry(false)
 
       try {
         if (maybeCode) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(maybeCode)
           if (exchangeError) {
-            setError(exchangeError.message)
+            // Fall back to manual code entry
+            setNeedsCodeEntry(true)
+            verifyForm.setValue('token', maybeCode)
+            setError(
+              'We could not verify the link automatically. Enter the code and your email to continue.'
+            )
             return
           }
+        } else if (recoveryToken && recoveryType === 'recovery') {
+          // Recovery token path (OTP-style)
+          setNeedsCodeEntry(true)
+          verifyForm.setValue('token', recoveryToken)
+          setSuccess(
+            'Enter your email and the code from the email to continue.'
+          )
+          return
         } else if (fragmentTokens) {
           const { error: setErrorResult } = await supabase.auth.setSession({
             access_token: fragmentTokens.access_token,
@@ -117,7 +151,7 @@ export function ResetPasswordForm() {
     }
 
     void hydrateSession()
-  }, [searchParams, supabase])
+  }, [searchParams, supabase, verifyForm])
 
   const handleSendLink = async (values: z.infer<typeof RequestSchema>) => {
     setLoading(true)
@@ -135,6 +169,35 @@ export function ResetPasswordForm() {
       setError(resetError.message)
     } else {
       setSuccess('Check your email for a reset link.')
+    }
+
+    setLoading(false)
+  }
+
+  const handleVerifyCode = async (values: z.infer<typeof VerifySchema>) => {
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: values.email,
+      token: values.token,
+      type: 'recovery',
+    })
+
+    if (verifyError) {
+      setError(verifyError.message)
+    } else {
+      const { data, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        setError(sessionError.message)
+      } else if (data.session) {
+        setSessionReady(true)
+        setNeedsCodeEntry(false)
+        setSuccess('Code verified. You can set a new password below.')
+      } else {
+        setError('Could not establish a session. Try again.')
+      }
     }
 
     setLoading(false)
@@ -231,10 +294,75 @@ export function ResetPasswordForm() {
 
         {!isRequestPhase && (
           <div className="space-y-4">
-            {!showResetForm && (
-              <p className="text-sm text-muted-foreground">
+            {!showResetForm && !needsCodeEntry && (
+              <p className="text-muted-foreground text-sm">
                 Verifying your reset link…
               </p>
+            )}
+
+            {!showResetForm && needsCodeEntry && (
+              <Form {...verifyForm}>
+                <form
+                  className="space-y-4"
+                  onSubmit={verifyForm.handleSubmit(handleVerifyCode)}
+                >
+                  <FormField
+                    control={verifyForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="you@example.com"
+                            disabled={loading}
+                            data-testid="reset-verify-email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={verifyForm.control}
+                    name="token"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reset code</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="Enter the code from your email"
+                            disabled={loading}
+                            data-testid="reset-verify-code"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={
+                      loading ||
+                      (!verifyForm.formState.isValid &&
+                        process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
+                    }
+                    data-testid="reset-verify-submit"
+                  >
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Verify code
+                  </Button>
+                </form>
+              </Form>
             )}
 
             {showResetForm && (
