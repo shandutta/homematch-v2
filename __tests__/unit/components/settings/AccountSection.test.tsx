@@ -5,9 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 
 // Mock dependencies
 const mockPush = jest.fn()
+const mockRefresh = jest.fn()
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+    refresh: mockRefresh,
   }),
 }))
 

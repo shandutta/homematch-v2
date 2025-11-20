@@ -46,16 +46,10 @@ export function MarketingPreviewCard({
               className: 'left-4 top-4',
             },
             {
-              title: 'Nearby in one view',
-              copy: 'Peek at parks and cafés without leaving the card.',
-              icon: MapPin,
-              className: 'right-4 top-16',
-            },
-            {
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'left-4 bottom-20',
+              className: 'right-4 top-16',
             },
           ].map(({ title, copy, icon: Icon, className: pos }) => (
             <div
