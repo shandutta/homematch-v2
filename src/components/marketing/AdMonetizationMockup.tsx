@@ -113,7 +113,7 @@ function renderPreview(preview: AdPreview) {
 
 export function AdMonetizationMockup() {
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20">
+    <section className="relative overflow-hidden py-12 sm:py-14">
       <div
         className="pointer-events-none absolute inset-0 -z-10"
         aria-hidden
@@ -140,7 +140,7 @@ export function AdMonetizationMockup() {
         }}
       />
 
-      <div className="container mx-auto px-4">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-0">
         <MotionDiv
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -5,6 +5,7 @@
   "scripts": {
     "db:reset": "supabase start && supabase db reset",
     "dev": "node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0",
+    "dev:warmup": "node scripts/dev-warmup.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
