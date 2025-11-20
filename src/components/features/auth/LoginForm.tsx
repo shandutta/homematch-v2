@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
@@ -134,6 +135,15 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+
+            <div className="flex justify-end text-sm">
+              <Link
+                href="/reset-password"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <Button
               type="submit"

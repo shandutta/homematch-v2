@@ -40,8 +40,7 @@ const allowedDevOrigins = [
 const stripTrailingSlash = (value?: string | null) =>
   value ? value.replace(/\/+$/, '') : value
 
-const SUPABASE_LOCAL_PROXY_ENABLED =
-  process.env.SUPABASE_LOCAL_PROXY === 'true'
+const SUPABASE_LOCAL_PROXY_ENABLED = process.env.SUPABASE_LOCAL_PROXY === 'true'
 const SUPABASE_LOCAL_PROXY_TARGET =
   stripTrailingSlash(process.env.SUPABASE_LOCAL_PROXY_TARGET) ||
   'http://127.0.0.1:54321'
