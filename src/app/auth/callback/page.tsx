@@ -25,7 +25,9 @@ export default function AuthCallbackPage() {
       try {
         const code = searchParams.get('code')
         if (!code) {
-          setMessage('Missing authentication code. Please try signing in again.')
+          setMessage(
+            'Missing authentication code. Please try signing in again.'
+          )
           router.replace('/auth/auth-code-error')
           return
         }
