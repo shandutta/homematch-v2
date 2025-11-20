@@ -31,6 +31,24 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
+    'https://homematch.app'
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    url: baseUrl,
+    name: 'HomeMatch',
+    description:
+      'HomeMatch helps couples swipe, match, and find a home together with collaborative search.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${baseUrl}/search?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -53,6 +71,10 @@ export default async function LandingPage() {
   return (
     <>
       <Header />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <HeroSection />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks */}

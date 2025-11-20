@@ -1,8 +1,8 @@
-# Testing Guide for HomeMatch V2
+# Testing Guide for HomeMatch
 
-> **Current Status**: Complete test infrastructure implemented with 100% unit/integration test pass rates and E2E testing. Migration foundation complete with 99.1% success rate (2,214 records migrated).
+> **Current Status**: Test infrastructure is complete; unit and integration suites are green, E2E is partially passing while auth/setup finishes. Migration foundation landed with 99.1% success (2,214 records migrated).
 
-This comprehensive guide covers all testing approaches for HomeMatch V2, including unit tests, integration tests, end-to-end testing, fixtures, debugging tools, and complete development workflows.
+This comprehensive guide covers all testing approaches for HomeMatch, including unit tests, integration tests, end-to-end testing, fixtures, debugging tools, and complete development workflows.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ This comprehensive guide covers all testing approaches for HomeMatch V2, includi
 
 ## Testing Overview
 
-HomeMatch V2 implements a comprehensive 4-tier testing strategy:
+HomeMatch implements a comprehensive 4-tier testing strategy:
 
 1. **Unit Tests**: Jest + React Testing Library for service layer and components
 2. **Integration Tests**: Vitest + Supabase MCP for database and API testing
@@ -463,7 +463,7 @@ test('should complete property browsing workflow', async ({ page }) => {
 
 ### Fixtures Architecture
 
-HomeMatch V2 uses a comprehensive fixtures system that eliminates circular dependency issues while maintaining full functionality.
+HomeMatch uses a comprehensive fixtures system that eliminates circular dependency issues while maintaining full functionality.
 
 ### Benefits Over Helper Files
 
@@ -1488,4 +1488,4 @@ The `refactoring-safety-net.js` script performs:
 
 ---
 
-_This guide covers all testing strategies, tools, and procedures for HomeMatch V2 development, including the comprehensive refactoring safety net for safe code evolution._
+_This guide covers all testing strategies, tools, and procedures for HomeMatch development, including the comprehensive refactoring safety net for safe code evolution._

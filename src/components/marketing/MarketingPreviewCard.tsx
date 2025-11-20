@@ -7,13 +7,9 @@ import React from 'react'
 
 interface MarketingPreviewCardProps {
   className?: string
-  showOverlays?: boolean
 }
 
-export function MarketingPreviewCard({
-  className,
-  showOverlays = false,
-}: MarketingPreviewCardProps) {
+export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
   return (
     <div
       className={cn(
@@ -34,28 +30,32 @@ export function MarketingPreviewCard({
         <div className="absolute bottom-4 left-4 rounded-full bg-white px-4 py-2 text-lg font-bold text-slate-900 shadow-md">
           $975,000
         </div>
-      </div>
 
-      {showOverlays && (
         <div className="pointer-events-none absolute inset-0">
           {[
             {
               title: 'Built for couples',
               copy: 'Stay in sync on likes, tours, and moves.',
               icon: ShieldCheck,
-              className: 'left-4 top-4',
+              className: 'left-3 top-3',
+            },
+            {
+              title: 'See nearby spots',
+              copy: 'Peek at parks and cafés without leaving the card.',
+              icon: MapPin,
+              className: 'right-3 top-12',
             },
             {
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'right-4 top-16',
+              className: 'left-3 bottom-14',
             },
           ].map(({ title, copy, icon: Icon, className: pos }) => (
             <div
               key={title}
               className={cn(
-                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/60 bg-white/92 p-3 text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur-lg',
+                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/60 bg-white/90 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-lg',
                 pos
               )}
             >
@@ -67,7 +67,7 @@ export function MarketingPreviewCard({
             </div>
           ))}
         </div>
-      )}
+      </div>
 
       <div className="space-y-4 p-6 pb-4">
         <div>

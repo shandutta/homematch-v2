@@ -212,10 +212,12 @@ jest.mock('@/hooks/useValidatedForm', () => ({
 describe('SignupForm', () => {
   const mockSignUp = jest.fn()
   const mockSignInWithOAuth = jest.fn()
+  const mockResend = jest.fn()
   const mockSupabaseClient = {
     auth: {
       signUp: mockSignUp,
       signInWithOAuth: mockSignInWithOAuth,
+      resend: mockResend,
     },
   }
 
@@ -304,6 +306,7 @@ describe('SignupForm', () => {
 
   test('handles successful signup', async () => {
     mockSignUp.mockResolvedValueOnce({ error: null })
+    mockResend.mockResolvedValue({ error: null })
     const user = userEvent.setup()
 
     render(<SignupForm />)
@@ -324,6 +327,9 @@ describe('SignupForm', () => {
     // Check success message is displayed
     expect(
       screen.getByText(/check your email for a verification link/i)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /resend verification email/i })
     ).toBeInTheDocument()
   })
 
@@ -354,6 +360,7 @@ describe('SignupForm', () => {
 
   test('handles Google OAuth signup', async () => {
     mockSignInWithOAuth.mockResolvedValueOnce({ error: null })
+    mockResend.mockResolvedValue({ error: null })
     const user = userEvent.setup()
 
     render(<SignupForm />)
@@ -376,6 +383,7 @@ describe('SignupForm', () => {
     mockSignInWithOAuth.mockResolvedValueOnce({
       error: { message: errorMessage },
     })
+    mockResend.mockResolvedValue({ error: null })
 
     const user = userEvent.setup()
     render(<SignupForm />)
@@ -395,6 +403,7 @@ describe('SignupForm', () => {
           setTimeout(() => resolve({ error: null }), 100)
         )
     )
+    mockResend.mockResolvedValue({ error: null })
 
     const user = userEvent.setup()
     render(<SignupForm />)
@@ -427,6 +436,7 @@ describe('SignupForm', () => {
           setTimeout(() => resolve({ error: null }), 100)
         )
     )
+    mockResend.mockResolvedValue({ error: null })
 
     const user = userEvent.setup()
     render(<SignupForm />)
@@ -443,6 +453,7 @@ describe('SignupForm', () => {
 
   test('success state hides the form', async () => {
     mockSignUp.mockResolvedValueOnce({ error: null })
+    mockResend.mockResolvedValue({ error: null })
     const user = userEvent.setup()
 
     render(<SignupForm />)
@@ -471,6 +482,7 @@ describe('SignupForm', () => {
     mockSignUp.mockResolvedValueOnce({
       error: { message: errorMessage },
     })
+    mockResend.mockResolvedValue({ error: null })
 
     const user = userEvent.setup()
     render(<SignupForm />)
@@ -492,6 +504,35 @@ describe('SignupForm', () => {
       expect(screen.getByLabelText('Password')).toBeInTheDocument()
       // Error message should be shown
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
+    })
+  })
+
+  test('allows resending verification email after signup', async () => {
+    mockSignUp.mockResolvedValueOnce({ error: null })
+    mockResend.mockResolvedValueOnce({ error: null })
+    const user = userEvent.setup()
+
+    render(<SignupForm />)
+
+    const submitButton = screen.getByRole('button', { name: /create account/i })
+    await user.click(submitButton)
+
+    const resendButton = await screen.findByRole('button', {
+      name: /resend verification email/i,
+    })
+    await user.click(resendButton)
+
+    await waitFor(() => {
+      expect(mockResend).toHaveBeenCalledWith({
+        type: 'signup',
+        email: validSignupData.email,
+        options: {
+          emailRedirectTo: expect.stringContaining('/auth/callback'),
+        },
+      })
+      expect(
+        screen.getByText(/verification email resent/i)
+      ).toBeInTheDocument()
     })
   })
 })

@@ -1,5 +1,5 @@
 /**
- * Auth fixture for HomeMatch V2 E2E tests
+ * Auth fixture for HomeMatch E2E tests
  * Provides authentication utilities and user management
  */
 
@@ -162,7 +162,7 @@ export const authFixtures = {
           // Fallback: check for validation page elements
           try {
             await page.waitForSelector(
-              'h1:has-text("HomeMatch V2 - Database Migration Validation"), h1:has-text("Dashboard"), [data-testid="dashboard-header"]',
+              'h1:has-text("HomeMatch - Database Migration Validation"), h1:has-text("Dashboard"), [data-testid="dashboard-header"]',
               {
                 timeout: config.timeouts.NAVIGATION,
                 state: 'visible',
@@ -182,7 +182,7 @@ export const authFixtures = {
           timeout: config.timeouts.ELEMENT_VISIBLE,
         })
         const h1Text = await h1Locator.textContent()
-        if (!h1Text?.includes('HomeMatch V2 - Database Migration Validation')) {
+        if (!h1Text?.includes('HomeMatch - Database Migration Validation')) {
           throw new Error(
             `Expected h1 to contain validation text, got: ${h1Text}`
           )

@@ -1,5 +1,5 @@
 /**
- * Config fixture for HomeMatch V2 E2E tests
+ * Config fixture for HomeMatch E2E tests
  * Provides test constants, timeouts, and test user data
  */
 

@@ -1,4 +1,4 @@
-# Completed Features - HomeMatch V2
+# Completed Features - HomeMatch
 
 _Documentation of completed implementations_
 
@@ -231,4 +231,4 @@ CSS custom properties in Tailwind v4 migration caused build failures:
 
 ---
 
-_These completed features represent the solid foundation of HomeMatch V2, with the remaining work focused on polish and optimization rather than core functionality development._
+_These completed features represent the solid foundation of HomeMatch. Remaining work focuses on search, ML ranking, deeper collaboration polish, and marketing/onboarding._

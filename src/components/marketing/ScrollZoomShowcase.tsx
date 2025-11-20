@@ -70,7 +70,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                 style={{ scale, y: lift }}
                 className="relative mx-auto w-full max-w-[540px]"
               >
-                <MarketingPreviewCard showOverlays />
+                <MarketingPreviewCard />
               </MotionDiv>
             </div>
           </div>

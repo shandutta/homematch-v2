@@ -1,5 +1,5 @@
 /**
- * Logger fixture for HomeMatch V2 E2E tests
+ * Logger fixture for HomeMatch E2E tests
  * Provides debugging and logging functionality
  */
 

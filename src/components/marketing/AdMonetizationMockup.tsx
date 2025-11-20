@@ -40,7 +40,7 @@ function renderPreview(preview: AdPreview) {
   if (preview === 'leaderboard') {
     return (
       <div className="w-full rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-indigo-50 p-4 shadow-[0_12px_28px_-18px_rgba(6,58,158,0.3)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-sky-900">
+        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-sky-900 uppercase">
           <span>Header slot</span>
           <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] text-sky-800">
             Sponsored
@@ -67,7 +67,7 @@ function renderPreview(preview: AdPreview) {
   if (preview === 'inline') {
     return (
       <div className="w-full rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-amber-50 p-4 shadow-[0_10px_24px_-18px_rgba(217,119,6,0.35)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-900">
+        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-amber-900 uppercase">
           <span>Between cards</span>
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] text-amber-900">
             Sponsored
@@ -77,7 +77,7 @@ function renderPreview(preview: AdPreview) {
           <div className="h-16 rounded-md bg-amber-50" />
           <div className="h-16 rounded-md bg-amber-100" />
         </div>
-        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">
+        <p className="mt-2 text-xs font-semibold tracking-[0.12em] text-amber-800 uppercase">
           Matches listing tiles
         </p>
       </div>
@@ -86,14 +86,14 @@ function renderPreview(preview: AdPreview) {
 
   return (
     <div className="w-full rounded-xl border border-emerald-100 bg-gradient-to-b from-emerald-50 via-white to-emerald-50 p-4 shadow-[0_10px_24px_-18px_rgba(16,185,129,0.35)]">
-      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-900">
+      <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-emerald-900 uppercase">
         <span>Mobile anchor</span>
         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-900">
           Dismissible
         </span>
       </div>
       <div className="mt-3 space-y-3 rounded-lg border border-emerald-200 bg-white/90 p-3 text-emerald-900">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em]">
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.12em] uppercase">
           Appears after scroll
         </div>
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 text-sm font-semibold text-emerald-800">
@@ -141,7 +141,7 @@ export function AdMonetizationMockup() {
           className="max-w-3xl"
         >
           <p
-            className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700"
+            className="text-sm font-semibold tracking-[0.2em] text-sky-700 uppercase"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Sponsored moments
@@ -173,8 +173,8 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-token-md transition-all duration-200 hover:-translate-y-1 hover:shadow-token-lg">
-                  <div className="flex flex-col gap-3 min-h-[190px]">
+                <Card className="group shadow-token-md hover:shadow-token-lg flex h-full flex-col rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-1">
+                  <div className="flex min-h-[190px] flex-col gap-3">
                     <div className="grid grid-cols-[auto,1fr] items-start gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-sky-800 ring-1 ring-slate-200">
                         <Icon className="h-5 w-5" />

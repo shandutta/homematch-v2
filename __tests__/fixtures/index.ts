@@ -1,5 +1,5 @@
 /**
- * Combined fixtures for HomeMatch V2 E2E tests
+ * Combined fixtures for HomeMatch E2E tests
  * Exports a single test object with all fixtures available
  */
 

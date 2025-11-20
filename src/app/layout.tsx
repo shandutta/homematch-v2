@@ -5,6 +5,10 @@ import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
+  'http://localhost:3000'
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -40,6 +44,18 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'HomeMatch',
+              url: siteUrl,
+              logo: `${siteUrl}/favicon.ico`,
+            }),
+          }}
+        />
         {/* 
           SECURITY NOTE: Google Maps loading moved to SecureMapLoader component
           This reduces exposure and provides better error handling

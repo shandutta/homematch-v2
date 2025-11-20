@@ -1,10 +1,10 @@
-# HomeMatch V2 - System Architecture
+# HomeMatch - System Architecture
 
 📍 **You are here**: [Documentation Hub](./README.md) → [Setup Guide](./SETUP_GUIDE.md) → **Architecture** → [Testing](./TESTING.md)
 
 ## Overview
 
-HomeMatch V2 is a modern property browsing application built with Next.js 15, Supabase, and cutting-edge tooling. This architecture document outlines the complete system design, including technology stack, database schema, security patterns, API documentation, custom hooks, and migration assessment from V1.
+HomeMatch is a modern property browsing application built with Next.js 15, Supabase, and cutting-edge tooling. This architecture document outlines the complete system design, including technology stack, database schema, security patterns, API documentation, custom hooks, and migration assessment from V1.
 
 > **📖 Reading Path**: [SETUP_GUIDE.md](./SETUP_GUIDE.md) for current status → **This document** for technical details → [TESTING.md](./TESTING.md) for workflows
 
@@ -845,7 +845,7 @@ export class PropertyScoringService {
 
 ## API Reference
 
-HomeMatch V2 uses Next.js 15 App Router for API routes. All API endpoints are located under `/app/api/` and follow RESTful conventions.
+HomeMatch uses Next.js 15 App Router for API routes. All API endpoints are located under `/app/api/` and follow RESTful conventions.
 
 ### Authentication
 
@@ -965,7 +965,7 @@ SELECT * FROM get_user_interaction_summary(user_id);
 
 ## Custom React Hooks
 
-HomeMatch V2 implements several custom hooks to encapsulate common logic and provide clean APIs for components. All hooks follow React's rules of hooks and are fully typed with TypeScript.
+HomeMatch implements several custom hooks to encapsulate common logic and provide clean APIs for components. All hooks follow React's rules of hooks and are fully typed with TypeScript.
 
 ### Authentication Hooks
 
@@ -1482,9 +1482,9 @@ curl -X POST http://localhost:3000/api/maps/geocode \
 
 ## Conclusion
 
-> **Final Status**: HomeMatch V2 architecture successfully implemented with migration results. Production deployment achieved with 99.1% data migration success rate.
+> **Current Status**: Architecture foundations implemented; migration landed with 99.1% data retention. Ongoing work focuses on search, ML ranking, and deeper collaboration polish before full production hardening.
 
-The HomeMatch V2 architecture represents a significant modernization over V1, incorporating lessons learned from production usage while adopting cutting-edge technologies. The selective migration approach has successfully preserved high-quality V1 components while eliminating technical debt, resulting in a more maintainable, performant, and secure application.
+The HomeMatch architecture modernizes the stack from V1, preserving high-quality components while eliminating technical debt for a maintainable, performant, and secure application.
 
 ### **Achieved Improvements**
 

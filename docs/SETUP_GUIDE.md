@@ -1,9 +1,9 @@
-# HomeMatch V2 - Setup Guide & Project Status
+# HomeMatch - Setup Guide & Project Status
 
 📍 **You are here**: [Documentation Hub](./README.md) → **Setup Guide** → [Architecture](./ARCHITECTURE.md) → [Testing](./TESTING.md)
 
 **Last Updated**: August 4, 2025  
-**Status**: Foundation Complete, Dashboard & Interactions Implemented
+**Status**: Core dashboard/auth implemented; search, ML ranking, collaboration polish, and marketing site are in progress.
 
 > **📖 Reading Path**: Start here for setup → [ARCHITECTURE.md](./ARCHITECTURE.md) for system design → [TESTING.md](./TESTING.md) for development workflows
 
@@ -19,7 +19,7 @@
 
 ## Current Implementation Status
 
-### 🟢 Production Ready
+### 🟢 Working Now
 
 > **💡 Quick Reference**
 >
@@ -35,7 +35,7 @@
 - PostGIS geographic support
 - Testing infrastructure (Jest, Vitest, Playwright)
 - CI/CD pipeline via GitHub Actions
-- Production deployment on Vercel
+- Deployment on Vercel
 
 #### Authentication
 
