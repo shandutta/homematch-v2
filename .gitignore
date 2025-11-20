@@ -55,6 +55,7 @@ homematch-v2.code-workspace
 .env.local
 .env.vercel
 .env.test.local
+.env.prod
 # Environment Variables
 .vercel
 .env*

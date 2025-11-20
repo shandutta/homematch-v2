@@ -37,18 +37,22 @@ test.describe('Couples Features Workflow', () => {
   let householdId: string
 
   test.beforeAll(async () => {
+    const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseServiceKey) {
+      throw new Error(
+        'Missing SUPABASE_SERVICE_ROLE_KEY for E2E couples workflow. Set it in .env.test.local/.env.prod.'
+      )
+    }
+
     // Initialize Supabase admin client for test setup
-    // Use hardcoded values for local test environment
-    supabaseAdmin = createClient(
-      'http://127.0.0.1:54321',
-      'REDACTED_SUPABASE_SERVICE_ROLE_KEY',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    )
+    supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
 
     // Create test household and users
     const { data: household } = await supabaseAdmin

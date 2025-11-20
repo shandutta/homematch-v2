@@ -100,8 +100,8 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
 // Vitest is used for integration tests only
 // Unit tests use Jest directly
 
-// Load test environment variables
-// Integration tests use local Supabase Docker stack
+// Load test environment variables from .env.local (primary) and allow CI override with .env.test.local
+config({ path: '.env.local' })
 config({ path: '.env.test.local' })
 
 // Set NODE_ENV to test for integration tests
@@ -112,15 +112,24 @@ if (!process.env.NODE_ENV) {
   })
 }
 
-// Set default test environment variables for local Supabase
+// Set test environment variables for local Supabase (pull from env / .env.prod)
 process.env.NEXT_PUBLIC_SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'REDACTED_SUPABASE_ANON_KEY'
-process.env.SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'REDACTED_SUPABASE_SERVICE_ROLE_KEY'
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  'http://127.0.0.1:54321'
+
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseAnonKey || !supabaseServiceRoleKey) {
+  throw new Error(
+    'Missing Supabase keys for Vitest. Set NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY via .env.local (or provide .env.test.local in CI).'
+  )
+}
+
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 
 // Set default BASE_URL for integration tests - force override since it's being set incorrectly
 process.env.BASE_URL = 'http://localhost:3000'

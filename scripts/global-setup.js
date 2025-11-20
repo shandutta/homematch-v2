@@ -6,6 +6,19 @@
 const { spawn } = require('child_process')
 const path = require('path')
 
+const supabaseUrl =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseServiceRoleKey || !supabaseAnonKey) {
+  console.error(
+    'Missing Supabase configuration for global setup. Ensure SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_ANON_KEY are set (check .env.prod/.env.test.local).'
+  )
+  process.exit(1)
+}
+
 // Helper to run isolated commands without contaminating module cache
 function runIsolated(command, args = []) {
   return new Promise((resolve, reject) => {
@@ -27,7 +40,7 @@ function runIsolated(command, args = []) {
 // Helper to check if Supabase is already running
 async function checkSupabaseStatus() {
   try {
-    const response = await fetch('http://127.0.0.1:54321/rest/v1/', {
+    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
       timeout: 2000,
     })
     return response.ok
@@ -39,12 +52,10 @@ async function checkSupabaseStatus() {
 // Helper to check if test users already exist
 async function checkTestUsersExist() {
   try {
-    const response = await fetch('http://127.0.0.1:54321/auth/v1/admin/users', {
+    const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
       headers: {
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
-        apikey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        apikey: supabaseServiceRoleKey,
       },
       timeout: 2000,
     })
@@ -97,11 +108,10 @@ async function globalSetup() {
     try {
       // Quick validation that essential tables exist
       const response = await fetch(
-        'http://127.0.0.1:54321/rest/v1/user_profiles?limit=1',
+        `${supabaseUrl}/rest/v1/user_profiles?limit=1`,
         {
           headers: {
-            apikey:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ',
+            apikey: supabaseAnonKey,
           },
           timeout: 2000,
         }
@@ -119,7 +129,7 @@ async function globalSetup() {
     }
 
     console.log('\n✅ E2E test environment ready!')
-    console.log('📦 Using local Supabase at: http://127.0.0.1:54321')
+    console.log(`📦 Using Supabase at: ${supabaseUrl}`)
     console.log('👤 Test users: test1@example.com, test2@example.com')
 
     // ENHANCED STABILITY WAIT - Addresses Phase 1 infrastructure race conditions
@@ -129,21 +139,17 @@ async function globalSetup() {
     for (let attempt = 1; attempt <= 10; attempt++) {
       try {
         // Check API endpoint
-        const apiResponse = await fetch('http://127.0.0.1:54321/rest/v1/', {
+        const apiResponse = await fetch(`${supabaseUrl}/rest/v1/`, {
           headers: {
-            apikey:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOuoJb-Uo4x3ZZKdl7AhVOMi9CgqZCL-QPBQ',
+            apikey: supabaseAnonKey,
           },
           timeout: 3000,
         })
 
         // Check auth endpoint
-        const authResponse = await fetch(
-          'http://127.0.0.1:54321/auth/v1/health',
-          {
-            timeout: 3000,
-          }
-        )
+        const authResponse = await fetch(`${supabaseUrl}/auth/v1/health`, {
+          timeout: 3000,
+        })
 
         if (apiResponse.ok && authResponse.ok) {
           console.log(`   ✅ All services ready (attempt ${attempt})`)

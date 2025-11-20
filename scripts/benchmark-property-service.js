@@ -13,9 +13,14 @@ const { performance } = require('perf_hooks')
 // Local Supabase configuration
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321'
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'REDACTED_SUPABASE_ANON_KEY'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseKey) {
+  console.error(
+    '❌ Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Populate from .env.prod/.env.test.local before running benchmarks.'
+  )
+  process.exit(1)
+}
 
 async function benchmark() {
   console.log('🏃 PropertyService Performance Benchmark\n')

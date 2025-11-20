@@ -15,9 +15,7 @@ describe('Household Functionality Tests', () => {
     try {
       // Create Supabase client with service role for integration tests
       const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
-      const supabaseKey =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        'REDACTED_SUPABASE_SERVICE_ROLE_KEY'
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
       if (!supabaseUrl || !supabaseKey) {
         throw new Error('Supabase environment variables not set')

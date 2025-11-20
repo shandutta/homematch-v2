@@ -23,14 +23,26 @@ if (!fs.existsSync(testEnvPath)) {
 // Load test environment
 dotenv.config({ path: testEnvPath })
 
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  'http://127.0.0.1:54321'
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+if (!supabaseAnonKey) {
+  console.error(
+    '❌ Missing Supabase anon key. Set NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.test.local or .env.prod'
+  )
+  process.exit(1)
+}
+
 // Force test environment variables
 process.env.NODE_ENV = 'production' // Build in production mode for realistic testing
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
-  'REDACTED_SUPABASE_ANON_KEY'
-process.env.SUPABASE_URL = 'http://127.0.0.1:54321'
-process.env.SUPABASE_ANON_KEY =
-  'REDACTED_SUPABASE_ANON_KEY'
+process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+process.env.SUPABASE_URL = supabaseUrl
+process.env.SUPABASE_ANON_KEY = supabaseAnonKey
 
 // Clean previous test build
 const testBuildDir = path.join(__dirname, '..', '.next-test')

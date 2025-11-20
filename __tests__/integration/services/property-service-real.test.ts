@@ -24,9 +24,7 @@ describeOrSkip('PropertyService Real Integration Tests', () => {
     // Use test database URL - the vitest.setup.ts should have set these
     const supabaseUrl =
       process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321'
-    const supabaseKey =
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      'REDACTED_SUPABASE_ANON_KEY'
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     console.log('✅ Running real integration tests with local Supabase')
     console.log('📊 Database URL:', supabaseUrl)

@@ -1,12 +1,19 @@
 const { createClient } = require('@supabase/supabase-js')
 
-const supabaseUrl = 'http://127.0.0.1:54321'
-// Use the actual service role key from supabase status
-const supabaseServiceKey =
-  'REDACTED_SUPABASE_SERVICE_ROLE_KEY'
+const supabaseUrl =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+// Use the service role key from environment (configurable via .env.prod / .env.test.local)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error(
+    '❌ Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment'
+  )
+  process.exit(1)
+}
 
 console.log('URL:', supabaseUrl)
-console.log('Testing with correct service role key from supabase status...')
+console.log('Testing with service role key from environment...')
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
