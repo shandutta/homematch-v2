@@ -37,23 +37,14 @@ export default async function LandingPage() {
   } = await supabase.auth.getUser()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
-  const [
-    { FeatureGrid },
-    { SwipeDemo },
-    { Footer },
-    { HowItWorks },
-    { CtaBand },
-    { ScrollZoomShowcase },
-    { AdMonetizationMockup },
-  ] = await Promise.all([
-    import('@/components/marketing/FeatureGrid'),
-    import('@/components/marketing/SwipeDemo'),
-    import('@/components/marketing/Footer'),
-    import('@/components/marketing/HowItWorks'),
-    import('@/components/marketing/CtaBand'),
-    import('@/components/marketing/ScrollZoomShowcase'),
-    import('@/components/marketing/AdMonetizationMockup'),
-  ])
+  const [{ FeatureGrid }, { SwipeDemo }, { Footer }, { HowItWorks }, { CtaBand }] =
+    await Promise.all([
+      import('@/components/marketing/FeatureGrid'),
+      import('@/components/marketing/SwipeDemo'),
+      import('@/components/marketing/Footer'),
+      import('@/components/marketing/HowItWorks'),
+      import('@/components/marketing/CtaBand'),
+    ])
 
   // If user is already authenticated, send them straight to the dashboard
   if (user) {
@@ -64,7 +55,6 @@ export default async function LandingPage() {
     <>
       <Header />
       <HeroSection />
-      <ScrollZoomShowcase className="mt-20 sm:mt-24" />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks + SwipeDemo */}
       <section className="relative isolate">
@@ -101,8 +91,6 @@ export default async function LandingPage() {
         <HowItWorks />
         <SwipeDemo />
       </section>
-
-      <AdMonetizationMockup />
       <CtaBand />
       <Footer />
     </>
