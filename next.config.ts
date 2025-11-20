@@ -37,6 +37,15 @@ const allowedDevOrigins = [
   .filter(Boolean)
   .map((origin) => origin!.toLowerCase()) as string[]
 
+const stripTrailingSlash = (value?: string | null) =>
+  value ? value.replace(/\/+$/, '') : value
+
+const SUPABASE_LOCAL_PROXY_ENABLED =
+  process.env.SUPABASE_LOCAL_PROXY === 'true'
+const SUPABASE_LOCAL_PROXY_TARGET =
+  stripTrailingSlash(process.env.SUPABASE_LOCAL_PROXY_TARGET) ||
+  'http://127.0.0.1:54321'
+
 const nextConfig: NextConfig = {
   /* config options here */
   ...(allowedDevOrigins.length
@@ -114,6 +123,19 @@ const nextConfig: NextConfig = {
             exclude: ['error', 'warn'],
           }
         : false,
+  },
+
+  async rewrites() {
+    const rules = []
+
+    if (SUPABASE_LOCAL_PROXY_ENABLED) {
+      rules.push({
+        source: '/supabase/:path*',
+        destination: `${SUPABASE_LOCAL_PROXY_TARGET}/:path*`,
+      })
+    }
+
+    return rules
   },
 }
 
