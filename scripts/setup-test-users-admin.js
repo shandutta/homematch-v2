@@ -17,8 +17,7 @@ if (fs.existsSync(envTestPath)) {
 }
 
 let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
-const supabaseAdminUrl =
-  process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl
+const supabaseAdminUrl = process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 let isLocalSupabase =
   supabaseAdminUrl.includes('127.0.0.1') ||
@@ -167,38 +166,38 @@ async function setupTestUsers() {
   // Note: We'll handle profile creation manually instead of relying on the trigger
   // The trigger has RLS issues that prevent it from working during testing
 
-for (const user of testUsers) {
-  let success = false
+  for (const user of testUsers) {
+    let success = false
 
-  // First, try to delete existing user
-  const deleted = await deleteExistingUser(user.email)
-  if (!deleted) {
-    if (process.env.DEBUG_TEST_SETUP) {
-      console.debug(
-        `⚠️  Continuing with user creation despite deletion issues for ${user.email}`
-      )
+    // First, try to delete existing user
+    const deleted = await deleteExistingUser(user.email)
+    if (!deleted) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug(
+          `⚠️  Continuing with user creation despite deletion issues for ${user.email}`
+        )
+      }
     }
-  }
 
-  // Try to create user with retries
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      // Create new user - temporarily disable trigger by using bypass method
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: user.email,
-        password: user.password,
-        email_confirm: true, // Auto-confirm for testing
-        user_metadata: {
-          test_user: true,
-        },
-      })
+    // Try to create user with retries
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        // Create new user - temporarily disable trigger by using bypass method
+        const { data, error } = await supabase.auth.admin.createUser({
+          email: user.email,
+          password: user.password,
+          email_confirm: true, // Auto-confirm for testing
+          user_metadata: {
+            test_user: true,
+          },
+        })
 
-      if (error) {
-        if (
-          error.message?.includes('already been registered') &&
-          attempt < 3
-        ) {
-          if (process.env.DEBUG_TEST_SETUP) {
+        if (error) {
+          if (
+            error.message?.includes('already been registered') &&
+            attempt < 3
+          ) {
+            if (process.env.DEBUG_TEST_SETUP) {
               console.debug(
                 `⚠️  User ${user.email} still exists, retrying delete...`
               )
