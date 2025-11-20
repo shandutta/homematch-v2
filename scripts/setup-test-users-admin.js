@@ -17,12 +17,14 @@ if (fs.existsSync(envTestPath)) {
 }
 
 let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+const supabaseAdminUrl =
+  process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 let isLocalSupabase =
-  supabaseUrl.includes('127.0.0.1') ||
-  supabaseUrl.includes('localhost') ||
-  supabaseUrl.includes('supabase.local') ||
-  supabaseUrl.startsWith('http://local-')
+  supabaseAdminUrl.includes('127.0.0.1') ||
+  supabaseAdminUrl.includes('localhost') ||
+  supabaseAdminUrl.includes('supabase.local') ||
+  supabaseAdminUrl.startsWith('http://local-')
 const allowRemoteSupabase =
   process.env.ALLOW_REMOTE_SUPABASE === 'true' ||
   process.env.SUPABASE_ALLOW_REMOTE === 'true'
@@ -36,7 +38,7 @@ if (!isLocalSupabase && !allowRemoteSupabase) {
   console.error(
     '❌ Test user setup expects a local Supabase instance (e.g. http://127.0.0.1:54321).'
   )
-  console.error('   Detected SUPABASE_URL =', supabaseUrl)
+  console.error('   Detected SUPABASE_URL =', supabaseAdminUrl)
   console.error(
     '   If you are reverse-proxying a local Supabase (e.g. dev.homematch.pro -> localhost), set ALLOW_REMOTE_SUPABASE=true.'
   )
@@ -47,7 +49,7 @@ if (!isLocalSupabase && !allowRemoteSupabase) {
 }
 
 // Create admin client with service role key and RLS bypass
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+const supabase = createClient(supabaseAdminUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
@@ -165,38 +167,38 @@ async function setupTestUsers() {
   // Note: We'll handle profile creation manually instead of relying on the trigger
   // The trigger has RLS issues that prevent it from working during testing
 
-  for (const user of testUsers) {
-    let success = false
+for (const user of testUsers) {
+  let success = false
 
-    // First, try to delete existing user
-    const deleted = await deleteExistingUser(user.email)
-    if (!deleted) {
-      if (process.env.DEBUG_TEST_SETUP) {
-        console.debug(
-          `⚠️  Continuing with user creation despite deletion issues for ${user.email}`
-        )
-      }
+  // First, try to delete existing user
+  const deleted = await deleteExistingUser(user.email)
+  if (!deleted) {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug(
+        `⚠️  Continuing with user creation despite deletion issues for ${user.email}`
+      )
     }
+  }
 
-    // Try to create user with retries
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        // Create new user - temporarily disable trigger by using bypass method
-        const { data, error } = await supabase.auth.admin.createUser({
-          email: user.email,
-          password: user.password,
-          email_confirm: true, // Auto-confirm for testing
-          user_metadata: {
-            test_user: true,
-          },
-        })
+  // Try to create user with retries
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      // Create new user - temporarily disable trigger by using bypass method
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: user.email,
+        password: user.password,
+        email_confirm: true, // Auto-confirm for testing
+        user_metadata: {
+          test_user: true,
+        },
+      })
 
-        if (error) {
-          if (
-            error.message?.includes('already been registered') &&
-            attempt < 3
-          ) {
-            if (process.env.DEBUG_TEST_SETUP) {
+      if (error) {
+        if (
+          error.message?.includes('already been registered') &&
+          attempt < 3
+        ) {
+          if (process.env.DEBUG_TEST_SETUP) {
               console.debug(
                 `⚠️  User ${user.email} still exists, retrying delete...`
               )
@@ -253,6 +255,14 @@ async function setupTestUsers() {
             `❌ Failed to create ${user.email} after ${attempt} attempts: ${String(error?.message || error)}`
           )
           console.error('   Raw error object:', JSON.stringify(error, null, 2))
+
+          // If remote/auth endpoint is unreachable, bail early to avoid spam
+          if (error?.status === 502 || error?.status === 503) {
+            console.error(
+              '   Supabase auth endpoint unreachable (502/503). Check SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY and network/proxy.'
+            )
+            process.exit(1)
+          }
         }
       }
     }

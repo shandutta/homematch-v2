@@ -23,11 +23,14 @@ let supabaseUrl =
 let supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 let supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseAdminUrl =
+  process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl || ''
 let isLocalSupabase =
   supabaseUrl.includes('127.0.0.1') ||
   supabaseUrl.includes('localhost') ||
   supabaseUrl.includes('supabase.local') ||
   supabaseUrl.startsWith('http://local-')
+const isLocalProxy = process.env.SUPABASE_LOCAL_PROXY === 'true'
 const allowRemoteSupabase =
   process.env.ALLOW_REMOTE_SUPABASE === 'true' ||
   process.env.SUPABASE_ALLOW_REMOTE === 'true'
@@ -59,209 +62,81 @@ async function setupIntegrationTests() {
   }
 
   try {
-    // Step 1 + 2: Only manage Docker/local Supabase if pointing to a local instance
-    let supabaseHealthy = !isLocalSupabase
-    if (isLocalSupabase) {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug('1️⃣  Checking Supabase status...')
+    }
+
+    // Step 1: health check regardless of URL
+    let supabaseHealthy = false
+    try {
+      const response = await fetch(`${supabaseAdminUrl}/rest/v1/`, {
+        headers: { apikey: supabaseAnonKey || '' },
+      })
+      supabaseHealthy = response.ok || response.status === 401
       if (process.env.DEBUG_TEST_SETUP) {
-        console.debug('1️⃣  Checking Supabase status...')
+        console.debug(
+          supabaseHealthy
+            ? '✅ Supabase API responded'
+            : `⚠️ Supabase API health returned status ${response.status}`
+        )
+      }
+    } catch (error) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug('⚠️ Supabase API not responding:', error.message)
+      }
+    }
+
+    const canStartLocally = isLocalSupabase || isLocalProxy
+
+    // Step 2: Start Supabase locally if unhealthy and allowed
+    if (!supabaseHealthy && canStartLocally) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug('\n2️⃣  Starting Supabase (local/proxy)...')
+        console.debug('   This may take a minute...')
       }
 
       try {
-        // Simple check for running containers
-        const containers = execSync(
-          'docker ps --filter name=supabase --format "{{.Names}}"',
-          { encoding: 'utf8', stdio: 'pipe' }
-        ).trim()
-
-        const containerCount = containers.split('\n').filter((n) => n).length
-
-        if (containerCount >= 10) {
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug(`✅ ${containerCount} Supabase containers running`)
-          }
-
-          // Quick health check using Node's fetch
-          try {
-            const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-              headers: {
-                apikey: supabaseAnonKey,
-              },
-            })
-
-            if (response.ok || response.status === 401) {
-              supabaseHealthy = true
-              if (process.env.DEBUG_TEST_SETUP) {
-                console.debug('✅ Supabase API is responding')
-              }
-            }
-          } catch (error) {
-            if (process.env.DEBUG_TEST_SETUP) {
-              console.debug('⚠️  Supabase API not responding:', error.message)
-            }
-          }
-        } else if (process.env.DEBUG_TEST_SETUP) {
-          console.debug(
-            `⚠️  Only ${containerCount} containers running, need to start Supabase`
-          )
-        }
-      } catch (error) {
-        if (process.env.DEBUG_TEST_SETUP) {
-          console.debug('⚠️  Docker check failed:', error.message)
-          console.debug('   Attempting to start Docker Desktop...')
-        }
-
-        // Try to start Docker Desktop if it's not running
         try {
-          const platform = process.platform
-
-          if (platform === 'win32') {
-            execSync(
-              'powershell -Command "Start-Process \\"Docker Desktop\\" -WindowStyle Hidden"',
-              {
-                stdio: 'pipe',
-              }
-            )
-          } else if (platform === 'darwin') {
-            execSync('open -a Docker', { stdio: 'pipe' })
-          } else {
-            try {
-              const wslCheck = execSync('cat /proc/version', {
-                encoding: 'utf8',
-              })
-              if (wslCheck.includes('microsoft') || wslCheck.includes('WSL')) {
-                if (process.env.DEBUG_TEST_SETUP) {
-                  console.debug(
-                    '🐧 WSL2 detected - Docker Desktop integration required'
-                  )
-                  console.debug(
-                    '   Please start Docker Desktop on Windows and enable WSL2 integration'
-                  )
-                }
-              } else {
-                console.debug(
-                  '🐧 Linux detected - Please ensure Docker daemon is running'
-                )
-                console.debug(
-                  '   Run: sudo systemctl start docker (if applicable)'
-                )
-              }
-            } catch {
-              console.debug(
-                '🐧 Linux detected - Please ensure Docker daemon is running'
-              )
-            }
-          }
-
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug('⏳ Docker starting... waiting 30 seconds...')
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, 30000))
-
-          execSync('docker ps --filter name=supabase --format "{{.Names}}"', {
-            encoding: 'utf8',
-            stdio: 'pipe',
-          }).trim()
-
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug('✅ Docker Desktop started successfully')
-          }
-        } catch (dockerStartError) {
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug(
-              '⚠️  Could not auto-start Docker Desktop:',
-              dockerStartError.message
-            )
-            console.debug(
-              '   Please start Docker Desktop manually and try again'
-            )
-          }
-        }
-      }
-
-      // Step 2: Start Supabase if not healthy
-      if (!supabaseHealthy) {
-        if (process.env.DEBUG_TEST_SETUP) {
-          console.debug('\n2️⃣  Starting Supabase...')
-          console.debug('   This may take a minute...')
-        }
-
-        try {
-          try {
-            execSync('docker version', { stdio: 'pipe' })
-          } catch {
-            console.error('❌ Docker is not available or not running')
-
-            try {
-              const wslCheck = execSync('cat /proc/version', {
-                encoding: 'utf8',
-              })
-              if (wslCheck.includes('microsoft') || wslCheck.includes('WSL')) {
-                console.error('\n🐧 WSL2 Environment Detected:')
-                console.error('   1. Start Docker Desktop on Windows')
-                console.error(
-                  '   2. Go to Settings → Resources → WSL Integration'
-                )
-                console.error('   3. Enable integration with your WSL2 distro')
-                console.error('   4. Run: wsl --shutdown && wsl')
-                console.error('   5. Try again: pnpm run test:integration')
-              } else {
-                console.error(
-                  '   Please ensure Docker Desktop is installed and running'
-                )
-                console.error(
-                  '   Then try again with: pnpm run test:integration'
-                )
-              }
-            } catch {
-              console.error(
-                '   Please ensure Docker Desktop is installed and running'
-              )
-              console.error('   Then try again with: pnpm run test:integration')
-            }
-
-            process.exit(1)
-          }
-
-          try {
-            execSync('pnpm dlx supabase@latest stop', {
-              stdio: 'pipe',
-              cwd: path.join(__dirname, '..'),
-            })
-          } catch {
-            // Ignore stop errors - may not be running
-          }
-
-          execSync('pnpm dlx supabase@latest start -x studio', {
-            stdio: 'inherit',
-            cwd: path.join(__dirname, '..'),
-          })
-
-          supabaseHealthy = true
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug('✅ Supabase started successfully')
-          }
-        } catch (error) {
-          console.error('❌ Failed to start Supabase:', error.message)
-
-          if (
-            error.message.includes('docker') ||
-            error.message.includes('Docker')
-          ) {
-            console.error('\n💡 Docker Desktop may not be running. Try:')
-            console.error('   1. Start Docker Desktop manually')
-            console.error('   2. Wait for it to fully load')
-            console.error('   3. Run: pnpm run test:integration')
-          } else {
-            console.error(
-              '   Please run manually: pnpm dlx supabase@latest start -x studio'
-            )
-          }
+          execSync('docker version', { stdio: 'pipe' })
+        } catch {
+          console.error('❌ Docker is not available or not running')
           process.exit(1)
         }
+
+        try {
+          execSync('pnpm dlx supabase@latest stop', {
+            stdio: 'pipe',
+            cwd: path.join(__dirname, '..'),
+          })
+        } catch {
+          // Ignore stop errors
+        }
+
+        execSync('pnpm dlx supabase@latest start -x studio', {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+        })
+
+        // Ensure DB is reset/migrations applied for integration determinism
+        execSync('pnpm dlx supabase@latest db reset --force', {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+        })
+
+        supabaseHealthy = true
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug('✅ Supabase started and database reset successfully')
+        }
+      } catch (error) {
+        console.error('❌ Failed to start Supabase:', error.message)
+        process.exit(1)
       }
-    } else if (process.env.DEBUG_TEST_SETUP) {
-      console.debug('ℹ️  Skipping Docker/Supabase start because URL is remote')
+    }
+
+    // If still unhealthy and remote only, bail
+    if (!supabaseHealthy && !canStartLocally && !allowRemoteSupabase) {
+      console.error('❌ Supabase is unreachable and cannot be started locally.')
+      process.exit(1)
     }
 
     // Step 3: Create test users
@@ -291,7 +166,11 @@ async function setupIntegrationTests() {
       console.debug('\n4️⃣  Generating authentication token...')
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Point env to the reachable admin URL for downstream Vitest steps
+    process.env.SUPABASE_URL = supabaseAdminUrl
+    process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseAdminUrl
+
+    const supabase = createClient(supabaseAdminUrl, supabaseAnonKey)
 
     // Sign in as test user to get JWT token
     const { data: authData, error: authError } =
