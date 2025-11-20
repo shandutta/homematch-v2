@@ -28,6 +28,23 @@ let isLocalSupabase =
   supabaseUrl.includes('localhost') ||
   supabaseUrl.includes('supabase.local') ||
   supabaseUrl.startsWith('http://local-')
+const allowRemoteSupabase =
+  process.env.ALLOW_REMOTE_SUPABASE === 'true' ||
+  process.env.SUPABASE_ALLOW_REMOTE === 'true'
+
+if (!isLocalSupabase && !allowRemoteSupabase) {
+  console.error(
+    '❌ Integration tests expect a local Supabase instance (e.g. http://127.0.0.1:54321).'
+  )
+  console.error('   Detected SUPABASE_URL =', supabaseUrl || '(not set)')
+  console.error(
+    '   If you are reverse-proxying a local Supabase (e.g. dev.homematch.pro -> localhost), set ALLOW_REMOTE_SUPABASE=true.'
+  )
+  console.error(
+    '   Otherwise run `supabase start -x studio` and set local keys in .env.local or export ALLOW_REMOTE_SUPABASE=true.'
+  )
+  process.exit(1)
+}
 
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
   console.error(

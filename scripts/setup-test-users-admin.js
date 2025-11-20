@@ -23,16 +23,27 @@ let isLocalSupabase =
   supabaseUrl.includes('localhost') ||
   supabaseUrl.includes('supabase.local') ||
   supabaseUrl.startsWith('http://local-')
+const allowRemoteSupabase =
+  process.env.ALLOW_REMOTE_SUPABASE === 'true' ||
+  process.env.SUPABASE_ALLOW_REMOTE === 'true'
 
 if (!supabaseServiceKey) {
   console.error('❌ SUPABASE_SERVICE_ROLE_KEY not found. Add it to .env.local.')
   process.exit(1)
 }
 
-if (!isLocalSupabase && process.env.DEBUG_TEST_SETUP) {
-  console.debug(
-    'ℹ️  Running test user setup against non-local Supabase (ALLOW_REMOTE_SUPABASE assumed).'
+if (!isLocalSupabase && !allowRemoteSupabase) {
+  console.error(
+    '❌ Test user setup expects a local Supabase instance (e.g. http://127.0.0.1:54321).'
   )
+  console.error('   Detected SUPABASE_URL =', supabaseUrl)
+  console.error(
+    '   If you are reverse-proxying a local Supabase (e.g. dev.homematch.pro -> localhost), set ALLOW_REMOTE_SUPABASE=true.'
+  )
+  console.error(
+    '   Otherwise run `supabase start -x studio` and set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY in .env.local.'
+  )
+  process.exit(1)
 }
 
 // Create admin client with service role key and RLS bypass
@@ -239,11 +250,9 @@ async function setupTestUsers() {
           await new Promise((resolve) => setTimeout(resolve, 2000 * attempt))
         } else {
           console.error(
-            `❌ Failed to create ${user.email} after ${attempt} attempts: ${error.message}`
+            `❌ Failed to create ${user.email} after ${attempt} attempts: ${String(error?.message || error)}`
           )
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug('   Full error:', JSON.stringify(error, null, 2))
-          }
+          console.error('   Raw error object:', JSON.stringify(error, null, 2))
         }
       }
     }
@@ -265,6 +274,7 @@ async function setupTestUsers() {
 
 // Run the setup
 setupTestUsers().catch((error) => {
-  console.error('❌ Setup failed:', error)
+  console.error('❌ Setup failed:', error?.message || error)
+  console.error('   Raw error object:', JSON.stringify(error, null, 2))
   process.exit(1)
 })
