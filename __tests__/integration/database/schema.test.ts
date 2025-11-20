@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
 
-describe('Database Schema Validation - Integration Tests', () => {
+const skipHeavy =
+  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
+  process.env.SKIP_HEAVY_TESTS === 'true'
+const describeOrSkip = skipHeavy ? describe.skip : describe
+
+describeOrSkip('Database Schema Validation - Integration Tests', () => {
   let supabase: ReturnType<typeof createClient<Database>>
 
   beforeAll(() => {

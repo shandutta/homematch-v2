@@ -435,7 +435,3 @@ describeOrSkip('Migration Data Integrity', () => {
     }, 10000)
   })
 })
-const skipHeavy =
-  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
-  process.env.SKIP_HEAVY_TESTS === 'true'
-const describeOrSkip = skipHeavy ? describe.skip : describe

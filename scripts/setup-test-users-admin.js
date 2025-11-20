@@ -215,27 +215,25 @@ async function setupTestUsers() {
           )
         }
 
-        // Wait for trigger to create user profile automatically
+        // Ensure user profile exists (triggers can be flaky in local setups)
         await new Promise((resolve) => setTimeout(resolve, 500))
-
-        // Verify the trigger created the user profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('id', data.user.id)
           .single()
-
-        if (profile) {
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug(`   ✅ User profile created automatically by trigger`)
-          }
-        } else {
-          if (process.env.DEBUG_TEST_SETUP) {
-            console.debug(
-              `   ⚠️  User profile not found: ${profileError?.message || 'Unknown error'}`
-            )
-            console.debug(`   This is unexpected but not critical for testing`)
-          }
+        if (!profile) {
+          await supabase
+            .from('user_profiles')
+            .upsert({
+              id: data.user.id,
+              email: user.email,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              onboarding_completed: false,
+            })
+            .select()
+            .single()
         }
 
         success = true
