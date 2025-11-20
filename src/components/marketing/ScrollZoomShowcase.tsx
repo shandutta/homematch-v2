@@ -21,7 +21,8 @@ const storyBeats = [
   },
   {
     title: 'No guesswork',
-    description: 'Price, beds/baths, and pass/love buttons match the dashboard.',
+    description:
+      'Price, beds/baths, and pass/love buttons match the dashboard.',
     accent: 'Familiar layout',
   },
 ]
@@ -68,7 +69,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
             <div className="lg:sticky lg:top-16">
               <MotionDiv
                 style={{ scale, y: lift }}
-                className="relative mx-auto w-full max-w-[560px] overflow-hidden rounded-[32px] border border-slate-200/70 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.18)]"
+                className="relative mx-auto w-full max-w-[560px] overflow-hidden rounded-[32px] border border-slate-200/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.14)]"
               >
                 <MotionDiv
                   style={{ opacity: glowOpacity }}
@@ -101,8 +102,8 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.05 }}
               >
-                Watch a real card from your feed—photo, price, beds/baths, and actions
-                match what you see on the dashboard.
+                Watch a real card from your feed—photo, price, beds/baths, and
+                actions match what you see on the dashboard.
               </MotionP>
               <div className="h-1.5 w-full rounded-full bg-slate-200/80">
                 <MotionDiv
@@ -133,7 +134,9 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                       <h3 className="text-lg font-semibold text-slate-900">
                         {beat.title}
                       </h3>
-                      <p className="text-sm text-slate-600">{beat.description}</p>
+                      <p className="text-sm text-slate-600">
+                        {beat.description}
+                      </p>
                     </div>
                   </div>
                 </MotionDiv>
