@@ -1,5 +1,6 @@
 /* eslint-env node */
 import { config } from 'dotenv'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
 
 // Provide a minimal localStorage/sessionStorage implementation when Node's
@@ -104,6 +105,22 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
 config({ path: '.env.local' })
 config({ path: '.env.test.local' })
 
+const markSupabaseHeavyTestsSkipped = (reason: string) => {
+  if (
+    process.env.SKIP_HEAVY_TESTS === 'true' ||
+    process.env.SKIP_HEAVY_INTEGRATION === 'true'
+  ) {
+    return
+  }
+
+  process.env.SKIP_HEAVY_TESTS = 'true'
+  process.env.SKIP_HEAVY_INTEGRATION = 'true'
+  process.env.SUPABASE_INTEGRATION_DISABLED_REASON = reason
+  console.warn(
+    `Skipping heavy Supabase integration tests: ${reason}. Set RUN_SUPABASE_INTEGRATION=true to force.`
+  )
+}
+
 // Set NODE_ENV to test for integration tests
 if (!process.env.NODE_ENV) {
   Object.defineProperty(process.env, 'NODE_ENV', {
@@ -113,23 +130,71 @@ if (!process.env.NODE_ENV) {
 }
 
 // Set test environment variables for local Supabase (pull from env / .env.prod)
-process.env.NEXT_PUBLIC_SUPABASE_URL =
+const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.SUPABASE_URL ||
   'http://127.0.0.1:54321'
 
+process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || supabaseUrl
+
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const forceSupabaseIntegration =
+  process.env.RUN_SUPABASE_INTEGRATION === 'true' ||
+  process.env.FORCE_SUPABASE_TESTS === 'true'
 
 if (!supabaseAnonKey || !supabaseServiceRoleKey) {
-  throw new Error(
-    'Missing Supabase keys for Vitest. Set NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY via .env.local (or provide .env.test.local in CI).'
+  markSupabaseHeavyTestsSkipped(
+    'Missing Supabase credentials (NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY)'
   )
+} else {
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+  process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 }
 
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
-process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
+if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
+  const runSupabaseHealthCheck = async () => {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 1500)
+      const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+        headers: { apikey: supabaseAnonKey },
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+
+      const apiReachable = response.ok || response.status === 401
+      if (!apiReachable) {
+        markSupabaseHeavyTestsSkipped(
+          `Supabase API not reachable at ${supabaseUrl}`
+        )
+        return
+      }
+
+      const { data, error } = await createSupabaseClient(
+        supabaseUrl,
+        supabaseServiceRoleKey
+      )
+        .from('user_profiles')
+        .select('id')
+        .limit(1)
+
+      if (error || !data?.length) {
+        markSupabaseHeavyTestsSkipped(
+          'Supabase schema or seed data missing. Run pnpm test:integration to provision the local stack.'
+        )
+      }
+    } catch (error: any) {
+      markSupabaseHeavyTestsSkipped(
+        `Supabase health check failed: ${error?.message || 'unknown error'}`
+      )
+    }
+  }
+
+  await runSupabaseHealthCheck()
+}
 
 // Set default BASE_URL for integration tests - force override since it's being set incorrectly
 process.env.BASE_URL = 'http://localhost:3000'
