@@ -52,8 +52,12 @@ describe('HeroSection', () => {
     expect(
       screen.getByText('See nearby spots without leaving the page')
     ).toBeInTheDocument()
-    expect(screen.getByText('Real listings with quick swipes')).toBeInTheDocument()
-    expect(screen.getByText('Favorites sync across your devices')).toBeInTheDocument()
+    expect(
+      screen.getByText('Real listings with quick swipes')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Favorites sync across your devices')
+    ).toBeInTheDocument()
 
     // Check mockup components
     expect(screen.getByTestId('parallax-stars')).toBeInTheDocument()
@@ -142,7 +146,9 @@ describe('HeroSection', () => {
       'lg:text-7xl'
     )
 
-    const description = screen.getByText(/Swipe through real listings together/i)
+    const description = screen.getByText(
+      /Swipe through real listings together/i
+    )
     expect(description).toHaveClass(
       'max-w-2xl',
       'text-lg',

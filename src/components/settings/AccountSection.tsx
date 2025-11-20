@@ -5,9 +5,10 @@ import { User } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { signOut } from '@/lib/supabase/actions'
 import { LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react'
 import { useTransition } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface AccountSectionProps {
   user: User
@@ -17,6 +18,8 @@ export function AccountSection({ user }: AccountSectionProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSigningOut, startTransition] = useTransition()
+  const router = useRouter()
+  const supabase = createClient()
 
   const handleSignOut = () => {
     setError(null)
@@ -24,11 +27,21 @@ export function AccountSection({ user }: AccountSectionProps) {
 
     startTransition(async () => {
       try {
-        await signOut()
+        const { error: signOutError } = await supabase.auth.signOut()
+
+        if (signOutError) {
+          throw signOutError
+        }
+
+        router.push('/login')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to sign out')
         setLoading(false)
+        return
       }
+
+      router.refresh()
+      setLoading(false)
     })
   }
 

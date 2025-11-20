@@ -7,6 +7,7 @@ HomeMatch is an AI-assisted home discovery app I'm building to make real estate 
 ## Features
 
 ### ✅ Working now
+
 - Authentication: Supabase Auth with Google plus email/password flows
 - Database: PostGIS-enabled PostgreSQL with row-level security and real-time updates
 - Dashboard: Tinder-style swiper for properties with like/pass and live counters
@@ -14,6 +15,7 @@ HomeMatch is an AI-assisted home discovery app I'm building to make real estate 
 - Activity views: Dedicated screens for viewed, liked, and passed homes
 
 ### 🚧 In progress
+
 - Property search: Filtering, sorting, and better browsing controls
 - ML scoring: Staged recommendation pipeline that adapts to feedback
 - Household collaboration: Shared lists, notifications, and tour planning polish
