@@ -18,10 +18,15 @@ import { CouplesService } from '@/lib/services/couples'
 import { PropertyService } from '@/lib/services/properties'
 import { createTestClientFactory as _createTestClientFactory } from '../utils/test-client-factory'
 
+const skipHeavy =
+  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
+  process.env.SKIP_HEAVY_TESTS === 'true'
+const describeOrSkip = skipHeavy ? describe.skip : describe
+
 // Extend Jest matchers
 expect.extend(performanceMatchers)
 
-describe('Performance Benchmark Tests', () => {
+describeOrSkip('Performance Benchmark Tests', () => {
   let client: ReturnType<typeof createClient>
   let factory: TestDataFactory
   let snapshotManager: DatabaseSnapshotManager
