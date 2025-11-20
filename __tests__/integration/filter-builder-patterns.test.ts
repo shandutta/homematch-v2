@@ -4,7 +4,12 @@ import { setupTestDatabase, cleanupTestDatabase } from './fixtures'
 import { createTestClientFactory } from '../utils/test-client-factory'
 import { Property, PropertyInsert } from '@/types/database'
 
-describe('Filter Builder Patterns Integration Tests', () => {
+const skipHeavy =
+  process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
+  process.env.SKIP_HEAVY_TESTS === 'true'
+const describeOrSkip = skipHeavy ? describe.skip : describe
+
+describeOrSkip('Filter Builder Patterns Integration Tests', () => {
   let propertyService: PropertyService
   let testProperties: Property[] = []
 

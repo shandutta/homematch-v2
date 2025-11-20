@@ -104,6 +104,11 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
 config({ path: '.env.local' })
 config({ path: '.env.test.local' })
 
+// Default to skipping heavy integration suites locally unless explicitly disabled
+if (!process.env.SKIP_HEAVY_TESTS) {
+  process.env.SKIP_HEAVY_TESTS = 'true'
+}
+
 // Set NODE_ENV to test for integration tests
 if (!process.env.NODE_ENV) {
   Object.defineProperty(process.env, 'NODE_ENV', {
