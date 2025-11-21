@@ -151,6 +151,25 @@ export default [
       'no-undef': 'off',
     },
   },
+  // Ensure Playwright configs are parsed with the TS parser (ESM)
+  {
+    files: ['playwright.config.ts', 'playwright.remote.config.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: './tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
   // Legacy v1-reference override: fully relax rules and stop reporting in CI
   {
     files: ['v1-reference/**/*'],

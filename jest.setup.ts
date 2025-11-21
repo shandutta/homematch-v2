@@ -131,24 +131,26 @@ beforeEach(() => {
   jest.restoreAllMocks()
 
   // Re-setup Canvas mocks after restoreAllMocks clears them
-  HTMLCanvasElement.prototype.getContext = jest
-    .fn()
-    .mockImplementation((contextType) => {
-      if (contextType === '2d') {
-        return {
-          createLinearGradient: jest.fn().mockReturnValue({
-            addColorStop: jest.fn(),
-          }),
-          fillRect: jest.fn(),
-          fillStyle: null,
+  if (typeof HTMLCanvasElement !== 'undefined') {
+    HTMLCanvasElement.prototype.getContext = jest
+      .fn()
+      .mockImplementation((contextType) => {
+        if (contextType === '2d') {
+          return {
+            createLinearGradient: jest.fn().mockReturnValue({
+              addColorStop: jest.fn(),
+            }),
+            fillRect: jest.fn(),
+            fillStyle: null,
+          }
         }
-      }
-      return null
-    })
+        return null
+      })
 
-  HTMLCanvasElement.prototype.toDataURL = jest
-    .fn()
-    .mockReturnValue('data:image/png;base64,mockDataURL')
+    HTMLCanvasElement.prototype.toDataURL = jest
+      .fn()
+      .mockReturnValue('data:image/png;base64,mockDataURL')
+  }
 })
 
 afterEach(() => {

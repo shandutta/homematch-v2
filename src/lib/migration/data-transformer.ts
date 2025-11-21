@@ -211,17 +211,30 @@ export class DataTransformer {
         }
       }
 
-      // Validate property type
-      const validPropertyTypes = ['house', 'condo', 'townhouse', 'apartment']
+      // Validate property type (aligns with schema enum)
+      const validPropertyTypes = [
+        'single_family',
+        'condo',
+        'townhome',
+        'multi_family',
+        'manufactured',
+        'land',
+        'other',
+      ]
       let propertyType = raw.property_type?.toLowerCase()
-      if (propertyType === 'multi_family') {
-        propertyType = 'apartment'
+      if (propertyType === 'house') {
+        propertyType = 'single_family'
+      } else if (propertyType === 'townhouse') {
+        propertyType = 'townhome'
+      } else if (propertyType === 'apartment') {
+        propertyType = 'multi_family'
       }
+
       if (propertyType && !validPropertyTypes.includes(propertyType)) {
         warnings.push(
-          `Unknown property type: ${raw.property_type}, defaulting to house`
+          `Unknown property type: ${raw.property_type}, defaulting to other`
         )
-        propertyType = 'house'
+        propertyType = 'other'
       }
 
       // Create property insert object

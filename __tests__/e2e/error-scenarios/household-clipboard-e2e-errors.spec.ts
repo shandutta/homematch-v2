@@ -15,6 +15,7 @@ import {
   TEST_SELECTORS,
   TEST_ROUTES,
   TEST_TIMEOUTS,
+  getWorkerTestUser,
 } from '../../fixtures/test-data'
 import { createWorkerAuthHelper } from '../../utils/auth-helper'
 
@@ -36,7 +37,11 @@ function createFreshTestUser(workerIndex: number) {
 }
 
 test.describe('Household Clipboard E2E Error Scenarios', () => {
-  test.beforeEach(async ({ page }) => {
+  let testUser: ReturnType<typeof getWorkerTestUser>
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    testUser = getWorkerTestUser(testInfo.workerIndex)
+
     // Grant clipboard permissions for testing
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   })
@@ -288,6 +293,8 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
       page,
     }) => {
       let createCalled = false
+
+      const freshUser = createFreshTestUser(test.info().workerIndex)
 
       await page.route('**/api/households**', async (route) => {
         if (route.request().method() === 'POST' && !createCalled) {

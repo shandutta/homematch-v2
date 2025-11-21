@@ -136,15 +136,6 @@ export function LoginForm() {
               )}
             />
 
-            <div className="flex justify-end text-sm">
-              <Link
-                href="/reset-password"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
             <Button
               type="submit"
               className="w-full"
@@ -159,6 +150,15 @@ export function LoginForm() {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
+
+            <div className="flex justify-end text-sm">
+              <Link
+                href="/reset-password"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </form>
         </Form>
 

@@ -20,6 +20,7 @@
 
 # testing
 /coverage
+/.test-auth-token
 
 
 # next.js

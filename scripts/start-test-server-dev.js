@@ -7,6 +7,7 @@
 
 const { spawn, execSync } = require('child_process')
 const path = require('path')
+const fs = require('fs')
 
 // First, kill any process on port 3000
 console.log('🔪 Killing any process on port 3000...')
@@ -22,10 +23,23 @@ try {
 // Load test environment variables BEFORE starting Next.js
 const dotenv = require('dotenv')
 
-// First, load the .env.test.local file
-dotenv.config({
-  path: path.join(__dirname, '..', '.env.test.local'),
-})
+// Load env files in priority order: test -> local -> prod (first wins)
+const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
+const loadedEnvFiles = []
+
+for (const file of envCandidates) {
+  const envPath = path.join(__dirname, '..', file)
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath })
+    loadedEnvFiles.push(file)
+  }
+}
+
+if (!loadedEnvFiles.length) {
+  console.warn(
+    '⚠️  No env file found (.env.test.local/.env.local/.env.prod); relying on process environment variables.'
+  )
+}
 
 // Ensure we're in test mode
 process.env.NODE_ENV = 'test'

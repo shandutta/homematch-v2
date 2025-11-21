@@ -158,7 +158,8 @@ if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
   const runSupabaseHealthCheck = async () => {
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 1500)
+      // Allow extra time for proxied/local Supabase to respond before skipping heavy tests
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
       const response = await fetch(`${supabaseUrl}/rest/v1/`, {
         headers: { apikey: supabaseAnonKey },
         signal: controller.signal,
@@ -186,9 +187,11 @@ if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
           'Supabase schema or seed data missing. Run pnpm test:integration to provision the local stack.'
         )
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'unknown error'
       markSupabaseHeavyTestsSkipped(
-        `Supabase health check failed: ${error?.message || 'unknown error'}`
+        `Supabase health check failed: ${message}`
       )
     }
   }

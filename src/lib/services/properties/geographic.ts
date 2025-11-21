@@ -326,25 +326,67 @@ export class GeographicService
     this.validateRequired({ lat1, lng1, lat2, lng2 })
 
     return this.executeQuery('calculateDistance', async (supabase) => {
-      return callNumericRPC(
-        supabase,
-        'calculate_distance',
-        {
-          lat1,
-          lng1,
-          lat2,
-          lng2,
-        },
-        {
-          operation: 'calculateDistance',
-          errorContext: { lat1, lng1, lat2, lng2 },
-          fallbackValue: 0,
-          cache: {
-            enabled: true,
-            ttl: 10 * 60 * 1000, // 10 minutes for distance calculations
-          },
-        }
+      const fallbackDistance = calculateHaversineDistance(
+        { lat: lat1, lng: lng1 },
+        { lat: lat2, lng: lng2 }
       )
+
+      try {
+        const distance = await callNumericRPC(
+          supabase,
+          'calculate_distance',
+          {
+            lat1,
+            lng1,
+            lat2,
+            lng2,
+          },
+          {
+            operation: 'calculateDistance',
+            errorContext: { lat1, lng1, lat2, lng2 },
+            fallbackValue: 0,
+            cache: {
+              enabled: true,
+              ttl: 10 * 60 * 1000, // 10 minutes for distance calculations
+            },
+          }
+        )
+
+        if (typeof distance === 'number' && Number.isFinite(distance)) {
+          return distance
+        }
+
+        if (
+          distance &&
+          typeof distance === 'object' &&
+          'distance' in (distance as Record<string, unknown>)
+        ) {
+          const numericDistance = Number(
+            (distance as { distance?: unknown; calculate_distance?: unknown })
+              .distance ??
+              (distance as { calculate_distance?: unknown }).calculate_distance
+          )
+
+          if (!Number.isNaN(numericDistance)) {
+            return numericDistance
+          }
+        }
+
+        return fallbackDistance
+      } catch (error) {
+        const message = (error as { message?: string })?.message || ''
+        const networkIssue =
+          /fetch failed|Failed to fetch|AbortSignal|ECONNREFUSED|ENOTFOUND|network/i
+        const unknownFailure =
+          message.trim() === '' ||
+          /failed:\s*$|Unknown database error/i.test(message)
+
+        if (networkIssue.test(message) || unknownFailure) {
+          return fallbackDistance
+        }
+
+        throw error
+      }
     })
   }
 

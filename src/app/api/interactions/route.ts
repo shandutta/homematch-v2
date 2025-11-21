@@ -36,7 +36,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch (error) {
+      return ApiErrorHandler.badRequest('Invalid or missing JSON body', error)
+    }
+
     const parsed = createInteractionRequestSchema.safeParse(body)
     if (!parsed.success) {
       return ApiErrorHandler.fromZodError(parsed.error)

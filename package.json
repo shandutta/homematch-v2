@@ -66,7 +66,8 @@
     "ci:validate:schema": "node scripts/validate-db-schema.js",
     "ci:validate:rls": "node scripts/test-rls-policies.js",
     "ci:health": "node scripts/health-check.js",
-    "auto:commit": "node scripts/auto-commit.js"
+    "auto:commit": "node scripts/auto-commit.js",
+    "ingest:zillow": "pnpm exec tsx scripts/ingest-zillow.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
@@ -172,5 +173,5 @@
     "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check",
     "commit-msg": "pnpm exec commitlint --edit $1"
   },
-  "packageManager": "pnpm@10.22.0+sha512.bf049efe995b28f527fd2b41ae0474ce29186f7edcb3bf545087bd61fbbebb2bf75362d1307fda09c2d288e1e499787ac12d4fcb617a974718a6051f2eee741c"
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }

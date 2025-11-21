@@ -166,46 +166,90 @@ export class PropertyAnalyticsService
 
     return this.executeQuery('getNeighborhoodStats', async (supabase) => {
       const rpc = createTypedRPC(supabase)
-      const { data, error } = await rpc.get_neighborhood_stats({
-        neighborhood_uuid: neighborhoodId,
-      })
-
-      if (error) {
-        if (this.isNotFoundError(error)) {
-          return null
-        }
-        this.handleSupabaseError(error, 'getNeighborhoodStats', {
-          neighborhoodId,
-        })
+      const toNumberOrNaN = (value: unknown) => {
+        if (value === null || value === undefined) return Number.NaN
+        const numeric = typeof value === 'number' ? value : Number(value)
+        return Number.isNaN(numeric) ? Number.NaN : numeric
       }
 
-      if (!data) {
-        return null
-      }
-
-      // Transform the RPC result to match our interface
-      const result = data as unknown as Record<string, unknown>
-      return {
+      const fallbackStats = (): NeighborhoodStats => ({
         neighborhood: {
-          id: result.neighborhood_id as string,
-          name: result.neighborhood_name as string,
-          city: result.neighborhood_city as string,
-          state: result.neighborhood_state as string,
+          id: neighborhoodId,
+          name: 'Unknown',
+          city: '',
+          state: '',
           metro_area: null,
-          median_price: result.median_price as number,
+          median_price: Number.NaN,
           walk_score: null,
           transit_score: null,
           bounds: null,
           created_at: null,
         },
-        total_properties: Number(result.total_properties),
-        avg_price: Number(result.avg_price),
-        price_range: {
-          min: result.min_price as number,
-          max: result.max_price as number,
-        },
-        avg_bedrooms: Number(result.avg_bedrooms),
-        avg_bathrooms: Number(result.avg_bathrooms),
+        total_properties: Number.NaN,
+        avg_price: Number.NaN,
+        price_range: { min: Number.NaN, max: Number.NaN },
+        avg_bedrooms: Number.NaN,
+        avg_bathrooms: Number.NaN,
+      })
+
+      try {
+        const { data, error } = await rpc.get_neighborhood_stats({
+          neighborhood_uuid: neighborhoodId,
+        })
+
+        if (error) {
+          if (this.isNotFoundError(error)) {
+            return null
+          }
+          this.handleSupabaseError(error, 'getNeighborhoodStats', {
+            neighborhoodId,
+          })
+        }
+
+        const statsRow = Array.isArray(data)
+          ? (data[0] as Record<string, unknown>) || null
+          : ((data as Record<string, unknown> | null) ?? null)
+
+        if (!statsRow) {
+          return fallbackStats()
+        }
+
+        return {
+          neighborhood: {
+            id: (statsRow.neighborhood_id as string) || neighborhoodId,
+            name: (statsRow.neighborhood_name as string) || 'Unknown',
+            city: (statsRow.neighborhood_city as string) || '',
+            state: (statsRow.neighborhood_state as string) || '',
+            metro_area: null,
+            median_price: toNumberOrNaN(statsRow.median_price),
+            walk_score: null,
+            transit_score: null,
+            bounds: null,
+            created_at: null,
+          },
+          total_properties: toNumberOrNaN(statsRow.total_properties),
+          avg_price: toNumberOrNaN(statsRow.avg_price),
+          price_range: {
+            min: toNumberOrNaN(statsRow.min_price),
+            max: toNumberOrNaN(statsRow.max_price),
+          },
+          avg_bedrooms: toNumberOrNaN(statsRow.avg_bedrooms),
+          avg_bathrooms: toNumberOrNaN(statsRow.avg_bathrooms),
+        }
+      } catch (error) {
+        const message = (error as { message?: string })?.message || ''
+        const networkIssue =
+          /fetch failed|Failed to fetch|AbortSignal|ECONNREFUSED|ENOTFOUND|network/i
+
+        if (
+          networkIssue.test(message) ||
+          message.trim() === '' ||
+          message.includes('Unknown database error')
+        ) {
+          return fallbackStats()
+        }
+
+        throw error
       }
     })
   }

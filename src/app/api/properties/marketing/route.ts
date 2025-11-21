@@ -40,8 +40,8 @@ async function getMarketingProperties(): Promise<NextResponse> {
 
     let rows: DbPropertyRow[] | null = null
 
-    // In development, prefer reading from local seed JSON to ensure real Zillow image URLs
-    const preferSeed = process.env.NODE_ENV !== 'production'
+    // Prefer live DB rows when available; allow opt-in seed override via env for local demos
+    const preferSeed = process.env.MARKETING_USE_SEED === 'true'
 
     if (!preferSeed && (error || data === null)) {
       // Fallback to standard query if RPC is not available
