@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { ZillowUtils } from '@/lib/api/zillow-client'
 import {
   DataTransformer,
@@ -12,18 +13,7 @@ const DEFAULT_DELAY_MS = 1250
 
 type FetchLike = typeof fetch
 
-type UpsertResult = { data: unknown; error: { message?: string } | null }
-
-type SupabaseLike = {
-  from: <T extends keyof Database['public']['Tables']>(
-    table: T
-  ) => {
-    upsert(
-      values: Database['public']['Tables'][T]['Insert'][],
-      opts: { onConflict?: string }
-    ): Promise<UpsertResult>
-  }
-}
+type SupabaseLike = Pick<SupabaseClient<Database>, 'from'>
 
 export type ZillowSearchItem = {
   zpid?: string | number

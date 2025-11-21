@@ -424,26 +424,24 @@ test.describe('Couples Features Workflow', () => {
     ]
 
     // Add properties to database
-    await supabaseAdmin
-      .from('properties')
-      .upsert(
-        additionalProperties.map((prop) => ({
-          id: prop.id,
-          address: prop.address,
-          price: 600000,
-          bedrooms: 3,
-          bathrooms: 2,
-          city: 'Test City',
-          state: 'CA',
-          zip_code: '12345',
-          property_type: 'house',
-          square_feet: 1500,
-          is_active: true,
-          listing_status: 'active',
-          images: ['https://via.placeholder.com/400x300'],
-        })),
-        { onConflict: 'id' }
-      )
+    await supabaseAdmin.from('properties').upsert(
+      additionalProperties.map((prop) => ({
+        id: prop.id,
+        address: prop.address,
+        price: 600000,
+        bedrooms: 3,
+        bathrooms: 2,
+        city: 'Test City',
+        state: 'CA',
+        zip_code: '12345',
+        property_type: 'house',
+        square_feet: 1500,
+        is_active: true,
+        listing_status: 'active',
+        images: ['https://via.placeholder.com/400x300'],
+      })),
+      { onConflict: 'id' }
+    )
 
     // Have both partners like all additional properties
     for (const prop of additionalProperties) {
