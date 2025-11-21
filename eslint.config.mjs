@@ -126,6 +126,15 @@ export default [
   {
     files: ['**/*.js', '*.config.{js,ts,mjs}', 'scripts/**/*', 'jest.setup.js'],
     languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        // Avoid project-required parsing for JS so lint does not error on files
+        // that aren't part of the TS program
+        project: null,
+        tsconfigRootDir: __dirname,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
       globals: {
         ...globals.node,
       },

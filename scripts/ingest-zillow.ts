@@ -21,9 +21,31 @@ type Args = {
   maxPages: number
 }
 
+const DEFAULT_BAY_AREA_LOCATIONS = [
+  'San Francisco, CA',
+  'Oakland, CA',
+  'Berkeley, CA',
+  'San Jose, CA',
+  'Palo Alto, CA',
+  'Mountain View, CA',
+  'Sunnyvale, CA',
+  'Santa Clara, CA',
+  'Fremont, CA',
+  'Hayward, CA',
+  'Walnut Creek, CA',
+  'Concord, CA',
+  'San Mateo, CA',
+  'Redwood City, CA',
+  'Menlo Park, CA',
+  'San Rafael, CA',
+  'Santa Rosa, CA',
+  'Napa, CA',
+  'Vallejo, CA',
+]
+
 function parseArgs(argv: string[]): Args {
   const defaults: Args = {
-    locations: ['San Francisco, CA'],
+    locations: DEFAULT_BAY_AREA_LOCATIONS,
     pageSize: 20,
     maxPages: 2,
   }

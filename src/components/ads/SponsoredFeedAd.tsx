@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import Script from 'next/script'
 import { cn } from '@/lib/utils'
 
@@ -13,14 +14,21 @@ declare global {
 type Props = {
   slotId?: string
   className?: string
+  allowOnHome?: boolean
 }
 
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
 const defaultSlotId = process.env.NEXT_PUBLIC_ADSENSE_FEED_SLOT
 
-export function SponsoredFeedAd({ slotId, className }: Props) {
+export function SponsoredFeedAd({
+  slotId,
+  className,
+  allowOnHome = false,
+}: Props) {
   const pushedRef = useRef(false)
   const resolvedSlotId = slotId || defaultSlotId
+  const pathname = usePathname()
+  const isHome = pathname === '/'
 
   useEffect(() => {
     if (!clientId || !resolvedSlotId || pushedRef.current) return
@@ -31,6 +39,8 @@ export function SponsoredFeedAd({ slotId, className }: Props) {
       // ignore in dev/ssr
     }
   }, [resolvedSlotId])
+
+  if (isHome && !allowOnHome) return null
 
   const showPlaceholder = !clientId || !resolvedSlotId
 

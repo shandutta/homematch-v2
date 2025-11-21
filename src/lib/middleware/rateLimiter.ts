@@ -1,4 +1,5 @@
-import { RateLimiterMemory } from 'rate-limiter-flexible'
+import type { RateLimiterMemory as RateLimiterMemoryType } from 'rate-limiter-flexible'
+import RateLimiterMemory from 'rate-limiter-flexible/lib/RateLimiterMemory'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
@@ -32,11 +33,12 @@ const RATE_LIMIT_TIERS = {
 } as const
 
 // Create rate limiter instances
-const rateLimiters = new Map<string, RateLimiterMemory>()
+// Deep import to avoid pulling optional adapters (e.g. Drizzle) from the package entrypoint
+const rateLimiters = new Map<string, RateLimiterMemoryType>()
 
 function getRateLimiter(
   tier: keyof typeof RATE_LIMIT_TIERS
-): RateLimiterMemory {
+): RateLimiterMemoryType {
   const key = tier
   if (!rateLimiters.has(key)) {
     const config = RATE_LIMIT_TIERS[tier]

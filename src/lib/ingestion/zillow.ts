@@ -4,7 +4,6 @@ import {
   RawPropertyData,
 } from '@/lib/migration/data-transformer'
 import type { Database, PropertyInsert } from '@/types/database'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
@@ -13,7 +12,18 @@ const DEFAULT_DELAY_MS = 1250
 
 type FetchLike = typeof fetch
 
-type SupabaseLike = Pick<SupabaseClient<Database>, 'from'>
+type UpsertResult = { data: unknown; error: { message?: string } | null }
+
+type SupabaseLike = {
+  from: <T extends keyof Database['public']['Tables']>(
+    table: T
+  ) => {
+    upsert(
+      values: Database['public']['Tables'][T]['Insert'][],
+      opts: { onConflict?: string }
+    ): Promise<UpsertResult>
+  }
+}
 
 export type ZillowSearchItem = {
   zpid?: string | number

@@ -1,10 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={<AuthCallbackLayout message="Verifying your sign-in…" />}
+    >
+      <AuthCallbackContent />
+    </Suspense>
+  )
+}
+
+function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [message, setMessage] = useState('Verifying your sign-in…')
@@ -56,6 +66,10 @@ export default function AuthCallbackPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, router])
 
+  return <AuthCallbackLayout message={message} />
+}
+
+function AuthCallbackLayout({ message }: { message: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-12">
       <div className="w-full max-w-md space-y-4 text-center">

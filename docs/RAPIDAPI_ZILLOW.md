@@ -227,6 +227,10 @@ async function handleZillowError(error: any, operation: string) {
 - **Run**: `pnpm ingest:zillow --locations="San Francisco, CA;Oakland, CA" --pageSize=25 --maxPages=2`
 - **Behavior**: Calls `propertyExtendedSearch` (`status_type=ForSale`), maps to `properties` table (dedupe on `zpid`, `property_hash`), basic backoff on 429, skips rows missing address/city/state/zip/zpid.
 - **Marketing**: `/api/properties/marketing` prefers DB rows populated via ingestion; set `MARKETING_USE_SEED=true` to force local seed JSON in dev.
+- **Defaults**: If no locations are provided, the script and cron route default to Bay Area metros (SF/Oakland/Berkeley/SJ/Palo Alto/Mountain View/Sunnyvale/Santa Clara/Fremont/Hayward/Walnut Creek/Concord/San Mateo/Redwood City/Menlo Park/San Rafael/Santa Rosa/Napa/Vallejo).
+- **Scheduled trigger (template)**: `vercel.cron.template.json` shows how to schedule `/api/admin/ingest/zillow` daily at 09:00 UTC with header `x-cron-secret: ${ZILLOW_CRON_SECRET}`. Copy the cron block into Vercel or the dashboard when ready.
+- **Secure endpoint**: `POST /api/admin/ingest/zillow` (requires `x-cron-secret` matching `ZILLOW_CRON_SECRET`; uses `RAPIDAPI_KEY` and Supabase service role). Fails with 401 if the secret is missing.
+- **ZILLOW_LOCATIONS**: Optional env override to supply your own semicolon/comma-separated list; otherwise defaults above are used.
 
 ```typescript
 // src/lib/services/property-ingestion.ts

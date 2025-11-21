@@ -17,14 +17,14 @@ const testUsers = {
 
 const testProperties = [
   {
-    id: 'test-prop-couples-1',
+    id: '00000000-0000-0000-0000-000000000001',
     address: '123 Romance Street',
     price: 500000,
     bedrooms: 3,
     bathrooms: 2,
   },
   {
-    id: 'test-prop-couples-2',
+    id: '00000000-0000-0000-0000-000000000002',
     address: '456 Love Avenue',
     price: 750000,
     bedrooms: 4,
@@ -55,11 +55,19 @@ test.describe('Couples Features Workflow', () => {
     })
 
     // Create test household and users
-    const { data: household } = await supabaseAdmin
+    const { data: household, error: householdError } = await supabaseAdmin
       .from('households')
       .insert([{ name: 'Test Couples Household' }])
       .select()
       .single()
+
+    if (householdError || !household) {
+      throw new Error(
+        `Failed to create test household: ${
+          householdError?.message || 'no household returned'
+        }`
+      )
+    }
 
     householdId = household.id
 
@@ -149,7 +157,7 @@ test.describe('Couples Features Workflow', () => {
           city: 'Test City',
           state: 'CA',
           zip_code: '12345',
-          property_type: 'single_family',
+          property_type: 'house',
           square_feet: 1500,
           is_active: true,
           listing_status: 'active',
@@ -401,29 +409,41 @@ test.describe('Couples Features Workflow', () => {
   }) => {
     // Create additional mutual likes by having both partners like more properties
     const additionalProperties = [
-      { id: 'test-prop-couples-3', address: '789 Harmony Blvd' },
-      { id: 'test-prop-couples-4', address: '321 Unity Way' },
-      { id: 'test-prop-couples-5', address: '654 Together Terrace' },
+      {
+        id: '00000000-0000-0000-0000-000000000003',
+        address: '789 Harmony Blvd',
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000004',
+        address: '321 Unity Way',
+      },
+      {
+        id: '00000000-0000-0000-0000-000000000005',
+        address: '654 Together Terrace',
+      },
     ]
 
     // Add properties to database
-    await supabaseAdmin.from('properties').insert(
-      additionalProperties.map((prop) => ({
-        id: prop.id,
-        address: prop.address,
-        price: 600000,
-        bedrooms: 3,
-        bathrooms: 2,
-        city: 'Test City',
-        state: 'CA',
-        zip_code: '12345',
-        property_type: 'single_family',
-        square_feet: 1500,
-        is_active: true,
-        listing_status: 'active',
-        images: ['https://via.placeholder.com/400x300'],
-      }))
-    )
+    await supabaseAdmin
+      .from('properties')
+      .upsert(
+        additionalProperties.map((prop) => ({
+          id: prop.id,
+          address: prop.address,
+          price: 600000,
+          bedrooms: 3,
+          bathrooms: 2,
+          city: 'Test City',
+          state: 'CA',
+          zip_code: '12345',
+          property_type: 'house',
+          square_feet: 1500,
+          is_active: true,
+          listing_status: 'active',
+          images: ['https://via.placeholder.com/400x300'],
+        })),
+        { onConflict: 'id' }
+      )
 
     // Have both partners like all additional properties
     for (const prop of additionalProperties) {
