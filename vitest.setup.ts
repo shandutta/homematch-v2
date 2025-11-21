@@ -188,11 +188,8 @@ if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
         )
       }
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'unknown error'
-      markSupabaseHeavyTestsSkipped(
-        `Supabase health check failed: ${message}`
-      )
+      const message = error instanceof Error ? error.message : 'unknown error'
+      markSupabaseHeavyTestsSkipped(`Supabase health check failed: ${message}`)
     }
   }
 
