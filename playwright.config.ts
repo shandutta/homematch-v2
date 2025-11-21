@@ -1,9 +1,32 @@
 import { defineConfig, devices } from '@playwright/test'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
+import * as fs from 'fs'
 
-// Load test environment variables
-dotenv.config({ path: path.resolve(__dirname, '.env.test.local') })
+// Load test environment variables with fallbacks
+const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
+const loadedEnvFiles: string[] = []
+const WORKER_CAP = 2
+const envRequestedWorkers = Number(process.env.PLAYWRIGHT_WORKERS)
+const workers =
+  Number.isFinite(envRequestedWorkers) && envRequestedWorkers > 0
+    ? Math.min(WORKER_CAP, Math.floor(envRequestedWorkers))
+    : WORKER_CAP
+
+for (const file of envCandidates) {
+  const envPath = path.resolve(__dirname, file)
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath })
+    loadedEnvFiles.push(file)
+  }
+}
+
+if (!loadedEnvFiles.length) {
+  // Avoid failing when the test env file is absent; fall back to shell env.
+  console.warn(
+    '⚠️  No env file found for Playwright (.env.test.local/.env.local/.env.prod); relying on existing environment variables.'
+  )
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -13,6 +36,7 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   testIgnore: '**/api/**', // Exclude API tests - they run with Vitest
   globalSetup: './scripts/global-setup.js',
+  globalTeardown: './scripts/global-teardown.js',
 
   // CRITICAL TIMEOUT CONFIGURATION - Addresses Phase 1 failures and performance issues
   timeout: 120000, // 120s default test timeout (increased to handle slow renders)
@@ -27,7 +51,7 @@ export default defineConfig({
   /* Enhanced retry logic for stability */
   retries: process.env.CI ? 3 : 1, // Always retry once locally, 3 times on CI
   /* Optimal parallel workers for performance */
-  workers: 8, // Always use 8 workers for maximum parallel performance
+  workers, // Capped for low-resource hosts; override with PLAYWRIGHT_WORKERS<=2
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

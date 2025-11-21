@@ -3,7 +3,9 @@
  * Runs setup in isolated child processes to avoid module cache contamination
  */
 
-const { spawn } = require('child_process')
+const { spawn, execSync } = require('child_process')
+const fs = require('fs')
+const os = require('os')
 const path = require('path')
 
 const supabaseUrl =
@@ -11,6 +13,49 @@ const supabaseUrl =
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const PLAYWRIGHT_PROCESS_REGEX =
+  /(playwright|headless_shell|chrome-linux|ms-playwright)/i
+const PLAYWRIGHT_BASELINE_FILE = path.join(
+  os.tmpdir(),
+  'homematch-v2-playwright-baseline.json'
+)
+
+function listPlaywrightLikeProcesses() {
+  try {
+    const output = execSync('ps -eo pid,comm,args', { encoding: 'utf8' })
+    return output
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('PID'))
+      .map((line) => {
+        const [pidStr, ...rest] = line.split(/\s+/)
+        const pid = Number.parseInt(pidStr, 10)
+        const cmd = rest.join(' ')
+        return { pid, cmd }
+      })
+      .filter(
+        (proc) =>
+          Number.isFinite(proc.pid) &&
+          PLAYWRIGHT_PROCESS_REGEX.test(proc.cmd || '')
+      )
+      .map((proc) => proc.pid)
+  } catch {
+    return []
+  }
+}
+
+function recordPlaywrightBaseline() {
+  const pids = listPlaywrightLikeProcesses()
+  try {
+    fs.writeFileSync(
+      PLAYWRIGHT_BASELINE_FILE,
+      JSON.stringify({ recordedAt: new Date().toISOString(), pids }, null, 2)
+    )
+  } catch (error) {
+    console.warn('⚠️  Failed to record Playwright baseline:', error?.message)
+  }
+  return pids
+}
 
 if (!supabaseUrl || !supabaseServiceRoleKey || !supabaseAnonKey) {
   console.error(
@@ -74,6 +119,15 @@ async function checkTestUsersExist() {
 
 async function globalSetup() {
   console.log('🔧 Setting up E2E test environment (optimized)...\n')
+
+  const baselinePids = recordPlaywrightBaseline()
+  if (baselinePids.length) {
+    console.log(
+      `🧹 Captured ${baselinePids.length} existing Playwright/Chromium processes for teardown safety`
+    )
+  } else {
+    console.log('🧹 No existing Playwright/Chromium processes detected pre-run')
+  }
 
   try {
     // Step 1: Check if Supabase is already running

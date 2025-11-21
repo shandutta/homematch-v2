@@ -465,15 +465,15 @@ export const ZillowUtils = {
    */
   mapPropertyType(zillowType: string): string {
     const typeMap: Record<string, string> = {
-      SINGLE_FAMILY: 'house',
+      SINGLE_FAMILY: 'single_family',
       CONDO: 'condo',
-      TOWNHOUSE: 'townhouse',
-      APARTMENT: 'apartment',
-      MULTI_FAMILY: 'house',
-      MANUFACTURED: 'house',
-      LOT: 'house',
+      TOWNHOUSE: 'townhome',
+      APARTMENT: 'multi_family',
+      MULTI_FAMILY: 'multi_family',
+      MANUFACTURED: 'manufactured',
+      LOT: 'land',
     }
-    return typeMap[zillowType?.toUpperCase()] || 'house'
+    return typeMap[zillowType?.toUpperCase()] || 'other'
   },
 
   /**

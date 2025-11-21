@@ -1,8 +1,25 @@
 import { beforeAll, afterAll } from 'vitest'
 import { config } from 'dotenv'
+import fs from 'fs'
+import path from 'path'
 
-// Load test environment variables
-config({ path: '.env.test.local' })
+// Load test environment variables with fallback
+const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
+const loadedEnvFiles: string[] = []
+
+for (const file of envCandidates) {
+  const envPath = path.resolve(process.cwd(), file)
+  if (fs.existsSync(envPath)) {
+    config({ path: envPath })
+    loadedEnvFiles.push(file)
+  }
+}
+
+if (!loadedEnvFiles.length) {
+  console.warn(
+    '⚠️  No env file found for Vitest E2E setup (.env.test.local/.env.local/.env.prod); relying on existing environment variables.'
+  )
+}
 
 beforeAll(async () => {
   // Ensure dev server is running

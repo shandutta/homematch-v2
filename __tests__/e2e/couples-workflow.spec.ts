@@ -65,41 +65,104 @@ test.describe('Couples Features Workflow', () => {
 
     // Create test users
     for (const [_key, user] of Object.entries(testUsers)) {
-      const { data: authUser } = await supabaseAdmin.auth.admin.createUser({
-        email: user.email,
-        password: user.password,
-        email_confirm: true,
-      })
+      const { data: authUser, error: creationError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: user.email,
+          password: user.password,
+          email_confirm: true,
+        })
+
+      let userId = authUser?.user?.id
+
+      // Handle existing users created by prior runs
+      if (!userId) {
+        const { data: existingUsers, error: listError } =
+          await supabaseAdmin.auth.admin.listUsers()
+
+        if (listError) {
+          throw new Error(
+            `Failed to create or find user ${user.email}: ${listError.message}`
+          )
+        }
+
+        const existingUser = existingUsers?.users?.find(
+          (u: { email?: string; id: string }) =>
+            u.email?.toLowerCase() === user.email.toLowerCase()
+        )
+
+        if (existingUser) {
+          userId = existingUser.id
+          const { error: updateError } =
+            await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+              password: user.password,
+              email_confirm: true,
+            })
+
+          if (updateError) {
+            throw new Error(
+              `Failed to update existing user ${user.email}: ${updateError.message}`
+            )
+          }
+        } else if (creationError) {
+          throw new Error(
+            `Failed to create user ${user.email}: ${creationError.message}`
+          )
+        } else {
+          throw new Error(
+            `Failed to create or locate user ${user.email} for couples workflow tests`
+          )
+        }
+      }
 
       // Create user profile and assign to household
-      await supabaseAdmin.from('user_profiles').insert([
-        {
-          id: authUser.user.id,
-          email: user.email,
-          display_name: user.name,
-          household_id: householdId,
-        },
-      ])
+      const { error: profileError } = await supabaseAdmin
+        .from('user_profiles')
+        .upsert(
+          [
+            {
+              id: userId,
+              email: user.email,
+              display_name: user.name,
+              household_id: householdId,
+            },
+          ],
+          { onConflict: 'id' }
+        )
+
+      if (profileError) {
+        throw new Error(
+          `Failed to upsert profile for ${user.email}: ${profileError.message}`
+        )
+      }
     }
 
     // Create test properties
-    await supabaseAdmin.from('properties').insert(
-      testProperties.map((prop) => ({
-        id: prop.id,
-        address: prop.address,
-        price: prop.price,
-        bedrooms: prop.bedrooms,
-        bathrooms: prop.bathrooms,
-        city: 'Test City',
-        state: 'CA',
-        zip_code: '12345',
-        property_type: 'single_family',
-        square_feet: 1500,
-        is_active: true,
-        listing_status: 'active',
-        images: ['https://via.placeholder.com/400x300'],
-      }))
-    )
+    const { error: propertiesError } = await supabaseAdmin
+      .from('properties')
+      .upsert(
+        testProperties.map((prop) => ({
+          id: prop.id,
+          address: prop.address,
+          price: prop.price,
+          bedrooms: prop.bedrooms,
+          bathrooms: prop.bathrooms,
+          city: 'Test City',
+          state: 'CA',
+          zip_code: '12345',
+          property_type: 'single_family',
+          square_feet: 1500,
+          is_active: true,
+          listing_status: 'active',
+          images: ['https://via.placeholder.com/400x300'],
+        })),
+        { onConflict: 'id' }
+      )
+
+    if (propertiesError) {
+      throw new Error(
+        `Failed to upsert test properties: ${propertiesError.message}`
+      )
+    }
   })
 
   test.afterAll(async () => {

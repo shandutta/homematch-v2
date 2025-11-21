@@ -222,6 +222,12 @@ async function handleZillowError(error: any, operation: string) {
 
 ### Property Ingestion Pipeline
 
+- **Script**: `pnpm ingest:zillow` (see `scripts/ingest-zillow.ts`)
+- **Env**: `RAPIDAPI_KEY` (+ optional `RAPIDAPI_HOST`), `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- **Run**: `pnpm ingest:zillow --locations="San Francisco, CA;Oakland, CA" --pageSize=25 --maxPages=2`
+- **Behavior**: Calls `propertyExtendedSearch` (`status_type=ForSale`), maps to `properties` table (dedupe on `zpid`, `property_hash`), basic backoff on 429, skips rows missing address/city/state/zip/zpid.
+- **Marketing**: `/api/properties/marketing` prefers DB rows populated via ingestion; set `MARKETING_USE_SEED=true` to force local seed JSON in dev.
+
 ```typescript
 // src/lib/services/property-ingestion.ts
 export class PropertyIngestionService {
