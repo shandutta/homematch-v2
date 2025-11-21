@@ -274,6 +274,8 @@ export type Database = {
       user_profiles: {
         Row: {
           created_at: string | null
+          display_name: string | null
+          email: string
           household_id: string | null
           id: string
           onboarding_completed: boolean | null
@@ -282,6 +284,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_name?: string | null
+          email: string
           household_id?: string | null
           id: string
           onboarding_completed?: boolean | null
@@ -290,6 +294,8 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_name?: string | null
+          email?: string
           household_id?: string | null
           id?: string
           onboarding_completed?: boolean | null

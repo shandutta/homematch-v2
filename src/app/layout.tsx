@@ -7,7 +7,7 @@ import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
-  'http://localhost:3000'
+  'https://homematch.pro'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,9 +23,7 @@ export const metadata: Metadata = {
   title: 'HomeMatch - AI-Powered Home Search',
   description:
     'Find your perfect home with AI-powered matching and personalized recommendations',
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-  ),
+  metadataBase: new URL(siteUrl),
 }
 
 export default function RootLayout({

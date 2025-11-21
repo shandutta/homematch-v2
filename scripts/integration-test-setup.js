@@ -14,26 +14,52 @@ const { createClient } = require('@supabase/supabase-js')
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 dotenv.config({ path: path.join(process.cwd(), '.env.local') })
 const testEnvPath = path.join(process.cwd(), '.env.test.local')
-if (fs.existsSync(testEnvPath)) {
-  dotenv.config({ path: testEnvPath })
-}
+const testEnv = fs.existsSync(testEnvPath)
+  ? dotenv.parse(fs.readFileSync(testEnvPath))
+  : null
 
 let supabaseUrl =
   process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 let supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 let supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-const supabaseAdminUrl =
-  process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl || ''
 let isLocalSupabase =
   supabaseUrl.includes('127.0.0.1') ||
   supabaseUrl.includes('localhost') ||
   supabaseUrl.includes('supabase.local') ||
   supabaseUrl.startsWith('http://local-')
-const isLocalProxy = process.env.SUPABASE_LOCAL_PROXY === 'true'
+let isLocalProxy =
+  process.env.SUPABASE_LOCAL_PROXY === 'true' ||
+  testEnv?.SUPABASE_LOCAL_PROXY === 'true'
 const allowRemoteSupabase =
   process.env.ALLOW_REMOTE_SUPABASE === 'true' ||
   process.env.SUPABASE_ALLOW_REMOTE === 'true'
+
+// Prefer local test env values when local/proxy is available
+if ((isLocalSupabase || isLocalProxy) && testEnv) {
+  supabaseUrl =
+    testEnv.SUPABASE_URL ||
+    testEnv.NEXT_PUBLIC_SUPABASE_URL ||
+    supabaseUrl
+  supabaseAnonKey =
+    testEnv.SUPABASE_ANON_KEY ||
+    testEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    supabaseAnonKey
+  supabaseServiceRoleKey =
+    testEnv.SUPABASE_SERVICE_ROLE_KEY || supabaseServiceRoleKey
+}
+
+// Recompute locals after potential overrides
+isLocalSupabase =
+  supabaseUrl.includes('127.0.0.1') ||
+  supabaseUrl.includes('localhost') ||
+  supabaseUrl.includes('supabase.local') ||
+  supabaseUrl.startsWith('http://local-')
+const supabaseAdminUrl =
+  process.env.SUPABASE_LOCAL_PROXY_TARGET ||
+  testEnv?.SUPABASE_LOCAL_PROXY_TARGET ||
+  supabaseUrl ||
+  ''
 
 if (!isLocalSupabase && !allowRemoteSupabase) {
   console.error(
@@ -56,10 +82,50 @@ if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
   process.exit(1)
 }
 
+const sleepSync = (ms) => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
+const resetDatabase = () => {
+  const cmd = 'pnpm dlx supabase@latest db reset --local --yes'
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      execSync(cmd, {
+        stdio: 'inherit',
+        cwd: path.join(__dirname, '..'),
+      })
+      return true
+    } catch (error) {
+      const msg = error?.message || ''
+      if (attempt < 3) {
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug(
+            `⚠️  Reset attempt ${attempt} failed (${msg || 'unknown error'}). Retrying...`
+          )
+        }
+        sleepSync(3000)
+        continue
+      }
+      throw error
+    }
+  }
+  return false
+}
+
+const applyLocalEnv = () => {
+  process.env.SUPABASE_URL = supabaseAdminUrl
+  process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseAdminUrl
+  process.env.SUPABASE_ANON_KEY = supabaseAnonKey
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+  process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
+}
+
 async function setupIntegrationTests() {
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('🔧 Setting up integration test environment...\n')
   }
+
+  let dbResetPerformed = false
 
   try {
     if (process.env.DEBUG_TEST_SETUP) {
@@ -117,12 +183,13 @@ async function setupIntegrationTests() {
           cwd: path.join(__dirname, '..'),
         })
 
-        // Ensure DB is reset/migrations applied for integration determinism
-        execSync('pnpm dlx supabase@latest db reset --force', {
-          stdio: 'inherit',
-          cwd: path.join(__dirname, '..'),
-        })
+        // Give the services a moment to settle
+        sleepSync(2000)
 
+        // Ensure DB is reset/migrations applied for integration determinism
+        resetDatabase()
+
+        dbResetPerformed = true
         supabaseHealthy = true
         if (process.env.DEBUG_TEST_SETUP) {
           console.debug('✅ Supabase started and database reset successfully')
@@ -139,16 +206,36 @@ async function setupIntegrationTests() {
       process.exit(1)
     }
 
+    // Step 2b: Always reset for deterministic state when using local/proxy
+    if (canStartLocally && !dbResetPerformed) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug('\n2️⃣  Resetting database for a clean test state...')
+      }
+      try {
+        resetDatabase()
+        dbResetPerformed = true
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug('✅ Database reset complete')
+        }
+      } catch (error) {
+        console.error('❌ Failed to reset database:', error.message)
+        process.exit(1)
+      }
+    }
+
     // Step 3: Create test users
     if (process.env.DEBUG_TEST_SETUP) {
       console.debug('\n3️⃣  Setting up test users...')
     }
+
+    applyLocalEnv()
 
     try {
       // Run the setup-test-users-admin script
       execSync('node scripts/setup-test-users-admin.js', {
         stdio: 'inherit',
         cwd: path.join(__dirname, '..'),
+        env: { ...process.env },
       })
       if (process.env.DEBUG_TEST_SETUP) {
         console.debug('✅ Test users created')
@@ -167,8 +254,7 @@ async function setupIntegrationTests() {
     }
 
     // Point env to the reachable admin URL for downstream Vitest steps
-    process.env.SUPABASE_URL = supabaseAdminUrl
-    process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseAdminUrl
+    applyLocalEnv()
 
     const supabase = createClient(supabaseAdminUrl, supabaseAnonKey)
 
@@ -196,13 +282,17 @@ async function setupIntegrationTests() {
 
     // Set environment variables
     process.env.TEST_AUTH_TOKEN = testAuthToken
-    process.env.SUPABASE_URL = supabaseUrl
+    // Keep tests pointed at the local/proxy Supabase we just reset/seeded
+    process.env.SUPABASE_URL = supabaseAdminUrl
+    process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseAdminUrl
     process.env.SUPABASE_ANON_KEY = supabaseAnonKey
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+    process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 
     if (process.env.DEBUG_TEST_SETUP) {
       console.debug('\n✅ Integration test environment ready!')
       console.debug('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-      console.debug('📦 Supabase: http://127.0.0.1:54321')
+      console.debug(`📦 Supabase: ${supabaseAdminUrl}`)
       console.debug('👤 Test user: test1@example.com')
       console.debug('🔐 JWT token saved to .test-auth-token')
       console.debug('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')

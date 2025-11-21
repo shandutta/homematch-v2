@@ -1,8 +1,12 @@
-import { HeroSection } from '@/components/marketing/HeroSection'
-import { Header } from '@/components/marketing/Header'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+import { Header } from '@/components/marketing/Header'
+import { HeroSection } from '@/components/marketing/HeroSection'
+import { createClient } from '@/lib/supabase/server'
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
+  'https://homematch.pro'
 
 export const metadata: Metadata = {
   title: 'HomeMatch - Swipe. Match. Move In.',
@@ -13,38 +17,34 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'HomeMatch - Tinder for Houses',
     description: 'The modern way for couples to find their dream home',
-    images: ['/og-image.jpg'],
+    images: [`${siteUrl}/og-image.jpg`],
     type: 'website',
-    url: 'https://homematch.app',
+    url: siteUrl,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HomeMatch - Swipe Right on Your Dream Home',
     description: 'House hunting for the modern couple',
-    images: ['/twitter-image.jpg'],
+    images: [`${siteUrl}/twitter-image.jpg`],
   },
   alternates: {
-    canonical: 'https://homematch.app',
+    canonical: siteUrl,
   },
 }
 
 export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
-    'https://homematch.app'
-
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    url: baseUrl,
+    url: siteUrl,
     name: 'HomeMatch',
     description:
       'HomeMatch helps couples swipe, match, and find a home together with collaborative search.',
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${baseUrl}/search?q={search_term_string}`,
+      target: `${siteUrl}/search?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   }

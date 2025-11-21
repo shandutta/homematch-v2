@@ -308,6 +308,39 @@ export class AuthHelper {
     }
 
     if (!logoutButton) {
+      // Open user menu if available (desktop)
+      const userMenu = await this.page
+        .locator('[data-testid="user-menu"]')
+        .first()
+      if (await userMenu.isVisible()) {
+        await userMenu.click()
+        await this.page.waitForTimeout(200)
+      } else {
+        // Fallback: open mobile menu to reveal logout
+        const mobileToggle = this.page.locator(
+          'button[aria-label="Open navigation menu"], [data-testid="mobile-menu-toggle"]'
+        )
+        if (await mobileToggle.isVisible()) {
+          await mobileToggle.click()
+          await this.page.waitForTimeout(200)
+        }
+      }
+
+      // Retry locating logout button after opening menu
+      for (const selector of logoutSelectors) {
+        try {
+          logoutButton = await this.page.waitForSelector(selector, {
+            timeout: 3000,
+            state: 'visible',
+          })
+          if (logoutButton) break
+        } catch (_e) {
+          continue
+        }
+      }
+    }
+
+    if (!logoutButton) {
       throw new Error('Could not find logout button')
     }
 

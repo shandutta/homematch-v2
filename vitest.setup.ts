@@ -1,7 +1,13 @@
 /* eslint-env node */
-import { config } from 'dotenv'
+import { config, parse } from 'dotenv'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
+import {
+  AbortController as UndiciAbortController,
+  fetch as undiciFetch,
+} from 'undici'
+import * as fs from 'fs'
+import * as path from 'path'
 
 // Provide a minimal localStorage/sessionStorage implementation when Node's
 // experimental storage API is unavailable or missing core methods.
@@ -130,7 +136,7 @@ if (!process.env.NODE_ENV) {
 }
 
 // Set test environment variables for local Supabase (pull from env / .env.prod)
-const supabaseUrl =
+let supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.SUPABASE_URL ||
   'http://127.0.0.1:54321'
@@ -138,17 +144,118 @@ const supabaseUrl =
 process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || supabaseUrl
 
-const supabaseAnonKey =
+let supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+let supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const forceSupabaseIntegration =
   process.env.RUN_SUPABASE_INTEGRATION === 'true' ||
   process.env.FORCE_SUPABASE_TESTS === 'true'
 
+// Ensure we use the same AbortController brand as undici's fetch implementation
+const AbortCtor =
+  typeof UndiciAbortController === 'function'
+    ? UndiciAbortController
+    : (globalThis.AbortController as typeof AbortController)
+
+function loadFallbackSupabaseEnv(): {
+  url: string
+  anonKey: string
+  serviceKey: string
+} | null {
+  const testEnvPath = path.join(process.cwd(), '.env.test.local')
+  if (!fs.existsSync(testEnvPath)) {
+    return null
+  }
+
+  try {
+    const parsed = parse(fs.readFileSync(testEnvPath))
+    const url = parsed.NEXT_PUBLIC_SUPABASE_URL || parsed.SUPABASE_URL
+    const anonKey =
+      parsed.NEXT_PUBLIC_SUPABASE_ANON_KEY || parsed.SUPABASE_ANON_KEY
+    const serviceKey = parsed.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!url || !anonKey || !serviceKey) {
+      return null
+    }
+
+    return { url, anonKey, serviceKey }
+  } catch {
+    return null
+  }
+}
+
+async function performSupabaseHealthCheck(
+  url: string | undefined,
+  anonKey: string | undefined,
+  serviceKey: string | undefined
+): Promise<{ ok: boolean; reason?: string }> {
+  if (!url || !anonKey || !serviceKey) {
+    return {
+      ok: false,
+      reason:
+        'Missing Supabase credentials (URL/anon/service role) for health check',
+    }
+  }
+
+  try {
+    const controller =
+      typeof AbortCtor === 'function' ? new AbortCtor() : new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const response = await undiciFetch(`${url}/rest/v1/`, {
+      headers: { apikey: anonKey },
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+
+    const apiReachable = response.ok || response.status === 401
+    if (!apiReachable) {
+      return { ok: false, reason: `Supabase API not reachable at ${url}` }
+    }
+
+    const { data, error } = await createSupabaseClient(url, serviceKey)
+      .from('user_profiles')
+      .select('id')
+      .limit(1)
+
+    if (error || !data?.length) {
+      return {
+        ok: false,
+        reason:
+          'Supabase schema or seed data missing. Run pnpm test:integration to provision the local stack.',
+      }
+    }
+
+    return { ok: true }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'unknown error'
+    return {
+      ok: false,
+      reason: `Supabase health check failed: ${message}`,
+    }
+  }
+}
+
+if (typeof AbortCtor === 'function') {
+  // Align global AbortController for any downstream fetch usage
+  globalThis.AbortController = AbortCtor as typeof AbortController
+}
+
 if (!supabaseAnonKey || !supabaseServiceRoleKey) {
-  markSupabaseHeavyTestsSkipped(
-    'Missing Supabase credentials (NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY)'
-  )
+  const fallback = loadFallbackSupabaseEnv()
+  if (fallback) {
+    supabaseUrl = fallback.url
+    supabaseAnonKey = fallback.anonKey
+    supabaseServiceRoleKey = fallback.serviceKey
+    process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+    process.env.SUPABASE_URL = supabaseUrl
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+    process.env.SUPABASE_ANON_KEY = supabaseAnonKey
+    process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
+  } else {
+    markSupabaseHeavyTestsSkipped(
+      'Missing Supabase credentials (NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY)'
+    )
+  }
 } else {
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
   process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
@@ -156,41 +263,46 @@ if (!supabaseAnonKey || !supabaseServiceRoleKey) {
 
 if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
   const runSupabaseHealthCheck = async () => {
-    try {
-      const controller = new AbortController()
-      // Allow extra time for proxied/local Supabase to respond before skipping heavy tests
-      const timeoutId = setTimeout(() => controller.abort(), 5000)
-      const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-        headers: { apikey: supabaseAnonKey },
-        signal: controller.signal,
-      })
-      clearTimeout(timeoutId)
+    const primary = await performSupabaseHealthCheck(
+      supabaseUrl,
+      supabaseAnonKey,
+      supabaseServiceRoleKey
+    )
 
-      const apiReachable = response.ok || response.status === 401
-      if (!apiReachable) {
-        markSupabaseHeavyTestsSkipped(
-          `Supabase API not reachable at ${supabaseUrl}`
-        )
+    if (primary.ok) {
+      return
+    }
+
+    const fallbackEnv = loadFallbackSupabaseEnv()
+    if (fallbackEnv) {
+      const fallback = await performSupabaseHealthCheck(
+        fallbackEnv.url,
+        fallbackEnv.anonKey,
+        fallbackEnv.serviceKey
+      )
+
+      if (fallback.ok) {
+        supabaseUrl = fallbackEnv.url
+        supabaseAnonKey = fallbackEnv.anonKey
+        supabaseServiceRoleKey = fallbackEnv.serviceKey
+        process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+        process.env.SUPABASE_URL = supabaseUrl
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
+        process.env.SUPABASE_ANON_KEY = supabaseAnonKey
+        process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
         return
       }
 
-      const { data, error } = await createSupabaseClient(
-        supabaseUrl,
-        supabaseServiceRoleKey
-      )
-        .from('user_profiles')
-        .select('id')
-        .limit(1)
-
-      if (error || !data?.length) {
-        markSupabaseHeavyTestsSkipped(
-          'Supabase schema or seed data missing. Run pnpm test:integration to provision the local stack.'
-        )
+      if (fallback.reason) {
+        return markSupabaseHeavyTestsSkipped(fallback.reason)
       }
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'unknown error'
-      markSupabaseHeavyTestsSkipped(`Supabase health check failed: ${message}`)
     }
+
+    if (primary.reason) {
+      return markSupabaseHeavyTestsSkipped(primary.reason)
+    }
+
+    markSupabaseHeavyTestsSkipped('Supabase health check failed')
   }
 
   await runSupabaseHealthCheck()
@@ -200,9 +312,6 @@ if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
 process.env.BASE_URL = 'http://localhost:3000'
 
 // Try to load auth token from temp file if it exists (for integration tests)
-import * as fs from 'fs'
-import * as path from 'path'
-
 try {
   const tokenFile = path.join(process.cwd(), '.test-auth-token')
   if (fs.existsSync(tokenFile)) {

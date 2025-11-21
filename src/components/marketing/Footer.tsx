@@ -114,10 +114,9 @@ export function Footer() {
               className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
-              {/* TODO: Implement these pages */}
               <li>
                 <Link
-                  href="#"
+                  href="/about"
                   className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   About Us
@@ -125,7 +124,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/contact"
                   className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Contact
@@ -133,7 +132,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/blog"
                   className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Blog
@@ -141,7 +140,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/careers"
                   className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
                 >
                   Careers
@@ -162,27 +161,26 @@ export function Footer() {
               className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
-              {/* TODO: Implement these legal pages */}
               <li>
                 <Link
-                  href="#"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  href="/privacy"
+                  className="transition-token-colors hover:text-white"
                 >
                   Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  href="/terms"
+                  className="transition-token-colors hover:text-white"
                 >
                   Terms of Service
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  href="/cookies"
+                  className="transition-token-colors hover:text-white"
                 >
                   Cookie Policy
                 </Link>

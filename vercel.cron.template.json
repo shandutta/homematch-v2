@@ -1,0 +1,12 @@
+{
+  "//": "Copy the cron block below into vercel.json (or the Vercel dashboard) when ready. Keep this file as a template only.",
+  "cron": [
+    {
+      "path": "/api/admin/ingest/zillow",
+      "schedule": "0 9 * * *",
+      "headers": {
+        "x-cron-secret": "${ZILLOW_CRON_SECRET}"
+      }
+    }
+  ]
+}
