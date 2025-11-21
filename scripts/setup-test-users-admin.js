@@ -90,13 +90,14 @@ for (let workerIndex = 0; workerIndex < 8; workerIndex++) {
 
 async function ensureProfilesExist() {
   // Avoid relying solely on triggers; upsert profiles for our test users explicitly
-  const { data: userList, error: listError } = await supabase.auth.admin.listUsers()
+  const { data: userList, error: listError } =
+    await supabase.auth.admin.listUsers()
   if (listError || !userList?.users) {
-    console.error(
-      '❌ Could not list users to upsert profiles:',
-      listError?.message || 'unknown error'
+    throw new Error(
+      `Could not list users to upsert profiles: ${
+        listError?.message || 'unknown error'
+      }`
     )
-    return
   }
 
   const usersByEmail = new Map(userList.users.map((user) => [user.email, user]))
@@ -114,8 +115,7 @@ async function ensureProfilesExist() {
     }))
 
   if (profilesToUpsert.length === 0) {
-    console.error('❌ No test users found when ensuring profiles exist.')
-    return
+    throw new Error('No test users found when ensuring profiles exist.')
   }
 
   const { error: upsertError } = await supabase
@@ -123,15 +123,15 @@ async function ensureProfilesExist() {
     .upsert(profilesToUpsert, { onConflict: 'id' })
 
   if (upsertError) {
-    console.error(
-      '❌ Failed to upsert user_profiles for test users:',
-      upsertError.message
+    throw new Error(
+      `Failed to upsert user_profiles for test users: ${upsertError.message}`
     )
-    return
   }
 
   if (process.env.DEBUG_TEST_SETUP) {
-    console.debug(`✅ Ensured user_profiles for ${profilesToUpsert.length} test users`)
+    console.debug(
+      `✅ Ensured user_profiles for ${profilesToUpsert.length} test users`
+    )
   }
 }
 
@@ -265,13 +265,18 @@ async function setupTestUsers() {
 
         // Ensure user profile exists (triggers can be flaky in local setups)
         await new Promise((resolve) => setTimeout(resolve, 500))
-        const { data: profile } = await supabase
+        const { data: profile, error: profileLookupError } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('id', data.user.id)
           .single()
+        if (profileLookupError && process.env.DEBUG_TEST_SETUP) {
+          console.debug(
+            `⚠️  Profile lookup failed for ${user.email}: ${profileLookupError.message}`
+          )
+        }
         if (!profile) {
-          await supabase
+          const { error: upsertError } = await supabase
             .from('user_profiles')
             .upsert({
               id: data.user.id,
@@ -280,8 +285,11 @@ async function setupTestUsers() {
               updated_at: new Date().toISOString(),
               onboarding_completed: false,
             })
-            .select()
-            .single()
+          if (upsertError) {
+            throw new Error(
+              `Failed to upsert profile for ${user.email}: ${upsertError.message}`
+            )
+          }
         }
 
         success = true
@@ -318,6 +326,31 @@ async function setupTestUsers() {
   }
 
   await ensureProfilesExist()
+
+  // Final verification to avoid silently missing profiles
+  const { data: profiles, error: verifyError } = await supabase
+    .from('user_profiles')
+    .select('email, id')
+    .in(
+      'email',
+      testUsers.map((u) => u.email)
+    )
+
+  if (verifyError) {
+    console.error('❌ Could not verify user_profiles:', verifyError.message)
+    process.exit(1)
+  }
+
+  if ((profiles || []).length !== testUsers.length) {
+    const missingEmails = testUsers
+      .map((u) => u.email)
+      .filter((email) => !(profiles || []).some((p) => p.email === email))
+    console.error(
+      '❌ Missing user_profiles for test users:',
+      missingEmails.join(', ')
+    )
+    process.exit(1)
+  }
 
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('\n✨ Test user setup complete!')
