@@ -60,23 +60,22 @@ export abstract class BaseService implements IBaseService {
       process.env.USE_SERVICE_ROLE_FOR_TESTS === 'true'
     ) {
       const url =
-        process.env.SUPABASE_LOCAL_PROXY_TARGET ||
+      process.env.SUPABASE_LOCAL_PROXY_TARGET ||
         process.env.SUPABASE_URL ||
         process.env.NEXT_PUBLIC_SUPABASE_URL
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-      if (!url || !serviceKey) {
-        throw new Error(
-          'Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for test service client'
-        )
+      // If credentials are available, use the standalone client (useful for integration/E2E)
+      if (url && serviceKey) {
+        return createStandaloneClient<Database>(url, serviceKey, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        })
       }
 
-      return createStandaloneClient<Database>(url, serviceKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      })
+      // For unit tests (no service role credentials), fall back to injected/mocked client factory
     }
 
     return this.clientFactory.createClient()
