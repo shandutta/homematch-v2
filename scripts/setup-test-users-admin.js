@@ -12,8 +12,9 @@ const fs = require('fs')
 const envLocalPath = path.join(__dirname, '..', '.env.local')
 const envTestPath = path.join(__dirname, '..', '.env.test.local')
 dotenv.config({ path: envLocalPath })
+// Let .env.test.local override .env.local for local/proxy test runs
 if (fs.existsSync(envTestPath)) {
-  dotenv.config({ path: envTestPath })
+  dotenv.config({ path: envTestPath, override: true })
 }
 
 let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
@@ -85,6 +86,53 @@ for (let workerIndex = 0; workerIndex < 8; workerIndex++) {
     email: `test-worker-${workerIndex}@example.com`,
     password: 'testpassword123',
   })
+}
+
+async function ensureProfilesExist() {
+  // Avoid relying solely on triggers; upsert profiles for our test users explicitly
+  const { data: userList, error: listError } = await supabase.auth.admin.listUsers()
+  if (listError || !userList?.users) {
+    console.error(
+      '❌ Could not list users to upsert profiles:',
+      listError?.message || 'unknown error'
+    )
+    return
+  }
+
+  const usersByEmail = new Map(userList.users.map((user) => [user.email, user]))
+
+  const profilesToUpsert = testUsers
+    .map((user) => usersByEmail.get(user.email))
+    .filter(Boolean)
+    .map((user) => ({
+      id: user.id,
+      email: user.email,
+      display_name: user.user_metadata?.display_name || user.email,
+      onboarding_completed: false,
+      preferences: user.user_metadata?.preferences || {},
+      updated_at: new Date().toISOString(),
+    }))
+
+  if (profilesToUpsert.length === 0) {
+    console.error('❌ No test users found when ensuring profiles exist.')
+    return
+  }
+
+  const { error: upsertError } = await supabase
+    .from('user_profiles')
+    .upsert(profilesToUpsert, { onConflict: 'id' })
+
+  if (upsertError) {
+    console.error(
+      '❌ Failed to upsert user_profiles for test users:',
+      upsertError.message
+    )
+    return
+  }
+
+  if (process.env.DEBUG_TEST_SETUP) {
+    console.debug(`✅ Ensured user_profiles for ${profilesToUpsert.length} test users`)
+  }
 }
 
 async function deleteExistingUser(email, maxRetries = 3) {
@@ -268,6 +316,8 @@ async function setupTestUsers() {
       console.error(`❌ Could not create test user ${user.email}`)
     }
   }
+
+  await ensureProfilesExist()
 
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('\n✨ Test user setup complete!')
