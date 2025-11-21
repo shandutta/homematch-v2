@@ -2,10 +2,7 @@
 import { config, parse } from 'dotenv'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
-import {
-  AbortController as UndiciAbortController,
-  fetch as undiciFetch,
-} from 'undici'
+import { fetch as undiciFetch } from 'undici'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -152,10 +149,7 @@ const forceSupabaseIntegration =
   process.env.FORCE_SUPABASE_TESTS === 'true'
 
 // Ensure we use the same AbortController brand as undici's fetch implementation
-const AbortCtor =
-  typeof UndiciAbortController === 'function'
-    ? UndiciAbortController
-    : (globalThis.AbortController as typeof AbortController)
+const AbortCtor = globalThis.AbortController
 
 function loadFallbackSupabaseEnv(): {
   url: string

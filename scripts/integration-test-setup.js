@@ -38,9 +38,7 @@ const allowRemoteSupabase =
 // Prefer local test env values when local/proxy is available
 if ((isLocalSupabase || isLocalProxy) && testEnv) {
   supabaseUrl =
-    testEnv.SUPABASE_URL ||
-    testEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    supabaseUrl
+    testEnv.SUPABASE_URL || testEnv.NEXT_PUBLIC_SUPABASE_URL || supabaseUrl
   supabaseAnonKey =
     testEnv.SUPABASE_ANON_KEY ||
     testEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ||

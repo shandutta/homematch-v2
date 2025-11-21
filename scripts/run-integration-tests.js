@@ -12,15 +12,11 @@ const setupIntegrationTests = require('./integration-test-setup')
 async function run() {
   await setupIntegrationTests()
 
-  const result = spawnSync(
-    'pnpm',
-    ['exec', 'vitest', 'run'],
-    {
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..'),
-      env: { ...process.env },
-    }
-  )
+  const result = spawnSync('pnpm', ['exec', 'vitest', 'run'], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..'),
+    env: { ...process.env },
+  })
 
   if (result.error) {
     throw result.error
