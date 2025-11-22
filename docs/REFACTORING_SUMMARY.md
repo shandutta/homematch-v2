@@ -15,7 +15,7 @@ I have successfully analyzed the HomeMatch v2 backend dependencies and created a
   - `src/lib/data/loader.ts` - Uses `searchProperties()`, `getNeighborhoodsByCity()`
 - **Method Usage Patterns**:
   - `searchProperties()` - **HIGH** usage (complex filter logic, 40+ conditionals)
-  - `getPropertyStats()` - **MEDIUM** usage (analytics dashboard)
+  - `getPropertyStats()` - **MEDIUM** usage (basic stats)
   - `getNeighborhoodsByCity()` - **MEDIUM** usage (geographic queries)
   - Basic CRUD operations - **LOW** usage (validation page only)
 
@@ -43,7 +43,7 @@ I have successfully analyzed the HomeMatch v2 backend dependencies and created a
 IPropertyCrudService // Basic CRUD operations (7 methods)
 IPropertySearchService // Search and filtering (2 methods)
 INeighborhoodService // Neighborhood operations (6 methods)
-IPropertyAnalyticsService // Statistics and analytics (2 methods)
+IPropertyStatsService // Basic property stats only
 IGeographicService // Spatial queries (2 methods)
 ```
 

@@ -11,6 +11,7 @@ import type {
   IPropertySearchService,
   ISupabaseClientFactory,
   PropertySearchResult,
+  PropertyStats,
 } from '@/lib/services/interfaces'
 import { BaseService } from '@/lib/services/base'
 import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
@@ -215,42 +216,70 @@ export class PropertySearchService
   /**
    * Get property statistics and analytics
    */
-  async getPropertyStats(): Promise<{
-    total: number
-    active: number
-    avgPrice: number
-  }> {
+  async getPropertyStats(): Promise<PropertyStats> {
     return this.executeQuery('getPropertyStats', async (supabase) => {
-      // Get counts and basic stats
-      const [totalResult, activeResult, priceResult] = await Promise.all([
-        supabase
-          .from('properties')
-          .select('id', { count: 'exact', head: true }),
-        supabase
-          .from('properties')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_active', true),
-        supabase.from('properties').select('price').eq('is_active', true),
-      ])
+      const { data, error } = await supabase
+        .from('properties')
+        .select('price, bedrooms, bathrooms, square_feet, property_type')
+        .eq('is_active', true)
 
-      if (totalResult.error || activeResult.error || priceResult.error) {
-        const error =
-          totalResult.error || activeResult.error || priceResult.error
-        this.handleSupabaseError(error!, 'getPropertyStats', {})
+      if (error) {
+        this.handleSupabaseError(error, 'getPropertyStats', {})
       }
 
-      const total = totalResult.count || 0
-      const active = activeResult.count || 0
-      const prices = priceResult.data?.map((p) => p.price) || []
+      const properties = data || []
+      const totalProperties = properties.length
+
+      if (totalProperties === 0) {
+        return {
+          total_properties: 0,
+          avg_price: 0,
+          median_price: 0,
+          avg_bedrooms: 0,
+          avg_bathrooms: 0,
+          avg_square_feet: 0,
+          property_type_distribution: {},
+        }
+      }
+
+      const prices = properties.map((p) => p.price).sort((a, b) => a - b)
       const avgPrice =
-        prices.length > 0
-          ? prices.reduce((sum, price) => sum + price, 0) / prices.length
+        prices.reduce((sum, price) => sum + price, 0) / totalProperties
+      const medianPrice = prices[Math.floor(totalProperties / 2)]
+
+      const avgBedrooms =
+        properties.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
+      const avgBathrooms =
+        properties.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
+
+      const propertiesWithSquareFeet = properties.filter(
+        (p) => p.square_feet !== null
+      )
+      const avgSquareFeet =
+        propertiesWithSquareFeet.length > 0
+          ? propertiesWithSquareFeet.reduce(
+              (sum, p) => sum + (p.square_feet || 0),
+              0
+            ) / propertiesWithSquareFeet.length
           : 0
 
+      const typeDistribution = properties.reduce(
+        (acc, p) => {
+          const type = p.property_type || 'unknown'
+          acc[type] = (acc[type] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>
+      )
+
       return {
-        total,
-        active,
-        avgPrice: Math.round(avgPrice),
+        total_properties: totalProperties,
+        avg_price: Math.round(avgPrice),
+        median_price: medianPrice,
+        avg_bedrooms: Math.round(avgBedrooms * 10) / 10,
+        avg_bathrooms: Math.round(avgBathrooms * 10) / 10,
+        avg_square_feet: Math.round(avgSquareFeet),
+        property_type_distribution: typeDistribution,
       }
     })
   }

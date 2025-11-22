@@ -48,6 +48,7 @@ export interface IPropertySearchService {
     neighborhoodId: string,
     limit?: number
   ): Promise<Property[]>
+  getPropertyStats(): Promise<PropertyStats>
 }
 
 /**
@@ -69,14 +70,10 @@ export interface INeighborhoodService {
 }
 
 /**
- * Analytics and statistics operations
- * Handles: property stats, neighborhood analytics, market data
+ * Basic statistics operations (lightweight replacement for analytics)
  */
-export interface IPropertyAnalyticsService {
-  getPropertyStats(): Promise<PropertyStats | null>
-  getNeighborhoodStats(
-    neighborhoodId: string
-  ): Promise<NeighborhoodStats | null>
+export interface IPropertyStatsService {
+  getPropertyStats(): Promise<PropertyStats>
 }
 
 /**
@@ -157,15 +154,6 @@ export interface PropertyStats {
   property_type_distribution: Record<string, number>
 }
 
-export interface NeighborhoodStats {
-  neighborhood: Neighborhood
-  total_properties: number
-  avg_price: number
-  price_range: { min: number; max: number }
-  avg_bedrooms: number
-  avg_bathrooms: number
-}
-
 // ============================================================================
 // CLIENT FACTORY INTERFACES
 // ============================================================================
@@ -243,13 +231,13 @@ export interface IPropertyService
   extends IPropertyCrudService,
     IPropertySearchService,
     INeighborhoodService,
-    IPropertyAnalyticsService,
+    IPropertyStatsService,
     IGeographicService {
   // Additional facade-specific methods if needed
   readonly crudService: IPropertyCrudService
   readonly searchService: IPropertySearchService
   readonly neighborhoodService: INeighborhoodService
-  readonly analyticsService: IPropertyAnalyticsService
+  readonly statsService: IPropertyStatsService
   readonly geographicService: IGeographicService
 }
 
@@ -270,9 +258,6 @@ export interface IServiceFactory {
   createNeighborhoodService(
     clientFactory?: ISupabaseClientFactory
   ): INeighborhoodService
-  createPropertyAnalyticsService(
-    clientFactory?: ISupabaseClientFactory
-  ): IPropertyAnalyticsService
   createGeographicService(
     clientFactory?: ISupabaseClientFactory
   ): IGeographicService

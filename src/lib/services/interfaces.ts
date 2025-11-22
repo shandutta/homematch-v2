@@ -89,6 +89,16 @@ export interface PropertySearchResult {
   limit: number
 }
 
+export interface PropertyStats {
+  total_properties: number
+  avg_price: number
+  median_price: number
+  avg_bedrooms: number
+  avg_bathrooms: number
+  avg_square_feet: number
+  property_type_distribution: Record<string, number>
+}
+
 /**
  * Property search and analytics interface
  */
@@ -108,11 +118,7 @@ export interface IPropertySearchService extends IBaseService {
     city: string,
     state: string
   ): Promise<Property[]>
-  getPropertyStats(): Promise<{
-    total: number
-    active: number
-    avgPrice: number
-  }>
+  getPropertyStats(): Promise<PropertyStats>
 }
 
 /**
