@@ -93,9 +93,10 @@ export async function POST(req: Request) {
     maxItems
   )
   const delayInput = Number(url.searchParams.get('delayMs'))
-  const delayMs = Number.isFinite(delayInput) && delayInput >= 0
-    ? delayInput
-    : DEFAULT_DELAY_MS
+  const delayMs =
+    Number.isFinite(delayInput) && delayInput >= 0
+      ? delayInput
+      : DEFAULT_DELAY_MS
   const maxRuntimeInput = Number(url.searchParams.get('maxRuntimeMs'))
   const maxRuntimeMs = Math.min(
     Number.isFinite(maxRuntimeInput) && maxRuntimeInput > 0
