@@ -25,10 +25,7 @@ describe('zillow ingestion helpers', () => {
   test('mapSearchItemToRaw maps core fields and falls back to imgSrc', () => {
     const raw = mapSearchItemToRaw({
       zpid: 123,
-      streetAddress: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipcode: 94105,
+      address: '123 Main St, San Francisco, CA 94105',
       price: 1000000,
       bedrooms: 2,
       bathrooms: 2,
@@ -43,6 +40,26 @@ describe('zillow ingestion helpers', () => {
     expect(raw?.property_type).toBe('single_family')
     expect(raw?.listing_status).toBe('active')
     expect(raw?.images).toEqual(['http://example.com/a.jpg'])
+    expect(raw?.city).toBe('San Francisco')
+    expect(raw?.state).toBe('CA')
+    expect(raw?.zip_code).toBe('94105')
+  })
+
+  test('mapSearchItemToRaw applies default zip when missing', () => {
+    const raw = mapSearchItemToRaw(
+      {
+        zpid: 456,
+        address: '50 Oak Grove Ave, Menlo Park, CA',
+        price: 500000,
+        bedrooms: 1,
+        bathrooms: 1,
+        propertyType: 'SINGLE_FAMILY',
+      },
+      'Menlo Park, CA'
+    )
+
+    expect(raw).not.toBeNull()
+    expect(raw?.zip_code).toBe('94025') // default fallback for Menlo Park, CA
   })
 })
 

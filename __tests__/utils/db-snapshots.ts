@@ -58,7 +58,6 @@ export class DatabaseSnapshotManager {
   async createSnapshot(
     name: string,
     tables: string[] = [
-      'user_profiles',
       'properties',
       'households',
       'user_property_interactions',
@@ -135,7 +134,7 @@ export class DatabaseSnapshotManager {
       'property_images',
       'properties',
       'households',
-      'user_profiles',
+      // Note: we intentionally avoid clearing user_profiles to keep base test users
     ]
 
     // Clear existing data with proper deletion strategy
@@ -162,7 +161,7 @@ export class DatabaseSnapshotManager {
 
     // Restore data in proper dependency order (auth.users managed separately)
     const restoreOrder = [
-      'user_profiles', // References auth.users (managed by auth triggers)
+      // user_profiles are preserved to avoid wiping test users
       'households', // Independent table
       'properties', // Independent table
       'property_images', // References properties

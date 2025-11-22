@@ -75,8 +75,7 @@ function parseArgs(argv: string[]): Args {
     locations,
     pageSize:
       Number.isFinite(pageSize) && pageSize > 0 ? pageSize : defaults.pageSize,
-    maxPages:
-      Number.isFinite(maxPages) && maxPages > 0 ? maxPages : defaults.maxPages,
+    maxPages: Number.isFinite(maxPages) && maxPages > 0 ? maxPages : 50, // 50 ~ "until hasNextPage ends" safety cap
   }
 }
 

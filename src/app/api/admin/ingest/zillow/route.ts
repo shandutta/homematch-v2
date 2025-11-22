@@ -38,8 +38,10 @@ function parseLocations(): string[] {
 export async function POST(req: Request) {
   const secret = process.env.ZILLOW_CRON_SECRET
   const headerSecret = req.headers.get('x-cron-secret')
+  const url = new URL(req.url)
+  const querySecret = url.searchParams.get('cron_secret')
 
-  if (!secret || headerSecret !== secret) {
+  if (!secret || (headerSecret !== secret && querySecret !== secret)) {
     return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
   }
 

@@ -43,4 +43,20 @@ describe('POST /api/admin/ingest/zillow', () => {
     const body = await res.json()
     expect(body.ok).toBe(true)
   })
+
+  test('accepts cron_secret query param', async () => {
+    mockCreateClient.mockReturnValue({ from: jest.fn() })
+    mockIngest.mockResolvedValue({ totals: { attempted: 1 } })
+
+    const res = await POST(
+      new Request(
+        'http://localhost/api/admin/ingest/zillow?cron_secret=secret',
+        {
+          method: 'POST',
+        }
+      )
+    )
+
+    expect(res.status).toBe(200)
+  })
 })

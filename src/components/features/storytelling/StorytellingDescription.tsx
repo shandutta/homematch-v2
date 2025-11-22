@@ -198,8 +198,11 @@ const FUTURE_VISION_TAGS = {
 }
 
 // Property type specific templates
-const DESCRIPTION_TEMPLATES = {
-  single_family: {
+const DESCRIPTION_TEMPLATES: Record<
+  'house' | 'condo' | 'townhome' | 'apartment' | 'other',
+  Record<'starter' | 'family' | 'luxury', string[]>
+> = {
+  house: {
     starter: [
       'Perfect starter home where your love story begins',
       'Charming space to build your first memories together',
@@ -259,7 +262,7 @@ const DESCRIPTION_TEMPLATES = {
       'Prestigious address with thoughtful family features',
     ],
   },
-  multi_family: {
+  apartment: {
     starter: [
       'Urban apartment living at its most vibrant finest',
       'Convenient location perfect for adventurous city lovers',
@@ -277,46 +280,6 @@ const DESCRIPTION_TEMPLATES = {
       'Five-star amenities and personalized attention',
       'Luxury apartment living completely redefined',
       'Urban sophistication reaching its absolute peak',
-    ],
-  },
-  manufactured: {
-    starter: [
-      'Smart affordable living with modern conveniences',
-      'Quality craftsmanship designed for comfortable living',
-      'Well-maintained community perfect for first-time buyers',
-      'Practical choice for couples starting their journey',
-    ],
-    family: [
-      'Family-friendly community with affordable charm',
-      'Spacious layouts designed for growing families',
-      'Community atmosphere with affordable family living',
-      'Smart choice for families seeking value and comfort',
-    ],
-    luxury: [
-      'Premium manufactured home living exceeding expectations',
-      'Luxury amenities in a thoughtfully designed community',
-      'High-end finishes with low-maintenance lifestyle',
-      'Upscale living with intelligent value proposition',
-    ],
-  },
-  land: {
-    starter: [
-      'Blank canvas perfect for building your dream together',
-      'Raw potential waiting for your shared vision',
-      'Build your love story from the ground up',
-      'Your future home starts with this perfect foundation',
-    ],
-    family: [
-      'Spacious lot ready for your growing family dreams',
-      'Room to create the perfect family compound',
-      'Build exactly what your family needs and wants',
-      "Investment in your family's future starts here",
-    ],
-    luxury: [
-      'Premium lot in exclusive area for custom estate',
-      'Executive building site for your architectural vision',
-      'Prestigious location worthy of your luxury dreams',
-      'Create the ultimate custom retreat on this exceptional site',
     ],
   },
   other: {
@@ -351,6 +314,23 @@ const MUTUAL_LIKE_MESSAGES = [
   'Love at first sight, for both of you',
 ]
 
+type NormalizedPropertyType =
+  | 'house'
+  | 'condo'
+  | 'townhome'
+  | 'apartment'
+  | 'other'
+
+const normalizePropertyType = (
+  type?: Property['property_type'] | null
+): NormalizedPropertyType => {
+  if (!type) return 'house'
+  if (type === 'single_family') return 'house'
+  if (type === 'townhouse' || type === 'townhome') return 'townhome'
+  if (type === 'condo' || type === 'apartment' || type === 'house') return type
+  return 'other'
+}
+
 // Deterministic random function using property ID as seed
 function seededRandom(seed: string): number {
   let hash = 0
@@ -378,6 +358,7 @@ function generateLifestyleTags(
   property: Property,
   neighborhood?: Neighborhood
 ): string[] {
+  const propertyType = normalizePropertyType(property.property_type)
   const tags: string[] = []
 
   // Work from home logic - enhanced
@@ -401,8 +382,8 @@ function generateLifestyleTags(
 
   // Pet-friendly logic
   if (
-    property.property_type === 'single_family' &&
-    property.lot_size_sqft &&
+    propertyType === 'house' &&
+    property.lot_size_sqft !== null &&
     property.lot_size_sqft > 2000
   ) {
     tags.push('Pet Paradise')
@@ -410,7 +391,7 @@ function generateLifestyleTags(
 
   // Urban oasis logic - enhanced
   if (
-    property.property_type === 'condo' &&
+    propertyType === 'condo' &&
     property.amenities?.some(
       (a) =>
         a.toLowerCase().includes('pool') ||
@@ -644,7 +625,7 @@ function getDescription(
     return MUTUAL_LIKE_MESSAGES[mutualIndex]
   }
 
-  const propertyType = property.property_type || 'single_family'
+  const normalizedType = normalizePropertyType(property.property_type)
 
   // Determine price category
   let priceCategory: 'starter' | 'family' | 'luxury'
@@ -658,13 +639,13 @@ function getDescription(
 
   // Get templates for this property type and price category
   const templates =
-    DESCRIPTION_TEMPLATES[propertyType]?.[priceCategory] ||
-    DESCRIPTION_TEMPLATES.single_family.starter
+    DESCRIPTION_TEMPLATES[normalizedType]?.[priceCategory] ||
+    DESCRIPTION_TEMPLATES.house.starter
 
   // Choose a template description based on property ID
   const index = getSeededIndex(
     property.id,
-    `description-${propertyType}-${priceCategory}`,
+    `description-${normalizedType}-${priceCategory}`,
     templates.length
   )
   return templates[index]

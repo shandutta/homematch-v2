@@ -1,5 +1,20 @@
 import { z } from 'zod'
 
+// Property type literals (includes legacy values for compatibility; DB constraint uses house/condo/townhouse/apartment)
+export const PROPERTY_TYPE_VALUES = [
+  'house',
+  'condo',
+  'townhouse',
+  'apartment',
+  'single_family',
+  'townhome',
+  'multi_family',
+  'manufactured',
+  'land',
+  'other',
+] as const
+const propertyTypeEnum = z.enum(PROPERTY_TYPE_VALUES)
+
 // Property Schemas
 export const propertySchema = z.object({
   id: z.string().uuid('Invalid uuid'),
@@ -26,18 +41,8 @@ export const propertySchema = z.object({
     .min(0)
     .max(20, { message: 'Number must be less than or equal to 20' }),
   square_feet: z.number().min(0).nullable(),
-  // Tight enum per domain decision - matches production database schema
-  property_type: z
-    .enum([
-      'single_family',
-      'condo',
-      'townhome',
-      'multi_family',
-      'manufactured',
-      'land',
-      'other',
-    ])
-    .nullable(),
+  // Must match DB check constraint in Supabase
+  property_type: propertyTypeEnum.nullable(),
   images: z.array(z.string().url()).nullable(),
   description: z.string().nullable(),
   // Coordinates can be GeoJSON Point, lat/lng object, or null when unknown
@@ -155,19 +160,7 @@ export const propertyFiltersSchema = z.object({
   bathrooms_max: z.number().min(0).max(10).optional(),
   square_feet_min: z.number().min(0).optional(),
   square_feet_max: z.number().min(0).optional(),
-  property_types: z
-    .array(
-      z.enum([
-        'single_family',
-        'condo',
-        'townhome',
-        'multi_family',
-        'manufactured',
-        'land',
-        'other',
-      ])
-    )
-    .optional(),
+  property_types: z.array(propertyTypeEnum).optional(),
   neighborhoods: z.array(z.string().uuid()).optional(),
   amenities: z.array(z.string()).optional(),
   year_built_min: z.number().min(1800).optional(),
@@ -229,6 +222,7 @@ export {
 export type Property = z.infer<typeof propertySchema>
 export type PropertyInsert = z.infer<typeof propertyInsertSchema>
 export type PropertyUpdate = z.infer<typeof propertyUpdateSchema>
+export type PropertyType = (typeof PROPERTY_TYPE_VALUES)[number]
 
 export type Neighborhood = z.infer<typeof neighborhoodSchema>
 export type NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>

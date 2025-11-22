@@ -11,12 +11,17 @@ const { execSync } = require('child_process')
 const PLAYWRIGHT_PROCESS_REGEX =
   /(playwright|headless_shell|chrome-linux|ms-playwright)/i
 const MAX_AGE_SECONDS = Number.parseInt(
-  process.env.PLAYWRIGHT_ORPHAN_MAX_AGE || '7200',
+  process.env.PLAYWRIGHT_ORPHAN_MAX_AGE || '3600',
   10
 )
 const MAX_CPU_PERCENT = Number.parseFloat(
   process.env.PLAYWRIGHT_ORPHAN_MAX_CPU || '1.0'
 )
+
+const timestamp = () => new Date().toISOString()
+const log = (msg) => console.log(`[${timestamp()}] ${msg}`)
+const warn = (msg) => console.warn(`[${timestamp()}] ${msg}`)
+const errorLog = (msg) => console.error(`[${timestamp()}] ${msg}`)
 
 function listPlaywrightProcesses() {
   try {
@@ -48,9 +53,7 @@ function listPlaywrightProcesses() {
           PLAYWRIGHT_PROCESS_REGEX.test(proc.cmd || '')
       )
   } catch (error) {
-    console.error(
-      `Failed to list Playwright/Chromium processes: ${error?.message}`
-    )
+    errorLog(`Failed to list Playwright/Chromium processes: ${error?.message}`)
     return []
   }
 }
@@ -68,13 +71,11 @@ async function terminateProcesses(targets) {
   targets.forEach((proc) => {
     try {
       process.kill(proc.pid, 'SIGTERM')
-      console.log(
+      log(
         `Sent SIGTERM to pid=${proc.pid} (age=${proc.etimes}s, cpu=${proc.pcpu}%)`
       )
     } catch (error) {
-      console.warn(
-        `⚠️  Failed to send SIGTERM to PID ${proc.pid}: ${error?.message}`
-      )
+      warn(`⚠️  Failed to send SIGTERM to PID ${proc.pid}: ${error?.message}`)
     }
   })
 
@@ -84,11 +85,9 @@ async function terminateProcesses(targets) {
     if (isAlive(proc.pid)) {
       try {
         process.kill(proc.pid, 'SIGKILL')
-        console.log(`Sent SIGKILL to stubborn pid=${proc.pid}`)
+        log(`Sent SIGKILL to stubborn pid=${proc.pid}`)
       } catch (error) {
-        console.warn(
-          `⚠️  Failed to send SIGKILL to PID ${proc.pid}: ${error?.message}`
-        )
+        warn(`⚠️  Failed to send SIGKILL to PID ${proc.pid}: ${error?.message}`)
       }
     }
   })
@@ -97,13 +96,13 @@ async function terminateProcesses(targets) {
 async function main() {
   const targets = listPlaywrightProcesses()
   if (!targets.length) {
-    console.log(
+    log(
       `No orphaned Playwright/Chromium processes older than ${MAX_AGE_SECONDS}s found.`
     )
     return
   }
 
-  console.log(
+  log(
     `Found ${targets.length} Playwright/Chromium process(es) older than ${MAX_AGE_SECONDS}s (idle CPU < ${MAX_CPU_PERCENT}%): ${targets
       .map((proc) => proc.pid)
       .join(', ')}`
@@ -112,6 +111,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(`Cron cleanup failed: ${error?.message}`)
+  errorLog(`Cron cleanup failed: ${error?.message}`)
   process.exitCode = 1
 })

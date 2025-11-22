@@ -80,7 +80,7 @@ export function CtaBand() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10"
+              className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:!text-white"
               asChild
             >
               <Link href="/login">Already a Member?</Link>

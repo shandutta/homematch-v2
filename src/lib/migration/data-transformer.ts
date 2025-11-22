@@ -2,6 +2,7 @@ import { NeighborhoodInsert, PropertyInsert } from '@/types/database'
 import {
   neighborhoodInsertSchema,
   propertyInsertSchema,
+  type PropertyType,
 } from '@/lib/schemas/property'
 import { getStateForMetroArea } from './metro-state-mapping'
 import crypto from 'node:crypto'
@@ -188,7 +189,11 @@ export class DataTransformer {
           const lat = parseFloat(raw.latitude.toString())
           const lng = parseFloat(raw.longitude.toString())
           if (!isNaN(lat) && !isNaN(lng)) {
-            coordinates = `(${lng},${lat})` // PostgreSQL point format: (lng,lat)
+            // Use GeoJSON Point to avoid PostgREST parse errors on POINT syntax
+            coordinates = {
+              type: 'Point',
+              coordinates: [lng, lat],
+            }
           }
         } catch (_error) {
           warnings.push('Invalid coordinate format')
@@ -212,29 +217,35 @@ export class DataTransformer {
       }
 
       // Validate property type (aligns with schema enum)
-      const validPropertyTypes = [
-        'single_family',
-        'condo',
-        'townhome',
-        'multi_family',
-        'manufactured',
-        'land',
-        'other',
-      ]
-      let propertyType = raw.property_type?.toLowerCase()
-      if (propertyType === 'house') {
-        propertyType = 'single_family'
-      } else if (propertyType === 'townhouse') {
-        propertyType = 'townhome'
-      } else if (propertyType === 'apartment') {
-        propertyType = 'multi_family'
+      const rawPropertyType = raw.property_type?.toString().toLowerCase()
+      const propertyTypeMap: Record<string, PropertyType> = {
+        single_family: 'single_family',
+        house: 'single_family',
+        condo: 'condo',
+        condominium: 'condo',
+        townhome: 'townhome',
+        townhouse: 'townhome',
+        multi_family: 'multi_family',
+        multifamily: 'multi_family',
+        apartment: 'multi_family',
+        multifamily_dwelling: 'multi_family',
+        manufactured: 'manufactured',
+        mobile: 'manufactured',
+        land: 'land',
+        lot: 'land',
+        other: 'other',
       }
+      let propertyType = rawPropertyType
+        ? propertyTypeMap[rawPropertyType] || undefined
+        : undefined
 
-      if (propertyType && !validPropertyTypes.includes(propertyType)) {
+      if (rawPropertyType && !propertyType) {
         warnings.push(
           `Unknown property type: ${raw.property_type}, defaulting to other`
         )
         propertyType = 'other'
+      } else if (!propertyType) {
+        propertyType = 'single_family'
       }
 
       // Create property insert object

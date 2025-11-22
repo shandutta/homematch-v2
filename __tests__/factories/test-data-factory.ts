@@ -1,8 +1,9 @@
 import { faker } from '@faker-js/faker'
 import type { Database } from '@/types/database'
-import type {
-  Property as SchemaProperty,
-  Neighborhood as SchemaNeighborhood,
+import {
+  PROPERTY_TYPE_VALUES,
+  type Property as SchemaProperty,
+  type Neighborhood as SchemaNeighborhood,
 } from '@/lib/schemas/property'
 
 // Database types for backend/API tests
@@ -35,13 +36,7 @@ export const createMockProperty = (
   square_feet: faker.number.int({ min: 500, max: 10000 }),
   lot_size_sqft: faker.number.int({ min: 1000, max: 50000 }),
   year_built: faker.number.int({ min: 1900, max: 2024 }),
-  property_type: faker.helpers.arrayElement([
-    'single_family',
-    'condo',
-    'townhome',
-    'multi_family',
-    'land',
-  ]),
+  property_type: faker.helpers.arrayElement(PROPERTY_TYPE_VALUES),
   listing_status: faker.helpers.arrayElement(['active', 'pending', 'sold']),
   is_active: true,
   created_at: faker.date.past().toISOString(),
@@ -76,13 +71,7 @@ export const createMockDatabaseProperty = (
   square_feet: faker.number.int({ min: 500, max: 10000 }),
   lot_size_sqft: faker.number.int({ min: 1000, max: 50000 }),
   year_built: faker.number.int({ min: 1900, max: 2024 }),
-  property_type: faker.helpers.arrayElement([
-    'single_family',
-    'condo',
-    'townhome',
-    'multi_family',
-    'land',
-  ]),
+  property_type: faker.helpers.arrayElement(PROPERTY_TYPE_VALUES),
   listing_status: faker.helpers.arrayElement(['active', 'pending', 'sold']),
   is_active: true,
   created_at: faker.date.past().toISOString(),

@@ -186,10 +186,12 @@ export class PerformanceBenchmark {
 
     // Save report to file
     await this.ensureReportDir()
-    const reportPath = path.join(
-      this.reportDir,
-      `${testName}_${Date.now()}.json`
-    )
+    // Ensure test-specific subdir exists to avoid ENOENT
+    const safeName = testName.replace(/[^a-zA-Z0-9_-]/g, '_')
+    const testDir = path.join(this.reportDir, safeName)
+    await fs.mkdir(testDir, { recursive: true })
+
+    const reportPath = path.join(testDir, `${safeName}_${Date.now()}.json`)
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2))
 
     return report
