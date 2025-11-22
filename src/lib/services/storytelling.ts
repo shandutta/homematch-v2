@@ -6,6 +6,23 @@ interface LifestyleContext {
   isMutualLike?: boolean
 }
 
+type NormalizedPropertyType =
+  | 'house'
+  | 'condo'
+  | 'townhome'
+  | 'apartment'
+  | 'other'
+
+const normalizePropertyType = (
+  type?: Property['property_type'] | null
+): NormalizedPropertyType => {
+  if (!type) return 'house'
+  if (type === 'single_family') return 'house'
+  if (type === 'townhouse' || type === 'townhome') return 'townhome'
+  if (type === 'condo' || type === 'apartment' || type === 'house') return type
+  return 'other'
+}
+
 /**
  * Generates dynamic lifestyle descriptions based on property features
  */
@@ -78,6 +95,7 @@ export class StorytellingService {
     description: string
     priority: number
   }> {
+    const propertyType = normalizePropertyType(property.property_type)
     const tags: Array<{ tag: string; description: string; priority: number }> =
       []
 
@@ -141,8 +159,8 @@ export class StorytellingService {
 
     // Outdoor living
     if (
-      property.property_type === 'single_family' &&
-      property.lot_size_sqft &&
+      propertyType === 'house' &&
+      property.lot_size_sqft !== null &&
       property.lot_size_sqft > 1000
     ) {
       tags.push({
@@ -154,7 +172,7 @@ export class StorytellingService {
 
     // Urban amenities
     if (
-      property.property_type === 'condo' &&
+      propertyType === 'condo' &&
       property.amenities?.some(
         (a) =>
           a.toLowerCase().includes('gym') ||
@@ -216,6 +234,7 @@ export class StorytellingService {
   } {
     const amenities = property.amenities || []
     const amenityText = amenities.join(' ').toLowerCase()
+    const propertyType = normalizePropertyType(property.property_type)
 
     return {
       hasBalcony:
@@ -227,7 +246,7 @@ export class StorytellingService {
         amenityText.includes('kitchen') ||
         (property.square_feet !== null && property.square_feet > 1200),
       hasOutdoorSpace:
-        property.property_type === 'single_family' &&
+        propertyType === 'house' &&
         property.lot_size_sqft !== null &&
         property.lot_size_sqft > 500,
       isSpacious:

@@ -246,6 +246,34 @@ async function setupIntegrationTests() {
       process.exit(1)
     }
 
+    // Step 3b: Verify profiles exist so downstream tests don't skip
+    try {
+      const adminClient = createClient(supabaseAdminUrl, supabaseServiceRoleKey)
+      const { count, error: profileError } = await adminClient
+        .from('user_profiles')
+        .select('id', { count: 'exact', head: true })
+
+      if (profileError || !count || count < 2) {
+        console.error(
+          `❌ User profiles not present after setup (count=${count || 0}).`
+        )
+        console.error(
+          '   This prevents integration tests from running. Rerun with DEBUG_TEST_SETUP=1 node scripts/setup-test-users-admin.js.'
+        )
+        process.exit(1)
+      }
+
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug(`✅ Verified user_profiles count: ${count}`)
+      }
+    } catch (error) {
+      console.error(
+        '❌ Failed to verify user_profiles after setup:',
+        error?.message || error
+      )
+      process.exit(1)
+    }
+
     // Step 4: Generate proper auth token by signing in as test user
     if (process.env.DEBUG_TEST_SETUP) {
       console.debug('\n4️⃣  Generating authentication token...')

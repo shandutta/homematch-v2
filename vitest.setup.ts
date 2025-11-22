@@ -1,10 +1,55 @@
 /* eslint-env node */
 import { config, parse } from 'dotenv'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import {
+  createClient as createSupabaseClient,
+} from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
 import { fetch as undiciFetch } from 'undici'
+import { execSync } from 'child_process'
+import { vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
+
+type SupabaseModule = typeof import('@supabase/supabase-js')
+type SupabaseCreateClient = SupabaseModule['createClient']
+type CachedSupabaseClient = ReturnType<SupabaseCreateClient>
+type SupabaseCreateClientOptions = Parameters<SupabaseCreateClient>[2]
+
+// Deduplicate Supabase clients in Vitest to avoid multiple GoTrue instances sharing storage
+const supabaseClientCache = new Map<string, CachedSupabaseClient>()
+vi.mock('@supabase/supabase-js', async () => {
+  const actual = await vi.importActual<SupabaseModule>('@supabase/supabase-js')
+  return {
+    ...actual,
+    createClient: (
+      url: string,
+      key: string,
+      options?: SupabaseCreateClientOptions
+    ) => {
+      const cacheKey = `${url}:${key}`
+      if (!supabaseClientCache.has(cacheKey)) {
+        const mergedOptions: SupabaseCreateClientOptions = {
+          ...(options ?? {}),
+          auth: {
+            ...options?.auth,
+            autoRefreshToken: false,
+            persistSession: false,
+            storage: undefined,
+            storageKey:
+              options?.auth?.storageKey ||
+              `vitest-${process.env.VITEST_POOL_ID || '1'}-${key.slice(0, 6)}`,
+          },
+        }
+        const client = actual.createClient(url, key, mergedOptions)
+        supabaseClientCache.set(
+          cacheKey,
+          client
+        )
+      }
+      return supabaseClientCache.get(cacheKey)!
+    },
+  }
+})
 
 // Provide a minimal localStorage/sessionStorage implementation when Node's
 // experimental storage API is unavailable or missing core methods.
@@ -106,7 +151,8 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
 
 // Load test environment variables from .env.local (primary) and allow CI override with .env.test.local
 config({ path: '.env.local' })
-config({ path: '.env.test.local' })
+// Ensure .env.test.local can override .env.local values for local testing
+config({ path: '.env.test.local', override: true })
 
 const markSupabaseHeavyTestsSkipped = (reason: string) => {
   if (
@@ -134,6 +180,7 @@ if (!process.env.NODE_ENV) {
 
 // Set test environment variables for local Supabase (pull from env / .env.prod)
 let supabaseUrl =
+  process.env.SUPABASE_LOCAL_PROXY_TARGET ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.SUPABASE_URL ||
   'http://127.0.0.1:54321'
@@ -142,8 +189,10 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || supabaseUrl
 
 let supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
-let supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  ''
+let supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const forceSupabaseIntegration =
   process.env.RUN_SUPABASE_INTEGRATION === 'true' ||
   process.env.FORCE_SUPABASE_TESTS === 'true'
@@ -300,6 +349,60 @@ if (!forceSupabaseIntegration && supabaseAnonKey && supabaseServiceRoleKey) {
   }
 
   await runSupabaseHealthCheck()
+}
+
+// Ensure test profiles exist before any suites run; reseed if empty
+if (!supabaseServiceRoleKey) {
+  if (process.env.DEBUG_TEST_SETUP) {
+    console.warn(
+      '⚠️  DEBUG_TEST_SETUP: skipping user_profiles verification because SUPABASE_SERVICE_ROLE_KEY is missing.'
+    )
+  }
+} else {
+  try {
+    const { count, error } = await createSupabaseClient(
+      supabaseUrl,
+      supabaseServiceRoleKey
+    )
+      .from('user_profiles')
+      .select('id', { count: 'exact', head: true })
+
+    if (error || !count || count < 2) {
+      console.warn(
+        `⚠️  user_profiles missing or empty (count=${count || 0}). Reseeding test users...`
+      )
+      execSync('node scripts/setup-test-users-admin.js', {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+        env: { ...process.env },
+      })
+
+      const { count: afterCount, error: afterError } =
+        await createSupabaseClient(supabaseUrl, supabaseServiceRoleKey)
+          .from('user_profiles')
+          .select('id', { count: 'exact', head: true })
+
+      if (afterError || !afterCount || afterCount < 2) {
+        console.warn(
+          `⚠️  user_profiles still empty after reseed (count=${afterCount || 0}).`
+        )
+      } else if (process.env.DEBUG_TEST_SETUP) {
+        console.debug(
+          `✅ DEBUG_TEST_SETUP: user_profiles reseeded, count=${afterCount}`
+        )
+      }
+    } else if (process.env.DEBUG_TEST_SETUP) {
+      console.debug(
+        `✅ DEBUG_TEST_SETUP: user_profiles count before tests = ${count}`
+      )
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn(
+      '⚠️  DEBUG_TEST_SETUP: could not verify/seed user_profiles:',
+      message
+    )
+  }
 }
 
 // Set default BASE_URL for integration tests - force override since it's being set incorrectly

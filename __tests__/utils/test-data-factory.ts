@@ -38,6 +38,21 @@ export class TestDataFactory {
         .single()
 
       if (error) {
+        if (process.env.DEBUG_TEST_SETUP || process.env.DEBUG_TEST_FACTORY) {
+          const { count, error: countError } = await this.client
+            .from('user_profiles')
+            .select('id', { count: 'exact', head: true })
+          console.debug(
+            '⚠️  DEBUG_TEST: profile lookup failed.',
+            {
+              email,
+            },
+            'profile count:',
+            count ?? 'unknown',
+            'count error:',
+            countError?.message
+          )
+        }
         throw new Error(
           `Test user profile for ${email} not found. Ensure test setup has run and user profiles were created by database triggers. Error: ${error.message}`
         )

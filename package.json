@@ -67,7 +67,15 @@
     "ci:validate:rls": "node scripts/test-rls-policies.js",
     "ci:health": "node scripts/health-check.js",
     "auto:commit": "node scripts/auto-commit.js",
-    "ingest:zillow": "pnpm exec tsx scripts/ingest-zillow.ts"
+    "ingest:zillow": "pnpm exec tsx scripts/ingest-zillow.ts",
+    "cleanup:properties:ba": "pnpm exec tsx scripts/cleanup-properties-bayarea.ts",
+    "refresh:zillow-status": "pnpm exec tsx scripts/refresh-zillow-status.ts",
+    "refresh:zillow-status:search": "pnpm exec tsx scripts/refresh-zillow-status-search.ts",
+    "refresh:zillow-status:detail": "pnpm exec tsx scripts/refresh-zillow-status-detail.ts",
+    "normalize:cities": "pnpm exec tsx scripts/normalize-cities.ts",
+    "report:properties": "pnpm exec tsx scripts/report-properties.ts",
+    "cron:zombie-watch": "node scripts/zombie-watch.js",
+    "cron:nightly-shutdown": "node scripts/nightly-shutdown.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",

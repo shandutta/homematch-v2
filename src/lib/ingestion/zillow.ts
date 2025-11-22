@@ -5,11 +5,14 @@ import {
   RawPropertyData,
 } from '@/lib/migration/data-transformer'
 import type { Database, PropertyInsert } from '@/types/database'
+import { defaultZipForCityState } from './default-zips'
 
 const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
 const DEFAULT_MAX_PAGES = 2
 const DEFAULT_DELAY_MS = 1250
+const MAX_INT_SAFE = 2_000_000_000
+const MAX_BATHROOMS = 9.9
 
 type FetchLike = typeof fetch
 
@@ -32,6 +35,7 @@ export type ZillowSearchItem = {
   propertyType?: string
   statusType?: string
   brokerStatus?: string
+  listingStatus?: string
   latitude?: number
   longitude?: number
   imgSrc?: string
@@ -176,19 +180,75 @@ export async function fetchZillowSearchPage(options: {
   return { items, hasNextPage }
 }
 
+function parseAddressParts(
+  item: ZillowSearchItem,
+  fallbackLocation?: string
+): { address: string; city: string; state: string; zip: string } | null {
+  const address = item.address || item.streetAddress || ''
+  if (!address) return null
+
+  let street = address
+  let city = item.city || ''
+  let state = item.state || ''
+  let zip = item.zipcode ? String(item.zipcode) : ''
+
+  // Attempt to parse "123 Main St, San Francisco, CA 94105"
+  const parts = address.split(',').map((s) => s.trim())
+  if (parts.length >= 3) {
+    const [addrPart, cityPart, stateZipPart] = [
+      parts.slice(0, parts.length - 2).join(', '),
+      parts[parts.length - 2],
+      parts[parts.length - 1],
+    ]
+    if (!city) city = cityPart
+    if (!state || !zip) {
+      const m = stateZipPart.match(/([A-Z]{2})\s+(\d{5})/)
+      if (m) {
+        state = state || m[1]
+        zip = zip || m[2]
+      } else if (/^[A-Z]{2}$/.test(stateZipPart)) {
+        state = state || stateZipPart
+      }
+    }
+    if (addrPart) street = addrPart
+  }
+
+  // Fallback: use provided location ("City, ST") if parsing failed
+  if (fallbackLocation && (!city || !state)) {
+    const locParts = fallbackLocation.split(',').map((s) => s.trim())
+    if (locParts.length >= 2) {
+      city = city || locParts.slice(0, locParts.length - 1).join(', ')
+      state = state || locParts[locParts.length - 1]
+    }
+  }
+
+  if (!city || !state) return null
+
+  // Use default zip if missing but we have city/state
+  if (!zip) {
+    const fallbackZip = defaultZipForCityState(city, state)
+    if (fallbackZip) {
+      zip = fallbackZip
+    }
+  }
+
+  return {
+    address: street,
+    city,
+    state,
+    zip,
+  }
+}
+
 export function mapSearchItemToRaw(
-  item: ZillowSearchItem
+  item: ZillowSearchItem,
+  locationForFallback?: string
 ): RawPropertyData | null {
   if (!item?.zpid) return null
 
-  const address = item.address || item.streetAddress || ''
-  const city = item.city || ''
-  const state = item.state || ''
-  const zip = item.zipcode ? String(item.zipcode) : ''
-
-  if (!address || !city || !state || !zip) {
-    return null
-  }
+  const parsed = parseAddressParts(item, locationForFallback)
+  if (!parsed) return null
+  const { address, city, state, zip } = parsed
 
   const propertyType = ZillowUtils.mapPropertyType(
     (item.propertyType || item.homeType || '') as string
@@ -207,14 +267,25 @@ export function mapSearchItemToRaw(
     city,
     state,
     zip_code: zip,
-    price: item.price ?? 0,
+    price:
+      typeof item.price === 'number'
+        ? Math.min(Math.round(item.price), MAX_INT_SAFE)
+        : 0,
     bedrooms: item.bedrooms ?? 0,
-    bathrooms: item.bathrooms ?? 0,
+    bathrooms:
+      typeof item.bathrooms === 'number'
+        ? Math.min(Math.round(item.bathrooms * 10) / 10, MAX_BATHROOMS)
+        : 0,
     square_feet: item.livingArea,
-    lot_size: item.lotAreaValue,
+    lot_size:
+      typeof item.lotAreaValue === 'number'
+        ? Math.min(Math.round(item.lotAreaValue), MAX_INT_SAFE)
+        : undefined,
     year_built: item.yearBuilt,
     property_type: propertyType,
-    listing_status: normalizeStatus(item.statusType || item.brokerStatus),
+    listing_status: normalizeStatus(
+      item.statusType || item.brokerStatus || item.listingStatus
+    ),
     images,
     latitude: item.latitude,
     longitude: item.longitude,
@@ -279,7 +350,7 @@ export async function ingestZillowLocations(
       }
 
       const rawItems = pageResult.items
-        .map(mapSearchItemToRaw)
+        .map((it) => mapSearchItemToRaw(it, location))
         .filter(Boolean) as RawPropertyData[]
 
       locationSummary.attempted += pageResult.items.length
@@ -318,9 +389,11 @@ export async function ingestZillowLocations(
         })
 
         if (error) {
-          locationSummary.errors.push(
-            error.message || 'Failed to upsert properties'
-          )
+          const errMsg =
+            (error as { message?: string }).message ||
+            JSON.stringify(error) ||
+            'Failed to upsert properties'
+          locationSummary.errors.push(errMsg)
         } else {
           locationSummary.insertedOrUpdated += inserts.length
           summary.totals.insertedOrUpdated += inserts.length
