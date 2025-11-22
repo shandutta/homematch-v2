@@ -28,12 +28,12 @@ HomeMatch is a modern property browsing application built with Next.js 15, Supab
 >
 > - **Frontend**: Next.js 15 + React 19 + TypeScript 5 + Tailwind CSS 4
 > - **Backend**: Supabase (PostgreSQL + Auth + RLS)
-> - **Testing**: Jest + Vitest + Playwright (100% unit/integration pass rate)
+> - **Testing**: Jest + Vitest + Playwright (suites configured; run locally)
 > - **State**: TanStack Query + Zustand + React Hook Form + Zod
 
 ### Core Framework
 
-- **Next.js 15.4.4** 🟢 - App Router with React 19 and Server Components
+- **Next.js 15.4.5** 🟢 - App Router with React 19 and Server Components
 - **TypeScript 5.x** 🟢 - Full type safety throughout the application with strict mode
 - **Tailwind CSS 4** 🟢 - Utility-first styling with custom design tokens
 - **shadcn/ui** 🟢 - Modern, accessible component library built on Radix (15 components)
@@ -60,18 +60,12 @@ HomeMatch is a modern property browsing application built with Next.js 15, Supab
 
 ### Testing Strategy
 
-> **✅ Status**: Complete test infrastructure with 100% unit/integration test pass rates.
->
-> **📊 Test Results**:
->
-> - **Unit Tests**: 82/82 passing (100% success rate)
-> - **Integration Tests**: 36/36 passing (100% success rate)
-> - **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
+> **Status**: Test infrastructure is configured; run suites locally to verify current results (see `docs/TESTING.md`).
 
 **Core Testing Stack:**
 
 - **Jest 30.0.5** 🟢 - Unit tests for components, functions, and utilities
-- **Vitest 3.2.4** 🟢 - Fast integration tests for API routes and services
+- **Vitest 3.2.4** 🟢 - Integration tests for API routes and services
 - **Playwright 1.54.1** 🟢 - End-to-end testing with cross-browser support
 
 <details>
@@ -126,7 +120,7 @@ HomeMatch is a modern property browsing application built with Next.js 15, Supab
 
 ## Database Architecture
 
-> **Migration Complete**: All 6 core tables successfully deployed to production with data migration completed. Total: 2,214 records migrated (1,123 neighborhoods + 1,091 properties) with 99.1% success rate.
+> **Status**: Core tables defined with PostGIS support. Migrations live in `supabase/migrations`, seeds in `supabase/seed.sql`, and migrated source files in `migrated_data/` (e.g., ~1.1k properties CSV and ~3.4k neighborhood rows for reference).
 
 ### Schema Design
 

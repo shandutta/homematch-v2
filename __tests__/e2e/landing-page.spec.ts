@@ -29,10 +29,8 @@ test.describe('Landing Page Navigation', () => {
 
   test('should navigate to signup from hero CTA', async ({ page }) => {
     await page.goto('/')
-    // Capture hero section screenshot for visual sanity
     const hero = page.locator('[data-testid="hero"]')
     await expect(hero).toBeVisible()
-    await hero.screenshot({ path: 'hero.png' })
 
     // Click the main signup CTA scoped to the hero to avoid ambiguity
     const heroSection = page.locator('[data-testid="hero"]')

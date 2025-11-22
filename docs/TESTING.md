@@ -1,8 +1,8 @@
 # Testing Guide for HomeMatch
 
-> **Current Status**: Test infrastructure is complete; unit and integration suites are green, E2E is partially passing while auth/setup finishes. Migration foundation landed with 99.1% success (2,214 records migrated).
+> **Current Status**: Test infrastructure is configured (Jest, Vitest, Playwright). Run the suites locally to verify current results; E2E depends on Supabase and seeded data.
 
-This comprehensive guide covers all testing approaches for HomeMatch, including unit tests, integration tests, end-to-end testing, fixtures, debugging tools, and complete development workflows.
+This guide covers all testing approaches for HomeMatch, including unit tests, integration tests, end-to-end testing, fixtures, debugging tools, and development workflows.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ This comprehensive guide covers all testing approaches for HomeMatch, including 
 
 ## Testing Overview
 
-HomeMatch implements a comprehensive 4-tier testing strategy:
+HomeMatch implements a 4-tier testing strategy:
 
 1. **Unit Tests**: Jest + React Testing Library for service layer and components
 2. **Integration Tests**: Vitest + Supabase MCP for database and API testing
@@ -31,12 +31,7 @@ HomeMatch implements a comprehensive 4-tier testing strategy:
 
 ### Test Results Summary
 
-- **Unit Tests**: 849/849 passing (100% success rate) ✅
-- **Integration Tests**: 36/36 passing (100% success rate)
-- **E2E Tests**: 18/30 passing (60%), 12 skipped pending auth setup
-- **PostGIS Migration**: Safe conversion preserving 2,176 spatial data points
-
-> **Recent Achievement**: Completed comprehensive unit testing remediation resolving 42+ test failures including React Hook Form validation issues, cache collisions, and architectural inconsistencies.
+Run suites via pnpm commands below. Current results depend on your environment and Supabase data; check CI for latest status.
 
 ## Quick Start
 
@@ -98,15 +93,16 @@ Lighthouse CI + Web Vitals + PostHog analytics
 HomeMatch is configured to run on **port 3000** by default. E2E tests include automatic port management and cleanup.
 
 ```json
-// package.json
+// package.json (testing-related scripts)
 "scripts": {
-  "dev": "next dev --turbopack",  // Defaults to port 3000
-  "test": "npm run test:unit && npm run test:integration",
-  "test:unit": "jest",
-  "test:integration": "vitest run",
-  "test:e2e": "playwright test",
-  "test:coverage": "jest --coverage",
-  "test:watch": "jest --watch"
+  "test": "pnpm test:unit && pnpm test:integration && pnpm test:e2e",
+  "test:unit": "cross-env NODE_ENV=test pnpm exec jest __tests__/unit/",
+  "test:unit:watch": "cross-env NODE_ENV=test pnpm exec jest __tests__/unit/ --watch",
+  "test:integration": "node scripts/run-integration-tests.js",
+  "test:e2e": "pnpm run test:e2e:ui-tests && pnpm run test:e2e:api-tests",
+  "test:e2e:ui-tests": "cross-env NEXT_PUBLIC_TEST_MODE=true node scripts/playwright-wrapper.js test",
+  "test:e2e:api-tests": "pnpm exec vitest run --config vitest.e2e.config.ts",
+  "test:coverage": "pnpm exec jest --coverage"
 }
 ```
 
@@ -693,28 +689,13 @@ mcp__puppeteer__puppeteer_evaluate({
 
 ### Current Coverage Status
 
-**Unit Test Coverage**: ~50-60% (up from initial 6.7%)
+Coverage varies by branch. Generate fresh reports with `pnpm test:coverage` to understand current gaps. Focus areas already covered include authentication, dashboard swipe logic, marketing, settings, and shared utilities; factories/utilities exist to accelerate new tests.
 
-- **Test Files**: 39 unit test files (increased from 18)
-- **Components Tested**: Authentication, Dashboard, Property, Marketing, Settings, Utilities
-- **Infrastructure**: Complete mock factories and test utilities implemented
+### Recent Coverage Work
 
-### Recent Coverage Improvements
-
-The team successfully implemented a comprehensive unit test coverage plan that included:
-
-1. **Infrastructure Enhancement**
-   - Enhanced mock factory architecture (`test-data-factory.ts`)
-   - Type-safe test utilities (`test-helpers.ts`)
-   - Comprehensive Jest configuration
-
-2. **Component Coverage**
-   - Authentication components (LoginForm, SignupForm)
-   - Property components (SwipeContainer, EnhancedPropertyCard)
-   - Dashboard components (DashboardErrorBoundary)
-   - Marketing components (HeroSection, FeatureGrid, HowItWorks)
-   - Settings components (NotificationsSection, SavedSearchesSection)
-   - Utility functions (utils, image-blur)
+- Enhanced mock factory architecture (`test-data-factory.ts`)
+- Type-safe test utilities (`test-helpers.ts`)
+- Additional component coverage across auth, dashboard, marketing, and settings
 
 ### Coverage Workflow
 
@@ -748,12 +729,7 @@ coverageThreshold: {
 
 ### Performance Benchmarks
 
-With the migrated dataset of 1,091 properties and 1,123 neighborhoods:
-
-- **Property Search**: <2s load time with filters applied
-- **Spatial Queries**: <500ms for radius-based property searches
-- **Database Operations**: <100ms for standard CRUD operations
-- **Image Loading**: Progressive loading with blur placeholders
+Collect performance baselines when running integration/E2E suites (see `perf:*` scripts). Key areas to watch: property feed queries, spatial lookups, and marketing card/image loading.
 
 ## CI/CD Integration
 
@@ -1384,13 +1360,13 @@ test('improved reliable test', async () => {
 
 - **Pattern**: Property search filtering in `searchProperties` method
 - **Issues**: Repetitive conditional logic for filter application
-- **Coverage**: All filter combinations tested with edge cases
+- **Coverage**: Safety-net tests cover common and edge filter combinations
 
 #### 4. Supabase Client Patterns (3 implementations)
 
 - **Components**: Server client, browser client, API client patterns
 - **Issues**: Different client creation patterns, inconsistent configuration
-- **Coverage**: All client patterns tested for consistency and reliability
+- **Coverage**: Client patterns validated by dedicated integration tests
 
 ### Safety Net Test Structure
 
@@ -1442,21 +1418,10 @@ pnpm run test:safety-net
 pnpm run test
 ```
 
-### Coverage Requirements
+### Coverage Targets
 
-#### Minimum Coverage Thresholds
-
-- **Statements**: 85%
-- **Branches**: 80%
-- **Functions**: 85%
-- **Lines**: 85%
-
-#### Current Coverage Status
-
-- ✅ **PropertyService**: 85%+ (up from 12.69%)
-- ✅ **Error Handling**: 100% of patterns covered
-- ✅ **Filter Builder**: 100% of conditionals covered
-- ✅ **Supabase Clients**: 100% of implementations covered
+- Suggested minimums when running safety-net suites: Statements 85%, Branches 80%, Functions 85%, Lines 85%
+- Verify actual results by generating reports in your branch; targets may be relaxed temporarily during refactors
 
 ### Performance Benchmarks
 
@@ -1481,10 +1446,10 @@ The `refactoring-safety-net.js` script performs:
 
 #### Exit Criteria
 
-- ✅ All safety net tests pass
-- ✅ Coverage thresholds met
-- ✅ Performance benchmarks within limits
-- ✅ No regression in existing functionality
+- Safety net tests pass
+- Coverage targets met or documented if temporarily lowered
+- Performance checks within expected limits
+- No regressions in existing functionality
 
 ---
 

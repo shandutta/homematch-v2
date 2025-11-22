@@ -122,5 +122,5 @@ Before marking any task complete:
 
 ---
 
-_Last Updated: January 2025_  
+_Last Updated: November 2025_  
 _This directory represents the current source of truth for HomeMatch development tasks and priorities._

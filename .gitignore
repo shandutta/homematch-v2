@@ -66,6 +66,7 @@ homematch-original-analysis/
 
 # Browser logs & screenshots
 __tests__/browser_screenshots
+hero.png
 
 # Server logs
 dev-server.log
