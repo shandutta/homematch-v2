@@ -16,7 +16,7 @@ This document outlines the architectural foundation for safely refactoring the H
 **Method Usage Frequency:**
 
 1. `searchProperties()` - **High Usage** (40+ conditionals in filter logic)
-2. `getPropertyStats()` - **Medium Usage** (analytics)
+2. `getPropertyStats()` - **Medium Usage** (basic stats)
 3. `getNeighborhoodsByCity()` - **Medium Usage** (geographic queries)
 4. `getProperty()`, `getPropertyWithNeighborhood()` - **Low Usage** (CRUD operations)
 
@@ -94,11 +94,8 @@ interface INeighborhoodService {
   searchNeighborhoods(searchTerm: string): Promise<Neighborhood[]>
 }
 
-interface IPropertyAnalyticsService {
-  getPropertyStats(): Promise<PropertyStats | null>
-  getNeighborhoodStats(
-    neighborhoodId: string
-  ): Promise<NeighborhoodStats | null>
+interface IPropertyStatsService {
+  getPropertyStats(): Promise<PropertyStats>
 }
 
 interface IGeographicService {
@@ -123,13 +120,13 @@ export class PropertyService
     IPropertyCrudService,
     IPropertySearchService,
     INeighborhoodService,
-    IPropertyAnalyticsService,
+    IPropertyStatsService,
     IGeographicService
 {
   private crudService: PropertyCrudService
   private searchService: PropertySearchService
   private neighborhoodService: NeighborhoodService
-  private analyticsService: PropertyAnalyticsService
+  private statsService: PropertySearchService
   private geographicService: GeographicService
 
   constructor(clientFactory?: SupabaseClientFactory) {
@@ -138,7 +135,7 @@ export class PropertyService
     this.crudService = new PropertyCrudService(factory)
     this.searchService = new PropertySearchService(factory)
     this.neighborhoodService = new NeighborhoodService(factory)
-    this.analyticsService = new PropertyAnalyticsService(factory)
+    this.statsService = new PropertySearchService(factory)
     this.geographicService = new GeographicService(factory)
   }
 
@@ -149,6 +146,10 @@ export class PropertyService
 
   async searchProperties(params: PropertySearch) {
     return this.searchService.searchProperties(params)
+  }
+
+  async getPropertyStats() {
+    return this.searchService.getPropertyStats()
   }
 
   // ... delegate all other methods
@@ -182,7 +183,7 @@ export class ServiceFactory {
     return new PropertyCrudService(this.clientFactory)
   }
 
-  // ... other service creators
+  // ... other service creators (search, neighborhood, stats, geographic)
 }
 ```
 
