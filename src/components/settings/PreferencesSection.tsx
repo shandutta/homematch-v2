@@ -26,6 +26,10 @@ interface PreferencesSectionProps {
 }
 
 type PropertyTypeKey = 'single_family' | 'condo' | 'townhome'
+type PropertyTypeLegacyKey = 'house' | 'townhouse'
+type PropertyTypePreferences = Partial<
+  Record<PropertyTypeKey | PropertyTypeLegacyKey, boolean>
+>
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
 
 export function PreferencesSection({
@@ -38,7 +42,7 @@ export function PreferencesSection({
     priceRange?: [number, number]
     bedrooms?: number
     bathrooms?: number
-    propertyTypes?: Record<string, boolean>
+    propertyTypes?: PropertyTypePreferences
     mustHaves?: Record<string, boolean>
     searchRadius?: number
   }
@@ -59,26 +63,23 @@ export function PreferencesSection({
     condo: true,
     townhome: true,
   }
+  const normalizePropertyTypes = (
+    existing?: PropertyTypePreferences
+  ): Record<PropertyTypeKey, boolean> => ({
+    single_family:
+      existing?.single_family ??
+      existing?.house ??
+      defaultPropertyTypes.single_family,
+    condo: existing?.condo ?? defaultPropertyTypes.condo,
+    townhome:
+      existing?.townhome ??
+      existing?.townhouse ??
+      defaultPropertyTypes.townhome,
+  })
 
   const [propertyTypes, setPropertyTypes] = useState<
     Record<PropertyTypeKey, boolean>
-  >(
-    preferences.propertyTypes
-      ? {
-          single_family:
-            (preferences.propertyTypes as any).single_family ??
-            (preferences.propertyTypes as any).house ??
-            true,
-          condo:
-            (preferences.propertyTypes as any).condo ??
-            defaultPropertyTypes.condo,
-          townhome:
-            (preferences.propertyTypes as any).townhome ??
-            (preferences.propertyTypes as any).townhouse ??
-            defaultPropertyTypes.townhome,
-        }
-      : defaultPropertyTypes
-  )
+  >(normalizePropertyTypes(preferences.propertyTypes))
   const [mustHaves, setMustHaves] = useState<Record<MustHaveKey, boolean>>(
     preferences.mustHaves || {
       parking: false,

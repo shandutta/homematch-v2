@@ -27,10 +27,7 @@ import {
   isValidLatLng,
   createCircularPolygon,
 } from '@/lib/utils/coordinates'
-import {
-  PROPERTY_TYPE_VALUES,
-  type PropertyType,
-} from '@/lib/schemas/property'
+import { PROPERTY_TYPE_VALUES, type PropertyType } from '@/lib/schemas/property'
 
 // Legacy interface for backward compatibility
 interface LegacyBoundingBox {

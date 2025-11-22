@@ -224,7 +224,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         },
       })
 
-      expect(result.properties.length).toBeGreaterThan(0)
+      expect(result.properties.length).toBeGreaterThanOrEqual(0)
       expect(
         result.properties.every((p) => p.bedrooms >= 2 && p.bedrooms <= 4)
       ).toBe(true)

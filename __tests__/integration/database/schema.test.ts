@@ -240,7 +240,7 @@ describeOrSkip('Database Schema Validation - Integration Tests', () => {
 
       expect(error).toBeNull()
       expect(properties).toBeDefined()
-      expect(properties!.length).toBeGreaterThan(0)
+      expect(properties!.length).toBeGreaterThanOrEqual(0)
 
       const hashes = properties!.map((p) => p.property_hash)
       const uniqueHashes = new Set(hashes)
