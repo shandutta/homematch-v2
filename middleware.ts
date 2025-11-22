@@ -46,7 +46,8 @@ export async function middleware(request: NextRequest) {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
-        flowType: 'pkce',
+        // Align with implicit flow in the browser to avoid PKCE verifier issues
+        flowType: 'implicit',
       },
     }
   )

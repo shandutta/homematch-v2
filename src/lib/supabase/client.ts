@@ -6,7 +6,9 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        flowType: 'pkce',
+        // Use implicit flow to avoid PKCE code-verifier cookies that can be
+        // blocked by browser extensions/security tooling.
+        flowType: 'implicit',
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,

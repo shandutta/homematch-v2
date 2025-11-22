@@ -253,7 +253,11 @@ export class DataTransformer {
         bedrooms.value === null || bedrooms.value === undefined
           ? 0
           : Math.min(bedrooms.value, 20)
-      if (bedrooms.value !== null && bedrooms.value !== undefined && bedrooms.value > 20) {
+      if (
+        bedrooms.value !== null &&
+        bedrooms.value !== undefined &&
+        bedrooms.value > 20
+      ) {
         warnings.push(`Bedrooms capped at 20 from ${bedrooms.value}`)
       }
 
@@ -261,7 +265,11 @@ export class DataTransformer {
         bathrooms.value === null || bathrooms.value === undefined
           ? 0
           : Math.min(bathrooms.value, 20)
-      if (bathrooms.value !== null && bathrooms.value !== undefined && bathrooms.value > 20) {
+      if (
+        bathrooms.value !== null &&
+        bathrooms.value !== undefined &&
+        bathrooms.value > 20
+      ) {
         warnings.push(`Bathrooms capped at 20 from ${bathrooms.value}`)
       }
 

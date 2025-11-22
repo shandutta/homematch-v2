@@ -400,7 +400,9 @@ export async function ingestZillowLocations(
             ...result.data,
             bedrooms: Math.min(result.data.bedrooms ?? 0, 20),
             bathrooms: Math.min(result.data.bathrooms ?? 0, 20),
-            property_type: normalizePropertyTypeForDb(result.data.property_type),
+            property_type: normalizePropertyTypeForDb(
+              result.data.property_type
+            ),
             updated_at: new Date().toISOString(),
           })
         } else {
