@@ -8,10 +8,18 @@
 const { spawn, execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
 
 class WorkingInfrastructure {
   constructor() {
-    this.supabaseBinary = path.join(__dirname, '..', 'supabase.exe')
+    this.supabaseBinary = process.env.SUPABASE_CLI || 'supabase'
+    this.supabasePathDefault = path.join(
+      os.homedir(),
+      '.local',
+      'bin',
+      'supabase'
+    )
+    this.supabaseWindowsBinary = path.join(__dirname, '..', 'supabase.exe')
     this.timeout = 120000
   }
 
@@ -29,31 +37,35 @@ class WorkingInfrastructure {
   }
 
   async ensureSupabaseBinary() {
-    if (fs.existsSync(this.supabaseBinary)) return true
+    const candidates = [
+      process.env.SUPABASE_CLI,
+      'supabase',
+      this.supabasePathDefault,
+      this.supabaseWindowsBinary,
+    ].filter(Boolean)
 
-    await this.log('Downloading Supabase CLI binary...', 'progress')
-    try {
-      execSync(
-        `powershell -Command "Invoke-WebRequest -Uri 'https://github.com/supabase/cli/releases/latest/download/supabase_windows_amd64.tar.gz' -OutFile 'supabase-cli.tar.gz'"`,
-        { cwd: path.dirname(this.supabaseBinary) }
-      )
+    for (const candidate of candidates) {
+      if (candidate === 'supabase') {
+        try {
+          execSync('supabase --version', { stdio: 'ignore' })
+          this.supabaseBinary = 'supabase'
+          return true
+        } catch {
+          continue
+        }
+      }
 
-      execSync('tar -xzf supabase-cli.tar.gz', {
-        cwd: path.dirname(this.supabaseBinary),
-      })
-      execSync('rm supabase-cli.tar.gz', {
-        cwd: path.dirname(this.supabaseBinary),
-      })
-
-      await this.log('Supabase CLI binary downloaded')
-      return true
-    } catch (error) {
-      await this.log(
-        `Failed to download Supabase binary: ${error.message}`,
-        'error'
-      )
-      return false
+      if (fs.existsSync(candidate)) {
+        this.supabaseBinary = candidate
+        return true
+      }
     }
+
+    await this.log(
+      'Supabase CLI not found. Install it (see docs) or set SUPABASE_CLI to the binary path.',
+      'error'
+    )
+    return false
   }
 
   async checkDockerStatus() {
