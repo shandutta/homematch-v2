@@ -110,6 +110,7 @@ export interface IngestSummary {
     skipped: number
   }
   locations: IngestLocationSummary[]
+  propertyTypes: Record<string, number>
 }
 
 function delay(ms: number) {
@@ -338,6 +339,7 @@ export async function ingestZillowLocations(
   const summary: IngestSummary = {
     totals: { attempted: 0, transformed: 0, insertedOrUpdated: 0, skipped: 0 },
     locations: [],
+    propertyTypes: {},
   }
 
   for (const location of locations) {
@@ -349,6 +351,7 @@ export async function ingestZillowLocations(
       skipped: 0,
       errors: [],
     }
+    const locationTypeCounts: Record<string, number> = {}
 
     let page = 1
     let hasMore = true
@@ -396,13 +399,18 @@ export async function ingestZillowLocations(
         if (result.success && result.data) {
           locationSummary.transformed++
           summary.totals.transformed++
+          const normalizedType = normalizePropertyTypeForDb(
+            result.data.property_type
+          )
+          locationTypeCounts[normalizedType] =
+            (locationTypeCounts[normalizedType] || 0) + 1
+          summary.propertyTypes[normalizedType] =
+            (summary.propertyTypes[normalizedType] || 0) + 1
           inserts.push({
             ...result.data,
             bedrooms: Math.min(result.data.bedrooms ?? 0, 20),
             bathrooms: Math.min(result.data.bathrooms ?? 0, 20),
-            property_type: normalizePropertyTypeForDb(
-              result.data.property_type
-            ),
+            property_type: normalizedType,
             updated_at: new Date().toISOString(),
           })
         } else {
@@ -425,7 +433,12 @@ export async function ingestZillowLocations(
             (error as { message?: string }).message ||
             JSON.stringify(error) ||
             'Failed to upsert properties'
-          locationSummary.errors.push(errMsg)
+          const typesList = Object.entries(locationTypeCounts)
+            .map(([t, c]) => `${t}:${c}`)
+            .join(', ')
+          locationSummary.errors.push(
+            typesList ? `${errMsg} | types=${typesList}` : errMsg
+          )
         } else {
           locationSummary.insertedOrUpdated += inserts.length
           summary.totals.insertedOrUpdated += inserts.length
