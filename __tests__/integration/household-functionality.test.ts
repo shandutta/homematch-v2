@@ -205,7 +205,10 @@ describe('Household Functionality Tests', () => {
         throw new Error(`Could not create household: ${householdError.message}`)
       }
 
-      console.log('✅ Household created successfully:', householdResult?.length || 0)
+      console.log(
+        '✅ Household created successfully:',
+        householdResult?.length || 0
+      )
 
       // Update existing user profiles with household association
       // (profiles should already exist from auth trigger)
@@ -245,13 +248,15 @@ describe('Household Functionality Tests', () => {
       const actualUserId2 = user2.id
 
       // Create household first
-      const { error: householdError } = await supabase.from('households').upsert([
-        {
-          id: testHouseholdId,
-          name: 'Test Household for Members',
-          created_at: new Date().toISOString(),
-        },
-      ])
+      const { error: householdError } = await supabase
+        .from('households')
+        .upsert([
+          {
+            id: testHouseholdId,
+            name: 'Test Household for Members',
+            created_at: new Date().toISOString(),
+          },
+        ])
 
       if (householdError) {
         throw new Error(
@@ -404,7 +409,10 @@ describe('Household Functionality Tests', () => {
           },
         ])
 
-      if (propertiesError && !(propertiesError.message || '').includes('does not exist')) {
+      if (
+        propertiesError &&
+        !(propertiesError.message || '').includes('does not exist')
+      ) {
         throw propertiesError
       }
 
@@ -433,7 +441,9 @@ describe('Household Functionality Tests', () => {
         },
       ]
 
-      const { error } = await supabase.from('user_property_interactions').insert(interactions)
+      const { error } = await supabase
+        .from('user_property_interactions')
+        .insert(interactions)
 
       if (error) {
         throw error
@@ -453,7 +463,8 @@ describe('Household Functionality Tests', () => {
 
       // Check mutual likes
       const property1Likes = householdInteractions.filter(
-        (i: any) => i.property_id === testPropertyId1 && i.interaction_type === 'like'
+        (i: any) =>
+          i.property_id === testPropertyId1 && i.interaction_type === 'like'
       )
       expect(property1Likes).toHaveLength(2) // Both users liked property 1
     })
@@ -513,7 +524,10 @@ describe('Household Functionality Tests', () => {
           },
         ])
 
-      if (propertyError && !(propertyError.message || '').includes('does not exist')) {
+      if (
+        propertyError &&
+        !(propertyError.message || '').includes('does not exist')
+      ) {
         throw propertyError
       }
 

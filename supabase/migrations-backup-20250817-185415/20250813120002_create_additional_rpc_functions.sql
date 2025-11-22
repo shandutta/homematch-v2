@@ -1,5 +1,5 @@
 -- Additional RPC Functions Migration
--- Implements remaining geographic and analytics functions
+-- Implements remaining geographic functions
 
 -- Function: get_neighborhoods_in_bounds  
 -- Get neighborhoods within a bounding box using PostGIS
