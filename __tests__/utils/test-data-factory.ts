@@ -29,12 +29,23 @@ export class TestDataFactory {
    */
   async getTestUser(email: string = 'test1@example.com') {
     try {
-      // Get user profile directly from database using service role client
-      // This avoids hitting the Auth API and works with predefined test users
+      // Look up auth user by email (service role)
+      const { data: users, error: listError } =
+        await this.client.auth.admin.listUsers()
+      if (listError || !users?.users) {
+        throw new Error(listError?.message || 'Could not list auth users')
+      }
+
+      const authUser = users.users.find((u) => u.email === email)
+      if (!authUser) {
+        throw new Error(`Auth user ${email} not found`)
+      }
+
+      // Fetch matching profile by ID (schema has no email column)
       const { data: profile, error } = await this.client
         .from('user_profiles')
         .select('*')
-        .eq('email', email)
+        .eq('id', authUser.id)
         .single()
 
       if (error) {
@@ -44,9 +55,7 @@ export class TestDataFactory {
             .select('id', { count: 'exact', head: true })
           console.debug(
             '⚠️  DEBUG_TEST: profile lookup failed.',
-            {
-              email,
-            },
+            { email },
             'profile count:',
             count ?? 'unknown',
             'count error:',
