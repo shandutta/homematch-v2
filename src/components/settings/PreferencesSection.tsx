@@ -25,7 +25,7 @@ interface PreferencesSectionProps {
   onProfileUpdate?: (profile: UserProfile) => void
 }
 
-type PropertyTypeKey = 'house' | 'condo' | 'townhouse'
+type PropertyTypeKey = 'single_family' | 'condo' | 'townhome'
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
 
 export function PreferencesSection({
@@ -54,14 +54,30 @@ export function PreferencesSection({
   )
   const [bedrooms, setBedrooms] = useState(preferences.bedrooms || 2)
   const [bathrooms, setBathrooms] = useState(preferences.bathrooms || 2)
+  const defaultPropertyTypes: Record<PropertyTypeKey, boolean> = {
+    single_family: true,
+    condo: true,
+    townhome: true,
+  }
+
   const [propertyTypes, setPropertyTypes] = useState<
     Record<PropertyTypeKey, boolean>
   >(
-    preferences.propertyTypes || {
-      house: true,
-      condo: true,
-      townhouse: true,
-    }
+    preferences.propertyTypes
+      ? {
+          single_family:
+            (preferences.propertyTypes as any).single_family ??
+            (preferences.propertyTypes as any).house ??
+            true,
+          condo:
+            (preferences.propertyTypes as any).condo ??
+            defaultPropertyTypes.condo,
+          townhome:
+            (preferences.propertyTypes as any).townhome ??
+            (preferences.propertyTypes as any).townhouse ??
+            defaultPropertyTypes.townhome,
+        }
+      : defaultPropertyTypes
   )
   const [mustHaves, setMustHaves] = useState<Record<MustHaveKey, boolean>>(
     preferences.mustHaves || {
@@ -81,7 +97,7 @@ export function PreferencesSection({
     helper: string
   }> = [
     {
-      key: 'house',
+      key: 'single_family',
       label: 'Single Family Home',
       helper: 'Detached homes & standalone properties',
     },
@@ -91,8 +107,8 @@ export function PreferencesSection({
       helper: 'Condo towers & multi-family buildings',
     },
     {
-      key: 'townhouse',
-      label: 'Townhouse',
+      key: 'townhome',
+      label: 'Townhome',
       helper: 'Attached homes with multiple floors',
     },
   ]

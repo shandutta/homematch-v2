@@ -220,16 +220,19 @@ export function EnhancedPropertyCard({
             ...property,
             // Ensure property_type matches the expected enum
             property_type: [
-              'house',
+              'single_family',
               'condo',
+              'townhome',
+              'multi_family',
+              'manufactured',
+              'land',
+              'other',
+              // legacy values kept for compatibility with older data
+              'house',
               'townhouse',
               'apartment',
             ].includes(property.property_type as string)
-              ? (property.property_type as
-                  | 'house'
-                  | 'condo'
-                  | 'townhouse'
-                  | 'apartment')
+              ? property.property_type
               : null,
             // Ensure listing_status matches the expected enum
             listing_status: ['active', 'pending', 'sold'].includes(

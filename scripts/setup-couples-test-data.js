@@ -143,7 +143,7 @@ async function setupCouplesTestData() {
                 max_price: 2000000,
                 min_bedrooms: 2,
                 max_bedrooms: 4,
-                property_types: ['house', 'condo'],
+                property_types: ['single_family', 'condo'],
               },
             })
             .eq('id', newUser.user.id)

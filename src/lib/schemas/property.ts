@@ -1,12 +1,9 @@
 import { z } from 'zod'
 
-// Property type literals (includes legacy values for compatibility; DB constraint uses house/condo/townhouse/apartment)
+// Property type literals (canonical set aligned with DB constraint and ingestion)
 export const PROPERTY_TYPE_VALUES = [
-  'house',
-  'condo',
-  'townhouse',
-  'apartment',
   'single_family',
+  'condo',
   'townhome',
   'multi_family',
   'manufactured',

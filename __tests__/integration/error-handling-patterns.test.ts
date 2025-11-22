@@ -78,7 +78,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         city: 'Test City',
         state: 'CA',
         zip_code: '90210',
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true,
       } as any
@@ -104,7 +104,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true,
         zpid: uniqueZpid,
@@ -340,7 +340,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2,
         square_feet: 1500,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         is_active: true,
       }

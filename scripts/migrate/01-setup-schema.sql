@@ -55,7 +55,17 @@ CREATE TABLE IF NOT EXISTS properties (
   bedrooms INTEGER NOT NULL,
   bathrooms DECIMAL(2,1) NOT NULL,
   square_feet INTEGER,
-  property_type TEXT CHECK (property_type IN ('house', 'condo', 'townhouse', 'apartment')),
+  property_type TEXT CHECK (
+    property_type IN (
+      'single_family',
+      'condo',
+      'townhome',
+      'multi_family',
+      'manufactured',
+      'land',
+      'other'
+    )
+  ),
   images TEXT[] DEFAULT '{}',
   description TEXT,
   coordinates POINT,

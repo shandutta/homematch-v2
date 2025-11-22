@@ -68,7 +68,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 3,
         bathrooms: 2.5,
         square_feet: 1800,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         year_built: 2020,
         lot_size_sqft: 5000,
@@ -85,7 +85,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 4,
         bathrooms: 3,
         square_feet: 2200,
-        property_type: 'house',
+        property_type: 'single_family',
         listing_status: 'active',
         year_built: 2018,
         lot_size_sqft: 7000,
@@ -119,7 +119,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         bedrooms: 5,
         bathrooms: 4,
         square_feet: 3000,
-        property_type: 'townhouse',
+        property_type: 'townhome',
         listing_status: 'active',
         year_built: 2021,
         lot_size_sqft: 3000,
@@ -293,31 +293,31 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
   describe('Property Type Filtering', () => {
     test('should filter by single property type', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['house'] },
+        filters: { property_types: ['single_family'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
-      expect(result.properties.every((p) => p.property_type === 'house')).toBe(
-        true
-      )
+      expect(
+        result.properties.every((p) => p.property_type === 'single_family')
+      ).toBe(true)
     })
 
     test('should filter by multiple property types', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['house', 'condo'] },
+        filters: { property_types: ['single_family', 'condo'] },
       })
 
       expect(result.properties.length).toBeGreaterThan(0)
       expect(
         result.properties.every((p) =>
-          ['house', 'condo'].includes(p.property_type)
+          ['single_family', 'condo'].includes(p.property_type)
         )
       ).toBe(true)
     })
 
     test('should return empty results for non-existent property type', async () => {
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['non_existent_type'] },
+        filters: { property_types: ['land'] },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -488,7 +488,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
           bedrooms_max: 4,
           bathrooms_min: 2,
           square_feet_min: 1200,
-          property_types: ['house', 'townhouse'],
+          property_types: ['single_family', 'townhome'],
           year_built_min: 2015,
           parking_spots_min: 2,
           listing_status: ['active'],
@@ -506,7 +506,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
             p.bedrooms <= 4 &&
             p.bathrooms >= 2 &&
             p.square_feet >= 1200 &&
-            ['house', 'townhouse'].includes(p.property_type) &&
+            ['single_family', 'townhome'].includes(p.property_type) &&
             p.year_built >= 2015 &&
             p.parking_spots >= 2 &&
             p.listing_status === 'active' &&
@@ -688,7 +688,7 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
           bathrooms_max: 10,
           square_feet_min: 500,
           square_feet_max: 10000,
-          property_types: ['house', 'condo', 'townhouse'],
+          property_types: ['single_family', 'condo', 'townhome'],
           year_built_min: 1900,
           year_built_max: 2025,
           lot_size_min: 0,

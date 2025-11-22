@@ -27,6 +27,10 @@ import {
   isValidLatLng,
   createCircularPolygon,
 } from '@/lib/utils/coordinates'
+import {
+  PROPERTY_TYPE_VALUES,
+  type PropertyType,
+} from '@/lib/schemas/property'
 
 // Legacy interface for backward compatibility
 interface LegacyBoundingBox {
@@ -124,6 +128,11 @@ function transformPropertyWithDistanceToProperty(
   item: PropertyWithDistance
 ): Property {
   const currentTimestamp = new Date().toISOString()
+  const normalizedType = PROPERTY_TYPE_VALUES.includes(
+    item.property_type as PropertyType
+  )
+    ? (item.property_type as PropertyType)
+    : null
 
   return {
     // Fields present in PropertyWithDistance
@@ -135,7 +144,7 @@ function transformPropertyWithDistanceToProperty(
     bedrooms: item.bedrooms,
     bathrooms: item.bathrooms,
     square_feet: item.square_feet,
-    property_type: item.property_type,
+    property_type: normalizedType,
     images: item.images,
     neighborhood_id: item.neighborhood_id,
 
