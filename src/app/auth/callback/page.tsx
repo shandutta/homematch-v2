@@ -34,6 +34,7 @@ function AuthCallbackContent() {
   }
 
   const processing = useRef(false)
+  const retryCount = useRef(0)
 
   useEffect(() => {
     const error = searchParams.get('error')
@@ -49,6 +50,9 @@ function AuthCallbackContent() {
     const exchange = async () => {
       if (processing.current) return
       processing.current = true
+
+      const MAX_RETRIES = 3
+      const RETRY_DELAYS = [500, 1000, 2000] // Exponential backoff in ms
 
       try {
         const fragmentTokens = parseFragmentTokens()
@@ -89,17 +93,46 @@ function AuthCallbackContent() {
           return
         }
 
-        const { error: sessionError } =
-          await supabase.auth.exchangeCodeForSession(code)
+        // Retry loop for PKCE exchange
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+          retryCount.current = attempt
 
-        if (sessionError) {
-          setMessage(sessionError.message || 'Authentication failed.')
-          console.error('OAuth callback error', sessionError)
-          router.replace('/auth/auth-code-error')
-          return
+          if (attempt > 0) {
+            setMessage(
+              `Verifying your sign-in… (attempt ${attempt + 1}/${MAX_RETRIES + 1})`
+            )
+            // Wait before retry with exponential backoff
+            await new Promise((resolve) =>
+              setTimeout(resolve, RETRY_DELAYS[attempt - 1] || 2000)
+            )
+          }
+
+          const { error: sessionError } =
+            await supabase.auth.exchangeCodeForSession(code)
+
+          if (!sessionError) {
+            // Success!
+            router.replace(next.startsWith('/') ? next : `/${next}`)
+            return
+          }
+
+          // If this is the last attempt or not a PKCE error, fail
+          const isPKCEError =
+            sessionError.message.includes('code verifier') ||
+            sessionError.message.includes('pkce')
+          if (attempt === MAX_RETRIES || !isPKCEError) {
+            setMessage(sessionError.message || 'Authentication failed.')
+            console.error('OAuth callback error (after retries)', sessionError)
+            router.replace('/auth/auth-code-error')
+            return
+          }
+
+          // Log retry for debugging
+          console.warn(
+            `PKCE exchange attempt ${attempt + 1} failed, retrying...`,
+            sessionError.message
+          )
         }
-
-        router.replace(next.startsWith('/') ? next : `/${next}`)
       } catch (err) {
         setMessage(
           err instanceof Error ? err.message : 'Authentication failed.'
