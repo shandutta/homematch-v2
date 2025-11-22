@@ -33,13 +33,15 @@ if [[ "$MODE" == "dev" ]]; then
   HOSTNAME=127.0.0.1 PORT="$PORT" node_modules/.bin/next dev --turbopack -H 0.0.0.0 -p "$PORT" \
     >/tmp/homematch-local-server.log 2>&1 &
 else
-  # Ensure a production build exists
-  if [[ ! -f ".next/BUILD_ID" ]]; then
+  if [[ "${FORCE_REBUILD:-0}" == "1" || ! -f ".next/BUILD_ID" ]]; then
     echo "[run-local-api] Building Next.js app..."
     pnpm build >/tmp/homematch-local-build.log 2>&1
+  else
+    echo "[run-local-api] Reusing existing build in .next (set FORCE_REBUILD=1 to rebuild)..."
   fi
   echo "[run-local-api] Starting prod server on port $PORT..."
-  HOSTNAME=127.0.0.1 pnpm start -- -p "$PORT" >/tmp/homematch-local-server.log 2>&1 &
+  HOSTNAME=127.0.0.1 pnpm exec next start -H 0.0.0.0 -p "$PORT" \
+    >/tmp/homematch-local-server.log 2>&1 &
 fi
 
 SERVER_PID=$!

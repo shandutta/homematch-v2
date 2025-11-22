@@ -76,12 +76,16 @@ export function ResetPasswordForm() {
   useEffect(() => {
     const maybeCode = searchParams.get('code')
     const recoveryToken = searchParams.get('token')
+    const recoveryTokenHash = searchParams.get('token_hash')
     const recoveryType = searchParams.get('type')
     const fragmentTokens = parseFragmentTokens()
 
     if (
       !maybeCode &&
-      !(recoveryToken && recoveryType === 'recovery') &&
+      !(
+        (recoveryToken || recoveryTokenHash) &&
+        recoveryType === 'recovery'
+      ) &&
       !fragmentTokens
     )
       return
@@ -106,10 +110,14 @@ export function ResetPasswordForm() {
             )
             return
           }
-        } else if (recoveryToken && recoveryType === 'recovery') {
+        } else if (
+          (recoveryToken || recoveryTokenHash) &&
+          recoveryType === 'recovery'
+        ) {
+          const tokenToUse = recoveryToken ?? recoveryTokenHash
           // Recovery token path (OTP-style)
           setNeedsCodeEntry(true)
-          verifyForm.setValue('token', recoveryToken)
+          verifyForm.setValue('token', tokenToUse ?? '')
           setSuccess(
             'Enter your email and the code from the email to continue.'
           )
@@ -172,6 +180,14 @@ export function ResetPasswordForm() {
     }
 
     setLoading(false)
+  }
+
+  const startManualCodeEntry = () => {
+    setPhase('reset')
+    setNeedsCodeEntry(true)
+    setSessionReady(false)
+    setError(null)
+    setSuccess('Enter your email and the code from the email to continue.')
   }
 
   const handleVerifyCode = async (values: z.infer<typeof VerifySchema>) => {
@@ -287,6 +303,17 @@ export function ResetPasswordForm() {
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send reset link
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={startManualCodeEntry}
+                disabled={loading}
+                data-testid="reset-enter-code"
+              >
+                Already have a code? Enter it manually
               </Button>
             </form>
           </Form>
