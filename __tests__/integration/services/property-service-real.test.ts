@@ -73,30 +73,6 @@ describeOrSkip('PropertyService Real Integration Tests', () => {
       }
     })
 
-    test('getNeighborhoodStats should use real RPC function', async () => {
-      try {
-        // Use a fake UUID - we expect null result but no error
-        const result =
-          await propertyService.analyticsService.getNeighborhoodStats(
-            '00000000-0000-0000-0000-000000000000'
-          )
-
-        // Should return stats object (even for non-existent neighborhood)
-        expect(result).toBeDefined()
-        expect(typeof result).toBe('object')
-        // For non-existent neighborhood, numeric values should be NaN
-        expect(result?.total_properties).toBeNaN()
-      } catch (error: any) {
-        if (
-          error.message?.includes('function') &&
-          error.message?.includes('does not exist')
-        ) {
-          throw new Error('RPC function get_neighborhood_stats does not exist!')
-        }
-        throw error
-      }
-    })
-
     test('calculateDistance should use real RPC function', async () => {
       try {
         const distance = await propertyService.calculateDistance(
@@ -193,18 +169,7 @@ async function _runRealIntegrationTests(): Promise<{
     results.errors.push(`getPropertiesWithinRadius: ${error.message}`)
   }
 
-  // Test 2: Analytics RPC works
-  try {
-    await service.analyticsService.getNeighborhoodStats(
-      '00000000-0000-0000-0000-000000000000'
-    )
-    results.passed++
-  } catch (error: any) {
-    results.failed++
-    results.errors.push(`getNeighborhoodStats: ${error.message}`)
-  }
-
-  // Test 3: Geographic RPC works
+  // Test 2: Geographic RPC works
   try {
     await service.calculateDistance(37.7749, -122.4194, 37.7849, -122.4094)
     results.passed++

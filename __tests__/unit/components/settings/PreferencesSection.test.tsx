@@ -174,11 +174,13 @@ describe('PreferencesSection', () => {
     await waitFor(() => {
       expect(mockUpdateUserProfile).toHaveBeenCalledWith('user-123', {
         preferences: expect.objectContaining({
-          propertyTypes: {
+          propertyTypes: expect.objectContaining({
             house: false,
+            single_family: false,
             condo: true,
             townhouse: true,
-          },
+            townhome: true,
+          }),
         }),
       })
     })

@@ -157,12 +157,9 @@ const markSupabaseHeavyTestsSkipped = (reason: string) => {
     return
   }
 
-  process.env.SKIP_HEAVY_TESTS = 'true'
-  process.env.SKIP_HEAVY_INTEGRATION = 'true'
+  const message = `Supabase integration prerequisites failed: ${reason}`
   process.env.SUPABASE_INTEGRATION_DISABLED_REASON = reason
-  console.warn(
-    `Skipping heavy Supabase integration tests: ${reason}. Set RUN_SUPABASE_INTEGRATION=true to force.`
-  )
+  throw new Error(message)
 }
 
 // Set NODE_ENV to test for integration tests

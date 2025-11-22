@@ -109,7 +109,7 @@ export function PreferencesSection({
     },
     {
       key: 'townhome',
-      label: 'Townhome',
+      label: 'Townhouse',
       helper: 'Attached homes with multiple floors',
     },
   ]
@@ -133,16 +133,36 @@ export function PreferencesSection({
     },
   ]
 
+  const toPersistedPropertyTypes = (
+    types: Record<PropertyTypeKey, boolean>
+  ): PropertyTypePreferences => {
+    const singleFamily = Boolean(types.single_family)
+    const condo = Boolean(types.condo)
+    const townhome = Boolean(types.townhome)
+
+    return {
+      // Canonical keys
+      single_family: singleFamily,
+      condo,
+      townhome,
+      // Legacy compatibility keys
+      house: singleFamily,
+      townhouse: townhome,
+    }
+  }
+
   const savePreferences = async () => {
     setLoading(true)
     try {
+      const propertyTypesPayload = toPersistedPropertyTypes(propertyTypes)
+
       const updatedProfile = await userService.updateUserProfile(user.id, {
         preferences: {
           ...preferences,
           priceRange,
           bedrooms,
           bathrooms,
-          propertyTypes,
+          propertyTypes: propertyTypesPayload,
           mustHaves,
           searchRadius,
         },
@@ -292,7 +312,7 @@ export function PreferencesSection({
                   onCheckedChange={(checked) =>
                     setPropertyTypes((prev) => ({ ...prev, [key]: checked }))
                   }
-                  aria-label={`Toggle ${label}`}
+                  aria-label={label}
                 />
               </div>
             ))}
@@ -329,7 +349,7 @@ export function PreferencesSection({
                   onCheckedChange={(checked) =>
                     setMustHaves((prev) => ({ ...prev, [key]: checked }))
                   }
-                  aria-label={`Toggle ${label}`}
+                  aria-label={label}
                 />
               </div>
             ))}

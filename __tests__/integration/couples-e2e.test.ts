@@ -29,26 +29,25 @@ describe('Couples E2E Integration Tests', () => {
         // PGRST116 is "no rows returned", which is fine
         throw error
       }
-    } catch (error) {
-      console.warn(
-        'Could not create Supabase client - database may not be available:',
-        error
+    } catch (error: any) {
+      throw new Error(
+        `Supabase unavailable for couples integration tests: ${
+          error?.message || error
+        }`
       )
-      supabase = null
     }
   })
 
   // Skip all tests if database is not available
   beforeEach(() => {
     if (!supabase) {
-      console.warn('Skipping test - database not available')
-      return
+      throw new Error('Supabase client not initialized')
     }
   })
 
   describe('Database Schema Validation', () => {
     test('should have required tables', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       // Check if core tables exist
       let tables, error
@@ -87,7 +86,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should have couples optimization functions', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       // Try to call each function to verify it exists
       const functions = [
@@ -135,7 +134,7 @@ describe('Couples E2E Integration Tests', () => {
 
   describe('CouplesService Integration', () => {
     beforeEach(async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       // Clean up only interactions and properties, preserve users
       try {
@@ -177,7 +176,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should return empty array when user has no household', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       const result = await CouplesService.getMutualLikes(
         supabase,
@@ -187,7 +186,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should return empty array when household has no mutual likes', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       // Create test user profiles without any property interactions
       try {
@@ -213,7 +212,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should detect mutual likes correctly', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes
@@ -276,7 +275,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should handle household activity correctly', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes
@@ -335,7 +334,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should generate household stats correctly', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes
@@ -377,7 +376,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should check potential mutual likes correctly', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes
@@ -424,7 +423,7 @@ describe('Couples E2E Integration Tests', () => {
 
   describe('Performance and Caching', () => {
     test('should cache mutual likes results', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes
@@ -459,7 +458,7 @@ describe('Couples E2E Integration Tests', () => {
     })
 
     test('should clear cache when interactions change', async () => {
-      if (!supabase) return
+      if (!supabase) throw new Error('Supabase client not initialized')
 
       try {
         // Use TestDataFactory which has proper race condition fixes

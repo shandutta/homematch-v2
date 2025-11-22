@@ -18,21 +18,18 @@ import type {
 import type { PropertySearch } from '@/lib/schemas/property'
 import type {
   IPropertyService,
-  PropertyStats,
   IPropertyCrudService,
   IPropertySearchService,
   INeighborhoodService,
+  PropertyStats,
   PropertySearchResult,
+  IPropertyStatsService,
 } from '../interfaces/index'
 import { BaseService } from '../base'
 import type { ISupabaseClientFactory } from '../interfaces'
 import { PropertyCrudService } from './crud'
 import { PropertySearchService } from './search'
 import { NeighborhoodService } from './neighborhood'
-import {
-  PropertyAnalyticsService,
-  type IPropertyAnalyticsService,
-} from './analytics'
 import { GeographicService, type IGeographicService } from './geographic'
 
 /**
@@ -47,7 +44,7 @@ export class PropertyServiceFacade
   readonly crudService: IPropertyCrudService
   readonly searchService: IPropertySearchService
   readonly neighborhoodService: INeighborhoodService
-  readonly analyticsService: IPropertyAnalyticsService
+  readonly statsService: IPropertyStatsService
   readonly geographicService: IGeographicService
 
   constructor(clientFactory?: ISupabaseClientFactory) {
@@ -57,7 +54,7 @@ export class PropertyServiceFacade
     this.crudService = new PropertyCrudService(clientFactory)
     this.searchService = new PropertySearchService(clientFactory)
     this.neighborhoodService = new NeighborhoodService(clientFactory)
-    this.analyticsService = new PropertyAnalyticsService(clientFactory)
+    this.statsService = this.searchService
     this.geographicService = new GeographicService(clientFactory)
   }
 
@@ -158,10 +155,8 @@ export class PropertyServiceFacade
     return this.searchService.getPropertiesByNeighborhood(neighborhoodName)
   }
 
-  async getPropertyStats(): Promise<PropertyStats | null> {
-    // Delegate to analytics service for enhanced stats to maintain compatibility
-    // with validation page that expects enhanced format
-    return this.analyticsService.getPropertyStats()
+  async getPropertyStats(): Promise<PropertyStats> {
+    return this.searchService.getPropertyStats()
   }
 
   // ============================================================================
@@ -200,27 +195,6 @@ export class PropertyServiceFacade
 
   async searchNeighborhoods(query: string): Promise<Neighborhood[]> {
     return this.neighborhoodService.searchNeighborhoods(query)
-  }
-
-  // ============================================================================
-  // ANALYTICS OPERATIONS (delegate to PropertyAnalyticsService)
-  // ============================================================================
-
-  // Additional analytics methods exposed through facade
-  async getAdvancedPropertyStats() {
-    return this.analyticsService.getPropertyStats()
-  }
-
-  async getNeighborhoodStats(neighborhoodId: string) {
-    return this.analyticsService.getNeighborhoodStats(neighborhoodId)
-  }
-
-  async getMarketTrends(timeframe: 'weekly' | 'monthly' | 'quarterly') {
-    return this.analyticsService.getMarketTrends(timeframe)
-  }
-
-  async analyzePropertyPricing(propertyId: string) {
-    return this.analyticsService.analyzePropertyPricing(propertyId)
   }
 
   // ============================================================================
