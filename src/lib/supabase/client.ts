@@ -11,18 +11,21 @@ export function createClient() {
         storage: {
           getItem: (key) => {
             if (typeof window === 'undefined') return null
-            return document.cookie
-              .split('; ')
-              .find((row) => row.startsWith(`${key}=`))
-              ?.split('=')[1] || null
+            return (
+              document.cookie
+                .split('; ')
+                .find((row) => row.startsWith(`${key}=`))
+                ?.split('=')[1] || null
+            )
           },
           setItem: (key, value) => {
             if (typeof window === 'undefined') return
             // Set cookie with proper flags for OAuth flow
             // SameSite=Lax allows cookie to be sent on redirect from Google
             // Max age of 10 minutes is enough for OAuth flow
-            document.cookie = `${key}=${value}; path=/; max-age=600; SameSite=Lax; ${window.location.protocol === 'https:' ? 'Secure;' : ''
-              }`
+            document.cookie = `${key}=${value}; path=/; max-age=600; SameSite=Lax; ${
+              window.location.protocol === 'https:' ? 'Secure;' : ''
+            }`
           },
           removeItem: (key) => {
             if (typeof window === 'undefined') return
