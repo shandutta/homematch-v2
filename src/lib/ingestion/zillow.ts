@@ -7,6 +7,17 @@ import {
 import type { Database, PropertyInsert } from '@/types/database'
 import { defaultZipForCityState } from './default-zips'
 
+const ALLOWED_PROPERTY_TYPES = [
+  'single_family',
+  'condo',
+  'townhome',
+  'multi_family',
+  'manufactured',
+  'land',
+  'other',
+] as const
+type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
+
 const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
 const DEFAULT_MAX_PAGES = 2
@@ -17,6 +28,22 @@ const MAX_BATHROOMS = 9.9
 type FetchLike = typeof fetch
 
 type SupabaseLike = Pick<SupabaseClient<Database>, 'from'>
+
+function normalizePropertyTypeForDb(
+  type: string | null | undefined
+): AllowedPropertyType {
+  const t = type?.toString().toLowerCase() || ''
+  if ((ALLOWED_PROPERTY_TYPES as readonly string[]).includes(t)) {
+    return t as AllowedPropertyType
+  }
+  if (['house', 'singlefamily'].includes(t)) return 'single_family'
+  if (['townhouse'].includes(t)) return 'townhome'
+  if (['multifamily', 'apartment', 'duplex', 'triplex'].includes(t))
+    return 'multi_family'
+  if (['mobile'].includes(t)) return 'manufactured'
+  if (['lot'].includes(t)) return 'land'
+  return 'other'
+}
 
 export type ZillowSearchItem = {
   zpid?: string | number
@@ -371,6 +398,9 @@ export async function ingestZillowLocations(
           summary.totals.transformed++
           inserts.push({
             ...result.data,
+            bedrooms: Math.min(result.data.bedrooms ?? 0, 20),
+            bathrooms: Math.min(result.data.bathrooms ?? 0, 20),
+            property_type: normalizePropertyTypeForDb(result.data.property_type),
             updated_at: new Date().toISOString(),
           })
         } else {

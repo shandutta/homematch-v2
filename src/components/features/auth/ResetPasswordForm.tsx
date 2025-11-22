@@ -82,10 +82,7 @@ export function ResetPasswordForm() {
 
     if (
       !maybeCode &&
-      !(
-        (recoveryToken || recoveryTokenHash) &&
-        recoveryType === 'recovery'
-      ) &&
+      !((recoveryToken || recoveryTokenHash) && recoveryType === 'recovery') &&
       !fragmentTokens
     )
       return
