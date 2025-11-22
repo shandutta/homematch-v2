@@ -2,7 +2,7 @@
 
 > **Consolidated Documentation**: Essential guides for development, testing, architecture, and deployment of HomeMatch.
 
-This directory contains **12 core documents** plus 4 task management files, organized by topic and purpose. Use this index to quickly find the information you need.
+This directory contains the core guides plus task management files, organized by topic and purpose. Use this index to quickly find the information you need.
 
 ## Quick Navigation
 
@@ -45,25 +45,25 @@ This directory contains **12 core documents** plus 4 task management files, orga
 
 ## Current Project Status
 
-**Last Updated**: January 2025  
-**Status**: Active development — dashboard/auth/real-time features are working; search, ML ranking, and collaboration depth are in progress.
+**Last Updated**: November 2025  
+**Status**: Active development — marketing site, Supabase auth, and dashboard swiper are live; search, ML ranking, and collaboration depth are in progress.
 
 ### ✅ Working now
 
-- **Core Features**: Property browsing, swiping, and couples collaboration basics
-- **Database**: Supabase with PostGIS, RLS policies, and real-time updates
-- **Authentication**: Complete auth flow with household management
-- **UI/UX**: Modern design with Framer Motion animations
-- **Testing**: Jest, Vitest, and Playwright suites configured (see `docs/TESTING.md` for coverage and setup)
-- **Performance**: Optimized for Core Web Vitals compliance
+- **Auth**: Supabase auth (email/password + Google) with protected routes
+- **Dashboard**: Swipe with like/pass/view tracking and stats
+- **Couples**: Mutual likes surfaced on dashboard with celebration states
+- **Marketing**: Landing page with feature grid, how-it-works, CTA band, and marketing cards pulled from Supabase/seed
+- **User pages**: Liked/Passed/Viewed lists, profile, settings, validation dashboard
+- **Testing**: Jest, Vitest, and Playwright suites configured (see `docs/TESTING.md` for setup)
 
 ### 🚧 In progress
 
-- **Property Search**: Filters, sorting, and richer browsing controls
+- **Property Search**: Filters and richer browsing beyond dashboard feed
 - **ML Scoring**: Multi-phase recommendation pipeline
-- **Real-time Sync**: Deeper collaboration with live updates
-- **Natural Language**: AI-powered search capabilities
-- **Marketing**: Landing page and onboarding refinements
+- **Households**: Invitations + shared lists/decisions beyond mutual likes
+- **Background Jobs**: Inngest/cron wiring
+- **Marketing/Onboarding**: Additional pages and flows
 
 ## Document Overview
 
@@ -99,7 +99,7 @@ This directory contains **12 core documents** plus 4 task management files, orga
 
 **Documentation is maintained by the HomeMatch development team and updated with each release.**
 
-- **Regular Updates**: Documentation is updated with each major feature
+- **Regular Updates**: Documentation is updated alongside feature work
 - **Version Control**: All documentation changes are tracked in git
 - **Review Process**: Documentation changes go through the same review process as code
 - **Feedback Integration**: Documentation is improved based on developer feedback

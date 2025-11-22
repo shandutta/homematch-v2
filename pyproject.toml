@@ -1,6 +1,0 @@
-[project]
-name = "homematch-v2"
-version = "0.1.0"
-dependencies = [
-    "superclaude>=3.0.0.2",
-]

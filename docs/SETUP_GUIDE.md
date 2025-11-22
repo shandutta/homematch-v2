@@ -2,8 +2,8 @@
 
 📍 **You are here**: [Documentation Hub](./README.md) → **Setup Guide** → [Architecture](./ARCHITECTURE.md) → [Testing](./TESTING.md)
 
-**Last Updated**: August 4, 2025  
-**Status**: Core dashboard/auth implemented; search, ML ranking, collaboration polish, and marketing site are in progress.
+**Last Updated**: November 22, 2025  
+**Status**: Marketing site, Supabase auth, and the dashboard swipe experience are live; property search, ML ranking, households, and jobs are still in progress.
 
 > **📖 Reading Path**: Start here for setup → [ARCHITECTURE.md](./ARCHITECTURE.md) for system design → [TESTING.md](./TESTING.md) for development workflows
 
@@ -21,72 +21,25 @@
 
 ### 🟢 Working Now
 
-> **💡 Quick Reference**
->
-> - Database: 6 tables, 99.1% migration success (2,214 records)
-> - Tests: 100% unit/integration pass rate
-> - Auth: Supabase with Google OAuth integration
-> - Dashboard: Complete property swiper and interaction system
-
-#### Infrastructure & Foundation
-
-- Next.js 15 App Router with TypeScript strict mode
-- Supabase integration with RLS policies
-- PostGIS geographic support
-- Testing infrastructure (Jest, Vitest, Playwright)
-- CI/CD pipeline via GitHub Actions
-- Deployment on Vercel
-
-#### Authentication
-
-- Email/password authentication
-- Google OAuth integration
-- Protected routes with middleware
-- Session management
-- 🔴 **Gap**: User profile creation flow
-
-#### Data Migration
-
-- **2,214 records migrated** (99.1% success rate)
-- 1,123 neighborhoods with boundaries
-- 1,091 properties with metadata
-- PostGIS spatial indexing operational
-
-#### Test Coverage
-
-- **Unit Tests**: 82/82 passing (100%)
-- **Integration Tests**: 36/36 passing (100%)
-- **E2E Tests**: 18/30 passing (60%)
-- **Overall Coverage**: ~75%
-
-#### Dashboard & User Interactions
-
-- **Property Swiper**: Tinder-style swipe interface with react-tinder-card
-- **Interaction System**: Complete like/pass/view tracking with optimistic UI
-- **Real-time Counters**: Dashboard stats with immediate visual feedback
-- **Interaction Pages**: Dedicated views for liked/passed/viewed properties
-- **Visual Enhancements**: Gradient backgrounds, glassmorphism cards
-- **Zillow Integration**: Direct property links with ExternalLink icons
-- **API Routes**: RESTful `/api/interactions` with pagination support
-- **Database Functions**: SQL RPC for efficient summary calculations
-- **Strong Typing**: Full TypeScript coverage with Zod validation
+- **Infrastructure**: Next.js 15 App Router with TypeScript strict; Supabase with RLS and PostGIS migrations in `supabase/migrations`; seed fixtures in `supabase/seed.sql` and `migrated_data/`.
+- **Auth**: Email/password + Google OAuth, protected routes via middleware, profile/settings pages create missing profiles for OAuth users.
+- **Dashboard**: Swipe experience backed by `PropertyService.searchProperties`, optimistic like/pass/view tracking, interaction APIs, mutual likes surfaced with celebration states, and Liked/Passed/Viewed pages.
+- **Marketing**: Landing page (Hero, FeatureGrid, HowItWorks, CTA band) with marketing cards pulled from Supabase properties or `migrated_data/seed-properties.json` fallback.
+- **User/validation**: Profile, Settings, Couples page, and `/validation` dashboard to verify tables, PostGIS, and service health.
+- **APIs**: Interactions, couples mutual likes/stats, marketing properties, and Zillow random-image fallback for demos.
+- **Tooling**: Jest, Vitest, and Playwright suites configured; lint/type-check/format scripts in package.json; CI workflows in `.github/workflows/`.
 
 ### 🟡 In Progress
 
-- **Search**: Service stubs created, implementation pending
-- **ML Scoring**: Schema ready, algorithm pending
-- **Households**: Database ready, features pending
+- Property search UI/filters beyond the dashboard feed
+- ML scoring / recommendation pipeline
+- Household invitations and shared decision lists
+- Background jobs (Inngest) and cron utilities wiring
+- Additional marketing/onboarding flows
 
 ### 🔴 Not Started
 
-- Landing page (marketing)
-- Property listing/grid UI
-- Search implementation
-- ML recommendation system
-- Household collaboration
-- Natural language search
-- Zillow API data sync (UI links complete)
-- Background jobs (Inngest)
+- Natural language search / AI-assisted query translation
 
 ---
 
@@ -217,110 +170,32 @@ Key tables implemented:
 
 ---
 
-## Development Roadmap
+## Development Roadmap (near term)
 
-### Phase 1: MVP Foundation (Weeks 1-2)
-
-#### Landing Page
-
-- Transform app/page.tsx to marketing site
-- Create (marketing) and (app) route groups
-- Implement hero, features, CTA sections
-- Mobile-first responsive design
-
-#### Property UI Components
-
-```
-components/features/properties/
-├── PropertyCard.tsx
-├── PropertyGrid.tsx
-├── PropertyFilters.tsx
-└── SearchBar.tsx
-```
-
-### Phase 2: Core Functionality (Weeks 3-4)
-
-#### Search Implementation
-
-- `/api/properties/search` - Text and filter search
-- `/api/properties/[id]` - Property details
-- `/api/properties/featured` - Homepage properties
-- Pagination and sorting
-
-#### Property Pages
-
-- `/properties` - Listing page with filters
-- `/properties/[id]` - Detail page with gallery
-- Save/favorite functionality
-- Contact forms
-
-### Phase 3: User Features (Weeks 5-6) ✅ **COMPLETED**
-
-#### Dashboard
-
-- ✅ `/dashboard` - User overview with property swiper
-- ✅ `/dashboard/liked` - Liked properties with pagination
-- ✅ `/dashboard/passed` - Passed properties with pagination
-- ✅ `/dashboard/viewed` - Viewed properties with pagination
-- ⏳ `/dashboard/searches` - Search history
-- ⏳ Profile management
-
-#### Households
-
-- Create/join households
-- Member invitations
-- Shared property lists
-- Voting system
-
-### Phase 4: Advanced Features (Weeks 7-8)
-
-#### ML Implementation
-
-- Cold-start recommendations
-- Online learning (Linear Regression)
-- Advanced scoring (LightGBM)
-- Interaction tracking
-
-#### Natural Language Search
-
-- OpenAI integration
-- Query parsing
-- Contextual results
-
-### Phase 5: External Integrations (Weeks 9-10)
-
-#### Zillow API
-
-- Property data sync
-- Price history
-- Market trends
-
-#### Background Jobs
-
-- Inngest configuration
-- Data updates
-- ML training
-- Notifications
-
----
+- Ship property search/listing UI with filters and pagination (and `/api/properties/search`)
+- Add property detail view and richer cards with metadata
+- Wire household invitations + shared lists/decisions on top of existing couples endpoints
+- Introduce ML scoring pipeline and persistence for recommendations
+- Activate background jobs (Inngest/cron) for ingest, status refresh, and notifications
+- Polish onboarding/marketing flows and CTA conversion paths
 
 ## MVP Requirements
 
 ### Must Have
 
 1. ✅ User authentication
-2. ⏳ Landing page
-3. ⏳ Property search
-4. ⏳ Property details
-5. ⏳ Save properties
-6. ⏳ User dashboard
+2. ✅ Landing page
+3. 🚧 Property search
+4. 🚧 Property details
+5. 🚧 Save/favorite properties beyond swipe lists
+6. ✅ User dashboard (swipe + liked/passed/viewed)
 
 ### Post-MVP
 
 - ML recommendations
-- Household features
+- Household collaboration
 - Natural language search
-- External integrations
+- Automated ingest/background integrations
 
 ---
 
@@ -349,62 +224,26 @@ components/features/properties/
 
 ### Code Quality
 
-- Add missing TypeScript types
-- Implement error boundaries
-- Add loading states
-- Improve error handling
+- Harden service error handling consistency (ApiErrorHandler, Supabase client patterns)
+- Trim legacy roadmap code and unused stubs in property search
+- Add stricter typing for preferences and interaction payloads
 
 ### Performance
 
-- Implement React Query
-- Add image optimization
-- Setup monitoring (PostHog)
-- Bundle optimization
+- Improve Supabase query plans/indexes for property feed
+- Measure marketing card/landing performance budgets
+- Add lightweight monitoring hooks (PostHog/Sentry wiring)
+- Keep bundle size checks in CI green
 
 ### Testing
 
-- Complete E2E coverage
-- Add visual regression tests
-- Performance benchmarks
-- Load testing
-
----
-
-## Timeline & Risk Mitigation
-
-- **MVP**: 6 weeks
-- **Full Feature Set**: 12 weeks
-- **Production Ready**: 14 weeks
-
-### Technical Risks
-
-- **ML Complexity**: Start with simple algorithms
-- **API Costs**: Implement aggressive caching
-- **Scale**: Current architecture supports ~10k properties
-
-### Mitigation Strategy
-
-- Incremental feature rollout
-- Performance monitoring from day 1
-- User feedback loops
-- A/B testing infrastructure
+- Run full Jest/Vitest/Playwright regularly; add smoke for marketing API and couples flows
+- Add visual regression coverage for landing hero/feature grid
+- Capture performance baselines (perf:benchmark + Lighthouse)
+- Expand auth + households integration tests once invites ship
 
 ---
 
 ## Summary
 
-**Current State:**
-
-- ✅ 6 core tables deployed with 99.1% migration success (2,214 records)
-- ✅ 100% unit/integration test pass rate, comprehensive testing infrastructure
-- ✅ Complete authentication system with Google OAuth integration
-- ✅ Dashboard and property interaction system fully implemented
-
-**Next Steps:**
-
-- 🟡 Landing page development (marketing site)
-- 🟡 Property search implementation with filters
-- 📋 ML recommendation system implementation
-- 📋 Household collaboration features
-
-**MVP Timeline:** 6 weeks remaining for core features → 12 weeks for full feature set → 14 weeks production ready
+HomeMatch is running with auth, marketing, and dashboard/couples flows. The next milestones are property search + detail experiences, households collaboration, and ML scoring with background jobs. Keep docs in sync with feature work and revisit this guide whenever a new endpoint or page ships.
