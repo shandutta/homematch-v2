@@ -1,8 +1,6 @@
 /* eslint-env node */
 import { config, parse } from 'dotenv'
-import {
-  createClient as createSupabaseClient,
-} from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
 import { fetch as undiciFetch } from 'undici'
 import { execSync } from 'child_process'
@@ -41,10 +39,7 @@ vi.mock('@supabase/supabase-js', async () => {
           },
         }
         const client = actual.createClient(url, key, mergedOptions)
-        supabaseClientCache.set(
-          cacheKey,
-          client
-        )
+        supabaseClientCache.set(cacheKey, client)
       }
       return supabaseClientCache.get(cacheKey)!
     },
