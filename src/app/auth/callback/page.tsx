@@ -20,6 +20,19 @@ function AuthCallbackContent() {
   const [message, setMessage] = useState('Verifying your sign-in…')
   const supabase = createClient()
 
+  const parseFragmentTokens = () => {
+    if (typeof window === 'undefined') return null
+    const hash = window.location.hash
+    if (!hash || !hash.startsWith('#')) return null
+    const params = new URLSearchParams(hash.slice(1))
+    const access_token = params.get('access_token')
+    const refresh_token = params.get('refresh_token')
+    if (access_token && refresh_token) {
+      return { access_token, refresh_token }
+    }
+    return null
+  }
+
   useEffect(() => {
     const error = searchParams.get('error')
     const error_description = searchParams.get('error_description')
@@ -33,6 +46,27 @@ function AuthCallbackContent() {
 
     const exchange = async () => {
       try {
+        const fragmentTokens = parseFragmentTokens()
+        if (fragmentTokens) {
+          const { error: setErrorResult } = await supabase.auth.setSession({
+            access_token: fragmentTokens.access_token,
+            refresh_token: fragmentTokens.refresh_token,
+          })
+          if (setErrorResult) {
+            setMessage(setErrorResult.message || 'Authentication failed.')
+            router.replace('/auth/auth-code-error')
+            return
+          }
+          // Clean up the hash to avoid leaking tokens
+          if (typeof window !== 'undefined' && window.location.hash) {
+            const url = new URL(window.location.href)
+            url.hash = ''
+            window.history.replaceState(null, '', url.toString())
+          }
+          router.replace(next.startsWith('/') ? next : `/${next}`)
+          return
+        }
+
         const code = searchParams.get('code')
         if (!code) {
           setMessage(
