@@ -249,6 +249,22 @@ export class DataTransformer {
       }
 
       // Create property insert object
+      const cappedBedrooms =
+        bedrooms.value === null || bedrooms.value === undefined
+          ? 0
+          : Math.min(bedrooms.value, 20)
+      if (bedrooms.value !== null && bedrooms.value !== undefined && bedrooms.value > 20) {
+        warnings.push(`Bedrooms capped at 20 from ${bedrooms.value}`)
+      }
+
+      const cappedBathrooms =
+        bathrooms.value === null || bathrooms.value === undefined
+          ? 0
+          : Math.min(bathrooms.value, 20)
+      if (bathrooms.value !== null && bathrooms.value !== undefined && bathrooms.value > 20) {
+        warnings.push(`Bathrooms capped at 20 from ${bathrooms.value}`)
+      }
+
       const property: PropertyInsert = {
         zpid: raw.zpid?.toString() || null,
         address: raw.address?.trim() || '',
@@ -256,8 +272,8 @@ export class DataTransformer {
         state: raw.state?.trim() || this.DEFAULT_STATE,
         zip_code: raw.zip_code?.toString().trim() || '',
         price: price.value || 0,
-        bedrooms: bedrooms.value || 0,
-        bathrooms: bathrooms.value || 0,
+        bedrooms: cappedBedrooms,
+        bathrooms: cappedBathrooms,
         square_feet: squareFeet.value,
         property_type: propertyType || null,
         images: images.length > 0 ? images : null,
