@@ -107,8 +107,6 @@ async function ensureProfilesExist() {
     .filter(Boolean)
     .map((user) => ({
       id: user.id,
-      email: user.email,
-      display_name: user.user_metadata?.display_name || user.email,
       onboarding_completed: false,
       preferences: user.user_metadata?.preferences || {},
       updated_at: new Date().toISOString(),
@@ -280,7 +278,6 @@ async function setupTestUsers() {
             .from('user_profiles')
             .upsert({
               id: data.user.id,
-              email: user.email,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
               onboarding_completed: false,
@@ -328,26 +325,36 @@ async function setupTestUsers() {
   await ensureProfilesExist()
 
   // Final verification to avoid silently missing profiles
+  const { data: latestUsers, error: latestUsersError } =
+    await supabase.auth.admin.listUsers()
+  if (latestUsersError || !latestUsers?.users) {
+    console.error(
+      '❌ Could not list users for final profile verification:',
+      latestUsersError?.message || 'unknown error'
+    )
+    process.exit(1)
+  }
+  const targetIds = latestUsers.users
+    .filter((u) => testUsers.some((t) => t.email === u.email))
+    .map((u) => u.id)
+
   const { data: profiles, error: verifyError } = await supabase
     .from('user_profiles')
-    .select('email, id')
-    .in(
-      'email',
-      testUsers.map((u) => u.email)
-    )
+    .select('id')
+    .in('id', targetIds)
 
   if (verifyError) {
     console.error('❌ Could not verify user_profiles:', verifyError.message)
     process.exit(1)
   }
 
-  if ((profiles || []).length !== testUsers.length) {
-    const missingEmails = testUsers
-      .map((u) => u.email)
-      .filter((email) => !(profiles || []).some((p) => p.email === email))
+  if ((profiles || []).length !== targetIds.length) {
+    const missingIds = targetIds.filter(
+      (id) => !(profiles || []).some((p) => p.id === id)
+    )
     console.error(
-      '❌ Missing user_profiles for test users:',
-      missingEmails.join(', ')
+      '❌ Missing user_profiles for test user ids:',
+      missingIds.join(', ')
     )
     process.exit(1)
   }
