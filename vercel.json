@@ -42,15 +42,5 @@
       "source": "/health",
       "destination": "/api/health"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/admin/ingest/zillow?cron_secret=${ZILLOW_CRON_SECRET}",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/admin/status-refresh?cron_secret=${STATUS_REFRESH_CRON_SECRET}",
-      "schedule": "30 9 * * *"
-    }
   ]
 }
