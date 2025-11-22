@@ -132,6 +132,9 @@ describe('Property Schema Validation', () => {
         'condo',
         'townhome',
         'multi_family',
+        'manufactured',
+        'land',
+        'other',
       ]
 
       validPropertyTypes.forEach((type) => {

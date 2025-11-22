@@ -302,12 +302,11 @@ export class PropertyAnalyticsService
 
       // Get comparable properties
       const priceTolerance = property.price * 0.15 // 15% tolerance
-      const { data: comparables } = await supabase
+      let comparableQuery = supabase
         .from('properties')
         .select('*')
         .neq('id', propertyId)
         .eq('is_active', true)
-        .eq('property_type', property.property_type || 'unknown')
         .gte('bedrooms', Math.max(0, property.bedrooms - 1))
         .lte('bedrooms', property.bedrooms + 1)
         .gte('bathrooms', Math.max(0, property.bathrooms - 0.5))
@@ -315,6 +314,15 @@ export class PropertyAnalyticsService
         .gte('price', property.price - priceTolerance)
         .lte('price', property.price + priceTolerance)
         .limit(10)
+
+      if (property.property_type) {
+        comparableQuery = comparableQuery.eq(
+          'property_type',
+          property.property_type
+        )
+      }
+
+      const { data: comparables } = await comparableQuery
 
       const comparableProperties = comparables || []
 

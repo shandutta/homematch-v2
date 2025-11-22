@@ -324,10 +324,14 @@ type NormalizedPropertyType =
 const normalizePropertyType = (
   type?: Property['property_type'] | null
 ): NormalizedPropertyType => {
-  if (!type) return 'house'
-  if (type === 'single_family') return 'house'
-  if (type === 'townhouse' || type === 'townhome') return 'townhome'
-  if (type === 'condo' || type === 'apartment' || type === 'house') return type
+  const rawType = (type || '') as string
+
+  if (!rawType) return 'house'
+  if (rawType === 'single_family' || rawType === 'manufactured') return 'house'
+  if (rawType === 'multi_family' || rawType === 'apartment') return 'apartment'
+  if (rawType === 'townhouse' || rawType === 'townhome') return 'townhome'
+  if (rawType === 'condo') return 'condo'
+  if (rawType === 'house') return 'house'
   return 'other'
 }
 

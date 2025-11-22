@@ -115,17 +115,37 @@ export class RelaxedPropertyTransformer {
         }
       }
 
-      // Relaxed property type validation
-      const validPropertyTypes = ['house', 'condo', 'townhouse', 'apartment']
-      let propertyType = raw.property_type?.toLowerCase()
-      if (propertyType === 'multi_family') {
-        propertyType = 'apartment'
+      // Relaxed property type validation (map legacy values to canonical set)
+      const validPropertyTypes = [
+        'single_family',
+        'condo',
+        'townhome',
+        'multi_family',
+        'manufactured',
+        'land',
+        'other',
+      ]
+      const legacyTypeMap: Record<string, string> = {
+        house: 'single_family',
+        singlefamily: 'single_family',
+        townhouse: 'townhome',
+        apartment: 'multi_family',
+        multifamily: 'multi_family',
+        duplex: 'multi_family',
+        triplex: 'multi_family',
+        mobile: 'manufactured',
+        lot: 'land',
       }
+
+      let propertyType =
+        legacyTypeMap[raw.property_type?.toLowerCase() || ''] ||
+        raw.property_type?.toLowerCase()
+
       if (!propertyType || !validPropertyTypes.includes(propertyType)) {
-        propertyType = 'house' // Default to house
+        propertyType = 'other' // Default to other for unexpected values
         if (raw.property_type) {
           warnings.push(
-            `Unknown property type: ${raw.property_type}, defaulting to house`
+            `Unknown property type: ${raw.property_type}, defaulting to other`
           )
         }
       }
@@ -141,11 +161,7 @@ export class RelaxedPropertyTransformer {
         bedrooms: bedrooms.value || this.DEFAULT_BEDROOMS,
         bathrooms: bathrooms.value || this.DEFAULT_BATHROOMS,
         square_feet: squareFeet.value,
-        property_type: propertyType as
-          | 'house'
-          | 'condo'
-          | 'townhouse'
-          | 'apartment',
+        property_type: propertyType as PropertyInsert['property_type'],
         images: images.length > 0 ? images : null,
         description: null,
         coordinates: coordinates as string | null,

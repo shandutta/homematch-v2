@@ -315,7 +315,7 @@ export class PropertySearchService
     const bathroomRange = 0.5
 
     return this.executeArrayQuery('getSimilarProperties', async (supabase) => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('properties')
         .select('*')
         .eq('is_active', true)
@@ -329,7 +329,12 @@ export class PropertySearchService
           Math.max(0, referenceProperty.bathrooms - bathroomRange)
         )
         .lte('bathrooms', referenceProperty.bathrooms + bathroomRange)
-        .eq('property_type', referenceProperty.property_type || 'unknown')
+
+      if (referenceProperty.property_type) {
+        query = query.eq('property_type', referenceProperty.property_type)
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
         .limit(limit)
 

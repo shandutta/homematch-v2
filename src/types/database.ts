@@ -163,7 +163,7 @@ export type Database = {
           parking_spots: number | null
           price: number
           property_hash: string | null
-          property_type: string | null
+          property_type: PropertyType | null
           square_feet: number | null
           state: string
           updated_at: string | null
@@ -189,7 +189,7 @@ export type Database = {
           parking_spots?: number | null
           price: number
           property_hash?: string | null
-          property_type?: string | null
+          property_type?: PropertyType | null
           square_feet?: number | null
           state: string
           updated_at?: string | null
@@ -215,7 +215,7 @@ export type Database = {
           parking_spots?: number | null
           price?: number
           property_hash?: string | null
-          property_type?: string | null
+          property_type?: PropertyType | null
           square_feet?: number | null
           state?: string
           updated_at?: string | null
@@ -492,7 +492,14 @@ export type PropertyWithNeighborhood = Property & {
 
 export type InteractionType = 'viewed' | 'liked' | 'skip'
 
-export type PropertyType = 'house' | 'condo' | 'townhouse' | 'apartment'
+export type PropertyType =
+  | 'single_family'
+  | 'condo'
+  | 'townhome'
+  | 'multi_family'
+  | 'manufactured'
+  | 'land'
+  | 'other'
 
 export type CollaborationMode = 'independent' | 'shared' | 'weighted'
 
