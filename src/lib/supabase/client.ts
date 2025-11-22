@@ -6,20 +6,29 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        // Use PKCE flow (default) for better security and SSR support
         detectSessionInUrl: true,
-      },
-      cookieOptions: {
-        // Ensure cookies persist across OAuth redirects
-        // CRITICAL: Without these settings, the PKCE code_verifier cookie
-        // gets cleared during the Google OAuth redirect, causing auth to fail
-        name: 'sb-auth-token',
-        // Set maxAge to 10 minutes (enough time to complete OAuth flow)
-        maxAge: 60 * 10,
-        // SameSite=Lax allows cookies to be sent on redirect from Google
-        sameSite: 'lax',
-        // Ensure cookies work in production
-        secure: process.env.NODE_ENV === 'production',
+        // Force storage to use browser cookies instead of localStorage
+        storage: {
+          getItem: (key) => {
+            if (typeof window === 'undefined') return null
+            return document.cookie
+              .split('; ')
+              .find((row) => row.startsWith(`${key}=`))
+              ?.split('=')[1] || null
+          },
+          setItem: (key, value) => {
+            if (typeof window === 'undefined') return
+            // Set cookie with proper flags for OAuth flow
+            // SameSite=Lax allows cookie to be sent on redirect from Google
+            // Max age of 10 minutes is enough for OAuth flow
+            document.cookie = `${key}=${value}; path=/; max-age=600; SameSite=Lax; ${window.location.protocol === 'https:' ? 'Secure;' : ''
+              }`
+          },
+          removeItem: (key) => {
+            if (typeof window === 'undefined') return
+            document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`
+          },
+        },
       },
     }
   )
