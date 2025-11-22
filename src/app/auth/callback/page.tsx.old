@@ -93,46 +93,14 @@ function AuthCallbackContent() {
           return
         }
 
-        // Retry loop for PKCE exchange
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-          retryCount.current = attempt
-
-          if (attempt > 0) {
-            setMessage(
-              `Verifying your sign-in… (attempt ${attempt + 1}/${MAX_RETRIES + 1})`
-            )
-            // Wait before retry with exponential backoff
-            await new Promise((resolve) =>
-              setTimeout(resolve, RETRY_DELAYS[attempt - 1] || 2000)
-            )
-          }
-
-          const { error: sessionError } =
-            await supabase.auth.exchangeCodeForSession(code)
-
-          if (!sessionError) {
-            // Success!
-            router.replace(next.startsWith('/') ? next : `/${next}`)
-            return
-          }
-
-          // If this is the last attempt or not a PKCE error, fail
-          const isPKCEError =
-            sessionError.message.includes('code verifier') ||
-            sessionError.message.includes('pkce')
-          if (attempt === MAX_RETRIES || !isPKCEError) {
-            setMessage(sessionError.message || 'Authentication failed.')
-            console.error('OAuth callback error (after retries)', sessionError)
-            router.replace('/auth/auth-code-error')
-            return
-          }
-
-          // Log retry for debugging
-          console.warn(
-            `PKCE exchange attempt ${attempt + 1} failed, retrying...`,
-            sessionError.message
-          )
-        }
+        // NOTE: We're using implicit flow (flowType: 'implicit' in client.ts)
+        // which returns tokens in the URL hash, NOT an authorization code.
+        // If we're seeing a code here, it means implicit flow isn't working
+        // and we're back to PKCE, which has cookie issues.
+        // Skip the exchange and redirect to error page.
+        console.warn('Received authorization code but using implicit flow - this should not happen')
+        setMessage('Authentication configuration error. Please contact support.')
+        router.replace('/auth/auth-code-error')
       } catch (err) {
         setMessage(
           err instanceof Error ? err.message : 'Authentication failed.'
