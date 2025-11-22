@@ -50,7 +50,7 @@
     },
     {
       "path": "/api/admin/status-refresh?cron_secret=${STATUS_REFRESH_CRON_SECRET}",
-      "schedule": "15 * * * *"
+      "schedule": "30 9 * * *"
     }
   ]
 }

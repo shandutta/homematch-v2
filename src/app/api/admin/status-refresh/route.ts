@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import type { PropertyInsert } from '@/types/database'
 
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
     )
   }
 
-  const updates: any[] = []
+  const updates: PropertyInsert[] = []
   let requests = 0
   let skipped = 0
   let rateLimitHits = 0
