@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -33,6 +33,8 @@ function AuthCallbackContent() {
     return null
   }
 
+  const processing = useRef(false)
+
   useEffect(() => {
     const error = searchParams.get('error')
     const error_description = searchParams.get('error_description')
@@ -45,6 +47,9 @@ function AuthCallbackContent() {
     }
 
     const exchange = async () => {
+      if (processing.current) return
+      processing.current = true
+
       try {
         const fragmentTokens = parseFragmentTokens()
         if (fragmentTokens) {
@@ -69,6 +74,14 @@ function AuthCallbackContent() {
 
         const code = searchParams.get('code')
         if (!code) {
+          // If no code and no fragments, we might already be logged in or it's a direct visit
+          // Check if we have a session
+          const { data } = await supabase.auth.getSession()
+          if (data.session) {
+            router.replace(next.startsWith('/') ? next : `/${next}`)
+            return
+          }
+
           setMessage(
             'Missing authentication code. Please try signing in again.'
           )
