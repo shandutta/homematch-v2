@@ -118,6 +118,67 @@ const applyLocalEnv = () => {
   process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 }
 
+const tryStartDocker = () => {
+  const platform = process.platform
+  const attempts = []
+
+  if (platform === 'darwin') {
+    attempts.push('open -ga Docker')
+  } else if (platform === 'win32') {
+    attempts.push(
+      'powershell.exe -Command "Start-Process \\"Docker Desktop\\" -ErrorAction SilentlyContinue"'
+    )
+  } else {
+    // Linux/WSL: try common service starters without sudo to avoid prompts
+    attempts.push('systemctl start docker')
+    attempts.push('service docker start')
+  }
+
+  for (const cmd of attempts) {
+    try {
+      execSync(cmd, { stdio: 'ignore' })
+      return true
+    } catch {
+      // try next
+    }
+  }
+  return false
+}
+
+const ensureDockerRunning = () => {
+  try {
+    execSync('docker info', { stdio: 'pipe' })
+    return
+  } catch {
+    // Fall through
+  }
+
+  const started = tryStartDocker()
+  if (!started) {
+    console.error('❌ Docker is not available or not running.')
+    console.error(
+      '   Please start Docker (Docker Desktop or system docker service) and rerun.'
+    )
+    process.exit(1)
+  }
+
+  const timeoutMs = 60_000
+  const pollMs = 2_000
+  const start = Date.now()
+
+  while (Date.now() - start < timeoutMs) {
+    try {
+      execSync('docker info', { stdio: 'pipe' })
+      return
+    } catch {
+      sleepSync(pollMs)
+    }
+  }
+
+  console.error('❌ Docker did not become ready after 60s. Please start it manually and retry.')
+  process.exit(1)
+}
+
 async function setupIntegrationTests() {
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('🔧 Setting up integration test environment...\n')
@@ -154,6 +215,8 @@ async function setupIntegrationTests() {
 
     // Step 2: Start Supabase locally if unhealthy and allowed
     if (!supabaseHealthy && canStartLocally) {
+      ensureDockerRunning()
+
       if (process.env.DEBUG_TEST_SETUP) {
         console.debug('\n2️⃣  Starting Supabase (local/proxy)...')
         console.debug('   This may take a minute...')
@@ -206,6 +269,8 @@ async function setupIntegrationTests() {
 
     // Step 2b: Always reset for deterministic state when using local/proxy
     if (canStartLocally && !dbResetPerformed) {
+      ensureDockerRunning()
+
       if (process.env.DEBUG_TEST_SETUP) {
         console.debug('\n2️⃣  Resetting database for a clean test state...')
       }
