@@ -67,7 +67,10 @@ describe('VerifyEmailForm', () => {
 
     render(<VerifyEmailForm />)
 
-    await user.type(screen.getByTestId('verify-email-input'), 'person@example.com')
+    await user.type(
+      screen.getByTestId('verify-email-input'),
+      'person@example.com'
+    )
     await user.type(screen.getByTestId('verify-code-input'), '123456')
     await user.click(screen.getByTestId('verify-submit'))
 

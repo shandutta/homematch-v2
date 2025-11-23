@@ -27,9 +27,7 @@ export type SignupData = z.infer<typeof SignupSchema>
 
 export const VerifyEmailSchema = z.object({
   email: z.string().email('Invalid email address'),
-  token: z
-    .string()
-    .regex(/^\d{6}$/, 'Enter the 6-digit code from your email'),
+  token: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your email'),
 })
 
 export type VerifyEmailData = z.infer<typeof VerifyEmailSchema>
