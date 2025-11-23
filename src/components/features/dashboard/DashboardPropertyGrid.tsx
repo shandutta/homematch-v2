@@ -53,12 +53,12 @@ export function DashboardPropertyGrid({
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return
     const mq = window.matchMedia('(max-width: 1024px)')
-    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+    const handleChange = (event: MediaQueryListEvent) => {
       setIsMobile(event.matches)
     }
-    handleChange(mq)
-    mq.addEventListener('change', handleChange as EventListener)
-    return () => mq.removeEventListener('change', handleChange as EventListener)
+    setIsMobile(mq.matches)
+    mq.addEventListener('change', handleChange)
+    return () => mq.removeEventListener('change', handleChange)
   }, [])
 
   // Track views for the currently focused card in mobile mode
@@ -109,9 +109,7 @@ export function DashboardPropertyGrid({
             trigger={celebrationTrigger?.type === 'mutual-like'}
             count={8}
           />
-          <SuccessConfetti
-            trigger={celebrationTrigger?.type === 'milestone'}
-          />
+          <SuccessConfetti trigger={celebrationTrigger?.type === 'milestone'} />
         </Suspense>
 
         <SwipeablePropertyCard
