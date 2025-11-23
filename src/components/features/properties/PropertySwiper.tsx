@@ -120,7 +120,7 @@ export function PropertySwiper({
 
   if (isLoading) {
     return (
-      <div className="relative mx-auto h-[600px] w-full max-w-md">
+      <div className="relative mx-auto h-[560px] w-full max-w-md pb-16">
         <PropertyCardSkeleton />
       </div>
     )
