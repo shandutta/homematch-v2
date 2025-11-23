@@ -168,14 +168,14 @@ export function DashboardPropertyGrid({
         <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
           <button
             type="button"
-            className="rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-white/10 text-white shadow-sm"
+            className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors"
             onClick={() => setViewMode('grid')}
           >
             Grid
           </button>
           <button
             type="button"
-            className="rounded-full px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-white"
+            className="text-muted-foreground rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:text-white"
             onClick={() => setViewMode('stack')}
           >
             Card stack
