@@ -132,6 +132,9 @@ const tryStartDocker = () => {
     // Linux/WSL: try common service starters without sudo to avoid prompts
     attempts.push('systemctl start docker')
     attempts.push('service docker start')
+    // If that fails, try non-interactive sudo (will fail fast if password needed)
+    attempts.push('sudo -n systemctl start docker')
+    attempts.push('sudo -n service docker start')
   }
 
   for (const cmd of attempts) {
@@ -175,7 +178,9 @@ const ensureDockerRunning = () => {
     }
   }
 
-  console.error('❌ Docker did not become ready after 60s. Please start it manually and retry.')
+  console.error(
+    '❌ Docker did not become ready after 60s. Please start it manually and retry.'
+  )
   process.exit(1)
 }
 
