@@ -93,7 +93,11 @@ describe('PreferencesSection', () => {
     // Property types
     expect(screen.getByLabelText('Single Family Home')).toBeChecked()
     expect(screen.getByLabelText('Condo/Apartment')).not.toBeChecked()
-    expect(screen.getByLabelText('Townhouse')).toBeChecked()
+    expect(screen.getByLabelText('Townhome')).toBeChecked()
+    expect(screen.getByLabelText('Multi-family / Duplex')).toBeChecked()
+    expect(screen.getByLabelText('Manufactured / Mobile')).toBeChecked()
+    expect(screen.getByLabelText('Land / Lots')).toBeChecked()
+    expect(screen.getByLabelText('Other / Unique')).toBeChecked()
 
     // Must-have features
     expect(screen.getByLabelText('Parking')).toBeChecked()
@@ -178,8 +182,12 @@ describe('PreferencesSection', () => {
             house: false,
             single_family: false,
             condo: true,
-            townhouse: true,
             townhome: true,
+            townhouse: true,
+            multi_family: true,
+            manufactured: true,
+            land: true,
+            other: true,
           }),
         }),
       })

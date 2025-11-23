@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
+import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import { toast } from 'sonner'
 import { Loader2, Save } from 'lucide-react'
 
@@ -25,12 +26,52 @@ interface PreferencesSectionProps {
   onProfileUpdate?: (profile: UserProfile) => void
 }
 
-type PropertyTypeKey = 'single_family' | 'condo' | 'townhome'
+type PropertyTypeKey = (typeof PROPERTY_TYPE_VALUES)[number]
 type PropertyTypeLegacyKey = 'house' | 'townhouse'
 type PropertyTypePreferences = Partial<
   Record<PropertyTypeKey | PropertyTypeLegacyKey, boolean>
 >
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
+
+const PROPERTY_TYPE_LABELS: Record<
+  PropertyTypeKey,
+  { label: string; helper: string }
+> = {
+  single_family: {
+    label: 'Single Family Home',
+    helper: 'Detached homes & standalone properties',
+  },
+  condo: {
+    label: 'Condo/Apartment',
+    helper: 'Condo towers & multi-family buildings',
+  },
+  townhome: {
+    label: 'Townhome',
+    helper: 'Attached homes with multiple floors',
+  },
+  multi_family: {
+    label: 'Multi-family / Duplex',
+    helper: 'Duplexes, triplexes, and small multi-unit homes',
+  },
+  manufactured: {
+    label: 'Manufactured / Mobile',
+    helper: 'Mobile, prefab, and manufactured homes',
+  },
+  land: {
+    label: 'Land / Lots',
+    helper: 'Empty lots and build-ready parcels',
+  },
+  other: {
+    label: 'Other / Unique',
+    helper: 'Mixed-use, investment, or unique spaces',
+  },
+}
+
+const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
+  PROPERTY_TYPE_VALUES.reduce((acc, type) => {
+    acc[type] = true
+    return acc
+  }, {} as Record<PropertyTypeKey, boolean>)
 
 export function PreferencesSection({
   user,
@@ -58,24 +99,27 @@ export function PreferencesSection({
   )
   const [bedrooms, setBedrooms] = useState(preferences.bedrooms || 2)
   const [bathrooms, setBathrooms] = useState(preferences.bathrooms || 2)
-  const defaultPropertyTypes: Record<PropertyTypeKey, boolean> = {
-    single_family: true,
-    condo: true,
-    townhome: true,
-  }
   const normalizePropertyTypes = (
     existing?: PropertyTypePreferences
-  ): Record<PropertyTypeKey, boolean> => ({
-    single_family:
-      existing?.single_family ??
-      existing?.house ??
-      defaultPropertyTypes.single_family,
-    condo: existing?.condo ?? defaultPropertyTypes.condo,
-    townhome:
-      existing?.townhome ??
-      existing?.townhouse ??
-      defaultPropertyTypes.townhome,
-  })
+  ): Record<PropertyTypeKey, boolean> => {
+    return PROPERTY_TYPE_VALUES.reduce<Record<PropertyTypeKey, boolean>>(
+      (acc, type) => {
+        const legacyValue =
+          type === 'single_family'
+            ? existing?.house
+            : type === 'townhome'
+              ? existing?.townhouse
+              : undefined
+
+        acc[type] =
+          (existing?.[type] as boolean | undefined) ??
+          legacyValue ??
+          defaultPropertyTypes[type]
+        return acc
+      },
+      {} as Record<PropertyTypeKey, boolean>
+    )
+  }
 
   const [propertyTypes, setPropertyTypes] = useState<
     Record<PropertyTypeKey, boolean>
@@ -96,23 +140,11 @@ export function PreferencesSection({
     key: PropertyTypeKey
     label: string
     helper: string
-  }> = [
-    {
-      key: 'single_family',
-      label: 'Single Family Home',
-      helper: 'Detached homes & standalone properties',
-    },
-    {
-      key: 'condo',
-      label: 'Condo/Apartment',
-      helper: 'Condo towers & multi-family buildings',
-    },
-    {
-      key: 'townhome',
-      label: 'Townhouse',
-      helper: 'Attached homes with multiple floors',
-    },
-  ]
+  }> = PROPERTY_TYPE_VALUES.map((type) => ({
+    key: type,
+    label: PROPERTY_TYPE_LABELS[type].label,
+    helper: PROPERTY_TYPE_LABELS[type].helper,
+  }))
 
   const mustHaveOptions: Array<{
     key: MustHaveKey
@@ -136,18 +168,18 @@ export function PreferencesSection({
   const toPersistedPropertyTypes = (
     types: Record<PropertyTypeKey, boolean>
   ): PropertyTypePreferences => {
-    const singleFamily = Boolean(types.single_family)
-    const condo = Boolean(types.condo)
-    const townhome = Boolean(types.townhome)
+    const canonicalTypes = PROPERTY_TYPE_VALUES.reduce<
+      PropertyTypePreferences
+    >((acc, type) => {
+      acc[type] = Boolean(types[type])
+      return acc
+    }, {})
 
     return {
-      // Canonical keys
-      single_family: singleFamily,
-      condo,
-      townhome,
+      ...canonicalTypes,
       // Legacy compatibility keys
-      house: singleFamily,
-      townhouse: townhome,
+      house: canonicalTypes.single_family,
+      townhouse: canonicalTypes.townhome,
     }
   }
 
