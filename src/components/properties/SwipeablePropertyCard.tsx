@@ -139,7 +139,10 @@ export function SwipeablePropertyCard({
   if (!currentProperty) {
     return (
       <div
-        className={cn('relative mx-auto h-[600px] w-full max-w-md', className)}
+        className={cn(
+          'relative mx-auto h-[560px] w-full max-w-md pb-16',
+          className
+        )}
       >
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
@@ -157,7 +160,10 @@ export function SwipeablePropertyCard({
 
   return (
     <div
-      className={cn('relative mx-auto h-[600px] w-full max-w-md', className)}
+      className={cn(
+        'relative mx-auto h-[560px] w-full max-w-md pb-16',
+        className
+      )}
     >
       {/* Card Stack - Background Cards */}
       <div className="relative h-full w-full">
@@ -301,7 +307,7 @@ export function SwipeablePropertyCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute -bottom-20 left-1/2 flex -translate-x-1/2 items-center space-x-4">
+      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center space-x-4">
         <MotionButton
           onClick={() => swipeCard('left')}
           className="flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full bg-white/10 text-red-500 shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-red-500/20 focus-visible:ring-4 focus-visible:ring-red-400/50 focus-visible:outline-none active:scale-95"

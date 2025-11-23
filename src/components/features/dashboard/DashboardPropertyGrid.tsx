@@ -49,6 +49,7 @@ export function DashboardPropertyGrid({
 }: DashboardPropertyGridProps) {
   // Detect small screens to switch to swipe-first layout
   const [isMobile, setIsMobile] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'stack'>('grid')
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return
@@ -61,16 +62,24 @@ export function DashboardPropertyGrid({
     return () => mq.removeEventListener('change', handleChange)
   }, [])
 
-  // Track views for the currently focused card in mobile mode
+  useEffect(() => {
+    if (isMobile) {
+      setViewMode('stack')
+    }
+  }, [isMobile])
+
+  const isStackView = isMobile || viewMode === 'stack'
+
+  // Track views for the currently focused card in stack mode
   const viewedRef = useRef(new Set<string>())
 
   useEffect(() => {
-    if (!isMobile || !onView || properties.length === 0) return
+    if (!isStackView || !onView || properties.length === 0) return
     const currentId = properties[0]?.id
     if (!currentId || viewedRef.current.has(currentId)) return
     viewedRef.current.add(currentId)
     onView(currentId)
-  }, [isMobile, onView, properties])
+  }, [isStackView, onView, properties])
 
   if (isLoading) {
     return (
@@ -101,9 +110,38 @@ export function DashboardPropertyGrid({
   }
 
   // Mobile: Tinder-style single-card stack with swipe + buttons
-  if (isMobile) {
+  if (isStackView) {
     return (
       <div className="relative">
+        {!isMobile && (
+          <div className="mb-4 flex justify-end">
+            <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
+              <button
+                type="button"
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                  viewMode === 'stack'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-white'
+                }`}
+                onClick={() => setViewMode('stack')}
+              >
+                Card stack
+              </button>
+              <button
+                type="button"
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-white'
+                }`}
+                onClick={() => setViewMode('grid')}
+              >
+                Grid
+              </button>
+            </div>
+          </div>
+        )}
+
         <Suspense fallback={null}>
           <FloatingHearts
             trigger={celebrationTrigger?.type === 'mutual-like'}
@@ -126,6 +164,25 @@ export function DashboardPropertyGrid({
   // Desktop/tablet: grid of cards with inline like/pass actions
   return (
     <div className="relative">
+      <div className="mb-4 flex justify-end">
+        <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
+          <button
+            type="button"
+            className="rounded-full px-4 py-2 text-sm font-semibold transition-colors bg-white/10 text-white shadow-sm"
+            onClick={() => setViewMode('grid')}
+          >
+            Grid
+          </button>
+          <button
+            type="button"
+            className="rounded-full px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-white"
+            onClick={() => setViewMode('stack')}
+          >
+            Card stack
+          </button>
+        </div>
+      </div>
+
       <Suspense fallback={null}>
         <FloatingHearts
           trigger={celebrationTrigger?.type === 'mutual-like'}
