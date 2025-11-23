@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type ReactNode,
 } from 'react'
 import { Property } from '@/lib/schemas/property'
@@ -13,6 +14,7 @@ import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
+import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
 
 const FloatingHearts = lazy(() =>
   import('@/components/couples/CouplesMicroInteractions').then((m) => ({
@@ -45,6 +47,31 @@ export function DashboardPropertyGrid({
   celebrationTrigger,
   onView,
 }: DashboardPropertyGridProps) {
+  // Detect small screens to switch to swipe-first layout
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return
+    const mq = window.matchMedia('(max-width: 1024px)')
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(event.matches)
+    }
+    handleChange(mq)
+    mq.addEventListener('change', handleChange as EventListener)
+    return () => mq.removeEventListener('change', handleChange as EventListener)
+  }, [])
+
+  // Track views for the currently focused card in mobile mode
+  const viewedRef = useRef(new Set<string>())
+
+  useEffect(() => {
+    if (!isMobile || !onView || properties.length === 0) return
+    const currentId = properties[0]?.id
+    if (!currentId || viewedRef.current.has(currentId)) return
+    viewedRef.current.add(currentId)
+    onView(currentId)
+  }, [isMobile, onView, properties])
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -73,6 +100,32 @@ export function DashboardPropertyGrid({
     )
   }
 
+  // Mobile: Tinder-style single-card stack with swipe + buttons
+  if (isMobile) {
+    return (
+      <div className="relative">
+        <Suspense fallback={null}>
+          <FloatingHearts
+            trigger={celebrationTrigger?.type === 'mutual-like'}
+            count={8}
+          />
+          <SuccessConfetti
+            trigger={celebrationTrigger?.type === 'milestone'}
+          />
+        </Suspense>
+
+        <SwipeablePropertyCard
+          properties={properties}
+          currentIndex={0}
+          onDecision={onDecision}
+          showHints
+          className="max-w-md"
+        />
+      </div>
+    )
+  }
+
+  // Desktop/tablet: grid of cards with inline like/pass actions
   return (
     <div className="relative">
       <Suspense fallback={null}>
