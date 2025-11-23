@@ -404,11 +404,23 @@ configure_cron_auto_commit() {
   if ! $SETUP_CRON_AUTOCOMMIT; then
     return
   fi
-  if [[ ! -f "$OPENROUTER_KEY_FILE" ]]; then
-    warn "OpenRouter key file not found at $OPENROUTER_KEY_FILE; skipping auto-commit cron."
+
+  local node_bin pnpm_bin cron_line env_local key_env key_source
+  env_local="$ROOT_DIR/.env.local"
+  key_env=""
+  key_source=""
+
+  if [[ -f "$env_local" ]] && grep -Eq '^OPENROUTER_API_KEY=' "$env_local"; then
+    key_source="$env_local"
+    # No need to inline the key; dotenv in auto-commit will load it.
+  elif [[ -f "$OPENROUTER_KEY_FILE" ]]; then
+    key_source="$OPENROUTER_KEY_FILE"
+    key_env="OPENROUTER_API_KEY=$(cat "$OPENROUTER_KEY_FILE")"
+  else
+    warn "OpenRouter API key not found in $env_local or $OPENROUTER_KEY_FILE; skipping auto-commit cron."
     return
   fi
-  local node_bin pnpm_bin cron_line
+
   node_bin="$(command -v node || true)"
   pnpm_bin="$(command -v pnpm || true)"
   if [[ -z "$node_bin" || -z "$pnpm_bin" ]]; then
@@ -416,9 +428,10 @@ configure_cron_auto_commit() {
     return
   fi
   ensure_log_dir
-  cron_line="*/15 * * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin COREPACK_HOME=$ROOT_DIR/.corepack-cache OPENROUTER_API_KEY=\$(cat $OPENROUTER_KEY_FILE) $pnpm_bin auto:commit >> $HOME/auto-commit.log 2>&1"
+
+  cron_line="*/15 * * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin COREPACK_HOME=$ROOT_DIR/.corepack-cache ${key_env:+$key_env }$pnpm_bin auto:commit >> $HOME/auto-commit.log 2>&1"
   ensure_cron_line "$cron_line"
-  log "Installed auto-commit cron (15m)."
+  log "Installed auto-commit cron (15m) using OpenRouter key from ${key_source}."
 }
 
 copy_env_file() {

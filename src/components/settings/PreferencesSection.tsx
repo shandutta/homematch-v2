@@ -68,10 +68,13 @@ const PROPERTY_TYPE_LABELS: Record<
 }
 
 const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
-  PROPERTY_TYPE_VALUES.reduce((acc, type) => {
-    acc[type] = true
-    return acc
-  }, {} as Record<PropertyTypeKey, boolean>)
+  PROPERTY_TYPE_VALUES.reduce(
+    (acc, type) => {
+      acc[type] = true
+      return acc
+    },
+    {} as Record<PropertyTypeKey, boolean>
+  )
 
 export function PreferencesSection({
   user,
@@ -168,12 +171,13 @@ export function PreferencesSection({
   const toPersistedPropertyTypes = (
     types: Record<PropertyTypeKey, boolean>
   ): PropertyTypePreferences => {
-    const canonicalTypes = PROPERTY_TYPE_VALUES.reduce<
-      PropertyTypePreferences
-    >((acc, type) => {
-      acc[type] = Boolean(types[type])
-      return acc
-    }, {})
+    const canonicalTypes = PROPERTY_TYPE_VALUES.reduce<PropertyTypePreferences>(
+      (acc, type) => {
+        acc[type] = Boolean(types[type])
+        return acc
+      },
+      {}
+    )
 
     return {
       ...canonicalTypes,
