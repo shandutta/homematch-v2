@@ -173,7 +173,7 @@ export function VerifyEmailForm() {
           </form>
         </Form>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-center text-sm">
           Already confirmed?{' '}
           <Link
             href="/login"
