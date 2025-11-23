@@ -25,6 +25,17 @@ Run manually:
 OPENROUTER_API_KEY=sk-or-v1-... pnpm auto:commit
 ```
 
+Or drop the key into a local env file (ignored by git) and just run the script:
+
+```bash
+# .env.local
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_REFERER=https://your.domain
+OPENROUTER_TITLE="Auto Commit Bot"
+
+pnpm auto:commit
+```
+
 If there are no pending changes, the script exits quietly. Otherwise it:
 
 1. Collects `git status`, `git diff --stat`, and the full diff.

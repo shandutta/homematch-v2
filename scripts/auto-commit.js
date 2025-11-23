@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 'use strict'
 
+// Load local env so OPENROUTER_API_KEY can live in .env/.env.local
+const dotenv = require('dotenv')
+dotenv.config()
+dotenv.config({ path: '.env.local', override: true })
+
 /**
  * Simple automation helper that:
  * 1. Checks for pending git changes.
