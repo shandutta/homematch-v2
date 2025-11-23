@@ -15,6 +15,16 @@ export default function LoginPage() {
 
         <LoginForm />
 
+        <div className="text-center text-sm text-gray-600">
+          Have a verification code?{' '}
+          <Link
+            href="/verify-email"
+            className="font-medium text-blue-600 hover:text-blue-500"
+          >
+            Verify email
+          </Link>
+        </div>
+
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}

@@ -103,6 +103,10 @@ export function SignupForm() {
   }
 
   if (success) {
+    const verificationLink = lastEmail
+      ? `/verify-email?email=${encodeURIComponent(lastEmail)}`
+      : '/verify-email'
+
     return (
       <Card className="mx-auto w-full max-w-md">
         <CardContent className="space-y-4 pt-6">
@@ -111,7 +115,9 @@ export function SignupForm() {
               {lastEmail
                 ? `Check ${lastEmail} for a verification link to complete your account setup.`
                 : 'Check your email for a verification link to complete your account setup.'}{' '}
-              If it does not arrive within a minute, you can resend it below.
+              If your email includes a 6-digit code, you can enter it using the
+              button below. If it does not arrive within a minute, you can
+              resend it below.
             </AlertDescription>
           </Alert>
 
@@ -130,6 +136,10 @@ export function SignupForm() {
           )}
 
           <div className="space-y-3">
+            <Button className="w-full" asChild>
+              <Link href={verificationLink}>Enter verification code</Link>
+            </Button>
+
             <Button
               variant="outline"
               className="w-full"

@@ -82,6 +82,11 @@ const mockSupabaseClient: any = {
       data: { user: null, session: null },
       error: null,
     })),
+    verifyOtp: jest.fn(async () => ({
+      data: { user: null, session: null },
+      error: null,
+    })),
+    resend: jest.fn(async () => ({ data: null, error: null })),
     resetPasswordForEmail: jest.fn(async () => ({ data: {}, error: null })),
     updateUser: jest.fn(async () => ({ data: { user: null }, error: null })),
     onAuthStateChange: jest.fn(() => ({
