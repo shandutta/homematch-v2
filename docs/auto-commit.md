@@ -54,4 +54,6 @@ pnpm auto:commit >> /home/shan/auto-commit.log 2>&1
 
 Adjust the Referer/Title values to match your own site or GitHub profile as recommended by OpenRouter.
 
+If you use `scripts/setup-dev-box.sh --setup-cron-auto-commit`, the cron it installs will now prefer `OPENROUTER_API_KEY` from `.env.local` (since the script loads it via `dotenv`) and only fall back to `~/.config/openrouter.key` when that env entry is missing.
+
 > **Tip:** Start with `AUTO_COMMIT_PUSH=false` until you are confident in the flow. You can also combine this script with git hooks or CI checks to improve safety.
