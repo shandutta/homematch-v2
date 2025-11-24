@@ -12,7 +12,6 @@ This directory contains the core guides plus task management files, organized by
 | **[ARCHITECTURE.md](./ARCHITECTURE.md)**                         | Complete system architecture        | Tech stack, database, security patterns, API reference, custom hooks |
 | **[REFACTORING_ARCHITECTURE.md](./REFACTORING_ARCHITECTURE.md)** | PropertyService refactoring guide   | Implementation status, migration strategy, performance metrics       |
 | **[TESTING.md](./TESTING.md)**                                   | Testing & development workflows     | Unit/integration/E2E testing, git workflows, debugging, deployment   |
-| **[PERFORMANCE.md](./PERFORMANCE.md)**                           | Performance optimization guide      | Core Web Vitals, monitoring, testing, optimization strategies        |
 | **[STYLE_GUIDE.md](./STYLE_GUIDE.md)**                           | UI/UX design & component guidelines | Design system, component development, accessibility standards        |
 | **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)**                 | Code quality & analysis reports     | Landing page analysis, performance assessments, best practices       |
 | **[RAPIDAPI_ZILLOW.md](./RAPIDAPI_ZILLOW.md)**                   | External API integration            | Zillow API endpoints, authentication, data sync                      |
@@ -40,8 +39,7 @@ This directory contains the core guides plus task management files, organized by
 
 1. **[TESTING.md](./TESTING.md)** - Complete testing strategy and CI/CD integration
 2. **[CI_INTEGRATION_TESTS.md](./CI_INTEGRATION_TESTS.md)** - Continuous integration and test automation
-3. **[PERFORMANCE.md](./PERFORMANCE.md)** - Performance monitoring and optimization
-4. **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)** - Quality analysis and production readiness
+3. **[PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)** - Quality analysis and production readiness
 
 ## Current Project Status
 
@@ -73,7 +71,6 @@ This directory contains the core guides plus task management files, organized by
 - **ARCHITECTURE.md**: System design, database schema, security patterns, and API reference
 - **REFACTORING_ARCHITECTURE.md**: PropertyService refactoring guide with implementation status
 - **TESTING.md**: Complete testing strategy and quality assurance
-- **PERFORMANCE.md**: Optimization guide and monitoring setup
 - **STYLE_GUIDE.md**: Design system, component development guidelines, and accessibility
 - **PROJECT_ANALYSIS.md**: Code quality analysis, performance assessments, and best practices
 - **RAPIDAPI_ZILLOW.md**: External API integration reference
