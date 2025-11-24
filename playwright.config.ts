@@ -42,9 +42,12 @@ const workerSource = hasValidWorkerOverride
     ? 'CI default (2)'
     : `auto based on logical cores (capped at ${localWorkerCap})`
 
-console.log(
-  `🧪 Playwright: ${cpuCount} logical cores, ${totalMemGb}GB RAM (${freeMemGb}GB free). Workers=${workers} (${workerSource}).`
-)
+// Only log from main process to avoid spamming logs (config is loaded by each worker)
+if (!process.env.TEST_WORKER_INDEX) {
+  console.log(
+    `🧪 Playwright: ${cpuCount} logical cores, ${totalMemGb}GB RAM (${freeMemGb}GB free). Workers=${workers} (${workerSource}).`
+  )
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
