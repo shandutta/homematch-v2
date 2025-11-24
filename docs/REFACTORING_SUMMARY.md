@@ -181,7 +181,6 @@ FEATURE_NEW_ERROR_HANDLING=false        # Error handling toggle
 ```bash
 pnpm run test:safety-net              # Backward compatibility
 pnpm run test:refactoring-targets     # New service validation
-pnpm run perf:benchmark               # Performance regression
 pnpm run validate:deployment          # Production readiness
 ```
 

@@ -239,7 +239,6 @@ Key tables implemented:
 
 - Run full Jest/Vitest/Playwright regularly; add smoke for marketing API and couples flows
 - Add visual regression coverage for landing hero/feature grid
-- Capture performance baselines (perf:benchmark + Lighthouse)
 - Expand auth + households integration tests once invites ship
 
 ---
