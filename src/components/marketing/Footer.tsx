@@ -51,13 +51,13 @@ export function Footer() {
           {/* Product */}
           <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Product
             </h4>
             <ul
-              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
+              className="text-token-sm space-y-0 leading-none text-white/70 lg:space-y-3 lg:leading-normal"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -99,13 +99,13 @@ export function Footer() {
           {/* Company */}
           <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Company
             </h4>
             <ul
-              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
+              className="text-token-sm space-y-0 leading-none text-white/70 lg:space-y-3 lg:leading-normal"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -146,13 +146,13 @@ export function Footer() {
           {/* Legal */}
           <div className="mt-4 text-center lg:mt-0 lg:text-left">
             <h4
-              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Legal
             </h4>
             <ul
-              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
+              className="text-token-sm space-y-0 leading-none text-white/70 lg:space-y-3 lg:leading-normal"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>

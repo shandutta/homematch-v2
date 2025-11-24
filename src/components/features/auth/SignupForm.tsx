@@ -33,6 +33,7 @@ export function SignupForm() {
 
   const form = useValidatedForm(SignupSchema, {
     email: '',
+    displayName: '',
     password: '',
     confirmPassword: '',
   })
@@ -46,6 +47,9 @@ export function SignupForm() {
       password: data.password,
       options: {
         emailRedirectTo: buildBrowserRedirectUrl(),
+        data: {
+          display_name: data.displayName,
+        },
       },
     })
 
@@ -190,6 +194,25 @@ export function SignupForm() {
                     <Input
                       type="email"
                       placeholder="Enter your email"
+                      disabled={loading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="displayName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Display Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Enter your display name"
                       disabled={loading}
                       {...field}
                     />

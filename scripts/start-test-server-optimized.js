@@ -12,12 +12,12 @@ const fs = require('fs')
 // First, kill any process on port 3000
 console.log('🔪 Killing any process on port 3000...')
 try {
-    execSync('node scripts/kill-port.js 3000', {
-        stdio: 'inherit',
-        cwd: path.join(__dirname, '..'),
-    })
+  execSync('node scripts/kill-port.js 3000', {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..'),
+  })
 } catch {
-    // Ignore errors - port might already be free
+  // Ignore errors - port might already be free
 }
 
 // Load test environment variables BEFORE starting Next.js
@@ -28,35 +28,35 @@ const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
 const loadedEnvFiles = []
 
 for (const file of envCandidates) {
-    const envPath = path.join(__dirname, '..', file)
-    if (fs.existsSync(envPath)) {
-        dotenv.config({ path: envPath })
-        loadedEnvFiles.push(file)
-    }
+  const envPath = path.join(__dirname, '..', file)
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath })
+    loadedEnvFiles.push(file)
+  }
 }
 
 if (!loadedEnvFiles.length) {
-    console.warn(
-        '⚠️  No env file found (.env.test.local/.env.local/.env.prod); relying on process environment variables.'
-    )
+  console.warn(
+    '⚠️  No env file found (.env.test.local/.env.local/.env.prod); relying on process environment variables.'
+  )
 }
 
 // Ensure we're in test mode
 process.env.NODE_ENV = 'test'
 
 const supabaseUrl =
-    process.env.SUPABASE_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    'http://127.0.0.1:54321'
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  'http://127.0.0.1:54321'
 
 const supabaseAnonKey =
-    process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseAnonKey || !supabaseServiceRoleKey) {
-    throw new Error(
-        'Missing Supabase keys for test server. Set SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY (see .env.prod)'
-    )
+  throw new Error(
+    'Missing Supabase keys for test server. Set SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY (see .env.prod)'
+  )
 }
 
 // Force test environment variables to override any existing ones
@@ -81,16 +81,16 @@ console.log(`📦 Using Supabase at: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`)
 
 // Build a clean environment object with only what we need
 const testEnv = {
-    ...process.env,
-    // Force test environment
-    NODE_ENV: 'test',
-    NEXT_PUBLIC_TEST_MODE: 'true',
-    // Supabase test configuration
-    NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
-    SUPABASE_URL: supabaseUrl,
-    SUPABASE_ANON_KEY: supabaseAnonKey,
-    SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,
+  ...process.env,
+  // Force test environment
+  NODE_ENV: 'test',
+  NEXT_PUBLIC_TEST_MODE: 'true',
+  // Supabase test configuration
+  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
+  SUPABASE_URL: supabaseUrl,
+  SUPABASE_ANON_KEY: supabaseAnonKey,
+  SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,
 }
 
 // Remove production environment variables from the test environment
@@ -102,19 +102,23 @@ delete testEnv.POSTGRES_PRISMA_URL
 
 // Start Next.js dev server with test environment on port 3000
 // DIRECTLY calling next dev, skipping the heavy npm scripts
-const nextProcess = spawn('npx', ['next', 'dev', '--turbopack', '--hostname', '0.0.0.0', '--port', '3000'], {
+const nextProcess = spawn(
+  'npx',
+  ['next', 'dev', '--turbopack', '--hostname', '0.0.0.0', '--port', '3000'],
+  {
     stdio: 'inherit',
     env: testEnv,
     shell: true,
     cwd: path.join(__dirname, '..'),
-})
+  }
+)
 
 process.on('SIGINT', () => {
-    nextProcess.kill('SIGINT')
-    process.exit(0)
+  nextProcess.kill('SIGINT')
+  process.exit(0)
 })
 
 nextProcess.on('error', (err) => {
-    console.error('❌ Failed to start Next.js:', err)
-    process.exit(1)
+  console.error('❌ Failed to start Next.js:', err)
+  process.exit(1)
 })

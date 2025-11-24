@@ -27,7 +27,7 @@ const cpuCount = os.cpus()?.length || 1
 const totalMemGb = Math.round(os.totalmem() / 1024 / 1024 / 1024)
 const freeMemGb = Math.round(os.freemem() / 1024 / 1024 / 1024)
 const isCI = !!process.env.CI
-const localWorkerCap = Number(process.env.PLAYWRIGHT_WORKER_CAP || 8)
+const localWorkerCap = Number(process.env.PLAYWRIGHT_WORKER_CAP || 32)
 const envRequestedWorkers = Number(process.env.PLAYWRIGHT_WORKERS)
 const hasValidWorkerOverride =
   Number.isFinite(envRequestedWorkers) && envRequestedWorkers > 0
