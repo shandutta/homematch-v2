@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "db:reset": "supabase start && supabase db reset",
+    "db:reset": "supabase start && supabase db reset && node scripts/supabase-cleanup.js",
     "guard:supabase": "node scripts/guard-supabase-env.js",
     "ensure:docker": "node scripts/ensure-docker.js",
     "dev": "pnpm run guard:supabase && pnpm run ensure:docker && pnpm run db:reset && pnpm run test:setup-users && node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0 --port 3000",
@@ -180,9 +180,8 @@
     "vitest": "^3.2.4"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check",
-    "commit-msg": "pnpm exec commitlint --edit $1",
-    "pre-commit": "node scripts/pre-commit-hook.js"
+    "pre-commit": "node scripts/pre-commit-hook.js",
+    "commit-msg": "pnpm exec commitlint --edit $1"
   },
   "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }

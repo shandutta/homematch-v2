@@ -10,6 +10,7 @@ const path = require('path')
 const fs = require('fs')
 const dotenv = require('dotenv')
 const { createClient } = require('@supabase/supabase-js')
+const { runCleanup } = require('./supabase-cleanup')
 
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 dotenv.config({ path: path.join(process.cwd(), '.env.local') })
@@ -92,6 +93,7 @@ const resetDatabase = () => {
         stdio: 'inherit',
         cwd: path.join(__dirname, '..'),
       })
+      runCleanup()
       return true
     } catch (error) {
       const msg = error?.message || ''

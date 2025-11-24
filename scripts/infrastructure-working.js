@@ -9,6 +9,7 @@ const { spawn, execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
+const { runCleanup } = require('./supabase-cleanup')
 
 class WorkingInfrastructure {
   constructor() {
@@ -268,6 +269,7 @@ class WorkingInfrastructure {
       await this.waitForServicesReady()
 
       await this.log('Supabase database reset successfully')
+      runCleanup()
       return true
     } catch (error) {
       await this.log(`Failed to reset database: ${error.message}`, 'error')
