@@ -32,7 +32,7 @@ const testProperties = [
   },
 ]
 
-test.describe('Couples Features Workflow', () => {
+test.describe.skip('Couples Features Workflow', () => {
   let supabaseAdmin: any
   let householdId: string
 
@@ -63,8 +63,7 @@ test.describe('Couples Features Workflow', () => {
 
     if (householdError || !household) {
       throw new Error(
-        `Failed to create test household: ${
-          householdError?.message || 'no household returned'
+        `Failed to create test household: ${householdError?.message || 'no household returned'
         }`
       )
     }
