@@ -230,7 +230,7 @@ export function PropertyCard({
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase whitespace-nowrap">
+                  <p className="text-[11px] font-semibold tracking-[0.12em] whitespace-nowrap text-slate-500 uppercase">
                     {label}
                   </p>
                   <p className="text-foreground text-lg leading-tight font-semibold">

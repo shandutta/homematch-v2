@@ -29,7 +29,8 @@ const allowHosts = new Set([
   'dev.homematch.pro', // current dev proxy host
 ])
 
-const suspiciousHostPattern = /(supabase\.co|supabase\.net|supabase\.com|supabase\.in)$/i
+const suspiciousHostPattern =
+  /(supabase\.co|supabase\.net|supabase\.com|supabase\.in)$/i
 
 const keysToCheck = [
   'SUPABASE_URL',
@@ -88,7 +89,10 @@ const currentHostsToCheck = [
 const looksLikeProdSupabaseHost = currentHostsToCheck.some((host) => {
   const normalized = host.toLowerCase()
   if (allowHosts.has(normalized)) return false
-  return suspiciousHostPattern.test(normalized) || normalized.includes('pooler.supabase.com')
+  return (
+    suspiciousHostPattern.test(normalized) ||
+    normalized.includes('pooler.supabase.com')
+  )
 })
 
 if (matches.length || hostMatches || looksLikeProdSupabaseHost) {
@@ -96,7 +100,10 @@ if (matches.length || hostMatches || looksLikeProdSupabaseHost) {
   if (hostMatches) offenders.push('SUPABASE_URL_HOST')
   if (looksLikeProdSupabaseHost) offenders.push('SUPABASE_HOST_PATTERN')
 
-  console.error('❌ Supabase env looks like production. Matching keys:', offenders.join(', '))
+  console.error(
+    '❌ Supabase env looks like production. Matching keys:',
+    offenders.join(', ')
+  )
   console.error(
     '   Update .env.local to point at your local/proxy instance (e.g. SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 or your dev proxy).'
   )

@@ -359,6 +359,13 @@ async function setupTestUsers() {
     process.exit(1)
   }
 
+  // Friendly reminder for developers running pnpm dev
+  const primaryUser = testUsers[0]
+  const secondaryUser = testUsers[1]
+  console.log('\n🔑 Test users ready for dev login:')
+  console.log(`   ${primaryUser.email} / ${primaryUser.password}`)
+  console.log(`   ${secondaryUser.email} / ${secondaryUser.password}\n`)
+
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('\n✨ Test user setup complete!')
     console.debug('\n📝 Test credentials for E2E tests:')

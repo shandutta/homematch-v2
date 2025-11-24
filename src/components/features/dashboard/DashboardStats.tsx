@@ -33,7 +33,7 @@ const StatTile = ({
       </div>
       <div className="flex items-center gap-3">
         <Icon className={`h-6 w-6 ${colorClass} opacity-80`} />
-        <div className={`text-3xl font-bold leading-none ${colorClass}`}>
+        <div className={`text-3xl leading-none font-bold ${colorClass}`}>
           {value !== undefined ? (
             value
           ) : (
