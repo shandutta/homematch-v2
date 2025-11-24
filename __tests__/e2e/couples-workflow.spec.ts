@@ -63,7 +63,8 @@ test.describe.skip('Couples Features Workflow', () => {
 
     if (householdError || !household) {
       throw new Error(
-        `Failed to create test household: ${householdError?.message || 'no household returned'
+        `Failed to create test household: ${
+          householdError?.message || 'no household returned'
         }`
       )
     }
