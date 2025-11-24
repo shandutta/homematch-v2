@@ -8,6 +8,10 @@ export const LoginSchema = z.object({
 export const SignupSchema = z
   .object({
     email: z.string().email('Invalid email address'),
+    displayName: z
+      .string()
+      .min(1, 'Display name is required')
+      .max(50, 'Display name must be 50 characters or less'),
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
@@ -21,6 +25,7 @@ export const SignupSchema = z
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })
+
 
 export type LoginData = z.infer<typeof LoginSchema>
 export type SignupData = z.infer<typeof SignupSchema>
