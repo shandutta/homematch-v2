@@ -39,16 +39,23 @@ export function LoginForm() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       })
 
       if (error) {
         setError(error.message)
-      } else {
-        router.push('/dashboard')
+        return
       }
+
+      if (!authData?.session) {
+        setError('Unable to sign in right now. Please try again.')
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
     } catch (networkError) {
       // Handle network errors or other exceptions
       setError(

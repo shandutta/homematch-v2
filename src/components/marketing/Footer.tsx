@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="bg-gradient-marketing-primary px-4 py-6 text-white sm:px-6 sm:py-8">
       <div className="container mx-auto max-w-5xl px-1 sm:px-2">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-8">
           {/* Brand */}
           <div className="col-span-2 mb-6 flex flex-col items-center lg:col-span-1 lg:items-start">
             <h3
@@ -51,13 +51,13 @@ export function Footer() {
           {/* Product */}
           <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Product
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70"
+              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -99,13 +99,13 @@ export function Footer() {
           {/* Company */}
           <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Company
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70"
+              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -146,13 +146,13 @@ export function Footer() {
           {/* Legal */}
           <div className="mt-4 text-center lg:mt-0 lg:text-left">
             <h4
-              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 lg:mb-4 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Legal
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70"
+              className="text-token-sm space-y-0 lg:space-y-3 leading-none lg:leading-normal text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
