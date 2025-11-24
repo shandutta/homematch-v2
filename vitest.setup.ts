@@ -14,6 +14,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 type UndiciFetchResponse = Awaited<ReturnType<typeof undiciFetch>>
+type UndiciFetchArgs = Parameters<typeof undiciFetch>
+type UndiciFetchInput = UndiciFetchArgs[0]
+type UndiciFetchInit = UndiciFetchArgs[1]
 type SupabaseModule = typeof import('@supabase/supabase-js')
 type SupabaseCreateClient = SupabaseModule['createClient']
 type CachedSupabaseClient = ReturnType<SupabaseCreateClient>
@@ -72,7 +75,10 @@ async function fetchWithRetry(
   attempt = 0
 ): Promise<UndiciFetchResponse> {
   try {
-    const response = await undiciFetch(input as any, init as any)
+    const response = await undiciFetch(
+      input as unknown as UndiciFetchInput,
+      init as unknown as UndiciFetchInit
+    )
     if (attempt < maxFetchRetries && RETRYABLE_STATUS.has(response.status)) {
       // Clean up the current response stream before retrying
       if (response.body && typeof response.body.cancel === 'function') {
@@ -347,7 +353,7 @@ async function ensureBaselinePropertyData(
     if (error) {
       console.warn(
         '⚠️  Unable to verify baseline property data:',
-        (error as any)?.message || error
+        error?.message ?? String(error)
       )
       return
     }

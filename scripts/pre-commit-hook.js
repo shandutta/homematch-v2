@@ -2,8 +2,8 @@
 'use strict'
 
 /**
- * Pre-commit runner that mirrors the simple-git-hooks config:
- *   pnpm run format && pnpm run lint:fix && pnpm run type-check
+ * Pre-commit runner that mirrors the simple-git-hooks config with strict lint:
+ *   pnpm run format && pnpm run lint:fix && pnpm exec eslint . --max-warnings=0 && pnpm run type-check
  *
  * If a check fails, it will invoke the Codex CLI once with the captured errors
  * to attempt an automatic fix, then re-run the checks. Disable with
@@ -18,6 +18,8 @@ const repoRoot = path.resolve(__dirname, '..')
 const commands = [
   { label: 'format', cmd: 'pnpm run format' },
   { label: 'lint:fix', cmd: 'pnpm run lint:fix' },
+  // Treat warnings as failures so Codex runs when lint can't fully fix
+  { label: 'lint', cmd: 'pnpm exec eslint . --max-warnings=0' },
   { label: 'type-check', cmd: 'pnpm run type-check' },
 ]
 
@@ -77,6 +79,24 @@ const shouldAutoFix =
   autoFixEnv === undefined ||
   (autoFixEnv !== '0' && autoFixEnv.toLowerCase() !== 'false')
 
+const resolveCodexBin = () => {
+  if (process.env.CODEX_BIN) {
+    return process.env.CODEX_BIN
+  }
+
+  const found = spawnSync('which codex', {
+    shell: true,
+    cwd: repoRoot,
+    encoding: 'utf8',
+  })
+
+  if (found.status === 0 && found.stdout.trim()) {
+    return found.stdout.trim()
+  }
+
+  return null
+}
+
 if (!shouldAutoFix) {
   console.error(
     '\n[pre-commit] Checks failed. Set CODEX_AUTO_FIX back to 1/true (default) to let Codex attempt an auto-fix.'
@@ -84,17 +104,18 @@ if (!shouldAutoFix) {
   process.exit(failure.result.status ?? 1)
 }
 
-const codexAvailable = spawnSync('codex', ['--version'], {
-  cwd: repoRoot,
-  encoding: 'utf8',
-})
-
-if (codexAvailable.status !== 0) {
+const codexBin = resolveCodexBin()
+if (!codexBin) {
   console.error(
-    '\n[pre-commit] Codex CLI is not available. Install/login to Codex or set CODEX_AUTO_FIX=0 to skip auto-fix.'
+    '\n[pre-commit] Codex CLI is not available. Install/login to Codex, set CODEX_BIN to its path, or set CODEX_AUTO_FIX=0 to skip auto-fix.'
   )
   process.exit(failure.result.status ?? 1)
 }
+
+spawnSync(codexBin, ['--version'], {
+  cwd: repoRoot,
+  encoding: 'utf8',
+})
 
 console.warn('\n[pre-commit] Checks failed; invoking Codex for auto-fix...')
 
@@ -109,7 +130,7 @@ const prompt = [
 ].join('\n\n')
 
 const codexResult = spawnSync(
-  'codex',
+  codexBin,
   [
     '--ask-for-approval',
     'never',
