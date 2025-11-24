@@ -26,7 +26,17 @@ dotenv.config({ path: '.env.local', override: true })
 const { execSync, spawnSync } = require('child_process')
 const repoRoot = path.resolve(__dirname, '..')
 
-const timestamp = () => new Date().toISOString()
+const timestamp = () =>
+  new Date().toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
 const log = (message) => console.log(`[${timestamp()}] ${message}`)
 
 const CHECK_COMMANDS = [

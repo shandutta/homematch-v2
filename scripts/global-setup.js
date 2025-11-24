@@ -130,103 +130,85 @@ async function globalSetup() {
   }
 
   try {
-    // Step 1: Check if Supabase is already running
-    console.log('1️⃣  Checking Supabase status...')
-    const isRunning = await checkSupabaseStatus()
+    // Step 1: Check Supabase and test users in PARALLEL for speed
+    console.log('1️⃣  Checking Supabase & test users (parallel)...')
+    const [isRunning, usersExist] = await Promise.all([
+      checkSupabaseStatus(),
+      checkTestUsersExist().catch(() => false), // Don't fail if Supabase isn't up yet
+    ])
 
     if (!isRunning) {
       console.log('   Starting local Supabase...')
       await runIsolated('scripts/infrastructure-working.js', ['start'])
-
-      // Wait for Supabase to be ready
-      console.log('   ⏳ Waiting for Supabase to be ready...')
-      await new Promise((resolve) => setTimeout(resolve, 3000))
+      // Smart polling instead of hardcoded wait
+      for (let i = 0; i < 6; i++) {
+        if (await checkSupabaseStatus()) break
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
     } else {
       console.log('   ✅ Supabase already running')
     }
 
-    // Step 2: Check if test users exist
-    console.log('\n2️⃣  Checking test users...')
-    const usersExist = await checkTestUsersExist()
-
-    if (!usersExist) {
+    // Step 2: Create test users if needed (re-check if Supabase just started)
+    const finalUsersExist = isRunning ? usersExist : await checkTestUsersExist()
+    if (!finalUsersExist) {
       console.log('   Creating test users...')
       await runIsolated('scripts/setup-test-users-admin.js')
     } else {
       console.log('   ✅ Test users already exist')
     }
 
-    // Step 3: Minimal database migration check (only if schema changes detected)
-    // This is much faster than a full reset
-    console.log('\n3️⃣  Checking database schema...')
+    // Step 3: Quick schema validation (skip full reset unless broken)
+    console.log('\n2️⃣  Validating database schema...')
     try {
-      // Quick validation that essential tables exist
       const response = await fetch(
         `${supabaseUrl}/rest/v1/user_profiles?limit=1`,
         {
-          headers: {
-            apikey: supabaseAnonKey,
-          },
-          timeout: 2000,
+          headers: { apikey: supabaseAnonKey },
+          signal: AbortSignal.timeout(2000),
         }
       )
-
       if (response.ok) {
-        console.log('   ✅ Database schema looks good')
+        console.log('   ✅ Database schema valid')
       } else {
-        console.log('   🔄 Applying database migrations...')
-        await runIsolated('scripts/infrastructure-working.js', ['reset-db'])
+        throw new Error('Schema check failed')
       }
     } catch {
       console.log('   🔄 Applying database migrations...')
       await runIsolated('scripts/infrastructure-working.js', ['reset-db'])
     }
 
-    console.log('\n✅ E2E test environment ready!')
-    console.log(`📦 Using Supabase at: ${supabaseUrl}`)
-    console.log('👤 Test users: test1@example.com, test2@example.com')
-
-    // ENHANCED STABILITY WAIT - Addresses Phase 1 infrastructure race conditions
-    console.log('🔄 Verifying service stability...')
-
-    // Comprehensive readiness check with multiple retries
-    for (let attempt = 1; attempt <= 10; attempt++) {
+    // Step 4: Quick service readiness check (3 attempts max, parallel checks)
+    console.log('\n3️⃣  Verifying services ready...')
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        // Check API endpoint
-        const apiResponse = await fetch(`${supabaseUrl}/rest/v1/`, {
-          headers: {
-            apikey: supabaseAnonKey,
-          },
-          timeout: 3000,
-        })
-
-        // Check auth endpoint
-        const authResponse = await fetch(`${supabaseUrl}/auth/v1/health`, {
-          timeout: 3000,
-        })
+        const [apiResponse, authResponse] = await Promise.all([
+          fetch(`${supabaseUrl}/rest/v1/`, {
+            headers: { apikey: supabaseAnonKey },
+            signal: AbortSignal.timeout(2000),
+          }),
+          fetch(`${supabaseUrl}/auth/v1/health`, {
+            signal: AbortSignal.timeout(2000),
+          }),
+        ])
 
         if (apiResponse.ok && authResponse.ok) {
-          console.log(`   ✅ All services ready (attempt ${attempt})`)
+          console.log(`   ✅ All services ready`)
           break
-        } else {
-          throw new Error('Services not ready')
         }
+        throw new Error('Services not ready')
       } catch {
-        if (attempt === 10) {
-          console.log(
-            '   ⚠️  Services may not be fully ready, proceeding anyway'
-          )
+        if (attempt === 3) {
+          console.log('   ⚠️  Proceeding (services may still be warming up)')
           break
         }
-        console.log(
-          `   ⏳ Services not ready, waiting... (attempt ${attempt}/10)`
-        )
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 500))
       }
     }
 
-    // Final stability wait to prevent race conditions
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    console.log('\n✅ E2E test environment ready!')
+    console.log(`📦 Using Supabase at: ${supabaseUrl}`)
+    console.log('👤 Test users: test1@example.com, test2@example.com\n')
   } catch (error) {
     console.error('\n❌ Failed to setup E2E tests:', error)
     throw error
