@@ -187,9 +187,8 @@ const gitCommit = (message) => {
   }
 
   const commitEnv = { ...process.env }
-  if (!commitEnv.CODEX_AUTO_FIX) {
-    commitEnv.CODEX_AUTO_FIX = '1'
-  }
+  // Skip pre-commit hook since we already ran the checks in runChecksWithCodex()
+  commitEnv.SKIP_SIMPLE_GIT_HOOKS = '1'
 
   const commit = spawnSync('git', ['commit', '-m', message], {
     stdio: 'inherit',
