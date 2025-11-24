@@ -13,11 +13,16 @@ export interface RateLimitConfig {
 }
 
 export class RateLimiter {
-  constructor(private config: RateLimitConfig) {}
+  constructor(private config: RateLimitConfig) { }
 
   async check(
     identifier: string
   ): Promise<{ success: boolean; remaining: number; resetTime: number }> {
+    // Bypass rate limiting in test mode
+    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true' || process.env.NODE_ENV === 'test') {
+      return { success: true, remaining: 999, resetTime: Date.now() + this.config.windowMs }
+    }
+
     const now = Date.now()
     const record = store.get(identifier)
 
