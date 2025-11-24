@@ -8,9 +8,15 @@ import { TEST_ROUTES } from '../fixtures/test-data'
 import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 
 test.describe('Authentication Flow', () => {
-  test.beforeEach(async ({ page: _page, context }) => {
-    // Grant necessary permissions
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  test.beforeEach(async ({ page: _page, context, browserName }) => {
+    // Grant necessary permissions (webkit doesn't support clipboard permissions)
+    if (browserName !== 'webkit') {
+      try {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+      } catch (error) {
+        console.log(`Warning: Could not grant clipboard permissions: ${error}`)
+      }
+    }
   })
 
   test('should complete full login and logout flow', async ({

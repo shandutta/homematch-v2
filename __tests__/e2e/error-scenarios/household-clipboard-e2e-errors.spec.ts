@@ -42,8 +42,15 @@ test.describe('Household Clipboard E2E Error Scenarios', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     testUser = getWorkerTestUser(testInfo.workerIndex)
 
-    // Grant clipboard permissions for testing
-    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+    // Grant clipboard permissions for testing (webkit doesn't support this)
+    const browserName = testInfo.project.name
+    if (browserName !== 'webkit') {
+      try {
+        await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+      } catch (error) {
+        console.log(`Warning: Could not grant clipboard permissions: ${error}`)
+      }
+    }
   })
 
   test.describe('Authentication Error Scenarios', () => {
