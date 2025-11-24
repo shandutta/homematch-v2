@@ -3,11 +3,11 @@ import { Heart } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="p-token-xl sm:p-token-2xl bg-gradient-marketing-primary text-white">
-      <div className="p-token-md container mx-auto">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="bg-gradient-marketing-primary px-4 py-6 text-white sm:px-6 sm:py-12">
+      <div className="container mx-auto max-w-5xl px-1 sm:px-2">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-2 sm:gap-7 lg:grid-cols-4">
           {/* Brand */}
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <h3
               className="text-token-xl sm:text-token-2xl font-bold"
               style={{ fontFamily: 'var(--font-heading)' }}
@@ -15,15 +15,15 @@ export function Footer() {
               HomeMatch
             </h3>
             <p
-              className="mt-token-sm text-token-sm text-white/60"
+              className="text-token-sm mt-1 text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               Swipe. Match. Move In.
             </p>
-            <div className="mt-token-md gap-token-md flex">
+            <div className="mt-3 flex gap-3">
               <a
                 href="https://twitter.com/homematch"
-                className="rounded-token-md p-token-md transition-token-colors inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-white/60 hover:bg-white/10 hover:text-white"
+                className="rounded-token-md transition-token-colors inline-flex min-h-[40px] min-w-[40px] items-center justify-center p-2 text-white/60 hover:bg-white/10 hover:text-white"
                 aria-label="Twitter"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -57,13 +57,13 @@ export function Footer() {
           {/* Product */}
           <div>
             <h4
-              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
+              className="text-token-sm sm:mb-token-md mb-0.5 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Product
             </h4>
             <ul
-              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-tight text-white/70 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -105,19 +105,19 @@ export function Footer() {
           {/* Company */}
           <div>
             <h4
-              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
+              className="text-token-sm sm:mb-token-md mb-0.5 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Company
             </h4>
             <ul
-              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-tight text-white/70 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
                 <Link
                   href="/about"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   About Us
                 </Link>
@@ -125,7 +125,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Contact
                 </Link>
@@ -133,7 +133,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Blog
                 </Link>
@@ -141,7 +141,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/careers"
-                  className="transition-token-colors cursor-not-allowed opacity-50 hover:text-white"
+                  className="transition-token-colors hover:text-white"
                 >
                   Careers
                 </Link>
@@ -152,13 +152,13 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4
-              className="mb-token-md text-token-sm sm:mb-token-md font-semibold tracking-wider uppercase"
+              className="text-token-sm sm:mb-token-md mb-0.5 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Legal
             </h4>
             <ul
-              className="text-token-sm space-y-1.5 text-white/60 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-tight text-white/70 sm:space-y-2"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -189,9 +189,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-token-xl sm:mt-token-2xl border-t border-white/10 pt-6 text-center sm:pt-2">
+        <div className="mt-6 border-t border-white/10 pt-4 text-center sm:mt-8 sm:pt-6">
           <p
-            className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/60"
+            className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/70"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Built with
@@ -199,7 +199,7 @@ export function Footer() {
             in the Bay Area
           </p>
           <p
-            className="text-token-xs mt-1 text-white/40 sm:mt-2"
+            className="text-token-xs mt-1 text-white/50 sm:mt-2"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             © 2024 HomeMatch. All rights reserved.

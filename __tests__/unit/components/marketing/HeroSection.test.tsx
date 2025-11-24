@@ -105,12 +105,10 @@ describe('HeroSection', () => {
     const secondaryButton = screen.getByText('Resume your search').closest('a')
 
     expect(primaryButton).toHaveClass('rounded-full', 'px-9', 'py-7')
-    expect(secondaryButton).toHaveClass(
-      'border-white/30',
-      'hover:bg-white/10',
-      'bg-white/5',
-      'text-white'
-    )
+    expect(secondaryButton).toHaveClass('border-white/40')
+    expect(secondaryButton).toHaveClass('bg-white/5')
+    expect(secondaryButton).toHaveClass('hover:bg-white/10')
+    expect(secondaryButton).toHaveClass('text-white')
   })
 
   test('responsive grid layout is applied', () => {

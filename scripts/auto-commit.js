@@ -158,8 +158,14 @@ const gitCommit = (message) => {
     process.exit(1)
   }
 
+  const commitEnv = { ...process.env }
+  if (!commitEnv.CODEX_AUTO_FIX) {
+    commitEnv.CODEX_AUTO_FIX = '1'
+  }
+
   const commit = spawnSync('git', ['commit', '-m', message], {
     stdio: 'inherit',
+    env: commitEnv,
   })
 
   if (commit.status !== 0) {

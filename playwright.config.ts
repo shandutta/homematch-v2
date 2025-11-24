@@ -2,16 +2,11 @@ import { defineConfig, devices } from '@playwright/test'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 import * as fs from 'fs'
+import * as os from 'os'
 
 // Load test environment variables with fallbacks
 const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
 const loadedEnvFiles: string[] = []
-const WORKER_CAP = 2
-const envRequestedWorkers = Number(process.env.PLAYWRIGHT_WORKERS)
-const workers =
-  Number.isFinite(envRequestedWorkers) && envRequestedWorkers > 0
-    ? Math.min(WORKER_CAP, Math.floor(envRequestedWorkers))
-    : WORKER_CAP
 
 for (const file of envCandidates) {
   const envPath = path.resolve(__dirname, file)
@@ -27,6 +22,29 @@ if (!loadedEnvFiles.length) {
     '⚠️  No env file found for Playwright (.env.test.local/.env.local/.env.prod); relying on existing environment variables.'
   )
 }
+
+const cpuCount = os.cpus()?.length || 1
+const totalMemGb = Math.round(os.totalmem() / 1024 / 1024 / 1024)
+const freeMemGb = Math.round(os.freemem() / 1024 / 1024 / 1024)
+const isCI = !!process.env.CI
+const localWorkerCap = Number(process.env.PLAYWRIGHT_WORKER_CAP || 8)
+const envRequestedWorkers = Number(process.env.PLAYWRIGHT_WORKERS)
+const hasValidWorkerOverride =
+  Number.isFinite(envRequestedWorkers) && envRequestedWorkers > 0
+const workers = hasValidWorkerOverride
+  ? Math.floor(envRequestedWorkers)
+  : isCI
+    ? 2
+    : Math.max(1, Math.min(cpuCount, localWorkerCap))
+const workerSource = hasValidWorkerOverride
+  ? 'PLAYWRIGHT_WORKERS override'
+  : isCI
+    ? 'CI default (2)'
+    : `auto based on logical cores (capped at ${localWorkerCap})`
+
+console.log(
+  `🧪 Playwright: ${cpuCount} logical cores, ${totalMemGb}GB RAM (${freeMemGb}GB free). Workers=${workers} (${workerSource}).`
+)
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -51,9 +69,14 @@ export default defineConfig({
   /* Enhanced retry logic for stability */
   retries: process.env.CI ? 3 : 1, // Always retry once locally, 3 times on CI
   /* Optimal parallel workers for performance */
-  workers, // Capped for low-resource hosts; override with PLAYWRIGHT_WORKERS<=2
+  workers, // Auto-scales to detected logical cores locally; override with PLAYWRIGHT_WORKERS
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI
+    ? [['html', { open: 'never' }]]
+    : [
+        ['list'], // live progress locally so we can see stalls
+        ['html', { open: 'never' }], // keep HTML report for inspection
+      ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

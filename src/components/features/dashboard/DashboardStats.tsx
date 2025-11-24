@@ -27,18 +27,20 @@ const StatTile = ({
     href={href}
     className="card-glassmorphism-style group block min-h-[120px] rounded-xl p-4 sm:p-5"
   >
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <div className="text-[13px] font-medium tracking-wide text-purple-200/70 uppercase">
         {label}
       </div>
-      <Icon className={`h-6 w-6 ${colorClass} opacity-70`} />
-    </div>
-    <div className={`mt-1 text-3xl font-bold ${colorClass}`}>
-      {value !== undefined ? (
-        value
-      ) : (
-        <Skeleton className="h-10 w-16 bg-white/10" />
-      )}
+      <div className="flex items-center gap-3">
+        <Icon className={`h-6 w-6 ${colorClass} opacity-80`} />
+        <div className={`text-3xl font-bold leading-none ${colorClass}`}>
+          {value !== undefined ? (
+            value
+          ) : (
+            <Skeleton className="h-8 w-12 bg-white/10" />
+          )}
+        </div>
+      </div>
     </div>
   </Link>
 )

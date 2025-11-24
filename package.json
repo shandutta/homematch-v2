@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "db:reset": "supabase start && supabase db reset",
-    "dev": "node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0",
+    "guard:supabase": "node scripts/guard-supabase-env.js",
+    "dev": "pnpm run guard:supabase && pnpm run db:reset && pnpm run test:setup-users && node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0",
     "dev:warmup": "node scripts/dev-warmup.js",
     "build": "next build",
     "start": "next start",
@@ -15,7 +16,7 @@
     "format": "prettier --write .",
     "lint:fix": "eslint --fix .",
     "kill-node": "node scripts/kill-port.js",
-    "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check",
+    "pre-commit": "node scripts/pre-commit-hook.js",
     "migrate": "pnpm exec tsx scripts/run-migration.ts",
     "migrate:schema": "echo 'Run the SQL file in Supabase SQL Editor: scripts/migrate/01-setup-schema.sql'",
     "format:file": "prettier --write --ignore-unknown",
@@ -179,7 +180,8 @@
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm run format && pnpm run lint:fix && pnpm run type-check",
-    "commit-msg": "pnpm exec commitlint --edit $1"
+    "commit-msg": "pnpm exec commitlint --edit $1",
+    "pre-commit": "node scripts/pre-commit-hook.js"
   },
   "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }
