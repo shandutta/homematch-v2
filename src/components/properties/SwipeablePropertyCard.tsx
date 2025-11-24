@@ -218,9 +218,6 @@ export function SwipeablePropertyCard({
             <PropertyCard
               property={currentProperty}
               imagePriority
-              onDecision={(_, type) =>
-                swipeCard(type === 'liked' ? 'right' : 'left')
-              }
             />
 
             {/* Decision Overlays */}

@@ -2,12 +2,18 @@
 import { config, parse } from 'dotenv'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
-import { fetch as undiciFetch } from 'undici'
+import {
+  fetch as undiciFetch,
+  Headers as UndiciHeaders,
+  Request as UndiciRequest,
+  Response as UndiciResponse,
+} from 'undici'
 import { execSync } from 'child_process'
 import { vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 
+type UndiciFetchResponse = Awaited<ReturnType<typeof undiciFetch>>
 type SupabaseModule = typeof import('@supabase/supabase-js')
 type SupabaseCreateClient = SupabaseModule['createClient']
 type CachedSupabaseClient = ReturnType<SupabaseCreateClient>
@@ -45,6 +51,63 @@ vi.mock('@supabase/supabase-js', async () => {
     },
   }
 })
+
+// Lightweight retry wrapper to smooth out transient Supabase "upstream" 502s
+const RETRYABLE_STATUS = new Set([502, 503, 504])
+const RETRYABLE_ERROR =
+  /(ECONNREFUSED|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN)/i
+const maxFetchRetries = Number(process.env.SUPABASE_FETCH_RETRIES ?? 2)
+const fetchRetryDelayMs = Number(
+  process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 150
+)
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+
+async function fetchWithRetry(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  attempt = 0
+): Promise<UndiciFetchResponse> {
+  try {
+    const response = await undiciFetch(input as any, init as any)
+    if (attempt < maxFetchRetries && RETRYABLE_STATUS.has(response.status)) {
+      // Clean up the current response stream before retrying
+      if (response.body && typeof response.body.cancel === 'function') {
+        response.body.cancel()
+      }
+      await sleep(fetchRetryDelayMs * (attempt + 1))
+      return fetchWithRetry(input, init, attempt + 1)
+    }
+    return response
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (attempt < maxFetchRetries && RETRYABLE_ERROR.test(message)) {
+      await sleep(fetchRetryDelayMs * (attempt + 1))
+      return fetchWithRetry(input, init, attempt + 1)
+    }
+    throw error
+  }
+}
+
+// Apply the resilient fetch globally for integration tests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(globalThis as any).fetch = fetchWithRetry
+// Ensure associated fetch globals are available (helps when Node lacks them)
+if (typeof globalThis.Headers === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).Headers = UndiciHeaders
+}
+if (typeof globalThis.Request === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).Request = UndiciRequest
+}
+if (typeof globalThis.Response === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).Response = UndiciResponse
+}
 
 // Provide a minimal localStorage/sessionStorage implementation when Node's
 // experimental storage API is unavailable or missing core methods.
@@ -270,6 +333,80 @@ async function performSupabaseHealthCheck(
   }
 }
 
+async function ensureBaselinePropertyData(
+  url: string,
+  serviceKey: string
+): Promise<void> {
+  try {
+    const adminClient = createSupabaseClient(url, serviceKey)
+    const { count, error } = await adminClient
+      .from('properties')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+
+    if (error) {
+      console.warn(
+        '⚠️  Unable to verify baseline property data:',
+        (error as any)?.message || error
+      )
+      return
+    }
+
+    if (count && count > 0) {
+      return
+    }
+
+    // Minimal seed to keep data-integrity checks stable when a reset/seed fails
+    const neighborhoodId = '99999999-aaaa-bbbb-cccc-000000000001'
+    const propertyId = '99999999-aaaa-bbbb-cccc-000000000002'
+
+    await adminClient.from('neighborhoods').upsert(
+      [
+        {
+          id: neighborhoodId,
+          name: 'Integration Test Neighborhood',
+          city: 'Test City',
+          state: 'CA',
+          bounds:
+            '((-122.52,37.70),(-122.52,37.82),(-122.36,37.82),(-122.36,37.70))',
+          median_price: 750000,
+          walk_score: 80,
+          transit_score: 70,
+        },
+      ],
+      { onConflict: 'id' }
+    )
+
+    await adminClient.from('properties').upsert(
+      [
+        {
+          id: propertyId,
+          address: '1 Integration Test Way',
+          city: 'Test City',
+          state: 'CA',
+          zip_code: '99999',
+          price: 825000,
+          bedrooms: 3,
+          bathrooms: 2.5,
+          square_feet: 1650,
+          property_type: 'single_family',
+          listing_status: 'active',
+          coordinates: '(-122.45,37.77)',
+          neighborhood_id: neighborhoodId,
+          parking_spots: 1,
+          amenities: ['test-fixture'],
+          property_hash: 'integration-test-hash-1',
+          is_active: true,
+        },
+      ],
+      { onConflict: 'id' }
+    )
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn('⚠️  Could not seed baseline property data:', message)
+  }
+}
+
 if (typeof AbortCtor === 'function') {
   // Align global AbortController for any downstream fetch usage
   globalThis.AbortController = AbortCtor as typeof AbortController
@@ -395,6 +532,9 @@ if (!supabaseServiceRoleKey) {
       message
     )
   }
+
+  // Ensure core property/neighborhood fixtures exist so integration tests have deterministic data
+  await ensureBaselinePropertyData(supabaseUrl, supabaseServiceRoleKey)
 }
 
 // Set default BASE_URL for integration tests - force override since it's being set incorrectly

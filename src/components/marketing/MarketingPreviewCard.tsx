@@ -44,28 +44,28 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               title: 'Built for couples',
               copy: 'Stay in sync on likes, tours, and moves.',
               icon: ShieldCheck,
-              className: 'left-3 top-3',
+              className: 'left-2 top-2 sm:left-4 sm:top-4',
               shift: couplesShift,
             },
             {
               title: 'See nearby spots',
               copy: 'Peek at parks and cafés without leaving the card.',
               icon: MapPin,
-              className: 'right-3 top-12',
+              className: 'hidden sm:flex right-4 top-30',
               shift: spotsShift,
             },
             {
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'left-3 bottom-22',
+              className: 'right-2 bottom-20 sm:left-4 sm:bottom-25',
               shift: listingsShift,
             },
           ].map(({ title, copy, icon: Icon, className: pos, shift }) => (
             <MotionDiv
               key={title}
               className={cn(
-                'absolute flex max-w-[230px] flex-col gap-1 rounded-2xl border border-white/50 bg-white/55 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl',
+                'absolute flex max-w-[210px] flex-col gap-1 rounded-2xl border border-white/50 bg-white/55 p-3 text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:max-w-[230px]',
                 pos
               )}
               style={{ y: shift }}

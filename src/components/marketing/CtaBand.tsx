@@ -44,13 +44,13 @@ export function CtaBand() {
             and start finding places you both love.
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-8 sm:flex-row">
             {/* Match hero primary CTA behavior: white text, scale + background shift on hover */}
             <Button
               variant="prime"
               size="lg"
               asChild
-              className="group relative overflow-visible px-4 py-3 sm:px-8 sm:py-4"
+              className="group relative w-full overflow-visible px-4 py-3 sm:w-auto sm:px-8 sm:py-4"
             >
               <Link
                 href="/signup"
@@ -80,7 +80,7 @@ export function CtaBand() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-white/20 bg-white/5 px-8 py-6 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:!text-white"
+              className="w-full border-2 border-white/20 bg-white/5 px-8 py-4 text-lg font-medium text-white backdrop-blur transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:!text-white sm:w-auto sm:py-6"
               asChild
             >
               <Link href="/login">Already a Member?</Link>

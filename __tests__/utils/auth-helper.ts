@@ -20,6 +20,44 @@ export class AuthHelper {
   constructor(private page: Page) {}
 
   /**
+   * Navigate with a lighter wait condition and a retry to avoid hanging on the "load" event.
+   */
+  private async navigateWithRetry(
+    url: string,
+    label: string,
+    attempts = 2
+  ): Promise<void> {
+    let lastError: unknown
+
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        await this.page.goto(url, {
+          waitUntil: 'commit', // don't wait for all assets; we handle readiness below
+          timeout: TEST_TIMEOUTS.navigation * 6, // allow a bit more for cold starts
+        })
+
+        await this.page.waitForLoadState('domcontentloaded', {
+          timeout: TEST_TIMEOUTS.navigation * 4,
+        })
+        return
+      } catch (error) {
+        lastError = error
+        if (attempt < attempts) {
+          console.warn(
+            `Navigation to ${label} failed (attempt ${attempt}/${attempts}). Retrying...`,
+            error instanceof Error ? error.message : error
+          )
+          await this.page.waitForTimeout(500 * attempt)
+        }
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`Failed to navigate to ${label} (${url})`)
+  }
+
+  /**
    * Clear all authentication state (cookies, localStorage, sessionStorage)
    */
   async clearAuthState(): Promise<void> {
@@ -27,7 +65,7 @@ export class AuthHelper {
 
     // Navigate to a valid origin first to access localStorage
     try {
-      await this.page.goto('http://localhost:3000/')
+      await this.navigateWithRetry('/', 'root')
       await this.page.evaluate(() => {
         try {
           localStorage.clear()
@@ -51,8 +89,7 @@ export class AuthHelper {
     await this.clearAuthState()
 
     // Navigate to login page
-    await this.page.goto(TEST_ROUTES.auth.signIn)
-    await this.page.waitForLoadState('domcontentloaded')
+    await this.navigateWithRetry(TEST_ROUTES.auth.signIn, 'login')
 
     // Find email input with multiple strategies
     const emailSelectors = [

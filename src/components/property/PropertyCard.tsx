@@ -105,7 +105,7 @@ export function PropertyCard({
     },
     {
       icon: Square,
-      label: 'Sq Ft',
+      label: 'Sq. Ft.',
       value: formattedSqft,
     },
   ]
@@ -230,7 +230,7 @@ export function PropertyCard({
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                  <p className="text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase whitespace-nowrap">
                     {label}
                   </p>
                   <p className="text-foreground text-lg leading-tight font-semibold">
@@ -309,7 +309,7 @@ export function PropertyCard({
                 e.stopPropagation()
                 onDecision(property.id, 'skip')
               }}
-              className="shadow-token-lg duration-token-fast ease-token-out flex h-14 w-14 items-center justify-center rounded-full border border-red-200/70 bg-red-500/60 text-white transition-all hover:bg-red-500/80 focus-visible:ring-4 focus-visible:ring-red-200/80"
+              className="shadow-token-lg duration-token-fast ease-token-out flex h-14 w-14 items-center justify-center rounded-full border border-red-500/80 bg-red-500 text-white transition-all hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
               aria-label="Pass property"
             >
               <X className="h-6 w-6" strokeWidth={2.5} />
@@ -319,7 +319,7 @@ export function PropertyCard({
                 e.stopPropagation()
                 onDecision(property.id, 'liked')
               }}
-              className="shadow-token-lg duration-token-fast ease-token-out flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/70 bg-emerald-500/60 text-white transition-all hover:bg-emerald-500/80 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
+              className="shadow-token-lg duration-token-fast ease-token-out flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/80 bg-emerald-500 text-white transition-all hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
               aria-label="Like property"
               data-testid="like-button"
             >

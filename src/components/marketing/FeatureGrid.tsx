@@ -93,7 +93,7 @@ export function FeatureGrid() {
           </p>
         </MotionDiv>
 
-        <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
             <MotionDiv
               key={feature.title}

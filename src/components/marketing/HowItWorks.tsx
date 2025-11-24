@@ -28,7 +28,7 @@ export function HowItWorks() {
 
   return (
     <section
-      className="relative bg-transparent py-10 sm:py-14"
+      className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
       id="how-it-works"
     >
       <div className="container mx-auto px-4">
@@ -47,14 +47,14 @@ export function HowItWorks() {
             How It Works
           </h2>
           <p
-            className="mt-4 text-lg text-gray-600 sm:text-xl"
+            className="mt-3 text-lg text-gray-600 sm:text-xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Three simple steps to go from scrolling to moving in.
           </p>
         </MotionDiv>
 
-        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-3">
+        <div className="mt-3 grid gap-4 sm:mt-3 sm:grid-cols-3 sm:gap-5">
           {steps.map((step, i) => (
             <MotionDiv
               key={step.title}
@@ -63,8 +63,8 @@ export function HowItWorks() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.45 }}
             >
-              <Card className="relative h-full overflow-hidden border-white/60 bg-white p-6 shadow-[0_6px_22px_rgba(2,6,23,0.06)] transition-shadow hover:shadow-[0_10px_30px_rgba(2,6,23,0.1)]">
-                <div className="mb-3 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_6px_18px_rgba(2,26,68,0.15)]">
+              <Card className="relative h-full overflow-hidden border-white/60 bg-white p-5 shadow-[0_6px_22px_rgba(2,6,23,0.06)] transition-shadow hover:shadow-[0_10px_30px_rgba(2,6,23,0.1)] sm:p-6">
+                <div className="mb-2 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_6px_18px_rgba(2,26,68,0.15)]">
                   <step.icon className="h-6 w-6" />
                 </div>
                 <h3
@@ -74,7 +74,7 @@ export function HowItWorks() {
                   {i + 1}. {step.title}
                 </h3>
                 <p
-                  className="mt-2 text-gray-600"
+                  className="mt-1.5 text-gray-600"
                   style={{ fontFamily: 'var(--font-body)' }}
                 >
                   {step.description}
