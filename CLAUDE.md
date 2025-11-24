@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Your context window will be automatically compacted as it approaches its limit. Never stop tasks early due to token budget concerns. Always complete tasks fully, even if the end of your budget is approaching.
+
 ## Development Environment
 
 - **Package Manager**: Use `pnpm` exclusively (specified in package.json)
@@ -169,7 +171,7 @@ See [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) for complete se
 ## Tech Stack
 
 **Frontend**: Next.js 15, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Framer Motion
-**Backend**: Supabase (PostgreSQL + Auth + RLS), Inngest (background jobs)
+**Backend**: Supabase (PostgreSQL + Auth + RLS)
 **State**: TanStack Query, Zustand, React Hook Form, Zod
 **Testing**: Jest, Vitest, Playwright, React Testing Library
 **Tools**: ESLint 9, Prettier, pnpm, Turbopack
