@@ -12,6 +12,7 @@ const path = require('path')
 const { execSync } = require('child_process')
 const { killProcessOnPort } = require('./kill-port')
 const WorkingInfrastructure = require('./infrastructure-working')
+const { cleanupSupabaseDocker } = require('./supabase-cleanup')
 
 const DEV_PORT = Number.parseInt(process.env.DEV_PORT || '3000', 10)
 const LOG_DIR = path.join(__dirname, '..', '.logs')
@@ -98,6 +99,8 @@ async function main() {
   }
 
   await stopSupabaseStack()
+
+  await cleanupSupabaseDocker()
 }
 
 main().catch((error) => {
