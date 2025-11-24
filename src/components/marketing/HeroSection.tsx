@@ -48,7 +48,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10">
-        <div className="container mx-auto max-w-6xl px-4 pt-22 pb-16 sm:pt-24 sm:pb-28 lg:pt-28">
+        <div className="container mx-auto max-w-6xl px-6 pt-22 pb-16 sm:pt-24 sm:pb-28 lg:pt-28">
           <div className="grid gap-10 sm:gap-12 lg:grid-cols-[1.05fr,0.95fr] lg:items-center">
             <div className="space-y-5 sm:space-y-8">
               <div className="space-y-4">
