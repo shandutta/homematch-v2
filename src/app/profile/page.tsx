@@ -20,7 +20,7 @@ export default async function ProfilePage() {
   let activitySummary = null
 
   try {
-    [userProfile, activitySummary] = await Promise.all([
+    ;[userProfile, activitySummary] = await Promise.all([
       userService.getUserProfileWithHousehold(user.id),
       userService.getUserActivitySummary(user.id),
     ])
@@ -34,7 +34,9 @@ export default async function ProfilePage() {
   if (!profile) {
     try {
       const email =
-        user.email || (user.user_metadata as Record<string, string>)?.email || ''
+        user.email ||
+        (user.user_metadata as Record<string, string>)?.email ||
+        ''
       profile = await userService.createUserProfile({
         id: user.id,
         email,
@@ -58,7 +60,15 @@ export default async function ProfilePage() {
       <ProfilePageClient
         user={user}
         profile={profile}
-        activitySummary={activitySummary || { likes: 0, dislikes: 0, views: 0, saved_searches: 0, total_interactions: 0 }}
+        activitySummary={
+          activitySummary || {
+            likes: 0,
+            dislikes: 0,
+            views: 0,
+            saved_searches: 0,
+            total_interactions: 0,
+          }
+        }
       />
     </div>
   )
