@@ -16,8 +16,23 @@ export interface TestUser {
   password: string
 }
 
+/**
+ * Detect if the current browser is WebKit (Safari)
+ */
+function isWebKit(page: Page): boolean {
+  const browserName = page.context().browser()?.browserType().name()
+  return browserName === 'webkit'
+}
+
 export class AuthHelper {
   constructor(private page: Page) {}
+
+  /**
+   * Check if running in WebKit browser
+   */
+  private get isWebKit(): boolean {
+    return isWebKit(this.page)
+  }
 
   /**
    * Navigate with a lighter wait condition and a retry to avoid hanging on the "load" event.
@@ -200,11 +215,23 @@ export class AuthHelper {
     // Submit form and wait for navigation away from login page
     await submitButton.click()
 
+    // WebKit-specific: Wait for network to settle after form submission
+    if (this.isWebKit) {
+      await this.page
+        .waitForLoadState('networkidle', { timeout: 10000 })
+        .catch(() => {})
+      await this.page.waitForTimeout(500) // Extra stabilization for WebKit
+    }
+
     // First, wait for navigation away from login (session establishment)
     try {
       await this.page.waitForFunction(
         () => !window.location.pathname.includes('/login'),
-        { timeout: TEST_TIMEOUTS.navigation }
+        {
+          timeout: this.isWebKit
+            ? TEST_TIMEOUTS.navigation * 1.5
+            : TEST_TIMEOUTS.navigation,
+        }
       )
     } catch (_navError) {
       // If still on login page, check for error messages
