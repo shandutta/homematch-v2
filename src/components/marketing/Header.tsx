@@ -5,7 +5,7 @@ export function Header() {
   return (
     <header className="absolute top-0 z-50 w-full">
       {/* Align header content with hero container and text column */}
-      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-6 sm:py-8">
+      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 sm:px-6 sm:py-8">
         <Link
           href="/"
           className="rounded-xl px-3 py-2 text-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"

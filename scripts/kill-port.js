@@ -49,8 +49,19 @@ async function killProcessOnPort(port, options = {}) {
         })
 
         if (!processLine) {
-          console.log(`✅ No process found on port ${port}.`)
-          return true
+          const available = await isPortAvailable(port)
+          if (available) {
+            console.log(`✅ No process found on port ${port}.`)
+            return true
+          }
+          console.warn(
+            `⚠️  Port ${port} appears in use but no PID found (Windows). Retrying...`
+          )
+          if (attempt < maxRetries) {
+            await delay(retryDelay)
+            continue
+          }
+          return false
         }
 
         // Extract PID from the last column
@@ -69,13 +80,53 @@ async function killProcessOnPort(port, options = {}) {
         await execPromise(`taskkill /PID ${pid} /F`)
         console.log(`✅ Process ${pid} killed successfully.`)
       } else {
-        // macOS & Linux - use lsof
-        const { stdout } = await execPromise(`lsof -ti:${port}`)
-        const pids = stdout.trim().split('\n').filter(Boolean)
+        // macOS & Linux - try fuser first, then lsof
+        let pids = []
+        try {
+          const { stdout: fuserStdout } = await execPromise(
+            `fuser -n tcp ${port}`
+          )
+          pids = fuserStdout.trim().split(/\s+/).filter(Boolean)
+        } catch {
+          // ignore; fall back to lsof
+        }
 
         if (pids.length === 0) {
-          console.log(`✅ No process found on port ${port}.`)
-          return true
+          const { stdout } = await execPromise(`lsof -ti:${port}`)
+          pids = stdout.trim().split('\n').filter(Boolean)
+        }
+
+        if (pids.length === 0) {
+          // Double-check availability; if still blocked, try fuser as a fallback
+          const available = await isPortAvailable(port)
+          if (available) {
+            console.log(`✅ No process found on port ${port}.`)
+            return true
+          }
+
+          console.warn(
+            `⚠️  Port ${port} appears in use but no PIDs found. Trying fuser...`
+          )
+          try {
+            await execPromise(`fuser -k -n tcp ${port}`)
+          } catch {
+            // Ignore fuser errors; we'll check availability next
+          }
+
+          await delay(500)
+          const availableAfter = await isPortAvailable(port)
+          if (availableAfter) {
+            console.log(`✅ Port ${port} freed via fallback.`)
+            return true
+          }
+
+          if (attempt < maxRetries) {
+            console.log(`⚠️  Port ${port} still in use, retrying...`)
+            await delay(retryDelay)
+            continue
+          }
+
+          return false
         }
 
         for (const pid of pids) {

@@ -3,9 +3,9 @@ import { Heart } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-marketing-primary px-4 py-6 text-white sm:px-6 sm:py-12">
+    <footer className="bg-gradient-marketing-primary px-4 py-6 text-white sm:px-6 sm:py-8">
       <div className="container mx-auto max-w-5xl px-1 sm:px-2">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-2 sm:gap-7 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 mb-6 flex flex-col items-center lg:col-span-1 lg:items-start">
             <h3
@@ -49,15 +49,15 @@ export function Footer() {
           </div>
 
           {/* Product */}
-          <div>
+          <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm sm:mb-token-md mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Product
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-none text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -97,15 +97,15 @@ export function Footer() {
           </div>
 
           {/* Company */}
-          <div>
+          <div className="text-center lg:text-left">
             <h4
-              className="text-token-sm sm:mb-token-md mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Company
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-none text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
@@ -144,15 +144,15 @@ export function Footer() {
           </div>
 
           {/* Legal */}
-          <div>
+          <div className="mt-4 text-center lg:mt-0 lg:text-left">
             <h4
-              className="text-token-sm sm:mb-token-md mb-0 font-semibold tracking-wider uppercase"
+              className="text-token-sm mb-0 font-semibold tracking-wider uppercase"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Legal
             </h4>
             <ul
-              className="text-token-sm space-y-0 leading-none text-white/70 sm:space-y-2"
+              className="text-token-sm space-y-0 leading-none text-white/70"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <li>
