@@ -59,18 +59,18 @@ export default defineConfig({
   globalSetup: './scripts/global-setup.js',
   globalTeardown: './scripts/global-teardown.js',
 
-  // CRITICAL TIMEOUT CONFIGURATION - Addresses Phase 1 failures and performance issues
-  timeout: 120000, // 120s default test timeout (increased to handle slow renders)
+  // OPTIMIZED TIMEOUT CONFIGURATION - Balanced for speed and reliability
+  timeout: isCI ? 120000 : 60000, // 60s locally (fail fast), 120s CI
   expect: {
-    timeout: 30000, // 30s for assertions (increased to handle slow component loading)
+    timeout: isCI ? 30000 : 15000, // 15s locally, 30s CI
   },
 
   /* Run tests in files in parallel */
   fullyParallel: true, // Enabled with per-worker auth isolation
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Enhanced retry logic for stability */
-  retries: process.env.CI ? 3 : 1, // Always retry once locally, 3 times on CI
+  /* Retry strategy: CI retries flaky tests, local dev should fix them */
+  retries: isCI ? 2 : 0, // No retries locally - fix flaky tests instead
   /* Optimal parallel workers for performance */
   workers, // Auto-scales to detected logical cores locally; override with PLAYWRIGHT_WORKERS
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -86,11 +86,11 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: isCI ? 'on-first-retry' : 'off', // Skip traces locally for speed
 
-    // CRITICAL ACTION TIMEOUTS - Addresses Phase 1 failures and performance issues
-    actionTimeout: 30000, // 30s for interactions (increased to handle slow renders)
-    navigationTimeout: 60000, // 60s for page navigation (increased to handle slow dashboard loading)
+    // OPTIMIZED ACTION TIMEOUTS - Fail fast locally, generous in CI
+    actionTimeout: isCI ? 30000 : 15000, // 15s locally, 30s CI
+    navigationTimeout: isCI ? 60000 : 30000, // 30s locally, 60s CI
 
     /* Make environment variables available to tests */
     extraHTTPHeaders: {
@@ -99,6 +99,7 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers */
+  /* LOCAL: Only Chromium for speed (3x faster). CI: All browsers for compatibility */
   projects: [
     // Setup project for auth state preparation
     {
@@ -118,17 +119,21 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      dependencies: ['setup'],
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      dependencies: ['setup'],
-    },
+    // Firefox and WebKit only run in CI (or when PLAYWRIGHT_ALL_BROWSERS=true)
+    ...(isCI || process.env.PLAYWRIGHT_ALL_BROWSERS
+      ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+            dependencies: ['setup'],
+          },
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            dependencies: ['setup'],
+          },
+        ]
+      : []),
 
     /* Test against mobile viewports. */
     // {
@@ -156,7 +161,7 @@ export default defineConfig({
     command: 'node scripts/start-test-server-optimized.js',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
-    timeout: 120 * 1000,
+    timeout: isCI ? 120 * 1000 : 60 * 1000, // 60s locally, 120s CI
     env: {
       NODE_ENV: 'test',
       NEXT_PUBLIC_TEST_MODE: 'true',
