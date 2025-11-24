@@ -55,6 +55,10 @@ describe('LoginForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSignInWithPassword.mockResolvedValue({
+      data: { session: { access_token: 'token' } },
+      error: null,
+    })
 
     // Mock the router
     const mockRouter = {
@@ -108,7 +112,10 @@ describe('LoginForm', () => {
   })
 
   test('handles successful email/password login', async () => {
-    mockSignInWithPassword.mockResolvedValueOnce({ error: null })
+    mockSignInWithPassword.mockResolvedValueOnce({
+      data: { session: { access_token: 'token' } },
+      error: null,
+    })
     const user = userEvent.setup()
 
     render(<LoginForm />)
@@ -135,6 +142,7 @@ describe('LoginForm', () => {
     const errorMessage = 'Invalid credentials'
 
     mockSignInWithPassword.mockResolvedValueOnce({
+      data: { session: null },
       error: { message: errorMessage },
     })
 
@@ -199,7 +207,14 @@ describe('LoginForm', () => {
     mockSignInWithPassword.mockImplementation(
       () =>
         new Promise((resolve) =>
-          setTimeout(() => resolve({ error: null }), 200)
+          setTimeout(
+            () =>
+              resolve({
+                data: { session: { access_token: 'token' } },
+                error: null,
+              }),
+            200
+          )
         )
     )
 
@@ -240,7 +255,14 @@ describe('LoginForm', () => {
     mockSignInWithPassword.mockImplementation(
       () =>
         new Promise((resolve) =>
-          setTimeout(() => resolve({ error: null }), 200)
+          setTimeout(
+            () =>
+              resolve({
+                data: { session: { access_token: 'token' } },
+                error: null,
+              }),
+            200
+          )
         )
     )
 

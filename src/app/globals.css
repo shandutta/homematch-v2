@@ -312,6 +312,10 @@
 }
 
 @layer base {
+  html {
+    @apply relative;
+    min-height: 100%;
+  }
   * {
     @apply border-border outline-ring/50;
   }

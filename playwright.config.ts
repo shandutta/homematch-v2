@@ -74,9 +74,9 @@ export default defineConfig({
   reporter: process.env.CI
     ? [['html', { open: 'never' }]]
     : [
-        ['list'], // live progress locally so we can see stalls
-        ['html', { open: 'never' }], // keep HTML report for inspection
-      ],
+      ['list'], // live progress locally so we can see stalls
+      ['html', { open: 'never' }], // keep HTML report for inspection
+    ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -150,7 +150,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'node scripts/start-test-server-dev.js',
+    command: 'node scripts/start-test-server-optimized.js',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 120 * 1000,
