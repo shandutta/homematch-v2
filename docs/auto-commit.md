@@ -9,13 +9,14 @@ This repository now contains a helper script that can automatically stage, summa
 
 ### Environment variables
 
-| Variable             | Required | Description                                                  |
-| -------------------- | -------- | ------------------------------------------------------------ |
-| `OPENROUTER_API_KEY` | ✅       | API key used to call OpenRouter.                             |
-| `AUTO_COMMIT_MODEL`  | ❌       | Override model name (defaults to `openai/gpt-oss-20b:free`). |
-| `AUTO_COMMIT_PUSH`   | ❌       | Set to `false` to skip `git push` (default pushes).          |
-| `OPENROUTER_REFERER` | ❌       | Optional Referer header recommended by OpenRouter.           |
-| `OPENROUTER_TITLE`   | ❌       | Optional Title header recommended by OpenRouter.             |
+| Variable              | Required | Description                                                                             |
+| --------------------- | -------- | --------------------------------------------------------------------------------------- |
+| `OPENROUTER_API_KEY`  | ✅       | API key used to call OpenRouter.                                                        |
+| `AUTO_COMMIT_MODEL`   | ❌       | Override model name (defaults to `openai/gpt-oss-20b:free`).                            |
+| `AUTO_COMMIT_PUSH`    | ❌       | Set to `false` to skip `git push` (default pushes).                                     |
+| `OPENROUTER_REFERER`  | ❌       | Optional Referer header recommended by OpenRouter.                                      |
+| `OPENROUTER_TITLE`    | ❌       | Optional Title header recommended by OpenRouter.                                        |
+| `OPENROUTER_KEY_FILE` | ❌       | Path fallback when `OPENROUTER_API_KEY` is unset (default: `~/.config/openrouter.key`). |
 
 ### Usage
 
@@ -35,6 +36,8 @@ OPENROUTER_TITLE="Auto Commit Bot"
 
 pnpm auto:commit
 ```
+
+If `OPENROUTER_API_KEY` is not present in the environment, the script will try `OPENROUTER_KEY_FILE` (or `~/.config/openrouter.key`) as a fallback source.
 
 If there are no pending changes, the script exits quietly. Otherwise it:
 

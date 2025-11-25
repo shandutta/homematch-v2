@@ -33,7 +33,7 @@ describe('Login Flow Integration', () => {
 
     // Reset mock implementations with default behavior
     mockSignInWithPassword.mockResolvedValue({
-      data: { user: null, session: null },
+      data: { user: null, session: { access_token: 'default-session' } },
       error: null,
     })
     mockSignInWithOAuth.mockResolvedValue({
@@ -73,7 +73,10 @@ describe('Login Flow Integration', () => {
 
   describe('Successful Authentication Flow', () => {
     it('completes email/password login successfully', async () => {
-      mockSignInWithPassword.mockResolvedValue({ error: null })
+      mockSignInWithPassword.mockResolvedValue({
+        data: { session: { access_token: 'valid-session' } },
+        error: null,
+      })
 
       const user = userEvent.setup()
       render(<LoginForm />)
@@ -223,7 +226,14 @@ describe('Login Flow Integration', () => {
       mockSignInWithPassword.mockImplementation(
         () =>
           new Promise((resolve) =>
-            setTimeout(() => resolve({ error: null }), 100)
+            setTimeout(
+              () =>
+                resolve({
+                  data: { session: { access_token: 'slow-session' } },
+                  error: null,
+                }),
+              100
+            )
           )
       )
 

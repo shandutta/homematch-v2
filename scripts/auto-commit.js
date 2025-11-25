@@ -3,6 +3,7 @@
 
 // Load local env so OPENROUTER_API_KEY can live in .env/.env.local
 const path = require('path')
+const fs = require('fs')
 
 // Ensure dotenv is available; if missing (e.g., cron after cache cleanup), install it on the fly.
 try {
@@ -63,6 +64,39 @@ const timestamp = () =>
   })
 const log = (message) => console.log(`[${timestamp()}] ${message}`)
 
+const resolveOpenRouterApiKey = () => {
+  if (process.env.OPENROUTER_API_KEY) {
+    return process.env.OPENROUTER_API_KEY
+  }
+
+  const keyFile = process.env.OPENROUTER_KEY_FILE
+    ? path.resolve(process.env.OPENROUTER_KEY_FILE)
+    : process.env.HOME
+      ? path.join(process.env.HOME, '.config', 'openrouter.key')
+      : null
+
+  if (!keyFile) {
+    return null
+  }
+
+  try {
+    if (fs.existsSync(keyFile)) {
+      const key = fs.readFileSync(keyFile, 'utf8').trim()
+      if (key) {
+        log(`Loaded OPENROUTER_API_KEY from ${keyFile}`)
+        return key
+      }
+    }
+  } catch (error) {
+    console.warn(
+      `[${timestamp()}] Failed to read OpenRouter key file at ${keyFile}:`,
+      error.message
+    )
+  }
+
+  return null
+}
+
 const CHECK_COMMANDS = [
   { label: 'format', cmd: 'pnpm run format' },
   { label: 'lint:fix', cmd: 'pnpm run lint:fix' },
@@ -111,7 +145,7 @@ const ensureFetch = async () => {
 }
 
 const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
-  const apiKey = process.env.OPENROUTER_API_KEY
+  const apiKey = resolveOpenRouterApiKey()
   if (!apiKey) {
     console.error(
       `[${timestamp()}] OPENROUTER_API_KEY is not set. Cannot request commit message.`

@@ -67,9 +67,9 @@ describe('Supabase Client Patterns E2E Tests', () => {
   })
 
   describe('Test Client Factory Pattern', () => {
-    test('should create test client with service role', () => {
+    test('should create test client with service role', async () => {
       const clientFactory = createTestClientFactory()
-      const client = clientFactory.createClient()
+      const client = await clientFactory.createClient()
 
       expect(client).toBeTruthy()
       expect(typeof client.from).toBe('function')
@@ -78,7 +78,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
 
     test('should bypass RLS with test client', async () => {
       const clientFactory = createTestClientFactory()
-      const client = clientFactory.createClient()
+      const client = await clientFactory.createClient()
 
       // Service role should bypass RLS
       const { error } = await client.from('properties').select('id').limit(1)
@@ -98,7 +98,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
 
     test('should bypass RLS with service role key', async () => {
       const clientFactory = createTestClientFactory()
-      const client = clientFactory.createClient()
+      const client = await clientFactory.createClient()
 
       // Service client should be able to perform operations that regular clients cannot
       const { error } = await client.from('properties').select('id').limit(1)
@@ -139,9 +139,13 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Mock environment variables to cause client creation failure
       const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      const originalServiceUrl = process.env.SUPABASE_URL
+      const originalServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
       delete process.env.NEXT_PUBLIC_SUPABASE_URL
       delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      delete process.env.SUPABASE_URL
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY
 
       expect(() => createBrowserClient()).toThrow()
       expect(() => createStandaloneClient()).toThrow()
@@ -149,6 +153,10 @@ describe('Supabase Client Patterns E2E Tests', () => {
       // Restore environment variables
       if (originalUrl) process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl
       if (originalKey) process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey
+      if (originalServiceUrl) process.env.SUPABASE_URL = originalServiceUrl
+      if (originalServiceKey) {
+        process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceKey
+      }
     })
   })
 
@@ -178,7 +186,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
     test('should handle network errors consistently across clients', async () => {
       const standaloneClient = createStandaloneClient()
       const browserClient = createBrowserClient()
-      const testClient = createTestClientFactory().createClient()
+      const testClient = await createTestClientFactory().createClient()
 
       // All clients should handle network errors the same way
       const clients = [standaloneClient, browserClient, testClient]
@@ -229,13 +237,13 @@ describe('Supabase Client Patterns E2E Tests', () => {
   })
 
   describe('Client Performance Patterns', () => {
-    test('should create clients efficiently', () => {
+    test('should create clients efficiently', async () => {
       const startTime = Date.now()
 
       // Create multiple clients
       const standaloneClient = createStandaloneClient()
       const browserClient = createBrowserClient()
-      const testClient = createTestClientFactory().createClient()
+      const testClient = await createTestClientFactory().createClient()
 
       const endTime = Date.now()
       const creationTime = endTime - startTime
@@ -284,9 +292,9 @@ describe('Supabase Client Patterns E2E Tests', () => {
       expect(client).toBeTruthy()
     })
 
-    test('should apply correct settings for test client', () => {
+    test('should apply correct settings for test client', async () => {
       const clientFactory = createTestClientFactory()
-      const client = clientFactory.createClient()
+      const client = await clientFactory.createClient()
 
       // Test client should be configured with service role
       expect(client).toBeTruthy()

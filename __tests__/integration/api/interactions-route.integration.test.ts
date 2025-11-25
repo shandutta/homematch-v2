@@ -16,6 +16,7 @@ import {
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
 import { createClient as createServerSupabase } from '@/lib/supabase/server'
 import type { Database } from '@/types/database'
+import { resetRateLimitStore } from '@/lib/utils/rate-limit'
 
 const headerStore = new Map<string, string>()
 const cookieStore = new Map<string, string>()
@@ -311,6 +312,10 @@ describe('Integration: /api/interactions route', () => {
   })
 
   it('enforces rate limiting responses', async () => {
+    const originalEnforce = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
+    process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
+    resetRateLimitStore()
+
     const propertyId = await createTestProperty()
     const burst = Array.from({ length: 105 }, () =>
       POST(
@@ -321,10 +326,19 @@ describe('Integration: /api/interactions route', () => {
       )
     )
 
-    const results = await Promise.all(burst)
-    const rateLimited = results.some(
-      (res) => res.status === 400 || res.status === 429
-    )
-    expect(rateLimited).toBe(true)
+    try {
+      const results = await Promise.all(burst)
+      const rateLimited = results.some(
+        (res) => res.status === 400 || res.status === 429
+      )
+      expect(rateLimited).toBe(true)
+    } finally {
+      if (originalEnforce) {
+        process.env.RATE_LIMIT_ENFORCE_IN_TESTS = originalEnforce
+      } else {
+        delete process.env.RATE_LIMIT_ENFORCE_IN_TESTS
+      }
+      resetRateLimitStore()
+    }
   })
 })

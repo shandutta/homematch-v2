@@ -137,6 +137,12 @@ describe('Household Functionality Tests', () => {
           .delete()
           .in('id', [testUserId1, testUserId2])
 
+        // Clear any prior associations to this test household from seeded users
+        await supabase
+          .from('user_profiles')
+          .update({ household_id: null })
+          .eq('household_id', testHouseholdId)
+
         // Clean up auth users using Admin API (Supabase best practice)
         try {
           await supabase.auth.admin.deleteUser(testUserId1)
