@@ -112,7 +112,8 @@ describe('HowItWorks', () => {
       'overflow-hidden',
       'border-white/60',
       'bg-white',
-      'p-6'
+      'p-5',
+      'sm:p-6'
     )
   })
 
@@ -142,8 +143,10 @@ describe('HowItWorks', () => {
     expect(section).toHaveClass(
       'relative',
       'bg-transparent',
-      'py-10',
-      'sm:py-14'
+      'pt-0',
+      'pb-8',
+      'sm:pt-0',
+      'sm:pb-12'
     )
 
     const container = screen.getByText('How It Works').closest('.container')
@@ -186,6 +189,13 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     const grid = screen.getByText('1. Tell Us Your Vibe').closest('.grid')
-    expect(grid).toHaveClass('gap-5', 'mt-10', 'sm:mt-12', 'sm:grid-cols-3')
+    expect(grid).toHaveClass(
+      'grid',
+      'mt-3',
+      'gap-4',
+      'sm:mt-3',
+      'sm:grid-cols-3',
+      'sm:gap-5'
+    )
   })
 })

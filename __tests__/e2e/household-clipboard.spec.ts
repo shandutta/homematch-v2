@@ -73,12 +73,9 @@ test.describe('Household Clipboard Functionality', () => {
     // Grant clipboard permissions for testing (browser-specific)
     await grantClipboardPermissions(context, browserName)
 
-    // Clear cookies to start fresh
-    await context.clearCookies()
-
-    // Use worker-specific authentication to prevent race conditions
+    // Use worker-specific authentication with storage state (more reliable)
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
-    await auth.login(testUser)
+    await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
     await auth.verifyAuthenticated()
 
     // Verify we're authenticated (flexible check)

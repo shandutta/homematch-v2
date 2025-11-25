@@ -23,14 +23,17 @@ try {
 // Load test environment variables BEFORE starting Next.js
 const dotenv = require('dotenv')
 
-// Load env files in priority order: test -> local -> prod (first wins)
+// Load env files in priority order: test -> local -> prod
+// Use override for .env.test.local to ensure test config takes precedence over shell env vars
 const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
 const loadedEnvFiles = []
 
 for (const file of envCandidates) {
   const envPath = path.join(__dirname, '..', file)
   if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath })
+    // Use override for .env.test.local to ensure test config takes precedence
+    const override = file === '.env.test.local'
+    dotenv.config({ path: envPath, override })
     loadedEnvFiles.push(file)
   }
 }

@@ -10,6 +10,11 @@ import {
   TEST_TIMEOUTS,
   getWorkerTestUser,
 } from '../fixtures/test-data'
+import * as path from 'path'
+import * as fs from 'fs'
+
+// Auth storage directory (same as auth.setup.ts)
+const AUTH_DIR = path.join(__dirname, '../../playwright/.auth')
 
 export interface TestUser {
   email: string
@@ -593,6 +598,113 @@ export class AuthHelper {
     if (!isAuth) {
       await this.login(user)
     }
+  }
+
+  /**
+   * Get the auth storage file path for a worker
+   */
+  static getAuthFilePath(workerIndex: number): string {
+    return path.join(AUTH_DIR, `user-worker-${workerIndex}.json`)
+  }
+
+  /**
+   * Check if auth storage state exists for a worker
+   */
+  static hasStorageState(workerIndex: number): boolean {
+    const authFile = AuthHelper.getAuthFilePath(workerIndex)
+    return fs.existsSync(authFile)
+  }
+
+  /**
+   * Use pre-saved storage state for authentication (WebKit-friendly)
+   * This is faster and more reliable than logging in again, especially for WebKit
+   */
+  async useStorageState(workerIndex: number): Promise<boolean> {
+    const authFile = AuthHelper.getAuthFilePath(workerIndex)
+
+    if (!fs.existsSync(authFile)) {
+      console.log(`No storage state found at ${authFile}`)
+      return false
+    }
+
+    try {
+      // Read the storage state
+      const storageState = JSON.parse(fs.readFileSync(authFile, 'utf-8'))
+
+      // Get the browser context
+      const context = this.page.context()
+
+      // Add cookies from storage state
+      if (storageState.cookies && storageState.cookies.length > 0) {
+        await context.addCookies(storageState.cookies)
+      }
+
+      // Set localStorage/sessionStorage via page evaluation
+      if (storageState.origins && storageState.origins.length > 0) {
+        for (const origin of storageState.origins) {
+          // Navigate to the origin first to set storage
+          await this.page.goto(origin.origin || '/')
+          await this.page.waitForLoadState('domcontentloaded')
+
+          await this.page.evaluate((storage) => {
+            if (storage.localStorage) {
+              for (const item of storage.localStorage) {
+                localStorage.setItem(item.name, item.value)
+              }
+            }
+            if (storage.sessionStorage) {
+              for (const item of storage.sessionStorage) {
+                sessionStorage.setItem(item.name, item.value)
+              }
+            }
+          }, origin)
+        }
+      }
+
+      // Navigate to dashboard to verify auth
+      await this.page.goto('/dashboard')
+      await this.page.waitForLoadState('domcontentloaded')
+
+      // Wait a bit for WebKit to process the cookies
+      if (this.isWebKit) {
+        await this.page.waitForTimeout(1000)
+      }
+
+      // Verify we're authenticated
+      const isAuth = await this.isAuthenticated()
+      if (isAuth) {
+        console.log(
+          `✅ Restored auth state from storage for worker ${workerIndex}`
+        )
+        return true
+      }
+
+      console.log(`⚠️ Storage state loaded but verification failed`)
+      return false
+    } catch (error) {
+      console.error(`Failed to use storage state:`, error)
+      return false
+    }
+  }
+
+  /**
+   * Authenticate using storage state first (preferred for WebKit), falling back to login
+   * This is the recommended method for tests that need authentication
+   */
+  async authenticateWithStorageState(
+    workerIndex: number,
+    user: TestUser = TEST_USERS.withHousehold
+  ): Promise<void> {
+    // For WebKit, strongly prefer storage state to avoid race conditions
+    if (this.isWebKit || AuthHelper.hasStorageState(workerIndex)) {
+      const success = await this.useStorageState(workerIndex)
+      if (success) {
+        return
+      }
+    }
+
+    // Fallback to regular login
+    await this.login(user)
   }
 }
 

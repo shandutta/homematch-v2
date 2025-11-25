@@ -1,15 +1,20 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
-import { RateLimiter } from '@/lib/utils/rate-limit'
+import { RateLimiter, resetRateLimitStore } from '@/lib/utils/rate-limit'
 
 describe('RateLimiter', () => {
   const now = 1_000_000
   let nowSpy: jest.SpyInstance<number, []>
+  const originalEnv = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
 
   beforeEach(() => {
+    process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
+    resetRateLimitStore()
     nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now)
   })
 
   afterEach(() => {
+    process.env.RATE_LIMIT_ENFORCE_IN_TESTS = originalEnv
+    resetRateLimitStore()
     nowSpy.mockRestore()
   })
 

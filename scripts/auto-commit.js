@@ -3,9 +3,33 @@
 
 // Load local env so OPENROUTER_API_KEY can live in .env/.env.local
 const path = require('path')
-const dotenv = require('dotenv')
-dotenv.config()
-dotenv.config({ path: '.env.local', override: true })
+
+// Ensure dotenv is available; if missing (e.g., cron after cache cleanup), install it on the fly.
+try {
+  const dotenv = require('dotenv')
+  dotenv.config()
+  dotenv.config({ path: '.env.local', override: true })
+} catch (error) {
+  console.warn('[auto-commit] dotenv missing, installing locally...', error)
+  const { spawnSync } = require('child_process')
+  const install = spawnSync(
+    process.execPath,
+    [
+      '-e',
+      "require('child_process').execSync('pnpm add dotenv --save-dev', { stdio: 'inherit' })",
+    ],
+    { stdio: 'inherit' }
+  )
+  if (install.status !== 0) {
+    console.error('[auto-commit] failed to install dotenv; aborting run')
+    process.exit(1)
+  }
+
+  // Retry load after install
+  const dotenv = require('dotenv')
+  dotenv.config()
+  dotenv.config({ path: '.env.local', override: true })
+}
 
 /**
  * Simple automation helper that:
