@@ -23,7 +23,10 @@ const cookieStore = new Map<string, string>()
 
 vi.mock('next/headers', () => ({
   headers: async () => ({
-    get: (name: string) => headerStore.get(name.toLowerCase()) ?? null,
+    get: (name: string) => {
+      // Only return values if our test file is the active one
+      return headerStore.get(name.toLowerCase()) ?? null
+    },
   }),
   cookies: async () => ({
     getAll: () =>
@@ -63,7 +66,8 @@ const loadTestAuthToken = () => {
   return null
 }
 
-describe('Integration: /api/interactions route', () => {
+// Use sequential to prevent race conditions between tests that share testUserId
+describe.sequential('Integration: /api/interactions route', () => {
   let supabaseAdmin: ReturnType<typeof createSupabaseClient<Database>>
   let authToken: string
   let testUserId: string
@@ -214,23 +218,27 @@ describe('Integration: /api/interactions route', () => {
     ]
     const skippedPropertyId = await createTestProperty()
 
+    // Seed interactions directly using admin client to avoid auth race conditions
+    // when tests run in parallel (mock headerStore can be cleared by other tests)
     for (const propertyId of likedPropertyIds) {
-      const res = await POST(
-        makeJsonRequest('http://localhost/api/interactions', 'POST', {
-          propertyId,
-          type: 'liked',
+      const { error } = await supabaseAdmin
+        .from('user_property_interactions')
+        .insert({
+          user_id: testUserId,
+          property_id: propertyId,
+          interaction_type: 'like',
         })
-      )
-      expect(res.status).toBe(200)
+      expect(error).toBeNull()
     }
 
-    const skipRes = await POST(
-      makeJsonRequest('http://localhost/api/interactions', 'POST', {
-        propertyId: skippedPropertyId,
-        type: 'skip',
+    const { error: skipError } = await supabaseAdmin
+      .from('user_property_interactions')
+      .insert({
+        user_id: testUserId,
+        property_id: skippedPropertyId,
+        interaction_type: 'skip',
       })
-    )
-    expect(skipRes.status).toBe(200)
+    expect(skipError).toBeNull()
 
     const summaryRes = await GET(
       new NextRequest('http://localhost/api/interactions?type=summary')

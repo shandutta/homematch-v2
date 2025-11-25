@@ -316,8 +316,10 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
     })
 
     test('should return empty results for non-existent property type', async () => {
+      // Use a property type that doesn't exist in the database
+      // Note: 'land' is a valid type that TestDataFactory can create
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['land'] },
+        filters: { property_types: ['nonexistent_type_xyz'] as any },
       })
 
       expect(result.properties).toHaveLength(0)

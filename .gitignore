@@ -120,7 +120,6 @@ zen-mcp-server/
 .vercel/*
 .next/*
 .images/*
-.github/*
 .open
 
 # Miscellaneous Stuff

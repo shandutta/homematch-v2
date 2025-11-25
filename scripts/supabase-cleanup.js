@@ -8,6 +8,24 @@ const { execSync } = require('child_process')
 
 const log = (message) => console.log(`🧹 ${message}`)
 
+const getSupabaseContainerIds = (includeStopped = false) => {
+  const psFlags = includeStopped ? '-a ' : ''
+  try {
+    return execSync(
+      `docker ps ${psFlags}--filter name=supabase --quiet`.trim(),
+      {
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'ignore'],
+      }
+    )
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
 const dockerAvailable = () => {
   try {
     execSync('docker info', { stdio: 'ignore' })
@@ -19,13 +37,7 @@ const dockerAvailable = () => {
 }
 
 const disableRestartPolicy = () => {
-  const ids = execSync('docker ps --filter name=supabase --quiet', {
-    encoding: 'utf8',
-    stdio: ['pipe', 'pipe', 'ignore'],
-  })
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
+  const ids = getSupabaseContainerIds()
 
   if (ids.length === 0) {
     return
@@ -37,6 +49,16 @@ const disableRestartPolicy = () => {
 
 const pruneSupabaseImages = () => {
   log('Pruning unused Supabase images...')
+
+  const runningContainers = getSupabaseContainerIds()
+  const anyContainers = getSupabaseContainerIds(true)
+
+  if (runningContainers.length > 0 || anyContainers.length > 0) {
+    log(
+      `Supabase containers ${runningContainers.length > 0 ? 'running' : 'present'}; skipping image prune to avoid conflicts.`
+    )
+    return
+  }
 
   // docker image prune does not accept a reference filter, so remove matches directly
   const ids = execSync(
