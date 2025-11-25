@@ -1,5 +1,5 @@
-import { vi, describe, test, beforeEach, expect } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
@@ -17,6 +17,10 @@ vi.mock('@/hooks/useCouplesFeatures', () => ({
 
 describe('Couples Frontend Integration', () => {
   let queryClient: QueryClient
+
+  afterEach(() => {
+    cleanup()
+  })
 
   beforeEach(async () => {
     queryClient = new QueryClient({

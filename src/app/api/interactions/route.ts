@@ -19,10 +19,8 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const { data, error: authError } = await supabase.auth.getUser()
+    const user = data?.user
 
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
@@ -95,10 +93,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const { data: authData, error: authError } = await supabase.auth.getUser()
+    const user = authData?.user
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -245,10 +241,8 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const { data, error: authError } = await supabase.auth.getUser()
+    const user = data?.user
 
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()

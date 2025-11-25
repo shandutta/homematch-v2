@@ -11,8 +11,15 @@
  * Note: Actual clipboard API testing is better suited for e2e tests with Playwright
  * since jsdom has limitations with browser APIs that require user interaction
  */
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
-import { render, screen, waitFor } from '@testing-library/react'
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { HouseholdSection } from '@/components/profile/HouseholdSection'
@@ -33,6 +40,10 @@ jest.mock('sonner', () => ({
 
 describe('HouseholdSection UI Integration', () => {
   const profileWithHousehold = TEST_USERS.withHousehold.profile
+
+  afterEach(() => {
+    cleanup()
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
