@@ -37,12 +37,41 @@ const disableRestartPolicy = () => {
 
 const pruneSupabaseImages = () => {
   log('Pruning unused Supabase images...')
-  execSync(
-    'docker image prune -af --filter reference=public.ecr.aws/supabase/*',
+
+  // docker image prune does not accept a reference filter, so remove matches directly
+  const ids = execSync(
+    'docker images --filter "reference=public.ecr.aws/supabase/*" --quiet',
     {
-      stdio: 'inherit',
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
     }
   )
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (ids.length === 0) {
+    log('No Supabase images found.')
+    return
+  }
+
+  const failed = []
+
+  ids.forEach((id) => {
+    try {
+      execSync(`docker image rm ${id}`, { stdio: 'inherit' })
+    } catch {
+      failed.push(id)
+    }
+  })
+
+  if (failed.length > 0) {
+    log(
+      `Could not remove ${failed.length} image(s) (likely still used by containers): ${failed.join(
+        ', '
+      )}`
+    )
+  }
 }
 
 const systemPruneIfRequested = () => {

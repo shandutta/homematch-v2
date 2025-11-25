@@ -3,9 +3,11 @@ import { createClient } from '@supabase/supabase-js'
 import { CouplesService } from '@/lib/services/couples'
 import { createClient as createStandaloneClient } from '@/lib/supabase/standalone'
 import { createAuthenticatedClient } from '../utils/test-users'
+import { getTestDataFactory } from '../utils/test-data-factory'
 import { randomUUID } from 'crypto'
 
 let TEST_HOUSEHOLD_ID: string = randomUUID()
+const TEST_USERS: { id: string }[] = []
 
 // Remove hardcoded properties - we'll create them dynamically in tests
 
@@ -29,6 +31,17 @@ describe('Couples E2E Integration Tests', () => {
         // PGRST116 is "no rows returned", which is fine
         throw error
       }
+
+      // Preload a small pool of test users for cleanup and membership updates
+      const userIndices = [0, 1, 2, 3]
+      const authenticatedUsers = await Promise.all(
+        userIndices.map((index) => createAuthenticatedClient(index))
+      )
+      TEST_USERS.splice(
+        0,
+        TEST_USERS.length,
+        ...authenticatedUsers.map(({ user }) => ({ id: user.id }))
+      )
     } catch (error: any) {
       throw new Error(
         `Supabase unavailable for couples integration tests: ${
