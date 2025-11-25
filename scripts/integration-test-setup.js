@@ -85,7 +85,63 @@ const sleepSync = (ms) => {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
 
-const resetDatabase = () => {
+const findKongContainer = () => {
+  try {
+    const names = execSync(
+      'docker ps --filter "name=supabase_kong" --format "{{.Names}}"',
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+
+    return names[0] || null
+  } catch {
+    return null
+  }
+}
+
+const restartKong = () => {
+  const kongContainer = findKongContainer()
+  if (!kongContainer) return false
+
+  try {
+    execSync(`docker restart ${kongContainer}`, {
+      stdio: process.env.DEBUG_TEST_SETUP ? 'inherit' : 'ignore',
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const isStorageHealthy = async () => {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+
+  try {
+    const response = await fetch(`${supabaseAdminUrl}/storage/v1/bucket`, {
+      method: 'HEAD',
+      headers: { apikey: supabaseAnonKey || '' },
+      signal: controller.signal,
+    })
+    return response.ok || response.status === 400 || response.status === 401
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+const waitForStorage = async (attempts = 5) => {
+  for (let i = 0; i < attempts; i++) {
+    if (await isStorageHealthy()) return true
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+  }
+  return false
+}
+
+const resetDatabase = async () => {
   const cmd = 'pnpm dlx supabase@latest db reset --local --yes'
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -96,11 +152,33 @@ const resetDatabase = () => {
       runCleanup()
       return true
     } catch (error) {
-      const msg = error?.message || ''
+      const combinedMessage = [
+        error?.message || '',
+        error?.stdout?.toString?.() || '',
+        error?.stderr?.toString?.() || '',
+      ]
+        .join('\n')
+        .toLowerCase()
+
+      const storageTimeout =
+        combinedMessage.includes('storage/v1') &&
+        (combinedMessage.includes('client.timeout') ||
+          combinedMessage.includes('context deadline'))
+
+      if (storageTimeout) {
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug(
+            `⚠️  Reset attempt ${attempt} hit storage timeout. Restarting Kong and retrying...`
+          )
+        }
+        restartKong()
+        await waitForStorage()
+      }
+
       if (attempt < 3) {
         if (process.env.DEBUG_TEST_SETUP) {
           console.debug(
-            `⚠️  Reset attempt ${attempt} failed (${msg || 'unknown error'}). Retrying...`
+            `⚠️  Reset attempt ${attempt} failed. Retrying in 3s...`
           )
         }
         sleepSync(3000)
@@ -255,7 +333,7 @@ async function setupIntegrationTests() {
         sleepSync(2000)
 
         // Ensure DB is reset/migrations applied for integration determinism
-        resetDatabase()
+        await resetDatabase()
 
         dbResetPerformed = true
         supabaseHealthy = true
@@ -282,7 +360,7 @@ async function setupIntegrationTests() {
         console.debug('\n2️⃣  Resetting database for a clean test state...')
       }
       try {
-        resetDatabase()
+        await resetDatabase()
         dbResetPerformed = true
         if (process.env.DEBUG_TEST_SETUP) {
           console.debug('✅ Database reset complete')
