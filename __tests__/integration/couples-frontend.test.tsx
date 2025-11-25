@@ -60,11 +60,14 @@ describe('Couples Frontend Integration', () => {
 
   describe('MutualLikesSection Component', () => {
     test('should render without crashing', () => {
-      expect(() => {
-        renderWithQueryClient(
-          <MutualLikesSection isLoading={false} mutualLikes={[]} />
-        )
-      }).not.toThrow()
+      // Render directly and verify the component mounts successfully
+      // Note: Using direct render instead of toThrow() to avoid framer-motion
+      // animation system issues in jsdom environment
+      renderWithQueryClient(
+        <MutualLikesSection isLoading={false} mutualLikes={[]} />
+      )
+      // If we get here without throwing, the test passes
+      expect(screen.getByTestId('mutual-likes-empty')).toBeInTheDocument()
     })
 
     test('should display loading state', () => {

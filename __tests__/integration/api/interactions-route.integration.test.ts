@@ -200,7 +200,22 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('rejects unauthorized interaction requests', async () => {
-    setAuthToken(undefined)
+    // Mock the server client to return no user for this test
+    // This is necessary because Supabase SSR client caches session state internally
+    const mockClient = {
+      auth: {
+        getUser: vi
+          .fn()
+          .mockResolvedValue({ data: { user: null }, error: null }),
+      },
+    }
+
+    const createClientSpy = vi.spyOn(
+      await import('@/lib/supabase/server'),
+      'createClient'
+    )
+    createClientSpy.mockResolvedValue(mockClient as any)
+
     const propertyId = randomUUID()
     const req = makeJsonRequest('http://localhost/api/interactions', 'POST', {
       propertyId,
@@ -209,6 +224,9 @@ describe.sequential('Integration: /api/interactions route', () => {
 
     const res = await POST(req)
     expect(res.status).toBe(401)
+
+    // Restore the original implementation
+    createClientSpy.mockRestore()
   })
 
   it('records interactions and returns summary plus paginated results', async () => {
