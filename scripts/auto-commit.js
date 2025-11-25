@@ -407,8 +407,29 @@ const runChecksWithCodex = () => {
   }
 }
 
+const gitPullRebase = () => {
+  log('Pulling latest changes from origin...')
+  const pull = spawnSync(
+    'git',
+    ['pull', '--rebase', '--autostash', 'origin', 'main'],
+    {
+      stdio: 'inherit',
+      cwd: repoRoot,
+    }
+  )
+  if (pull.status !== 0) {
+    console.error(
+      `[${timestamp()}] git pull --rebase failed. Resolve conflicts manually.`
+    )
+    process.exit(pull.status ?? 1)
+  }
+}
+
 const main = async () => {
   log('Starting auto-commit run')
+
+  // Always pull first to stay in sync with other machines
+  gitPullRebase()
 
   if (!hasChanges()) {
     log('No pending changes. Nothing to commit.')
