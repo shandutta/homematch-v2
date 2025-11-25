@@ -18,10 +18,15 @@ export class RateLimiter {
   async check(
     identifier: string
   ): Promise<{ success: boolean; remaining: number; resetTime: number }> {
+    const enforceInTest =
+      process.env.RATE_LIMIT_ENFORCE_IN_TESTS === 'true' ||
+      process.env.RATE_LIMIT_ENFORCE === 'true'
+
     // Bypass rate limiting in test mode
     if (
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-      process.env.NODE_ENV === 'test'
+      !enforceInTest &&
+      (process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+        process.env.NODE_ENV === 'test')
     ) {
       return {
         success: true,
@@ -78,3 +83,6 @@ export const authRateLimiter = new RateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 auth attempts per 15 minutes
 })
+
+// Test helpers
+export const resetRateLimitStore = () => store.clear()

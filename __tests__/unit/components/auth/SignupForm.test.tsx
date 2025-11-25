@@ -32,6 +32,7 @@ import { useValidatedForm } from '@/hooks/useValidatedForm'
 const createMockSignupData = (overrides?: Partial<SignupData>): SignupData => {
   const baseData = {
     email: 'newuser@example.com',
+    displayName: 'New User',
     password: 'Password123',
     confirmPassword: 'Password123',
     ...overrides,
@@ -76,11 +77,13 @@ jest.mock('@/components/ui/form', () => ({
       value:
         name === 'email'
           ? validSignupData.email
-          : name === 'password'
-            ? validSignupData.password
-            : name === 'confirmPassword'
-              ? validSignupData.confirmPassword
-              : '',
+          : name === 'displayName'
+            ? validSignupData.displayName
+            : name === 'password'
+              ? validSignupData.password
+              : name === 'confirmPassword'
+                ? validSignupData.confirmPassword
+                : '',
       onChange: jest.fn(),
       onBlur: jest.fn(),
       ref: jest.fn(),
@@ -319,7 +322,8 @@ describe('SignupForm', () => {
         email: validSignupData.email,
         password: validSignupData.password,
         options: {
-          emailRedirectTo: expect.stringContaining('/auth/callback'),
+          emailRedirectTo: 'http://localhost/auth/callback',
+          data: { display_name: validSignupData.displayName },
         },
       })
     })
@@ -355,7 +359,8 @@ describe('SignupForm', () => {
         email: validSignupData.email,
         password: validSignupData.password,
         options: {
-          emailRedirectTo: expect.stringContaining('/auth/callback'),
+          emailRedirectTo: 'http://localhost/auth/callback',
+          data: { display_name: validSignupData.displayName },
         },
       })
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
@@ -504,7 +509,8 @@ describe('SignupForm', () => {
         email: validSignupData.email,
         password: validSignupData.password,
         options: {
-          emailRedirectTo: expect.stringContaining('/auth/callback'),
+          emailRedirectTo: 'http://localhost/auth/callback',
+          data: { display_name: validSignupData.displayName },
         },
       })
       // Form should still be visible

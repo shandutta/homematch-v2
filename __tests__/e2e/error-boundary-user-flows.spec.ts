@@ -74,16 +74,7 @@ async function checkForErrorUI(
 }
 
 test.describe('Error Boundary User Flows', () => {
-  // Skip WebKit - authentication has race conditions that cause flaky failures
-  test.skip(
-    ({ browserName }) => browserName === 'webkit',
-    'WebKit auth race conditions'
-  )
-
-  test.beforeEach(async ({ page, context }, testInfo) => {
-    // Clear cookies and auth state
-    await context.clearCookies()
-
+  test.beforeEach(async ({ page }, testInfo) => {
     // Mock console to catch errors
     await page.addInitScript(() => {
       window.capturedErrors = []
@@ -103,9 +94,9 @@ test.describe('Error Boundary User Flows', () => {
       }
     })
 
-    // Use worker-specific authentication to prevent race conditions
+    // Use worker-specific authentication with storage state (WebKit-friendly)
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
-    await auth.login(testUser)
+    await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
     await auth.verifyAuthenticated()
 
     // Wait for React hydration

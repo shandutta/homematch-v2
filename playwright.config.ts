@@ -5,13 +5,17 @@ import * as fs from 'fs'
 import * as os from 'os'
 
 // Load test environment variables with fallbacks
+// Note: .env.test.local uses override:true to ensure test config takes precedence
+// over any shell environment variables (e.g., NEXT_PUBLIC_SUPABASE_URL)
 const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
 const loadedEnvFiles: string[] = []
 
 for (const file of envCandidates) {
   const envPath = path.resolve(__dirname, file)
   if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath })
+    // Use override for .env.test.local to ensure test config takes precedence
+    const override = file === '.env.test.local'
+    dotenv.config({ path: envPath, override })
     loadedEnvFiles.push(file)
   }
 }

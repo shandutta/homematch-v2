@@ -50,7 +50,13 @@ const mockProperty: Property = {
 }
 
 const getStatValueByLabel = (label: string) => {
-  const labelElement = screen.getByText(label, { selector: 'p' })
+  const labelElement = screen.getByText((content, element) => {
+    return (
+      element?.tagName.toLowerCase() === 'p' &&
+      content.replace(/\s|\./g, '').toLowerCase() ===
+        label.replace(/\s|\./g, '').toLowerCase()
+    )
+  })
   const valueElement = labelElement.nextElementSibling as HTMLElement | null
   if (!valueElement) {
     throw new Error(`Value element for ${label} stat not found`)
@@ -65,7 +71,7 @@ describe('PropertyCard Component', () => {
     expect(screen.getByText('$500,000')).toBeDefined()
     expect(getStatValueByLabel('Beds')).toHaveTextContent('3')
     expect(getStatValueByLabel('Baths')).toHaveTextContent('2')
-    expect(getStatValueByLabel('Sq Ft')).toHaveTextContent('1,500')
+    expect(getStatValueByLabel('Sq. Ft.')).toHaveTextContent('1,500')
   })
 
   test('should render Zillow link with correct href', () => {
