@@ -113,7 +113,9 @@ describe('HowItWorks', () => {
       'border-white/60',
       'bg-white',
       'p-5',
-      'sm:p-6'
+      'sm:p-6',
+      'rounded-token-xl',
+      'transition-shadow'
     )
   })
 
@@ -189,13 +191,7 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     const grid = screen.getByText('1. Tell Us Your Vibe').closest('.grid')
-    expect(grid).toHaveClass(
-      'grid',
-      'mt-3',
-      'gap-4',
-      'sm:mt-3',
-      'sm:grid-cols-3',
-      'sm:gap-5'
-    )
+    expect(grid).toHaveClass('gap-4', 'mt-3', 'sm:mt-3', 'sm:grid-cols-3')
+    expect(grid).toHaveClass('sm:gap-5')
   })
 })

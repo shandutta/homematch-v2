@@ -3,7 +3,7 @@
  * Provides reliable authentication utilities for Playwright tests
  */
 
-import { Page, expect } from '@playwright/test'
+import { Page, expect, Locator } from '@playwright/test'
 import {
   TEST_USERS,
   TEST_ROUTES,
@@ -37,6 +37,93 @@ export class AuthHelper {
    */
   private get isWebKit(): boolean {
     return isWebKit(this.page)
+  }
+
+  /**
+   * Ensure the login form is visible and hydrated before interacting with it.
+   */
+  private async waitForLoginFormReady(): Promise<void> {
+    await this.page.waitForSelector('[data-testid="login-form"]', {
+      state: 'visible',
+      timeout: TEST_TIMEOUTS.navigation * 2,
+    })
+
+    // Give hydration a brief moment to finish (Safari/WebKit is slower here)
+    await this.page.waitForTimeout(200)
+  }
+
+  /**
+   * Resolve the first visible locator from a list of selectors.
+   */
+  private async findFirstVisible(
+    selectors: string[],
+    label: string
+  ): Promise<Locator> {
+    for (const selector of selectors) {
+      const locator = this.page.locator(selector).first()
+      try {
+        await locator.waitFor({
+          state: 'visible',
+          timeout: TEST_TIMEOUTS.element,
+        })
+        return locator
+      } catch (_e) {
+        continue
+      }
+    }
+
+    throw new Error(`Could not find ${label}`)
+  }
+
+  /**
+   * Fill an input reliably across browsers, retrying when hydration clears values.
+   */
+  private async fillInputWithRetries(
+    locator: Locator,
+    value: string,
+    label: string
+  ): Promise<void> {
+    const maxAttempts = 3
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await locator.click({ force: true })
+      await locator.fill('')
+      await this.page.waitForTimeout(50)
+      await locator.fill(value, { force: true })
+
+      const currentValue = await locator.inputValue()
+      if (currentValue === value) {
+        return
+      }
+
+      await this.page.waitForTimeout(150 * attempt)
+    }
+
+    // Fallback: type to avoid hydration clobbering the filled value (WebKit prone)
+    await locator.click({ force: true })
+    await locator.fill('')
+    await locator.type(value, { delay: 20 })
+
+    const typedValue = await locator.inputValue()
+    if (typedValue === value) {
+      return
+    }
+
+    // Final fallback: set value directly and dispatch input/change events
+    await locator.evaluate((element, text) => {
+      const input = element as HTMLInputElement
+      input.focus()
+      input.value = text
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    }, value)
+
+    const finalValue = await locator.inputValue()
+    if (finalValue !== value) {
+      throw new Error(
+        `Input "${label}" not filled correctly. Expected: ${value}, Got: ${finalValue}`
+      )
+    }
   }
 
   /**
@@ -102,6 +189,60 @@ export class AuthHelper {
   }
 
   /**
+   * Fill the login form with the provided credentials, optionally navigating to the page.
+   */
+  async fillCredentials(
+    email: string,
+    password: string,
+    options: { navigateToLogin?: boolean } = {}
+  ): Promise<{
+    emailInput: Locator
+    passwordInput: Locator
+    submitButton: Locator
+  }> {
+    if (options.navigateToLogin) {
+      await this.navigateWithRetry(TEST_ROUTES.auth.signIn, 'login')
+    }
+
+    await this.waitForLoginFormReady()
+
+    const emailInput = await this.findFirstVisible(
+      [
+        '[data-testid="email-input"]',
+        'input[type="email"]',
+        'input[name="email"]',
+        '#email',
+      ],
+      'email input field'
+    )
+    await this.fillInputWithRetries(emailInput, email, 'email')
+
+    const passwordInput = await this.findFirstVisible(
+      [
+        '[data-testid="password-input"]',
+        'input[type="password"]',
+        'input[name="password"]',
+        '#password',
+      ],
+      'password input field'
+    )
+    await this.fillInputWithRetries(passwordInput, password, 'password')
+
+    const submitButton = await this.findFirstVisible(
+      [
+        '[data-testid="signin-button"]',
+        'button[type="submit"]',
+        'button:has-text("Sign In")',
+        'button:has-text("Log In")',
+        'button:has-text("Login")',
+      ],
+      'submit button'
+    )
+
+    return { emailInput, passwordInput, submitButton }
+  }
+
+  /**
    * Login with the specified user
    */
   async login(user: TestUser = TEST_USERS.withHousehold): Promise<void> {
@@ -111,111 +252,10 @@ export class AuthHelper {
     // Navigate to login page
     await this.navigateWithRetry(TEST_ROUTES.auth.signIn, 'login')
 
-    // Find email input with multiple strategies
-    const emailSelectors = [
-      '[data-testid="email-input"]',
-      'input[type="email"]',
-      'input[name="email"]',
-      '#email',
-    ]
-
-    let emailInput = null
-    for (const selector of emailSelectors) {
-      try {
-        emailInput = await this.page.waitForSelector(selector, {
-          timeout: TEST_TIMEOUTS.element,
-          state: 'visible',
-        })
-        if (emailInput) break
-      } catch (_e) {
-        continue
-      }
-    }
-
-    if (!emailInput) {
-      throw new Error('Could not find email input field')
-    }
-
-    // Clear and fill email with WebKit-friendly approach
-    await emailInput.fill('')
-    await this.page.waitForTimeout(100) // Brief pause after clear
-    await emailInput.fill(user.email)
-
-    // Verify email was entered correctly
-    const emailValue = await emailInput.inputValue()
-    if (emailValue !== user.email) {
-      throw new Error(
-        `Email not filled correctly. Expected: ${user.email}, Got: ${emailValue}`
-      )
-    }
-
-    await this.page.waitForTimeout(300)
-
-    // Find password input with multiple strategies
-    const passwordSelectors = [
-      '[data-testid="password-input"]',
-      'input[type="password"]',
-      'input[name="password"]',
-      '#password',
-    ]
-
-    let passwordInput = null
-    for (const selector of passwordSelectors) {
-      try {
-        passwordInput = await this.page.waitForSelector(selector, {
-          timeout: TEST_TIMEOUTS.element,
-          state: 'visible',
-        })
-        if (passwordInput) break
-      } catch (_e) {
-        continue
-      }
-    }
-
-    if (!passwordInput) {
-      throw new Error('Could not find password input field')
-    }
-
-    // Clear and fill password with WebKit-friendly approach
-    await passwordInput.fill('')
-    await this.page.waitForTimeout(100) // Brief pause after clear
-    await passwordInput.fill(user.password)
-
-    // Verify password was entered correctly
-    const passwordValue = await passwordInput.inputValue()
-    if (passwordValue !== user.password) {
-      throw new Error(
-        `Password not filled correctly. Expected: ${user.password}, Got: ${passwordValue}`
-      )
-    }
-
-    await this.page.waitForTimeout(300)
-
-    // Find and click submit button
-    const submitSelectors = [
-      '[data-testid="signin-button"]',
-      'button[type="submit"]',
-      'button:has-text("Sign In")',
-      'button:has-text("Log In")',
-      'button:has-text("Login")',
-    ]
-
-    let submitButton = null
-    for (const selector of submitSelectors) {
-      try {
-        submitButton = await this.page.waitForSelector(selector, {
-          timeout: TEST_TIMEOUTS.element,
-          state: 'visible',
-        })
-        if (submitButton) break
-      } catch (_e) {
-        continue
-      }
-    }
-
-    if (!submitButton) {
-      throw new Error('Could not find submit button')
-    }
+    const { submitButton } = await this.fillCredentials(
+      user.email,
+      user.password
+    )
 
     // Submit form and wait for navigation away from login page
     await submitButton.click()

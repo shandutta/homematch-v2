@@ -12,8 +12,29 @@ export interface RateLimitConfig {
   max: number // Max requests per window
 }
 
+export interface RateLimiterOptions {
+  /**
+   * When true (default), rate limiting is bypassed in test environments.
+   * Useful for e2e/integration tests that shouldn't be blocked.
+   */
+  enableTestBypass?: boolean
+}
+
 export class RateLimiter {
-  constructor(private config: RateLimitConfig) {}
+  constructor(
+    private config: RateLimitConfig,
+    private options: RateLimiterOptions = {}
+  ) {}
+
+  private shouldBypassRateLimit() {
+    if (this.options.enableTestBypass === false) {
+      return false
+    }
+    return (
+      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+      process.env.NODE_ENV === 'test'
+    )
+  }
 
   async check(
     identifier: string
@@ -23,11 +44,7 @@ export class RateLimiter {
       process.env.RATE_LIMIT_ENFORCE === 'true'
 
     // Bypass rate limiting in test mode
-    if (
-      !enforceInTest &&
-      (process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-        process.env.NODE_ENV === 'test')
-    ) {
+    if (!enforceInTest && this.shouldBypassRateLimit()) {
       return {
         success: true,
         remaining: 999,

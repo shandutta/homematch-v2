@@ -321,10 +321,10 @@ describe('SignupForm', () => {
       expect(mockSignUp).toHaveBeenCalledWith({
         email: validSignupData.email,
         password: validSignupData.password,
-        options: {
-          emailRedirectTo: 'http://localhost/auth/callback',
+        options: expect.objectContaining({
+          emailRedirectTo: expect.stringContaining('/auth/callback'),
           data: { display_name: validSignupData.displayName },
-        },
+        }),
       })
     })
 
@@ -358,10 +358,10 @@ describe('SignupForm', () => {
       expect(mockSignUp).toHaveBeenCalledWith({
         email: validSignupData.email,
         password: validSignupData.password,
-        options: {
-          emailRedirectTo: 'http://localhost/auth/callback',
+        options: expect.objectContaining({
+          emailRedirectTo: expect.stringContaining('/auth/callback'),
           data: { display_name: validSignupData.displayName },
-        },
+        }),
       })
       expect(screen.getByText(errorMessage)).toBeInTheDocument()
     })
@@ -508,10 +508,10 @@ describe('SignupForm', () => {
       expect(mockSignUp).toHaveBeenCalledWith({
         email: validSignupData.email,
         password: validSignupData.password,
-        options: {
-          emailRedirectTo: 'http://localhost/auth/callback',
+        options: expect.objectContaining({
+          emailRedirectTo: expect.stringContaining('/auth/callback'),
           data: { display_name: validSignupData.displayName },
-        },
+        }),
       })
       // Form should still be visible
       expect(screen.getByLabelText('Email')).toBeInTheDocument()

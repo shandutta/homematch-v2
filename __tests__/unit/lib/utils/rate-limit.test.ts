@@ -19,7 +19,10 @@ describe('RateLimiter', () => {
   })
 
   test('allows requests within limit and blocks after max', async () => {
-    const limiter = new RateLimiter({ windowMs: 1000, max: 2 })
+    const limiter = new RateLimiter(
+      { windowMs: 1000, max: 2 },
+      { enableTestBypass: false }
+    )
 
     const first = await limiter.check('user1')
     const second = await limiter.check('user1')
@@ -32,7 +35,10 @@ describe('RateLimiter', () => {
   })
 
   test('resets after window passes', async () => {
-    const limiter = new RateLimiter({ windowMs: 1000, max: 1 })
+    const limiter = new RateLimiter(
+      { windowMs: 1000, max: 1 },
+      { enableTestBypass: false }
+    )
 
     const first = await limiter.check('user2')
     expect(first.success).toBe(true)
