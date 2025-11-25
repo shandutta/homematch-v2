@@ -24,16 +24,34 @@ const FALLBACK_IMAGES = [
   '/images/properties/house-3.svg',
 ]
 
-// Known broken Unsplash URLs and unreliable image sources that should be avoided
-const BROKEN_IMAGE_PATTERNS = [
+// Known broken Unsplash URLs (path patterns)
+const BROKEN_IMAGE_PATH_PATTERNS = [
   'photo-1575517111478-7f6f2c59ebb0', // This specific image is consistently 404
-  'loremflickr.com', // LoremFlickr causes Next.js optimization 500 errors in test mode
-  // Add more patterns as they're identified
 ]
 
-// Check if a URL contains known broken patterns
+// Domains that cause issues (checked via hostname, not substring)
+const BLOCKED_DOMAINS = new Set([
+  'loremflickr.com', // LoremFlickr causes Next.js optimization 500 errors in test mode
+])
+
+// Safely extract hostname from URL
+const getUrlHostname = (url: string): string | null => {
+  try {
+    return new URL(url).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+}
+
+// Check if a URL is known to be broken (via hostname or path patterns)
 const isKnownBrokenImage = (url: string): boolean => {
-  return BROKEN_IMAGE_PATTERNS.some((pattern) => url.includes(pattern))
+  // Check blocked domains via proper hostname parsing
+  const hostname = getUrlHostname(url)
+  if (hostname && BLOCKED_DOMAINS.has(hostname)) {
+    return true
+  }
+  // Check path patterns (these are not domain-based)
+  return BROKEN_IMAGE_PATH_PATTERNS.some((pattern) => url.includes(pattern))
 }
 
 export function PropertyImage({
@@ -66,7 +84,8 @@ export function PropertyImage({
       }
 
       // Double-check: if the URL is still a loremflickr URL, force fallback
-      if (imageUrl && imageUrl.includes('loremflickr.com')) {
+      const imageHostname = imageUrl ? getUrlHostname(imageUrl) : null
+      if (imageHostname === 'loremflickr.com') {
         console.warn(
           `Blocking loremflickr URL from Next.js Image optimization: ${imageUrl}`
         )

@@ -70,6 +70,15 @@ function normalizeString(s?: string | number): string {
     .replace(/\s+/g, ' ')
 }
 
+// Safely extract hostname from URL for proper domain checking
+function getUrlHostname(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+}
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 function isProbableMatch(seed: SeedProperty, res: ZillowListing): boolean {
   const a1 = normalizeString(seed.address)
@@ -219,7 +228,9 @@ async function main() {
     // Only fetch if we don't already have a Zillow URL or if image looks like placeholder
     const current =
       Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined
-    const isUnsplash = current?.includes('images.unsplash.com')
+    // Use proper hostname extraction instead of substring matching for security
+    const currentHostname = current ? getUrlHostname(current) : null
+    const isUnsplash = currentHostname === 'images.unsplash.com'
 
     if (!isUnsplash && current) {
       // Leave as-is if already non-Unsplash URL

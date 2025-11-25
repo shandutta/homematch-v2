@@ -13,17 +13,86 @@ import { vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 
+// Suppress known harmless warnings during tests
+const originalWarn = console.warn
+console.warn = (...args: unknown[]) => {
+  const message = args[0]
+  if (
+    typeof message === 'string' &&
+    message.includes('Multiple GoTrueClient instances detected')
+  ) {
+    // This warning is expected in test environment where multiple clients
+    // are created for different test scenarios. It doesn't affect test validity.
+    return
+  }
+  originalWarn.apply(console, args)
+}
+
 type UndiciFetchResponse = Awaited<ReturnType<typeof undiciFetch>>
 type UndiciFetchArgs = Parameters<typeof undiciFetch>
 type UndiciFetchInput = UndiciFetchArgs[0]
 type UndiciFetchInit = UndiciFetchArgs[1]
 type SupabaseModule = typeof import('@supabase/supabase-js')
+type SupabaseSsrModule = typeof import('@supabase/ssr')
 type SupabaseCreateClient = SupabaseModule['createClient']
 type CachedSupabaseClient = ReturnType<SupabaseCreateClient>
 type SupabaseCreateClientOptions = Parameters<SupabaseCreateClient>[2]
 
+// Unique storage key prefix per worker to avoid GoTrue collisions
+const storageKeyPrefix = `vitest-${process.env.VITEST_POOL_ID || process.pid || '1'}`
+
+// In-memory storage implementation for tests to avoid GoTrueClient collision warnings
+class TestMemoryStorage {
+  private store = new Map<string, string>()
+  private id: string
+
+  constructor(id: string) {
+    this.id = id
+  }
+
+  getItem(key: string): string | null {
+    return this.store.get(`${this.id}:${key}`) ?? null
+  }
+
+  setItem(key: string, value: string): void {
+    this.store.set(`${this.id}:${key}`, value)
+  }
+
+  removeItem(key: string): void {
+    this.store.delete(`${this.id}:${key}`)
+  }
+}
+
 // Deduplicate Supabase clients in Vitest to avoid multiple GoTrue instances sharing storage
 const supabaseClientCache = new Map<string, CachedSupabaseClient>()
+let clientCounter = 0
+
+const createCachedClient = (
+  actualCreateClient: SupabaseCreateClient,
+  url: string,
+  key: string,
+  options?: SupabaseCreateClientOptions
+): CachedSupabaseClient => {
+  const cacheKey = `${url}:${key}:${storageKeyPrefix}`
+  if (!supabaseClientCache.has(cacheKey)) {
+    const clientId = `${storageKeyPrefix}-${++clientCounter}`
+    const mergedOptions: SupabaseCreateClientOptions = {
+      ...(options ?? {}),
+      auth: {
+        ...options?.auth,
+        autoRefreshToken: false,
+        persistSession: false,
+        // Use custom in-memory storage to avoid GoTrueClient collision detection
+        storage: new TestMemoryStorage(clientId),
+        storageKey: clientId,
+      },
+    }
+    const client = actualCreateClient(url, key, mergedOptions)
+    supabaseClientCache.set(cacheKey, client)
+  }
+  return supabaseClientCache.get(cacheKey)!
+}
+
 vi.mock('@supabase/supabase-js', async () => {
   const actual = await vi.importActual<SupabaseModule>('@supabase/supabase-js')
   return {
@@ -32,26 +101,29 @@ vi.mock('@supabase/supabase-js', async () => {
       url: string,
       key: string,
       options?: SupabaseCreateClientOptions
-    ) => {
-      const cacheKey = `${url}:${key}`
-      if (!supabaseClientCache.has(cacheKey)) {
-        const mergedOptions: SupabaseCreateClientOptions = {
-          ...(options ?? {}),
-          auth: {
-            ...options?.auth,
-            autoRefreshToken: false,
-            persistSession: false,
-            storage: undefined,
-            storageKey:
-              options?.auth?.storageKey ||
-              `vitest-${process.env.VITEST_POOL_ID || '1'}-${key.slice(0, 6)}`,
-          },
-        }
-        const client = actual.createClient(url, key, mergedOptions)
-        supabaseClientCache.set(cacheKey, client)
-      }
-      return supabaseClientCache.get(cacheKey)!
-    },
+    ) => createCachedClient(actual.createClient, url, key, options),
+  }
+})
+
+// Also mock @supabase/ssr to use consistent auth options
+vi.mock('@supabase/ssr', async () => {
+  const actual = await vi.importActual<SupabaseSsrModule>('@supabase/ssr')
+  const supabaseJs = await vi.importActual<SupabaseModule>(
+    '@supabase/supabase-js'
+  )
+
+  return {
+    ...actual,
+    createBrowserClient: (
+      url: string,
+      key: string,
+      options?: SupabaseCreateClientOptions
+    ) => createCachedClient(supabaseJs.createClient, url, key, options),
+    createServerClient: (
+      url: string,
+      key: string,
+      options?: SupabaseCreateClientOptions
+    ) => createCachedClient(supabaseJs.createClient, url, key, options),
   }
 })
 

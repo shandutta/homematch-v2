@@ -69,6 +69,14 @@ console.error = (...args) => {
 }
 
 // Mock clipboard API globally with proper async behavior - make it configurable for userEvent
+// Ensure navigator exists before defining clipboard (may not exist in pure Node.js environments)
+if (typeof global.navigator === 'undefined') {
+  Object.defineProperty(global, 'navigator', {
+    value: {},
+    writable: true,
+    configurable: true,
+  })
+}
 Object.defineProperty(global.navigator, 'clipboard', {
   value: {
     writeText: jest.fn().mockResolvedValue(undefined),

@@ -628,12 +628,12 @@ test.describe('Authentication Flow E2E Tests', () => {
 
         if (emailValue.length === 0 || passwordValue.length === 0) {
           throw new Error(
-            `Input fields not filling correctly: email="${emailValue}", password="${passwordValue}"`
+            `Input fields not filling correctly: email="${emailValue}", password=[REDACTED]`
           )
         }
 
         console.log(
-          `Input values differ from expected but not empty: email="${emailValue}", password="${passwordValue}"`
+          `Input values differ from expected but not empty: email="${emailValue}", password=[REDACTED]`
         )
       }
 

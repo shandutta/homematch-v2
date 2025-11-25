@@ -25,12 +25,13 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     testTimeout: 45000, // 45 seconds for individual tests (increased for HTTP requests)
     hookTimeout: 90000, // 90 seconds for beforeAll/afterAll hooks (increased for auth setup)
-    // Use threads pool for faster execution (lighter than forks)
-    pool: 'threads',
+    // Use forks pool to allow execArgv for suppressing Node experimental warnings
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: false, // Run test files in parallel
+      forks: {
+        singleFork: true, // Run test files sequentially to avoid race conditions
         isolate: true, // Isolate globals between tests
+        execArgv: ['--disable-warning=ExperimentalWarning'],
       },
     },
   },

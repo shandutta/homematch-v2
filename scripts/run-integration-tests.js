@@ -9,6 +9,9 @@ const path = require('path')
 
 const setupIntegrationTests = require('./integration-test-setup')
 
+// Suppress Node.js experimental warnings (e.g., --localstorage-file)
+process.env.NODE_NO_WARNINGS = '1'
+
 const maskKey = (value = '') =>
   value ? `${value.slice(0, 4)}…${value.slice(-4)}` : '(empty)'
 

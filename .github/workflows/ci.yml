@@ -7,6 +7,10 @@ on:
       - main
       - develop
 
+# Restrict permissions for security - only request what's needed
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

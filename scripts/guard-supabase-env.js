@@ -89,9 +89,11 @@ const currentHostsToCheck = [
 const looksLikeProdSupabaseHost = currentHostsToCheck.some((host) => {
   const normalized = host.toLowerCase()
   if (allowHosts.has(normalized)) return false
+  // Use endsWith() instead of includes() to prevent bypass via subdomains like 'pooler.supabase.com.evil.com'
   return (
     suspiciousHostPattern.test(normalized) ||
-    normalized.includes('pooler.supabase.com')
+    normalized.endsWith('.pooler.supabase.com') ||
+    normalized === 'pooler.supabase.com'
   )
 })
 
