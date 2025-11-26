@@ -163,14 +163,20 @@ jobs:
 
       - name: Wait for Supabase readiness
         run: |
-          for i in {1..60}; do
-            if curl -fs "${SUPABASE_URL}/health" >/dev/null; then
-              echo "Supabase is ready"
+          for i in {1..90}; do
+            code_health=$(curl -s -o /dev/null -w "%{http_code}" "${SUPABASE_URL}/health" || true)
+            code_rest=$(curl -s -o /dev/null -w "%{http_code}" -H "apikey: ${SUPABASE_ANON_KEY}" "${SUPABASE_URL}/rest/v1/?select=1" || true)
+            code_auth=$(curl -s -o /dev/null -w "%{http_code}" "${SUPABASE_URL}/auth/v1/health" || true)
+
+            if [ "$code_health" = "200" ] || [ "$code_rest" = "200" ] || [ "$code_rest" = "401" ] || [ "$code_auth" = "200" ]; then
+              echo "Supabase is ready (health=${code_health}, rest=${code_rest}, auth=${code_auth})"
               exit 0
             fi
-            echo "Waiting for Supabase... ($i/60)"
+
+            echo "Waiting for Supabase... ($i/90) health=${code_health} rest=${code_rest} auth=${code_auth}"
             sleep 2
           done
+
           echo "Supabase did not become ready in time"
           exit 1
 
