@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "db:reset": "supabase start -x studio,inbucket,imgproxy,storage && supabase db reset && node scripts/supabase-cleanup.js",
+    "db:reset": "supabase start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime && supabase db reset && node scripts/supabase-cleanup.js",
     "guard:supabase": "node scripts/guard-supabase-env.js",
     "ensure:docker": "node scripts/ensure-docker.js",
     "dev": "pnpm run guard:supabase && pnpm run ensure:docker && pnpm run db:reset && pnpm run test:setup-users && node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0 --port 3000",

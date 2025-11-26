@@ -43,7 +43,7 @@ if (!isLocalSupabase && !allowRemoteSupabase) {
     '   If you are reverse-proxying a local Supabase (e.g. dev.homematch.pro -> localhost), set ALLOW_REMOTE_SUPABASE=true.'
   )
   console.error(
-    '   Otherwise run `supabase start -x studio,inbucket,imgproxy,storage` and set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY in .env.local.'
+    '   Otherwise run `supabase start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime` and set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY in .env.local.'
   )
   process.exit(1)
 }

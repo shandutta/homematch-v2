@@ -152,7 +152,7 @@ pnpm run build         # Production build
 
 ```bash
 # Use ONLY this command format on Windows
-pnpm dlx supabase@latest start -x studio
+pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime
 
 # Access local studio at http://localhost:54323
 ```

@@ -69,7 +69,7 @@ if (!isLocalSupabase && !allowRemoteSupabase) {
     '   If you are reverse-proxying a local Supabase (e.g. dev.homematch.pro -> localhost), set ALLOW_REMOTE_SUPABASE=true.'
   )
   console.error(
-    '   Otherwise run `supabase start -x studio,inbucket,imgproxy,storage` and set local keys in .env.local or export ALLOW_REMOTE_SUPABASE=true.'
+    '   Otherwise run `supabase start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime` and set local keys in .env.local or export ALLOW_REMOTE_SUPABASE=true.'
   )
   process.exit(1)
 }
@@ -325,7 +325,7 @@ async function setupIntegrationTests() {
         }
 
         execSync(
-          'pnpm dlx supabase@latest start -x studio,inbucket,imgproxy,storage',
+          'pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime',
           {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..'),

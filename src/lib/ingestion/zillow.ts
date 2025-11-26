@@ -217,7 +217,15 @@ export async function fetchZillowSearchPage(options: {
     maxPrice,
   } = options
 
-  const url = buildSearchUrl({ location, page, pageSize, host, sort, minPrice, maxPrice })
+  const url = buildSearchUrl({
+    location,
+    page,
+    pageSize,
+    host,
+    sort,
+    minPrice,
+    maxPrice,
+  })
   const res = await fetchImpl(url, {
     headers: {
       'X-RapidAPI-Key': rapidApiKey,

@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-import {
-  ingestZillowLocations,
-  ZillowSortOption,
-} from '@/lib/ingestion/zillow'
+import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 
 const VALID_SORT_OPTIONS: ZillowSortOption[] = [

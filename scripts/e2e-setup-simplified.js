@@ -80,7 +80,7 @@ async function setupE2ETests() {
 
         // Start fresh
         execSync(
-          'pnpm dlx supabase@latest start -x studio,inbucket,imgproxy,storage',
+          'pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime',
           {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..'),
@@ -91,7 +91,7 @@ async function setupE2ETests() {
       } catch (error) {
         console.error('❌ Failed to start Supabase:', error.message)
         console.error(
-          '   Please run manually: pnpm dlx supabase@latest start -x studio,inbucket,imgproxy,storage'
+          '   Please run manually: pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime'
         )
         process.exit(1)
       }

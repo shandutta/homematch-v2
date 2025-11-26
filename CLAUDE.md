@@ -158,7 +158,7 @@ See [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) for complete se
 
 - **Always use**: `pnpm dlx supabase@latest <command>`
 - **Never use**: `supabase` or `pnpm exec supabase`
-- **Local development**: `pnpm dlx supabase@latest start -x studio`
+- **Local development**: `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`
 
 ## Documentation
 

@@ -47,8 +47,8 @@ pnpm install
 # Copy env vars and add your Supabase credentials
 cp .env.example .env.local
 
-# (Optional) start local Supabase
-pnpm dlx supabase@latest start -x studio
+# (Optional) start local Supabase (lean profile)
+pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime
 supabase db reset --force   # apply migrations + seed fixtures
 
 # Run the dev server

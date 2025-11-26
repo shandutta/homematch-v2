@@ -511,5 +511,5 @@ configure_cron_auto_commit
 
 log "Setup complete. Next steps:"
 echo "1) Fill in secrets in .env.local (and .env.test.local if you run tests)."
-echo "2) Start local Supabase (optional): pnpm dlx supabase@latest start -x studio"
+echo "2) Start local Supabase (optional): pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime"
 echo "3) Run the dev server: pnpm dev"
