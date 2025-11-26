@@ -16,18 +16,22 @@ import {
   ExternalLink,
   MapPin,
   Calendar,
+  Heart,
+  X,
 } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
+import { InteractionType } from '@/types/app'
 
 interface PropertyDetailModalProps {
   property: Property | null
   neighborhood?: Neighborhood
   open: boolean
   onOpenChange: (open: boolean) => void
+  onDecision?: (propertyId: string, type: InteractionType) => void
 }
 
 function buildZillowUrl(property: Property): string {
@@ -45,6 +49,7 @@ export function PropertyDetailModal({
   neighborhood,
   open,
   onOpenChange,
+  onDecision,
 }: PropertyDetailModalProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
 
@@ -186,6 +191,38 @@ export function PropertyDetailModal({
               className="h-48 w-full rounded-xl border border-slate-700"
             />
           </div>
+
+          {onDecision && (
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={() => {
+                  onDecision(property.id, 'skip')
+                  onOpenChange(false)
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/80 bg-red-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
+                aria-label="Pass property"
+              >
+                <X className="h-6 w-6" strokeWidth={2.5} />
+                Pass
+              </button>
+              <button
+                onClick={() => {
+                  onDecision(property.id, 'liked')
+                  onOpenChange(false)
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
+                aria-label="Like property"
+                data-testid="like-button"
+              >
+                <Heart
+                  className="h-6 w-6"
+                  strokeWidth={2.5}
+                  fill="currentColor"
+                />
+                Like
+              </button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,5 @@
-import { InteractionsListPage } from '@/components/dashboard/InteractionsListPage'
+import { GroupedViewedPropertiesPage } from '@/components/dashboard/GroupedViewedPropertiesPage'
 
 export default function ViewedPropertiesPage() {
-  return <InteractionsListPage type="viewed" title="Viewed Properties" />
+  return <GroupedViewedPropertiesPage />
 }

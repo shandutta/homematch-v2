@@ -9,6 +9,8 @@ import {
 } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import { PropertyDetailModal } from './PropertyDetailModal'
+import { useRecordInteraction } from '@/hooks/useInteractions'
+import { InteractionType } from '@/types/app'
 
 interface PropertyDetailContextValue {
   openPropertyDetail: (property: Property, neighborhood?: Neighborhood) => void
@@ -44,6 +46,8 @@ export function PropertyDetailProvider({
   >()
   const [isOpen, setIsOpen] = useState(false)
 
+  const recordInteraction = useRecordInteraction()
+
   const openPropertyDetail = useCallback(
     (property: Property, neighborhood?: Neighborhood) => {
       setSelectedProperty(property)
@@ -68,6 +72,13 @@ export function PropertyDetailProvider({
     }
   }, [])
 
+  const handleDecision = useCallback(
+    (propertyId: string, type: InteractionType) => {
+      recordInteraction.mutate({ propertyId, type })
+    },
+    [recordInteraction]
+  )
+
   return (
     <PropertyDetailContext.Provider
       value={{ openPropertyDetail, closePropertyDetail }}
@@ -78,6 +89,7 @@ export function PropertyDetailProvider({
         neighborhood={selectedNeighborhood}
         open={isOpen}
         onOpenChange={handleOpenChange}
+        onDecision={handleDecision}
       />
     </PropertyDetailContext.Provider>
   )
