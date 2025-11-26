@@ -28,7 +28,7 @@ interface EmptyStateProps {
 export function NoHouseholdState({ className }: EmptyStateProps) {
   return (
     <Card
-      className={`card-glassmorphism-style border-orange-500/20 ${className}`}
+      className={`card-glassmorphism-style w-full border-orange-500/20 !bg-slate-900/90 ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -54,16 +54,16 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
           </div>
         </MotionDiv>
 
-        <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
+        <h2 className="mb-3 text-2xl font-bold text-white">
           {CouplesMessages.onboarding.household.create}
         </h2>
 
-        <p className="text-primary/70 mx-auto mb-2 max-w-md">
+        <p className="mx-auto mb-2 max-w-md text-slate-300">
           {CouplesMessages.welcome.subtitle} - create a household to share your
           journey!
         </p>
 
-        <div className="text-primary/50 mb-6 flex items-center justify-center gap-2 text-sm">
+        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
           <Sparkles className="h-4 w-4" />
           <span>
             Once you both join, you&apos;ll discover mutual likes and track your
@@ -105,7 +105,7 @@ export function WaitingForPartnerState({
 }: EmptyStateProps & { householdId?: string }) {
   return (
     <Card
-      className={`card-glassmorphism-style border-purple-500/20 ${className}`}
+      className={`card-glassmorphism-style w-full border-purple-500/20 !bg-slate-900/90 ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -136,16 +136,16 @@ export function WaitingForPartnerState({
           </div>
         </MotionDiv>
 
-        <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
+        <h2 className="mb-3 text-2xl font-bold text-white">
           {CouplesMessages.onboarding.household.invite}
         </h2>
 
-        <p className="text-primary/70 mx-auto mb-2 max-w-md">
+        <p className="mx-auto mb-2 max-w-md text-slate-300">
           You&apos;re all set up! Now invite your partner to join your household
           and {CouplesMessages.welcome.dashboard.toLowerCase()}.
         </p>
 
-        <div className="text-primary/50 mb-6 flex items-center justify-center gap-2 text-sm">
+        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
           <Coffee className="h-4 w-4" />
           <Heart className="h-4 w-4 fill-pink-400 text-pink-400" />
           <span>
@@ -195,7 +195,7 @@ export function NoMutualLikesState({
 
   return (
     <Card
-      className={`card-glassmorphism-style border-pink-500/20 ${className}`}
+      className={`card-glassmorphism-style w-full border-pink-500/20 !bg-slate-900/90 ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -256,19 +256,19 @@ export function NoMutualLikesState({
           </div>
         </MotionDiv>
 
-        <h2 className="text-primary-foreground mb-3 text-2xl font-bold">
+        <h2 className="mb-3 text-2xl font-bold text-white">
           {hasIndividualLikes
             ? CouplesMessages.empty.noMutualLikes.title
             : CouplesMessages.empty.noLikes.title}
         </h2>
 
-        <p className="text-primary/70 mx-auto mb-2 max-w-md">
+        <p className="mx-auto mb-2 max-w-md text-slate-300">
           {hasIndividualLikes
             ? CouplesMessages.empty.noMutualLikes.message
             : CouplesMessages.empty.noLikes.message}
         </p>
 
-        <div className="text-primary/50 mb-6 flex items-center justify-center gap-2 text-sm">
+        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
           <Star className="h-4 w-4" />
           <span>{CouplesMessages.empty.noMutualLikes.subtitle}</span>
         </div>
@@ -320,7 +320,9 @@ export function NetworkErrorState({
   onRetry,
 }: EmptyStateProps & { onRetry: () => void }) {
   return (
-    <Card className={`card-glassmorphism-style border-red-500/20 ${className}`}>
+    <Card
+      className={`card-glassmorphism-style w-full border-red-500/20 !bg-slate-900/90 ${className}`}
+    >
       <CardContent className="p-8 text-center">
         <MotionDiv
           variants={scaleIn}
@@ -345,11 +347,11 @@ export function NetworkErrorState({
           </div>
         </MotionDiv>
 
-        <h2 className="text-primary-foreground mb-3 text-xl font-semibold">
+        <h2 className="mb-3 text-xl font-semibold text-white">
           Connection Issue
         </h2>
 
-        <p className="text-primary/70 mx-auto mb-6 max-w-md">
+        <p className="mx-auto mb-6 max-w-md text-slate-300">
           {CouplesMessages.error.network}
         </p>
 

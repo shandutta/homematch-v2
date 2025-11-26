@@ -141,12 +141,12 @@ export function PropertyMap({
   if (!hasValidCoordinates) {
     return (
       <div
-        className={`relative h-32 w-full overflow-hidden rounded-lg bg-gray-100 ${className}`}
+        className={`relative h-32 w-full overflow-hidden rounded-lg bg-slate-800/50 ${className}`}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
-            <p className="text-xs text-gray-600">Map unavailable</p>
+            <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
+            <p className="text-xs text-slate-400">Map unavailable</p>
           </div>
         </div>
       </div>
@@ -176,16 +176,16 @@ export function PropertyMap({
         <div ref={mapRef} className="absolute inset-0 rounded-lg" />
 
         {(isLoading || !mapsReady) && !error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/60">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
           </div>
         )}
 
         {loaderError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50">
             <div className="text-center">
-              <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
-              <p className="text-xs text-gray-600">
+              <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
+              <p className="text-xs text-slate-400">
                 {loaderError.message ?? 'Map unavailable'}
               </p>
             </div>
@@ -193,10 +193,10 @@ export function PropertyMap({
         )}
 
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50">
             <div className="text-center">
-              <MapPin className="mx-auto mb-1 h-6 w-6 text-gray-400" />
-              <p className="text-xs text-gray-600">{error}</p>
+              <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
+              <p className="text-xs text-slate-400">{error}</p>
             </div>
           </div>
         )}

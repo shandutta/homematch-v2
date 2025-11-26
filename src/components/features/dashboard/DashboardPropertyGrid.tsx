@@ -17,6 +17,7 @@ import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
 import { InFeedAd } from '@/components/ads/InFeedAd'
+import { Heart, X } from 'lucide-react'
 
 /** Insert an ad after every N property cards */
 const AD_FREQUENCY = 4
@@ -124,17 +125,6 @@ export function DashboardPropertyGrid({
               <button
                 type="button"
                 className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  viewMode === 'stack'
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-muted-foreground hover:text-white'
-                }`}
-                onClick={() => setViewMode('stack')}
-              >
-                Card stack
-              </button>
-              <button
-                type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                   viewMode === 'grid'
                     ? 'bg-white/10 text-white shadow-sm'
                     : 'text-muted-foreground hover:text-white'
@@ -142,6 +132,17 @@ export function DashboardPropertyGrid({
                 onClick={() => setViewMode('grid')}
               >
                 Grid
+              </button>
+              <button
+                type="button"
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                  viewMode === 'stack'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-white'
+                }`}
+                onClick={() => setViewMode('stack')}
+              >
+                Card stack
               </button>
             </div>
           </div>
@@ -202,24 +203,47 @@ export function DashboardPropertyGrid({
             <PropertyViewTracker
               propertyId={property.id}
               onView={onView}
-              className="h-[520px]"
+              className="min-h-[480px]"
             >
               <PropertyCard
                 property={property}
-                onDecision={onDecision}
                 showStory
                 storyVariant="futureVision"
                 showMap
                 enableDetailsToggle
+                floatingAction={
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Pass on this home"
+                      className="shadow-token-lg flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-all duration-200 hover:scale-110 hover:bg-rose-600 focus-visible:outline-none"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDecision(property.id, 'skip')
+                      }}
+                    >
+                      <X className="h-5 w-5" strokeWidth={2.5} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Like this home"
+                      className="shadow-token-lg flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white transition-all duration-200 hover:scale-110 hover:bg-emerald-600 focus-visible:outline-none"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDecision(property.id, 'liked')
+                      }}
+                    >
+                      <Heart className="h-5 w-5" strokeWidth={2.5} />
+                    </button>
+                  </div>
+                }
               />
             </PropertyViewTracker>
 
             {/* Insert sponsored ad after every AD_FREQUENCY cards */}
             {(index + 1) % AD_FREQUENCY === 0 &&
               index < properties.length - 1 && (
-                <div className="min-h-[280px]">
-                  <InFeedAd position={Math.floor((index + 1) / AD_FREQUENCY)} />
-                </div>
+                <InFeedAd position={Math.floor((index + 1) / AD_FREQUENCY)} />
               )}
           </Fragment>
         ))}

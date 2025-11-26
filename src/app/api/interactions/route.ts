@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createApiClient } from '@/lib/supabase/server'
 import { DbInteractionType } from '@/types/app'
 import { Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -18,9 +18,14 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createApiClient(request)
     const { data, error: authError } = await supabase.auth.getUser()
     const user = data?.user
+
+    console.log('[Interactions POST] Auth result:', {
+      userId: user?.id,
+      error: authError?.message,
+    })
 
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
@@ -101,9 +106,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createApiClient(request)
     const { data: authData, error: authError } = await supabase.auth.getUser()
     const user = authData?.user
+
+    console.log('[Interactions GET] Auth result:', {
+      userId: user?.id,
+      error: authError?.message,
+    })
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -249,9 +259,14 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createApiClient(request)
     const { data, error: authError } = await supabase.auth.getUser()
     const user = data?.user
+
+    console.log('[Interactions DELETE] Auth result:', {
+      userId: user?.id,
+      error: authError?.message,
+    })
 
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
@@ -271,17 +286,40 @@ export async function DELETE(request: NextRequest) {
 
     const { propertyId } = parsed.data
 
-    const { error } = await supabase
+    console.log('[Interactions DELETE] Attempting delete:', {
+      userId: user.id,
+      propertyId,
+    })
+
+    // Use select() to get back deleted rows and verify the delete worked
+    const { data: deletedRows, error } = await supabase
       .from('user_property_interactions')
       .delete()
       .match({ user_id: user.id, property_id: propertyId })
+      .select()
+
+    console.log('[Interactions DELETE] Result:', {
+      deletedCount: deletedRows?.length ?? 0,
+      error: error?.message,
+    })
 
     if (error) {
+      console.error('[Interactions DELETE] Error:', error)
       return ApiErrorHandler.serverError('Failed to delete interaction', error)
     }
 
-    return ApiErrorHandler.success({ deleted: true })
+    if (!deletedRows || deletedRows.length === 0) {
+      console.warn(
+        '[Interactions DELETE] No rows deleted - interaction may not exist or RLS blocked'
+      )
+    }
+
+    return ApiErrorHandler.success({
+      deleted: true,
+      count: deletedRows?.length ?? 0,
+    })
   } catch (err) {
+    console.error('[Interactions DELETE] Unexpected error:', err)
     return ApiErrorHandler.serverError('Failed to delete interaction', err)
   }
 }

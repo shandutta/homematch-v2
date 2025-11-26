@@ -255,7 +255,7 @@ describe('InFeedAd', () => {
     test('ad container has minimum height', () => {
       render(<InFeedAd />)
 
-      const adContainer = document.querySelector('.min-h-\\[280px\\]')
+      const adContainer = document.querySelector('.min-h-\\[420px\\]')
       expect(adContainer).toBeInTheDocument()
     })
 

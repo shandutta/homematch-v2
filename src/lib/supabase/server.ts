@@ -72,32 +72,39 @@ export async function createClient() {
 export function createApiClient(request?: NextRequest) {
   let authHeader: string | null = null
   let cookieData: { name: string; value: string }[] = []
+  let hostname = 'localhost'
 
   if (request) {
     // Extract auth header from NextRequest
     authHeader = request.headers.get('authorization')
 
-    // Extract cookies from NextRequest
-    const cookieStr = request.headers.get('cookie')
-    if (cookieStr) {
-      cookieData = cookieStr
-        .split(';')
-        .map((c) => {
-          const [name, ...valueParts] = c.trim().split('=')
-          // Join with '=' to handle base64 tokens that contain '=' padding
-          // Don't decode - cookies in HTTP headers are already raw values
-          return { name, value: valueParts.join('=') }
-        })
-        .filter((c) => c.name && c.value)
-    }
+    // Use Next.js cookies API for reliable cookie access
+    cookieData = request.cookies.getAll()
+
+    // Get hostname for consistent cookie naming
+    const host = request.headers.get('host') || 'localhost:3000'
+    hostname = host.split(':')[0].replace(/\./g, '-')
+
+    // Debug logging for auth issues
+    console.log('[createApiClient] Host:', host, 'Hostname:', hostname)
+    console.log(
+      '[createApiClient] Cookies received:',
+      cookieData.map((c) => c.name).join(', ')
+    )
   }
 
   const bearerToken = authHeader?.replace('Bearer ', '')
+  const cookieName = `sb-${hostname}-auth-token`
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: {
+        name: cookieName,
+        path: '/',
+        sameSite: 'lax',
+      },
       cookies: {
         getAll() {
           return cookieData

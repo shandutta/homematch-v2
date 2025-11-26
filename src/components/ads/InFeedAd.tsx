@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useId } from 'react'
 
 declare global {
   interface Window {
     adsbygoogle: Array<Record<string, unknown>>
   }
 }
+
+// Global Set to track which ad instances have been pushed
+// This persists across React re-renders and Strict Mode double-mounting
+const pushedAdIds = new Set<string>()
 
 interface InFeedAdProps {
   /** Position in the feed (for tracking) */
@@ -25,26 +29,31 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
   const adRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
+  // Use React's useId for a stable unique ID across renders
+  const adInstanceId = useId()
 
   useEffect(() => {
     // Only run on client
     if (typeof window === 'undefined') return
 
-    // Check if this specific ins element already has an ad or is pending
-    const insElement = adRef.current?.querySelector('.adsbygoogle')
-    if (!insElement) return
-
-    // Check if already processed (either by Google or by us in a previous mount)
-    if (
-      insElement.getAttribute('data-adsbygoogle-status') ||
-      insElement.getAttribute('data-ad-push-pending')
-    ) {
-      setIsLoaded(!!insElement.getAttribute('data-adsbygoogle-status'))
+    // Check if we've already pushed for this specific ad instance
+    if (pushedAdIds.has(adInstanceId)) {
+      setIsLoaded(true)
       return
     }
 
-    // Mark as pending BEFORE pushing (persists across Strict Mode remounts)
-    insElement.setAttribute('data-ad-push-pending', 'true')
+    const insElement = adRef.current?.querySelector('.adsbygoogle')
+    if (!insElement) return
+
+    // Check if Google has already processed this element
+    if (insElement.getAttribute('data-adsbygoogle-status')) {
+      setIsLoaded(true)
+      pushedAdIds.add(adInstanceId)
+      return
+    }
+
+    // Mark as pushed BEFORE calling push to prevent duplicate calls
+    pushedAdIds.add(adInstanceId)
 
     try {
       // Push the ad to be loaded
@@ -52,10 +61,10 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
       setIsLoaded(true)
     } catch (error) {
       console.warn('AdSense failed to load:', error)
-      insElement.removeAttribute('data-ad-push-pending')
+      pushedAdIds.delete(adInstanceId)
       setHasError(true)
     }
-  }, [])
+  }, [adInstanceId])
 
   // Don't render anything if there's an error (graceful degradation)
   if (hasError) {
@@ -75,8 +84,8 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
         </span>
       </div>
 
-      {/* Ad container */}
-      <div className="flex min-h-[280px] flex-1 flex-col items-center justify-center p-4">
+      {/* Ad container - sized to match PropertyCard height */}
+      <div className="flex min-h-[420px] flex-1 flex-col items-center justify-center p-4">
         {!isLoaded && (
           <div className="flex h-full w-full items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
@@ -90,7 +99,7 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
             display: 'block',
             width: '100%',
             height: isLoaded ? 'auto' : '0',
-            minHeight: isLoaded ? '250px' : '0',
+            minHeight: isLoaded ? '380px' : '0',
           }}
           data-ad-format="fluid"
           data-ad-layout-key="-fb+5w+4e-db+86"

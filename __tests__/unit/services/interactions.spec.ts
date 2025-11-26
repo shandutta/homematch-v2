@@ -29,6 +29,7 @@ describe('InteractionService', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ propertyId: 'prop1', type: 'liked' }),
+        credentials: 'include',
       })
       expect(result).toEqual(mockInteraction)
     })
@@ -62,6 +63,7 @@ describe('InteractionService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith('/api/interactions?type=summary', {
         method: 'GET',
+        credentials: 'include',
       })
       expect(result).toEqual(mockSummary)
     })
@@ -96,7 +98,7 @@ describe('InteractionService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/interactions?type=liked&limit=5',
-        { method: 'GET' }
+        { method: 'GET', credentials: 'include' }
       )
       expect(result).toEqual(mockResponse)
     })
@@ -114,7 +116,7 @@ describe('InteractionService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         '/api/interactions?type=liked&limit=5&cursor=prev-cursor',
-        { method: 'GET' }
+        { method: 'GET', credentials: 'include' }
       )
     })
   })

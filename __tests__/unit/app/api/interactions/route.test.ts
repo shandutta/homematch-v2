@@ -18,7 +18,7 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
-  createClient: (...args: unknown[]) => createClientMock(...args),
+  createApiClient: (...args: unknown[]) => createClientMock(...args),
 }))
 
 jest.mock('@/lib/utils/rate-limit', () => ({

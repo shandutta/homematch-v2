@@ -79,13 +79,22 @@ export function EnhancedDashboardPageImpl({
 
   const handlePropertyView = useCallback(
     (propertyId: string) => {
+      // Optimistically update the viewed count
+      const currentSummary = optimisticSummary || summary
+      if (currentSummary) {
+        const newSummary = { ...currentSummary }
+        newSummary.viewed++
+        setOptimisticSummary(newSummary)
+      }
+
+      // Record the view interaction
       if (userId) {
         couplesInteraction.recordInteraction({ propertyId, type: 'viewed' })
       } else {
         recordInteraction({ propertyId, type: 'viewed' })
       }
     },
-    [userId, couplesInteraction, recordInteraction]
+    [userId, couplesInteraction, recordInteraction, optimisticSummary, summary]
   )
 
   // Memoize computed values to prevent unnecessary recalculations

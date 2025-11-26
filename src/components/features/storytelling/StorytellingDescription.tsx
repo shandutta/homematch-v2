@@ -43,48 +43,49 @@ interface StorytellingDescriptionProps {
 }
 
 // Lifestyle tags with their associated icons and colors
+// Using saturated colors with white text for better readability on dark backgrounds
 const LIFESTYLE_TAGS = {
-  'Work from Home Ready': { icon: Wifi, color: 'bg-blue-100 text-blue-800' },
+  'Work from Home Ready': { icon: Wifi, color: 'bg-blue-500 text-white' },
   "Entertainer's Dream": {
     icon: UtensilsCrossed,
-    color: 'bg-purple-100 text-purple-800',
+    color: 'bg-purple-500 text-white',
   },
-  'Pet Paradise': { icon: TreePine, color: 'bg-green-100 text-green-800' },
-  'Urban Oasis': { icon: Sparkles, color: 'bg-yellow-100 text-yellow-800' },
-  'Family Haven': { icon: Users, color: 'bg-pink-100 text-pink-800' },
-  'Cozy Retreat': { icon: Coffee, color: 'bg-orange-100 text-orange-800' },
+  'Pet Paradise': { icon: TreePine, color: 'bg-green-500 text-white' },
+  'Urban Oasis': { icon: Sparkles, color: 'bg-amber-500 text-white' },
+  'Family Haven': { icon: Users, color: 'bg-pink-500 text-white' },
+  'Cozy Retreat': { icon: Coffee, color: 'bg-orange-500 text-white' },
   "Scholar's Den": {
     icon: GraduationCap,
-    color: 'bg-indigo-100 text-indigo-800',
+    color: 'bg-indigo-500 text-white',
   },
-  'Love Nest': { icon: Heart, color: 'bg-red-100 text-red-800' },
+  'Love Nest': { icon: Heart, color: 'bg-rose-500 text-white' },
   'Future Family Home': {
     icon: Baby,
-    color: 'bg-emerald-100 text-emerald-800',
+    color: 'bg-emerald-500 text-white',
   },
   'Entertainment Haven': {
     icon: Music,
-    color: 'bg-violet-100 text-violet-800',
+    color: 'bg-violet-500 text-white',
   },
-  'Urban Love Nest': { icon: Home, color: 'bg-rose-100 text-rose-800' },
-  'Weekend Retreat': { icon: Mountain, color: 'bg-slate-100 text-slate-800' },
-  'Culinary Paradise': { icon: Utensils, color: 'bg-amber-100 text-amber-800' },
-  'Commuter Friendly': { icon: Car, color: 'bg-cyan-100 text-cyan-800' },
+  'Urban Love Nest': { icon: Home, color: 'bg-rose-500 text-white' },
+  'Weekend Retreat': { icon: Mountain, color: 'bg-slate-500 text-white' },
+  'Culinary Paradise': { icon: Utensils, color: 'bg-amber-500 text-white' },
+  'Commuter Friendly': { icon: Car, color: 'bg-cyan-500 text-white' },
   'Date Night Central': {
     icon: Sunset,
-    color: 'bg-orange-100 text-orange-800',
+    color: 'bg-orange-500 text-white',
   },
-  'Wellness Sanctuary': { icon: Dumbbell, color: 'bg-teal-100 text-teal-800' },
-  'Beach Lifestyle': { icon: Waves, color: 'bg-blue-100 text-blue-800' },
+  'Wellness Sanctuary': { icon: Dumbbell, color: 'bg-teal-500 text-white' },
+  'Beach Lifestyle': { icon: Waves, color: 'bg-sky-500 text-white' },
   "Book Lovers' Haven": {
     icon: BookOpen,
-    color: 'bg-indigo-100 text-indigo-800',
+    color: 'bg-indigo-500 text-white',
   },
   'Shopping Paradise': {
     icon: ShoppingBag,
-    color: 'bg-purple-100 text-purple-800',
+    color: 'bg-fuchsia-500 text-white',
   },
-  'Tropical Vibes': { icon: Palmtree, color: 'bg-green-100 text-green-800' },
+  'Tropical Vibes': { icon: Palmtree, color: 'bg-lime-500 text-white' },
 } as const
 
 // Enhanced lifestyle story templates

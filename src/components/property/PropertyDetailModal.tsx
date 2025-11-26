@@ -70,8 +70,6 @@ export function PropertyDetailModal({
     return value.toFixed(1).replace(/\.0$/, '')
   }
 
-  const hasMapCoordinates = Boolean(property.coordinates)
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-slate-900 p-0 text-white">
@@ -181,15 +179,13 @@ export function PropertyDetailModal({
             />
           </div>
 
-          {hasMapCoordinates && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-white">Location</h3>
-              <PropertyMap
-                property={property}
-                className="h-48 w-full rounded-xl border border-slate-700"
-              />
-            </div>
-          )}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-white">Location</h3>
+            <PropertyMap
+              property={property}
+              className="h-48 w-full rounded-xl border border-slate-700"
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

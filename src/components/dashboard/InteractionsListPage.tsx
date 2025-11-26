@@ -12,7 +12,7 @@ import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Heart, HeartOff } from 'lucide-react'
+import { Heart, HeartOff, X } from 'lucide-react'
 import { InFeedAd } from '@/components/ads/InFeedAd'
 
 /** Insert an ad after every N property cards */
@@ -38,6 +38,10 @@ export function InteractionsListPage({
   const [pendingDecisionId, setPendingDecisionId] = useState<string | null>(
     null
   )
+  // Track which decision was made for each property (for visual feedback on viewed page)
+  const [propertyDecisions, setPropertyDecisions] = useState<
+    Record<string, 'liked' | 'skip'>
+  >({})
 
   // Items come from API typed to the Zod Property schema used across UI
   const properties = data?.pages.flatMap((page) => page.items) ?? []
@@ -87,6 +91,11 @@ export function InteractionsListPage({
                 decision: 'liked' | 'skip'
               ) => {
                 setPendingDecisionId(propertyId)
+                // Track decision for visual feedback
+                setPropertyDecisions((prev) => ({
+                  ...prev,
+                  [propertyId]: decision,
+                }))
                 recordInteraction.mutate(
                   { propertyId, type: decision },
                   {
@@ -108,7 +117,8 @@ export function InteractionsListPage({
                       aria-label="Remove from likes"
                       className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
                       disabled={isRemoving}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         setPendingPropertyId(property.id)
                         deleteInteraction.mutate(
                           { propertyId: property.id },
@@ -139,7 +149,10 @@ export function InteractionsListPage({
                       aria-label="Like this home"
                       className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
                       disabled={isMutatingDecision}
-                      onClick={() => handleDecision(property.id, 'liked')}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDecision(property.id, 'liked')
+                      }}
                     >
                       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
                         <Heart className="h-6 w-6" strokeWidth={2.25} />
@@ -148,6 +161,75 @@ export function InteractionsListPage({
                         {isMutatingDecision ? 'Adding...' : 'Like this home'}
                       </span>
                     </button>
+                  )
+                }
+
+                if (type === 'viewed') {
+                  const decision = propertyDecisions[property.id]
+                  const isPassSelected = decision === 'skip'
+                  const isLikeSelected = decision === 'liked'
+
+                  return (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label="Pass on this home"
+                        className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+                          isPassSelected
+                            ? 'scale-110 border-rose-300 bg-rose-600 ring-2 ring-rose-300/50'
+                            : isLikeSelected
+                              ? 'border-rose-400/20 bg-rose-500/40 opacity-50'
+                              : 'border-rose-400/40 bg-rose-500/90 hover:w-24 focus-visible:w-24'
+                        } text-white`}
+                        disabled={isMutatingDecision || !!decision}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDecision(property.id, 'skip')
+                        }}
+                      >
+                        <div
+                          className={`pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
+                        >
+                          <X className="h-6 w-6" strokeWidth={2.25} />
+                        </div>
+                        {!decision && (
+                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                            Pass
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Like this home"
+                        className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+                          isLikeSelected
+                            ? 'scale-110 border-emerald-300 bg-emerald-600 ring-2 ring-emerald-300/50'
+                            : isPassSelected
+                              ? 'border-emerald-200/20 bg-emerald-500/40 opacity-50'
+                              : 'border-emerald-200/60 bg-emerald-500/90 hover:w-24 focus-visible:w-24'
+                        } text-white`}
+                        disabled={isMutatingDecision || !!decision}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDecision(property.id, 'liked')
+                        }}
+                      >
+                        <div
+                          className={`pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
+                        >
+                          <Heart
+                            className="h-6 w-6"
+                            strokeWidth={2.25}
+                            fill={isLikeSelected ? 'currentColor' : 'none'}
+                          />
+                        </div>
+                        {!decision && (
+                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                            Like
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   )
                 }
 
@@ -162,29 +244,17 @@ export function InteractionsListPage({
                       showMap={false}
                       showStory={type !== 'skip'}
                       storyVariant="tagline"
-                      onDecision={
-                        type === 'viewed'
-                          ? (propertyId, decision) => {
-                              if (decision === 'viewed') return
-                              handleDecision(
-                                propertyId,
-                                decision as 'liked' | 'skip'
-                              )
-                            }
-                          : undefined
-                      }
                       floatingAction={renderFloatingAction()}
+                      imagePriority={index < 2}
                     />
                   </div>
 
                   {/* Insert sponsored ad after every AD_FREQUENCY cards */}
                   {(index + 1) % AD_FREQUENCY === 0 &&
                     index < properties.length - 1 && (
-                      <div className="min-h-[280px]">
-                        <InFeedAd
-                          position={Math.floor((index + 1) / AD_FREQUENCY)}
-                        />
-                      </div>
+                      <InFeedAd
+                        position={Math.floor((index + 1) / AD_FREQUENCY)}
+                      />
                     )}
                 </Fragment>
               )

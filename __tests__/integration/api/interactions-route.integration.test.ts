@@ -14,7 +14,6 @@ import {
 } from 'vitest'
 
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
-import { createClient as createServerSupabase } from '@/lib/supabase/server'
 import type { Database } from '@/types/database'
 import { resetRateLimitStore } from '@/lib/utils/rate-limit'
 
@@ -134,12 +133,33 @@ describe.sequential('Integration: /api/interactions route', () => {
     if (error) throw error
   }
 
-  const makeJsonRequest = (url: string, method: string, body?: unknown) =>
-    new NextRequest(url, {
+  const makeAuthHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {}
+    const authHeader = headerStore.get('authorization')
+    if (authHeader) {
+      headers['authorization'] = authHeader
+    }
+    return headers
+  }
+
+  const makeJsonRequest = (url: string, method: string, body?: unknown) => {
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      ...makeAuthHeaders(),
+    }
+    return new NextRequest(url, {
       method,
-      headers: { 'content-type': 'application/json' },
+      headers,
       body: body ? JSON.stringify(body) : undefined,
     })
+  }
+
+  const makeGetRequest = (url: string) => {
+    return new NextRequest(url, {
+      method: 'GET',
+      headers: makeAuthHeaders(),
+    })
+  }
 
   beforeAll(() => {
     const env = requireSupabaseEnv()
@@ -210,11 +230,11 @@ describe.sequential('Integration: /api/interactions route', () => {
       },
     }
 
-    const createClientSpy = vi.spyOn(
-      await import('@/lib/supabase/server'),
-      'createClient'
+    const serverModule = await import('@/lib/supabase/server')
+    const createApiClientSpy = vi.spyOn(serverModule, 'createApiClient')
+    createApiClientSpy.mockReturnValue(
+      mockClient as ReturnType<typeof serverModule.createApiClient>
     )
-    createClientSpy.mockResolvedValue(mockClient as any)
 
     const propertyId = randomUUID()
     // Create request without auth header
@@ -229,7 +249,7 @@ describe.sequential('Integration: /api/interactions route', () => {
     expect(res.status).toBe(401)
 
     // Restore the original implementation
-    createClientSpy.mockRestore()
+    createApiClientSpy.mockRestore()
   })
 
   it('records interactions and returns summary plus paginated results', async () => {
@@ -270,7 +290,7 @@ describe.sequential('Integration: /api/interactions route', () => {
     expect(skipError).toBeNull()
 
     const summaryRes = await GET(
-      new NextRequest('http://localhost/api/interactions?type=summary')
+      makeGetRequest('http://localhost/api/interactions?type=summary')
     )
     expect(summaryRes.status).toBe(200)
     const summary = await summaryRes.json()
@@ -282,7 +302,7 @@ describe.sequential('Integration: /api/interactions route', () => {
     // Verify the liked items endpoint returns correctly
     // Note: We verify count only since property joins may be affected by parallel test auth issues
     const likedRes = await GET(
-      new NextRequest('http://localhost/api/interactions?type=liked&limit=10')
+      makeGetRequest('http://localhost/api/interactions?type=liked&limit=10')
     )
     expect(likedRes.status).toBe(200)
 
@@ -346,7 +366,10 @@ describe.sequential('Integration: /api/interactions route', () => {
 
   it('honors Authorization headers in server Supabase client', async () => {
     setAuthToken(authToken)
-    const client = await createServerSupabase()
+    // Import createApiClient dynamically to test with real request
+    const { createApiClient } = await import('@/lib/supabase/server')
+    const request = makeGetRequest('http://localhost/api/test')
+    const client = createApiClient(request)
     const {
       data: { user },
       error,
@@ -374,7 +397,7 @@ describe.sequential('Integration: /api/interactions route', () => {
     try {
       const results = await Promise.all(burst)
       const rateLimited = results.some(
-        (res) => res.status === 400 || res.status === 429
+        (res: Response) => res.status === 400 || res.status === 429
       )
       expect(rateLimited).toBe(true)
     } finally {
