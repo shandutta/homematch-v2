@@ -217,12 +217,15 @@ describe.sequential('Integration: /api/interactions route', () => {
     createClientSpy.mockResolvedValue(mockClient as any)
 
     const propertyId = randomUUID()
-    const req = makeJsonRequest('http://localhost/api/interactions', 'POST', {
-      propertyId,
-      type: 'liked',
+    // Create request without auth header
+    const req = new NextRequest('http://localhost/api/interactions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ propertyId, type: 'liked' }),
     })
 
     const res = await POST(req)
+    // Route should return 401 for unauthenticated requests
     expect(res.status).toBe(401)
 
     // Restore the original implementation

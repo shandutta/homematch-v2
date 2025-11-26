@@ -70,21 +70,38 @@ console.error = (...args) => {
 
 // Mock clipboard API globally with proper async behavior - make it configurable for userEvent
 // Ensure navigator exists before defining clipboard (may not exist in pure Node.js environments)
-if (typeof global.navigator === 'undefined') {
+// Use try-catch to handle edge cases where navigator is a getter or non-extensible
+try {
+  if (typeof global.navigator !== 'object' || global.navigator === null) {
+    Object.defineProperty(global, 'navigator', {
+      value: {},
+      writable: true,
+      configurable: true,
+    })
+  }
+  Object.defineProperty(global.navigator, 'clipboard', {
+    value: {
+      writeText: jest.fn().mockResolvedValue(undefined),
+      readText: jest.fn().mockResolvedValue(''),
+    },
+    writable: true,
+    configurable: true,
+  })
+} catch {
+  // If navigator setup fails (e.g., jsdom environment with readonly navigator),
+  // create a mock navigator on global that will be used instead
+  const mockNavigator = {
+    clipboard: {
+      writeText: jest.fn().mockResolvedValue(undefined),
+      readText: jest.fn().mockResolvedValue(''),
+    },
+  }
   Object.defineProperty(global, 'navigator', {
-    value: {},
+    value: mockNavigator,
     writable: true,
     configurable: true,
   })
 }
-Object.defineProperty(global.navigator, 'clipboard', {
-  value: {
-    writeText: jest.fn().mockResolvedValue(undefined),
-    readText: jest.fn().mockResolvedValue(''),
-  },
-  writable: true,
-  configurable: true,
-})
 
 // Simple framer-motion mock for remaining edge cases
 jest.mock('framer-motion', () => {
