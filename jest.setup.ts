@@ -65,6 +65,16 @@ console.error = (...args) => {
   ) {
     return
   }
+  // Suppress expected API route error logging in tests (ZodError validation, etc.)
+  // Jest's console has issues serializing ZodError objects, causing "Cannot read properties of undefined"
+  if (
+    args[0] &&
+    typeof args[0] === 'string' &&
+    (args[0].includes('Error in couples notification API') ||
+      args[0].includes('Invalid request data'))
+  ) {
+    return
+  }
   originalConsoleError.apply(console, args)
 }
 

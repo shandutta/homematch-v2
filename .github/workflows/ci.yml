@@ -228,7 +228,7 @@ jobs:
           exit 1
 
       - name: Apply migrations
-        run: supabase db reset --force
+        run: supabase db reset --yes
 
       - name: Run integration tests
         run: pnpm test:integration
