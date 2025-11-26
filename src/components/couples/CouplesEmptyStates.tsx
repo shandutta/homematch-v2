@@ -85,7 +85,7 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
           <Button
             variant="outline"
             asChild
-            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-200"
           >
             <Link href="/household/join">
               <UserPlus className="mr-2 h-4 w-4" />
