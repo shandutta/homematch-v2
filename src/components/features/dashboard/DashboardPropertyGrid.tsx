@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Fragment,
   lazy,
   Suspense,
   useCallback,
@@ -15,6 +16,10 @@ import { PropertyCard } from '@/components/property/PropertyCard'
 import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
+import { InFeedAd } from '@/components/ads/InFeedAd'
+
+/** Insert an ad after every N property cards */
+const AD_FREQUENCY = 4
 
 const FloatingHearts = lazy(() =>
   import('@/components/couples/CouplesMicroInteractions').then((m) => ({
@@ -192,22 +197,31 @@ export function DashboardPropertyGrid({
       </Suspense>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {properties.map((property) => (
-          <PropertyViewTracker
-            key={property.id}
-            propertyId={property.id}
-            onView={onView}
-            className="h-[520px]"
-          >
-            <PropertyCard
-              property={property}
-              onDecision={onDecision}
-              showStory
-              storyVariant="futureVision"
-              showMap
-              enableDetailsToggle
-            />
-          </PropertyViewTracker>
+        {properties.map((property, index) => (
+          <Fragment key={property.id}>
+            <PropertyViewTracker
+              propertyId={property.id}
+              onView={onView}
+              className="h-[520px]"
+            >
+              <PropertyCard
+                property={property}
+                onDecision={onDecision}
+                showStory
+                storyVariant="futureVision"
+                showMap
+                enableDetailsToggle
+              />
+            </PropertyViewTracker>
+
+            {/* Insert sponsored ad after every AD_FREQUENCY cards */}
+            {(index + 1) % AD_FREQUENCY === 0 &&
+              index < properties.length - 1 && (
+                <div className="min-h-[280px]">
+                  <InFeedAd position={Math.floor((index + 1) / AD_FREQUENCY)} />
+                </div>
+              )}
+          </Fragment>
         ))}
       </div>
     </div>

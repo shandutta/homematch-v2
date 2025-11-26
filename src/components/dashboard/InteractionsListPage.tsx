@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   interactionKeys,
@@ -13,6 +13,10 @@ import { PropertyCard } from '@/components/property/PropertyCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Heart, HeartOff } from 'lucide-react'
+import { InFeedAd } from '@/components/ads/InFeedAd'
+
+/** Insert an ad after every N property cards */
+const AD_FREQUENCY = 6
 
 interface InteractionsListPageProps {
   type: InteractionType
@@ -63,7 +67,7 @@ export function InteractionsListPage({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {properties.map((property) => {
+            {properties.map((property, index) => {
               const isRemoving =
                 pendingPropertyId === property.id && deleteInteraction.isPending
               const isMutatingDecision =
@@ -151,26 +155,38 @@ export function InteractionsListPage({
               }
 
               return (
-                <div key={property.id}>
-                  <PropertyCard
-                    property={property}
-                    showMap={false}
-                    showStory={type !== 'skip'}
-                    storyVariant="tagline"
-                    onDecision={
-                      type === 'viewed'
-                        ? (propertyId, decision) => {
-                            if (decision === 'viewed') return
-                            handleDecision(
-                              propertyId,
-                              decision as 'liked' | 'skip'
-                            )
-                          }
-                        : undefined
-                    }
-                    floatingAction={renderFloatingAction()}
-                  />
-                </div>
+                <Fragment key={property.id}>
+                  <div>
+                    <PropertyCard
+                      property={property}
+                      showMap={false}
+                      showStory={type !== 'skip'}
+                      storyVariant="tagline"
+                      onDecision={
+                        type === 'viewed'
+                          ? (propertyId, decision) => {
+                              if (decision === 'viewed') return
+                              handleDecision(
+                                propertyId,
+                                decision as 'liked' | 'skip'
+                              )
+                            }
+                          : undefined
+                      }
+                      floatingAction={renderFloatingAction()}
+                    />
+                  </div>
+
+                  {/* Insert sponsored ad after every AD_FREQUENCY cards */}
+                  {(index + 1) % AD_FREQUENCY === 0 &&
+                    index < properties.length - 1 && (
+                      <div className="min-h-[280px]">
+                        <InFeedAd
+                          position={Math.floor((index + 1) / AD_FREQUENCY)}
+                        />
+                      </div>
+                    )}
+                </Fragment>
               )
             })}
           </div>
