@@ -245,6 +245,21 @@ if (
   })
 }
 
+// Mock window.matchMedia for framer-motion (required for prefers-reduced-motion detection)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
+
 // Mock canvas API for image-blur tests
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: () => {
