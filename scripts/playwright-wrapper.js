@@ -7,19 +7,34 @@
 
 const { spawn } = require('child_process')
 const path = require('path')
+const fs = require('fs')
+
+// Dynamically find the Playwright CLI in pnpm's .pnpm directory
+function findPlaywrightCli() {
+  const pnpmDir = path.join(__dirname, '..', 'node_modules', '.pnpm')
+
+  // Find the @playwright+test directory (version may vary)
+  const entries = fs.readdirSync(pnpmDir)
+  const playwrightDir = entries.find((entry) =>
+    entry.startsWith('@playwright+test@')
+  )
+
+  if (!playwrightDir) {
+    throw new Error('Could not find @playwright/test in node_modules/.pnpm')
+  }
+
+  return path.join(
+    pnpmDir,
+    playwrightDir,
+    'node_modules',
+    '@playwright',
+    'test',
+    'cli.js'
+  )
+}
 
 // Path to the correct Playwright CLI
-const playwrightCli = path.join(
-  __dirname,
-  '..',
-  'node_modules',
-  '.pnpm',
-  '@playwright+test@1.54.1',
-  'node_modules',
-  '@playwright',
-  'test',
-  'cli.js'
-)
+const playwrightCli = findPlaywrightCli()
 
 // Pass through all arguments
 const args = process.argv.slice(2)

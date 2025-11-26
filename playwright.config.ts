@@ -178,6 +178,10 @@ export default defineConfig({
         process.env.SUPABASE_ANON_KEY ||
         '',
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      // Pass proxy configuration for local Supabase
+      SUPABASE_LOCAL_PROXY: process.env.SUPABASE_LOCAL_PROXY || '',
+      SUPABASE_LOCAL_PROXY_TARGET:
+        process.env.SUPABASE_LOCAL_PROXY_TARGET || '',
     },
   },
 })

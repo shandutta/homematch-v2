@@ -47,10 +47,12 @@ if (!loadedEnvFiles.length) {
 // Ensure we're in test mode
 process.env.NODE_ENV = 'test'
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  'http://127.0.0.1:54321'
+// Server-side Supabase URL (for admin operations)
+const supabaseServerUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+
+// Client-side Supabase URL - preserve proxy URL if configured
+const supabaseClientUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || supabaseServerUrl
 
 const supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -62,10 +64,11 @@ if (!supabaseAnonKey || !supabaseServiceRoleKey) {
   )
 }
 
-// Force test environment variables to override any existing ones
-process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
+// Set environment variables - don't override NEXT_PUBLIC_SUPABASE_URL if it's already set
+// (it may be configured to use a proxy like http://localhost:3000/supabase)
+process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseClientUrl
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = supabaseAnonKey
-process.env.SUPABASE_URL = supabaseUrl
+process.env.SUPABASE_URL = supabaseServerUrl
 process.env.SUPABASE_ANON_KEY = supabaseAnonKey
 process.env.SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey
 
@@ -80,7 +83,8 @@ delete process.env.POSTGRES_PRISMA_URL
 delete require.cache[require.resolve('dotenv')]
 
 console.log('🧪 Starting Next.js in test mode (OPTIMIZED - No DB Reset)...')
-console.log(`📦 Using Supabase at: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`)
+console.log(`📦 Using Supabase at: ${supabaseServerUrl}`)
+console.log(`📱 Client URL: ${supabaseClientUrl}`)
 
 // Build a clean environment object with only what we need
 const testEnv = {
@@ -89,9 +93,9 @@ const testEnv = {
   NODE_ENV: 'test',
   NEXT_PUBLIC_TEST_MODE: 'true',
   // Supabase test configuration
-  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
+  NEXT_PUBLIC_SUPABASE_URL: supabaseClientUrl,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
-  SUPABASE_URL: supabaseUrl,
+  SUPABASE_URL: supabaseServerUrl,
   SUPABASE_ANON_KEY: supabaseAnonKey,
   SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,
 }
