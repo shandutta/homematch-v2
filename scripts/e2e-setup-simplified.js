@@ -39,8 +39,8 @@ async function setupE2ETests() {
 
       const containerCount = containers.split('\n').filter((n) => n).length
 
-      if (containerCount >= 10) {
-        console.log(`✅ ${containerCount} Supabase containers running`)
+      if (containerCount > 0) {
+        console.log(`✅ ${containerCount} Supabase container(s) running`)
 
         // Quick health check using Node's fetch
         try {
@@ -59,7 +59,7 @@ async function setupE2ETests() {
         }
       } else {
         console.log(
-          `⚠️  Only ${containerCount} containers running, need to start Supabase`
+          '⚠️  No Supabase containers running, need to start Supabase'
         )
       }
     } catch (error) {
@@ -79,16 +79,19 @@ async function setupE2ETests() {
         })
 
         // Start fresh
-        execSync('pnpm dlx supabase@latest start -x studio', {
-          stdio: 'inherit',
-          cwd: path.join(__dirname, '..'),
-        })
+        execSync(
+          'pnpm dlx supabase@latest start -x studio,inbucket,imgproxy,storage',
+          {
+            stdio: 'inherit',
+            cwd: path.join(__dirname, '..'),
+          }
+        )
 
         console.log('✅ Supabase started successfully')
       } catch (error) {
         console.error('❌ Failed to start Supabase:', error.message)
         console.error(
-          '   Please run manually: pnpm dlx supabase@latest start -x studio'
+          '   Please run manually: pnpm dlx supabase@latest start -x studio,inbucket,imgproxy,storage'
         )
         process.exit(1)
       }

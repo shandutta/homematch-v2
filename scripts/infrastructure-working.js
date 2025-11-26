@@ -163,7 +163,9 @@ class WorkingInfrastructure {
 
   async startSupabase(excludeStudio = true) {
     await this.log('Starting Supabase...', 'progress')
-    const command = excludeStudio ? 'start -x studio' : 'start'
+    const command = excludeStudio
+      ? 'start -x studio,inbucket,imgproxy,storage'
+      : 'start'
 
     try {
       await this.runSupabaseCommand(command)

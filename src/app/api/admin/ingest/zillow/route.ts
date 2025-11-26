@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server'
-import { ingestZillowLocations } from '@/lib/ingestion/zillow'
+import {
+  ingestZillowLocations,
+  ZillowSortOption,
+} from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+
+const VALID_SORT_OPTIONS: ZillowSortOption[] = [
+  'Newest',
+  'Price_High_Low',
+  'Price_Low_High',
+  'Beds',
+  'Baths',
+  'Square_Feet',
+]
 
 const DEFAULT_BAY_AREA_LOCATIONS = [
   'San Francisco, CA',
@@ -27,8 +39,9 @@ const DEFAULT_BAY_AREA_LOCATIONS = [
 function parseLocations(): string[] {
   const env = process.env.ZILLOW_LOCATIONS
   if (env && env.trim().length > 0) {
+    // Split on semicolon only - commas are part of "City, State" format
     return env
-      .split(/[;,]/)
+      .split(';')
       .map((s) => s.trim())
       .filter(Boolean)
   }
@@ -52,6 +65,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'RAPIDAPI_KEY missing' }, { status: 503 })
   }
 
+  // Parse optional query parameters
+  const sortParam = url.searchParams.get('sort')
+  const sort: ZillowSortOption | undefined =
+    sortParam && VALID_SORT_OPTIONS.includes(sortParam as ZillowSortOption)
+      ? (sortParam as ZillowSortOption)
+      : 'Newest' // Default to Newest to catch new listings
+
+  const minPriceParam = url.searchParams.get('minPrice')
+  const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined
+
+  const maxPriceParam = url.searchParams.get('maxPrice')
+  const maxPrice = maxPriceParam ? parseInt(maxPriceParam, 10) : undefined
+
+  const maxPagesParam = url.searchParams.get('maxPages')
+  const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : undefined
+
   const locations = parseLocations()
   const supabase = createStandaloneClient()
 
@@ -61,6 +90,10 @@ export async function POST(req: Request) {
       rapidApiKey,
       supabase,
       host: rapidApiHost,
+      sort,
+      minPrice,
+      maxPrice,
+      maxPages,
     })
 
     return NextResponse.json({ ok: true, summary }, { status: 200 })

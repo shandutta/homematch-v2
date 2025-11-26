@@ -20,10 +20,19 @@ type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
 
 const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
-const DEFAULT_MAX_PAGES = 2
+const DEFAULT_MAX_PAGES = 5 // Increased from 2 to get more properties
 const DEFAULT_DELAY_MS = 1250
 const MAX_INT_SAFE = 2_000_000_000
 const MAX_BATHROOMS = 9.9
+
+// Sort options for Zillow API
+export type ZillowSortOption =
+  | 'Newest'
+  | 'Price_High_Low'
+  | 'Price_Low_High'
+  | 'Beds'
+  | 'Baths'
+  | 'Square_Feet'
 
 type FetchLike = typeof fetch
 
@@ -91,6 +100,12 @@ export interface ZillowIngestOptions {
   maxPages?: number
   delayMs?: number
   fetchImpl?: FetchLike
+  /** Sort order for results - 'Newest' recommended to catch new listings */
+  sort?: ZillowSortOption
+  /** Minimum price filter for price band searches */
+  minPrice?: number
+  /** Maximum price filter for price band searches */
+  maxPrice?: number
 }
 
 export interface IngestLocationSummary {
@@ -154,6 +169,9 @@ export function buildSearchUrl(options: {
   page: number
   pageSize: number
   host?: string
+  sort?: ZillowSortOption
+  minPrice?: number
+  maxPrice?: number
 }): string {
   const host = options.host || DEFAULT_HOST
   const params = new URLSearchParams({
@@ -162,6 +180,17 @@ export function buildSearchUrl(options: {
     page: options.page.toString(),
     pageSize: options.pageSize.toString(),
   })
+  // Add sort parameter - 'Newest' is recommended to catch new listings
+  if (options.sort) {
+    params.set('sort', options.sort)
+  }
+  // Add price filters for price band searches
+  if (options.minPrice !== undefined) {
+    params.set('minPrice', options.minPrice.toString())
+  }
+  if (options.maxPrice !== undefined) {
+    params.set('maxPrice', options.maxPrice.toString())
+  }
   return `https://${host}/propertyExtendedSearch?${params.toString()}`
 }
 
@@ -172,6 +201,9 @@ export async function fetchZillowSearchPage(options: {
   rapidApiKey: string
   host?: string
   fetchImpl?: FetchLike
+  sort?: ZillowSortOption
+  minPrice?: number
+  maxPrice?: number
 }): Promise<{ items: ZillowSearchItem[]; hasNextPage: boolean }> {
   const {
     location,
@@ -180,9 +212,12 @@ export async function fetchZillowSearchPage(options: {
     host = DEFAULT_HOST,
     fetchImpl = fetch,
     pageSize = DEFAULT_PAGE_SIZE,
+    sort,
+    minPrice,
+    maxPrice,
   } = options
 
-  const url = buildSearchUrl({ location, page, pageSize, host })
+  const url = buildSearchUrl({ location, page, pageSize, host, sort, minPrice, maxPrice })
   const res = await fetchImpl(url, {
     headers: {
       'X-RapidAPI-Key': rapidApiKey,
@@ -332,6 +367,9 @@ export async function ingestZillowLocations(
     maxPages = DEFAULT_MAX_PAGES,
     delayMs = DEFAULT_DELAY_MS,
     fetchImpl = fetch,
+    sort,
+    minPrice,
+    maxPrice,
   } = options
 
   const transformer = new DataTransformer()
@@ -367,6 +405,9 @@ export async function ingestZillowLocations(
           host,
           fetchImpl,
           pageSize,
+          sort,
+          minPrice,
+          maxPrice,
         })
       } catch (error) {
         const msg =
