@@ -79,6 +79,18 @@ export async function POST(req: Request) {
   const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : undefined
 
   const locations = parseLocations()
+
+  // Debug: log which Supabase we're connecting to
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  console.log(
+    '[ingest/zillow] Supabase URL:',
+    supabaseUrl?.substring(0, 40) + '...'
+  )
+  console.log(
+    '[ingest/zillow] Service key set:',
+    !!process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
   const supabase = createStandaloneClient()
 
   try {
