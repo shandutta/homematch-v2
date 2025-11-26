@@ -13,7 +13,16 @@ export async function GET(request: NextRequest) {
 
     // Exchange code for session
     // The server-side client has proper cookie handling
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (error) {
+      console.error('[Auth Callback] Exchange Error:', error.message)
+    } else {
+      console.log(
+        '[Auth Callback] Session established for user:',
+        data.user?.id
+      )
+    }
   }
 
   // Redirect to the next URL or dashboard

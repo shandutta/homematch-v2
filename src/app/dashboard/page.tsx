@@ -15,16 +15,27 @@ export default async function DashboardPage({
   searchParams: _searchParams,
 }: DashboardPageProps) {
   const supabase = await createClient()
+  console.log('[Dashboard] Getting user from Supabase...')
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
+  console.log('[Dashboard] Auth result:', {
+    userId: user?.id,
+    error: authError?.message,
+  })
+
   if (!user) {
+    console.log('[Dashboard] No user found, redirecting to login')
     redirect('/login')
   }
 
+  console.log('[Dashboard] User found:', user.id)
+
   try {
     const userService = new UserService()
+    console.log('[Dashboard] Calling getUser...')
     const userProfile = await userService.getUserProfile(user.id)
     const dashboardData = await loadDashboardData({
       userPreferences: userProfile?.preferences as DashboardPreferences | null,
@@ -62,7 +73,11 @@ export default async function DashboardPage({
       </DashboardErrorBoundary>
     )
   } catch (error) {
-    console.error('Dashboard error:', error)
+    console.error('[Dashboard] Error caught:', error)
+    // Check if it's a redirect error (NEXT_REDIRECT)
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
 
     // Check if it's a database connection error
     const errorMessage = error instanceof Error ? error.message : String(error)

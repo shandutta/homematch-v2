@@ -6,10 +6,19 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  // Dynamic cookie name based on hostname
+  const hostname = request.nextUrl.hostname.replace(/\./g, '-')
+  const cookieName = `sb-${hostname}-auth-token`
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: {
+        name: cookieName,
+        path: '/',
+        sameSite: 'lax',
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -22,21 +31,22 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            const isPkceCookie = name.endsWith('code-verifier')
+            // Force secure based on environment, ignoring the incoming option which might be wrong
+            const isProduction = process.env.NODE_ENV === 'production'
             const sharedOptions = {
               ...options,
               maxAge: options?.maxAge ?? 60 * 60 * 24 * 7,
               path: options?.path ?? '/',
               sameSite: options?.sameSite ?? 'lax',
-              secure:
-                typeof options?.secure === 'boolean'
-                  ? options.secure
-                  : process.env.NODE_ENV === 'production',
+              secure: isProduction,
             }
+
+            // Log cookie setting for debugging
+            // console.log(`[Middleware] Setting cookie: ${name}, Secure: ${sharedOptions.secure}`)
 
             supabaseResponse.cookies.set(name, value, {
               ...sharedOptions,
-              httpOnly: isPkceCookie ? false : true, // PKCE cookie must be JS-readable
+              httpOnly: false, // Allow client-side to read cookie for session hydration
             })
           })
         },
@@ -56,7 +66,19 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser()
+
+  console.error('[Middleware] Path:', request.nextUrl.pathname)
+  console.error('[Middleware] User ID:', user?.id)
+  if (error) console.error('[Middleware] Auth Error:', error.message)
+  console.error(
+    '[Middleware] Cookies:',
+    request.cookies
+      .getAll()
+      .map((c) => c.name)
+      .join(', ')
+  )
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = [

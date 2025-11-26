@@ -18,11 +18,23 @@ export function createClient() {
     ? `supabase-browser-${process.env.VITEST_POOL_ID || '1'}-${supabaseAnonKey.slice(0, 6)}`
     : undefined
 
+  // Dynamic cookie configuration for dev/prod
+  const cookieName =
+    typeof window !== 'undefined'
+      ? `sb-${window.location.hostname.replace(/\./g, '-')}-auth-token`
+      : 'sb-localhost-auth-token'
+
   return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: {
+      name: cookieName,
+      path: '/',
+      sameSite: 'lax',
+    },
     auth: {
       detectSessionInUrl: true,
-      // Use unique storage keys in test runs to avoid GoTrue collisions across pools
       storageKey,
+      autoRefreshToken: true,
+      persistSession: true,
     },
   })
 }

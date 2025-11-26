@@ -7,6 +7,30 @@ export async function createClient() {
   const cookieStore = await cookies()
   const headerStore = await headers()
 
+  // Dynamic cookie name from host header
+  const host = headerStore.get('host') || 'localhost:3000'
+  const hostname = host.split(':')[0].replace(/\./g, '-')
+  const cookieName = `sb-${hostname}-auth-token`
+
+  // Debug logging
+  const allCookies = cookieStore.getAll()
+  console.log('[Server Client] Cookie count:', allCookies.length)
+  console.log(
+    '[Server Client] Cookie names:',
+    allCookies.map((c) => c.name)
+  )
+  const authCookie = allCookies.find((c) => c.name.includes('auth-token'))
+  if (authCookie) {
+    console.log(
+      '[Server Client] Auth cookie value length:',
+      authCookie.value?.length
+    )
+    console.log(
+      '[Server Client] Auth cookie value preview:',
+      authCookie.value?.substring(0, 50)
+    )
+  }
+
   // Check for Authorization header (for API routes)
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
@@ -15,6 +39,11 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: {
+        name: cookieName,
+        path: '/',
+        sameSite: 'lax',
+      },
       cookies: {
         getAll() {
           return cookieStore.getAll()
@@ -25,12 +54,16 @@ export async function createClient() {
               cookieStore.set(name, value, {
                 ...options,
                 // Enhanced cookie configuration for session persistence
-                httpOnly: true, // SECURITY: Prevent XSS
+                httpOnly: false, // Allow client-side access for session hydration
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax', // Better cross-browser compatibility
                 maxAge: 60 * 60 * 24 * 7, // 7 days
                 path: '/',
               })
+            )
+            console.log(
+              '[Server Client] Set cookies with NODE_ENV:',
+              process.env.NODE_ENV
             )
           } catch {
             // The `setAll` method was called from a Server Component.
