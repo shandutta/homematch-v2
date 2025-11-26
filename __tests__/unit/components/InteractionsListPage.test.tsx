@@ -5,15 +5,14 @@ import '@testing-library/jest-dom'
 import { InteractionsListPage } from '@/components/dashboard/InteractionsListPage'
 import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
 
-// Mock mutation functions
-const mockDeleteMutate = jest.fn()
-const mockRecordMutate = jest.fn()
-
-// Mock the hooks used by the component
+// Mock the hooks used by the component - must use jest.fn() directly inside factory
 jest.mock('@/hooks/useInteractions', () => {
-  const actual = jest.requireActual('@/hooks/useInteractions')
+  // Create stable mock functions inside the factory
+  const mockDeleteMutate = jest.fn()
+  const mockRecordMutate = jest.fn()
+
   return {
-    ...actual,
+    __esModule: true,
     useInfiniteInteractions: jest.fn(),
     useDeleteInteraction: jest.fn(() => ({
       mutate: mockDeleteMutate,
@@ -29,11 +28,25 @@ jest.mock('@/hooks/useInteractions', () => {
       lists: () => ['interactions', 'list'],
       list: (type: string) => ['interactions', 'list', type],
     },
+    // Export mock functions so tests can access them
+    _mockDeleteMutate: mockDeleteMutate,
+    _mockRecordMutate: mockRecordMutate,
   }
 })
 
-import { useInfiniteInteractions as mockedUseInfiniteInteractions } from '@/hooks/useInteractions'
-const mockedUseInfinite = mockedUseInfiniteInteractions as unknown as jest.Mock
+import {
+  useInfiniteInteractions,
+  useDeleteInteraction,
+  useRecordInteraction,
+  // @ts-expect-error - accessing test mocks
+  _mockDeleteMutate as mockDeleteMutate,
+  // @ts-expect-error - accessing test mocks
+  _mockRecordMutate as mockRecordMutate,
+} from '@/hooks/useInteractions'
+
+const mockedUseInfinite = useInfiniteInteractions as unknown as jest.Mock
+const mockedUseDeleteInteraction = useDeleteInteraction as unknown as jest.Mock
+const mockedUseRecordInteraction = useRecordInteraction as unknown as jest.Mock
 
 // Sample property fixture for testing
 const createMockProperty = (id: string, address: string) => ({
@@ -74,6 +87,15 @@ describe('InteractionsListPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    // Reset the mock implementations for each test
+    mockedUseDeleteInteraction.mockReturnValue({
+      mutate: mockDeleteMutate,
+      isPending: false,
+    })
+    mockedUseRecordInteraction.mockReturnValue({
+      mutate: mockRecordMutate,
+      isPending: false,
+    })
     mockDeleteMutate.mockClear()
     mockRecordMutate.mockClear()
   })
