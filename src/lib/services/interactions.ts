@@ -23,6 +23,7 @@ export const InteractionService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ propertyId, type }),
+      credentials: 'include',
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -33,7 +34,10 @@ export const InteractionService = {
   },
 
   async getInteractionSummary(): Promise<InteractionSummary> {
-    const res = await fetch('/api/interactions?type=summary', { method: 'GET' })
+    const res = await fetch('/api/interactions?type=summary', {
+      method: 'GET',
+      credentials: 'include',
+    })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
       throw new Error(
@@ -56,6 +60,7 @@ export const InteractionService = {
     if (cursor) params.set('cursor', cursor)
     const res = await fetch(`/api/interactions?${params.toString()}`, {
       method: 'GET',
+      credentials: 'include',
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
@@ -69,6 +74,7 @@ export const InteractionService = {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ propertyId }),
+      credentials: 'include',
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')

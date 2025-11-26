@@ -6,6 +6,7 @@ import { Footer } from '@/components/layouts/Footer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { createQueryClient } from '@/lib/query/config'
+import { PropertyDetailProvider } from '@/components/property/PropertyDetailProvider'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -19,7 +20,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Header />
       <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
         <QueryClientProvider client={queryClient}>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <PropertyDetailProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </PropertyDetailProvider>
         </QueryClientProvider>
       </main>
       <Footer />

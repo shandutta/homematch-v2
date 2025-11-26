@@ -64,7 +64,9 @@ export function useMutualLikes() {
   return useQuery<MutualLike[], Error>({
     queryKey: couplesKeys.mutualLikes(),
     queryFn: async () => {
-      const response = await fetch('/api/couples/mutual-likes')
+      const response = await fetch('/api/couples/mutual-likes', {
+        credentials: 'include',
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch mutual likes')
       }

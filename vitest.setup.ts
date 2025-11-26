@@ -260,6 +260,128 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+// Mock ResizeObserver for framer-motion projection system
+class MockResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+Object.defineProperty(globalThis, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: MockResizeObserver,
+})
+
+// Mock visualViewport for framer-motion resize listener
+Object.defineProperty(window, 'visualViewport', {
+  writable: true,
+  configurable: true,
+  value: {
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    width: 1024,
+    height: 768,
+    offsetLeft: 0,
+    offsetTop: 0,
+    pageLeft: 0,
+    pageTop: 0,
+    scale: 1,
+    onresize: null,
+    onscroll: null,
+  },
+})
+
+// Mock clipboard API for @testing-library/user-event
+Object.defineProperty(navigator, 'clipboard', {
+  writable: true,
+  configurable: true,
+  value: {
+    writeText: vi.fn().mockResolvedValue(undefined),
+    readText: vi.fn().mockResolvedValue(''),
+    write: vi.fn().mockResolvedValue(undefined),
+    read: vi.fn().mockResolvedValue([]),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  },
+})
+
+// Mock framer-motion to avoid projection system issues in JSDOM
+vi.mock('framer-motion', async () => {
+  const actual =
+    await vi.importActual<typeof import('framer-motion')>('framer-motion')
+  const React = await import('react')
+
+  // Create a simple passthrough component that renders children without animations
+  const createMotionComponent = (tag: string) => {
+    const Component = React.forwardRef<
+      HTMLElement,
+      React.HTMLAttributes<HTMLElement> & {
+        children?: React.ReactNode
+        initial?: unknown
+        animate?: unknown
+        exit?: unknown
+        transition?: unknown
+        variants?: unknown
+        whileHover?: unknown
+        whileTap?: unknown
+        whileFocus?: unknown
+        whileInView?: unknown
+        layout?: unknown
+        layoutId?: string
+        drag?: unknown
+        dragConstraints?: unknown
+        onDragEnd?: unknown
+        onDragStart?: unknown
+        onAnimationStart?: unknown
+        onAnimationComplete?: unknown
+      }
+    >((props, ref) => {
+      // Strip framer-motion specific props
+      const {
+        initial: _initial,
+        animate: _animate,
+        exit: _exit,
+        transition: _transition,
+        variants: _variants,
+        whileHover: _whileHover,
+        whileTap: _whileTap,
+        whileFocus: _whileFocus,
+        whileInView: _whileInView,
+        layout: _layout,
+        layoutId: _layoutId,
+        drag: _drag,
+        dragConstraints: _dragConstraints,
+        onDragEnd: _onDragEnd,
+        onDragStart: _onDragStart,
+        onAnimationStart: _onAnimationStart,
+        onAnimationComplete: _onAnimationComplete,
+        ...htmlProps
+      } = props
+      return React.createElement(tag, { ...htmlProps, ref })
+    })
+    Component.displayName = `motion.${tag}`
+    return Component
+  }
+
+  const motion = new Proxy(
+    {},
+    {
+      get: (_, tag: string) => createMotionComponent(tag),
+    }
+  ) as typeof actual.motion
+
+  return {
+    ...actual,
+    motion,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
+    LazyMotion: ({ children }: { children?: React.ReactNode }) => children,
+    MotionConfig: ({ children }: { children?: React.ReactNode }) => children,
+    domAnimation: {},
+    domMax: {},
+  }
+})
+
 // Mock canvas API for image-blur tests
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: () => {

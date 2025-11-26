@@ -127,9 +127,30 @@ jobs:
           curl -fsSL https://github.com/supabase/cli/releases/download/v${{ env.SUPABASE_CLI_VERSION }}/supabase_${{ env.SUPABASE_CLI_VERSION }}_linux_amd64.deb -o supabase.deb
           sudo dpkg -i supabase.deb
 
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker info --format '{{.OSType}} {{.Architecture}}'
+          docker compose version
+
       - name: Start Supabase
-        run: supabase start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime
+        run: |
+          supabase start --debug -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime,analytics,inbucket
+          # Give containers time to fully initialize
+          sleep 10
         timeout-minutes: 10
+
+      - name: Debug Docker state
+        if: always()
+        run: |
+          echo "=== Docker containers ==="
+          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+          echo ""
+          echo "=== Checking for crashed containers ==="
+          for container in $(docker ps -a --filter "status=exited" --format "{{.Names}}" | grep supabase); do
+            echo "--- Logs for $container ---"
+            docker logs --tail 50 "$container" 2>&1 || true
+          done
 
       - name: Export Supabase URL from status
         run: |
@@ -163,6 +184,21 @@ jobs:
 
       - name: Wait for Supabase readiness
         run: |
+          echo "Checking connectivity to ${SUPABASE_URL}"
+
+          # First verify we can reach the port at all
+          for i in {1..10}; do
+            if nc -z 127.0.0.1 54200 2>/dev/null; then
+              echo "Port 54200 is open"
+              break
+            fi
+            echo "Waiting for port 54200 to open... ($i/10)"
+            sleep 2
+          done
+
+          # Show running containers for debugging
+          docker ps --format "table {{.Names}}\t{{.Status}}" | grep -E "supabase|NAME" || true
+
           for i in {1..90}; do
             code_health=$(curl -s -o /dev/null -w "%{http_code}" "${SUPABASE_URL}/health" || true)
             code_rest=$(curl -s -o /dev/null -w "%{http_code}" -H "apikey: ${SUPABASE_ANON_KEY}" "${SUPABASE_URL}/rest/v1/?select=1" || true)
@@ -173,11 +209,21 @@ jobs:
               exit 0
             fi
 
+            # If still getting 000, check if containers died
+            if [ "$code_health" = "000" ] && [ "$i" = "10" ]; then
+              echo "=== Connection refused - checking container status ==="
+              docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep supabase || true
+            fi
+
             echo "Waiting for Supabase... ($i/90) health=${code_health} rest=${code_rest} auth=${code_auth}"
             sleep 2
           done
 
           echo "Supabase did not become ready in time"
+          echo "=== Final container state ==="
+          docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "supabase|NAME" || true
+          echo "=== Kong logs ==="
+          docker logs supabase_kong_homematch-v2 --tail 100 2>&1 || true
           exit 1
 
       - name: Apply migrations

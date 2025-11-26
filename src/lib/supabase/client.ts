@@ -20,7 +20,7 @@ export function createClient() {
 
   // Dynamic cookie configuration for dev/prod
   const cookieName =
-    typeof window !== 'undefined'
+    typeof window !== 'undefined' && window.location?.hostname
       ? `sb-${window.location.hostname.replace(/\./g, '-')}-auth-token`
       : 'sb-localhost-auth-token'
 

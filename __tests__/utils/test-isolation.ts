@@ -11,10 +11,10 @@ export function setupTestIsolation() {
     cleanup()
   })
 
-  // Reset all mocks before each test
+  // Clear mock call history before each test (but don't restore global mocks)
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.restoreAllMocks()
+    // Note: vi.restoreAllMocks() removed - it undoes global mocks from vitest.setup.ts
   })
 
   // Clear timers after tests

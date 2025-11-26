@@ -12,25 +12,6 @@ export async function createClient() {
   const hostname = host.split(':')[0].replace(/\./g, '-')
   const cookieName = `sb-${hostname}-auth-token`
 
-  // Debug logging
-  const allCookies = cookieStore.getAll()
-  console.log('[Server Client] Cookie count:', allCookies.length)
-  console.log(
-    '[Server Client] Cookie names:',
-    allCookies.map((c) => c.name)
-  )
-  const authCookie = allCookies.find((c) => c.name.includes('auth-token'))
-  if (authCookie) {
-    console.log(
-      '[Server Client] Auth cookie value length:',
-      authCookie.value?.length
-    )
-    console.log(
-      '[Server Client] Auth cookie value preview:',
-      authCookie.value?.substring(0, 50)
-    )
-  }
-
   // Check for Authorization header (for API routes)
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
@@ -60,10 +41,6 @@ export async function createClient() {
                 maxAge: 60 * 60 * 24 * 7, // 7 days
                 path: '/',
               })
-            )
-            console.log(
-              '[Server Client] Set cookies with NODE_ENV:',
-              process.env.NODE_ENV
             )
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -106,8 +83,10 @@ export function createApiClient(request?: NextRequest) {
       cookieData = cookieStr
         .split(';')
         .map((c) => {
-          const [name, value] = c.trim().split('=')
-          return { name, value: decodeURIComponent(value) }
+          const [name, ...valueParts] = c.trim().split('=')
+          // Join with '=' to handle base64 tokens that contain '=' padding
+          // Don't decode - cookies in HTTP headers are already raw values
+          return { name, value: valueParts.join('=') }
         })
         .filter((c) => c.name && c.value)
     }

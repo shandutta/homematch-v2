@@ -6,7 +6,7 @@ const jsonMock = jest.fn((body, init) => ({
   body,
 }))
 
-const createApiClientMock = jest.fn()
+const createClientMock = jest.fn()
 
 jest.mock('next/server', () => ({
   __esModule: true,
@@ -32,7 +32,7 @@ const supabaseMock: any = {
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
-  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+  createClient: (...args: unknown[]) => createClientMock(...args),
 }))
 
 jest.mock('@/lib/services/couples', () => ({
@@ -50,7 +50,7 @@ const resetSupabase = () => {
   supabaseMock.select.mockReset()
   supabaseMock.in.mockReset()
 
-  createApiClientMock.mockReturnValue(supabaseMock)
+  createClientMock.mockResolvedValue(supabaseMock)
   supabaseMock.from.mockReturnValue(supabaseMock)
   supabaseMock.select.mockReturnValue(supabaseMock)
 }

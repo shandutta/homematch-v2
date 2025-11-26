@@ -21,7 +21,7 @@ type MotionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 export const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
   ({ children, className, motionProps, ...buttonProps }, ref) => {
     return (
-      <motion.div {...motionProps}>
+      <motion.div className="inline-flex" {...motionProps}>
         <button ref={ref} className={cn(className)} {...buttonProps}>
           {children}
         </button>

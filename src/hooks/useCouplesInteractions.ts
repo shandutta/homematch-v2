@@ -43,7 +43,8 @@ export function useCouplesInteraction() {
       if (type === 'liked') {
         try {
           const response = await fetch(
-            `/api/couples/check-mutual?propertyId=${propertyId}`
+            `/api/couples/check-mutual?propertyId=${propertyId}`,
+            { credentials: 'include' }
           )
           if (response.ok) {
             const data = await response.json()
@@ -56,8 +57,9 @@ export function useCouplesInteraction() {
               milestone: data.milestone,
             }
           }
-        } catch (error) {
-          console.log('Could not check for mutual like:', error)
+          // 401 is expected if user is not in a couple - silently continue
+        } catch {
+          // Network errors - silently continue
         }
       }
 

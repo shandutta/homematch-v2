@@ -57,7 +57,9 @@ export function useMutualLikes(includeProperties = true) {
         includeProperties: includeProperties.toString(),
       })
 
-      const response = await fetch(`/api/couples/mutual-likes?${params}`)
+      const response = await fetch(`/api/couples/mutual-likes?${params}`, {
+        credentials: 'include',
+      })
 
       if (!response.ok) {
         throw new Error('Failed to fetch mutual likes')
@@ -83,7 +85,9 @@ export function useHouseholdActivity(limit = 20, offset = 0) {
         offset: offset.toString(),
       })
 
-      const response = await fetch(`/api/couples/activity?${params}`)
+      const response = await fetch(`/api/couples/activity?${params}`, {
+        credentials: 'include',
+      })
 
       if (!response.ok) {
         throw new Error('Failed to fetch household activity')
@@ -104,7 +108,9 @@ export function useCouplesStats() {
   return useQuery({
     queryKey: COUPLES_KEYS.stats(),
     queryFn: async (): Promise<CouplesStatsResponse> => {
-      const response = await fetch('/api/couples/stats')
+      const response = await fetch('/api/couples/stats', {
+        credentials: 'include',
+      })
 
       if (!response.ok) {
         throw new Error('Failed to fetch couples stats')
@@ -141,6 +147,7 @@ export function useNotifyInteraction() {
           propertyId,
           interactionType,
         }),
+        credentials: 'include',
       })
 
       if (!response.ok) {

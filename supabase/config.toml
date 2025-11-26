@@ -319,7 +319,7 @@ enabled = false
 # domain = "example.clerk.accounts.dev"
 
 [edge_runtime]
-enabled = true
+enabled = false
 # Configure one of the supported request policies: `oneshot`, `per_worker`.
 # Use `oneshot` for hot reload, or `per_worker` for load testing.
 policy = "oneshot"
@@ -332,7 +332,7 @@ deno_version = 1
 # secret_key = "env(SECRET_VALUE)"
 
 [analytics]
-enabled = true
+enabled = false
 port = 54205
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"

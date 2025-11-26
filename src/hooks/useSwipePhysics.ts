@@ -28,9 +28,9 @@ export const SNAP_BACK_CONFIG = {
 
 export const EXIT_CONFIG = {
   type: 'spring' as const,
-  stiffness: 200,
-  damping: 20,
-  mass: 0.5,
+  stiffness: 400,
+  damping: 30,
+  mass: 0.4,
 }
 
 export interface UseSwipePhysicsOptions {
@@ -150,14 +150,14 @@ export function useSwipePhysics({
       if (shouldSwipe) {
         const direction = offset.x > 0 ? 'right' : 'left'
 
-        // Enhanced exit animation with physics
+        // Fast exit animation with physics
         const exitX =
           direction === 'right'
             ? window.innerWidth * 1.2
             : -window.innerWidth * 1.2
-        const exitY = offset.y + velocity.y * 0.15 // More natural arc
+        const exitY = offset.y + velocity.y * 0.1 // Natural arc
         const exitRotate =
-          direction === 'right' ? MAX_ROTATION * 1.5 : -MAX_ROTATION * 1.5
+          direction === 'right' ? MAX_ROTATION * 1.3 : -MAX_ROTATION * 1.3
 
         controls
           .start({
@@ -165,10 +165,10 @@ export function useSwipePhysics({
             y: exitY,
             rotate: exitRotate,
             opacity: 0,
-            scale: 0.85,
+            scale: 0.9,
             transition: {
               ...EXIT_CONFIG,
-              duration: Math.max(0.4, Math.min(0.8, 0.6 / velocityFactor)),
+              duration: Math.max(0.25, Math.min(0.4, 0.35 / velocityFactor)),
             },
           })
           .then(() => {
@@ -214,7 +214,7 @@ export function useSwipePhysics({
           : -window.innerWidth * 1.2
       const exitRotate =
         direction === 'right' ? MAX_ROTATION * 1.2 : -MAX_ROTATION * 1.2
-      const exitY = (Math.random() - 0.5) * 100 // Add slight random trajectory
+      const exitY = (Math.random() - 0.5) * 50 // Slight random trajectory
 
       controls
         .start({
@@ -222,10 +222,10 @@ export function useSwipePhysics({
           y: exitY,
           rotate: exitRotate,
           opacity: 0,
-          scale: 0.85,
+          scale: 0.9,
           transition: {
             ...EXIT_CONFIG,
-            duration: 0.5,
+            duration: 0.3,
           },
         })
         .then(() => {

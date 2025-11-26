@@ -49,6 +49,7 @@ export function SwipeablePropertyCard({
   // Refs for performance optimization
   const cardRef = useRef<HTMLDivElement>(null)
   const hasDraggedRef = useRef(false)
+  const hasShownHintsRef = useRef(false)
 
   // Get current property
   const currentProperty = properties[currentIndex]
@@ -113,27 +114,28 @@ export function SwipeablePropertyCard({
     }
   }, [showHintsState])
 
-  // Swipe hints animation
+  // Swipe hints animation - only plays once on initial load
   useEffect(() => {
-    if (showHintsState && currentProperty) {
-      const showHints = async () => {
+    if (showHintsState && currentProperty && !hasShownHintsRef.current) {
+      hasShownHintsRef.current = true
+      const runHints = async () => {
         await controls.start({
           x: [0, 30, 0, -30, 0],
-          transition: { duration: 2, repeat: Infinity, repeatDelay: 3 },
+          transition: { duration: 2, repeat: 1, repeatDelay: 1 },
         })
+        setShowHintsState(false)
       }
-      showHints()
+      runHints()
     }
   }, [showHintsState, currentProperty, controls])
 
-  // Programmatic swipe function with haptic feedback
+  // Programmatic swipe function (haptic feedback handled in onSwipeComplete)
   const swipeCard = useCallback(
     (direction: 'left' | 'right') => {
       if (!currentProperty) return
-      haptic.success()
       physicsSwipeCard(direction)
     },
-    [currentProperty, haptic, physicsSwipeCard]
+    [currentProperty, physicsSwipeCard]
   )
 
   if (!currentProperty) {
@@ -185,7 +187,7 @@ export function SwipeablePropertyCard({
               }}
             >
               <div className="h-full w-full transform-gpu">
-                <PropertyCard property={property} />
+                <PropertyCard property={property} disableDetailModal />
               </div>
             </MotionDiv>
           )
@@ -215,7 +217,11 @@ export function SwipeablePropertyCard({
           whileTap={{ scale: 0.98 }}
         >
           <div className="relative h-full w-full transform-gpu">
-            <PropertyCard property={currentProperty} imagePriority />
+            <PropertyCard
+              property={currentProperty}
+              imagePriority
+              disableDetailModal
+            />
 
             {/* Decision Overlays */}
             <AnimatePresence>
@@ -301,10 +307,10 @@ export function SwipeablePropertyCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center space-x-4">
+      <div className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-6">
         <MotionButton
           onClick={() => swipeCard('left')}
-          className="flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full bg-white/10 text-red-500 shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-red-500/20 focus-visible:ring-4 focus-visible:ring-red-400/50 focus-visible:outline-none active:scale-95"
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-red-200 bg-white text-red-500 shadow-md transition-colors hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none dark:border-red-900 dark:bg-gray-900 dark:hover:bg-red-950"
           motionProps={{
             whileHover: { scale: 1.1 },
             whileTap: { scale: 0.95 },
@@ -312,13 +318,13 @@ export function SwipeablePropertyCard({
           aria-label="Pass on this property"
           type="button"
         >
-          <X size={28} />
+          <X size={24} strokeWidth={2.5} />
         </MotionButton>
 
         {onUndo && (
           <MotionButton
             onClick={onUndo}
-            className="flex h-14 min-h-[56px] w-14 min-w-[56px] touch-manipulation items-center justify-center rounded-full bg-white/10 text-gray-400 shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-gray-400/20 focus-visible:ring-4 focus-visible:ring-gray-400/50 focus-visible:outline-none active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
             motionProps={{
               whileHover: { scale: 1.1 },
               whileTap: { scale: 0.95 },
@@ -326,13 +332,13 @@ export function SwipeablePropertyCard({
             aria-label="Undo last action"
             type="button"
           >
-            <RotateCcw size={22} />
+            <RotateCcw size={18} strokeWidth={2.5} />
           </MotionButton>
         )}
 
         <MotionButton
           onClick={() => swipeCard('right')}
-          className="flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full bg-white/10 text-green-500 shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-green-500/20 focus-visible:ring-4 focus-visible:ring-green-400/50 focus-visible:outline-none active:scale-95"
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-green-200 bg-white text-green-500 shadow-md transition-colors hover:bg-green-50 focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:outline-none dark:border-green-900 dark:bg-gray-900 dark:hover:bg-green-950"
           motionProps={{
             whileHover: { scale: 1.1 },
             whileTap: { scale: 0.95 },
@@ -340,7 +346,7 @@ export function SwipeablePropertyCard({
           aria-label="Like this property"
           type="button"
         >
-          <Heart size={28} />
+          <Heart size={24} strokeWidth={2.5} />
         </MotionButton>
       </div>
     </div>

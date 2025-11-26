@@ -77,7 +77,7 @@ describe('InteractionService', () => {
       expect(res).toEqual(mockSummary)
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/interactions?type=summary',
-        { method: 'GET' }
+        { method: 'GET', credentials: 'include' }
       )
     })
 

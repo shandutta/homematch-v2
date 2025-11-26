@@ -30,13 +30,29 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
     // Only run on client
     if (typeof window === 'undefined') return
 
-    // Check if adsbygoogle is available
+    // Check if this specific ins element already has an ad or is pending
+    const insElement = adRef.current?.querySelector('.adsbygoogle')
+    if (!insElement) return
+
+    // Check if already processed (either by Google or by us in a previous mount)
+    if (
+      insElement.getAttribute('data-adsbygoogle-status') ||
+      insElement.getAttribute('data-ad-push-pending')
+    ) {
+      setIsLoaded(!!insElement.getAttribute('data-adsbygoogle-status'))
+      return
+    }
+
+    // Mark as pending BEFORE pushing (persists across Strict Mode remounts)
+    insElement.setAttribute('data-ad-push-pending', 'true')
+
     try {
       // Push the ad to be loaded
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
       setIsLoaded(true)
     } catch (error) {
       console.warn('AdSense failed to load:', error)
+      insElement.removeAttribute('data-ad-push-pending')
       setHasError(true)
     }
   }, [])

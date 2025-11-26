@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, useCallback } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { Neighborhood } from '@/lib/schemas/property'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +21,7 @@ import { useMutualLikes } from '@/hooks/useCouples'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
+import { usePropertyDetail } from './PropertyDetailProvider'
 
 interface PropertyCardProps {
   property: Property
@@ -33,6 +34,15 @@ interface PropertyCardProps {
   storyVariant?: 'tagline' | 'futureVision'
   showMap?: boolean
   enableDetailsToggle?: boolean
+  disableDetailModal?: boolean
+}
+
+function usePropertyDetailSafe() {
+  try {
+    return usePropertyDetail()
+  } catch {
+    return null
+  }
 }
 
 function buildZillowUrl(property: Property): string {
@@ -56,9 +66,17 @@ export function PropertyCard({
   storyVariant = 'tagline',
   showMap = true,
   enableDetailsToggle = false,
+  disableDetailModal = false,
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
   const hasMapCoordinates = Boolean(property.coordinates)
+  const propertyDetail = usePropertyDetailSafe()
+
+  const handleCardClick = useCallback(() => {
+    if (!disableDetailModal && propertyDetail) {
+      propertyDetail.openPropertyDetail(property, neighborhood)
+    }
+  }, [disableDetailModal, propertyDetail, property, neighborhood])
 
   // Check if this property is a mutual like
   const isMutualLike = mutualLikes.some(
@@ -137,11 +155,28 @@ export function PropertyCard({
   }, [availableDetailViews, enableDetailsToggle])
 
   // Use images array from property - PropertyImage component handles fallbacks
+  const isClickable = !disableDetailModal && propertyDetail
 
   return (
     <div
-      className="bg-card rounded-token-xl shadow-token-lg duration-token-normal ease-token-out hover:shadow-token-xl relative flex h-full w-full flex-col overflow-hidden transition-all"
+      className={cn(
+        'bg-card rounded-token-xl shadow-token-lg duration-token-normal ease-token-out hover:shadow-token-xl relative flex h-full w-full flex-col overflow-hidden transition-all',
+        isClickable && 'cursor-pointer'
+      )}
       data-testid="property-card"
+      onClick={handleCardClick}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleCardClick()
+              }
+            }
+          : undefined
+      }
     >
       {/* Property Image */}
       <div className="relative aspect-[16/9] w-full">

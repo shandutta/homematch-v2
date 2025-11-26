@@ -63,7 +63,10 @@ export async function POST(request: NextRequest) {
 
     if (deleteError) {
       // Not fatal; insert might still succeed if no matching row existed
-      // Log warning silently for debugging
+      console.warn(
+        '[Interactions API] Delete error (non-fatal):',
+        deleteError.message
+      )
     }
 
     // Insert the new interaction
@@ -78,6 +81,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
+      console.error('[Interactions API] Insert error:', {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+      })
       return NextResponse.json(
         { error: 'Failed to record interaction' },
         { status: 500 }
