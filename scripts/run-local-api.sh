@@ -10,6 +10,8 @@ ENDPOINT="${1:-}"
 ENV_FILE="${ENV_FILE:-.env.local}"
 MODE="${MODE:-prod}" # prod | dev
 CURL_TIMEOUT="${CURL_TIMEOUT:-600}" # 10 minute timeout for long-running API calls
+RETRIES="${RETRIES:-3}"
+RETRY_DELAY="${RETRY_DELAY:-10}" # seconds between retries
 
 timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
@@ -80,11 +82,23 @@ if ! nc -z 127.0.0.1 "$PORT" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "[run-local-api] [$(timestamp)] Hitting endpoint: $ENDPOINT"
-curl -sS -X POST --max-time "$CURL_TIMEOUT" "$ENDPOINT"
-curl_exit=$?
+attempt=1
+curl_exit=1
+while (( attempt <= RETRIES )); do
+  echo "[run-local-api] [$(timestamp)] Hitting endpoint (attempt $attempt/$RETRIES): $ENDPOINT"
+  curl -sS -X POST --max-time "$CURL_TIMEOUT" "$ENDPOINT"
+  curl_exit=$?
+  echo
+  if [[ $curl_exit -eq 0 ]]; then
+    break
+  fi
+  if (( attempt < RETRIES )); then
+    echo "[run-local-api] curl failed with exit code $curl_exit; retrying in ${RETRY_DELAY}s..."
+    sleep "$RETRY_DELAY"
+  fi
+  ((attempt++))
+done
 
-echo
 if [[ $curl_exit -eq 0 ]]; then
   echo "[run-local-api] [$(timestamp)] Done (success)."
 else
