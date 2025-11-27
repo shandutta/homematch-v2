@@ -199,32 +199,17 @@ export function CouplesPageClient() {
         return
       }
 
-      // Create a new household
-      const { data: newHousehold, error: createError } = await supabase
-        .from('households')
-        .insert({
-          created_by: session.user.id,
-          user_count: 1,
-        })
-        .select()
-        .single()
+      // Create a new household using RPC (handles both creation and profile update)
+      const { data: newHouseholdId, error: createError } = await supabase.rpc(
+        'create_household_for_user'
+      )
 
       if (createError) {
         throw createError
       }
 
-      // Update user profile with household_id
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ household_id: newHousehold.id })
-        .eq('id', session.user.id)
-
-      if (updateError) {
-        throw updateError
-      }
-
       // Set the state
-      setHouseholdId(newHousehold.id)
+      setHouseholdId(newHouseholdId)
       setUserId(session.user.id)
       setUserHouseholdStatus('waiting-partner')
 

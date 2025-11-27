@@ -174,15 +174,26 @@ export async function POST(
     }
 
     if (insertRecords.length > 0) {
+      console.log(
+        `[generate-vibes] Attempting to insert ${insertRecords.length} vibes records...`
+      )
       // Note: property_vibes table is not in generated types yet
       // Using type assertion until types are regenerated after migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: insertError } = await (supabase as any)
+      const { data: insertData, error: insertError } = await (supabase as any)
         .from('property_vibes')
-        .upsert(insertRecords, { onConflict: 'property_id' })
+        .upsert(insertRecords, {
+          onConflict: 'property_id',
+          ignoreDuplicates: false,
+        })
+        .select('id')
 
       if (insertError) {
         console.error('[generate-vibes] Failed to store vibes:', insertError)
+      } else {
+        console.log(
+          `[generate-vibes] Successfully stored ${insertData?.length || 0} vibes records`
+        )
       }
     }
 

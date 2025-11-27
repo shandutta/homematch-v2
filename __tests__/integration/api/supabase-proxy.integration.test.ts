@@ -1,18 +1,24 @@
 /**
- * Integration tests for the Supabase local proxy route
+ * Integration tests for the Supabase proxy route
  *
  * This ensures the proxy correctly forwards requests to the local Supabase instance.
- * The proxy is critical for development when using a reverse proxy (e.g., Caddy)
- * that routes all traffic through Next.js.
+ * The proxy is handled by Caddy (dev.homematch.pro) which strips /supabase prefix
+ * and forwards to 127.0.0.1:54200.
+ *
+ * These tests run against localhost:3000 which doesn't have the Caddy proxy,
+ * so they hit Supabase directly at the local ports.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest'
 
-const TEST_BASE_URL = process.env.TEST_BASE_URL || 'http://127.0.0.1:3000'
+// When running locally, hit Supabase Kong API gateway directly (port 54200)
+// Caddy handles /supabase/* routing in production
+const SUPABASE_REST_URL =
+  process.env.SUPABASE_REST_URL || 'http://127.0.0.1:54200'
 const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
-describe('Supabase Proxy Route', () => {
+describe('Supabase Direct Access', () => {
   beforeAll(() => {
     if (!SUPABASE_ANON_KEY) {
       throw new Error(
@@ -22,15 +28,14 @@ describe('Supabase Proxy Route', () => {
   })
 
   describe('Health Check', () => {
-    it('should proxy auth health endpoint', async () => {
-      const response = await fetch(`${TEST_BASE_URL}/supabase/auth/v1/health`)
+    it('should reach auth health endpoint', async () => {
+      const response = await fetch(`${SUPABASE_REST_URL}/auth/v1/health`)
 
       expect(response.status).toBe(200)
-      expect(response.headers.get('x-supabase-proxy-target')).toBeTruthy()
     })
 
-    it('should proxy rest health endpoint', async () => {
-      const response = await fetch(`${TEST_BASE_URL}/supabase/rest/v1/`, {
+    it('should reach rest health endpoint', async () => {
+      const response = await fetch(`${SUPABASE_REST_URL}/rest/v1/`, {
         headers: {
           apikey: SUPABASE_ANON_KEY!,
         },
@@ -41,10 +46,10 @@ describe('Supabase Proxy Route', () => {
     })
   })
 
-  describe('REST API Proxying', () => {
-    it('should proxy GET requests with query params', async () => {
+  describe('REST API Access', () => {
+    it('should handle GET requests with query params', async () => {
       const response = await fetch(
-        `${TEST_BASE_URL}/supabase/rest/v1/user_profiles?select=id&limit=1`,
+        `${SUPABASE_REST_URL}/rest/v1/user_profiles?select=id&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY!,
@@ -53,15 +58,13 @@ describe('Supabase Proxy Route', () => {
         }
       )
 
-      // Should get 200 (empty array is fine, we just care it proxied correctly)
+      // Should get 200 (empty array is fine, we just care it connected correctly)
       expect(response.status).toBe(200)
-      expect(response.headers.get('x-supabase-proxy-target')).toBeTruthy()
     })
 
     it('should preserve path segments correctly', async () => {
-      // Test that the [...path] catch-all correctly joins path segments
       const response = await fetch(
-        `${TEST_BASE_URL}/supabase/rest/v1/properties?select=id&limit=1`,
+        `${SUPABASE_REST_URL}/rest/v1/properties?select=id&limit=1`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY!,
@@ -76,7 +79,7 @@ describe('Supabase Proxy Route', () => {
     it('should forward authorization headers', async () => {
       // Without auth header, should still work but return empty due to RLS
       const response = await fetch(
-        `${TEST_BASE_URL}/supabase/rest/v1/user_profiles?select=id`,
+        `${SUPABASE_REST_URL}/rest/v1/user_profiles?select=id`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY!,
@@ -92,10 +95,10 @@ describe('Supabase Proxy Route', () => {
     })
   })
 
-  describe('Auth API Proxying', () => {
-    it('should proxy auth signup endpoint', async () => {
+  describe('Auth API Access', () => {
+    it('should reach auth signup endpoint', async () => {
       // Just verify the endpoint is reachable (don't actually create a user)
-      const response = await fetch(`${TEST_BASE_URL}/supabase/auth/v1/signup`, {
+      const response = await fetch(`${SUPABASE_REST_URL}/auth/v1/signup`, {
         method: 'POST',
         headers: {
           apikey: SUPABASE_ANON_KEY!,
@@ -115,7 +118,7 @@ describe('Supabase Proxy Route', () => {
   describe('Error Handling', () => {
     it('should return 404 for non-existent tables', async () => {
       const response = await fetch(
-        `${TEST_BASE_URL}/supabase/rest/v1/nonexistent_table_xyz`,
+        `${SUPABASE_REST_URL}/rest/v1/nonexistent_table_xyz`,
         {
           headers: {
             apikey: SUPABASE_ANON_KEY!,

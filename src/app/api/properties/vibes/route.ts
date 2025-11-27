@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createStandaloneClient } from '@/lib/supabase/standalone'
 
 /**
  * GET /api/properties/vibes
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   const offset = parseInt(url.searchParams.get('offset') || '0')
   const propertyId = url.searchParams.get('propertyId')
 
-  const supabase = await createClient()
+  const supabase = createStandaloneClient()
 
   // Note: property_vibes table is not in generated types yet
   // Using type assertion until types are regenerated after migration
