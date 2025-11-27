@@ -200,12 +200,27 @@ export function CouplesPageClient() {
       }
 
       // Create a new household using RPC (handles both creation and profile update)
+      console.log('[Household Create] Calling RPC for user:', session.user.id)
       const { data: newHouseholdId, error: createError } = await supabase.rpc(
         'create_household_for_user'
       )
 
+      console.log('[Household Create] RPC result:', {
+        newHouseholdId,
+        createError,
+        errorMessage: createError?.message,
+        errorCode: createError?.code,
+        errorKeys: createError ? Object.keys(createError) : null,
+      })
+
       if (createError) {
-        throw createError
+        // Log the raw error for debugging
+        console.error('[Household Create] Raw error:', JSON.stringify(createError, null, 2))
+        throw new Error(createError.message || createError.code || 'Unknown RPC error')
+      }
+
+      if (!newHouseholdId) {
+        throw new Error('RPC returned no household ID')
       }
 
       // Set the state
