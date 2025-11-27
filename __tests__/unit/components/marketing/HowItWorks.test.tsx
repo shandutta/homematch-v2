@@ -124,9 +124,11 @@ describe('HowItWorks', () => {
   test('step icons have gradient background', () => {
     render(<HowItWorks />)
 
+    // Icons are nested: gradient-div > animation-div > icon
+    // So we need parentElement.parentElement to get the gradient container
     const iconContainers = screen
       .getAllByTestId(/.*-icon/)
-      .map((icon) => icon.parentElement)
+      .map((icon) => icon.parentElement?.parentElement)
     iconContainers.forEach((container) => {
       expect(container).toHaveClass(
         'inline-flex',
