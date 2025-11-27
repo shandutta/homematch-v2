@@ -19,8 +19,40 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-display), Georgia, serif;
+
+  /* ============================================
+     HomeMatch Luxury Theme: "Warm Obsidian"
+     ============================================ */
+
+  /* Deep, warm backgrounds */
+  --hm-obsidian-950: #0c0a09;
+  --hm-obsidian-900: #1c1917;
+  --hm-obsidian-800: #292524;
+  --hm-obsidian-700: #44403c;
+
+  /* Warm stone neutrals */
+  --hm-stone-50: #fafaf9;
+  --hm-stone-100: #f5f5f4;
+  --hm-stone-200: #e7e5e4;
+  --hm-stone-300: #d6d3d1;
+  --hm-stone-400: #a8a29e;
+  --hm-stone-500: #78716c;
+  --hm-stone-600: #57534e;
+
+  /* Accent: Warm Amber/Gold */
+  --hm-amber-300: #fcd34d;
+  --hm-amber-400: #fbbf24;
+  --hm-amber-500: #f59e0b;
+  --hm-amber-600: #d97706;
+
+  /* Refined semantic colors */
+  --hm-success: #86efac;
+  --hm-success-muted: #4ade80;
+  --hm-error: #fca5a5;
+  --hm-error-muted: #f87171;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -368,48 +400,47 @@
     box-shadow: 0 0 40px rgba(41, 227, 255, 0.5);
   }
 
-  /* Styles for the new dashboard look and feel */
+  /* Styles for the new dashboard look and feel - Warm Obsidian theme */
   .gradient-grid-bg {
-    background-color: #020b1f; /* Fallback color */
-    /* Exact background from src/app/page.tsx for perfect cohesion */
+    background-color: var(--hm-obsidian-950); /* Warm dark fallback */
     background-image:
-      /* Layer 1: Radial gradient for depth */
+      /* Layer 1: Subtle warm radial gradient for depth */
       radial-gradient(
         1200px 600px at 50% -10%,
-        rgba(2, 26, 68, 0.06) 0%,
-        rgba(2, 26, 68, 0.03) 35%,
+        rgba(251, 191, 36, 0.03) 0%,
+        rgba(251, 191, 36, 0.01) 35%,
         rgba(255, 255, 255, 0) 65%
       ),
-      /* Layer 2: Repeating grid pattern */
+      /* Layer 2: Subtle grid pattern with warm tones */
         repeating-linear-gradient(
           0deg,
-          rgba(2, 26, 68, 0.08) 0px,
-          rgba(2, 26, 68, 0.08) 1px,
+          rgba(255, 255, 255, 0.02) 0px,
+          rgba(255, 255, 255, 0.02) 1px,
           transparent 1px,
-          transparent 28px
+          transparent 48px
         ),
       repeating-linear-gradient(
         90deg,
-        rgba(2, 26, 68, 0.08) 0px,
-        rgba(2, 26, 68, 0.08) 1px,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 1px,
         transparent 1px,
-        transparent 28px
+        transparent 48px
       ),
-      /* Layer 3: Additional colored radial glows */
+      /* Layer 3: Subtle warm radial glows */
         radial-gradient(
-          600px 300px at 80% 0%,
-          rgba(41, 227, 255, 0.12) 0%,
-          rgba(41, 227, 255, 0) 60%
+          600px 300px at 85% 0%,
+          rgba(251, 191, 36, 0.04) 0%,
+          rgba(251, 191, 36, 0) 60%
         ),
       radial-gradient(
-        700px 320px at 15% 0%,
-        rgba(6, 58, 158, 0.1) 0%,
-        rgba(6, 58, 158, 0) 60%
+        700px 320px at 10% 0%,
+        rgba(120, 113, 108, 0.05) 0%,
+        rgba(120, 113, 108, 0) 60%
       );
     background-size:
       100% 100%,
-      28px 28px,
-      100% 100%,
+      48px 48px,
+      48px 48px,
       100% 100%,
       100% 100%;
   }
@@ -1282,5 +1313,150 @@
   .glass-strong {
     background-color: rgba(255, 255, 255, var(--opacity-glass-strong));
     backdrop-filter: blur(var(--blur-glassmorphism-lg));
+  }
+
+  /* ============================================
+     HomeMatch Luxury Theme Utilities
+     ============================================ */
+
+  /* Display font for prices and headlines */
+  .font-display {
+    font-family: var(--font-display), Georgia, serif;
+  }
+
+  /* Body font */
+  .font-body {
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  /* Obsidian backgrounds */
+  .bg-hm-obsidian-950 {
+    background-color: var(--hm-obsidian-950);
+  }
+  .bg-hm-obsidian-900 {
+    background-color: var(--hm-obsidian-900);
+  }
+  .bg-hm-obsidian-800 {
+    background-color: var(--hm-obsidian-800);
+  }
+
+  /* Stone text colors */
+  .text-hm-stone-200 {
+    color: var(--hm-stone-200);
+  }
+  .text-hm-stone-300 {
+    color: var(--hm-stone-300);
+  }
+  .text-hm-stone-400 {
+    color: var(--hm-stone-400);
+  }
+  .text-hm-stone-500 {
+    color: var(--hm-stone-500);
+  }
+
+  /* Amber accent colors */
+  .text-hm-amber-400 {
+    color: var(--hm-amber-400);
+  }
+  .text-hm-amber-500 {
+    color: var(--hm-amber-500);
+  }
+  .bg-hm-amber-400 {
+    background-color: var(--hm-amber-400);
+  }
+  .bg-hm-amber-500 {
+    background-color: var(--hm-amber-500);
+  }
+  .border-hm-amber-400 {
+    border-color: var(--hm-amber-400);
+  }
+
+  /* Refined semantic colors */
+  .text-hm-success {
+    color: var(--hm-success);
+  }
+  .text-hm-error {
+    color: var(--hm-error);
+  }
+  .bg-hm-success {
+    background-color: var(--hm-success);
+  }
+  .bg-hm-error {
+    background-color: var(--hm-error);
+  }
+
+  /* Luxury card style */
+  .card-luxury {
+    background-color: var(--hm-obsidian-900);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-luxury:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.25),
+      0 4px 6px -4px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+  }
+
+  /* Subtle vignette overlay for images */
+  .vignette-overlay {
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 50%,
+      rgba(12, 10, 9, 0.4) 100%
+    );
+  }
+
+  /* Elegant price typography */
+  .price-display {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-feature-settings:
+      'tnum' on,
+      'lnum' on;
+  }
+
+  /* Refined stat separator */
+  .stat-separator::before {
+    content: '·';
+    margin: 0 0.5rem;
+    color: var(--hm-stone-500);
+  }
+
+  /* Amber glow effect for buttons */
+  .glow-amber {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+  }
+
+  .glow-amber:hover {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.25);
+  }
+
+  /* Subtle hover lift animation */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Image zoom on hover */
+  .img-zoom {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .img-zoom:hover {
+    transform: scale(1.02);
   }
 }

@@ -48,12 +48,14 @@ export function InteractionsListPage({
 
   const renderSkeletons = () =>
     Array.from({ length: 6 }).map((_, i) => (
-      <Skeleton key={i} className="h-96 w-full rounded-xl bg-white/10" />
+      <Skeleton key={i} className="h-[480px] w-full rounded-xl bg-white/5" />
     ))
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-white">{title}</h1>
+      <h1 className="font-display text-hm-stone-200 text-4xl font-medium tracking-tight">
+        {title}
+      </h1>
 
       {isLoading && properties.length === 0 ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -61,11 +63,11 @@ export function InteractionsListPage({
         </div>
       ) : properties.length === 0 ? (
         <div className="py-20 text-center">
-          <h2 className="text-2xl font-semibold text-white">
-            No {title.toLowerCase()} yet.
+          <h2 className="font-display text-hm-stone-300 text-2xl font-medium">
+            No {title.toLowerCase()} yet
           </h2>
-          <p className="mt-2 text-purple-300/80">
-            Start swiping to see properties here!
+          <p className="text-hm-stone-500 mt-2">
+            Start swiping to see properties here
           </p>
         </div>
       ) : (
@@ -115,7 +117,7 @@ export function InteractionsListPage({
                     <button
                       type="button"
                       aria-label="Remove from likes"
-                      className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+                      className="group bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-40 focus-visible:w-40 focus-visible:outline-none disabled:opacity-60"
                       disabled={isRemoving}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -132,10 +134,10 @@ export function InteractionsListPage({
                         )
                       }}
                     >
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
-                        <HeartOff className="h-6 w-6" strokeWidth={2.25} />
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
+                        <HeartOff className="h-4 w-4" strokeWidth={2} />
                       </div>
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-xs font-medium whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
                         {isRemoving ? 'Removing...' : 'Remove from likes'}
                       </span>
                     </button>
@@ -147,17 +149,17 @@ export function InteractionsListPage({
                     <button
                       type="button"
                       aria-label="Like this home"
-                      className="group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+                      className="group bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 transition-all duration-200 hover:w-36 focus-visible:w-36 focus-visible:outline-none disabled:opacity-60"
                       disabled={isMutatingDecision}
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDecision(property.id, 'liked')
                       }}
                     >
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
-                        <Heart className="h-6 w-6" strokeWidth={2.25} />
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
+                        <Heart className="h-4 w-4" strokeWidth={2} />
                       </div>
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-xs font-medium whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
                         {isMutatingDecision ? 'Adding...' : 'Like this home'}
                       </span>
                     </button>
@@ -174,13 +176,13 @@ export function InteractionsListPage({
                       <button
                         type="button"
                         aria-label="Pass on this home"
-                        className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+                        className={`group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 focus-visible:outline-none disabled:opacity-60 ${
                           isPassSelected
-                            ? 'scale-110 border-rose-300 bg-rose-600 ring-2 ring-rose-300/50'
+                            ? 'border-hm-error/50 bg-hm-error/20 ring-hm-error/30 scale-110 ring-2'
                             : isLikeSelected
-                              ? 'border-rose-400/20 bg-rose-500/40 opacity-50'
-                              : 'border-rose-400/40 bg-rose-500/90 hover:w-24 focus-visible:w-24'
-                        } text-white`}
+                              ? 'bg-hm-obsidian-800/50 border-white/5 opacity-40'
+                              : 'bg-hm-obsidian-800 hover:border-hm-error/30 hover:bg-hm-error/10 border-white/10 hover:w-20 focus-visible:w-20'
+                        } text-hm-error`}
                         disabled={isMutatingDecision || !!decision}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -188,12 +190,12 @@ export function InteractionsListPage({
                         }}
                       >
                         <div
-                          className={`pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
+                          className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
                         >
-                          <X className="h-6 w-6" strokeWidth={2.25} />
+                          <X className="h-4 w-4" strokeWidth={2} />
                         </div>
                         {!decision && (
-                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-xs font-medium whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
                             Pass
                           </span>
                         )}
@@ -201,13 +203,13 @@ export function InteractionsListPage({
                       <button
                         type="button"
                         aria-label="Like this home"
-                        className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+                        className={`group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 focus-visible:outline-none disabled:opacity-60 ${
                           isLikeSelected
-                            ? 'scale-110 border-emerald-300 bg-emerald-600 ring-2 ring-emerald-300/50'
+                            ? 'border-hm-success/50 bg-hm-success/20 ring-hm-success/30 scale-110 ring-2'
                             : isPassSelected
-                              ? 'border-emerald-200/20 bg-emerald-500/40 opacity-50'
-                              : 'border-emerald-200/60 bg-emerald-500/90 hover:w-24 focus-visible:w-24'
-                        } text-white`}
+                              ? 'bg-hm-obsidian-800/50 border-white/5 opacity-40'
+                              : 'bg-hm-obsidian-800 hover:border-hm-success/30 hover:bg-hm-success/10 border-white/10 hover:w-20 focus-visible:w-20'
+                        } text-hm-success`}
                         disabled={isMutatingDecision || !!decision}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -215,16 +217,16 @@ export function InteractionsListPage({
                         }}
                       >
                         <div
-                          className={`pointer-events-none absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
+                          className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${!decision ? 'group-hover:opacity-0 group-focus-visible:opacity-0' : ''}`}
                         >
                           <Heart
-                            className="h-6 w-6"
-                            strokeWidth={2.25}
+                            className="h-4 w-4"
+                            strokeWidth={2}
                             fill={isLikeSelected ? 'currentColor' : 'none'}
                           />
                         </div>
                         {!decision && (
-                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-sm font-semibold whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                          <span className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 text-xs font-medium whitespace-nowrap opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
                             Like
                           </span>
                         )}
@@ -265,9 +267,9 @@ export function InteractionsListPage({
               <Button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="bg-purple-600 text-white hover:bg-purple-700"
+                className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
               >
-                {isFetchingNextPage ? 'Loading more...' : 'Load More'}
+                {isFetchingNextPage ? 'Loading...' : 'Load More'}
               </Button>
             </div>
           )}

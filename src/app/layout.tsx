@@ -1,5 +1,10 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import {
+  Geist,
+  Geist_Mono,
+  Fraunces,
+  Plus_Jakarta_Sans,
+} from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import '../styles/mobile-enhancements.css'
@@ -18,6 +23,20 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+// Premium display font for prices and headlines
+const fraunces = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+// Clean body font with warmth
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-body',
+  subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -61,7 +80,7 @@ export default function RootLayout({
         */}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${plusJakartaSans.variable} antialiased`}
       >
         <ErrorBoundary>
           <PerformanceProvider>{children}</PerformanceProvider>

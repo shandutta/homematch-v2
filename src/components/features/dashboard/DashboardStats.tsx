@@ -15,50 +15,76 @@ const StatTile = ({
   label,
   value,
   icon: Icon,
-  colorClass,
+  accentColor,
 }: {
   href: string
   label: string
   value: number | undefined
   icon: React.ElementType
-  colorClass: string
-}) => (
-  <Link
-    href={href}
-    className="card-glassmorphism-style group block min-h-[120px] rounded-xl p-4 sm:p-5"
-  >
-    <div className="flex items-center justify-between gap-4">
-      <div className="text-[13px] font-medium tracking-wide text-purple-200/70 uppercase">
-        {label}
-      </div>
-      <div className="flex items-center gap-3">
-        <Icon className={`h-6 w-6 ${colorClass} opacity-80`} />
-        <div className={`text-3xl leading-none font-bold ${colorClass}`}>
-          {value !== undefined ? (
-            value
-          ) : (
-            <Skeleton className="h-8 w-12 bg-white/10" />
-          )}
+  accentColor: 'amber' | 'success' | 'error'
+}) => {
+  const colorClasses = {
+    amber: {
+      icon: 'text-hm-amber-400',
+      glow: 'group-hover:shadow-[0_0_30px_rgba(251,191,36,0.15)]',
+      border: 'group-hover:border-hm-amber-400/20',
+    },
+    success: {
+      icon: 'text-hm-success',
+      glow: 'group-hover:shadow-[0_0_30px_rgba(134,239,172,0.15)]',
+      border: 'group-hover:border-hm-success/20',
+    },
+    error: {
+      icon: 'text-hm-error',
+      glow: 'group-hover:shadow-[0_0_30px_rgba(252,165,165,0.15)]',
+      border: 'group-hover:border-hm-error/20',
+    },
+  }
+
+  const colors = colorClasses[accentColor]
+
+  return (
+    <Link
+      href={href}
+      className={`group bg-hm-obsidian-900 block rounded-xl border border-white/5 p-5 transition-all duration-300 hover:-translate-y-0.5 ${colors.glow} ${colors.border}`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-hm-stone-500 text-xs font-medium tracking-widest uppercase">
+            {label}
+          </p>
+          <p className="font-display text-hm-stone-200 mt-1 text-3xl font-medium tracking-tight">
+            {value !== undefined ? (
+              value
+            ) : (
+              <Skeleton className="h-9 w-12 bg-white/5" />
+            )}
+          </p>
+        </div>
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ${colors.icon} transition-all duration-300 group-hover:scale-110`}
+        >
+          <Icon className="h-5 w-5" strokeWidth={1.5} />
         </div>
       </div>
-    </div>
-  </Link>
-)
+    </Link>
+  )
+}
 
 export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
   if (isLoading && !summary) {
     return (
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Skeleton className="h-24 w-full rounded-lg bg-white/10" />
-        <Skeleton className="h-24 w-full rounded-lg bg-white/10" />
-        <Skeleton className="h-24 w-full rounded-lg bg-white/10" />
+        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
+        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
+        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
       </div>
     )
   }
 
   return (
     <div
-      className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3"
+      className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3"
       data-testid="dashboard-stats"
     >
       <StatTile
@@ -66,21 +92,21 @@ export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
         label="Viewed"
         value={summary?.viewed}
         icon={Eye}
-        colorClass="text-token-primary"
+        accentColor="amber"
       />
       <StatTile
         href="/dashboard/liked"
         label="Liked"
         value={summary?.liked}
         icon={Heart}
-        colorClass="text-token-success"
+        accentColor="success"
       />
       <StatTile
         href="/dashboard/passed"
         label="Passed"
         value={summary?.passed}
         icon={X}
-        colorClass="text-token-error"
+        accentColor="error"
       />
     </div>
   )
