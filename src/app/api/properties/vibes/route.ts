@@ -52,6 +52,20 @@ export async function GET(req: Request) {
   const { data, error } = await query
 
   if (error) {
+    const errorCode = (error as { code?: string }).code
+    if (errorCode === '42P01') {
+      console.error(
+        '[vibes API] property_vibes table missing - run migration 20251127150000_create_property_vibes_table.sql'
+      )
+      return NextResponse.json(
+        {
+          error:
+            'Vibes data not initialized. Run the property_vibes migration.',
+        },
+        { status: 503 }
+      )
+    }
+
     console.error('[vibes API] Error fetching vibes:', error)
     return NextResponse.json(
       { error: 'Failed to fetch vibes' },

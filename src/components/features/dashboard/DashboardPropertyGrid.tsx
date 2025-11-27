@@ -278,6 +278,10 @@ function PropertyViewTracker({
     if (!onView || typeof window === 'undefined') return
     const element = ref.current
     if (!element || hasTrackedRef.current) return
+    if (!(element instanceof Element)) {
+      triggerView()
+      return
+    }
     if (!('IntersectionObserver' in window)) {
       triggerView()
       return
@@ -294,7 +298,16 @@ function PropertyViewTracker({
       { threshold: 0.6 }
     )
 
-    observer.observe(element)
+    try {
+      observer.observe(element)
+    } catch (observeError) {
+      console.error(
+        '[PropertyViewTracker] Failed to observe element',
+        observeError
+      )
+      triggerView()
+      return
+    }
 
     return () => {
       observer.disconnect()
