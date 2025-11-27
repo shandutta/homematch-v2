@@ -7,7 +7,11 @@ jest.mock('framer-motion', () => {
   const MockMotionDiv = React.forwardRef<
     HTMLDivElement,
     React.HTMLProps<HTMLDivElement>
-  >((props, ref) => <div ref={ref} {...props} />)
+  >(({ children, ...rest }, ref) => (
+    <div ref={ref} {...rest}>
+      {children}
+    </div>
+  ))
   MockMotionDiv.displayName = 'MockMotionDiv'
 
   const MockMotionButton = React.forwardRef<
@@ -44,7 +48,11 @@ jest.mock('@/components/ui/motion-components', () => {
   const MockMotionDiv = React.forwardRef<
     HTMLDivElement,
     React.HTMLProps<HTMLDivElement>
-  >((props, ref) => <div ref={ref} {...props} data-testid="motion-div" />)
+  >(({ children, ...rest }, ref) => (
+    <div ref={ref} {...rest} data-testid="motion-div">
+      {children}
+    </div>
+  ))
   MockMotionDiv.displayName = 'MockMotionDiv'
   return { MotionDiv: MockMotionDiv }
 })
