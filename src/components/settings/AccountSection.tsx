@@ -2,14 +2,26 @@
 
 import { useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LogOut, Trash2, AlertTriangle, Shield, RotateCcw } from 'lucide-react'
+import {
+  LogOut,
+  Trash2,
+  AlertTriangle,
+  Shield,
+  RotateCcw,
+  Mail,
+  Key,
+  Calendar,
+  User as UserIcon,
+  CheckCircle,
+  Loader2,
+} from 'lucide-react'
 import { useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useResetInteractions } from '@/hooks/useInteractions'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface AccountSectionProps {
   user: User
@@ -99,135 +111,223 @@ export function AccountSection({ user }: AccountSectionProps) {
     }
   }
 
+  const accountInfo = [
+    {
+      label: 'Email Address',
+      value: user.email || 'Not set',
+      icon: Mail,
+      color: 'text-sky-400',
+    },
+    {
+      label: 'Account ID',
+      value: user.id,
+      icon: Key,
+      color: 'text-violet-400',
+      mono: true,
+    },
+    {
+      label: 'Account Created',
+      value: user.created_at
+        ? new Date(user.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : 'Unknown',
+      icon: Calendar,
+      color: 'text-emerald-400',
+    },
+    {
+      label: 'Auth Provider',
+      value: user.app_metadata?.provider || 'Email',
+      icon: UserIcon,
+      color: 'text-amber-400',
+      capitalize: true,
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Alert className="border-red-500/30 bg-red-500/10">
+              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-300">
+                {error}
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
-      {successMessage && (
-        <Alert className="border-green-500/20 bg-green-500/10">
-          <AlertDescription className="text-green-200">
-            {successMessage}
-          </AlertDescription>
-        </Alert>
-      )}
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Alert className="border-emerald-500/30 bg-emerald-500/10">
+              <CheckCircle className="h-4 w-4 text-emerald-400" />
+              <AlertDescription className="text-emerald-300">
+                {successMessage}
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-semibold text-white">
-            <Shield className="h-6 w-6" />
-            Account Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="mb-1 text-sm text-white/60">Email Address</p>
-            <p className="text-white">{user.email}</p>
+      {/* Account Information */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Shield className="h-5 w-5 text-sky-400" />
           </div>
           <div>
-            <p className="mb-1 text-sm text-white/60">Account ID</p>
-            <p className="font-mono text-sm text-white">{user.id}</p>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Account Information
+            </h2>
+            <p className="text-hm-stone-500 text-sm">Your account details</p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {accountInfo.map((item) => {
+            const Icon = item.icon
+            return (
+              <div
+                key={item.label}
+                className="rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-4 w-4 ${item.color}`} />
+                  <p className="text-hm-stone-500 text-xs font-medium tracking-wide uppercase">
+                    {item.label}
+                  </p>
+                </div>
+                <p
+                  className={`text-hm-stone-200 mt-2 truncate text-sm ${item.mono ? 'font-mono text-xs' : ''} ${item.capitalize ? 'capitalize' : ''}`}
+                  title={item.value}
+                >
+                  {item.value}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Session Management */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+            <LogOut className="text-hm-stone-400 h-5 w-5" />
           </div>
           <div>
-            <p className="mb-1 text-sm text-white/60">Account Created</p>
-            <p className="text-white">
-              {user.created_at
-                ? new Date(user.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
-                : 'Unknown'}
+            <h3 className="text-hm-stone-200 font-medium">
+              Session Management
+            </h3>
+            <p className="text-hm-stone-500 text-xs">
+              Sign out from your current session
             </p>
           </div>
+        </div>
+
+        <Button
+          onClick={handleSignOut}
+          disabled={loading || isSigningOut}
+          variant="outline"
+          className="text-hm-stone-300 w-full border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+        >
+          {isSigningOut ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing out...
+            </>
+          ) : (
+            <>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Reset Stats */}
+      <div className="space-y-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+            <RotateCcw className="h-5 w-5 text-amber-400" />
+          </div>
           <div>
-            <p className="mb-1 text-sm text-white/60">
-              Authentication Provider
-            </p>
-            <p className="text-white capitalize">
-              {user.app_metadata?.provider || 'Email'}
+            <h3 className="font-medium text-amber-200">Reset Stats</h3>
+            <p className="text-xs text-amber-300/70">
+              Clear all likes, passes, and views
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-white">
-            Session Management
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-white/70">
-            Sign out from your current session on this device.
+        <p className="text-sm text-amber-300/80">
+          Clear all your likes, passes, and viewed properties to start fresh.
+          This will allow you to see all properties again as if you were a new
+          user.
+        </p>
+
+        <Button
+          onClick={handleResetStats}
+          disabled={loading || resetInteractions.isPending}
+          variant="outline"
+          className="w-full border-amber-500/30 bg-transparent text-amber-200 hover:bg-amber-500/10"
+        >
+          {resetInteractions.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Resetting...
+            </>
+          ) : (
+            <>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset All Stats
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="space-y-4 rounded-xl border border-red-500/20 bg-red-500/5 p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
+          </div>
+          <div>
+            <h3 className="font-medium text-red-200">Danger Zone</h3>
+            <p className="text-xs text-red-300/70">
+              Irreversible account actions
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-red-500/10 bg-red-500/5 p-3">
+          <p className="text-sm text-red-300/80">
+            Deleting your account is permanent and cannot be undone. All your
+            data, including properties, preferences, and household information
+            will be permanently deleted.
           </p>
-          <Button
-            onClick={handleSignOut}
-            disabled={loading || isSigningOut}
-            variant="outline"
-            className="w-full border-white/20 text-white hover:bg-white/10"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="card-glassmorphism-style border-amber-500/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-amber-200">
-            <RotateCcw className="h-5 w-5" />
-            Reset Stats
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-white/70">
-            Clear all your likes, passes, and viewed properties to start fresh.
-            This will allow you to see all properties again as if you were a new
-            user.
-          </p>
-          <Button
-            onClick={handleResetStats}
-            disabled={loading || resetInteractions.isPending}
-            variant="outline"
-            className="w-full border-amber-500/40 bg-transparent text-amber-200 hover:bg-amber-500/10"
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            {resetInteractions.isPending ? 'Resetting...' : 'Reset All Stats'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="card-glassmorphism-style border-destructive/40">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-red-200">
-            Danger Zone
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert className="border-destructive/20 bg-destructive/10">
-            <AlertTriangle className="h-4 w-4 text-red-400" />
-            <AlertDescription className="text-red-200">
-              Deleting your account is permanent and cannot be undone. All your
-              data, including properties, preferences, and household information
-              will be permanently deleted.
-            </AlertDescription>
-          </Alert>
-          <Button
-            onClick={handleDeleteAccount}
-            disabled={loading}
-            variant="outline"
-            className="border-destructive/40 hover:bg-destructive/10 w-full bg-transparent text-red-300"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Account
-          </Button>
-        </CardContent>
-      </Card>
+        <Button
+          onClick={handleDeleteAccount}
+          disabled={loading}
+          variant="outline"
+          className="w-full border-red-500/30 bg-transparent text-red-300 hover:bg-red-500/10"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete Account
+        </Button>
+      </div>
     </div>
   )
 }

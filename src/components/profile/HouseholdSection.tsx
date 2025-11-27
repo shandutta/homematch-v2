@@ -2,17 +2,29 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { UserProfile, Household, HouseholdInvitation } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Users, UserPlus, LogOut, Copy, Plus, MailPlus, X } from 'lucide-react'
+import {
+  Users,
+  UserPlus,
+  LogOut,
+  Copy,
+  Plus,
+  MailPlus,
+  X,
+  Check,
+  Sparkles,
+  Home,
+  Link as LinkIcon,
+  Clock,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBrowserAppUrl } from '@/lib/utils/site-url'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface HouseholdSectionProps {
   profile: UserProfile & { household?: Household | null }
@@ -22,12 +34,32 @@ type InviteStatus = 'pending' | 'accepted' | 'revoked' | 'expired'
 
 const inviteStatusStyles: Record<
   InviteStatus,
-  { label: string; className: string }
+  { label: string; bg: string; text: string; border: string }
 > = {
-  pending: { label: 'Pending', className: 'bg-amber-100 text-amber-800' },
-  accepted: { label: 'Accepted', className: 'bg-emerald-100 text-emerald-700' },
-  revoked: { label: 'Revoked', className: 'bg-slate-200 text-slate-600' },
-  expired: { label: 'Expired', className: 'bg-rose-100 text-rose-700' },
+  pending: {
+    label: 'Pending',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-300',
+    border: 'border-amber-500/20',
+  },
+  accepted: {
+    label: 'Accepted',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-300',
+    border: 'border-emerald-500/20',
+  },
+  revoked: {
+    label: 'Revoked',
+    bg: 'bg-white/5',
+    text: 'text-hm-stone-400',
+    border: 'border-white/10',
+  },
+  expired: {
+    label: 'Expired',
+    bg: 'bg-red-500/10',
+    text: 'text-red-300',
+    border: 'border-red-500/20',
+  },
 }
 
 const formatDate = (value: string | null) => {
@@ -43,6 +75,9 @@ const formatDate = (value: string | null) => {
   }
 }
 
+const inputStyles =
+  'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-hm-stone-200 placeholder:text-hm-stone-500 transition-all focus:border-amber-500/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-amber-500/20'
+
 export function HouseholdSection({ profile }: HouseholdSectionProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +90,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
   const [inviteSubmitting, setInviteSubmitting] = useState(false)
   const [invitesLoading, setInvitesLoading] = useState(false)
   const [invites, setInvites] = useState<HouseholdInvitation[]>([])
+  const [codeCopied, setCodeCopied] = useState(false)
+  const [linkCopied, setLinkCopied] = useState<string | null>(null)
   const router = useRouter()
   const userService = UserServiceClient
   const householdId = profile.household?.id
@@ -154,10 +191,12 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
     }
   }
 
-  const copyHouseholdCode = () => {
+  const copyHouseholdCode = async () => {
     if (profile.household) {
-      navigator.clipboard.writeText(profile.household.id)
+      await navigator.clipboard.writeText(profile.household.id)
+      setCodeCopied(true)
       toast.success('Household code copied to clipboard')
+      setTimeout(() => setCodeCopied(false), 2000)
     }
   }
 
@@ -197,7 +236,9 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
   const handleCopyInviteLink = async (token: string) => {
     const link = `${inviteLinkBase}/invite/${token}`
     await navigator.clipboard.writeText(link)
+    setLinkCopied(token)
     toast.success('Invitation link copied')
+    setTimeout(() => setLinkCopied(null), 2000)
   }
 
   const handleRevokeInvite = async (inviteId: string) => {
@@ -217,52 +258,89 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
     return (
       <div className="space-y-6">
         {(error || inviteError) && (
-          <Alert variant="destructive">
-            <AlertDescription>{error || inviteError}</AlertDescription>
-          </Alert>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Alert className="border-red-500/30 bg-red-500/10 text-red-300">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error || inviteError}</AlertDescription>
+            </Alert>
+          </motion.div>
         )}
-        <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-2xl text-slate-900">
-              <Users className="h-6 w-6" />
-              Current Household
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 text-slate-600">
+
+        {/* Current Household Card */}
+        <div className="card-luxury overflow-hidden p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+              <Users className="h-5 w-5 text-emerald-400" />
+            </div>
             <div>
-              <p className="mb-2 text-sm font-medium text-slate-500">
-                Household name
+              <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                Current Household
+              </h2>
+              <p className="text-hm-stone-500 text-sm">
+                Manage your household settings
               </p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-5">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-400" />
+                <p className="text-xs font-medium tracking-[0.15em] text-emerald-300 uppercase">
+                  Household Name
+                </p>
+              </div>
               <p
-                className="text-2xl font-semibold text-slate-900"
+                className="font-heading text-hm-stone-200 mt-2 text-2xl font-semibold"
                 data-testid="household-name"
               >
                 {profile.household.name}
               </p>
             </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-500">
-                Invite code
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+              <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                Invite Code
               </p>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="mt-2 flex items-center gap-2">
                 <code
-                  className="rounded-full bg-slate-100 px-3 py-1 font-mono text-sm text-slate-800"
+                  className="text-hm-stone-300 flex-1 truncate rounded-lg bg-white/5 px-3 py-2 font-mono text-sm"
                   data-testid="household-id"
                 >
                   {profile.household.id}
                 </code>
-                <Button
-                  size="sm"
-                  variant="outline"
+                <button
                   onClick={copyHouseholdCode}
-                  className="border-slate-200 text-slate-600 hover:bg-slate-100"
+                  className="text-hm-stone-400 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                   data-testid="copy-household-code"
                 >
-                  <Copy className="h-4 w-4" />
-                </Button>
+                  <AnimatePresence mode="wait">
+                    {codeCopied ? (
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Check className="h-4 w-4 text-emerald-400" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="copy"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="text-hm-stone-500 mt-2 text-xs">
                 Share this code or send an invitation link so your partner can
                 join instantly.
               </p>
@@ -272,57 +350,68 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               onClick={leaveHousehold}
               disabled={loading}
               variant="ghost"
-              className="text-rose-500 hover:bg-rose-50"
+              className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
               data-testid="leave-household-button"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Leave Household
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="flex items-center gap-3 text-2xl text-slate-900">
-              <MailPlus className="h-6 w-6" />
-              Invite collaborators
-            </CardTitle>
+        {/* Invite Collaborators Card */}
+        <div className="card-luxury overflow-hidden p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+                <MailPlus className="h-5 w-5 text-sky-400" />
+              </div>
+              <div>
+                <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                  Invite Collaborators
+                </h2>
+                <p className="text-hm-stone-500 text-sm">
+                  Add partners or family members
+                </p>
+              </div>
+            </div>
             {invites.length > 0 && (
-              <Badge className="bg-slate-100 text-slate-700">
+              <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-300">
                 {invites.filter((invite) => invite.status === 'pending').length}{' '}
                 pending
-              </Badge>
+              </span>
             )}
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+          </div>
+
+          <div className="mt-6 space-y-6">
+            {/* Send invite form */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-base font-semibold text-slate-900">
+                  <p className="text-hm-stone-200 font-medium">
                     Send a new invite
                   </p>
-                  <p className="text-sm text-slate-500">
-                    We&apos;ll generate a private link your partner can use to
-                    join this household.
+                  <p className="text-hm-stone-500 text-sm">
+                    Generate a private link your partner can use to join.
                   </p>
                 </div>
-                <MailPlus className="hidden h-5 w-5 text-slate-400 sm:block" />
+                <MailPlus className="text-hm-stone-500 hidden h-5 w-5 sm:block" />
               </div>
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Input
+                <input
                   placeholder="Partner name (optional)"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
-                  className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                  className={inputStyles}
                   data-testid="invite-name-input"
                 />
-                <Input
+                <input
                   placeholder="Partner email"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                  className={inputStyles}
                   data-testid="invite-email-input"
                 />
               </div>
@@ -331,7 +420,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 placeholder="Add a personal message (optional)"
                 value={inviteMessage}
                 onChange={(e) => setInviteMessage(e.target.value)}
-                className="mt-4 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+                className={`${inputStyles} mt-4 resize-none`}
                 rows={3}
               />
 
@@ -339,11 +428,20 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 <Button
                   onClick={handleInviteSubmit}
                   disabled={inviteSubmitting}
-                  className="bg-slate-900 text-white hover:bg-slate-800"
+                  className="bg-gradient-to-r from-sky-500 to-sky-600 px-5 text-white shadow-lg shadow-sky-500/20 transition-all hover:shadow-sky-500/30"
                   data-testid="send-invite-button"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {inviteSubmitting ? 'Sending...' : 'Send invitation'}
+                  {inviteSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Send invitation
+                    </>
+                  )}
                 </Button>
                 {(inviteEmail || inviteName || inviteMessage) && (
                   <Button
@@ -354,7 +452,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                       setInviteName('')
                       setInviteMessage('')
                     }}
-                    className="text-slate-500 hover:bg-slate-100"
+                    className="text-hm-stone-400 hover:text-hm-stone-200 hover:bg-white/5"
                   >
                     Clear
                   </Button>
@@ -362,18 +460,27 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               </div>
             </div>
 
+            {/* Invitations list */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-600">Invitations</p>
+              <p className="text-hm-stone-400 text-xs font-medium tracking-[0.15em] uppercase">
+                Invitations
+              </p>
               {invitesLoading ? (
                 <div className="space-y-3" data-testid="invites-loading">
                   {[...Array(2)].map((_, index) => (
-                    <Skeleton key={index} className="h-20 rounded-2xl" />
+                    <div
+                      key={index}
+                      className="h-24 animate-pulse rounded-xl bg-white/5"
+                    />
                   ))}
                 </div>
               ) : invites.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                  No invitations yet. Add your partner&apos;s email above to get
-                  started.
+                <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center">
+                  <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
+                  <p className="text-hm-stone-400 mt-2 text-sm">
+                    No invitations yet. Add your partner&apos;s email above to
+                    get started.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -384,134 +491,199 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                     const styles =
                       inviteStatusStyles[status] || inviteStatusStyles.pending
                     return (
-                      <div
+                      <motion.div
                         key={invite.id}
-                        className="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-slate-200"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
                       >
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <p className="text-base font-semibold text-slate-900">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-hm-stone-200 truncate font-medium">
                               {invite.invited_name || invite.invited_email}
                             </p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-hm-stone-500 text-sm">
                               {invite.invited_email}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <div className="text-hm-stone-500 mt-1 flex items-center gap-1 text-xs">
+                              <Clock className="h-3 w-3" />
                               Expires {formatDate(invite.expires_at)}
-                            </p>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <Badge className={styles.className}>
-                              {styles.label}
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleCopyInviteLink(invite.token)}
-                              className="border-slate-200 text-slate-600 hover:bg-white"
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs ${styles.bg} ${styles.text} ${styles.border}`}
                             >
-                              <Copy className="mr-2 h-4 w-4" />
-                              Copy link
-                            </Button>
+                              {styles.label}
+                            </span>
+                            <button
+                              onClick={() => handleCopyInviteLink(invite.token)}
+                              className="text-hm-stone-400 flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                            >
+                              <AnimatePresence mode="wait">
+                                {linkCopied === invite.token ? (
+                                  <motion.span
+                                    key="check"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="flex items-center gap-1.5"
+                                  >
+                                    <Check className="h-3 w-3 text-emerald-400" />
+                                    Copied
+                                  </motion.span>
+                                ) : (
+                                  <motion.span
+                                    key="copy"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="flex items-center gap-1.5"
+                                  >
+                                    <LinkIcon className="h-3 w-3" />
+                                    Copy link
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </button>
                             {invite.status === 'pending' && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
+                              <button
                                 onClick={() => handleRevokeInvite(invite.id)}
-                                className="text-slate-500 hover:bg-slate-100"
+                                className="text-hm-stone-400 flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 text-xs transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
                               >
-                                <X className="mr-2 h-4 w-4" />
+                                <X className="h-3 w-3" />
                                 Revoke
-                              </Button>
+                              </button>
                             )}
                           </div>
                         </div>
                         {invite.message && (
-                          <p className="mt-3 rounded-2xl bg-white p-3 text-sm text-slate-600">
-                            “{invite.message}”
+                          <p className="text-hm-stone-400 mt-3 rounded-lg bg-white/[0.03] p-3 text-sm italic">
+                            &ldquo;{invite.message}&rdquo;
                           </p>
                         )}
-                      </div>
+                      </motion.div>
                     )
                   })}
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
+  // No household state
   return (
     <div className="space-y-6">
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Alert className="border-red-500/30 bg-red-500/10 text-red-300">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </motion.div>
       )}
 
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-slate-900">
-            Create a Household
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4" data-testid="create-household-form">
-          <p className="text-slate-500">
-            Create a household to share property searches and preferences with
-            family members.
-          </p>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter household name"
-              value={householdName}
-              onChange={(e) => setHouseholdName(e.target.value)}
-              className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-              data-testid="household-name-input"
-            />
-            <Button
-              onClick={createHousehold}
-              disabled={loading}
-              className="bg-slate-900 text-white hover:bg-slate-800"
-              data-testid="create-household-button"
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Create Household
-            </Button>
+      {/* Create Household Card */}
+      <div className="card-luxury overflow-hidden p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+            <Home className="h-5 w-5 text-amber-400" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Create a Household
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              Start collaborating with family
+            </p>
+          </div>
+        </div>
 
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl text-slate-900">
-            Join a Household
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-slate-500">
+        <div className="mt-6 space-y-4" data-testid="create-household-form">
+          <p className="text-hm-stone-400 text-sm">
+            Create a household to share property searches and preferences with
+            your partner or family members.
+          </p>
+          <input
+            placeholder="Enter household name"
+            value={householdName}
+            onChange={(e) => setHouseholdName(e.target.value)}
+            className={inputStyles}
+            data-testid="household-name-input"
+          />
+          <Button
+            onClick={createHousehold}
+            disabled={loading}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 px-5 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30"
+            data-testid="create-household-button"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Create Household
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Join Household Card */}
+      <div className="card-luxury overflow-hidden p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Users className="h-5 w-5 text-sky-400" />
+          </div>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Join a Household
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              Connect with an existing group
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <p className="text-hm-stone-400 text-sm">
             Have a household code? Enter it below to join an existing household.
           </p>
-          <div className="space-y-4">
-            <Input
-              placeholder="Enter household code"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-              className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-            />
-            <Button
-              onClick={joinHousehold}
-              disabled={loading}
-              variant="outline"
-              className="border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Join Household
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          <input
+            placeholder="Enter household code"
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value)}
+            className={inputStyles}
+          />
+          <Button
+            onClick={joinHousehold}
+            disabled={loading}
+            variant="outline"
+            className="text-hm-stone-300 border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Joining...
+              </>
+            ) : (
+              <>
+                <Users className="mr-2 h-4 w-4" />
+                Join Household
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

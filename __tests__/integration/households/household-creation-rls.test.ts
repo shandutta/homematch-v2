@@ -60,13 +60,11 @@ describe('Household creation RLS', () => {
     const client = await helper.authenticateAs(TEST_EMAIL, TEST_PASSWORD)
     const householdId = randomUUID()
 
-    const { error } = await client
-      .from('households')
-      .insert({
-        id: householdId,
-        name: 'RLS Allowed Household',
-        created_by: testUserId,
-      })
+    const { error } = await client.from('households').insert({
+      id: householdId,
+      name: 'RLS Allowed Household',
+      created_by: testUserId,
+    })
 
     expect(error).toBeNull()
     createdHouseholdIds.push(householdId)

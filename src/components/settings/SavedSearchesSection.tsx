@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { SavedSearch } from '@/types/database'
@@ -14,8 +13,11 @@ import {
   DollarSign,
   Bed,
   Home,
+  RefreshCw,
+  Calendar,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface SavedSearchesSectionProps {
   userId: string
@@ -85,6 +87,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: MapPin,
         text: `${filters.location}`,
         key: 'location',
+        color: 'text-sky-400',
+        bg: 'bg-sky-500/10',
       })
     }
     if (filters.priceMin || filters.priceMax) {
@@ -93,6 +97,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: DollarSign,
         text: price,
         key: 'price',
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-500/10',
       })
     }
     if (filters.bedrooms) {
@@ -100,6 +106,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: Bed,
         text: `${filters.bedrooms}+ beds`,
         key: 'bedrooms',
+        color: 'text-violet-400',
+        bg: 'bg-violet-500/10',
       })
     }
     if (filters.propertyType) {
@@ -107,6 +115,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: Home,
         text: `${filters.propertyType}`,
         key: 'propertyType',
+        color: 'text-amber-400',
+        bg: 'bg-amber-500/10',
       })
     }
     return parts
@@ -114,132 +124,169 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
 
   if (loading) {
     return (
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardContent className="py-10 text-center">
-          <p className="text-white/70">Loading saved searches...</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Search className="h-5 w-5 text-sky-400" />
+          </div>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Saved Searches
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              Manage your search alerts
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-hm-stone-400 flex items-center gap-3">
+            <RefreshCw className="h-5 w-5 animate-spin" />
+            <span>Loading saved searches...</span>
+          </div>
+        </div>
+      </div>
     )
   }
 
   if (savedSearches.length === 0) {
     return (
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-semibold text-white">
-            <Search className="h-6 w-6" />
-            Saved Searches
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="py-6 text-center text-base text-white/70">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Search className="h-5 w-5 text-sky-400" />
+          </div>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Saved Searches
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              Manage your search alerts
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+          <Search className="text-hm-stone-500 mx-auto h-10 w-10" />
+          <p className="text-hm-stone-300 mt-4">
             You haven&apos;t saved any searches yet.
           </p>
-          <p className="text-center text-sm text-white/60">
-            Dial in filters on the dashboard and tap “Save search” to keep
-            getting alerts here.
+          <p className="text-hm-stone-500 mt-2 text-sm">
+            Dial in filters on the dashboard and tap &ldquo;Save search&rdquo;
+            to keep getting alerts here.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-semibold text-white">
-            <Search className="h-6 w-6" />
-            Saved Searches
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <p className="text-sm text-white/70">
-            Manage notification delivery and clean up searches you no longer
-            need.
-          </p>
-          <Button
-            variant="outline"
-            onClick={loadSavedSearches}
-            className="border-white/30 text-white"
-          >
-            Refresh list
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+            <Search className="h-5 w-5 text-sky-400" />
+          </div>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Saved Searches
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              {savedSearches.length} saved{' '}
+              {savedSearches.length === 1 ? 'search' : 'searches'}
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          onClick={loadSavedSearches}
+          className="text-hm-stone-300 border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh list
+        </Button>
+      </div>
 
-      {savedSearches.map((search) => {
-        const filters = search.filters as Record<string, unknown>
-        const hasNotifications = filters.notifications !== false
+      {/* Searches list */}
+      <AnimatePresence>
+        <div className="space-y-4">
+          {savedSearches.map((search, index) => {
+            const filters = search.filters as Record<string, unknown>
+            const hasNotifications = filters.notifications !== false
 
-        return (
-          <Card
-            key={search.id}
-            className="card-glassmorphism-style border-white/10"
-          >
-            <CardContent className="space-y-4 pt-6">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex-1 space-y-3">
-                  <h3 className="text-xl font-semibold text-white">
-                    {search.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {formatFilters(filters).map((filter) => {
-                      const IconComponent = filter.icon
-                      return (
-                        <span
-                          key={filter.key}
-                          className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs text-white/80"
-                        >
-                          <IconComponent className="h-3 w-3" />
-                          {filter.text}
-                        </span>
-                      )
-                    })}
+            return (
+              <motion.div
+                key={search.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.05 }}
+                className="group rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 space-y-3">
+                    <h3 className="text-hm-stone-200 text-lg font-semibold">
+                      {search.name}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {formatFilters(filters).map((filter) => {
+                        const IconComponent = filter.icon
+                        return (
+                          <span
+                            key={filter.key}
+                            className={`flex items-center gap-1.5 rounded-full border border-white/5 px-2.5 py-1 text-xs ${filter.bg}`}
+                          >
+                            <IconComponent
+                              className={`h-3 w-3 ${filter.color}`}
+                            />
+                            <span className="text-hm-stone-300">
+                              {filter.text}
+                            </span>
+                          </span>
+                        )
+                      })}
+                    </div>
+                    <div className="text-hm-stone-500 flex items-center gap-1.5 text-xs">
+                      <Calendar className="h-3 w-3" />
+                      Created{' '}
+                      {new Date(search.created_at!).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      aria-label={
+                        hasNotifications
+                          ? `Disable notifications for ${search.name}`
+                          : `Enable notifications for ${search.name}`
+                      }
+                      onClick={() =>
+                        toggleNotifications(search.id, hasNotifications)
+                      }
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all ${
+                        hasNotifications
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                          : 'text-hm-stone-500 hover:text-hm-stone-300 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      {hasNotifications ? (
+                        <Bell className="h-4 w-4" />
+                      ) : (
+                        <BellOff className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button
+                      aria-label={`Delete saved search ${search.name}`}
+                      onClick={() => deleteSearch(search.id)}
+                      className="text-hm-stone-500 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    aria-label={
-                      hasNotifications
-                        ? `Disable notifications for ${search.name}`
-                        : `Enable notifications for ${search.name}`
-                    }
-                    onClick={() =>
-                      toggleNotifications(search.id, hasNotifications)
-                    }
-                    className={
-                      hasNotifications
-                        ? 'text-green-300 hover:text-green-200'
-                        : 'text-white/40 hover:text-white/70'
-                    }
-                  >
-                    {hasNotifications ? (
-                      <Bell className="h-4 w-4" />
-                    ) : (
-                      <BellOff className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    aria-label={`Delete saved search ${search.name}`}
-                    onClick={() => deleteSearch(search.id)}
-                    className="text-red-300 hover:text-red-200"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs text-white/60">
-                Created {new Date(search.created_at!).toLocaleDateString()}
-              </p>
-            </CardContent>
-          </Card>
-        )
-      })}
+              </motion.div>
+            )
+          })}
+        </div>
+      </AnimatePresence>
     </div>
   )
 }

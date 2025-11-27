@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
@@ -18,7 +17,20 @@ import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import { toast } from 'sonner'
-import { Loader2, Save } from 'lucide-react'
+import {
+  Loader2,
+  Save,
+  DollarSign,
+  Bed,
+  Bath,
+  MapPin,
+  Home,
+  Car,
+  Waves,
+  Dumbbell,
+  PawPrint,
+} from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface PreferencesSectionProps {
   user: User
@@ -153,18 +165,31 @@ export function PreferencesSection({
     key: MustHaveKey
     label: string
     helper: string
+    icon: typeof Car
   }> = [
-    { key: 'parking', label: 'Parking', helper: 'Garage or assigned space' },
-    { key: 'pool', label: 'Pool', helper: 'Community or private pool access' },
+    {
+      key: 'parking',
+      label: 'Parking',
+      helper: 'Garage or assigned space',
+      icon: Car,
+    },
+    {
+      key: 'pool',
+      label: 'Pool',
+      helper: 'Community or private pool access',
+      icon: Waves,
+    },
     {
       key: 'gym',
       label: 'Gym/Fitness Center',
       helper: 'On-site fitness amenities',
+      icon: Dumbbell,
     },
     {
       key: 'petFriendly',
       label: 'Pet Friendly',
       helper: 'Allows pets and has pet amenities',
+      icon: PawPrint,
     },
   ]
 
@@ -215,26 +240,34 @@ export function PreferencesSection({
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="card-glassmorphism-style border-white/10">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold text-white">
-            Search Preferences
-          </CardTitle>
-          <p className="text-sm text-white/70">
-            Adjust budget, rooms, and distance limits. These settings power your
-            discovery feed instantly.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/70">
-              <Label className="text-white/80">
-                Price Range: ${priceRange[0].toLocaleString()} - $
-                {priceRange[1].toLocaleString()}
+    <div className="space-y-8">
+      {/* Search Preferences */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+            <DollarSign className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+              Search Preferences
+            </h2>
+            <p className="text-hm-stone-500 text-sm">
+              Adjust budget, rooms, and distance limits
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6 rounded-xl border border-white/5 bg-white/[0.02] p-5">
+          {/* Price Range */}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+                <DollarSign className="h-4 w-4 text-emerald-400" />
+                Price Range
               </Label>
-              <span className="text-xs text-white/50">
-                Drag both handles to narrow your match budget
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-300">
+                ${priceRange[0].toLocaleString()} - $
+                {priceRange[1].toLocaleString()}
               </span>
             </div>
             <Slider
@@ -245,19 +278,26 @@ export function PreferencesSection({
               min={50000}
               max={2000000}
               step={25000}
-              className="[&_[role=slider]]:bg-white"
+              className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-emerald-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-emerald-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />
+            <p className="text-hm-stone-500 text-xs">
+              Drag both handles to narrow your match budget
+            </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Bedrooms and Bathrooms */}
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-3">
-              <Label className="text-white/80">Minimum Bedrooms</Label>
+              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+                <Bed className="h-4 w-4 text-sky-400" />
+                Minimum Bedrooms
+              </Label>
               <Select
                 value={bedrooms.toString()}
                 onValueChange={(v) => setBedrooms(Number(v))}
               >
                 <SelectTrigger
-                  className="w-full border-white/20 bg-white/5 text-white"
+                  className="text-hm-stone-200 w-full rounded-xl border-white/10 bg-white/5"
                   aria-label="Minimum Bedrooms"
                 >
                   <SelectValue placeholder="Select bedrooms" />
@@ -273,13 +313,16 @@ export function PreferencesSection({
             </div>
 
             <div className="space-y-3">
-              <Label className="text-white/80">Minimum Bathrooms</Label>
+              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+                <Bath className="h-4 w-4 text-violet-400" />
+                Minimum Bathrooms
+              </Label>
               <Select
                 value={bathrooms.toString()}
                 onValueChange={(v) => setBathrooms(Number(v))}
               >
                 <SelectTrigger
-                  className="w-full border-white/20 bg-white/5 text-white"
+                  className="text-hm-stone-200 w-full rounded-xl border-white/10 bg-white/5"
                   aria-label="Minimum Bathrooms"
                 >
                   <SelectValue placeholder="Select bathrooms" />
@@ -295,14 +338,15 @@ export function PreferencesSection({
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/70">
-              <Label className="text-white/80">
-                Search Radius: {searchRadius}{' '}
-                {searchRadius === 1 ? 'mile' : 'miles'}
+          {/* Search Radius */}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+                <MapPin className="h-4 w-4 text-amber-400" />
+                Search Radius
               </Label>
-              <span className="text-xs text-white/50">
-                Higher radius expands nearby cities and suburbs
+              <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-300">
+                {searchRadius} {searchRadius === 1 ? 'mile' : 'miles'}
               </span>
             </div>
             <Slider
@@ -311,36 +355,48 @@ export function PreferencesSection({
               min={1}
               max={50}
               step={1}
-              className="[&_[role=slider]]:bg-white"
+              className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-amber-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-amber-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="card-glassmorphism-style border-white/10">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-white">
-              Property Types
-            </CardTitle>
-            <p className="text-sm text-white/70">
-              Choose the building styles that suit your lifestyle.
+            <p className="text-hm-stone-500 text-xs">
+              Higher radius expands nearby cities and suburbs
             </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          </div>
+        </div>
+      </div>
+
+      {/* Property Types and Must-Haves */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Property Types */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+              <Home className="h-5 w-5 text-sky-400" />
+            </div>
+            <div>
+              <h3 className="text-hm-stone-200 font-medium">Property Types</h3>
+              <p className="text-hm-stone-500 text-xs">
+                Choose building styles that suit you
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
             {propertyTypeOptions.map(({ key, label, helper }) => (
-              <div
+              <motion.div
                 key={key}
-                className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
+                whileHover={{ x: 2 }}
+                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
               >
-                <div className="space-y-1">
+                <div className="min-w-0 flex-1 pr-3">
                   <Label
                     htmlFor={key}
-                    className="cursor-pointer text-sm font-medium text-white"
+                    className="text-hm-stone-200 cursor-pointer text-sm font-medium"
                   >
                     {label}
                   </Label>
-                  <p className="text-xs text-white/60">{helper}</p>
+                  <p className="text-hm-stone-500 mt-0.5 truncate text-xs">
+                    {helper}
+                  </p>
                 </div>
                 <Switch
                   id={key}
@@ -350,34 +406,47 @@ export function PreferencesSection({
                   }
                   aria-label={label}
                 />
-              </div>
+              </motion.div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="card-glassmorphism-style border-white/10">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-white">
-              Must-have Features
-            </CardTitle>
-            <p className="text-sm text-white/70">
-              Lock specific amenities so we only surface qualifying homes.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mustHaveOptions.map(({ key, label, helper }) => (
-              <div
+        {/* Must-Have Features */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+              <Car className="h-5 w-5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-hm-stone-200 font-medium">
+                Must-have Features
+              </h3>
+              <p className="text-hm-stone-500 text-xs">
+                Lock in specific amenities
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {mustHaveOptions.map(({ key, label, helper, icon: Icon }) => (
+              <motion.div
                 key={key}
-                className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
+                whileHover={{ x: 2 }}
+                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
               >
-                <div className="space-y-1">
-                  <Label
-                    htmlFor={`must-${key}`}
-                    className="cursor-pointer text-sm font-medium text-white"
-                  >
-                    {label}
-                  </Label>
-                  <p className="text-xs text-white/60">{helper}</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5">
+                    <Icon className="text-hm-stone-400 h-4 w-4" />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor={`must-${key}`}
+                      className="text-hm-stone-200 cursor-pointer text-sm font-medium"
+                    >
+                      {label}
+                    </Label>
+                    <p className="text-hm-stone-500 text-xs">{helper}</p>
+                  </div>
                 </div>
                 <Switch
                   id={`must-${key}`}
@@ -387,25 +456,24 @@ export function PreferencesSection({
                   }
                   aria-label={label}
                 />
-              </div>
+              </motion.div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80 shadow-inner backdrop-blur md:flex-row md:items-center md:justify-between">
+      {/* Save button */}
+      <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-base font-semibold">Save and sync</p>
-          <p className="text-sm text-white/60">
-            Updating preferences immediately refreshes dashboard matches and
-            saved searches.
+          <p className="text-hm-stone-200 font-medium">Save and sync</p>
+          <p className="text-hm-stone-500 text-sm">
+            Updating preferences immediately refreshes dashboard matches
           </p>
         </div>
         <Button
           onClick={savePreferences}
           disabled={loading}
-          variant="primary"
-          className="px-8 md:w-auto"
+          className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
         >
           {loading ? (
             <>

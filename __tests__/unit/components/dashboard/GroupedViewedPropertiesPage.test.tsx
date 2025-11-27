@@ -148,8 +148,8 @@ describe('GroupedViewedPropertiesPage', () => {
 
       renderWithQuery(<GroupedViewedPropertiesPage />)
 
-      // Expect multiple skeletons visible (we render 6)
-      const skeletons = document.querySelectorAll('.animate-pulse.h-96')
+      // Expect multiple skeletons visible (we render 6 with responsive aspect ratios)
+      const skeletons = document.querySelectorAll('.animate-pulse')
       expect(skeletons.length).toBeGreaterThanOrEqual(1)
     })
 

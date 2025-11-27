@@ -316,7 +316,10 @@ export function GroupedViewedPropertiesPage() {
 
   const renderSkeletons = () =>
     Array.from({ length: 6 }).map((_, i) => (
-      <Skeleton key={i} className="h-96 w-full rounded-xl bg-white/10" />
+      <Skeleton
+        key={i}
+        className="aspect-[3/4] w-full rounded-xl bg-white/5 md:aspect-[4/5] lg:aspect-[4/3]"
+      />
     ))
 
   const sharedSectionProps = {

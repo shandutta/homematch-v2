@@ -15,16 +15,40 @@ import {
   Search,
   ArrowLeft,
   DollarSign,
-  Map,
-  SlidersHorizontal,
+  MapPin,
+  Mail,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface SettingsPageClientProps {
   user: User
   profile: UserProfile
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 30,
+    },
+  },
 }
 
 export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
@@ -90,22 +114,30 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
       label: 'Budget focus',
       value: `$${priceRange[0].toLocaleString()} – $${priceRange[1].toLocaleString()}`,
       icon: DollarSign,
+      gradient: 'from-emerald-500/20 to-emerald-600/5',
+      iconColor: 'text-emerald-400',
     },
     {
       label: 'Search radius',
       value: `${searchRadius} miles`,
-      icon: Map,
+      icon: MapPin,
+      gradient: 'from-sky-500/20 to-sky-600/5',
+      iconColor: 'text-sky-400',
     },
     {
       label: 'Alerts enabled',
       value:
         enabledAlerts > 0 ? `${enabledAlerts} toggles on` : 'All alerts off',
       icon: Bell,
+      gradient: 'from-amber-500/20 to-amber-600/5',
+      iconColor: 'text-amber-400',
     },
     {
       label: 'Account email',
       value: user.email || 'Not set',
-      icon: SlidersHorizontal,
+      icon: Mail,
+      gradient: 'from-violet-500/20 to-violet-600/5',
+      iconColor: 'text-violet-400',
     },
   ]
 
@@ -114,139 +146,217 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
   }
 
   return (
-    <div className="text-primary-foreground min-h-screen pb-8">
-      <section
-        className="shadow-token-xl border-white/10 bg-white/5"
+    <div className="gradient-grid-bg min-h-screen pb-16 text-white">
+      {/* Hero Header */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative isolate overflow-hidden border-b border-white/5"
         data-testid="settings-header"
       >
-        <div className="relative container mx-auto max-w-6xl px-4 py-8">
-          <div className="flex flex-col gap-6">
+        {/* Ambient glow */}
+        <div
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+          aria-hidden="true"
+        >
+          <div className="absolute -top-40 left-1/3 h-[500px] w-[500px] rounded-full bg-amber-500/[0.03] blur-[100px]" />
+          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-violet-500/[0.04] blur-[80px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+          {/* Back navigation */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
             <Link
               href="/dashboard"
-              className="flex w-fit items-center gap-2 text-sm text-white/70 transition hover:text-white"
+              className="group text-hm-stone-400 hover:text-hm-stone-200 inline-flex items-center gap-2 text-sm transition-colors"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
             </Link>
+          </motion.div>
 
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-3xl space-y-3">
-                <p className="text-sm tracking-[0.2em] text-white/60 uppercase">
-                  Control center
-                </p>
-                <h1 className="text-token-4xl font-bold text-white">
-                  Settings
-                </h1>
-                <p className="text-base leading-relaxed text-white/70">
-                  Fine-tune your search preferences, alerts, and account
-                  security. Every change here immediately shapes the homes we
-                  surface for you.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
+          {/* Header content */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
+          >
+            <motion.div variants={itemVariants} className="max-w-2xl space-y-4">
+              <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
+                Control Center
+              </p>
+              <h1 className="font-heading text-hm-stone-200 text-3xl font-semibold tracking-tight sm:text-4xl">
+                Settings
+              </h1>
+              <p className="text-hm-stone-400 text-sm leading-relaxed">
+                Fine-tune your search preferences, alerts, and account security.
+                Every change here immediately shapes the homes we surface for
+                you.
+              </p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Link href="/profile">
                 <Button
-                  asChild
                   variant="outline"
-                  className="border-white/30 text-white"
+                  className="text-hm-stone-300 border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
-                  <Link href="/profile">View Profile</Link>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  View Profile
                 </Button>
-              </div>
-            </div>
+              </Link>
+            </motion.div>
+          </motion.div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {overviewCards.map(({ label, value, icon: Icon }) => (
-                <div
-                  key={label}
-                  className="flex flex-col gap-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white/70 shadow-inner backdrop-blur"
+          {/* Overview cards */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            {overviewCards.map((card, index) => {
+              const Icon = card.icon
+              return (
+                <motion.div
+                  key={card.label}
+                  variants={itemVariants}
+                  whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-4 backdrop-blur-sm transition-all hover:border-white/10`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-center gap-2 text-xs tracking-[0.2em] uppercase">
-                    <Icon className="h-4 w-4 text-white/60" />
-                    <span>{label}</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${card.iconColor}`} />
+                      <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                        {card.label}
+                      </p>
+                    </div>
+                    <p
+                      className="text-hm-stone-200 mt-2 truncate text-lg font-medium"
+                      title={card.value}
+                    >
+                      {card.value}
+                    </p>
                   </div>
-                  <p
-                    className="truncate text-left text-lg font-semibold text-white"
-                    title={value}
-                  >
-                    {value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      <div className="container mx-auto max-w-6xl px-4 pt-8">
-        <div className="rounded-[36px] border border-white/10 bg-[#070b18]/90 px-8 py-8 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+      {/* Main content */}
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="card-luxury overflow-hidden p-6 sm:p-8"
+        >
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
             className="space-y-8"
           >
-            <TabsList className="relative z-10 mb-6 grid h-auto w-full grid-cols-2 gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/20 p-2 text-white shadow-[0_20px_45px_rgba(8,10,30,0.35)] backdrop-blur md:grid-cols-4">
+            {/* Tab navigation */}
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 backdrop-blur-sm md:grid-cols-4">
               {tabOptions.map(({ value, label, description, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className={cn(
-                    'flex h-auto min-h-[92px] w-full flex-col items-start gap-2 rounded-xl border border-transparent px-4 py-3 text-left text-sm leading-tight font-medium whitespace-normal text-white/85 transition hover:text-white data-[state=active]:bg-white/20 data-[state=active]:text-white'
-                  )}
+                  className="group flex h-auto min-h-[80px] w-full flex-col items-start gap-2 rounded-lg border border-transparent px-4 py-3 text-left transition-all data-[state=active]:border-white/10 data-[state=active]:bg-white/10 data-[state=active]:shadow-lg"
                 >
-                  <Icon className="h-4 w-4 text-white" />
+                  <div className="text-hm-stone-400 flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition-colors group-data-[state=active]:bg-amber-500/10 group-data-[state=active]:text-amber-400">
+                    <Icon className="h-4 w-4" />
+                  </div>
                   <div>
-                    <p className="font-semibold">{label}</p>
-                    <p className="text-xs text-white/60">{description}</p>
+                    <p className="text-hm-stone-300 text-sm font-medium group-data-[state=active]:text-white">
+                      {label}
+                    </p>
+                    <p className="text-hm-stone-500 group-data-[state=active]:text-hm-stone-400 text-xs">
+                      {description}
+                    </p>
                   </div>
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            <TabsContent
-              value="preferences"
-              className="relative z-20 mt-6 space-y-6"
-            >
-              <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <PreferencesSection
-                  user={user}
-                  profile={profileState}
-                  onProfileUpdate={handleProfileUpdate}
-                />
-              </div>
-            </TabsContent>
+            {/* Tab content */}
+            <AnimatePresence mode="wait">
+              <TabsContent
+                value="preferences"
+                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PreferencesSection
+                    user={user}
+                    profile={profileState}
+                    onProfileUpdate={handleProfileUpdate}
+                  />
+                </motion.div>
+              </TabsContent>
 
-            <TabsContent
-              value="notifications"
-              className="relative z-20 mt-6 space-y-6"
-            >
-              <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <NotificationsSection
-                  user={user}
-                  profile={profileState}
-                  onProfileUpdate={handleProfileUpdate}
-                />
-              </div>
-            </TabsContent>
+              <TabsContent
+                value="notifications"
+                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <NotificationsSection
+                    user={user}
+                    profile={profileState}
+                    onProfileUpdate={handleProfileUpdate}
+                  />
+                </motion.div>
+              </TabsContent>
 
-            <TabsContent
-              value="saved-searches"
-              className="relative z-20 mt-6 space-y-6"
-            >
-              <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <SavedSearchesSection userId={user.id} />
-              </div>
-            </TabsContent>
+              <TabsContent
+                value="saved-searches"
+                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SavedSearchesSection userId={user.id} />
+                </motion.div>
+              </TabsContent>
 
-            <TabsContent
-              value="account"
-              className="relative z-20 mt-6 space-y-6"
-            >
-              <div className="relative z-20 rounded-[30px] border border-white/10 bg-[#050811]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-                <AccountSection user={user} />
-              </div>
-            </TabsContent>
+              <TabsContent
+                value="account"
+                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AccountSection user={user} />
+                </motion.div>
+              </TabsContent>
+            </AnimatePresence>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

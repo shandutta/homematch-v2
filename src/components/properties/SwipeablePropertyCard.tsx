@@ -142,16 +142,16 @@ export function SwipeablePropertyCard({
     return (
       <div
         className={cn(
-          'relative mx-auto h-[560px] w-full max-w-md pb-16',
+          'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-16',
           className
         )}
       >
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
-            <h2 className="text-foreground mb-4 text-2xl font-semibold">
+            <h2 className="font-display text-hm-stone-200 mb-4 text-2xl font-medium tracking-tight">
               No more properties!
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-hm-stone-400 text-lg">
               Check back later for new listings.
             </p>
           </div>
@@ -163,7 +163,7 @@ export function SwipeablePropertyCard({
   return (
     <div
       className={cn(
-        'relative mx-auto h-[560px] w-full max-w-md pb-16',
+        'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-16',
         className
       )}
     >
@@ -310,7 +310,7 @@ export function SwipeablePropertyCard({
       <div className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-6">
         <MotionButton
           onClick={() => swipeCard('left')}
-          className="flex h-14 w-14 items-center justify-center rounded-full border border-red-200 bg-white text-red-500 shadow-md transition-colors hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none dark:border-red-900 dark:bg-gray-900 dark:hover:bg-red-950"
+          className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
           motionProps={{
             whileHover: { scale: 1.1 },
             whileTap: { scale: 0.95 },
@@ -324,7 +324,7 @@ export function SwipeablePropertyCard({
         {onUndo && (
           <MotionButton
             onClick={onUndo}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+            className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
             motionProps={{
               whileHover: { scale: 1.1 },
               whileTap: { scale: 0.95 },
@@ -338,7 +338,7 @@ export function SwipeablePropertyCard({
 
         <MotionButton
           onClick={() => swipeCard('right')}
-          className="flex h-14 w-14 items-center justify-center rounded-full border border-green-200 bg-white text-green-500 shadow-md transition-colors hover:bg-green-50 focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:outline-none dark:border-green-900 dark:bg-gray-900 dark:hover:bg-green-950"
+          className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
           motionProps={{
             whileHover: { scale: 1.1 },
             whileTap: { scale: 0.95 },

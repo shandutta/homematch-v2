@@ -22,7 +22,9 @@ export default [
       'migrated_data/**/*',
       'playwright-report/**/*',
       'test-results/**/*',
+      '.next',
       '.next/**/*',
+      '.next-test',
       '.next-test/**/*',
       'out/**/*',
       'dist/**/*',
@@ -240,7 +242,9 @@ export default [
   },
   {
     ignores: [
+      '.next',
       '.next/**/*',
+      '.next-test',
       '.next-test/**/*',
       'out/**/*',
       'dist/**/*',

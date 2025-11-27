@@ -14,6 +14,14 @@ import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
 import { usePropertyDetail } from './PropertyDetailProvider'
 
+const formatPropertyType = (type: string) => {
+  return type
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 interface PropertyCardProps {
   property: Property
   neighborhood?: Neighborhood
@@ -148,8 +156,8 @@ export function PropertyCard({
           : undefined
       }
     >
-      {/* Property Image - Taller aspect ratio for immersion */}
-      <div className="group relative aspect-[4/5] w-full overflow-hidden">
+      {/* Property Image - Responsive aspect ratio */}
+      <div className="group relative aspect-[3/4] w-full overflow-hidden md:aspect-[4/5] lg:aspect-[4/3]">
         <PropertyImage
           src={property.images || undefined}
           alt={property.address || 'Property'}
@@ -178,8 +186,8 @@ export function PropertyCard({
         {/* Property Type - Minimal pill */}
         {property.property_type && (
           <div className="absolute top-4 left-4">
-            <span className="rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium tracking-wide text-white/90 uppercase backdrop-blur-sm">
-              {property.property_type}
+            <span className="rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium tracking-wide text-white/90 backdrop-blur-sm">
+              {formatPropertyType(property.property_type)}
             </span>
           </div>
         )}

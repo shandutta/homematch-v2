@@ -4,13 +4,20 @@ import React from 'react'
 import { useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
-import { Loader2, Save, Mail, Bell, Smartphone } from 'lucide-react'
+import {
+  Loader2,
+  Save,
+  Mail,
+  Bell,
+  Smartphone,
+  AlertCircle,
+} from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface NotificationsSectionProps {
   user: User
@@ -95,14 +102,18 @@ export function NotificationsSection({
   const notificationGroups: Array<{
     key: 'email' | 'push' | 'sms'
     title: string
-    icon: React.ReactElement
+    icon: React.ReactNode
+    iconBg: string
+    iconColor: string
     description: string
     options: Array<{ key: string; label: string; helper: string }>
   }> = [
     {
       key: 'email',
       title: 'Email Notifications',
-      icon: <Mail className="h-6 w-6 text-white/80" />,
+      icon: <Mail className="h-5 w-5" />,
+      iconBg: 'bg-sky-500/10',
+      iconColor: 'text-sky-400',
       description: `Sent to ${user.email}`,
       options: [
         {
@@ -130,7 +141,9 @@ export function NotificationsSection({
     {
       key: 'push',
       title: 'Push Notifications',
-      icon: <Bell className="h-5 w-5 text-white/80" />,
+      icon: <Bell className="h-5 w-5" />,
+      iconBg: 'bg-amber-500/10',
+      iconColor: 'text-amber-400',
       description: 'Instant nudges on your devices',
       options: [
         {
@@ -153,7 +166,9 @@ export function NotificationsSection({
     {
       key: 'sms',
       title: 'SMS Notifications',
-      icon: <Smartphone className="h-5 w-5 text-white/80" />,
+      icon: <Smartphone className="h-5 w-5" />,
+      iconBg: 'bg-emerald-500/10',
+      iconColor: 'text-emerald-400',
       description: 'High-signal texts for urgent updates',
       options: [
         {
@@ -191,18 +206,19 @@ export function NotificationsSection({
           : setSmsNotifications
 
     return (
-      <div
+      <motion.div
         key={`${group}-${optionKey}`}
-        className="flex items-center justify-between rounded-2xl border border-white/10 p-4"
+        whileHover={{ x: 2 }}
+        className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
       >
-        <div className="space-y-1">
+        <div className="min-w-0 flex-1 pr-3">
           <Label
             htmlFor={`${group}-${optionKey}`}
-            className="cursor-pointer text-sm font-medium text-white"
+            className="text-hm-stone-200 cursor-pointer text-sm font-medium"
           >
             {label}
           </Label>
-          <p className="text-xs text-white/60">{helper}</p>
+          <p className="text-hm-stone-500 mt-0.5 text-xs">{helper}</p>
         </div>
         <Switch
           id={`${group}-${optionKey}`}
@@ -215,7 +231,7 @@ export function NotificationsSection({
           }
           aria-label={`Toggle ${label}`}
         />
-      </div>
+      </motion.div>
     )
   }
 
@@ -226,45 +242,50 @@ export function NotificationsSection({
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-3">
         {notificationGroups.map(
-          ({ key, title, icon, description, options }) => (
-            <Card
-              key={key}
-              className="card-glassmorphism-style border-white/10"
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  {icon}
-                  <span className="text-xl font-semibold">{title}</span>
-                </CardTitle>
-                <p className="text-sm text-white/70">{description}</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          ({ key, title, icon, iconBg, iconColor, description, options }) => (
+            <div key={key} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}
+                >
+                  <span className={iconColor}>{icon}</span>
+                </div>
+                <div>
+                  <h3 className="text-hm-stone-200 font-medium">{title}</h3>
+                  <p className="text-hm-stone-500 text-xs">{description}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 {options.map((option) =>
                   renderSwitch(key, option.key, option.label, option.helper)
                 )}
                 {key === 'sms' && smsNeedsNumber && (
-                  <p className="text-xs text-white/60">
-                    Add a phone number in your profile to receive SMS alerts.
-                  </p>
+                  <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <p className="text-xs text-amber-300">
+                      Add a phone number in your profile to receive SMS alerts.
+                    </p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )
         )}
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80 shadow-inner backdrop-blur md:flex-row md:items-center md:justify-between">
+      {/* Save button */}
+      <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-base font-semibold">Alert preferences</p>
-          <p className="text-sm text-white/60">
-            Mix channels to match your responsiveness. We’ll only message you
-            when the toggles above are on.
+          <p className="text-hm-stone-200 font-medium">Alert preferences</p>
+          <p className="text-hm-stone-500 text-sm">
+            Mix channels to match your responsiveness
           </p>
         </div>
         <Button
           onClick={saveNotifications}
           disabled={loading}
-          className="text-primary bg-white font-semibold hover:bg-white/90 md:w-auto"
+          className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -274,7 +295,7 @@ export function NotificationsSection({
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              Save Notification Preferences
+              Save Preferences
             </>
           )}
         </Button>

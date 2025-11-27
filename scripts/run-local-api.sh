@@ -17,6 +17,34 @@ timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
 }
 
+ensure_routes_manifest_defaults() {
+  local manifest="$ROOT/.next/routes-manifest.json"
+  if [[ ! -f "$manifest" ]]; then
+    return
+  fi
+
+  node - "$manifest" <<'NODE'
+const fs = require('fs')
+const manifestPath = process.argv[2]
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+let changed = false
+
+if (!Array.isArray(manifest.dataRoutes)) {
+  manifest.dataRoutes = []
+  changed = true
+}
+if (!Array.isArray(manifest.dynamicRoutes)) {
+  manifest.dynamicRoutes = []
+  changed = true
+}
+
+if (changed) {
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest))
+  console.log('[run-local-api] Patched routes-manifest.json with default route arrays')
+}
+NODE
+}
+
 if [[ -z "$ENDPOINT" ]]; then
   echo "Usage: PORT=3000 $0 \"http://127.0.0.1:3000/api/...\""
   echo "Optional: ENV_FILE=.env.prod MODE=dev CURL_TIMEOUT=600"
@@ -56,6 +84,7 @@ else
   else
     echo "[run-local-api] [$(timestamp)] Reusing existing build in .next (set FORCE_REBUILD=1 to rebuild)..."
   fi
+  ensure_routes_manifest_defaults
   echo "[run-local-api] [$(timestamp)] Starting prod server on port $PORT..."
   HOSTNAME=127.0.0.1 pnpm exec next start -H 0.0.0.0 -p "$PORT" \
     >/tmp/homematch-local-server.log 2>&1 &

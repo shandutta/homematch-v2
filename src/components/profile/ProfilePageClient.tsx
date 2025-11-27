@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, Household } from '@/types/database'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from './ProfileForm'
 import { HouseholdSection } from './HouseholdSection'
@@ -17,11 +16,16 @@ import {
   Mail,
   Phone,
   Users,
+  Heart,
+  Eye,
+  Search,
+  Sparkles,
+  ChevronRight,
+  Copy,
+  Check,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-// import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProfilePageClientProps {
   user: User
@@ -41,12 +45,50 @@ type ProfilePreferences = Partial<{
   bio: string
 }>
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+} as const
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 300,
+      damping: 30,
+    },
+  },
+}
+
+const statVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 400,
+      damping: 25,
+    },
+  },
+}
+
 export function ProfilePageClient({
   user,
   profile,
   activitySummary,
 }: ProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState('profile')
+  const [codeCopied, setCodeCopied] = useState(false)
 
   const profilePreferences = (profile.preferences || {}) as ProfilePreferences
   const displayName =
@@ -66,282 +108,461 @@ export function ProfilePageClient({
 
   const heroStats = [
     {
-      label: 'Properties liked',
+      label: 'Liked',
       value: activitySummary.likes,
-      accent: 'text-emerald-300',
+      icon: Heart,
+      gradient: 'from-emerald-500/20 to-emerald-600/5',
+      iconColor: 'text-emerald-400',
+      valueColor: 'text-emerald-300',
     },
     {
-      label: 'Properties viewed',
+      label: 'Viewed',
       value: activitySummary.views,
-      accent: 'text-sky-300',
+      icon: Eye,
+      gradient: 'from-amber-500/20 to-amber-600/5',
+      iconColor: 'text-amber-400',
+      valueColor: 'text-amber-300',
     },
     {
-      label: 'Saved searches',
+      label: 'Saved',
       value: activitySummary.saved_searches,
-      accent: 'text-amber-200',
+      icon: Search,
+      gradient: 'from-sky-500/20 to-sky-600/5',
+      iconColor: 'text-sky-400',
+      valueColor: 'text-sky-300',
     },
   ]
 
+  const copyHouseholdCode = async () => {
+    if (profile.household?.id) {
+      await navigator.clipboard.writeText(profile.household.id)
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#030c24] pb-16 text-white">
-      <section
-        className="bg-primary/10 relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#081735] via-[#050f23] to-[#020814] backdrop-blur-md"
-        data-testid="profile-header"
+    <div className="gradient-grid-bg min-h-screen pb-16 text-white">
+      {/* Hero Header */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative isolate overflow-hidden border-b border-white/5"
       >
+        {/* Ambient glow */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-cyan-500/20 via-transparent to-transparent blur-3xl"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
           aria-hidden="true"
-        />
-        <div className="container mx-auto px-4 py-10">
-          <Link
-            href="/dashboard"
-            className="inline-flex w-fit items-center gap-2 text-sm text-white/70 transition hover:text-white"
+        >
+          <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-amber-500/[0.03] blur-[100px]" />
+          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-sky-500/[0.04] blur-[80px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+          {/* Back navigation */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Link>
-          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 border border-white/20 bg-white/10 text-2xl text-white">
-                  <AvatarFallback className="bg-white/10 text-xl text-white">
+            <Link
+              href="/dashboard"
+              className="group text-hm-stone-400 hover:text-hm-stone-200 inline-flex items-center gap-2 text-sm transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </motion.div>
+
+          {/* Profile header */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
+          >
+            {/* Left: Avatar and info */}
+            <motion.div variants={itemVariants} className="flex flex-col gap-6">
+              <div className="flex items-start gap-5">
+                {/* Avatar */}
+                <div className="relative">
+                  <div className="text-hm-stone-200 flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 text-2xl font-medium shadow-xl shadow-black/20 backdrop-blur-sm sm:h-24 sm:w-24 sm:text-3xl">
                     {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm tracking-wide text-white/60 uppercase">
+                  </div>
+                  {hasHousehold && (
+                    <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0c0a09] bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/30">
+                      <Users className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Name and meta */}
+                <div className="flex-1 pt-1">
+                  <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
                     My Profile
                   </p>
-                  <h1 className="text-3xl font-bold text-white sm:text-4xl">
+                  <h1 className="font-heading text-hm-stone-200 mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
                     {displayName}
                   </h1>
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-white/70">
-                    <span>{user.email}</span>
-                    <Badge className="border-white/30 bg-white/10 text-white/80">
-                      {hasHousehold ? 'Household synced' : 'No household yet'}
-                    </Badge>
-                    <Badge className="border-white/30 bg-emerald-500/15 text-emerald-100">
-                      Supabase sync live
-                    </Badge>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="text-hm-stone-400 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
+                      <Mail className="h-3 w-3" />
+                      {user.email}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${
+                        hasHousehold
+                          ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                          : 'text-hm-stone-400 border border-white/10 bg-white/5'
+                      }`}
+                    >
+                      <Users className="h-3 w-3" />
+                      {hasHousehold ? 'Household synced' : 'Solo mode'}
+                    </span>
                   </div>
                 </div>
               </div>
-              <p className="max-w-2xl text-sm text-white/70">
-                Adjust your information, manage your household, and understand
-                how you&apos;re interacting with listings—all from one place.
+
+              <p className="text-hm-stone-400 max-w-xl text-sm leading-relaxed">
+                Manage your profile, household settings, and track your property
+                search activity all in one place.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
+            </motion.div>
+
+            {/* Right: Action buttons */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap gap-3"
+            >
               <Link href="/settings">
                 <Button
                   variant="outline"
-                  className="border-white/30 bg-white/5 px-6 text-white hover:bg-white/10"
+                  className="text-hm-stone-300 border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   Settings
                 </Button>
               </Link>
               <Link href="/dashboard/liked">
-                <Button className="bg-cyan-500/80 px-6 text-white shadow-lg shadow-cyan-500/30 transition hover:bg-cyan-400/80">
-                  View favorites
+                <Button className="bg-gradient-to-r from-amber-500 to-amber-600 px-5 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30">
+                  <Heart className="mr-2 h-4 w-4" />
+                  View Favorites
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {heroStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl border border-white/15 bg-white/[0.06] p-4 shadow-inner"
-              >
-                <p className="text-xs tracking-[0.2em] text-white/60 uppercase">
-                  {stat.label}
-                </p>
-                <p className={`mt-2 text-3xl font-semibold ${stat.accent}`}>
-                  {stat.value.toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="bg-slate-50 text-slate-900">
-        <div className="container mx-auto px-4 py-10">
-          <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-            <div className="space-y-6">
-              <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
-                    <UserIcon className="h-5 w-5 text-slate-500" />
-                    Profile snapshot
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="space-y-4">
-                    {[
-                      {
-                        label: 'Primary email',
-                        value: user.email ?? 'Not provided',
-                        icon: Mail,
-                        muted: false,
-                      },
-                      {
-                        label: 'Phone number',
-                        value: phoneNumber || 'Add your phone number',
-                        icon: Phone,
-                        muted: !phoneNumber,
-                      },
-                    ].map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <div
-                          key={item.label}
-                          className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"
-                        >
-                          <div className="rounded-2xl bg-white p-2 text-slate-500">
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                              {item.label}
-                            </p>
-                            <p
-                              className={`text-sm ${
-                                item.muted ? 'text-slate-400' : 'text-slate-900'
-                              }`}
-                            >
-                              {item.value}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setActiveTab('profile')}
-                    className="w-full border-slate-200 text-slate-700 hover:bg-slate-100"
-                  >
-                    Edit profile details
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
-                    <Users className="h-5 w-5 text-slate-500" />
-                    Collaboration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm text-slate-600">
-                  <p>
-                    {hasHousehold
-                      ? 'You are sharing preferences with your household.'
-                      : 'Invite a partner or family member to collaborate on decisions.'}
-                  </p>
-                  {hasHousehold ? (
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                        Household
+          {/* Stats row */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-10 grid gap-4 sm:grid-cols-3"
+          >
+            {heroStats.map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <motion.div
+                  key={stat.label}
+                  variants={statVariants}
+                  whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${stat.gradient} p-5 backdrop-blur-sm transition-all hover:border-white/10`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="relative flex items-center justify-between">
+                    <div>
+                      <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                        {stat.label}
                       </p>
-                      <p className="text-lg font-semibold text-slate-900">
+                      <p
+                        className={`font-display mt-2 text-4xl font-medium tracking-tight ${stat.valueColor}`}
+                      >
+                        {stat.value.toLocaleString()}
+                      </p>
+                    </div>
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 ${stat.iconColor}`}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Main content */}
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div className="grid gap-8 lg:grid-cols-[340px,1fr]">
+          {/* Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="space-y-6"
+          >
+            {/* Profile snapshot card */}
+            <div className="card-luxury overflow-hidden p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                  <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-hm-stone-200 font-medium">
+                    Profile Snapshot
+                  </h3>
+                  <p className="text-hm-stone-500 text-xs">Quick overview</p>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {[
+                  {
+                    label: 'Primary email',
+                    value: user.email ?? 'Not provided',
+                    icon: Mail,
+                    muted: false,
+                  },
+                  {
+                    label: 'Phone number',
+                    value: phoneNumber || 'Add phone number',
+                    icon: Phone,
+                    muted: !phoneNumber,
+                  },
+                ].map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <div
+                      key={item.label}
+                      className="group flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+                    >
+                      <div className="text-hm-stone-500 group-hover:text-hm-stone-400 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 transition-colors">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-hm-stone-500 text-[10px] font-medium tracking-[0.15em] uppercase">
+                          {item.label}
+                        </p>
+                        <p
+                          className={`truncate text-sm ${
+                            item.muted
+                              ? 'text-hm-stone-500'
+                              : 'text-hm-stone-300'
+                          }`}
+                        >
+                          {item.value}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('profile')}
+                className="text-hm-stone-300 mt-5 w-full border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+              >
+                Edit profile details
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Collaboration card */}
+            <div className="card-luxury overflow-hidden p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                  <Users className="text-hm-stone-400 h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-hm-stone-200 font-medium">
+                    Collaboration
+                  </h3>
+                  <p className="text-hm-stone-500 text-xs">Household status</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                {hasHousehold ? (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-emerald-400" />
+                        <p className="text-xs font-medium tracking-wide text-emerald-300 uppercase">
+                          Active Household
+                        </p>
+                      </div>
+                      <p className="text-hm-stone-200 mt-2 text-lg font-medium">
                         {profile.household?.name}
                       </p>
-                      <p className="mt-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                        Join code
-                      </p>
-                      <p className="font-mono text-sm text-slate-800">
-                        {profile.household?.id}
-                      </p>
                     </div>
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-500">
-                      Create or join a household to unlock mutual likes and
-                      shared timelines.
+
+                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                      <p className="text-hm-stone-500 text-[10px] font-medium tracking-[0.15em] uppercase">
+                        Join Code
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <code className="text-hm-stone-400 flex-1 truncate rounded bg-white/5 px-2 py-1 font-mono text-xs">
+                          {profile.household?.id}
+                        </code>
+                        <button
+                          onClick={copyHouseholdCode}
+                          className="text-hm-stone-400 flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        >
+                          <AnimatePresence mode="wait">
+                            {codeCopied ? (
+                              <motion.div
+                                key="check"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                              >
+                                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="copy"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab('household')}
-                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-100"
-                    >
-                      Manage household
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveTab('activity')}
-                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-100"
-                    >
-                      View activity
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-center">
+                    <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
+                    <p className="text-hm-stone-400 mt-2 text-sm">
+                      Create or join a household to discover mutual likes and
+                      collaborate on your home search.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveTab('household')}
+                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <Home className="mr-1.5 h-3.5 w-3.5" />
+                  Household
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveTab('activity')}
+                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                  <Activity className="mr-1.5 h-3.5 w-3.5" />
+                  Activity
+                </Button>
+              </div>
             </div>
+          </motion.div>
 
-            <div>
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="space-y-6"
-              >
-                <TabsList className="flex w-full flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-1 text-slate-500 shadow-sm">
-                  <TabsTrigger
-                    value="profile"
-                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
-                  >
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Profile
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="household"
-                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
-                  >
-                    <Home className="mr-2 h-4 w-4" />
-                    Household
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="activity"
-                    className="min-w-[140px] rounded-2xl px-4 py-2 text-sm text-slate-500 data-[state=active]:!bg-slate-900 data-[state=active]:!text-white data-[state=active]:shadow-lg"
-                  >
-                    <Activity className="mr-2 h-4 w-4" />
-                    Activity
-                  </TabsTrigger>
-                </TabsList>
+          {/* Main content area */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-6"
+            >
+              <TabsList className="inline-flex h-auto w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1 backdrop-blur-sm sm:w-auto">
+                {[
+                  { value: 'profile', label: 'Profile', icon: UserIcon },
+                  { value: 'household', label: 'Household', icon: Home },
+                  { value: 'activity', label: 'Activity', icon: Activity },
+                ].map((tab) => {
+                  const Icon = tab.icon
+                  return (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="text-hm-stone-400 relative flex-1 rounded-lg px-4 py-2.5 text-sm transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-lg sm:flex-none sm:px-6"
+                    >
+                      <Icon className="mr-2 h-4 w-4" />
+                      {tab.label}
+                    </TabsTrigger>
+                  )
+                })}
+              </TabsList>
 
-                <TabsContent value="profile" className="space-y-6">
-                  <Card className="rounded-3xl border border-slate-200 bg-white shadow-xl">
-                    <CardHeader>
-                      <CardTitle className="text-2xl text-slate-900">
-                        Profile Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ProfileForm user={user} profile={profile} />
-                    </CardContent>
-                  </Card>
+              <AnimatePresence mode="wait">
+                <TabsContent
+                  value="profile"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="card-luxury overflow-hidden p-6 sm:p-8"
+                  >
+                    <div className="mb-6 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                        <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                      </div>
+                      <div>
+                        <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                          Profile Information
+                        </h2>
+                        <p className="text-hm-stone-500 text-sm">
+                          Update your personal details
+                        </p>
+                      </div>
+                    </div>
+                    <ProfileForm user={user} profile={profile} />
+                  </motion.div>
                 </TabsContent>
 
                 <TabsContent
                   value="household"
-                  className="space-y-6"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                   data-testid="household-section"
                 >
-                  <HouseholdSection profile={profile} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <HouseholdSection profile={profile} />
+                  </motion.div>
                 </TabsContent>
 
-                <TabsContent value="activity" className="space-y-6">
-                  <ActivityStats summary={activitySummary} />
+                <TabsContent
+                  value="activity"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ActivityStats summary={activitySummary} />
+                  </motion.div>
                 </TabsContent>
-              </Tabs>
-            </div>
-          </div>
+              </AnimatePresence>
+            </Tabs>
+          </motion.div>
         </div>
       </div>
     </div>
