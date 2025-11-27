@@ -145,8 +145,9 @@ describe('Footer', () => {
   test('renders "Built with love" message with heart icon', () => {
     render(<Footer />)
 
-    expect(screen.getByText('Built with')).toBeInTheDocument()
-    expect(screen.getByText('in the Bay Area')).toBeInTheDocument()
+    // Text is split by the heart icon, so use a more flexible matcher
+    expect(screen.getByText(/Built with/)).toBeInTheDocument()
+    expect(screen.getByText(/in the Bay Area/)).toBeInTheDocument()
     expect(screen.getByTestId('heart-icon')).toBeInTheDocument()
   })
 

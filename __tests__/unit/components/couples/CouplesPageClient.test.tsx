@@ -33,6 +33,7 @@ const mockSupabaseClient = {
     getSession: jest.fn(),
   },
   from: jest.fn(),
+  rpc: jest.fn(),
 }
 
 jest.mock('@/lib/supabase/client', () => ({
@@ -198,46 +199,13 @@ describe('CouplesPageClient', () => {
       ).toBeInTheDocument()
     })
 
-    test('should create household and open invite modal when invite partner is clicked', async () => {
+    test('should create household via RPC and open invite modal when invite partner is clicked', async () => {
       const newHouseholdId = 'new-household-123'
 
-      // Mock household creation
-      const insertMock = jest.fn().mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: { id: newHouseholdId },
-            error: null,
-          }),
-        }),
-      })
-
-      const updateMock = jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
-          error: null,
-        }),
-      })
-
-      // Initial query returns no household
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        if (table === 'user_profiles') {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
-                  data: { household_id: null, households: null },
-                  error: null,
-                }),
-              }),
-            }),
-            update: updateMock,
-          }
-        }
-        if (table === 'households') {
-          return {
-            insert: insertMock,
-          }
-        }
-        return {}
+      // Mock RPC call for household creation (SECURITY DEFINER function)
+      mockSupabaseClient.rpc.mockResolvedValue({
+        data: newHouseholdId,
+        error: null,
       })
 
       const user = userEvent.setup()
@@ -256,53 +224,34 @@ describe('CouplesPageClient', () => {
       })
       await user.click(inviteButton)
 
-      // Wait for household creation and modal to open
+      // Wait for RPC call
       await waitFor(() => {
-        expect(insertMock).toHaveBeenCalledWith({
-          created_by: 'test-user-id',
-          user_count: 1,
-        })
+        expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+          'create_household_for_user'
+        )
       })
 
-      await waitFor(() => {
-        expect(updateMock).toHaveBeenCalled()
-      })
-
+      // Verify success toast
       await waitFor(() => {
         expect(mockToastSuccess).toHaveBeenCalledWith(
           'Household created! Now invite your partner.'
         )
       })
+
+      // Verify invite modal opens with correct household ID
+      await waitFor(() => {
+        expect(screen.getByTestId('invite-partner-modal')).toBeInTheDocument()
+      })
+      expect(screen.getByTestId('modal-household-id')).toHaveTextContent(
+        newHouseholdId
+      )
     })
 
-    test('should show error toast when household creation fails', async () => {
-      // Mock household creation failure
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        if (table === 'user_profiles') {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
-                  data: { household_id: null, households: null },
-                  error: null,
-                }),
-              }),
-            }),
-          }
-        }
-        if (table === 'households') {
-          return {
-            insert: jest.fn().mockReturnValue({
-              select: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: 'Database error' },
-                }),
-              }),
-            }),
-          }
-        }
-        return {}
+    test('should show error toast when RPC household creation fails', async () => {
+      // Mock RPC failure
+      mockSupabaseClient.rpc.mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' },
       })
 
       const user = userEvent.setup()
@@ -322,50 +271,16 @@ describe('CouplesPageClient', () => {
       await waitFor(() => {
         expect(mockToastError).toHaveBeenCalledWith(
           'Failed to create household',
-          expect.any(String)
+          'Database error'
         )
       })
     })
 
-    test('should show error toast when user profile update fails after household creation', async () => {
-      const newHouseholdId = 'new-household-456'
-
-      // Mock successful household creation but failed profile update
-      const insertMock = jest.fn().mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: { id: newHouseholdId },
-            error: null,
-          }),
-        }),
-      })
-
-      const updateMock = jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
-          error: { message: 'Profile update failed' },
-        }),
-      })
-
-      mockSupabaseClient.from.mockImplementation((table: string) => {
-        if (table === 'user_profiles') {
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
-                  data: { household_id: null, households: null },
-                  error: null,
-                }),
-              }),
-            }),
-            update: updateMock,
-          }
-        }
-        if (table === 'households') {
-          return {
-            insert: insertMock,
-          }
-        }
-        return {}
+    test('should show error toast when RPC returns user already in household error', async () => {
+      // Mock RPC failure - user already has household
+      mockSupabaseClient.rpc.mockResolvedValue({
+        data: null,
+        error: { message: 'User already belongs to a household' },
       })
 
       const user = userEvent.setup()
@@ -385,7 +300,7 @@ describe('CouplesPageClient', () => {
       await waitFor(() => {
         expect(mockToastError).toHaveBeenCalledWith(
           'Failed to create household',
-          expect.any(String)
+          'User already belongs to a household'
         )
       })
     })
