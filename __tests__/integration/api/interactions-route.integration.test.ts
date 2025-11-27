@@ -421,8 +421,8 @@ describe.sequential('Integration: /api/interactions route', () => {
 
     expect(resetRes.status).toBe(200)
     const resetData = await resetRes.json()
-    expect(resetData.deleted).toBe(true)
-    expect(resetData.count).toBeGreaterThanOrEqual(3)
+    expect(resetData.data.deleted).toBe(true)
+    expect(resetData.data.count).toBeGreaterThanOrEqual(3)
 
     // Verify all interactions are deleted
     const { count: afterCount, error: afterError } = await supabaseAdmin
@@ -475,8 +475,8 @@ describe.sequential('Integration: /api/interactions route', () => {
 
     expect(resetRes.status).toBe(200)
     const resetData = await resetRes.json()
-    expect(resetData.deleted).toBe(true)
-    expect(resetData.count).toBe(0)
+    expect(resetData.data.deleted).toBe(true)
+    expect(resetData.data.count).toBe(0)
   })
 
   it('enforces rate limiting responses', async () => {

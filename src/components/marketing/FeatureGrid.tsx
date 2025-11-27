@@ -1,8 +1,16 @@
 'use client'
 
+import { useRef, useState } from 'react'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
-import { Brain, Users, Heart, MessageSquare } from 'lucide-react'
+import {
+  Brain,
+  Users,
+  Heart,
+  MessageSquare,
+  type LucideIcon,
+} from 'lucide-react'
 
 const features = [
   {
@@ -10,26 +18,130 @@ const features = [
     title: 'AI That Gets You Both',
     description:
       'Our ML learns what makes you and your partner tick, finding homes that check both your boxes.',
+    iconAnimation: 'pulse',
   },
   {
     icon: Users,
     title: 'Swipe Together, Decide Together',
     description:
       'Real-time collaboration means no more screenshot chains. See what they see, when they see it.',
+    iconAnimation: 'bounce',
   },
   {
     icon: Heart,
     title: 'Match on What Matters',
     description:
       'Beyond bedrooms and bathrooms—we match on vibe, neighborhood feel, and future potential.',
+    iconAnimation: 'heartbeat',
   },
   {
     icon: MessageSquare,
     title: 'Talk Like Humans, Search Like Pros',
     description:
       '"Walking distance to coffee, big kitchen, room for a dog" becomes your perfect property list.',
+    iconAnimation: 'typing',
   },
 ]
+
+// Spotlight card with mouse-following effect
+function SpotlightCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    mouseX.set(e.clientX - rect.left)
+    mouseY.set(e.clientY - rect.top)
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      className={className}
+      onMouseMove={handleMouseMove}
+      style={
+        {
+          '--mouse-x': mouseX,
+          '--mouse-y': mouseY,
+        } as React.CSSProperties
+      }
+    >
+      {/* Spotlight overlay */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background: useTransform(
+            [mouseX, mouseY],
+            ([x, y]) =>
+              `radial-gradient(400px circle at ${x}px ${y}px, rgba(56,189,248,0.1), transparent 40%)`
+          ),
+        }}
+      />
+      {children}
+    </div>
+  )
+}
+
+// Icon with micro-animation
+function AnimatedIcon({
+  Icon,
+  animation,
+  isHovered,
+}: {
+  Icon: LucideIcon
+  animation: string
+  isHovered: boolean
+}) {
+  const getAnimationProps = () => {
+    if (!isHovered) return {}
+
+    switch (animation) {
+      case 'pulse':
+        return {
+          animate: {
+            scale: [1, 1.15, 1],
+            filter: [
+              'drop-shadow(0 0 0px rgba(56,189,248,0))',
+              'drop-shadow(0 0 8px rgba(56,189,248,0.6))',
+              'drop-shadow(0 0 0px rgba(56,189,248,0))',
+            ],
+          },
+          transition: { duration: 1, repeat: Infinity },
+        }
+      case 'bounce':
+        return {
+          animate: { y: [0, -4, 0] },
+          transition: { duration: 0.6, repeat: Infinity },
+        }
+      case 'heartbeat':
+        return {
+          animate: { scale: [1, 1.2, 1, 1.15, 1] },
+          transition: { duration: 0.8, repeat: Infinity },
+        }
+      case 'typing':
+        return {
+          animate: { rotate: [0, -5, 5, 0] },
+          transition: { duration: 0.3, repeat: Infinity },
+        }
+      default:
+        return {}
+    }
+  }
+
+  return (
+    <motion.div {...getAnimationProps()}>
+      <Icon className="h-6 w-6" />
+    </motion.div>
+  )
+}
 
 export function FeatureGrid() {
   return (
@@ -93,68 +205,106 @@ export function FeatureGrid() {
           </p>
         </MotionDiv>
 
-        <div className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, index) => (
-            <MotionDiv
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:shadow-xl sm:p-6">
-                {/* Hover Glow Effect */}
-                <MotionDiv
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, rgba(41, 227, 255, 0) 0%, rgba(41, 227, 255, 0.1) 100%)',
-                    opacity: 0,
-                  }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
-
-                {/* Neon Ring on Focus */}
-                <MotionDiv
-                  className="absolute inset-0 rounded-lg transition-all duration-300"
-                  whileHover={{
-                    boxShadow: '0 0 0 2px rgba(41, 227, 255, 0.5)',
-                  }}
-                />
-
-                <div className="relative z-10">
-                  <MotionDiv
-                    className="mb-4 inline-flex rounded-lg p-3 text-white"
-                    style={{
-                      background:
-                        'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
-                    }}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <feature.icon className="h-6 w-6" />
-                  </MotionDiv>
-
-                  <h3
-                    className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
-                    style={{ fontFamily: 'var(--font-heading)' }}
-                  >
-                    {feature.title}
-                  </h3>
-
-                  <p
-                    className="text-sm text-gray-600 sm:text-base"
-                    style={{ fontFamily: 'var(--font-body)' }}
-                  >
-                    {feature.description}
-                  </p>
-                </div>
-              </Card>
-            </MotionDiv>
+        {/* Feature cards container with stagger */}
+        <motion.div
+          className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                staggerChildren: 0.12,
+              },
+            },
+          }}
+        >
+          {features.map((feature) => (
+            <FeatureCard key={feature.title} feature={feature} />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
+  )
+}
+
+function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 30, rotateX: -10 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          rotateX: 0,
+          transition: {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+          },
+        },
+      }}
+      style={{ perspective: 1000 }}
+    >
+      <SpotlightCard className="h-full">
+        <Card
+          className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Animated border gradient on hover */}
+          <motion.div
+            className="pointer-events-none absolute inset-0 rounded-xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(56,189,248,0.3) 0%, rgba(14,165,233,0.1) 50%, rgba(56,189,248,0.3) 100%)',
+              mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              maskComposite: 'exclude',
+              padding: '2px',
+            }}
+          />
+
+          <div className="relative z-10">
+            {/* Icon with gradient background and micro-animation */}
+            <motion.div
+              className="mb-4 inline-flex rounded-lg p-3 text-white"
+              style={{
+                background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
+              }}
+              animate={
+                isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }
+              }
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <AnimatedIcon
+                Icon={feature.icon}
+                animation={feature.iconAnimation}
+                isHovered={isHovered}
+              />
+            </motion.div>
+
+            <h3
+              className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              {feature.title}
+            </h3>
+
+            <p
+              className="text-sm text-gray-600 sm:text-base"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              {feature.description}
+            </p>
+          </div>
+        </Card>
+      </SpotlightCard>
+    </motion.div>
   )
 }

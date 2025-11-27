@@ -326,6 +326,110 @@ describe('CouplesPageClient', () => {
         )
       })
     })
+
+    test('should show error toast when user profile update fails after household creation', async () => {
+      const newHouseholdId = 'new-household-456'
+
+      // Mock successful household creation but failed profile update
+      const insertMock = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          single: jest.fn().mockResolvedValue({
+            data: { id: newHouseholdId },
+            error: null,
+          }),
+        }),
+      })
+
+      const updateMock = jest.fn().mockReturnValue({
+        eq: jest.fn().mockResolvedValue({
+          error: { message: 'Profile update failed' },
+        }),
+      })
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'user_profiles') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { household_id: null, households: null },
+                  error: null,
+                }),
+              }),
+            }),
+            update: updateMock,
+          }
+        }
+        if (table === 'households') {
+          return {
+            insert: insertMock,
+          }
+        }
+        return {}
+      })
+
+      const user = userEvent.setup()
+      render(<CouplesPageClient />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /invite partner/i })
+        ).toBeInTheDocument()
+      })
+
+      const inviteButton = screen.getByRole('button', {
+        name: /invite partner/i,
+      })
+      await user.click(inviteButton)
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith(
+          'Failed to create household',
+          expect.any(String)
+        )
+      })
+    })
+
+    test('should show auth required when session expires during household creation', async () => {
+      // Initial session exists for loading
+      mockSupabaseClient.auth.getSession
+        .mockResolvedValueOnce({
+          data: { session: mockSession },
+        })
+        // Second call during household creation returns no session
+        .mockResolvedValueOnce({
+          data: { session: null },
+        })
+
+      mockSupabaseClient.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { household_id: null, households: null },
+              error: null,
+            }),
+          }),
+        }),
+      })
+
+      const user = userEvent.setup()
+      render(<CouplesPageClient />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /invite partner/i })
+        ).toBeInTheDocument()
+      })
+
+      const inviteButton = screen.getByRole('button', {
+        name: /invite partner/i,
+      })
+      await user.click(inviteButton)
+
+      await waitFor(() => {
+        expect(mockToastAuthRequired).toHaveBeenCalled()
+      })
+    })
   })
 
   describe('Waiting for Partner State', () => {

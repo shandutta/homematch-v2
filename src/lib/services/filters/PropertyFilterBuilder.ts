@@ -1,6 +1,14 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
 import type { PropertyFilters } from '@/lib/schemas/property'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type FilterableQuery<T> = {
+  gte: (...args: any[]) => T
+  lte: (...args: any[]) => T
+  eq: (...args: any[]) => T
+  in: (...args: any[]) => T
+  contains: (...args: any[]) => T
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * Filter operation types supported by the PropertyFilterBuilder
@@ -86,11 +94,11 @@ export class PropertyFilterBuilder {
    * @param filters - The filter criteria to apply
    * @returns The filtered query with all applicable filters applied
    */
-  applyFilters(
-    query: ReturnType<SupabaseClient<Database>['from']>,
+  applyFilters<T extends FilterableQuery<T>>(
+    query: T,
     filters: PropertyFilters
-  ): ReturnType<SupabaseClient<Database>['from']> {
-    let filteredQuery = query
+  ): T {
+    let filteredQuery: T = query
 
     // Apply standard filters using declarative rules
     for (const rule of this.filterRules) {
@@ -112,11 +120,11 @@ export class PropertyFilterBuilder {
    *
    * @private
    */
-  private applyFilter(
-    query: ReturnType<SupabaseClient<Database>['from']>,
+  private applyFilter<T extends FilterableQuery<T>>(
+    query: T,
     filters: PropertyFilters,
     rule: FilterRule
-  ): ReturnType<SupabaseClient<Database>['from']> {
+  ): T {
     const filterValue = filters[rule.filterKey]
 
     // Skip if filter value is undefined or null

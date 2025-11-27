@@ -163,7 +163,10 @@ export async function validateImageUrls(
         )
       }
     } catch (error) {
-      console.warn(`[ImageSelector] Failed to validate image: ${image.url}`, error)
+      console.warn(
+        `[ImageSelector] Failed to validate image: ${image.url}`,
+        error
+      )
     }
   }
 
