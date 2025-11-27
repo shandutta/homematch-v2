@@ -76,12 +76,16 @@ export function CouplesPageClient() {
       // Store user ID
       setUserId(session.user.id)
 
-      // First check user's household status
-      const { data: userProfile } = await supabase
+      // First check user's household status (simple query without join)
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('household_id, households(id, user_count)')
+        .select('household_id')
         .eq('id', session.user.id)
         .single()
+
+      if (profileError) {
+        console.error('[Couples] Profile fetch error:', profileError)
+      }
 
       if (!userProfile?.household_id) {
         setUserHouseholdStatus('no-household')
@@ -92,9 +96,14 @@ export function CouplesPageClient() {
       // Store household ID
       setHouseholdId(userProfile.household_id)
 
-      // Check if there are other users in the household
-      const householdUserCount =
-        (userProfile.households as { user_count?: number })?.user_count || 1
+      // Fetch household info separately to check user count
+      const { data: household } = await supabase
+        .from('households')
+        .select('id, user_count')
+        .eq('id', userProfile.household_id)
+        .single()
+
+      const householdUserCount = household?.user_count || 1
       if (householdUserCount < 2) {
         setUserHouseholdStatus('waiting-partner')
         return
@@ -215,8 +224,13 @@ export function CouplesPageClient() {
 
       if (createError) {
         // Log the raw error for debugging
-        console.error('[Household Create] Raw error:', JSON.stringify(createError, null, 2))
-        throw new Error(createError.message || createError.code || 'Unknown RPC error')
+        console.error(
+          '[Household Create] Raw error:',
+          JSON.stringify(createError, null, 2)
+        )
+        throw new Error(
+          createError.message || createError.code || 'Unknown RPC error'
+        )
       }
 
       if (!newHouseholdId) {
