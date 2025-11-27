@@ -359,6 +359,18 @@ async function setupTestUsers() {
     process.exit(1)
   }
 
+  // Debug: Check household_id for test users
+  const { data: debugProfiles } = await supabase
+    .from('user_profiles')
+    .select('id, email, household_id, onboarding_completed')
+    .in('id', targetIds)
+  console.log('\n📊 Test user profiles after setup:')
+  debugProfiles?.forEach((p) => {
+    console.log(
+      `   ${p.email}: household_id=${p.household_id || 'null'}, onboarding=${p.onboarding_completed}`
+    )
+  })
+
   // Friendly reminder for developers running pnpm dev
   const primaryUser = testUsers[0]
   const secondaryUser = testUsers[1]

@@ -81,13 +81,33 @@ export function CouplesPageClient() {
         .from('user_profiles')
         .select('household_id')
         .eq('id', session.user.id)
-        .single()
+        .maybeSingle()
 
       if (profileError) {
-        console.error('[Couples] Profile fetch error:', profileError)
+        console.error('[Couples] Profile fetch error:', {
+          message: profileError.message,
+          code: profileError.code,
+          details: profileError.details,
+          hint: profileError.hint,
+        })
+        setUserHouseholdStatus('error')
+        setError('Failed to load your profile')
+        return
       }
 
-      if (!userProfile?.household_id) {
+      if (!userProfile) {
+        setUserHouseholdStatus('no-household')
+        setHouseholdId(null)
+        return
+      }
+
+      console.log('[Couples] Profile fetch:', {
+        householdId: userProfile.household_id,
+        hasError: false,
+        userId: session.user.id,
+      })
+
+      if (!userProfile.household_id) {
         setUserHouseholdStatus('no-household')
         setHouseholdId(null)
         return
