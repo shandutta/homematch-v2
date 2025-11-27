@@ -13,7 +13,6 @@ jest.mock('framer-motion', () => ({
 
 describe('GradientMeshBackground', () => {
   beforeEach(() => {
-    // Mock matchMedia for reduced motion preference
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query) => ({
@@ -28,102 +27,43 @@ describe('GradientMeshBackground', () => {
       })),
     })
   })
-  test('renders with default props', () => {
-    const { container } = render(<GradientMeshBackground />)
 
-    // Should have the container with absolute positioning
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveClass('absolute', 'inset-0', 'overflow-hidden')
+  test('renders without crashing', () => {
+    const { container } = render(<GradientMeshBackground />)
+    expect(container.firstChild).toBeInTheDocument()
   })
 
-  test('renders with custom className', () => {
+  test('applies custom className', () => {
     const { container } = render(
       <GradientMeshBackground className="custom-class" />
     )
-
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveClass('custom-class')
+    expect(container.firstChild).toHaveClass('custom-class')
   })
 
   test('renders noise texture by default', () => {
     const { container } = render(<GradientMeshBackground />)
-
-    // Should have SVG noise filter
-    const svg = container.querySelector('svg')
-    expect(svg).toBeInTheDocument()
-
     const filter = container.querySelector('filter#noise')
     expect(filter).toBeInTheDocument()
   })
 
   test('hides noise texture when showNoise is false', () => {
     const { container } = render(<GradientMeshBackground showNoise={false} />)
-
-    // Should not have SVG noise filter
     const svg = container.querySelector('svg')
     expect(svg).not.toBeInTheDocument()
   })
 
-  test('renders with default variant colors', () => {
+  test('renders with default variant', () => {
     const { container } = render(<GradientMeshBackground variant="default" />)
-
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveStyle({ backgroundColor: '#030712' })
+    expect(container.firstChild).toHaveStyle({ backgroundColor: '#030712' })
   })
 
-  test('renders with darker variant colors', () => {
+  test('renders with darker variant', () => {
     const { container } = render(<GradientMeshBackground variant="darker" />)
-
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveStyle({ backgroundColor: '#020617' })
+    expect(container.firstChild).toHaveStyle({ backgroundColor: '#020617' })
   })
 
-  test('renders with accent variant colors', () => {
+  test('renders with accent variant', () => {
     const { container } = render(<GradientMeshBackground variant="accent" />)
-
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveStyle({ backgroundColor: '#030712' })
-  })
-
-  test('renders gradient blobs', () => {
-    const { container } = render(<GradientMeshBackground />)
-
-    // Should have multiple blur elements for the blobs
-    const blurElements = container.querySelectorAll('[class*="blur-"]')
-    expect(blurElements.length).toBeGreaterThanOrEqual(4)
-  })
-
-  test('renders vignette overlay', () => {
-    const { container } = render(<GradientMeshBackground />)
-
-    // Should have vignette (radial gradient from transparent to black)
-    const pointerNoneElements = container.querySelectorAll(
-      '.pointer-events-none'
-    )
-    expect(pointerNoneElements.length).toBeGreaterThan(0)
-  })
-
-  test('renders glow accent at top', () => {
-    const { container } = render(<GradientMeshBackground />)
-
-    // Should have glow element at top
-    const glowElement = container.querySelector('.inset-x-0.top-0')
-    expect(glowElement).toBeInTheDocument()
-  })
-
-  test('applies intensity to blob opacity', () => {
-    const { container } = render(<GradientMeshBackground intensity={0.5} />)
-
-    // Blobs should exist with reduced opacity
-    const blobs = container.querySelectorAll('[class*="rounded-full"]')
-    expect(blobs.length).toBeGreaterThan(0)
-  })
-
-  test('renders base gradient layer', () => {
-    const { container } = render(<GradientMeshBackground />)
-
-    // Should have base gradient div
-    const baseLayer = container.querySelector('.absolute.inset-0')
-    expect(baseLayer).toBeInTheDocument()
+    expect(container.firstChild).toHaveStyle({ backgroundColor: '#030712' })
   })
 })

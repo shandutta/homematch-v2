@@ -38,10 +38,51 @@ VALUES
    ST_SetSRID(ST_MakePoint(-122.25, 37.90), 4326),
    '33333333-3333-3333-3333-333333333333', 'test-hash-4', true),
    
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'dev-100005', '654 Mock Rd', 'Berkeley', 'CA', '94702', 
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'dev-100005', '654 Mock Rd', 'Berkeley', 'CA', '94702',
    1200000, 4, 3, 2500, 'single_family', 'active',
    ST_SetSRID(ST_MakePoint(-122.26, 37.91), 4326),
-   '33333333-3333-3333-3333-333333333333', 'test-hash-5', true)
+   '33333333-3333-3333-3333-333333333333', 'test-hash-5', true),
+
+  -- Additional properties with fixed IDs for vibes seeding
+  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'dev-100006', '2847 Pine St', 'San Francisco', 'CA', '94115',
+   1890000, 3, 2.5, 1850, 'single_family', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4386, 37.7886), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-6', true),
+
+  ('11111111-2222-3333-4444-555555555555', 'dev-100007', '445 Kansas St #3B', 'San Francisco', 'CA', '94107',
+   1150000, 2, 2, 1050, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4008, 37.7611), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-7', true),
+
+  ('22222222-3333-4444-5555-666666666666', 'dev-100008', '1633 Webster St #1205', 'San Francisco', 'CA', '94115',
+   2250000, 3, 3, 1650, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4324, 37.7886), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-8', true),
+
+  ('33333333-4444-5555-6666-777777777777', 'dev-100009', '3542 18th St', 'San Francisco', 'CA', '94110',
+   1725000, 4, 3, 2100, 'single_family', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4194, 37.7615), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-9', true),
+
+  ('44444444-5555-6666-7777-888888888888', 'dev-100010', '5627 Lawton St', 'San Francisco', 'CA', '94122',
+   1385000, 3, 2, 1480, 'single_family', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4636, 37.7565), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-10', true),
+
+  ('55555555-6666-7777-8888-999999999999', 'dev-100011', '2045 Franklin St #4A', 'San Francisco', 'CA', '94109',
+   995000, 1, 1, 750, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4221, 37.7952), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-11', true),
+
+  ('66666666-7777-8888-9999-aaaaaaaaaaaa', 'dev-100012', '897 Harrison St #205', 'San Francisco', 'CA', '94107',
+   1650000, 2, 2, 1200, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4047, 37.7748), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-12', true),
+
+  ('77777777-8888-9999-aaaa-bbbbbbbbbbbb', 'dev-100013', '1456 Grove St', 'Berkeley', 'CA', '94709',
+   1220000, 3, 2, 1350, 'single_family', 'active',
+   ST_SetSRID(ST_MakePoint(-122.2730, 37.8715), 4326),
+   '33333333-3333-3333-3333-333333333333', 'test-hash-13', true)
 ON CONFLICT (zpid) DO UPDATE SET
   address = EXCLUDED.address,
   city = EXCLUDED.city,

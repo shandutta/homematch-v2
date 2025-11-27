@@ -187,7 +187,7 @@ describe('InvitePartnerModal Component', () => {
       household_id: 'test-household-123',
       invited_email: 'partner1@example.com',
       invited_name: 'Partner One',
-      invited_by: 'test-user-456',
+      created_by: 'test-user-456',
       message: null,
       token: 'token-abc',
       status: 'pending',
@@ -395,7 +395,7 @@ describe('InvitePartnerModal Component', () => {
           household_id: 'test-household-123',
           invited_email: 'partner@test.com',
           invited_name: 'Partner Name',
-          invited_by: 'test-user-456',
+          created_by: 'test-user-456',
           message: null,
         })
       })

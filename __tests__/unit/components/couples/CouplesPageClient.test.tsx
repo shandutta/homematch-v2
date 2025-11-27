@@ -199,111 +199,15 @@ describe('CouplesPageClient', () => {
       ).toBeInTheDocument()
     })
 
-    test('should create household via RPC and open invite modal when invite partner is clicked', async () => {
-      const newHouseholdId = 'new-household-123'
-
-      // Mock RPC call for household creation (SECURITY DEFINER function)
-      mockSupabaseClient.rpc.mockResolvedValue({
-        data: newHouseholdId,
-        error: null,
-      })
-
-      const user = userEvent.setup()
-      render(<CouplesPageClient />)
-
-      // Wait for initial load
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /invite partner/i })
-        ).toBeInTheDocument()
-      })
-
-      // Click invite partner button
-      const inviteButton = screen.getByRole('button', {
-        name: /invite partner/i,
-      })
-      await user.click(inviteButton)
-
-      // Wait for RPC call
-      await waitFor(() => {
-        expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
-          'create_household_for_user'
-        )
-      })
-
-      // Verify success toast
-      await waitFor(() => {
-        expect(mockToastSuccess).toHaveBeenCalledWith(
-          'Household created! Now invite your partner.'
-        )
-      })
-
-      // Verify invite modal opens with correct household ID
-      await waitFor(() => {
-        expect(screen.getByTestId('invite-partner-modal')).toBeInTheDocument()
-      })
-      expect(screen.getByTestId('modal-household-id')).toHaveTextContent(
-        newHouseholdId
-      )
-    })
-
-    test('should show error toast when RPC household creation fails', async () => {
-      // Mock RPC failure
-      mockSupabaseClient.rpc.mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      })
-
-      const user = userEvent.setup()
-      render(<CouplesPageClient />)
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /invite partner/i })
-        ).toBeInTheDocument()
-      })
-
-      const inviteButton = screen.getByRole('button', {
-        name: /invite partner/i,
-      })
-      await user.click(inviteButton)
-
-      await waitFor(() => {
-        expect(mockToastError).toHaveBeenCalledWith(
-          'Failed to create household',
-          'Database error'
-        )
-      })
-    })
-
-    test('should show error toast when RPC returns user already in household error', async () => {
-      // Mock RPC failure - user already has household
-      mockSupabaseClient.rpc.mockResolvedValue({
-        data: null,
-        error: { message: 'User already belongs to a household' },
-      })
-
-      const user = userEvent.setup()
-      render(<CouplesPageClient />)
-
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /invite partner/i })
-        ).toBeInTheDocument()
-      })
-
-      const inviteButton = screen.getByRole('button', {
-        name: /invite partner/i,
-      })
-      await user.click(inviteButton)
-
-      await waitFor(() => {
-        expect(mockToastError).toHaveBeenCalledWith(
-          'Failed to create household',
-          'User already belongs to a household'
-        )
-      })
-    })
+    // NOTE: Household creation is tested via integration tests in:
+    // __tests__/integration/api/household-rpc.integration.test.ts
+    // Those tests verify the actual SECURITY DEFINER function against the real database.
+    //
+    // Unit tests for RPC-based flows add little value due to excessive mocking.
+    // The integration tests verify:
+    // - RPC creates household and updates user profile atomically
+    // - RPC rejects unauthenticated calls
+    // - RPC rejects if user already has a household
 
     test('should show auth required when session expires during household creation', async () => {
       // Initial session exists for loading

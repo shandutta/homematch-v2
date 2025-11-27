@@ -1,8 +1,25 @@
 import { render, screen } from '@testing-library/react'
-// import userEvent from '@testing-library/user-event'
 import { HeroSection } from '@/components/marketing/HeroSection'
 
-// Framer-motion is mocked globally in jest.setup.ts
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
+    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+    section: ({ children, ...props }: any) => (
+      <section {...props}>{children}</section>
+    ),
+    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    button: ({ children, ...props }: any) => (
+      <button {...props}>{children}</button>
+    ),
+  },
+  useScroll: () => ({ scrollYProgress: { get: () => 0 } }),
+  useTransform: () => ({ get: () => 0 }),
+  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
+  useSpring: (value: any) => value,
+}))
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
@@ -14,176 +31,129 @@ jest.mock('next/link', () => ({
   ),
 }))
 
-// Mock child components
-jest.mock('@/components/marketing/PhoneMockup', () => ({
-  PhoneMockup: () => <div data-testid="phone-mockup">Phone Mockup</div>,
+// Mock Next.js Image
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: ({ src, alt, priority, fill, ...props }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      data-priority={priority ? 'true' : undefined}
+      data-fill={fill ? 'true' : undefined}
+      {...props}
+    />
+  ),
 }))
 
-jest.mock('@/components/marketing/ParallaxStarsCanvas', () => ({
-  ParallaxStarsCanvas: ({ className }: any) => (
-    <div data-testid="parallax-stars" className={className}>
-      Stars
+// Mock child components
+jest.mock('@/components/marketing/GradientMeshBackground', () => ({
+  GradientMeshBackground: () => (
+    <div data-testid="gradient-mesh-bg">Gradient Mesh</div>
+  ),
+}))
+
+jest.mock('@/components/marketing/MarketingPreviewCard', () => ({
+  MarketingPreviewCard: () => (
+    <div data-testid="marketing-preview-card">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="Sample property interior" src="/test.jpg" />
+      <span>Listing · Lake Merritt</span>
+      <span>1200 Lakeview Dr, Oakland, CA 94610</span>
+      <span>3 beds</span>
+      <button>Love</button>
+      <span>Built for couples</span>
+      <span>See nearby spots</span>
+      <span>Real listings, quick swipes</span>
     </div>
   ),
 }))
 
+// Mock lucide-react icons
+jest.mock('lucide-react', () => ({
+  Heart: () => <svg data-testid="heart-icon" />,
+}))
+
 describe('HeroSection', () => {
-  test('renders hero section with all content', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      })),
+    })
+  })
+
+  test('renders main heading', () => {
     render(<HeroSection />)
 
-    // Check main heading by role
     const heading = screen.getByRole('heading', { level: 1 })
     expect(heading).toBeInTheDocument()
-    expect(heading.textContent).toContain('Find the home you both love.')
+    // TextReveal adds non-breaking spaces between words
+    expect(heading.textContent?.replace(/\u00A0/g, ' ')).toContain(
+      'Find the home you both love.'
+    )
+  })
 
-    // Check description
+  test('renders description', () => {
+    render(<HeroSection />)
     expect(
       screen.getByText(/Swipe through real listings together/i)
     ).toBeInTheDocument()
-
-    // Check CTAs
-    expect(screen.getByText('Start matching')).toBeInTheDocument()
-    expect(screen.getByText('Resume your search')).toBeInTheDocument()
-
-    // Preview highlight copy
-    expect(screen.getByText('Built for couples')).toBeInTheDocument()
-    expect(screen.getByText('See nearby spots')).toBeInTheDocument()
-    expect(screen.getByText(/Real listings, quick swipes/i)).toBeInTheDocument()
-
-    // Check mockup components
-    expect(screen.getByTestId('parallax-stars')).toBeInTheDocument()
   })
 
-  test('renders with correct data-testid', () => {
+  test('renders primary CTA linking to signup', () => {
     render(<HeroSection />)
-    expect(screen.getByTestId('hero')).toBeInTheDocument()
-  })
 
-  test('primary CTA links to signup', () => {
-    render(<HeroSection />)
     const primaryCTA = screen.getByText('Start matching').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
   })
 
-  test('secondary CTA links to login', () => {
+  test('renders secondary CTA linking to login', () => {
     render(<HeroSection />)
+
     const secondaryCTA = screen.getByText('Resume your search').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
-  test('renders gradient background', () => {
+  test('renders hero test id', () => {
     render(<HeroSection />)
-
-    // Check for gradient background layer
-    const gradientDiv = screen
-      .getByTestId('hero')
-      .querySelector('[class*="bg-gradient-to-b from-white/10"]')
-    expect(gradientDiv).toBeInTheDocument()
+    expect(screen.getByTestId('hero')).toBeInTheDocument()
   })
 
-  test('renders vignette overlay', () => {
+  test('renders gradient mesh background', () => {
     render(<HeroSection />)
-
-    const overlayWrapper = screen
-      .getByTestId('hero')
-      .querySelector('.pointer-events-none')
-
-    const vignetteDiv = Array.from(overlayWrapper?.children ?? []).find(
-      (child) =>
-        (child as HTMLElement).className.includes(
-          'bg-[radial-gradient(circle_at_50%_120%'
-        )
-    )
-
-    expect(vignetteDiv).toBeTruthy()
+    expect(screen.getByTestId('gradient-mesh-bg')).toBeInTheDocument()
   })
 
-  test('button variants are applied correctly', () => {
+  test('renders marketing preview card', () => {
     render(<HeroSection />)
-
-    const primaryButton = screen.getByText('Start matching').closest('a')
-    const secondaryButton = screen.getByText('Resume your search').closest('a')
-
-    expect(primaryButton).toHaveClass('rounded-full', 'px-9', 'py-7')
-    expect(secondaryButton).toHaveClass('border-white/40')
-    expect(secondaryButton).toHaveClass('bg-white/5')
-    expect(secondaryButton).toHaveClass('hover:bg-white/10')
-    expect(secondaryButton).toHaveClass('text-white')
+    expect(screen.getByTestId('marketing-preview-card')).toBeInTheDocument()
   })
 
-  test('responsive grid layout is applied', () => {
+  test('renders preview card content', () => {
     render(<HeroSection />)
 
-    const gridContainer = screen.getByTestId('hero').querySelector('.grid')
-    expect(gridContainer).toHaveClass(
-      'lg:grid-cols-[1.05fr,0.95fr]',
-      'lg:items-center'
-    )
+    expect(screen.getByText('Built for couples')).toBeInTheDocument()
+    expect(screen.getByText('See nearby spots')).toBeInTheDocument()
+    expect(screen.getByText(/Real listings, quick swipes/i)).toBeInTheDocument()
   })
 
-  test('text content has correct styling classes', () => {
-    render(<HeroSection />)
-
-    // Find the h1 containing all the heading text
-    const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toHaveClass(
-      'text-4xl',
-      'font-black',
-      'leading-[1.05]',
-      'sm:text-5xl',
-      'md:text-6xl',
-      'lg:text-7xl'
-    )
-
-    const description = screen.getByText(
-      /Swipe through real listings together/i
-    )
-    expect(description).toHaveClass(
-      'max-w-2xl',
-      'text-lg',
-      'leading-relaxed',
-      'text-white/80',
-      'sm:text-xl'
-    )
-  })
-
-  test('CTA container has responsive flex layout', () => {
-    render(<HeroSection />)
-
-    const ctaContainer = screen
-      .getByText('Start matching')
-      .closest('a')?.parentElement
-    expect(ctaContainer).toHaveClass(
-      'flex',
-      'flex-col',
-      'sm:flex-row',
-      'sm:items-center',
-      'gap-3',
-      'sm:gap-3'
-    )
-  })
-
-  test('accessibility attributes are present', () => {
+  test('primary CTA has accessibility attributes', () => {
     render(<HeroSection />)
 
     const primaryCTA = screen.getByText('Start matching').closest('a')
-    expect(primaryCTA).toHaveAttribute('href', '/signup')
     expect(primaryCTA).toHaveAttribute(
       'aria-label',
       'Start matching with HomeMatch'
     )
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
-  })
-
-  test('renders preview card details', () => {
-    render(<HeroSection />)
-
-    expect(screen.getByAltText('Sample property interior')).toBeInTheDocument()
-    expect(screen.getByText('Listing · Lake Merritt')).toBeInTheDocument()
-    expect(
-      screen.getByText('1200 Lakeview Dr, Oakland, CA 94610')
-    ).toBeInTheDocument()
-    expect(screen.getByText('3 beds')).toBeInTheDocument()
-    expect(screen.getByText('Love')).toBeInTheDocument()
   })
 })

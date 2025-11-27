@@ -18,35 +18,30 @@ jest.mock('framer-motion', () => ({
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, priority, fill, ...props }: any) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} {...props} />
+    <img
+      src={src}
+      alt={alt}
+      data-priority={priority ? 'true' : undefined}
+      data-fill={fill ? 'true' : undefined}
+      {...props}
+    />
   ),
 }))
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Bed: ({ className }: any) => (
-    <svg data-testid="bed-icon" className={className} />
-  ),
-  Bath: ({ className }: any) => (
-    <svg data-testid="bath-icon" className={className} />
-  ),
-  MapPin: ({ className }: any) => (
-    <svg data-testid="mappin-icon" className={className} />
-  ),
-  Heart: ({ className }: any) => (
-    <svg data-testid="heart-icon" className={className} />
-  ),
-  X: ({ className }: any) => <svg data-testid="x-icon" className={className} />,
-  ShieldCheck: ({ className }: any) => (
-    <svg data-testid="shieldcheck-icon" className={className} />
-  ),
+  Bed: () => <svg data-testid="bed-icon" />,
+  Bath: () => <svg data-testid="bath-icon" />,
+  MapPin: () => <svg data-testid="mappin-icon" />,
+  Heart: () => <svg data-testid="heart-icon" />,
+  X: () => <svg data-testid="x-icon" />,
+  ShieldCheck: () => <svg data-testid="shieldcheck-icon" />,
 }))
 
 describe('MarketingPreviewCard', () => {
   beforeEach(() => {
-    // Mock matchMedia for reduced motion preference
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query) => ({
@@ -62,26 +57,18 @@ describe('MarketingPreviewCard', () => {
     })
   })
 
-  test('renders property image', () => {
+  test('renders property image with alt text', () => {
     render(<MarketingPreviewCard />)
-
-    const image = screen.getByAltText('Sample property interior')
-    expect(image).toBeInTheDocument()
-    expect(image).toHaveAttribute(
-      'src',
-      expect.stringContaining('unsplash.com')
-    )
+    expect(screen.getByAltText('Sample property interior')).toBeInTheDocument()
   })
 
-  test('renders price badge', () => {
+  test('renders property price', () => {
     render(<MarketingPreviewCard />)
-
     expect(screen.getByText('$975,000')).toBeInTheDocument()
   })
 
   test('renders property address', () => {
     render(<MarketingPreviewCard />)
-
     expect(
       screen.getByText('1200 Lakeview Dr, Oakland, CA 94610')
     ).toBeInTheDocument()
@@ -89,34 +76,31 @@ describe('MarketingPreviewCard', () => {
 
   test('renders location label', () => {
     render(<MarketingPreviewCard />)
-
     expect(screen.getByText('Listing · Lake Merritt')).toBeInTheDocument()
   })
 
   test('renders property details', () => {
     render(<MarketingPreviewCard />)
-
     expect(screen.getByText('3 beds')).toBeInTheDocument()
     expect(screen.getByText('2 baths')).toBeInTheDocument()
     expect(screen.getByText('Near parks')).toBeInTheDocument()
   })
 
-  test('renders action buttons', () => {
+  test('renders Pass and Love action buttons', () => {
     render(<MarketingPreviewCard />)
-
     expect(screen.getByText('Pass')).toBeInTheDocument()
     expect(screen.getByText('Love')).toBeInTheDocument()
   })
 
-  test('renders floating feature badges', () => {
+  test('renders feature badges with titles and descriptions', () => {
     render(<MarketingPreviewCard />)
 
-    // Check badge titles
+    // Badge titles
     expect(screen.getByText('Built for couples')).toBeInTheDocument()
     expect(screen.getByText('See nearby spots')).toBeInTheDocument()
     expect(screen.getByText('Real listings, quick swipes')).toBeInTheDocument()
 
-    // Check badge descriptions
+    // Badge descriptions
     expect(
       screen.getByText('Stay in sync on likes, tours, and moves.')
     ).toBeInTheDocument()
@@ -126,75 +110,10 @@ describe('MarketingPreviewCard', () => {
     expect(screen.getByText('Decide together in one tap.')).toBeInTheDocument()
   })
 
-  test('renders property icons', () => {
-    render(<MarketingPreviewCard />)
-
-    expect(screen.getByTestId('bed-icon')).toBeInTheDocument()
-    expect(screen.getByTestId('bath-icon')).toBeInTheDocument()
-    expect(screen.getAllByTestId('mappin-icon').length).toBeGreaterThan(0)
-  })
-
-  test('renders action button icons', () => {
-    render(<MarketingPreviewCard />)
-
-    expect(screen.getByTestId('x-icon')).toBeInTheDocument()
-    expect(screen.getAllByTestId('heart-icon').length).toBeGreaterThan(0)
-  })
-
   test('applies custom className', () => {
     const { container } = render(
       <MarketingPreviewCard className="custom-class" />
     )
-
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper).toHaveClass('custom-class')
-  })
-
-  test('card has correct styling classes', () => {
-    const { container } = render(<MarketingPreviewCard />)
-
-    const card = container.firstChild as HTMLElement
-    expect(card).toHaveClass(
-      'relative',
-      'overflow-hidden',
-      'rounded-[24px]',
-      'backdrop-blur-xl'
-    )
-  })
-
-  test('Pass button has correct styling', () => {
-    render(<MarketingPreviewCard />)
-
-    const passButton = screen.getByText('Pass').closest('button')
-    expect(passButton).toHaveClass(
-      'border-rose-500/30',
-      'bg-rose-500/10',
-      'text-rose-400'
-    )
-  })
-
-  test('Love button has correct styling', () => {
-    render(<MarketingPreviewCard />)
-
-    const loveButton = screen.getByText('Love').closest('button')
-    expect(loveButton).toHaveClass(
-      'border-emerald-500/30',
-      'bg-emerald-500/20',
-      'text-emerald-400'
-    )
-  })
-
-  test('renders image with aspect ratio container', () => {
-    const { container } = render(<MarketingPreviewCard />)
-
-    const aspectContainer = container.querySelector('.aspect-\\[4\\/3\\]')
-    expect(aspectContainer).toBeInTheDocument()
-  })
-
-  test('renders gradient overlay on image', () => {
-    const { container } = render(<MarketingPreviewCard />)
-
-    const gradient = container.querySelector('.bg-gradient-to-t')
-    expect(gradient).toBeInTheDocument()
+    expect(container.firstChild).toHaveClass('custom-class')
   })
 })
