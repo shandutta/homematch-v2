@@ -56,14 +56,19 @@ describe('Header', () => {
     )
 
     // Primary nav
-    expect(
-      screen.getByRole('link', { name: /Our Favorites/i })
-    ).toHaveAttribute('href', '/dashboard/liked')
-    expect(screen.getByRole('link', { name: /Explored/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Viewed/i })).toHaveAttribute(
       'href',
       '/dashboard/viewed'
     )
-    expect(screen.getByRole('link', { name: /Our Journey/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Liked/i })).toHaveAttribute(
+      'href',
+      '/dashboard/liked'
+    )
+    expect(screen.getByRole('link', { name: /Passed/i })).toHaveAttribute(
+      'href',
+      '/dashboard/passed'
+    )
+    expect(screen.getByRole('link', { name: /Matches/i })).toHaveAttribute(
       'href',
       '/couples'
     )
@@ -85,20 +90,23 @@ describe('Header', () => {
     const user = userEvent.setup()
     render(<Header />)
 
-    const liked = screen.getByRole('link', { name: /Our Favorites/i })
-    const viewed = screen.getByRole('link', { name: /Explored/i })
-    const journey = screen.getByRole('link', { name: /Our Journey/i })
+    const viewed = screen.getByRole('link', { name: /Viewed/i })
+    const liked = screen.getByRole('link', { name: /Liked/i })
+    const passed = screen.getByRole('link', { name: /Passed/i })
+    const matches = screen.getByRole('link', { name: /Matches/i })
 
     // We can verify that clicking doesn't throw and elements are interactable.
-    await user.click(liked)
     await user.click(viewed)
-    await user.click(journey)
+    await user.click(liked)
+    await user.click(passed)
+    await user.click(matches)
 
     // Since we mocked next/link to a simple anchor, there is no router push to assert.
     // The presence of correct hrefs ensures correct navigation targets.
-    expect(liked).toHaveAttribute('href', '/dashboard/liked')
     expect(viewed).toHaveAttribute('href', '/dashboard/viewed')
-    expect(journey).toHaveAttribute('href', '/couples')
+    expect(liked).toHaveAttribute('href', '/dashboard/liked')
+    expect(passed).toHaveAttribute('href', '/dashboard/passed')
+    expect(matches).toHaveAttribute('href', '/couples')
   })
 
   test('user dropdown menu works correctly', async () => {
@@ -161,15 +169,15 @@ describe('Header', () => {
     expect(mobileMenu).toBeInTheDocument()
 
     // Check navigation links are in mobile menu - use getAllByRole since there are duplicates
-    const favoritesLinks = screen.getAllByRole('link', {
-      name: /Our Favorites/i,
-    })
-    const exploredLinks = screen.getAllByRole('link', { name: /Explored/i })
-    const journeyLinks = screen.getAllByRole('link', { name: /Our Journey/i })
+    const viewedLinks = screen.getAllByRole('link', { name: /Viewed/i })
+    const likedLinks = screen.getAllByRole('link', { name: /Liked/i })
+    const passedLinks = screen.getAllByRole('link', { name: /Passed/i })
+    const matchesLinks = screen.getAllByRole('link', { name: /Matches/i })
 
-    expect(favoritesLinks.length).toBeGreaterThan(0)
-    expect(exploredLinks.length).toBeGreaterThan(0)
-    expect(journeyLinks.length).toBeGreaterThan(0)
+    expect(viewedLinks.length).toBeGreaterThan(0)
+    expect(likedLinks.length).toBeGreaterThan(0)
+    expect(passedLinks.length).toBeGreaterThan(0)
+    expect(matchesLinks.length).toBeGreaterThan(0)
 
     // Close button should be present
     const closeBtn = screen.getByLabelText(/close navigation menu/i)
@@ -192,11 +200,11 @@ describe('Header', () => {
     expect(mobileMenu).toBeInTheDocument()
 
     // Click a navigation link - get the first one from mobile menu
-    const favoritesLinks = screen.getAllByRole('link', {
-      name: /Our Favorites/i,
+    const viewedLinks = screen.getAllByRole('link', {
+      name: /Viewed/i,
     })
-    const favoritesLink = favoritesLinks[favoritesLinks.length - 1] // Get the mobile menu one (likely the last one)
-    await user.click(favoritesLink)
+    const viewedLink = viewedLinks[viewedLinks.length - 1] // Get the mobile menu one (likely the last one)
+    await user.click(viewedLink)
 
     // Menu should close
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

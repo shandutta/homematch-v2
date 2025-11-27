@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Only return users who have completed onboarding and are not the current user
     const { data: users, error } = await supabase
       .from('user_profiles')
-      .select('id, email, display_name, avatar_url, household_id')
+      .select('id, email, display_name, household_id')
       .neq('id', user.id)
       .eq('onboarding_completed', true)
       .ilike('email', `${query}%`)
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       id: u.id,
       email: u.email,
       display_name: u.display_name,
-      avatar_url: u.avatar_url,
+      avatar_url: null, // Not stored in current schema
       household_id: u.household_id,
     }))
 

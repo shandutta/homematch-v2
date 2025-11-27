@@ -86,26 +86,41 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
 
       {/* Ad container - sized to match PropertyCard height */}
       <div className="flex min-h-[420px] flex-1 flex-col items-center justify-center p-4">
-        {!isLoaded && (
-          <div className="flex h-full w-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+        {process.env.NODE_ENV === 'development' ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-white/20 bg-white/5 p-6">
+            <div className="text-4xl">📢</div>
+            <p className="text-muted-foreground text-center text-sm">
+              Ad placeholder
+              <br />
+              <span className="text-xs opacity-60">
+                Real ads appear in production
+              </span>
+            </p>
           </div>
-        )}
+        ) : (
+          <>
+            {!isLoaded && (
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+              </div>
+            )}
 
-        {/* Google AdSense In-feed Ad */}
-        <ins
-          className="adsbygoogle"
-          style={{
-            display: 'block',
-            width: '100%',
-            height: isLoaded ? 'auto' : '0',
-            minHeight: isLoaded ? '380px' : '0',
-          }}
-          data-ad-format="fluid"
-          data-ad-layout-key="-fb+5w+4e-db+86"
-          data-ad-client="ca-pub-9556502662108721"
-          data-ad-slot="3059335227"
-        />
+            {/* Google AdSense In-feed Ad */}
+            <ins
+              className="adsbygoogle"
+              style={{
+                display: 'block',
+                width: '100%',
+                height: isLoaded ? 'auto' : '0',
+                minHeight: isLoaded ? '380px' : '0',
+              }}
+              data-ad-format="fluid"
+              data-ad-layout-key="-fb+5w+4e-db+86"
+              data-ad-client="ca-pub-9556502662108721"
+              data-ad-slot="3059335227"
+            />
+          </>
+        )}
       </div>
 
       {/* Bottom label */}

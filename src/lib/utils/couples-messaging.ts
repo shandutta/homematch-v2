@@ -165,7 +165,7 @@ export const CouplesMessages = {
 
   // Navigation & UI
   navigation: {
-    couples: 'Our Journey',
+    couples: 'Matches',
     matches: 'Our Matches',
     activity: 'Our Activity',
     household: 'Our Home Search',

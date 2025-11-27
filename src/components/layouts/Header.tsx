@@ -86,19 +86,24 @@ export function Header() {
 
   const navigationLinks = [
     {
-      href: '/dashboard/liked',
-      icon: Heart,
-      label: 'Our Favorites',
-    },
-    {
       href: '/dashboard/viewed',
       icon: History,
-      label: 'Explored',
+      label: 'Viewed',
+    },
+    {
+      href: '/dashboard/liked',
+      icon: Heart,
+      label: 'Liked',
+    },
+    {
+      href: '/dashboard/passed',
+      icon: X,
+      label: 'Passed',
     },
     {
       href: '/couples',
       icon: HeartHandshake,
-      label: 'Our Journey',
+      label: 'Matches',
     },
   ]
 

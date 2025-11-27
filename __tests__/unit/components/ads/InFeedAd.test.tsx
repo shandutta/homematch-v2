@@ -4,6 +4,9 @@ import { InFeedAd } from '@/components/ads/InFeedAd'
 // Store original window.adsbygoogle
 const originalAdsbygoogle = (global.window as any).adsbygoogle
 
+// Store original NODE_ENV
+const originalNodeEnv = process.env.NODE_ENV
+
 describe('InFeedAd', () => {
   beforeEach(() => {
     // Reset the adsbygoogle mock before each test
@@ -13,6 +16,7 @@ describe('InFeedAd', () => {
   afterEach(() => {
     // Restore original
     ;(global.window as any).adsbygoogle = originalAdsbygoogle
+    process.env.NODE_ENV = originalNodeEnv
     jest.clearAllMocks()
   })
 
@@ -319,6 +323,102 @@ describe('InFeedAd', () => {
 
       const container = document.querySelector('[data-ad-position]')
       expect(container).toHaveAttribute('data-ad-position', '0')
+    })
+  })
+
+  describe('Development Placeholder', () => {
+    test('shows placeholder in development mode', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      expect(screen.getByText('Ad placeholder')).toBeInTheDocument()
+      expect(
+        screen.getByText('Real ads appear in production')
+      ).toBeInTheDocument()
+    })
+
+    test('shows ad emoji icon in development mode', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      expect(screen.getByText('📢')).toBeInTheDocument()
+    })
+
+    test('does not render AdSense ins element in development mode', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      const adElement = document.querySelector('.adsbygoogle')
+      expect(adElement).not.toBeInTheDocument()
+    })
+
+    test('does not push to adsbygoogle in development mode', () => {
+      process.env.NODE_ENV = 'development'
+      const mockAdsbygoogle: Array<Record<string, unknown>> = []
+      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+
+      render(<InFeedAd />)
+
+      expect(mockAdsbygoogle.length).toBe(0)
+    })
+
+    test('placeholder has dashed border styling', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      const placeholder = screen.getByText('Ad placeholder').closest('div')
+      expect(placeholder).toHaveClass('border-dashed', 'border-2')
+    })
+
+    test('still shows sponsored label in development mode', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      expect(screen.getByText('Sponsored')).toBeInTheDocument()
+    })
+
+    test('still shows partner content label in development mode', () => {
+      process.env.NODE_ENV = 'development'
+
+      render(<InFeedAd />)
+
+      expect(screen.getByText('Partner content')).toBeInTheDocument()
+    })
+  })
+
+  describe('Production Mode', () => {
+    test('renders AdSense element in production mode', () => {
+      process.env.NODE_ENV = 'production'
+
+      render(<InFeedAd />)
+
+      const adElement = document.querySelector('.adsbygoogle')
+      expect(adElement).toBeInTheDocument()
+    })
+
+    test('does not show placeholder in production mode', () => {
+      process.env.NODE_ENV = 'production'
+
+      render(<InFeedAd />)
+
+      expect(screen.queryByText('Ad placeholder')).not.toBeInTheDocument()
+    })
+
+    test('pushes to adsbygoogle in production mode', async () => {
+      process.env.NODE_ENV = 'production'
+      const mockAdsbygoogle: Array<Record<string, unknown>> = []
+      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+
+      render(<InFeedAd />)
+
+      await waitFor(() => {
+        expect(mockAdsbygoogle.length).toBe(1)
+      })
     })
   })
 })
