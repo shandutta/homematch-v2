@@ -280,7 +280,13 @@ function VibesCard({ vibe }: { vibe: PropertyVibesData }) {
               >
                 <span className="text-sm text-white">{v.name}</span>
                 <span className="text-xs text-slate-400">
-                  ({v.source === 'both' ? '↔' : v.source === 'interior' ? '🏠' : '🌳'})
+                  (
+                  {v.source === 'both'
+                    ? '↔'
+                    : v.source === 'interior'
+                      ? '🏠'
+                      : '🌳'}
+                  )
                 </span>
               </div>
             ))}

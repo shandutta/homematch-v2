@@ -18,6 +18,7 @@ import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
+import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
@@ -69,6 +70,7 @@ export function PropertyCard({
   disableDetailModal = false,
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
+  const { data: vibes } = usePropertyVibes(property.id)
   const hasMapCoordinates = Boolean(property.coordinates)
   const propertyDetail = usePropertyDetailSafe()
 
@@ -307,6 +309,7 @@ export function PropertyCard({
             <StorytellingDescription
               property={property}
               neighborhood={neighborhood}
+              vibes={vibes}
               isMutualLike={isMutualLike}
               variant="compact"
               showLifestyleTags={false}

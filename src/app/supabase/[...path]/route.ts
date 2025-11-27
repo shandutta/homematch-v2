@@ -16,14 +16,15 @@ export const dynamic = 'force-dynamic'
 
 const handler = async (
   req: NextRequest,
-  { params }: { params: { path?: string[] } }
+  { params }: { params: Promise<{ path?: string[] }> }
 ) => {
   const { enabled, target } = getProxyConfig()
   if (!enabled) {
     return new Response('Supabase proxy disabled', { status: 404 })
   }
 
-  const path = params.path?.join('/') ?? ''
+  const { path: pathSegments } = await params
+  const path = pathSegments?.join('/') ?? ''
   const targetUrl = `${target}/${path}${req.nextUrl.search}`
 
   const headers = new Headers(req.headers)
