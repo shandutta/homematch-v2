@@ -395,7 +395,6 @@ describe('InvitePartnerModal Component', () => {
           household_id: 'test-household-123',
           invited_email: 'partner@test.com',
           invited_name: 'Partner Name',
-          created_by: 'test-user-456',
           message: null,
         })
       })

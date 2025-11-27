@@ -252,7 +252,6 @@ describe('HouseholdSection', () => {
           household_id: TEST_USERS.withHousehold.profile.household.id,
           invited_email: 'partner@example.com',
           invited_name: null,
-          created_by: TEST_USERS.withHousehold.id,
           message: null,
         })
         expect(toast.success).toHaveBeenCalledWith('Invitation sent')

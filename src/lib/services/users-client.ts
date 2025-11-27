@@ -117,18 +117,67 @@ export class UserServiceClient {
   static async createHouseholdInvitation(
     invite: Omit<
       HouseholdInvitationInsert,
-      'status' | 'token' | 'created_at' | 'expires_at' | 'id'
+      'status' | 'token' | 'created_at' | 'expires_at' | 'id' | 'created_by'
     >
   ): Promise<HouseholdInvitation> {
     const supabase = createClient()
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError || !session?.user) {
+      throw new Error('Authentication required to send invitations')
+    }
+
+    // Verify the user belongs to the household to avoid RLS failures
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('household_id')
+      .eq('id', session.user.id)
+      .single()
+
+    if (profileError || !profile?.household_id) {
+      throw new Error('You need to join a household before sending invites')
+    }
+
+    if (profile.household_id !== invite.household_id) {
+      throw new Error('You can only send invites for your household')
+    }
+
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    const token =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+
+    const payload: HouseholdInvitationInsert = {
+      household_id: invite.household_id,
+      invited_email: invite.invited_email?.trim().toLowerCase() || null,
+      invited_name: invite.invited_name?.trim() || null,
+      message: invite.message?.trim() || null,
+      created_by: session.user.id,
+      status: 'pending',
+      token,
+      expires_at: expiresAt.toISOString(),
+    }
+
     const { data, error } = await supabase
       .from('household_invitations')
-      .insert(invite)
+      .insert(payload)
       .select()
       .single()
 
     if (error) {
-      throw new Error(`Failed to create invite: ${error.message}`)
+      const message = error.message || 'Failed to create invite'
+      if (
+        error.code === '42501' ||
+        message.toLowerCase().includes('row-level security')
+      ) {
+        throw new Error('You must belong to this household to send invites.')
+      }
+      throw new Error(`Failed to create invite: ${message}`)
     }
 
     return data

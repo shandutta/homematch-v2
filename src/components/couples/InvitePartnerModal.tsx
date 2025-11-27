@@ -160,7 +160,6 @@ export function InvitePartnerModal({
         household_id: householdId,
         invited_email: inviteEmail.trim(),
         invited_name: inviteName.trim() || null,
-        created_by: userId,
         message: inviteMessage.trim() || null,
       })
 

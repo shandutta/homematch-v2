@@ -5,8 +5,7 @@ const isInvalidRefreshTokenError = (error: unknown): boolean => {
   if (!error) return false
 
   const code = (error as { code?: string }).code?.toLowerCase?.()
-  const message =
-    (error as { message?: string }).message?.toLowerCase?.() || ''
+  const message = (error as { message?: string }).message?.toLowerCase?.() || ''
 
   return (
     code === 'refresh_token_not_found' ||
