@@ -1,4 +1,66 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
+
+const isInvalidRefreshTokenError = (error: unknown): boolean => {
+  if (!error) return false
+
+  const code = (error as { code?: string }).code?.toLowerCase?.()
+  const message =
+    (error as { message?: string }).message?.toLowerCase?.() || ''
+
+  return (
+    code === 'refresh_token_not_found' ||
+    code === 'invalid_refresh_token' ||
+    message.includes('invalid refresh token') ||
+    message.includes('refresh token not found')
+  )
+}
+
+const clearStaleSession = async (supabase: SupabaseClient) => {
+  try {
+    // Local scope avoids hitting the network when the refresh token is already invalid
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch (err) {
+    console.warn('[Supabase] Failed to clear stale session', err)
+  }
+}
+
+const withRefreshRecovery = (supabase: SupabaseClient) => {
+  const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
+
+  supabase.auth.getSession = (async () => {
+    try {
+      const result = await originalGetSession()
+
+      if (result.error && isInvalidRefreshTokenError(result.error)) {
+        console.warn(
+          '[Supabase] Clearing invalid refresh token and signing out',
+          {
+            code: (result.error as AuthApiError).code,
+            message: result.error.message,
+          }
+        )
+        await clearStaleSession(supabase)
+        return { data: { session: null }, error: null }
+      }
+
+      return result
+    } catch (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        console.warn(
+          '[Supabase] Clearing invalid refresh token and signing out',
+          {
+            code: (error as AuthApiError).code,
+            message: (error as AuthApiError).message,
+          }
+        )
+        await clearStaleSession(supabase)
+        return { data: { session: null }, error: null }
+      }
+      throw error
+    }
+  }) as typeof supabase.auth.getSession
+}
 
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -24,7 +86,7 @@ export function createClient() {
       ? `sb-${window.location.hostname.replace(/\./g, '-')}-auth-token`
       : 'sb-localhost-auth-token'
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {
       name: cookieName,
       path: '/',
@@ -37,4 +99,8 @@ export function createClient() {
       persistSession: true,
     },
   })
+
+  withRefreshRecovery(supabase)
+
+  return supabase
 }

@@ -84,14 +84,16 @@ export function CouplesPageClient() {
         .maybeSingle()
 
       if (profileError) {
-        console.error('[Couples] Profile fetch error:', {
-          message: profileError.message,
-          code: profileError.code,
+        const profileErrorDetails = {
+          message:
+            profileError.message || 'Unknown error while loading your profile',
+          code: profileError.code || 'unknown',
           details: profileError.details,
           hint: profileError.hint,
-        })
+        }
+        console.error('[Couples] Profile fetch error:', profileErrorDetails)
         setUserHouseholdStatus('error')
-        setError('Failed to load your profile')
+        setError(profileErrorDetails.message)
         return
       }
 
