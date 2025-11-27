@@ -53,13 +53,13 @@ const StatTile = ({
           <p className="text-hm-stone-500 text-xs font-medium tracking-widest uppercase">
             {label}
           </p>
-          <p className="font-display text-hm-stone-200 mt-1 text-3xl font-medium tracking-tight">
+          <div className="font-display text-hm-stone-200 mt-1 text-3xl font-medium tracking-tight">
             {value !== undefined ? (
               value
             ) : (
               <Skeleton className="h-9 w-12 bg-white/5" />
             )}
-          </p>
+          </div>
         </div>
         <div
           className={`flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ${colors.icon} transition-all duration-300 group-hover:scale-110`}
