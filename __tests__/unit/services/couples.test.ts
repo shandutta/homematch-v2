@@ -9,6 +9,20 @@ import {
 import { CouplesService } from '@/lib/services/couples'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+/**
+ * CouplesService Unit Tests
+ *
+ * NOTE: These tests use mocking to verify service interface and error handling.
+ * The mocks test that the service:
+ * 1. Calls the correct Supabase methods (rpc, from)
+ * 2. Handles errors gracefully
+ * 3. Implements caching correctly
+ *
+ * LIMITATIONS: Heavy mocking means changes to Supabase query patterns might not
+ * be caught. For full database integration testing, see:
+ * - __tests__/integration/api/household-rpc.integration.test.ts
+ * - __tests__/integration/couples-e2e.test.ts
+ */
 describe('CouplesService', () => {
   // Create a mock Supabase client
   const mockSupabaseClient = {
@@ -135,11 +149,15 @@ describe('CouplesService', () => {
   })
 
   describe('getHouseholdStats', () => {
+    // NOTE: This test has complex mocking that tests mock behavior rather than
+    // real database interactions. Consider this a contract test - it verifies
+    // the service calls expected methods. Real stats calculation is tested in
+    // integration tests.
     test('should calculate household statistics correctly', async () => {
       // Clear all caches before this test
       CouplesService.clearHouseholdCache(mockHouseholdId)
 
-      // Create a more robust mock that responds based on the table being queried
+      // Create a mock that responds based on the table being queried
       const createMockChain = (table: string) => {
         if (table === 'user_profiles') {
           // Mock getUserHousehold call

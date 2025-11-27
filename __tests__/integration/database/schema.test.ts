@@ -180,8 +180,8 @@ describeOrSkip('Database Schema Validation - Integration Tests', () => {
 
       // If properties table is accessible and has coordinates field, PostGIS is working
       expect(error).toBeNull()
-      // This validates that PostGIS geometry types are supported
-      expect(true).toBe(true)
+      // Verify we can actually query the coordinates field (confirms PostGIS types work)
+      expect(_data).toBeDefined()
     })
   })
 

@@ -14,6 +14,21 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 jest.mock('@/lib/services/couples')
 const mockCouplesService = CouplesService as jest.Mocked<typeof CouplesService>
 
+/**
+ * CouplesMiddleware Unit Tests
+ *
+ * NOTE: These tests mock the entire CouplesService to test the MIDDLEWARE's
+ * orchestration logic in isolation. This tests:
+ * 1. Middleware calls correct service methods in correct order
+ * 2. Middleware handles service responses correctly
+ * 3. Middleware returns correct structure to callers
+ *
+ * LIMITATIONS: Mocking the service means these tests don't verify that
+ * CouplesService actually works - just that middleware calls it correctly.
+ * For real service behavior, see:
+ * - __tests__/unit/services/couples.test.ts (service unit tests)
+ * - __tests__/integration/couples-e2e.test.ts (full integration)
+ */
 describe('CouplesMiddleware', () => {
   const mockSupabaseClient = {} as SupabaseClient
   const mockUserId = 'user-123'

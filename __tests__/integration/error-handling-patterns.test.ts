@@ -13,6 +13,15 @@ const skipHeavy =
   process.env.SKIP_HEAVY_TESTS === 'true'
 const describeOrSkip = skipHeavy ? describe.skip : describe
 
+/**
+ * NOTE: Some tests in this suite use mocking to simulate error conditions.
+ * This is intentional for error handling tests because:
+ * 1. Network failures, timeouts, and RLS violations can't be reliably triggered on demand
+ * 2. These tests verify the SERVICE handles errors gracefully, not that errors occur
+ * 3. Real database integration is tested elsewhere (property-service-real.test.ts)
+ *
+ * Tests that don't mock (createProperty, constraint violations) use real database.
+ */
 describeOrSkip('Error Handling Patterns Integration Tests', () => {
   beforeAll(async () => {
     await setupTestDatabase()
@@ -56,8 +65,9 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       createdPropertyIds = []
     })
 
+    // NOTE: Uses mocking to simulate network failure (can't reliably cause real network errors)
     test('should handle Supabase connection errors gracefully', async () => {
-      // Mock Supabase to simulate network failure
+      // Mock Supabase to simulate network failure - testing SERVICE error handling
       const originalGetSupabase = (propertyService as any).getSupabase
       ;(propertyService as any).getSupabase = vi
         .fn()

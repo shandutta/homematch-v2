@@ -203,10 +203,11 @@ describe('Supabase Client Patterns E2E Tests', () => {
       }
     })
 
+    // NOTE: Uses mocking to simulate timeout - can't reliably cause real timeouts on demand
     test('should handle timeout errors consistently', () => {
       const standaloneClient = createStandaloneClient()
 
-      // Mock a timeout scenario
+      // Mock a timeout scenario - testing that the error propagates correctly
       const originalFrom = standaloneClient.from
       standaloneClient.from = vi.fn().mockImplementation(() => {
         throw new Error('Request timeout')

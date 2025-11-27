@@ -224,9 +224,10 @@ describe('Couples API E2E Tests', () => {
       )
       const responses = await Promise.all(promises)
 
-      // All should complete successfully
+      // All should complete successfully - server errors should not be accepted
       responses.forEach((response) => {
-        expect(response.status).toBeOneOf([200, 401, 500]) // Valid HTTP status codes
+        expect(response.status).not.toBe(500)
+        expect(response.status).toBeOneOf([200, 401])
       })
 
       // All should return parseable JSON
@@ -252,7 +253,8 @@ describe('Couples API E2E Tests', () => {
             body: { test: 'data' },
           }
         )
-        expect(response.status).toBeOneOf([405, 401, 500])
+        expect(response.status).not.toBe(500) // Server errors indicate broken code
+        expect(response.status).toBeOneOf([405, 401])
       } catch (error) {
         // It's acceptable for unsupported methods to throw
         expect(error).toBeDefined()
@@ -270,7 +272,8 @@ describe('Couples API E2E Tests', () => {
             query: { query: longQuery },
           }
         )
-        expect(response.status).toBeOneOf([200, 400, 401, 414, 500])
+        expect(response.status).not.toBe(500) // Server errors indicate broken code
+        expect(response.status).toBeOneOf([200, 400, 401, 414])
       } catch (error) {
         // It's acceptable for malformed requests to throw
         expect(error).toBeDefined()
@@ -315,8 +318,9 @@ describe('Couples API E2E Tests', () => {
               query,
             }
           )
-          // Should not crash and should return appropriate error
-          expect(response.status).toBeOneOf([200, 400, 401, 422, 500])
+          // Should not crash - server errors indicate broken code
+          expect(response.status).not.toBe(500)
+          expect(response.status).toBeOneOf([200, 400, 401, 422])
         } catch (error) {
           // It's acceptable for dangerous inputs to be rejected
           expect(error).toBeDefined()
@@ -334,14 +338,13 @@ describe('Couples API E2E Tests', () => {
 
         const response = await client.get('/api/couples/mutual-likes')
 
-        // Should succeed with auth
-        expect(response.status).toBeOneOf([200, 500]) // 200 for success, 500 for DB issues
+        // Should succeed with auth - server errors indicate broken code
+        expect(response.status).not.toBe(500)
+        expect(response.status).toBe(200)
 
-        if (response.ok) {
-          const data = await response.json()
-          expect(data).toHaveProperty('mutualLikes')
-          expect(Array.isArray(data.mutualLikes)).toBe(true)
-        }
+        const data = await response.json()
+        expect(data).toHaveProperty('mutualLikes')
+        expect(Array.isArray(data.mutualLikes)).toBe(true)
       } catch (error) {
         // Test user may not exist yet - that's okay for this conversion
         console.log(

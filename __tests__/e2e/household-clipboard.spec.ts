@@ -187,9 +187,11 @@ test.describe('Household Clipboard Functionality', () => {
     }
 
     if (!copyButton) {
-      // Skip test if we can't find copy button
-      console.log('Could not find copy button, skipping test')
-      return
+      // Fail the test explicitly - silent returns hide test failures
+      throw new Error(
+        'Copy button not found - cannot verify clipboard functionality. ' +
+          'Ensure test user has a household or household creation is working.'
+      )
     }
 
     // Get the household ID from various possible locations
@@ -307,8 +309,11 @@ test.describe('Household Clipboard Functionality', () => {
     }
 
     if (!copyButton) {
-      console.log(`Copy button not found in ${browserName}, skipping`)
-      return
+      // Fail the test explicitly - silent returns hide test failures
+      throw new Error(
+        `Copy button not found in ${browserName} - cannot verify clipboard functionality. ` +
+          'Ensure test user has a household or household creation is working.'
+      )
     }
 
     // Get household ID if visible
@@ -400,8 +405,11 @@ test.describe('Household Clipboard Functionality', () => {
     }
 
     if (!copyButton) {
-      console.log('Copy button not found, skipping test')
-      return
+      // Fail the test explicitly - silent returns hide test failures
+      throw new Error(
+        'Copy button not found - cannot verify clipboard permissions handling. ' +
+          'Ensure test user has a household or household creation is working.'
+      )
     }
 
     // Click copy button

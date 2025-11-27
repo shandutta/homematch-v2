@@ -36,9 +36,10 @@ describe('E2E: /api/couples/activity', () => {
         await client.authenticateAs('test1@example.com', 'password123')
         const response = await client.get('/api/couples/activity')
 
-        // Should not be 401 with valid auth
+        // Should not be 401 with valid auth, and should not be 500 (server error)
         expect(response.status).not.toBe(401)
-        expect(response.status).toBeOneOf([200, 500]) // 200 for success, 500 for DB issues
+        expect(response.status).not.toBe(500) // Server errors indicate broken code
+        expect(response.status).toBe(200)
       } catch (error) {
         // Test user may not exist yet - that's expected during setup
         console.log(
@@ -152,7 +153,9 @@ describe('E2E: /api/couples/activity', () => {
       const responses = await Promise.all(requests)
 
       responses.forEach(async (response) => {
-        expect(response.status).toBeOneOf([200, 401, 500])
+        // Server errors should not be accepted
+        expect(response.status).not.toBe(500)
+        expect(response.status).toBeOneOf([200, 401])
         const data = await response.json()
         expect(data).toBeDefined()
       })
@@ -183,8 +186,9 @@ describe('E2E: /api/couples/activity', () => {
             }
           )
 
-          // Should return 405 Method Not Allowed or similar
-          expect(response.status).toBeOneOf([405, 401, 500])
+          // Should return 405 Method Not Allowed or similar - not 500
+          expect(response.status).not.toBe(500)
+          expect(response.status).toBeOneOf([405, 401])
         } catch (error) {
           // Some methods might throw, which is acceptable
           expect(error).toBeDefined()
@@ -227,8 +231,9 @@ describe('E2E: /api/couples/activity', () => {
               query,
             }
           )
-          // Should not crash and should return appropriate error
-          expect(response.status).toBeOneOf([200, 400, 401, 422, 500])
+          // Should not crash - server errors indicate broken code
+          expect(response.status).not.toBe(500)
+          expect(response.status).toBeOneOf([200, 400, 401, 422])
         } catch (error) {
           // It's acceptable for dangerous inputs to be rejected
           expect(error).toBeDefined()
@@ -247,8 +252,10 @@ describe('E2E: /api/couples/activity', () => {
       const responses = await Promise.all(rapidRequests)
 
       // All should complete (rate limits are generous for tests)
+      // Server errors should not be accepted
       responses.forEach((response) => {
-        expect(response.status).toBeOneOf([200, 401, 429, 500])
+        expect(response.status).not.toBe(500)
+        expect(response.status).toBeOneOf([200, 401, 429])
       })
     })
   })

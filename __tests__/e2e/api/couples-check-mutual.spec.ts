@@ -89,40 +89,40 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
       `/api/couples/check-mutual?propertyId=${testPropertyId}`
     )
 
-    expect([200, 500]).toContain(status)
+    // Server errors (500) should not be accepted - they indicate broken code
+    expect(status).not.toBe(500)
+    expect(status).toBe(200)
 
-    if (status === 200) {
-      expect(body.isMutual).toBeDefined()
-      expect(typeof body.isMutual).toBe('boolean')
+    expect(body.isMutual).toBeDefined()
+    expect(typeof body.isMutual).toBe('boolean')
 
-      if (body.isMutual === true) {
-        // If it's a mutual like, should have additional information
-        expect(body.partnerName).toBeDefined()
-        expect(typeof body.partnerName).toBe('string')
-        expect(body.partnerName.length).toBeGreaterThan(0)
+    if (body.isMutual === true) {
+      // If it's a mutual like, should have additional information
+      expect(body.partnerName).toBeDefined()
+      expect(typeof body.partnerName).toBe('string')
+      expect(body.partnerName.length).toBeGreaterThan(0)
 
-        expect(body.propertyAddress).toBeDefined()
-        expect(typeof body.propertyAddress).toBe('string')
-        expect(body.propertyAddress.length).toBeGreaterThan(0)
+      expect(body.propertyAddress).toBeDefined()
+      expect(typeof body.propertyAddress).toBe('string')
+      expect(body.propertyAddress.length).toBeGreaterThan(0)
 
-        // Optional fields
-        if (body.streak !== undefined) {
-          expect(typeof body.streak).toBe('number')
-          expect(body.streak).toBeGreaterThanOrEqual(0)
-        }
-
-        if (body.milestone !== undefined) {
-          expect(typeof body.milestone).toBe('object')
-          expect(body.milestone.type).toBeDefined()
-          expect(body.milestone.count).toBeDefined()
-          expect(typeof body.milestone.count).toBe('number')
-          expect(body.milestone.count).toBeGreaterThan(0)
-        }
-      } else {
-        // If not mutual, should only have isMutual field
-        expect(body.isMutual).toBe(false)
-        expect(Object.keys(body)).toEqual(['isMutual'])
+      // Optional fields
+      if (body.streak !== undefined) {
+        expect(typeof body.streak).toBe('number')
+        expect(body.streak).toBeGreaterThanOrEqual(0)
       }
+
+      if (body.milestone !== undefined) {
+        expect(typeof body.milestone).toBe('object')
+        expect(body.milestone.type).toBeDefined()
+        expect(body.milestone.count).toBeDefined()
+        expect(typeof body.milestone.count).toBe('number')
+        expect(body.milestone.count).toBeGreaterThan(0)
+      }
+    } else {
+      // If not mutual, should only have isMutual field
+      expect(body.isMutual).toBe(false)
+      expect(Object.keys(body)).toEqual(['isMutual'])
     }
   })
 
@@ -134,12 +134,11 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
       `/api/couples/check-mutual?propertyId=${nonExistentPropertyId}`
     )
 
-    expect([200, 500]).toContain(status)
-
-    if (status === 200) {
-      // Should return false for non-existent properties
-      expect(body.isMutual).toBe(false)
-    }
+    // Server errors should not be accepted
+    expect(status).not.toBe(500)
+    expect(status).toBe(200)
+    // Should return false for non-existent properties
+    expect(body.isMutual).toBe(false)
   })
 
   test('should handle URL encoding in propertyId', async () => {
@@ -152,12 +151,11 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
       `/api/couples/check-mutual?propertyId=${encodedPropertyId}`
     )
 
-    expect([200, 500]).toContain(status)
-
-    if (status === 200) {
-      expect(body.isMutual).toBeDefined()
-      expect(typeof body.isMutual).toBe('boolean')
-    }
+    // Server errors should not be accepted
+    expect(status).not.toBe(500)
+    expect(status).toBe(200)
+    expect(body.isMutual).toBeDefined()
+    expect(typeof body.isMutual).toBe('boolean')
   })
 
   test('should reject non-GET methods', async () => {
@@ -206,12 +204,11 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
       `/api/couples/check-mutual?propertyId=${testPropertyId}&extraParam=ignore&another=value`
     )
 
-    expect([200, 500]).toContain(status)
-
-    if (status === 200) {
-      expect(body.isMutual).toBeDefined()
-      expect(typeof body.isMutual).toBe('boolean')
-    }
+    // Server errors should not be accepted
+    expect(status).not.toBe(500)
+    expect(status).toBe(200)
+    expect(body.isMutual).toBeDefined()
+    expect(typeof body.isMutual).toBe('boolean')
   })
 
   test('should respond within reasonable time', async () => {
@@ -224,7 +221,9 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
     )
     const endTime = Date.now()
 
-    expect([200, 500]).toContain(status)
+    // Server errors should not be accepted - they indicate broken code
+    expect(status).not.toBe(500)
+    expect(status).toBe(200)
     expect(endTime - startTime).toBeLessThan(5000) // Should respond within 5 seconds
   })
 
@@ -239,12 +238,11 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
 
     // All responses should have the same result for the same property
     responses.forEach(({ status, body }) => {
-      expect([200, 500]).toContain(status)
-
-      if (status === 200) {
-        expect(body.isMutual).toBeDefined()
-        expect(typeof body.isMutual).toBe('boolean')
-      }
+      // Server errors should not be accepted
+      expect(status).not.toBe(500)
+      expect(status).toBe(200)
+      expect(body.isMutual).toBeDefined()
+      expect(typeof body.isMutual).toBe('boolean')
     })
 
     // Results should be consistent across concurrent requests
@@ -286,12 +284,11 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
         `/api/couples/check-mutual?propertyId=${propertyId}`
       )
 
-      expect([200, 500]).toContain(status)
-
-      if (status === 200) {
-        expect(body.isMutual).toBeDefined()
-        expect(typeof body.isMutual).toBe('boolean')
-      }
+      // Server errors should not be accepted
+      expect(status).not.toBe(500)
+      expect(status).toBe(200)
+      expect(body.isMutual).toBeDefined()
+      expect(typeof body.isMutual).toBe('boolean')
     }
   })
 })
