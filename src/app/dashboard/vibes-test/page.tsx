@@ -272,18 +272,15 @@ function VibesCard({ vibe }: { vibe: PropertyVibesData }) {
           <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
             Primary Vibes
           </p>
-          <div className="space-y-1">
-            {vibe.primary_vibes?.slice(0, 3).map((v, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="h-2 flex-1 rounded-full bg-slate-700">
-                  <div
-                    className="h-2 rounded-full bg-purple-500"
-                    style={{ width: `${v.intensity * 100}%` }}
-                  />
-                </div>
-                <span className="w-32 text-xs text-slate-300">{v.name}</span>
-                <span className="text-xs text-slate-500">
-                  {Math.round(v.intensity * 100)}%
+          <div className="flex flex-wrap gap-2">
+            {vibe.primary_vibes?.slice(0, 4).map((v, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 rounded-full bg-slate-700/50 px-3 py-1"
+              >
+                <span className="text-sm text-white">{v.name}</span>
+                <span className="text-xs text-slate-400">
+                  ({v.source === 'both' ? '↔' : v.source === 'interior' ? '🏠' : '🌳'})
                 </span>
               </div>
             ))}
