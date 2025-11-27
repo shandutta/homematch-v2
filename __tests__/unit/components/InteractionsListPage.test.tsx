@@ -109,8 +109,8 @@ describe('InteractionsListPage', () => {
 
     renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
-    // Expect multiple skeletons visible (we render 6)
-    const skeletons = document.querySelectorAll('.animate-pulse.h-96')
+    // Expect multiple skeletons visible (we render 6 with h-[480px])
+    const skeletons = document.querySelectorAll('.animate-pulse')
     expect(skeletons.length).toBeGreaterThanOrEqual(1)
   })
 
@@ -123,9 +123,10 @@ describe('InteractionsListPage', () => {
 
     renderWithQuery(<InteractionsListPage type="liked" title="Liked" />)
 
-    expect(screen.getByText(/No liked yet\./i)).toBeTruthy()
+    // Updated to match new UI text (no period/exclamation marks)
+    expect(screen.getByText(/No liked yet/i)).toBeTruthy()
     expect(
-      screen.getByText(/Start swiping to see properties here!/i)
+      screen.getByText(/Start swiping to see properties here/i)
     ).toBeTruthy()
   })
 
@@ -250,8 +251,9 @@ describe('InteractionsListPage', () => {
 
     renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
+    // Updated to match new UI text (just "Loading...")
     const btn = screen.getByRole('button', {
-      name: /Loading more.../i,
+      name: /Loading\.\.\./i,
     }) as HTMLButtonElement
     expect(btn.disabled).toBe(true)
   })
@@ -331,7 +333,7 @@ describe('InteractionsListPage', () => {
       // Property should no longer be visible
       expect(screen.queryByText('100 Liked St')).toBeNull()
       // Empty state should show
-      expect(screen.getByText(/No liked properties yet\./i)).toBeTruthy()
+      expect(screen.getByText(/No liked properties yet/i)).toBeTruthy()
     })
   })
 

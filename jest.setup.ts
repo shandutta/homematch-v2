@@ -115,18 +115,50 @@ try {
 
 // Simple framer-motion mock for remaining edge cases
 jest.mock('framer-motion', () => {
+  const React = require('react')
+
+  // Strip motion-only props so React DOM doesn't warn during tests
+  const createMotionComponent = (element: keyof JSX.IntrinsicElements) =>
+    React.forwardRef(
+      (props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
+        const {
+          animate,
+          initial,
+          exit,
+          variants,
+          whileHover,
+          whileTap,
+          whileInView,
+          transition,
+          drag,
+          dragConstraints,
+          dragElastic,
+          dragTransition,
+          layout,
+          layoutId,
+          transformTemplate,
+          onUpdate,
+          onAnimationComplete,
+          viewport,
+          ...rest
+        } = props
+
+        return React.createElement(element, { ref, ...rest })
+      }
+    )
+
   return {
     motion: {
-      div: 'div',
-      span: 'span',
-      section: 'section',
-      article: 'article',
-      h1: 'h1',
-      h2: 'h2',
-      h3: 'h3',
-      p: 'p',
-      ul: 'ul',
-      li: 'li',
+      div: createMotionComponent('div'),
+      span: createMotionComponent('span'),
+      section: createMotionComponent('section'),
+      article: createMotionComponent('article'),
+      h1: createMotionComponent('h1'),
+      h2: createMotionComponent('h2'),
+      h3: createMotionComponent('h3'),
+      p: createMotionComponent('p'),
+      ul: createMotionComponent('ul'),
+      li: createMotionComponent('li'),
     },
     AnimatePresence: ({ children }) => children,
     useScroll: () => ({ scrollY: { get: () => 0 } }),

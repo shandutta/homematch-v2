@@ -50,16 +50,22 @@ const mockProperty: Property = {
   zpid: '12345678',
 }
 
+/**
+ * Helper to get stat value from the new horizontal layout.
+ * New structure: <span><Icon/><span class="font-medium">VALUE</span><span>LABEL</span></span>
+ */
 const getStatValueByLabel = (label: string) => {
+  // Find the label text (e.g., "bed", "bath", "sqft")
   const labelElement = screen.getByText((content, element) => {
     return (
-      element?.tagName.toLowerCase() === 'p' &&
-      content.replace(/\s|\./g, '').toLowerCase() ===
-        label.replace(/\s|\./g, '').toLowerCase()
+      element?.tagName.toLowerCase() === 'span' &&
+      element?.className.includes('text-hm-stone-500') &&
+      content.toLowerCase() === label.toLowerCase()
     )
   })
-  const valueElement = labelElement.nextElementSibling as HTMLElement | null
-  if (!valueElement) {
+  // The value is the previous sibling with class "font-medium"
+  const valueElement = labelElement.previousElementSibling as HTMLElement | null
+  if (!valueElement || !valueElement.classList.contains('font-medium')) {
     throw new Error(`Value element for ${label} stat not found`)
   }
   return valueElement
@@ -70,9 +76,10 @@ describe('PropertyCard Component', () => {
     renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByText('123 Main St')).toBeDefined()
     expect(screen.getByText('$500,000')).toBeDefined()
-    expect(getStatValueByLabel('Beds')).toHaveTextContent('3')
-    expect(getStatValueByLabel('Baths')).toHaveTextContent('2')
-    expect(getStatValueByLabel('Sq. Ft.')).toHaveTextContent('1,500')
+    // New layout uses lowercase labels: "bed", "bath", "sqft"
+    expect(getStatValueByLabel('bed')).toHaveTextContent('3')
+    expect(getStatValueByLabel('bath')).toHaveTextContent('2')
+    expect(getStatValueByLabel('sqft')).toHaveTextContent('1,500')
   })
 
   test('should render Zillow link with correct href', () => {
