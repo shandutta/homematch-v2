@@ -135,9 +135,20 @@ export class UserService extends BaseService {
   // Household Operations
   async createHousehold(household: HouseholdInsert): Promise<Household | null> {
     const supabase = await this.getSupabase()
+
+    // RLS requires created_by to match auth.uid(); set it when a session exists
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const payload: HouseholdInsert = {
+      ...household,
+      created_by: household.created_by ?? user?.id,
+    }
+
     const { data, error } = await supabase
       .from('households')
-      .insert(household)
+      .insert(payload)
       .select()
       .single()
 

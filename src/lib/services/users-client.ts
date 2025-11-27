@@ -72,9 +72,25 @@ export class UserServiceClient {
   // Household Operations
   static async createHousehold(household: HouseholdInsert): Promise<Household> {
     const supabase = createClient()
+
+    // RLS: household inserts must set created_by to the current user
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError || !session?.user) {
+      throw new Error('Authentication required to create a household')
+    }
+
+    const payload: HouseholdInsert = {
+      ...household,
+      created_by: session.user.id,
+    }
+
     const { data, error } = await supabase
       .from('households')
-      .insert(household)
+      .insert(payload)
       .select()
       .single()
 
