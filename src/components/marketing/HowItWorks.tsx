@@ -30,53 +30,6 @@ const HOW_IT_WORKS_STEPS = [
   },
 ] as const
 
-// Animated counter component
-function AnimatedCounter({
-  value,
-  isActive,
-}: {
-  value: number
-  isActive: boolean
-}) {
-  const [displayValue, setDisplayValue] = useState(0)
-
-  useEffect(() => {
-    if (!isActive) {
-      setDisplayValue(0)
-      return
-    }
-
-    const duration = 800 // ms
-    const steps = 20
-    const increment = value / steps
-    const stepDuration = duration / steps
-
-    let current = 0
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= value) {
-        setDisplayValue(value)
-        clearInterval(timer)
-      } else {
-        setDisplayValue(Math.floor(current))
-      }
-    }, stepDuration)
-
-    return () => clearInterval(timer)
-  }, [isActive, value])
-
-  return (
-    <motion.span
-      className="tabular-nums"
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={isActive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-    >
-      {displayValue}
-    </motion.span>
-  )
-}
-
 export function HowItWorks() {
   const sectionRef = useRef<HTMLElement>(null)
   const [activeStep, setActiveStep] = useState(-1)
@@ -132,27 +85,7 @@ export function HowItWorks() {
           </p>
         </MotionDiv>
 
-        {/* Progress line connector (hidden on mobile) */}
-        <div className="relative mt-6 hidden sm:block">
-          <div className="absolute top-1/2 right-[16.67%] left-[16.67%] h-1 -translate-y-1/2">
-            {/* Background line */}
-            <div className="absolute inset-0 rounded-full bg-gray-200" />
-            {/* Animated progress line */}
-            <motion.div
-              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#021A44] via-[#063A9E] to-sky-500"
-              style={{
-                width: `${activeStep >= 2 ? 100 : activeStep >= 1 ? 50 : activeStep >= 0 ? 0 : 0}%`,
-              }}
-              initial={{ width: '0%' }}
-              animate={{
-                width: `${activeStep >= 2 ? 100 : activeStep >= 1 ? 50 : 0}%`,
-              }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3 grid gap-4 sm:mt-3 sm:grid-cols-3 sm:gap-5">
+        <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
           {steps.map((step, i) => (
             <StepCard
               key={step.title}
@@ -261,8 +194,7 @@ function StepCard({
             className="text-xl font-semibold text-gray-900"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            <AnimatedCounter value={index + 1} isActive={isActive} />.{' '}
-            {step.title}
+            {index + 1}. {step.title}
           </h3>
 
           <motion.p

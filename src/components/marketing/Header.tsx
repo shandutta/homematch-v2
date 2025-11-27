@@ -37,8 +37,12 @@ export function Header() {
         }}
       />
 
-      {/* Nav content */}
-      <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 sm:px-6 sm:py-5">
+      {/* Nav content - compact when scrolled */}
+      <nav
+        className={`relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 transition-all duration-300 ${
+          hasScrolled ? 'py-2 sm:py-2.5' : 'py-4 sm:py-5'
+        }`}
+      >
         {/* Logo with entrance animation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -83,12 +87,12 @@ export function Header() {
           >
             <Link
               href="/login"
-              className="group relative text-sm text-white/80 transition-colors hover:text-white sm:text-base"
+              className="group relative px-2 py-1 text-sm text-white/80 transition-colors hover:text-white sm:text-base"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               Log In
               {/* Animated underline on hover */}
-              <span className="absolute inset-x-0 -bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
+              <span className="absolute right-0 bottom-0 left-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
             </Link>
           </motion.div>
 
@@ -100,12 +104,12 @@ export function Header() {
           >
             <Link
               href="/signup"
-              className="group relative overflow-hidden rounded-lg bg-white/10 px-3 py-2 text-sm text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 sm:px-4 sm:text-base"
+              className="group relative overflow-hidden rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/25 hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] sm:px-4 sm:py-2 sm:text-base"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               <span className="relative z-10">Sign Up</span>
               {/* Shimmer effect on hover */}
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
             </Link>
           </motion.div>
         </motion.div>
