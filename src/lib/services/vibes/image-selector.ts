@@ -18,24 +18,37 @@ export interface ImageSelectionResult {
 }
 
 /**
+ * Fisher-Yates shuffle for random selection
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+/**
  * Select strategic images from property image array
  *
  * Strategy:
  * 1. First image is always the hero shot (exterior/facade)
  * 2. Kitchen (typically image 3-5) - high buyer impact
  * 3. Living area (typically image 2-4) - lifestyle visualization
- * 4. Bedroom/bathroom (if available)
+ * 4. Bedroom/bathroom - typically in middle positions
  * 5. Outdoor space or unique feature (if house type)
+ * 6. Fill remaining slots with random diverse images
  *
  * @param images - Array of image URLs from Zillow
  * @param propertyType - Property type for selection strategy
- * @param maxImages - Maximum images to select (default 5)
+ * @param maxImages - Maximum images to select (default 8)
  */
 export function selectStrategicImages(
   images: string[] | null,
   propertyType: string | null,
   lotSizeSqft: number | null,
-  maxImages: number = 5
+  maxImages: number = 8
 ): ImageSelectionResult {
   if (!images || images.length === 0) {
     return {
@@ -88,13 +101,21 @@ export function selectStrategicImages(
 
   // 4. Bedroom or bathroom - typically in positions 5-8
   if (selected.length < maxImages && images.length > 5) {
-    const bedroomIndices = [5, 6, 7]
+    const bedroomIndices = [5, 6, 7, 8]
     for (const idx of bedroomIndices) {
       if (addImage(idx, 'bedroom')) break
     }
   }
 
-  // 5. Outdoor space for houses with yards
+  // 5. Bathroom - try to get a separate bathroom shot
+  if (selected.length < maxImages && images.length > 7) {
+    const bathroomIndices = [7, 8, 9, 6]
+    for (const idx of bathroomIndices) {
+      if (addImage(idx, 'bathroom')) break
+    }
+  }
+
+  // 6. Outdoor space for houses with yards
   const isHouse =
     propertyType === 'single_family' ||
     propertyType === 'house' ||
@@ -103,18 +124,28 @@ export function selectStrategicImages(
 
   if (isHouse && hasYard && selected.length < maxImages && images.length > 6) {
     // Outdoor shots are often later in the gallery
-    const outdoorIndices = [images.length - 1, images.length - 2, 8, 9]
+    const outdoorIndices = [images.length - 1, images.length - 2, 8, 9, 10]
     for (const idx of outdoorIndices) {
       if (addImage(idx, 'outdoor')) break
     }
   }
 
-  // Fill remaining slots if we have room
+  // 7. Fill remaining slots with randomly selected diverse images
   if (selected.length < Math.min(maxImages, images.length)) {
-    for (let i = 0; i < images.length && selected.length < maxImages; i++) {
+    // Get all unused indices and shuffle them for random selection
+    const unusedIndices = []
+    for (let i = 0; i < images.length; i++) {
       if (!usedIndices.has(i)) {
-        addImage(i, 'additional')
+        unusedIndices.push(i)
       }
+    }
+
+    // Shuffle to randomize which additional images we pick
+    const shuffledUnused = shuffleArray(unusedIndices)
+
+    for (const idx of shuffledUnused) {
+      if (selected.length >= maxImages) break
+      addImage(idx, 'additional')
     }
   }
 
@@ -122,7 +153,7 @@ export function selectStrategicImages(
   let strategy: 'balanced' | 'limited' | 'single' = 'balanced'
   if (selected.length === 1) {
     strategy = 'single'
-  } else if (selected.length < 3) {
+  } else if (selected.length < 4) {
     strategy = 'limited'
   }
 

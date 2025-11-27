@@ -218,10 +218,17 @@ export function CouplesPageClient() {
 
       toast.success('Household created! Now invite your partner.')
     } catch (err) {
-      console.error('Error creating household:', err)
+      // Supabase errors don't serialize well - extract useful info
+      const errorDetails = {
+        message: err instanceof Error ? err.message : String(err),
+        code: (err as { code?: string })?.code,
+        details: (err as { details?: string })?.details,
+        hint: (err as { hint?: string })?.hint,
+      }
+      console.error('Error creating household:', errorDetails)
       toast.error(
         'Failed to create household',
-        err instanceof Error ? err.message : 'Please try again'
+        errorDetails.message || 'Please try again'
       )
     } finally {
       setCreatingHousehold(false)

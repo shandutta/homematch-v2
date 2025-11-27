@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
+    // Get the current user (authenticate first)
     const {
       data: { user },
       error: authError,
@@ -26,15 +27,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Use service role client to bypass RLS for user search
+    // RLS only allows users to view their own profile, but search needs to see others
+    const serviceClient = await getServiceRoleClient()
+
     // Search for users by email (case-insensitive prefix match)
     // Only return users who have completed onboarding and are not the current user
-    const { data: users, error } = await supabase
+    const { data: users, error } = await serviceClient
       .from('user_profiles')
       .select('id, email, display_name, household_id')
       .neq('id', user.id)
       .eq('onboarding_completed', true)
       .ilike('email', `${query}%`)
       .limit(10)
+
+    console.log('[User Search] Query:', query, 'Current user:', user.id)
+    console.log('[User Search] Results:', users?.length ?? 0, 'users found')
 
     if (error) {
       console.error('Error searching users:', error)

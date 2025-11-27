@@ -79,8 +79,8 @@ export function Header() {
             },
           }}
         >
-          {/* Auth buttons container with consistent sizing */}
-          <div className="flex items-center rounded-xl bg-white/5 p-1 backdrop-blur-sm">
+          {/* Auth buttons container - unified pill with shared animation language */}
+          <div className="flex items-center gap-1 rounded-full bg-slate-800/60 p-1 ring-1 ring-white/10 backdrop-blur-md">
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: -10 },
@@ -89,12 +89,12 @@ export function Header() {
             >
               <Link
                 href="/login"
-                className="group relative block rounded-lg px-4 py-2 text-sm text-white/80 transition-all duration-200 hover:bg-white/10 hover:text-white sm:px-5 sm:py-2.5 sm:text-base"
+                className="group relative block overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
-                Log In
-                {/* Animated underline on hover */}
-                <span className="absolute bottom-1 left-1/2 h-0.5 w-0 -translate-x-1/2 bg-gradient-to-r from-sky-400 to-cyan-400 transition-all duration-300 group-hover:w-[calc(100%-1rem)]" />
+                <span className="relative z-10">Log In</span>
+                {/* Shared glow effect on hover */}
+                <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
             </motion.div>
 
@@ -106,12 +106,12 @@ export function Header() {
             >
               <Link
                 href="/signup"
-                className="group relative block overflow-hidden rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white transition-all duration-200 hover:border-white/40 hover:bg-white/20 hover:shadow-[0_0_20px_rgba(56,189,248,0.2)] sm:px-5 sm:py-2.5 sm:text-base"
+                className="group relative block overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 <span className="relative z-10">Sign Up</span>
-                {/* Shimmer effect on hover */}
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+                {/* Shared glow effect - slightly brighter for primary CTA */}
+                <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_12px_rgba(56,189,248,0.15)] transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
             </motion.div>
           </div>
