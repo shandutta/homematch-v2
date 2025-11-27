@@ -199,12 +199,8 @@ export function CouplesPageClient() {
   }
 
   if (userHouseholdStatus === 'no-household') {
-    return (
-      <div className="space-y-6">
-        <CouplesHero stats={null} loading />
-        <NoHouseholdState />
-      </div>
-    )
+    // Don't show CouplesHero loading skeleton - just show the create household CTA
+    return <NoHouseholdState />
   }
 
   if (userHouseholdStatus === 'waiting-partner') {
