@@ -250,15 +250,14 @@ describe('PreferencesSection', () => {
 
   it('shows loading state while saving', async () => {
     const user = userEvent.setup()
-    mockUpdateUserProfile.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
-    )
+    // Use a promise that never resolves to ensure loading state persists
+    mockUpdateUserProfile.mockImplementation(() => new Promise(() => {}))
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
     const saveButton = screen.getByRole('button', { name: /save preferences/i })
     await user.click(saveButton)
 
-    expect(screen.getByText(/saving.../i)).toBeInTheDocument()
-    expect(saveButton).toBeDisabled()
+    expect(await screen.findByText(/saving.../i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /saving.../i })).toBeDisabled()
   })
 })
