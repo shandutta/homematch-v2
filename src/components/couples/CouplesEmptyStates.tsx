@@ -52,8 +52,8 @@ export function NoHouseholdState({
         >
           <div className="relative mx-auto h-20 w-20">
             <MotionDiv
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <Home className="h-20 w-20 text-orange-400/30" />
             </MotionDiv>
