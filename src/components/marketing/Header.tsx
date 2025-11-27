@@ -79,39 +79,42 @@ export function Header() {
             },
           }}
         >
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, y: -10 },
-              visible: { opacity: 1, y: 0 },
-            }}
-          >
-            <Link
-              href="/login"
-              className="group relative px-2 py-1 text-sm text-white/80 transition-colors hover:text-white sm:text-base"
-              style={{ fontFamily: 'var(--font-body)' }}
+          {/* Auth buttons container with consistent sizing */}
+          <div className="flex items-center rounded-xl bg-white/5 p-1 backdrop-blur-sm">
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 },
+              }}
             >
-              Log In
-              {/* Animated underline on hover */}
-              <span className="absolute right-0 bottom-0 left-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
-            </Link>
-          </motion.div>
+              <Link
+                href="/login"
+                className="group relative block rounded-lg px-4 py-2 text-sm text-white/80 transition-all duration-200 hover:bg-white/10 hover:text-white sm:px-5 sm:py-2.5 sm:text-base"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                Log In
+                {/* Animated underline on hover */}
+                <span className="absolute bottom-1 left-1/2 h-0.5 w-0 -translate-x-1/2 bg-gradient-to-r from-sky-400 to-cyan-400 transition-all duration-300 group-hover:w-[calc(100%-1rem)]" />
+              </Link>
+            </motion.div>
 
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, y: -10 },
-              visible: { opacity: 1, y: 0 },
-            }}
-          >
-            <Link
-              href="/signup"
-              className="group relative overflow-hidden rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/25 hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] sm:px-4 sm:py-2 sm:text-base"
-              style={{ fontFamily: 'var(--font-body)' }}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: -10 },
+                visible: { opacity: 1, y: 0 },
+              }}
             >
-              <span className="relative z-10">Sign Up</span>
-              {/* Shimmer effect on hover */}
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
-            </Link>
-          </motion.div>
+              <Link
+                href="/signup"
+                className="group relative block overflow-hidden rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm text-white transition-all duration-200 hover:border-white/40 hover:bg-white/20 hover:shadow-[0_0_20px_rgba(56,189,248,0.2)] sm:px-5 sm:py-2.5 sm:text-base"
+                style={{ fontFamily: 'var(--font-body)' }}
+              >
+                <span className="relative z-10">Sign Up</span>
+                {/* Shimmer effect on hover */}
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+              </Link>
+            </motion.div>
+          </div>
         </motion.div>
       </nav>
     </motion.header>
