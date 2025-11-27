@@ -21,6 +21,7 @@ import {
   NetworkErrorState,
 } from './CouplesEmptyStates'
 import { DisputedPropertiesAlert } from './DisputedPropertiesAlert'
+import { InvitePartnerModal } from './InvitePartnerModal'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/lib/utils/toast'
 import type {
@@ -51,6 +52,9 @@ export function CouplesPageClient() {
   const [userHouseholdStatus, setUserHouseholdStatus] = useState<
     'loading' | 'no-household' | 'waiting-partner' | 'active' | 'error'
   >('loading')
+  const [householdId, setHouseholdId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false)
 
   const fetchCouplesData = useCallback(async () => {
     try {
@@ -68,6 +72,9 @@ export function CouplesPageClient() {
         return
       }
 
+      // Store user ID
+      setUserId(session.user.id)
+
       // First check user's household status
       const { data: userProfile } = await supabase
         .from('user_profiles')
@@ -77,8 +84,12 @@ export function CouplesPageClient() {
 
       if (!userProfile?.household_id) {
         setUserHouseholdStatus('no-household')
+        setHouseholdId(null)
         return
       }
+
+      // Store household ID
+      setHouseholdId(userProfile.household_id)
 
       // Check if there are other users in the household
       const householdUserCount =
@@ -197,14 +208,27 @@ export function CouplesPageClient() {
   // Waiting for partner state
   if (userHouseholdStatus === 'waiting-partner') {
     return (
-      <MotionDiv
-        variants={fadeInUp}
-        initial="initial"
-        animate="animate"
-        transition={{ duration: 0.5 }}
-      >
-        <WaitingForPartnerState />
-      </MotionDiv>
+      <>
+        <MotionDiv
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.5 }}
+        >
+          <WaitingForPartnerState
+            householdId={householdId || undefined}
+            onInvite={() => setInviteModalOpen(true)}
+          />
+        </MotionDiv>
+        {householdId && userId && (
+          <InvitePartnerModal
+            open={inviteModalOpen}
+            onOpenChange={setInviteModalOpen}
+            householdId={householdId}
+            userId={userId}
+          />
+        )}
+      </>
     )
   }
 

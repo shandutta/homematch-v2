@@ -141,8 +141,14 @@ export function useCouplesInteraction() {
     },
 
     // Always refetch after error or success
-    onSettled: () => {
+    onSettled: (_data, _error, { type }) => {
       queryClient.invalidateQueries({ queryKey: interactionKeys.summaries() })
+      // Invalidate the target list so it refetches (e.g., Liked page after liking)
+      queryClient.invalidateQueries({ queryKey: interactionKeys.list(type) })
+      // Also invalidate viewed list since the property may have been moved from there
+      queryClient.invalidateQueries({
+        queryKey: interactionKeys.list('viewed'),
+      })
     },
   })
 

@@ -102,7 +102,8 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
 export function WaitingForPartnerState({
   className,
   householdId,
-}: EmptyStateProps & { householdId?: string }) {
+  onInvite,
+}: EmptyStateProps & { householdId?: string; onInvite?: () => void }) {
   return (
     <Card
       className={`card-glassmorphism-style w-full border-purple-500/20 !bg-slate-900/90 ${className}`}
@@ -154,7 +155,10 @@ export function WaitingForPartnerState({
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
-          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+          <Button
+            onClick={onInvite}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          >
             <UserPlus className="mr-2 h-4 w-4" />
             Send Invitation
           </Button>

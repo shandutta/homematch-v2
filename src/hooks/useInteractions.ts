@@ -98,7 +98,9 @@ export function useRecordInteraction() {
       // Invalidate the target list so it refetches (e.g., Liked page after liking)
       queryClient.invalidateQueries({ queryKey: interactionKeys.list(type) })
       // Also invalidate viewed list since the property may have been moved from there
-      queryClient.invalidateQueries({ queryKey: interactionKeys.list('viewed') })
+      queryClient.invalidateQueries({
+        queryKey: interactionKeys.list('viewed'),
+      })
     },
   })
 }
