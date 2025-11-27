@@ -50,14 +50,22 @@ export function NoHouseholdState({
           }}
           className="mb-6"
         >
-          <div className="relative mx-auto h-20 w-20">
+          <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+            {/* Soft gradient glow background */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-transparent blur-xl" />
+
+            {/* Icon container with subtle pulse */}
             <MotionDiv
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              animate={{ opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-500/30 bg-gradient-to-br from-slate-800/80 to-slate-900/80 shadow-lg shadow-orange-500/10"
             >
-              <Home className="h-20 w-20 text-orange-400/30" />
+              <Home className="h-8 w-8 text-orange-400/60" strokeWidth={1.5} />
+              <UserPlus
+                className="absolute -right-2 -bottom-2 h-6 w-6 rounded-full bg-slate-900 p-1 text-orange-400"
+                strokeWidth={2}
+              />
             </MotionDiv>
-            <UserPlus className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-orange-400" />
           </div>
         </MotionDiv>
 

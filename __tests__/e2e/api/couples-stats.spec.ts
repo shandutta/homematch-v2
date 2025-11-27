@@ -211,7 +211,9 @@ describe('Integration: /api/couples/stats (authenticated)', () => {
     const { status } = await fetchJson('/api/couples/stats')
     const endTime = Date.now()
 
-    expect([200, 404, 500]).toContain(status)
+    // Server errors should not be accepted - they indicate broken code
+    expect(status).not.toBe(500)
+    expect([200, 404]).toContain(status)
     expect(endTime - startTime).toBeLessThan(5000) // Should respond within 5 seconds
   })
 

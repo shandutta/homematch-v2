@@ -24,6 +24,7 @@ import { PropertyMap } from '@/components/property/PropertyMap'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
+import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { InteractionType } from '@/types/app'
 
 interface PropertyDetailModalProps {
@@ -52,6 +53,7 @@ export function PropertyDetailModal({
   onDecision,
 }: PropertyDetailModalProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
+  const { data: vibes } = usePropertyVibes(property?.id)
 
   if (!property) return null
 
@@ -175,6 +177,7 @@ export function PropertyDetailModal({
             <StorytellingDescription
               property={property}
               neighborhood={neighborhood}
+              vibes={vibes}
               isMutualLike={mutualLikes.some(
                 (ml) => ml.property_id === property.id && ml.liked_by_count >= 2
               )}

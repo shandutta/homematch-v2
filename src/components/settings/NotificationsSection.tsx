@@ -40,7 +40,9 @@ export function NotificationsSection({
   const notifications = preferences.notifications || {}
 
   const [loading, setLoading] = useState(false)
-  const [emailNotifications, setEmailNotifications] = useState(
+  const [emailNotifications, setEmailNotifications] = useState<
+    Record<string, boolean>
+  >(
     notifications.email || {
       newMatches: true,
       priceDrops: true,
@@ -48,14 +50,18 @@ export function NotificationsSection({
       weeklyDigest: false,
     }
   )
-  const [pushNotifications, setPushNotifications] = useState(
+  const [pushNotifications, setPushNotifications] = useState<
+    Record<string, boolean>
+  >(
     notifications.push || {
       newMatches: false,
       priceDrops: false,
       messages: true,
     }
   )
-  const [smsNotifications, setSmsNotifications] = useState(
+  const [smsNotifications, setSmsNotifications] = useState<
+    Record<string, boolean>
+  >(
     notifications.sms || {
       urgentAlerts: false,
       viewingReminders: false,

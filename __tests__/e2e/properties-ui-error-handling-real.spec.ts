@@ -1,9 +1,13 @@
 /**
- * Real UI Error Handling Tests for Properties
- * Converted from Jest mocking tests to Playwright E2E tests
+ * UI Error Handling Tests for Properties
  *
- * These tests verify actual user-facing error handling through the browser
- * instead of mocking service responses.
+ * NOTE: These tests intentionally use API mocking to test error handling UI.
+ * This is the correct approach for testing error scenarios because:
+ * 1. We cannot reliably cause real server errors on demand
+ * 2. We need to test specific error conditions (500, network failure, timeout)
+ * 3. The purpose is testing UI responses to errors, not server behavior
+ *
+ * For tests of real API behavior without mocking, see the integration tests.
  */
 
 import { test, expect } from '../fixtures'

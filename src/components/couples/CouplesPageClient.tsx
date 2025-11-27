@@ -76,12 +76,16 @@ export function CouplesPageClient() {
       // Store user ID
       setUserId(session.user.id)
 
-      // First check user's household status
-      const { data: userProfile } = await supabase
+      // First check user's household status (simple query without join)
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('household_id, households(id, user_count)')
+        .select('household_id')
         .eq('id', session.user.id)
         .single()
+
+      if (profileError) {
+        console.error('[Couples] Profile fetch error:', profileError)
+      }
 
       if (!userProfile?.household_id) {
         setUserHouseholdStatus('no-household')
@@ -92,9 +96,14 @@ export function CouplesPageClient() {
       // Store household ID
       setHouseholdId(userProfile.household_id)
 
-      // Check if there are other users in the household
-      const householdUserCount =
-        (userProfile.households as { user_count?: number })?.user_count || 1
+      // Fetch household info separately to check user count
+      const { data: household } = await supabase
+        .from('households')
+        .select('id, user_count')
+        .eq('id', userProfile.household_id)
+        .single()
+
+      const householdUserCount = household?.user_count || 1
       if (householdUserCount < 2) {
         setUserHouseholdStatus('waiting-partner')
         return
@@ -199,32 +208,37 @@ export function CouplesPageClient() {
         return
       }
 
-      // Create a new household
-      const { data: newHousehold, error: createError } = await supabase
-        .from('households')
-        .insert({
-          created_by: session.user.id,
-          user_count: 1,
-        })
-        .select()
-        .single()
+      // Create a new household using RPC (handles both creation and profile update)
+      console.log('[Household Create] Calling RPC for user:', session.user.id)
+      const { data: newHouseholdId, error: createError } = await supabase.rpc(
+        'create_household_for_user'
+      )
+
+      console.log('[Household Create] RPC result:', {
+        newHouseholdId,
+        createError,
+        errorMessage: createError?.message,
+        errorCode: createError?.code,
+        errorKeys: createError ? Object.keys(createError) : null,
+      })
 
       if (createError) {
-        throw createError
+        // Log the raw error for debugging
+        console.error(
+          '[Household Create] Raw error:',
+          JSON.stringify(createError, null, 2)
+        )
+        throw new Error(
+          createError.message || createError.code || 'Unknown RPC error'
+        )
       }
 
-      // Update user profile with household_id
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ household_id: newHousehold.id })
-        .eq('id', session.user.id)
-
-      if (updateError) {
-        throw updateError
+      if (!newHouseholdId) {
+        throw new Error('RPC returned no household ID')
       }
 
       // Set the state
-      setHouseholdId(newHousehold.id)
+      setHouseholdId(newHouseholdId)
       setUserId(session.user.id)
       setUserHouseholdStatus('waiting-partner')
 
@@ -233,10 +247,17 @@ export function CouplesPageClient() {
 
       toast.success('Household created! Now invite your partner.')
     } catch (err) {
-      console.error('Error creating household:', err)
+      // Supabase errors don't serialize well - extract useful info
+      const errorDetails = {
+        message: err instanceof Error ? err.message : String(err),
+        code: (err as { code?: string })?.code,
+        details: (err as { details?: string })?.details,
+        hint: (err as { hint?: string })?.hint,
+      }
+      console.error('Error creating household:', errorDetails)
       toast.error(
         'Failed to create household',
-        err instanceof Error ? err.message : 'Please try again'
+        errorDetails.message || 'Please try again'
       )
     } finally {
       setCreatingHousehold(false)

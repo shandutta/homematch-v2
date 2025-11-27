@@ -88,14 +88,24 @@ Respond with a JSON object matching this EXACT structure:
   "primaryVibes": [
     {
       "name": "string - vibe name like 'Modern Minimalist' or 'Cozy Craftsman'",
-      "intensity": "number 0-1 (how strongly this vibe presents)",
+      "intensity": "number 0.0-1.0 - BE PRECISE based on visual evidence:
+        0.9-1.0 = DEFINING feature (e.g., floor-to-ceiling windows for 'Light-Filled')
+        0.7-0.89 = STRONG presence (clearly designed around this vibe)
+        0.5-0.69 = MODERATE (noticeable but not dominant)
+        0.3-0.49 = SUBTLE hint (minor touches suggesting this vibe)
+        0.1-0.29 = FAINT trace (barely perceptible)",
       "source": "interior" | "exterior" | "both"
     }
   ],
   "lifestyleFits": [
     {
       "category": "string - e.g., 'Remote Worker', 'Home Chef', 'Pet Owner', 'Fitness Enthusiast'",
-      "score": "number 0-1 (how well this home fits this lifestyle)",
+      "score": "number 0.0-1.0 - based on specific features:
+        0.9+ = PERFECT fit (dedicated space/features for this lifestyle)
+        0.7-0.89 = GREAT fit (strong support)
+        0.5-0.69 = DECENT fit (workable)
+        0.3-0.49 = MARGINAL (possible with compromise)
+        <0.3 = NOT a good fit (don't include if below this)",
       "reason": "string (max 200 chars) - why this home fits this lifestyle"
     }
   ],
@@ -117,10 +127,10 @@ Respond with a JSON object matching this EXACT structure:
 }
 
 Requirements:
-- primaryVibes: 2-4 items, ordered by intensity (highest first)
-- lifestyleFits: 2-6 items based on what you see in the images
+- primaryVibes: 2-4 items, ordered by intensity (highest first). IMPORTANT: Vary the intensities meaningfully - don't default to 0.8/0.7/0.6. A modest condo won't have the same "Luxurious" intensity as a mansion.
+- lifestyleFits: 2-6 items based on what you see in the images. Only include lifestyles that score 0.3+
 - notableFeatures: 2-8 specific features that would catch a buyer's eye
-- emotionalHooks: 2-4 specific moments (not generic)
+- emotionalHooks: 2-4 specific moments (not generic like "relaxing at home")
 - suggestedTags: 2-4 tags from the predefined list ONLY`
 }
 

@@ -107,7 +107,7 @@ async function ensureProfilesExist() {
     .filter(Boolean)
     .map((user) => ({
       id: user.id,
-      onboarding_completed: false,
+      onboarding_completed: true, // Set true so test users appear in partner search
       preferences: user.user_metadata?.preferences || {},
       updated_at: new Date().toISOString(),
     }))
@@ -280,7 +280,7 @@ async function setupTestUsers() {
               id: data.user.id,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              onboarding_completed: false,
+              onboarding_completed: true, // Set true so test users appear in partner search
             })
           if (upsertError) {
             throw new Error(

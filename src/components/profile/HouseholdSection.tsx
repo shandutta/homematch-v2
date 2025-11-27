@@ -177,7 +177,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         household_id: householdId,
         invited_email: inviteEmail.trim(),
         invited_name: inviteName.trim() || null,
-        invited_by: profile.id,
+        created_by: profile.id,
         message: inviteMessage.trim() || null,
       })
       setInviteEmail('')

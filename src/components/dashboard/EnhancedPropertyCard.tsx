@@ -6,7 +6,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Property } from '@/types/database'
-import { Neighborhood } from '@/lib/schemas/property'
+import {
+  Neighborhood,
+  PROPERTY_TYPE_VALUES,
+  PropertyType,
+} from '@/lib/schemas/property'
 import {
   MapPin,
   Heart,
@@ -219,20 +223,10 @@ export function EnhancedPropertyCard({
           property={{
             ...property,
             // Ensure property_type matches the expected enum
-            property_type: [
-              'single_family',
-              'condo',
-              'townhome',
-              'multi_family',
-              'manufactured',
-              'land',
-              'other',
-              // legacy values kept for compatibility with older data
-              'house',
-              'townhouse',
-              'apartment',
-            ].includes(property.property_type as string)
-              ? property.property_type
+            property_type: PROPERTY_TYPE_VALUES.includes(
+              property.property_type as PropertyType
+            )
+              ? (property.property_type as PropertyType)
               : null,
             // Ensure listing_status matches the expected enum
             listing_status: ['active', 'pending', 'sold'].includes(

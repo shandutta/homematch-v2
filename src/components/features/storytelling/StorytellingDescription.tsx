@@ -1,6 +1,7 @@
 'use client'
 
 import { Property, Neighborhood } from '@/lib/schemas/property'
+import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 import { Badge } from '@/components/ui/badge'
 import {
   MotionDiv,
@@ -34,6 +35,7 @@ import {
 interface StorytellingDescriptionProps {
   property: Property
   neighborhood?: Neighborhood
+  vibes?: PropertyVibes | null
   isMutualLike?: boolean
   className?: string
   showNeighborhoodPerks?: boolean
@@ -659,6 +661,7 @@ function getDescription(
 export function StorytellingDescription({
   property,
   neighborhood,
+  vibes,
   isMutualLike = false,
   className = '',
   showNeighborhoodPerks = true,
@@ -666,13 +669,46 @@ export function StorytellingDescription({
   showLifestyleTags = true,
   variant = 'full',
 }: StorytellingDescriptionProps) {
-  const description = getDescription(property, neighborhood, isMutualLike)
-  const lifestyleTags = generateLifestyleTags(property, neighborhood)
-  const lifestyleStory = getLifestyleStory(property, neighborhood)
+  // Use LLM-generated vibes when available, fallback to templates
+  const hasVibes = !!vibes
+
+  // Description: use vibes tagline or template
+  const description = hasVibes
+    ? vibes.tagline
+    : getDescription(property, neighborhood, isMutualLike)
+
+  // Lifestyle tags: use vibes suggested_tags or generate from property
+  const lifestyleTags = hasVibes
+    ? vibes.suggested_tags.filter(
+        (tag): tag is keyof typeof LIFESTYLE_TAGS => tag in LIFESTYLE_TAGS
+      )
+    : generateLifestyleTags(property, neighborhood)
+
+  // Lifestyle story: use vibes vibe_statement or template
+  const lifestyleStory = hasVibes
+    ? vibes.vibe_statement
+    : getLifestyleStory(property, neighborhood)
+
+  // Neighborhood perks: keep template-based for now (vibes focus on property, not neighborhood)
   const neighborhoodPerk = showNeighborhoodPerks
     ? getNeighborhoodPerks(property, neighborhood)
     : null
-  const futureVision = showFutureVision ? getFutureVisionTag(property) : null
+
+  // Future vision: use vibes lifestyle_fits if available, else template
+  const futureVision = showFutureVision
+    ? hasVibes && vibes.lifestyle_fits?.length > 0
+      ? {
+          tag: vibes.lifestyle_fits[0].category,
+          description: vibes.lifestyle_fits[0].reason,
+        }
+      : getFutureVisionTag(property)
+    : null
+
+  // Emotional hooks from vibes (used in full variant)
+  const emotionalHooks = hasVibes ? vibes.emotional_hooks : null
+
+  // Primary vibes (used for enhanced display in full variant)
+  const primaryVibes = hasVibes ? vibes.primary_vibes : null
 
   if (variant === 'minimal') {
     return (
@@ -799,6 +835,53 @@ export function StorytellingDescription({
         >
           {lifestyleStory}
         </MotionP>
+      )}
+
+      {/* Primary Vibes - LLM-generated vibes display */}
+      {primaryVibes && primaryVibes.length > 0 && (
+        <MotionDiv
+          className="flex flex-wrap gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+        >
+          {primaryVibes.slice(0, 4).map((vibe, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1"
+            >
+              <span className="text-token-xs font-medium text-slate-700">
+                {vibe.name}
+              </span>
+              <span className="text-token-xs text-slate-400">
+                {vibe.source === 'both'
+                  ? '↔'
+                  : vibe.source === 'interior'
+                    ? '🏠'
+                    : '🌳'}
+              </span>
+            </div>
+          ))}
+        </MotionDiv>
+      )}
+
+      {/* Emotional Hooks - LLM-generated lifestyle moments */}
+      {emotionalHooks && emotionalHooks.length > 0 && (
+        <MotionDiv
+          className="space-y-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.38 }}
+        >
+          {emotionalHooks.slice(0, 2).map((hook, i) => (
+            <p
+              key={i}
+              className="text-token-xs leading-relaxed text-slate-400 italic"
+            >
+              &quot;{hook}&quot;
+            </p>
+          ))}
+        </MotionDiv>
       )}
 
       {/* Neighborhood Perks */}

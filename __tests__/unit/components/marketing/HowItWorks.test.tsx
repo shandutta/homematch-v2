@@ -5,7 +5,9 @@ import { HowItWorks } from '@/components/marketing/HowItWorks'
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
   },
+  useInView: () => true,
 }))
 
 // Mock lucide-react icons
@@ -115,16 +117,18 @@ describe('HowItWorks', () => {
       'p-5',
       'sm:p-6',
       'rounded-token-xl',
-      'transition-shadow'
+      'transition-all'
     )
   })
 
   test('step icons have gradient background', () => {
     render(<HowItWorks />)
 
+    // Icons are nested: gradient-div > animation-div > icon
+    // So we need parentElement.parentElement to get the gradient container
     const iconContainers = screen
       .getAllByTestId(/.*-icon/)
-      .map((icon) => icon.parentElement)
+      .map((icon) => icon.parentElement?.parentElement)
     iconContainers.forEach((container) => {
       expect(container).toHaveClass(
         'inline-flex',
@@ -191,7 +195,7 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     const grid = screen.getByText('1. Tell Us Your Vibe').closest('.grid')
-    expect(grid).toHaveClass('gap-4', 'mt-3', 'sm:mt-3', 'sm:grid-cols-3')
+    expect(grid).toHaveClass('gap-4', 'mt-6', 'sm:grid-cols-3')
     expect(grid).toHaveClass('sm:gap-5')
   })
 })

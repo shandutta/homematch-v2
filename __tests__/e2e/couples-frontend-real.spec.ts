@@ -196,6 +196,9 @@ test.describe('Couples Features E2E Tests', () => {
       }
     })
 
+    // NOTE: This test uses API mocking to verify error handling UI behavior.
+    // This is intentional - we need to simulate specific error conditions to test
+    // how the UI responds. This is a UI error handling test, not a full E2E flow test.
     test('handles error states gracefully', async ({ page }) => {
       await page.goto('/dashboard')
       await page.waitForLoadState('domcontentloaded')
@@ -214,7 +217,7 @@ test.describe('Couples Features E2E Tests', () => {
         }
       }
 
-      // Simulate network error by intercepting API calls
+      // Mock API to return error - testing UI error handling, not server behavior
       await page.route('**/api/couples/mutual-likes', (route) => {
         route.fulfill({
           status: 500,

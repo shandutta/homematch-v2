@@ -1,5 +1,6 @@
 import { jest, describe, test, expect } from '@jest/globals'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
+import { renderWithQuery } from '../../utils/TestQueryProvider'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { Property } from '@/lib/schemas/property'
 
@@ -66,7 +67,7 @@ const getStatValueByLabel = (label: string) => {
 
 describe('PropertyCard Component', () => {
   test('should render property details correctly', () => {
-    render(<PropertyCard property={mockProperty} />)
+    renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByText('123 Main St')).toBeDefined()
     expect(screen.getByText('$500,000')).toBeDefined()
     expect(getStatValueByLabel('Beds')).toHaveTextContent('3')
@@ -75,7 +76,7 @@ describe('PropertyCard Component', () => {
   })
 
   test('should render Zillow link with correct href', () => {
-    render(<PropertyCard property={mockProperty} />)
+    renderWithQuery(<PropertyCard property={mockProperty} />)
     const zillowLink = screen.getByLabelText('View on Zillow')
     expect(zillowLink).toBeTruthy()
     expect(zillowLink.getAttribute('href')).toBe(
@@ -85,27 +86,33 @@ describe('PropertyCard Component', () => {
 
   test('should render action buttons when onDecision is provided', () => {
     const onDecision = jest.fn()
-    render(<PropertyCard property={mockProperty} onDecision={onDecision} />)
+    renderWithQuery(
+      <PropertyCard property={mockProperty} onDecision={onDecision} />
+    )
     expect(screen.getByLabelText('Pass property')).toBeDefined()
     expect(screen.getByLabelText('Like property')).toBeDefined()
   })
 
   test('should not render action buttons when onDecision is not provided', () => {
-    render(<PropertyCard property={mockProperty} />)
+    renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.queryByLabelText('Pass property')).toBeNull()
     expect(screen.queryByLabelText('Like property')).toBeNull()
   })
 
   test('should call onDecision with "skip" when pass button is clicked', () => {
     const onDecision = jest.fn()
-    render(<PropertyCard property={mockProperty} onDecision={onDecision} />)
+    renderWithQuery(
+      <PropertyCard property={mockProperty} onDecision={onDecision} />
+    )
     fireEvent.click(screen.getByLabelText('Pass property'))
     expect(onDecision).toHaveBeenCalledWith('prop-1', 'skip')
   })
 
   test('should call onDecision with "liked" when like button is clicked', () => {
     const onDecision = jest.fn()
-    render(<PropertyCard property={mockProperty} onDecision={onDecision} />)
+    renderWithQuery(
+      <PropertyCard property={mockProperty} onDecision={onDecision} />
+    )
     fireEvent.click(screen.getByLabelText('Like property'))
     expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
   })
@@ -115,23 +122,23 @@ describe('PropertyCard Component', () => {
       ...mockProperty,
       coordinates: { lat: 37.7749, lng: -122.4194 } as any,
     }
-    render(<PropertyCard property={propertyWithCoords} />)
+    renderWithQuery(<PropertyCard property={propertyWithCoords} />)
     expect(screen.getByTestId('property-map')).toBeDefined()
   })
 
   test('should not render PropertyMap when coordinates are null', () => {
     const propWithoutCoords: Property = { ...mockProperty, coordinates: null }
-    render(<PropertyCard property={propWithoutCoords} />)
+    renderWithQuery(<PropertyCard property={propWithoutCoords} />)
     expect(screen.queryByTestId('property-map')).toBeNull()
   })
 
   test('should render StorytellingDescription component', () => {
-    render(<PropertyCard property={mockProperty} />)
+    renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByTestId('storytelling-description')).toBeDefined()
   })
 
   test('should render MutualLikesIndicator component', () => {
-    render(<PropertyCard property={mockProperty} />)
+    renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByTestId('mutual-likes-indicator')).toBeDefined()
   })
 })

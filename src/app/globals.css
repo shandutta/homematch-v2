@@ -172,6 +172,28 @@
   --opacity-glass-subtle: 0.05;
   --opacity-glass-strong: 0.95;
 
+  /* Gradient Mesh Background Tokens */
+  --mesh-primary: #021a44;
+  --mesh-secondary: #063a9e;
+  --mesh-accent-warm: #1e3a5f;
+  --mesh-accent-glow: #0ea5e9;
+  --mesh-soft-purple: #1e1b4b;
+
+  /* Dark Card System */
+  --color-card-dark-bg: rgba(15, 23, 42, 0.85);
+  --color-card-dark-border: rgba(255, 255, 255, 0.1);
+  --color-card-dark-border-hover: rgba(255, 255, 255, 0.2);
+
+  /* Glow Effects */
+  --glow-cyan-subtle: 0 0 40px rgba(56, 189, 248, 0.08);
+  --glow-cyan-medium: 0 0 60px rgba(56, 189, 248, 0.12);
+  --glow-couples-subtle: 0 0 40px rgba(236, 72, 153, 0.06);
+
+  /* Text on Dark */
+  --color-text-on-dark-primary: #f8fafc;
+  --color-text-on-dark-secondary: #cbd5e1;
+  --color-text-on-dark-muted: #94a3b8;
+
   /* Design Token Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;

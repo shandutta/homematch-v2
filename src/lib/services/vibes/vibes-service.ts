@@ -98,10 +98,7 @@ export class VibesService {
 
     // Call LLM
     const { response, usage } = await this.client.chatCompletion(
-      [
-        { role: 'system', content: systemPrompt },
-        userMessage,
-      ],
+      [{ role: 'system', content: systemPrompt }, userMessage],
       {
         temperature: 0.7,
         maxTokens: 2000,
@@ -142,7 +139,10 @@ export class VibesService {
    */
   async generateVibesBatch(
     properties: Property[],
-    options?: { delayMs?: number; onProgress?: (completed: number, total: number) => void }
+    options?: {
+      delayMs?: number
+      onProgress?: (completed: number, total: number) => void
+    }
   ): Promise<BatchGenerationResult> {
     const delayMs = options?.delayMs ?? 1000
     const startTime = Date.now()
