@@ -5,10 +5,11 @@ import { User } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react'
+import { LogOut, Trash2, AlertTriangle, Shield, RotateCcw } from 'lucide-react'
 import { useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useResetInteractions } from '@/hooks/useInteractions'
 
 interface AccountSectionProps {
   user: User
@@ -17,12 +18,15 @@ interface AccountSectionProps {
 export function AccountSection({ user }: AccountSectionProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSigningOut, startTransition] = useTransition()
   const router = useRouter()
   const supabase = createClient()
+  const resetInteractions = useResetInteractions()
 
   const handleSignOut = () => {
     setError(null)
+    setSuccessMessage(null)
     setLoading(true)
 
     startTransition(async () => {
@@ -60,6 +64,7 @@ export function AccountSection({ user }: AccountSectionProps) {
 
     setLoading(true)
     setError(null)
+    setSuccessMessage(null)
 
     try {
       // In a real app, you would call an API endpoint that handles account deletion
@@ -74,12 +79,40 @@ export function AccountSection({ user }: AccountSectionProps) {
     }
   }
 
+  const handleResetStats = async () => {
+    const confirmed = confirm(
+      'Are you sure you want to reset all your stats? This will clear all your likes, passes, and viewed properties. You will see all properties again as if starting fresh.'
+    )
+
+    if (!confirmed) return
+
+    setError(null)
+    setSuccessMessage(null)
+
+    try {
+      const result = await resetInteractions.mutateAsync()
+      setSuccessMessage(
+        `Successfully reset ${result.count} interaction${result.count === 1 ? '' : 's'}. You can now start fresh!`
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reset stats')
+    }
+  }
+
   return (
     <div className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {successMessage && (
+        <Alert className="border-green-500/20 bg-green-500/10">
+          <AlertDescription className="text-green-200">
+            {successMessage}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -140,6 +173,31 @@ export function AccountSection({ user }: AccountSectionProps) {
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="card-glassmorphism-style border-amber-500/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl font-semibold text-amber-200">
+            <RotateCcw className="h-5 w-5" />
+            Reset Stats
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-white/70">
+            Clear all your likes, passes, and viewed properties to start fresh.
+            This will allow you to see all properties again as if you were a new
+            user.
+          </p>
+          <Button
+            onClick={handleResetStats}
+            disabled={loading || resetInteractions.isPending}
+            variant="outline"
+            className="w-full border-amber-500/40 bg-transparent text-amber-200 hover:bg-amber-500/10"
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            {resetInteractions.isPending ? 'Resetting...' : 'Reset All Stats'}
           </Button>
         </CardContent>
       </Card>

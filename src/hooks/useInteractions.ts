@@ -193,3 +193,54 @@ export function useInfiniteInteractions(type: InteractionType) {
     staleTime: QUERY_STALE_TIMES.PROPERTY_LIST,
   })
 }
+
+/**
+ * Resets all interactions (likes, passes, views) for the current user.
+ * Invalidates all interaction-related caches after success.
+ */
+export function useResetInteractions() {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    { deleted: boolean; count: number },
+    Error,
+    void,
+    { previousSummary: InteractionSummary | undefined }
+  >({
+    mutationFn: () => InteractionService.resetAllInteractions(),
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: interactionKeys.all })
+
+      const previousSummary = queryClient.getQueryData<InteractionSummary>(
+        interactionKeys.summaries()
+      )
+
+      // Optimistically reset the summary to zeros
+      queryClient.setQueryData<InteractionSummary>(
+        interactionKeys.summaries(),
+        {
+          liked: 0,
+          passed: 0,
+          viewed: 0,
+        }
+      )
+
+      return { previousSummary }
+    },
+
+    onError: (_err, _variables, context) => {
+      if (context?.previousSummary) {
+        queryClient.setQueryData(
+          interactionKeys.summaries(),
+          context.previousSummary
+        )
+      }
+    },
+
+    onSettled: () => {
+      // Invalidate all interaction queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: interactionKeys.all })
+    },
+  })
+}

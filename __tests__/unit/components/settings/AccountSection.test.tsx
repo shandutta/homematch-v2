@@ -1,7 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AccountSection } from '@/components/settings/AccountSection'
 import { createClient } from '@/lib/supabase/client'
+import { InteractionService } from '@/lib/services/interactions'
 
 // Mock dependencies
 const mockPush = jest.fn()
@@ -17,6 +19,28 @@ const mockSignOut = jest.fn()
 jest.mock('@/lib/supabase/client', () => ({
   createClient: jest.fn(),
 }))
+
+jest.mock('@/lib/services/interactions', () => ({
+  InteractionService: {
+    resetAllInteractions: jest.fn(),
+    getInteractionSummary: jest.fn(),
+  },
+}))
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui: React.ReactElement) => {
+  const queryClient = createTestQueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  )
+}
 
 const mockUser = {
   id: 'user-123',
@@ -36,10 +60,14 @@ describe('AccountSection', () => {
       },
     })
     mockSignOut.mockResolvedValue({ error: null })
+    ;(InteractionService.resetAllInteractions as jest.Mock).mockResolvedValue({
+      deleted: true,
+      count: 5,
+    })
   })
 
   it('displays user account information', () => {
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     expect(screen.getByText('Account Information')).toBeInTheDocument()
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
@@ -50,21 +78,21 @@ describe('AccountSection', () => {
 
   it('displays email provider for email auth', () => {
     const emailUser = { ...mockUser, app_metadata: {} }
-    render(<AccountSection user={emailUser} />)
+    renderWithQueryClient(<AccountSection user={emailUser} />)
 
     expect(screen.getByText('Email')).toBeInTheDocument()
   })
 
   it('handles missing created_at date', () => {
     const userWithoutDate = { ...mockUser, created_at: null }
-    render(<AccountSection user={userWithoutDate} />)
+    renderWithQueryClient(<AccountSection user={userWithoutDate} />)
 
     expect(screen.getByText('Unknown')).toBeInTheDocument()
   })
 
   it('signs out user successfully', async () => {
     const user = userEvent.setup()
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const signOutButton = screen.getByRole('button', { name: /sign out/i })
     await user.click(signOutButton)
@@ -79,7 +107,7 @@ describe('AccountSection', () => {
     const user = userEvent.setup()
     const errorMessage = 'Network error'
     mockSignOut.mockResolvedValueOnce({ error: new Error(errorMessage) })
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const signOutButton = screen.getByRole('button', { name: /sign out/i })
     await user.click(signOutButton)
@@ -95,7 +123,7 @@ describe('AccountSection', () => {
     mockSignOut.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
     )
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const signOutButton = screen.getByRole('button', { name: /sign out/i })
     await user.click(signOutButton)
@@ -104,7 +132,7 @@ describe('AccountSection', () => {
   })
 
   it('shows delete account section', () => {
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     expect(screen.getByText('Danger Zone')).toBeInTheDocument()
     expect(
@@ -122,7 +150,7 @@ describe('AccountSection', () => {
       .mockReturnValueOnce(true) // First confirmation
       .mockReturnValueOnce(false) // Second confirmation cancelled
 
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const deleteButton = screen.getByRole('button', { name: /delete account/i })
     await user.click(deleteButton)
@@ -142,7 +170,7 @@ describe('AccountSection', () => {
     const user = userEvent.setup()
     global.confirm = jest.fn().mockReturnValueOnce(false)
 
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const deleteButton = screen.getByRole('button', { name: /delete account/i })
     await user.click(deleteButton)
@@ -157,7 +185,7 @@ describe('AccountSection', () => {
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
 
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const deleteButton = screen.getByRole('button', { name: /delete account/i })
     await user.click(deleteButton)
@@ -176,7 +204,7 @@ describe('AccountSection', () => {
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
 
-    render(<AccountSection user={mockUser} />)
+    renderWithQueryClient(<AccountSection user={mockUser} />)
 
     const deleteButton = screen.getByRole('button', { name: /delete account/i })
 
@@ -195,5 +223,104 @@ describe('AccountSection', () => {
 
     // Button should be enabled again after the operation completes
     expect(deleteButton).not.toBeDisabled()
+  })
+
+  // Reset Stats tests
+  describe('Reset Stats', () => {
+    it('shows reset stats section', () => {
+      renderWithQueryClient(<AccountSection user={mockUser} />)
+
+      expect(screen.getByText('Reset Stats')).toBeInTheDocument()
+      expect(
+        screen.getByText(/clear all your likes, passes, and viewed properties/i)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /reset all stats/i })
+      ).toBeInTheDocument()
+    })
+
+    it('requires confirmation before resetting stats', async () => {
+      const user = userEvent.setup()
+      global.confirm = jest.fn().mockReturnValueOnce(false)
+
+      renderWithQueryClient(<AccountSection user={mockUser} />)
+
+      const resetButton = screen.getByRole('button', {
+        name: /reset all stats/i,
+      })
+      await user.click(resetButton)
+
+      expect(global.confirm).toHaveBeenCalledTimes(1)
+      expect(global.confirm).toHaveBeenCalledWith(
+        expect.stringContaining('Are you sure you want to reset all your stats')
+      )
+      expect(InteractionService.resetAllInteractions).not.toHaveBeenCalled()
+    })
+
+    it('resets stats successfully after confirmation', async () => {
+      const user = userEvent.setup()
+      global.confirm = jest.fn().mockReturnValueOnce(true)
+
+      renderWithQueryClient(<AccountSection user={mockUser} />)
+
+      const resetButton = screen.getByRole('button', {
+        name: /reset all stats/i,
+      })
+      await user.click(resetButton)
+
+      await waitFor(() => {
+        expect(InteractionService.resetAllInteractions).toHaveBeenCalled()
+      })
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/successfully reset 5 interactions/i)
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('handles reset stats error', async () => {
+      const user = userEvent.setup()
+      global.confirm = jest.fn().mockReturnValueOnce(true)
+      const errorMessage = 'Failed to reset'
+      ;(
+        InteractionService.resetAllInteractions as jest.Mock
+      ).mockRejectedValueOnce(new Error(errorMessage))
+
+      renderWithQueryClient(<AccountSection user={mockUser} />)
+
+      const resetButton = screen.getByRole('button', {
+        name: /reset all stats/i,
+      })
+      await user.click(resetButton)
+
+      await waitFor(() => {
+        expect(screen.getByText(errorMessage)).toBeInTheDocument()
+      })
+    })
+
+    it('shows singular message for single interaction reset', async () => {
+      const user = userEvent.setup()
+      global.confirm = jest.fn().mockReturnValueOnce(true)
+      ;(
+        InteractionService.resetAllInteractions as jest.Mock
+      ).mockResolvedValueOnce({
+        deleted: true,
+        count: 1,
+      })
+
+      renderWithQueryClient(<AccountSection user={mockUser} />)
+
+      const resetButton = screen.getByRole('button', {
+        name: /reset all stats/i,
+      })
+      await user.click(resetButton)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/successfully reset 1 interaction\./i)
+        ).toBeInTheDocument()
+      })
+    })
   })
 })

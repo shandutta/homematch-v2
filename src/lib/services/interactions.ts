@@ -81,4 +81,16 @@ export const InteractionService = {
       throw new Error(`Failed to delete interaction (${res.status}): ${text}`)
     }
   },
+
+  async resetAllInteractions(): Promise<{ deleted: boolean; count: number }> {
+    const res = await fetch('/api/interactions/reset', {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`Failed to reset interactions (${res.status}): ${text}`)
+    }
+    return res.json()
+  },
 }

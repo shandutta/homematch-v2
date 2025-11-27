@@ -55,6 +55,7 @@ export function CouplesPageClient() {
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [inviteModalOpen, setInviteModalOpen] = useState(false)
+  const [creatingHousehold, setCreatingHousehold] = useState(false)
 
   const fetchCouplesData = useCallback(async () => {
     try {
@@ -182,6 +183,66 @@ export function CouplesPageClient() {
     fetchCouplesData()
   }
 
+  // Handle invite from no-household state - creates household first then opens modal
+  const handleInviteFromNoHousehold = async () => {
+    if (creatingHousehold) return
+
+    setCreatingHousehold(true)
+    try {
+      const supabase = createClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.user) {
+        toast.authRequired()
+        return
+      }
+
+      // Create a new household
+      const { data: newHousehold, error: createError } = await supabase
+        .from('households')
+        .insert({
+          created_by: session.user.id,
+          user_count: 1,
+        })
+        .select()
+        .single()
+
+      if (createError) {
+        throw createError
+      }
+
+      // Update user profile with household_id
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ household_id: newHousehold.id })
+        .eq('id', session.user.id)
+
+      if (updateError) {
+        throw updateError
+      }
+
+      // Set the state
+      setHouseholdId(newHousehold.id)
+      setUserId(session.user.id)
+      setUserHouseholdStatus('waiting-partner')
+
+      // Open the invite modal
+      setInviteModalOpen(true)
+
+      toast.success('Household created! Now invite your partner.')
+    } catch (err) {
+      console.error('Error creating household:', err)
+      toast.error(
+        'Failed to create household',
+        err instanceof Error ? err.message : 'Please try again'
+      )
+    } finally {
+      setCreatingHousehold(false)
+    }
+  }
+
   useEffect(() => {
     fetchCouplesData()
   }, [fetchCouplesData])
@@ -194,14 +255,24 @@ export function CouplesPageClient() {
   // No household state
   if (userHouseholdStatus === 'no-household') {
     return (
-      <MotionDiv
-        variants={fadeInUp}
-        initial="initial"
-        animate="animate"
-        transition={{ duration: 0.5 }}
-      >
-        <NoHouseholdState />
-      </MotionDiv>
+      <>
+        <MotionDiv
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 0.5 }}
+        >
+          <NoHouseholdState onInvitePartner={handleInviteFromNoHousehold} />
+        </MotionDiv>
+        {householdId && userId && (
+          <InvitePartnerModal
+            open={inviteModalOpen}
+            onOpenChange={setInviteModalOpen}
+            householdId={householdId}
+            userId={userId}
+          />
+        )}
+      </>
     )
   }
 

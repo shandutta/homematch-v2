@@ -14,6 +14,7 @@ import {
 } from 'vitest'
 
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
+import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'
 import type { Database } from '@/types/database'
 import { resetRateLimitStore } from '@/lib/utils/rate-limit'
 
@@ -377,6 +378,105 @@ describe.sequential('Integration: /api/interactions route', () => {
 
     expect(error).toBeNull()
     expect(user?.id).toBe(testUserId)
+  })
+
+  it('resets all interactions for the authenticated user', async () => {
+    // Create multiple properties and interactions
+    const propertyIds = [
+      await createTestProperty(),
+      await createTestProperty(),
+      await createTestProperty(),
+    ]
+
+    // Seed interactions directly using admin client
+    for (const propertyId of propertyIds) {
+      const { error } = await supabaseAdmin
+        .from('user_property_interactions')
+        .insert({
+          user_id: testUserId,
+          property_id: propertyId,
+          interaction_type: 'like',
+        })
+      expect(error).toBeNull()
+    }
+
+    // Verify interactions exist
+    const { count: beforeCount, error: beforeError } = await supabaseAdmin
+      .from('user_property_interactions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', testUserId)
+
+    expect(beforeError).toBeNull()
+    expect(beforeCount).toBeGreaterThanOrEqual(3)
+
+    // Call reset endpoint
+    const resetReq = new NextRequest(
+      'http://localhost/api/interactions/reset',
+      {
+        method: 'DELETE',
+        headers: makeAuthHeaders(),
+      }
+    )
+    const resetRes = await RESET_DELETE(resetReq)
+
+    expect(resetRes.status).toBe(200)
+    const resetData = await resetRes.json()
+    expect(resetData.deleted).toBe(true)
+    expect(resetData.count).toBeGreaterThanOrEqual(3)
+
+    // Verify all interactions are deleted
+    const { count: afterCount, error: afterError } = await supabaseAdmin
+      .from('user_property_interactions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', testUserId)
+
+    expect(afterError).toBeNull()
+    expect(afterCount).toBe(0)
+  })
+
+  it('returns 401 for unauthenticated reset requests', async () => {
+    // Mock the server client to return no user
+    const mockClient = {
+      auth: {
+        getUser: vi
+          .fn()
+          .mockResolvedValue({ data: { user: null }, error: null }),
+      },
+    }
+
+    const serverModule = await import('@/lib/supabase/server')
+    const createApiClientSpy = vi.spyOn(serverModule, 'createApiClient')
+    createApiClientSpy.mockReturnValue(
+      mockClient as ReturnType<typeof serverModule.createApiClient>
+    )
+
+    const req = new NextRequest('http://localhost/api/interactions/reset', {
+      method: 'DELETE',
+    })
+
+    const res = await RESET_DELETE(req)
+    expect(res.status).toBe(401)
+
+    createApiClientSpy.mockRestore()
+  })
+
+  it('returns zero count when resetting with no interactions', async () => {
+    // Ensure no interactions exist
+    await deleteUserInteractions()
+
+    const resetReq = new NextRequest(
+      'http://localhost/api/interactions/reset',
+      {
+        method: 'DELETE',
+        headers: makeAuthHeaders(),
+      }
+    )
+    const resetRes = await RESET_DELETE(resetReq)
+
+    expect(resetRes.status).toBe(200)
+    const resetData = await resetRes.json()
+    expect(resetData.deleted).toBe(true)
+    expect(resetData.count).toBe(0)
   })
 
   it('enforces rate limiting responses', async () => {

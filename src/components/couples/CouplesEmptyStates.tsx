@@ -24,8 +24,15 @@ interface EmptyStateProps {
   className?: string
 }
 
+interface NoHouseholdStateProps extends EmptyStateProps {
+  onInvitePartner?: () => void
+}
+
 // No household - user needs to create or join one
-export function NoHouseholdState({ className }: EmptyStateProps) {
+export function NoHouseholdState({
+  className,
+  onInvitePartner,
+}: NoHouseholdStateProps) {
   return (
     <Card
       className={`card-glassmorphism-style w-full border-orange-500/20 !bg-slate-900/90 ${className}`}
@@ -72,9 +79,24 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
+          {onInvitePartner && (
+            <Button
+              onClick={onInvitePartner}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Invite Partner
+            </Button>
+          )}
+
           <Button
             asChild
-            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+            className={
+              onInvitePartner
+                ? 'border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-200'
+                : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
+            }
+            variant={onInvitePartner ? 'outline' : 'default'}
           >
             <Link href="/household/create">
               <Home className="mr-2 h-4 w-4" />
@@ -88,7 +110,7 @@ export function NoHouseholdState({ className }: EmptyStateProps) {
             className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-200"
           >
             <Link href="/household/join">
-              <UserPlus className="mr-2 h-4 w-4" />
+              <Users className="mr-2 h-4 w-4" />
               Join Existing
             </Link>
           </Button>
