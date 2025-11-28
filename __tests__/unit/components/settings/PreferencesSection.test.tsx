@@ -79,16 +79,16 @@ describe('PreferencesSection', () => {
     render(<PreferencesSection user={mockUser} profile={mockProfile} />)
 
     // Price range
-    expect(
-      screen.getByText(/price range: \$300,000 - \$700,000/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText('Price Range')).toBeInTheDocument()
+    expect(screen.getByText(/\$300,000\s*-\s*\$700,000/i)).toBeInTheDocument()
 
     // Bedrooms and bathrooms
     expect(screen.getByText('3+ Bedrooms')).toBeInTheDocument()
     expect(screen.getByText('2+ Bathrooms')).toBeInTheDocument()
 
     // Search radius
-    expect(screen.getByText('Search Radius: 15 miles')).toBeInTheDocument()
+    expect(screen.getByText('Search Radius')).toBeInTheDocument()
+    expect(screen.getByText('15 miles')).toBeInTheDocument()
 
     // Property types
     expect(screen.getByLabelText('Single Family Home')).toBeChecked()
@@ -110,12 +110,11 @@ describe('PreferencesSection', () => {
     const profileWithoutPrefs = { ...mockProfile, preferences: {} }
     render(<PreferencesSection user={mockUser} profile={profileWithoutPrefs} />)
 
-    expect(
-      screen.getByText(/price range: \$200,000 - \$800,000/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/\$200,000\s*-\s*\$800,000/i)).toBeInTheDocument()
     expect(screen.getByText('2+ Bedrooms')).toBeInTheDocument()
     expect(screen.getByText('2+ Bathrooms')).toBeInTheDocument()
-    expect(screen.getByText('Search Radius: 10 miles')).toBeInTheDocument()
+    expect(screen.getByText('Search Radius')).toBeInTheDocument()
+    expect(screen.getByText('10 miles')).toBeInTheDocument()
   })
 
   it('updates bedrooms selection', async () => {

@@ -78,12 +78,17 @@ describe('NotificationsSection', () => {
     // Get the email section card to avoid conflicts with push notifications
     const emailSection = screen
       .getByText('Email Notifications')
-      .closest('.card-glassmorphism-style')
+      .closest('.space-y-4')
 
-    expect(emailSection).toHaveTextContent('New property matches')
-    expect(emailSection).toHaveTextContent('Price drops')
-    expect(emailSection).toHaveTextContent('Saved search updates')
-    expect(emailSection).toHaveTextContent('Weekly digest')
+    expect(emailSection).not.toBeNull()
+    expect(emailSection as HTMLElement).toHaveTextContent(
+      'New property matches'
+    )
+    expect(emailSection as HTMLElement).toHaveTextContent('Price drops')
+    expect(emailSection as HTMLElement).toHaveTextContent(
+      'Saved search updates'
+    )
+    expect(emailSection as HTMLElement).toHaveTextContent('Weekly digest')
   })
 
   test('renders all push notification options', () => {
@@ -91,10 +96,11 @@ describe('NotificationsSection', () => {
 
     const pushSection = screen
       .getByText('Push Notifications')
-      .closest('.card-glassmorphism-style')
-    expect(pushSection).toHaveTextContent('New matches')
-    expect(pushSection).toHaveTextContent('Price drops')
-    expect(pushSection).toHaveTextContent('Household messages')
+      .closest('.space-y-4')
+    expect(pushSection).not.toBeNull()
+    expect(pushSection as HTMLElement).toHaveTextContent('New matches')
+    expect(pushSection as HTMLElement).toHaveTextContent('Price drops')
+    expect(pushSection as HTMLElement).toHaveTextContent('Household messages')
   })
 
   test('renders all SMS notification options', () => {
@@ -170,7 +176,7 @@ describe('NotificationsSection', () => {
 
     // Click save
     const saveButton = screen.getByRole('button', {
-      name: /Save Notification Preferences/i,
+      name: /Save Preferences/i,
     })
     await user.click(saveButton)
 
@@ -197,7 +203,7 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     const saveButton = screen.getByRole('button', {
-      name: /Save Notification Preferences/i,
+      name: /Save Preferences/i,
     })
     await user.click(saveButton)
 
@@ -217,7 +223,7 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     const saveButton = screen.getByRole('button', {
-      name: /Save Notification Preferences/i,
+      name: /Save Preferences/i,
     })
     await user.click(saveButton)
 
@@ -225,9 +231,7 @@ describe('NotificationsSection', () => {
     expect(saveButton).toBeDisabled()
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Save Notification Preferences/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Save Preferences/i)).toBeInTheDocument()
     })
   })
 
@@ -245,9 +249,12 @@ describe('NotificationsSection', () => {
     // Check that email section exists and has the expected options
     const emailSection = screen
       .getByText('Email Notifications')
-      .closest('.card-glassmorphism-style')
-    expect(emailSection).toHaveTextContent('New property matches')
-    expect(emailSection).toHaveTextContent('Weekly digest')
+      .closest('.space-y-4')
+    expect(emailSection).not.toBeNull()
+    expect(emailSection as HTMLElement).toHaveTextContent(
+      'New property matches'
+    )
+    expect(emailSection as HTMLElement).toHaveTextContent('Weekly digest')
 
     // Check that all sections are rendered
     expect(screen.getByText('Push Notifications')).toBeInTheDocument()
@@ -258,9 +265,11 @@ describe('NotificationsSection', () => {
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
     // Check for section icons
-    const emailSection = screen.getByText('Email Notifications').parentElement
-    const pushSection = screen.getByText('Push Notifications').parentElement
-    const smsSection = screen.getByText('SMS Notifications').parentElement
+    const emailSection = screen
+      .getByText('Email Notifications')
+      .closest('.flex')
+    const pushSection = screen.getByText('Push Notifications').closest('.flex')
+    const smsSection = screen.getByText('SMS Notifications').closest('.flex')
 
     expect(emailSection?.querySelector('svg')).toBeInTheDocument()
     expect(pushSection?.querySelector('svg')).toBeInTheDocument()

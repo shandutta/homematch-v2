@@ -22,14 +22,21 @@ describe('ActivityStats', () => {
     render(<ActivityStats summary={mockSummary} />)
 
     expect(screen.getByText('Activity Overview')).toBeInTheDocument()
-    expect(screen.getByText('Properties Viewed')).toBeInTheDocument()
-    expect(screen.getByText('50')).toBeInTheDocument()
-    expect(screen.getByText('Properties Liked')).toBeInTheDocument()
-    expect(screen.getByText('25')).toBeInTheDocument()
-    expect(screen.getByText('Properties Passed')).toBeInTheDocument()
-    expect(screen.getByText('10')).toBeInTheDocument()
-    expect(screen.getByText('Saved Searches')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
+
+    const stats = [
+      { value: '50', words: ['Properties', 'Viewed'] },
+      { value: '25', words: ['Properties', 'Liked'] },
+      { value: '10', words: ['Properties', 'Passed'] },
+      { value: '3', words: ['Saved', 'Searches'] },
+    ]
+
+    stats.forEach(({ value, words }) => {
+      const valueEl = screen.getByText(value)
+      const cardText = valueEl.closest('div')?.textContent || ''
+      words.forEach((word) => {
+        expect(cardText).toMatch(new RegExp(word, 'i'))
+      })
+    })
   })
 
   it('calculates and displays engagement rate correctly', () => {

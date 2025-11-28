@@ -218,17 +218,24 @@ describe('ProfilePageClient', () => {
 
     // Check for main container classes
     expect(container.firstChild).toHaveClass(
+      'gradient-grid-bg',
       'min-h-screen',
-      'bg-[#030c24]',
+      'pb-16',
       'text-white'
     )
 
-    const header = screen.getByTestId('profile-header')
-    expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('border-b')
+    const header = screen
+      .getByRole('link', { name: /back to dashboard/i })
+      .closest('section')
+    expect(header).not.toBeNull()
+    expect(header as HTMLElement).toHaveClass('border-b', 'border-white/5')
 
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('border', 'bg-white')
+    expect(tabsList).toHaveClass(
+      'border',
+      'border-white/[0.06]',
+      'bg-white/[0.02]'
+    )
   })
 
   it('handles profile without household', () => {

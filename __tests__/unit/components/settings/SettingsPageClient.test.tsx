@@ -196,19 +196,24 @@ describe('SettingsPageClient', () => {
 
     // Check for main container classes
     expect(container.firstChild).toHaveClass(
+      'gradient-grid-bg',
       'min-h-screen',
-      'text-primary-foreground'
+      'pb-16',
+      'text-white'
     )
 
     // Check for header styling using testid
     const header = screen.getByTestId('settings-header')
     expect(header).toBeInTheDocument()
-    expect(header).toHaveClass('border-white/10')
-    expect(header).toHaveClass('shadow-token-xl')
+    expect(header).toHaveClass('border-b', 'border-white/5')
 
     // Check for tab styling - update to match actual rendered classes
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass('border')
+    expect(tabsList).toHaveClass(
+      'border',
+      'border-white/[0.06]',
+      'bg-white/[0.02]'
+    )
   })
 
   it('switches between all tabs correctly', async () => {

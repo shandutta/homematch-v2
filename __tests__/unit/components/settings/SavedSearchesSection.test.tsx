@@ -294,7 +294,9 @@ describe('SavedSearchesSection', () => {
     await waitFor(() => {
       const header = screen.getAllByText('Saved Searches')[0]
       expect(header).toBeInTheDocument()
-      expect(header.parentElement?.querySelector('svg')).toBeInTheDocument()
+      const headerContainer = header.closest('.flex')
+      expect(headerContainer).not.toBeNull()
+      expect(headerContainer?.querySelector('svg')).toBeInTheDocument()
     })
   })
 
