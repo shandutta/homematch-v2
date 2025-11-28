@@ -38,6 +38,7 @@ export function SwipeablePropertyCard({
 }: SwipeablePropertyCardProps) {
   // Haptic feedback hook
   const haptic = useHapticFeedback()
+  const isTopCard = currentIndex === 0
 
   // State for decision feedback
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(
@@ -57,6 +58,7 @@ export function SwipeablePropertyCard({
     currentIndex + 1,
     currentIndex + STACK_DEPTH + 1
   )
+  const shouldShowHints = showHintsState && isTopCard
 
   // Initialize swipe physics with haptic feedback
   const {
@@ -108,15 +110,15 @@ export function SwipeablePropertyCard({
 
   // Hide hints after first interaction
   useEffect(() => {
-    if (hasDraggedRef.current && showHintsState) {
+    if (hasDraggedRef.current && shouldShowHints) {
       const timer = setTimeout(() => setShowHintsState(false), 1000)
       return () => clearTimeout(timer)
     }
-  }, [showHintsState])
+  }, [shouldShowHints])
 
   // Swipe hints animation - only plays once on initial load
   useEffect(() => {
-    if (showHintsState && currentProperty && !hasShownHintsRef.current) {
+    if (shouldShowHints && currentProperty && !hasShownHintsRef.current) {
       hasShownHintsRef.current = true
       const runHints = async () => {
         await controls.start({
@@ -127,7 +129,7 @@ export function SwipeablePropertyCard({
       }
       runHints()
     }
-  }, [showHintsState, currentProperty, controls])
+  }, [shouldShowHints, currentProperty, controls])
 
   // Programmatic swipe function (haptic feedback handled in onSwipeComplete)
   const swipeCard = useCallback(
@@ -272,7 +274,7 @@ export function SwipeablePropertyCard({
 
             {/* Swipe Hints */}
             <AnimatePresence>
-              {showHintsState && (
+              {shouldShowHints && (
                 <MotionDiv
                   className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2"
                   initial={{ opacity: 0, y: 20 }}

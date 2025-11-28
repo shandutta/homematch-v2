@@ -1,19 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
-
-const isInvalidRefreshTokenError = (error: unknown): boolean => {
-  if (!error) return false
-
-  const code = (error as { code?: string }).code?.toLowerCase?.()
-  const message = (error as { message?: string }).message?.toLowerCase?.() || ''
-
-  return (
-    code === 'refresh_token_not_found' ||
-    code === 'invalid_refresh_token' ||
-    message.includes('invalid refresh token') ||
-    message.includes('refresh token not found')
-  )
-}
+import { isInvalidRefreshTokenError } from './auth-helpers'
 
 const clearStaleSession = async (supabase: SupabaseClient) => {
   try {

@@ -452,6 +452,24 @@ describe('SwipeablePropertyCard', () => {
       const motionDivs = screen.getAllByTestId('motion-div')
       expect(motionDivs.length).toBeGreaterThan(0)
     })
+
+    it('only shows hints on the top card (index 0)', () => {
+      const properties = [
+        createMockProperty({ id: 'prop-1' }),
+        createMockProperty({ id: 'prop-2' }),
+      ]
+
+      render(
+        <SwipeablePropertyCard
+          properties={properties}
+          currentIndex={1}
+          onDecision={mockOnDecision}
+          showHints={true}
+        />
+      )
+
+      expect(screen.queryByText(/swipe to explore/i)).not.toBeInTheDocument()
+    })
   })
 
   describe('edge cases', () => {

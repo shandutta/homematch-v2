@@ -5,11 +5,11 @@ import {
   Fraunces,
   Plus_Jakarta_Sans,
 } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
+import { AdSenseScript } from '@/components/ads/AdSenseScript'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
@@ -86,13 +86,7 @@ export default function RootLayout({
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
 
-        {/* Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9556502662108721"
-          crossOrigin="anonymous"
-          strategy="lazyOnload"
-        />
+        <AdSenseScript />
       </body>
     </html>
   )

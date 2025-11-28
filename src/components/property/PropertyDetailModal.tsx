@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -132,6 +133,10 @@ export function PropertyDetailModal({
             <DialogTitle className="text-2xl font-bold text-white">
               {property.address}
             </DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Detailed view of {property.address} in {property.city},{' '}
+              {property.state}. See photos, specs, and nearby highlights.
+            </DialogDescription>
             <div className="flex items-center gap-2 text-slate-400">
               <MapPin className="h-4 w-4" />
               <span>

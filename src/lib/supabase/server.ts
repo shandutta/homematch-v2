@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
+import { isInvalidRefreshTokenError } from './auth-helpers'
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
@@ -164,7 +165,14 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
     const client = await createClient()
     const {
       data: { user },
+      error,
     } = await client.auth.getUser()
+
+    // Handle invalid refresh token gracefully
+    if (error && isInvalidRefreshTokenError(error)) {
+      console.warn('[Server] Invalid refresh token in service role check')
+      return false
+    }
 
     if (!user) return false
 

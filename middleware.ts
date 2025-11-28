@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -64,15 +65,58 @@ export async function middleware(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
+  let user = null
+  let authError = null
 
-  console.error('[Middleware] Path:', request.nextUrl.pathname)
-  console.error('[Middleware] User ID:', user?.id)
-  if (error) console.error('[Middleware] Auth Error:', error.message)
-  console.error(
+  try {
+    const result = await supabase.auth.getUser()
+    user = result.data.user
+    authError = result.error
+
+    // Handle invalid refresh token errors gracefully
+    if (authError && isInvalidRefreshTokenError(authError)) {
+      console.warn(
+        '[Middleware] Invalid refresh token detected - treating as unauthenticated'
+      )
+      user = null
+      authError = null
+      // Clear ALL auth-related cookies to prevent repeated errors
+      const allCookies = request.cookies.getAll()
+      allCookies.forEach((cookie) => {
+        if (
+          cookie.name.startsWith('sb-') &&
+          cookie.name.includes('-auth-token')
+        ) {
+          supabaseResponse.cookies.delete(cookie.name)
+        }
+      })
+    }
+  } catch (e) {
+    // Handle thrown exceptions for invalid refresh tokens
+    if (isInvalidRefreshTokenError(e)) {
+      console.warn(
+        '[Middleware] Invalid refresh token exception - treating as unauthenticated'
+      )
+      user = null
+      // Clear ALL auth-related cookies
+      const allCookies = request.cookies.getAll()
+      allCookies.forEach((cookie) => {
+        if (
+          cookie.name.startsWith('sb-') &&
+          cookie.name.includes('-auth-token')
+        ) {
+          supabaseResponse.cookies.delete(cookie.name)
+        }
+      })
+    } else {
+      throw e
+    }
+  }
+
+  console.log('[Middleware] Path:', request.nextUrl.pathname)
+  console.log('[Middleware] User ID:', user?.id)
+  if (authError) console.warn('[Middleware] Auth Error:', authError.message)
+  console.log(
     '[Middleware] Cookies:',
     request.cookies
       .getAll()
