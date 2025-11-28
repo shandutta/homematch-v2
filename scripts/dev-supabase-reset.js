@@ -72,15 +72,12 @@ const listSupabaseContainers = () => {
 
 const readContainerState = (name) => {
   try {
-    const state = execSync(
-      `docker inspect -f "{{.State.Health.Status}}|{{.State.Status}}" ${name}`,
-      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }
-    )
-      .trim()
-      .split('|')
-    const [health, status] = state
-    if (health && health !== '<no value>') return health
-    return status || null
+    const state = execSync(`docker inspect -f '{{json .State}}' ${name}`, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    })
+    const parsed = JSON.parse(state)
+    return parsed?.Health?.Status || parsed?.Status || null
   } catch {
     return null
   }
