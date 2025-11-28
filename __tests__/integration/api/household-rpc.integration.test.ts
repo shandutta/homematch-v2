@@ -95,7 +95,8 @@ describe('create_household_for_user RPC', () => {
 
     // Call the RPC function
     const { data: householdId, error: rpcError } = await anonClient.rpc(
-      'create_household_for_user'
+      'create_household_for_user',
+      { p_name: null }
     )
 
     expect(rpcError).toBeNull()
@@ -133,7 +134,9 @@ describe('create_household_for_user RPC', () => {
     })
 
     // Don't sign in - call RPC as anonymous
-    const { data, error } = await anonClient.rpc('create_household_for_user')
+    const { data, error } = await anonClient.rpc('create_household_for_user', {
+      p_name: null,
+    })
 
     expect(data).toBeNull()
     expect(error).toBeTruthy()
@@ -152,7 +155,9 @@ describe('create_household_for_user RPC', () => {
     })
 
     // Try to create another household
-    const { data, error } = await anonClient.rpc('create_household_for_user')
+    const { data, error } = await anonClient.rpc('create_household_for_user', {
+      p_name: null,
+    })
 
     expect(data).toBeNull()
     expect(error).toBeTruthy()
