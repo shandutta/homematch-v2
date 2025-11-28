@@ -17,11 +17,26 @@ const START_RETRIES = 3
 const RETRY_DELAY_MS = 5_000
 const HEALTH_TIMEOUT_MS = 90_000
 const POLL_MS = 2_000
+const WAIT_LOG_EVERY_MS = 10_000
+
+let supabaseApiBase = null
 
 const sleep = (ms) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 
 const log = (message) => console.log(`🔧 ${message}`)
+
+const parseSupabaseUrls = (text) => {
+  const apiMatch = text.match(/API URL:\s*(\S+)/i)
+  const graphqlMatch = text.match(/GraphQL URL:\s*(\S+)/i)
+  const dbMatch = text.match(/Database URL:\s*(\S+)/i)
+
+  return {
+    apiUrl: apiMatch?.[1] || null,
+    graphqlUrl: graphqlMatch?.[1] || null,
+    dbUrl: dbMatch?.[1] || null,
+  }
+}
 
 const runCommand = (cmd) => {
   try {
@@ -82,13 +97,19 @@ const containersHealthy = () => {
 }
 
 const getHealthEndpoints = () => {
-  const bases = new Set(
-    [
-      process.env.SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      'http://127.0.0.1:54321',
-    ].filter(Boolean)
-  )
+  const bases = new Set()
+
+  if (supabaseApiBase) {
+    bases.add(supabaseApiBase)
+  } else {
+    ;[process.env.SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_URL]
+      .filter(Boolean)
+      .forEach((base) => bases.add(base))
+  }
+
+  if (bases.size === 0) {
+    bases.add('http://127.0.0.1:54321')
+  }
 
   const endpoints = []
   bases.forEach((base) => {
@@ -115,8 +136,10 @@ const endpointResponding = async (url) => {
 const waitForReadiness = async (label) => {
   const start = Date.now()
   const endpoints = getHealthEndpoints()
+  let lastLog = 0
 
   while (Date.now() - start < HEALTH_TIMEOUT_MS) {
+    const elapsed = Date.now() - start
     const dockerReady = containersHealthy()
     const httpReady =
       endpoints.length === 0
@@ -126,6 +149,15 @@ const waitForReadiness = async (label) => {
     if (dockerReady && httpReady) {
       if (label) log(`${label} ready`)
       return true
+    }
+
+    if (elapsed - lastLog >= WAIT_LOG_EVERY_MS) {
+      log(
+        `Waiting for services${
+          endpoints.length ? ` (${endpoints.join(', ')})` : ''
+        }... (${Math.round(elapsed / 1000)}s elapsed)`
+      )
+      lastLog = elapsed
     }
 
     sleep(POLL_MS)
@@ -138,6 +170,11 @@ const ensureSupabaseStarted = async () => {
   for (let attempt = 1; attempt <= START_RETRIES; attempt++) {
     log(`Starting Supabase (attempt ${attempt}/${START_RETRIES})...`)
     const result = runCommand(START_CMD)
+    const urls = parseSupabaseUrls(result.output || '')
+    if (urls.apiUrl) {
+      supabaseApiBase = urls.apiUrl
+      log(`Using Supabase API base: ${supabaseApiBase}`)
+    }
 
     if (result.ok) {
       const ready = await waitForReadiness('Supabase stack')
