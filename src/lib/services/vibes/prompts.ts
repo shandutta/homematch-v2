@@ -3,35 +3,64 @@
  *
  * System and user prompts for extracting property vibes from images
  * using vision-capable LLMs via OpenRouter.
+ *
+ * Key improvements:
+ * - Uses 15-20 images for comprehensive analysis
+ * - Includes listing description when available
+ * - Expanded tag system (~80 tags across 6 categories)
+ * - Unique, property-specific vibes (not generic)
+ * - Authentic lifestyle moments (real estate agent + friend voice)
+ * - Tier-based lifestyle fit scoring
  */
 
-import { LIFESTYLE_TAGS } from '@/lib/schemas/property-vibes'
+import { PROPERTY_TAGS } from '@/lib/schemas/property-vibes'
 
-export const VIBES_SYSTEM_PROMPT = `You are a real estate copywriter and interior design expert. Your job is to analyze property photos and extract the "vibes" - the emotional essence, aesthetic qualities, and lifestyle potential that would resonate with home buyers.
+// Format tags by category for the prompt
+function formatTagsForPrompt(): string {
+  const sections = [
+    `ARCHITECTURAL: ${PROPERTY_TAGS.architectural.join(', ')}`,
+    `OUTDOOR: ${PROPERTY_TAGS.outdoor.join(', ')}`,
+    `INTERIOR: ${PROPERTY_TAGS.interior.join(', ')}`,
+    `LIFESTYLE: ${PROPERTY_TAGS.lifestyle.join(', ')}`,
+    `AESTHETIC: ${PROPERTY_TAGS.aesthetic.join(', ')}`,
+    `LOCATION: ${PROPERTY_TAGS.location.join(', ')}`,
+  ]
+  return sections.join('\n')
+}
+
+export const VIBES_SYSTEM_PROMPT = `You are a sharp-eyed real estate agent with 20 years of experience who also happens to be a trusted friend. You analyze properties and tell it like it is - honest, specific, and helpful. No generic marketing fluff.
 
 You must respond ONLY with valid JSON matching the exact schema provided. No markdown, no explanations, no additional text.
 
-Key principles:
-1. BE SPECIFIC: Instead of "nice kitchen", say "chef's kitchen with quartz counters and stainless appliances"
-2. BE EVOCATIVE: Use sensory language that helps buyers visualize living there
-3. BE HONEST: If something looks dated or modest, frame it positively but accurately
-4. FIND THE STORY: Every home has a narrative - find what makes THIS home special
-5. NEUTRAL TONE: Content should resonate with any home buyer (individuals, families, roommates)
+YOUR VOICE:
+- Talk like you're advising a friend who's house hunting
+- Be specific about what you see - "that breakfast nook gets morning light" not "bright and airy spaces"
+- Be honest about trade-offs - a cozy cottage isn't a sprawling estate
+- Find the genuine story of THIS home, not generic real estate copy
+- Skip the superlatives - "nice" and "beautiful" say nothing useful
 
-Vibe vocabulary to consider:
-- Cozy, Warm, Inviting, Intimate
-- Modern, Sleek, Minimalist, Contemporary
-- Luxurious, Elegant, Sophisticated, Upscale
-- Rustic, Charming, Character-filled, Historic
-- Bright, Airy, Light-filled, Open
-- Serene, Peaceful, Tranquil, Retreat-like
-- Artistic, Creative, Eclectic, Unique
-- Family-friendly, Spacious, Practical, Functional
-- Urban, Metropolitan, City-connected
-- Nature-connected, Garden-focused, Outdoor-living
+VIBE NAMING:
+Instead of generic vibes like "Modern Minimalist" or "Cozy Craftsman", create UNIQUE descriptors for THIS specific home:
+- "Industrial Bones, Warm Soul" (converted warehouse with cozy touches)
+- "Treehouse for Grownups" (wooded lot with great views)
+- "Gallery-Ready Walls" (spaces that showcase art)
+- "Sunday Morning Kitchen" (breakfast-nook centered kitchen)
+- "Porch Life Central" (wraparound porch as focal point)
 
-Available lifestyle tags you can suggest (pick 2-4 most relevant):
-${LIFESTYLE_TAGS.map((tag) => `- ${tag}`).join('\n')}`
+LIFESTYLE MOMENTS:
+Write like you're walking through with a friend:
+AVOID (too AI):
+- "Morning coffee on the sun-drenched patio"
+- "Holiday gatherings in the spacious dining room"
+
+PREFER (real + specific):
+- "That kitchen island? It's where homework happens while you cook dinner"
+- "The den off the master - perfect for late-night work calls"
+- "Backyard's got room for a firepit. Your friends will thank you"
+- "Third bedroom has that awkward corner - ideal for a standing desk"
+
+AVAILABLE TAGS (pick 4-8 that genuinely apply):
+${formatTagsForPrompt()}`
 
 export interface PropertyContext {
   address: string
@@ -45,6 +74,7 @@ export interface PropertyContext {
   yearBuilt: number | null
   lotSizeSqft: number | null
   amenities: string[] | null
+  description: string | null
 }
 
 export function formatPrice(price: number): string {
@@ -69,69 +99,90 @@ export function buildUserPrompt(
     ? `${property.lotSizeSqft.toLocaleString()} sqft lot`
     : null
 
-  return `Analyze the ${imageCount} property image(s) and extract the vibes.
-
-PROPERTY DETAILS:
+  // Build property details section
+  let details = `PROPERTY DETAILS:
 - Address: ${property.address}, ${property.city}, ${property.state}
 - Price: ${priceFormatted}
 - Bedrooms: ${property.bedrooms} | Bathrooms: ${property.bathrooms}
 - Square Feet: ${sqft}
 - Property Type: ${property.propertyType || 'Unknown'}
-- Year Built: ${year}
-${lot ? `- Lot Size: ${lot}` : ''}
-${property.amenities?.length ? `- Listed Amenities: ${property.amenities.slice(0, 10).join(', ')}` : ''}
+- Year Built: ${year}`
+
+  if (lot) {
+    details += `\n- Lot Size: ${lot}`
+  }
+
+  if (property.amenities?.length) {
+    details += `\n- Listed Amenities: ${property.amenities.slice(0, 15).join(', ')}`
+  }
+
+  // Add description if available
+  let descriptionSection = ''
+  if (property.description) {
+    // Truncate very long descriptions
+    const desc =
+      property.description.length > 800
+        ? property.description.slice(0, 800) + '...'
+        : property.description
+    descriptionSection = `
+
+LISTING DESCRIPTION:
+${desc}`
+  }
+
+  return `Analyze the ${imageCount} property image(s) and extract the vibes.
+
+${details}${descriptionSection}
 
 Respond with a JSON object matching this EXACT structure:
 {
-  "tagline": "string (10-80 chars) - punchy headline capturing the essence, e.g., 'Sun-Drenched Victorian with Modern Soul'",
-  "vibeStatement": "string (20-200 chars) - 1-2 sentence summary of the home's lifestyle vibe",
+  "tagline": "string (10-80 chars) - punchy headline that captures what makes THIS home special. Be specific, not generic.",
+  "vibeStatement": "string (20-200 chars) - 1-2 sentences describing the lifestyle this home offers. Write like you're telling a friend about it.",
   "primaryVibes": [
     {
-      "name": "string - vibe name like 'Modern Minimalist' or 'Cozy Craftsman'",
-      "intensity": "number 0.0-1.0 - BE PRECISE based on visual evidence:
-        0.9-1.0 = DEFINING feature (e.g., floor-to-ceiling windows for 'Light-Filled')
-        0.7-0.89 = STRONG presence (clearly designed around this vibe)
-        0.5-0.69 = MODERATE (noticeable but not dominant)
-        0.3-0.49 = SUBTLE hint (minor touches suggesting this vibe)
-        0.1-0.29 = FAINT trace (barely perceptible)",
+      "name": "string - UNIQUE vibe descriptor for THIS home (not generic like 'Modern Minimalist'). Think: 'Gallery-Ready Walls' or 'Treehouse for Grownups'",
+      "intensity": "number 0.0-1.0 - how strongly this vibe defines the property:
+        0.85-1.0 = This IS the home's identity
+        0.65-0.84 = Major characteristic
+        0.45-0.64 = Noticeable element
+        0.25-0.44 = Subtle touch",
       "source": "interior" | "exterior" | "both"
     }
   ],
   "lifestyleFits": [
     {
-      "category": "string - e.g., 'Remote Worker', 'Home Chef', 'Pet Owner', 'Fitness Enthusiast'",
-      "score": "number 0.0-1.0 - based on specific features:
-        0.9+ = PERFECT fit (dedicated space/features for this lifestyle)
-        0.7-0.89 = GREAT fit (strong support)
-        0.5-0.69 = DECENT fit (workable)
-        0.3-0.49 = MARGINAL (possible with compromise)
-        <0.3 = NOT a good fit (don't include if below this)",
-      "reason": "string (max 200 chars) - why this home fits this lifestyle"
+      "category": "string - who would thrive here (e.g., 'Remote Worker', 'Home Chef', 'Dog Owner', 'Weekend Entertainer')",
+      "score": "number 0.0-1.0 - how well it fits:
+        0.9+ = Made for this lifestyle
+        0.7-0.89 = Really works well
+        0.5-0.69 = Would work
+        0.3-0.49 = Could make it work",
+      "reason": "string (max 200 chars) - be specific about WHY. 'The bonus room off the garage' not 'spacious layout'"
     }
   ],
   "notableFeatures": [
     {
-      "feature": "string - specific feature name, e.g., 'Chef's kitchen with gas range'",
-      "location": "string - where in the home, e.g., 'kitchen', 'primary bedroom'",
-      "appealFactor": "string (max 200 chars) - what makes it appealing"
+      "feature": "string - specific feature (e.g., 'Double oven with gas cooktop')",
+      "location": "string - where (e.g., 'kitchen', 'primary suite')",
+      "appealFactor": "string (max 200 chars) - why it matters to buyers"
     }
   ],
   "aesthetics": {
     "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
-    "colorPalette": ["array of 2-4 dominant color tones, e.g., 'warm neutrals', 'white', 'wood tones'"],
-    "architecturalStyle": "string - style classification, e.g., 'mid-century modern', 'traditional', 'contemporary'",
+    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
+    "architecturalStyle": "string - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
     "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
   },
-  "emotionalHooks": ["array of 2-4 specific lifestyle moments this home enables, e.g., 'Morning coffee on the sun-drenched patio', 'Holiday dinners in the open-concept dining area'"],
-  "suggestedTags": ["array of 2-4 tags from the predefined list that best match this property"]
+  "emotionalHooks": ["2-4 specific lifestyle moments - write like a friend walking through: 'That mudroom? Lifesaver with kids and dogs.' NOT 'Perfect for family living.'"],
+  "suggestedTags": ["4-8 tags from the predefined categories that GENUINELY apply to this property"]
 }
 
 Requirements:
-- primaryVibes: 2-4 items, ordered by intensity (highest first). IMPORTANT: Vary the intensities meaningfully - don't default to 0.8/0.7/0.6. A modest condo won't have the same "Luxurious" intensity as a mansion.
-- lifestyleFits: 2-6 items based on what you see in the images. Only include lifestyles that score 0.3+
+- primaryVibes: 2-4 items with UNIQUE names for this property. Vary intensities meaningfully.
+- lifestyleFits: 2-6 items. Be specific about WHY in the reason field.
 - notableFeatures: 2-8 specific features that would catch a buyer's eye
-- emotionalHooks: 2-4 specific moments (not generic like "relaxing at home")
-- suggestedTags: 2-4 tags from the predefined list ONLY`
+- emotionalHooks: 2-4 moments written like you're walking through with a friend
+- suggestedTags: 4-8 tags from the predefined list. Pick from multiple categories.`
 }
 
 /**

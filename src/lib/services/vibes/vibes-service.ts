@@ -15,6 +15,7 @@ import {
 import {
   OpenRouterClient,
   createOpenRouterClient,
+  DEFAULT_VIBES_MODEL,
   type UsageInfo,
 } from './openrouter-client'
 import { buildVibesMessages, type PropertyContext } from './prompts'
@@ -68,7 +69,7 @@ export class VibesService {
       throw new Error(`No images available for property ${property.id}`)
     }
 
-    // Build property context
+    // Build property context (including description for richer analysis)
     const context: PropertyContext = {
       address: property.address,
       city: property.city,
@@ -81,6 +82,7 @@ export class VibesService {
       yearBuilt: property.year_built,
       lotSizeSqft: property.lot_size_sqft,
       amenities: property.amenities,
+      description: property.description,
     }
 
     // Build prompts
@@ -243,10 +245,10 @@ export class VibesService {
           url: img.url,
           category: img.category,
         })),
-        modelId: 'openai/gpt-4o-mini',
+        modelId: DEFAULT_VIBES_MODEL,
       },
       raw_output: rawOutput,
-      model_used: 'openai/gpt-4o-mini',
+      model_used: DEFAULT_VIBES_MODEL,
       images_analyzed: result.images.selectedImages.map((img) => img.url),
       source_data_hash: VibesService.generateSourceHash(property),
       generation_cost_usd: result.usage.estimatedCostUsd,

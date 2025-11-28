@@ -2,7 +2,10 @@
  * OpenRouter API Client for Vision LLM
  *
  * Handles communication with OpenRouter to analyze property images
- * and extract vibes using GPT-4o-mini or other vision models.
+ * and extract vibes using vision-capable models.
+ *
+ * Default: Qwen 2.5 VL 72B (free tier) for cost-efficient beta testing.
+ * Fallback options: Kimi-VL, Llama 3.2 Vision, GPT-4o-mini (paid).
  */
 
 export interface OpenRouterConfig {
@@ -60,12 +63,23 @@ export interface UsageInfo {
 }
 
 // Pricing per 1M tokens (approximate, varies by model)
+// Free models have 0 cost but we track tokens for monitoring
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+  // Free vision models (recommended for beta testing)
+  'qwen/qwen2.5-vl-72b-instruct:free': { input: 0, output: 0 },
+  'qwen/qwen2.5-vl-32b-instruct:free': { input: 0, output: 0 },
+  'moonshotai/kimi-vl-a3b-thinking:free': { input: 0, output: 0 },
+  'meta-llama/llama-3.2-11b-vision-instruct:free': { input: 0, output: 0 },
+  'google/gemma-3-27b-it:free': { input: 0, output: 0 },
+  // Paid models
   'openai/gpt-4o-mini': { input: 0.15, output: 0.6 },
   'openai/gpt-4o': { input: 2.5, output: 10 },
   'anthropic/claude-3-haiku': { input: 0.25, output: 1.25 },
   'anthropic/claude-3-sonnet': { input: 3, output: 15 },
 }
+
+// Default model for vibes generation
+export const DEFAULT_VIBES_MODEL = 'qwen/qwen2.5-vl-72b-instruct:free'
 
 export class OpenRouterClient {
   private apiKey: string
@@ -77,7 +91,7 @@ export class OpenRouterClient {
   constructor(config: OpenRouterConfig) {
     this.apiKey = config.apiKey
     this.baseUrl = config.baseUrl || 'https://openrouter.ai/api/v1'
-    this.defaultModel = config.defaultModel || 'openai/gpt-4o-mini'
+    this.defaultModel = config.defaultModel || DEFAULT_VIBES_MODEL
     this.maxRetries = config.maxRetries || 3
     this.timeoutMs = config.timeoutMs || 120000 // 2 minutes for vision
   }
@@ -287,6 +301,6 @@ export function createOpenRouterClient(
 
   return new OpenRouterClient({
     apiKey: key,
-    defaultModel: model || process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
+    defaultModel: model || process.env.OPENROUTER_MODEL || DEFAULT_VIBES_MODEL,
   })
 }

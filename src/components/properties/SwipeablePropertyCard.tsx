@@ -17,7 +17,8 @@ import { useHapticFeedback } from '@/lib/utils/haptic-feedback'
 const STACK_DEPTH = 3
 const STACK_SCALE_FACTOR = 0.05
 const STACK_Y_OFFSET = 8
-const STACK_OPACITY_FACTOR = 0.3
+const STACK_OPACITY_FACTOR = 0.08
+const STACK_MIN_OPACITY = 0.9
 
 interface SwipeablePropertyCardProps {
   properties: Property[]
@@ -39,6 +40,7 @@ export function SwipeablePropertyCard({
   // Haptic feedback hook
   const haptic = useHapticFeedback()
   const isTopCard = currentIndex === 0
+  const initialTopPropertyId = useRef<string | null>(null)
 
   // State for decision feedback
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(
@@ -58,7 +60,12 @@ export function SwipeablePropertyCard({
     currentIndex + 1,
     currentIndex + STACK_DEPTH + 1
   )
-  const shouldShowHints = showHintsState && isTopCard
+  if (!initialTopPropertyId.current && properties[0]) {
+    initialTopPropertyId.current = properties[0].id
+  }
+  const isInitialTopCard =
+    !!currentProperty?.id && currentProperty.id === initialTopPropertyId.current
+  const shouldShowHints = showHintsState && isTopCard && isInitialTopCard
 
   // Initialize swipe physics with haptic feedback
   const {
@@ -78,7 +85,11 @@ export function SwipeablePropertyCard({
     onSwipeComplete: (direction) => {
       if (!currentProperty) return
       const type: InteractionType = direction === 'right' ? 'liked' : 'skip'
-      haptic.success()
+      if (type === 'liked') {
+        haptic.success()
+      } else {
+        haptic.selection()
+      }
       onDecision(currentProperty.id, type)
     },
     onSwipeThresholdCrossed: (direction) => {
@@ -115,6 +126,16 @@ export function SwipeablePropertyCard({
       return () => clearTimeout(timer)
     }
   }, [shouldShowHints])
+
+  // Ensure hints never show for cards beyond the initial top card
+  useEffect(() => {
+    if (
+      currentProperty &&
+      currentProperty.id !== initialTopPropertyId.current
+    ) {
+      setShowHintsState(false)
+    }
+  }, [currentProperty])
 
   // Swipe hints animation - only plays once on initial load
   useEffect(() => {
@@ -175,7 +196,10 @@ export function SwipeablePropertyCard({
           const stackIndex = index + 1
           const stackScale = 1 - stackIndex * STACK_SCALE_FACTOR
           const stackY = stackIndex * STACK_Y_OFFSET
-          const stackOpacity = 1 - stackIndex * STACK_OPACITY_FACTOR
+          const stackOpacity = Math.max(
+            STACK_MIN_OPACITY,
+            1 - stackIndex * STACK_OPACITY_FACTOR
+          )
 
           return (
             <MotionDiv

@@ -116,7 +116,7 @@ function extractImages(data: ZillowPropertyResponse): string[] {
     images.push(data.imgSrc)
   }
 
-  return images.slice(0, 10) // Limit to 10 images
+  return images.slice(0, 20) // Limit to 20 images for comprehensive analysis
 }
 
 /**

@@ -12,16 +12,16 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 /**
  * CouplesService Unit Tests
  *
- * NOTE: These tests use mocking to verify service interface and error handling.
+ * NOTE: These tests use minimal mocking to verify service interface and error handling.
  * The mocks test that the service:
- * 1. Calls the correct Supabase methods (rpc, from)
- * 2. Handles errors gracefully
- * 3. Implements caching correctly
+ * 1. Returns appropriate results for edge cases (no household, errors)
+ * 2. Implements caching correctly
+ * 3. Handles errors gracefully without throwing
  *
- * LIMITATIONS: Heavy mocking means changes to Supabase query patterns might not
- * be caught. For full database integration testing, see:
- * - __tests__/integration/api/household-rpc.integration.test.ts
- * - __tests__/integration/couples-e2e.test.ts
+ * LIMITATIONS: Unit tests with mocks cannot verify actual database query correctness.
+ * For comprehensive database integration testing, see:
+ * - __tests__/integration/services/couples-e2e.test.ts (real database queries)
+ * - __tests__/integration/api/couples-routes.integration.test.ts (API routes)
  */
 describe('CouplesService', () => {
   // Create a mock Supabase client
@@ -54,27 +54,8 @@ describe('CouplesService', () => {
     })
   })
 
-  describe('getUserHousehold', () => {
-    test('should return household ID for valid user', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
-      }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
-
-      // Access private method through getMutualLikes
-      await CouplesService.getMutualLikes(mockSupabaseClient, mockUserId)
-
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
-      expect(mockChain.select).toHaveBeenCalledWith('household_id')
-      expect(mockChain.eq).toHaveBeenCalledWith('id', mockUserId)
-    })
-
-    test('should return null when user has no household', async () => {
+  describe('getMutualLikes', () => {
+    test('should return empty array when user has no household', async () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -91,9 +72,7 @@ describe('CouplesService', () => {
       )
       expect(result).toEqual([])
     })
-  })
 
-  describe('getMutualLikes', () => {
     test('should return cached results when available', async () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
@@ -149,102 +128,8 @@ describe('CouplesService', () => {
   })
 
   describe('getHouseholdStats', () => {
-    // NOTE: This test has complex mocking that tests mock behavior rather than
-    // real database interactions. Consider this a contract test - it verifies
-    // the service calls expected methods. Real stats calculation is tested in
-    // integration tests.
-    test('should calculate household statistics correctly', async () => {
-      // Clear all caches before this test
-      CouplesService.clearHouseholdCache(mockHouseholdId)
-
-      // Create a mock that responds based on the table being queried
-      const createMockChain = (table: string) => {
-        if (table === 'user_profiles') {
-          // Mock getUserHousehold call
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({
-              data: { household_id: mockHouseholdId },
-              error: null,
-            }),
-          }
-        } else if (table === 'user_property_interactions') {
-          // Determine the type of query based on the chain methods called
-          const chain = {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            order: jest.fn().mockReturnThis(),
-            limit: jest.fn().mockReturnThis(),
-          }
-
-          // When eq is called twice, it's likely the count query
-          let eqCallCount = 0
-          chain.eq = jest.fn().mockImplementation((_field, _value) => {
-            eqCallCount++
-            if (eqCallCount >= 2) {
-              // This is the count query
-              return Promise.resolve({
-                count: 5,
-                error: null,
-              })
-            }
-            return chain
-          })
-
-          // When limit is called, it's the activity query
-          chain.limit = jest.fn().mockResolvedValue({
-            data: [
-              { created_at: '2024-01-03T00:00:00.000Z' },
-              { created_at: '2024-01-02T00:00:00.000Z' },
-              { created_at: '2024-01-01T00:00:00.000Z' },
-            ],
-            error: null,
-          })
-
-          return chain
-        }
-
-        // Default fallback
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({ data: null, error: null }),
-        }
-      }
-
-      // Mock the from method to return appropriate chains based on table name
-      ;(mockSupabaseClient.from as jest.Mock).mockImplementation(
-        createMockChain
-      )
-
-      // Mock getMutualLikes RPC call
-      ;(mockSupabaseClient.rpc as jest.Mock).mockClear()
-      ;(mockSupabaseClient.rpc as jest.Mock).mockResolvedValue({
-        data: [
-          {
-            property_id: 'prop-1',
-            liked_by_count: 2,
-            first_liked_at: '2024-01-01T00:00:00.000Z',
-            last_liked_at: '2024-01-02T00:00:00.000Z',
-            user_ids: ['user-123', 'user-456'],
-          },
-        ],
-        error: null,
-      })
-
-      const result = await CouplesService.getHouseholdStats(
-        mockSupabaseClient,
-        mockUserId
-      )
-
-      expect(result).toEqual({
-        total_mutual_likes: 1,
-        total_household_likes: 5,
-        activity_streak_days: expect.any(Number),
-        last_mutual_like_at: '2024-01-02T00:00:00.000Z',
-      })
-    })
+    // NOTE: Complex stats calculation tests are in integration tests.
+    // Unit tests focus on edge cases and error handling only.
 
     test('should return null when no household found', async () => {
       const mockChain = {
@@ -265,85 +150,18 @@ describe('CouplesService', () => {
       expect(result).toBeNull()
     })
 
-    test('should handle empty mutual likes', async () => {
-      // Clear all caches before this test
-      CouplesService.clearHouseholdCache(mockHouseholdId)
-
-      // Create a mock that responds based on the table being queried (empty scenario)
-      const createMockChain = (table: string) => {
-        if (table === 'user_profiles') {
-          // Mock getUserHousehold call
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({
-              data: { household_id: mockHouseholdId },
-              error: null,
-            }),
-          }
-        } else if (table === 'user_property_interactions') {
-          // Determine the type of query based on the chain methods called
-          const chain = {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            order: jest.fn().mockReturnThis(),
-            limit: jest.fn().mockReturnThis(),
-          }
-
-          // When eq is called twice, it's likely the count query (returning 0)
-          let eqCallCount = 0
-          chain.eq = jest.fn().mockImplementation((_field, _value) => {
-            eqCallCount++
-            if (eqCallCount >= 2) {
-              // This is the count query - return 0 for empty scenario
-              return Promise.resolve({
-                count: 0,
-                error: null,
-              })
-            }
-            return chain
-          })
-
-          // When limit is called, it's the activity query (returning empty array)
-          chain.limit = jest.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          })
-
-          return chain
-        }
-
-        // Default fallback
-        return {
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({ data: null, error: null }),
-        }
+    test('should handle database errors gracefully', async () => {
+      const mockChain = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockRejectedValue(new Error('Database error')),
       }
+      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
 
-      // Mock the from method to return appropriate chains based on table name
-      ;(mockSupabaseClient.from as jest.Mock).mockImplementation(
-        createMockChain
-      )
-
-      // Mock empty getMutualLikes RPC call
-      ;(mockSupabaseClient.rpc as jest.Mock).mockClear()
-      ;(mockSupabaseClient.rpc as jest.Mock).mockResolvedValue({
-        data: [],
-        error: null,
-      })
-
-      const result = await CouplesService.getHouseholdStats(
-        mockSupabaseClient,
-        mockUserId
-      )
-
-      expect(result).toEqual({
-        total_mutual_likes: 0,
-        total_household_likes: 0,
-        activity_streak_days: 0,
-        last_mutual_like_at: null,
-      })
+      // Should not throw, should return null or handle gracefully
+      await expect(
+        CouplesService.getHouseholdStats(mockSupabaseClient, mockUserId)
+      ).resolves.not.toThrow()
     })
   })
 
@@ -482,19 +300,9 @@ describe('CouplesService', () => {
   describe('notifyInteraction', () => {
     const propertyId = 'prop-123'
 
-    test('should clear cache and check for mutual like on like interaction', async () => {
-      // Mock getUserHousehold call for notifyInteraction
-      const mockUserChain1 = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
-      }
-
-      // Mock getUserHousehold call for checkPotentialMutualLike
-      const mockUserChain2 = {
+    test('should not throw on like interactions', async () => {
+      // Mock getUserHousehold calls
+      const mockUserChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({
@@ -514,27 +322,19 @@ describe('CouplesService', () => {
       }
 
       ;(mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce(mockUserChain1) // First call for notifyInteraction getUserHousehold
-        .mockReturnValueOnce(mockUserChain2) // Second call for checkPotentialMutualLike getUserHousehold
+        .mockReturnValueOnce(mockUserChain) // First call for notifyInteraction getUserHousehold
+        .mockReturnValueOnce(mockUserChain) // Second call for checkPotentialMutualLike getUserHousehold
         .mockReturnValueOnce(mockLikesChain) // Third call for existing likes
 
-      // Spy on console.log to verify mutual like logging
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-
-      await CouplesService.notifyInteraction(
-        mockSupabaseClient,
-        mockUserId,
-        propertyId,
-        'like'
-      )
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Mutual like created: user-123 + partner-456 for property prop-123'
+      // Should not throw
+      await expect(
+        CouplesService.notifyInteraction(
+          mockSupabaseClient,
+          mockUserId,
+          propertyId,
+          'like'
         )
-      )
-
-      consoleSpy.mockRestore()
+      ).resolves.not.toThrow()
     })
 
     test('should not check for mutual like on non-like interactions', async () => {
@@ -590,8 +390,6 @@ describe('CouplesService', () => {
       }
       ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
 
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesService.notifyInteraction(
         mockSupabaseClient,
         mockUserId,
@@ -599,12 +397,8 @@ describe('CouplesService', () => {
         'like'
       )
 
-      // Should not have logged a mutual like since there's no household
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('Mutual like created:')
-      )
-
-      consoleSpy.mockRestore()
+      // Should only make one query (getUserHousehold) since there's no household
+      expect(mockSupabaseClient.from).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -1,8 +1,8 @@
 /**
  * Strategic Image Selection for Property Vibes Analysis
  *
- * Selects 3-5 strategic images per property for LLM analysis,
- * optimizing for cost while maintaining quality coverage.
+ * Selects 15-20 strategic images per property for comprehensive LLM analysis.
+ * Expanded coverage for richer vibe extraction.
  */
 
 export interface SelectedImage {
@@ -13,7 +13,7 @@ export interface SelectedImage {
 
 export interface ImageSelectionResult {
   selectedImages: SelectedImage[]
-  strategy: 'balanced' | 'limited' | 'single'
+  strategy: 'comprehensive' | 'balanced' | 'limited' | 'single'
   totalAvailable: number
 }
 
@@ -32,23 +32,28 @@ function shuffleArray<T>(array: T[]): T[] {
 /**
  * Select strategic images from property image array
  *
- * Strategy:
- * 1. First image is always the hero shot (exterior/facade)
- * 2. Kitchen (typically image 3-5) - high buyer impact
- * 3. Living area (typically image 2-4) - lifestyle visualization
- * 4. Bedroom/bathroom - typically in middle positions
- * 5. Outdoor space or unique feature (if house type)
- * 6. Fill remaining slots with random diverse images
+ * Expanded Strategy (15-20 images):
+ * 1. Hero shot (exterior/facade) - always first
+ * 2. Kitchen shots (2) - high buyer impact
+ * 3. Living/great room (2) - lifestyle visualization
+ * 4. Bedrooms (3) - primary + secondary
+ * 5. Bathrooms (2) - primary + secondary
+ * 6. Outdoor/yard (2) - for houses with yards
+ * 7. Dining area (1) - if distinct from living
+ * 8. Office/flex space (1) - common buyer need
+ * 9. Garage/storage (1) - practical consideration
+ * 10. Fill remaining with diverse shots
  *
  * @param images - Array of image URLs from Zillow
  * @param propertyType - Property type for selection strategy
- * @param maxImages - Maximum images to select (default 8)
+ * @param lotSizeSqft - Lot size to determine outdoor relevance
+ * @param maxImages - Maximum images to select (default 18)
  */
 export function selectStrategicImages(
   images: string[] | null,
   propertyType: string | null,
   lotSizeSqft: number | null,
-  maxImages: number = 8
+  maxImages: number = 18
 ): ImageSelectionResult {
   if (!images || images.length === 0) {
     return {
@@ -75,7 +80,21 @@ export function selectStrategicImages(
     return false
   }
 
-  // 1. Always include first image (hero shot)
+  // Helper to add multiple images from candidate positions
+  const addMultiple = (
+    candidates: number[],
+    category: string,
+    count: number
+  ): void => {
+    let added = 0
+    for (const idx of candidates) {
+      if (added >= count) break
+      if (selected.length >= maxImages) break
+      if (addImage(idx, category)) added++
+    }
+  }
+
+  // 1. Hero shot (exterior/facade) - always first
   addImage(0, 'hero')
 
   // If only 1 image, return early
@@ -87,60 +106,67 @@ export function selectStrategicImages(
     }
   }
 
-  // 2. Kitchen - typically in positions 3-5 for Zillow listings
-  const kitchenIndices = [3, 4, 2, 5]
-  for (const idx of kitchenIndices) {
-    if (addImage(idx, 'kitchen')) break
+  // 2. Kitchen shots (2) - typically in positions 3-6 for Zillow
+  // Kitchen is high-impact, so we try to get multiple angles
+  addMultiple([3, 4, 5, 2, 6], 'kitchen', 2)
+
+  // 3. Living/great room (2) - typically positions 1-4
+  addMultiple([1, 2, 4, 5], 'living', 2)
+
+  // 4. Bedrooms (3) - typically middle positions 5-12
+  if (images.length > 5) {
+    addMultiple([6, 7, 8, 9, 10, 11, 5], 'bedroom', 3)
   }
 
-  // 3. Living area - typically in positions 1-3
-  const livingIndices = [1, 2]
-  for (const idx of livingIndices) {
-    if (addImage(idx, 'living')) break
+  // 5. Bathrooms (2) - typically positions 8-14
+  if (images.length > 7) {
+    addMultiple([9, 10, 11, 12, 8, 13, 14], 'bathroom', 2)
   }
 
-  // 4. Bedroom or bathroom - typically in positions 5-8
-  if (selected.length < maxImages && images.length > 5) {
-    const bedroomIndices = [5, 6, 7, 8]
-    for (const idx of bedroomIndices) {
-      if (addImage(idx, 'bedroom')) break
-    }
-  }
-
-  // 5. Bathroom - try to get a separate bathroom shot
-  if (selected.length < maxImages && images.length > 7) {
-    const bathroomIndices = [7, 8, 9, 6]
-    for (const idx of bathroomIndices) {
-      if (addImage(idx, 'bathroom')) break
-    }
-  }
-
-  // 6. Outdoor space for houses with yards
+  // 6. Outdoor space (2) for houses with yards
   const isHouse =
     propertyType === 'single_family' ||
     propertyType === 'house' ||
     propertyType === 'townhome'
   const hasYard = lotSizeSqft && lotSizeSqft > 3000
 
-  if (isHouse && hasYard && selected.length < maxImages && images.length > 6) {
-    // Outdoor shots are often later in the gallery
-    const outdoorIndices = [images.length - 1, images.length - 2, 8, 9, 10]
-    for (const idx of outdoorIndices) {
-      if (addImage(idx, 'outdoor')) break
-    }
+  if (isHouse || hasYard) {
+    // Outdoor shots are often at the end of the gallery
+    const lastImages = [
+      images.length - 1,
+      images.length - 2,
+      images.length - 3,
+      images.length - 4,
+    ].filter((i) => i > 0)
+    addMultiple(lastImages, 'outdoor', 2)
   }
 
-  // 7. Fill remaining slots with randomly selected diverse images
+  // 7. Dining area (1) - often near kitchen/living shots
+  if (images.length > 10) {
+    addMultiple([5, 6, 4, 7], 'dining', 1)
+  }
+
+  // 8. Office/flex space (1) - common buyer need, often later in gallery
+  if (images.length > 12) {
+    addMultiple([12, 13, 14, 11, 15], 'office', 1)
+  }
+
+  // 9. Garage/storage (1) - practical, usually near end
+  if (images.length > 15) {
+    const nearEnd = [images.length - 5, images.length - 6, images.length - 4]
+    addMultiple(nearEnd, 'garage', 1)
+  }
+
+  // 10. Fill remaining slots with diverse images
   if (selected.length < Math.min(maxImages, images.length)) {
-    // Get all unused indices and shuffle them for random selection
-    const unusedIndices = []
+    const unusedIndices: number[] = []
     for (let i = 0; i < images.length; i++) {
       if (!usedIndices.has(i)) {
         unusedIndices.push(i)
       }
     }
 
-    // Shuffle to randomize which additional images we pick
+    // Shuffle for variety
     const shuffledUnused = shuffleArray(unusedIndices)
 
     for (const idx of shuffledUnused) {
@@ -149,12 +175,16 @@ export function selectStrategicImages(
     }
   }
 
-  // Determine strategy based on what we selected
-  let strategy: 'balanced' | 'limited' | 'single' = 'balanced'
-  if (selected.length === 1) {
-    strategy = 'single'
-  } else if (selected.length < 4) {
+  // Determine strategy based on coverage
+  let strategy: 'comprehensive' | 'balanced' | 'limited' | 'single'
+  if (selected.length >= 12) {
+    strategy = 'comprehensive'
+  } else if (selected.length >= 6) {
+    strategy = 'balanced'
+  } else if (selected.length >= 2) {
     strategy = 'limited'
+  } else {
+    strategy = 'single'
   }
 
   return {

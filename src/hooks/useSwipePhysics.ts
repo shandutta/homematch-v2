@@ -27,10 +27,9 @@ export const SNAP_BACK_CONFIG = {
 }
 
 export const EXIT_CONFIG = {
-  type: 'spring' as const,
-  stiffness: 400,
-  damping: 30,
-  mass: 0.4,
+  type: 'tween' as const,
+  ease: 'easeOut' as const,
+  duration: 0.16,
 }
 
 export interface UseSwipePhysicsOptions {
@@ -168,7 +167,7 @@ export function useSwipePhysics({
             scale: 0.9,
             transition: {
               ...EXIT_CONFIG,
-              duration: Math.max(0.25, Math.min(0.4, 0.35 / velocityFactor)),
+              duration: Math.max(0.12, Math.min(0.2, 0.2 / velocityFactor)),
             },
           })
           .then(() => {
@@ -225,7 +224,7 @@ export function useSwipePhysics({
           scale: 0.9,
           transition: {
             ...EXIT_CONFIG,
-            duration: 0.3,
+            duration: 0.16,
           },
         })
         .then(() => {

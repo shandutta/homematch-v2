@@ -1,44 +1,177 @@
 import { z } from 'zod'
 
-// Predefined lifestyle tags that the LLM can suggest
-export const LIFESTYLE_TAGS = [
-  'Work from Home Ready',
-  'Commuter Friendly',
-  'Cozy Retreat',
-  'Entertainment Haven',
-  'Family Haven',
-  'Culinary Paradise',
-  'Pet Paradise',
-  'Wellness Sanctuary',
-  'Natural Light Haven',
-  'Urban Oasis',
-  'Weekend Retreat',
-  'Outdoor Living',
-  'City Views',
-  'Beach Lifestyle',
-  'Future Family Home',
-  "Entertainer's Dream",
-  'First-Time Buyer Friendly',
-  'Investment Ready',
-  'Modern Minimalist',
-  'Classic Charm',
+// Expanded property tags organized by category (~80 total)
+export const PROPERTY_TAGS = {
+  // Architectural Style (15)
+  architectural: [
+    'Victorian Character',
+    'Mid-Century Modern',
+    'Craftsman Details',
+    'Contemporary Lines',
+    'Spanish Revival',
+    'Colonial Elegance',
+    'Farmhouse Charm',
+    'Art Deco Flair',
+    'Ranch Style',
+    'Mediterranean Influence',
+    'Industrial Loft',
+    'Tudor Elements',
+    'Cape Cod Classic',
+    'Prairie Style',
+    'Brownstone Beauty',
+  ],
+
+  // Outdoor & Views (12)
+  outdoor: [
+    'Private Oasis',
+    "Entertainer's Yard",
+    'Urban Rooftop',
+    'Garden Paradise',
+    'Pool Ready',
+    'Mountain Views',
+    'Water Views',
+    'City Skyline',
+    'Wooded Retreat',
+    'Desert Landscape',
+    'Courtyard Living',
+    'Wraparound Porch',
+  ],
+
+  // Interior Features (15)
+  interior: [
+    "Chef's Kitchen",
+    'Open Concept Flow',
+    'Hardwood Throughout',
+    'Fireplace Focal Point',
+    'Vaulted Ceilings',
+    'Natural Light Filled',
+    'Built-In Character',
+    'Spa Bathroom',
+    'Walk-In Closets',
+    'Bonus Room Flex',
+    'Finished Basement',
+    'Attic Potential',
+    'Wine Storage',
+    'Home Theater Ready',
+    'Smart Home Wired',
+  ],
+
+  // Lifestyle Fit (18)
+  lifestyle: [
+    'Remote Work Ready',
+    'Commuter Friendly',
+    "Entertainer's Dream",
+    'Growing Family',
+    'Empty Nester',
+    'First-Time Buyer',
+    'Investment Property',
+    'Multi-Gen Living',
+    'Pet Paradise',
+    'Fitness Focused',
+    'Creative Studio',
+    'Wellness Sanctuary',
+    'Culinary Haven',
+    "Book Lover's Nook",
+    'Hobbyist Heaven',
+    'Minimalist Living',
+    "Collector's Space",
+    'Indoor-Outdoor Flow',
+  ],
+
+  // Vibe & Aesthetic (12)
+  aesthetic: [
+    'Bright & Airy',
+    'Cozy & Warm',
+    'Sleek & Modern',
+    'Rustic Charm',
+    'Bohemian Spirit',
+    'Coastal Casual',
+    'Urban Edge',
+    'Timeless Classic',
+    'Eclectic Mix',
+    'Serene Retreat',
+    'Bold & Dramatic',
+    'Soft & Neutral',
+  ],
+
+  // Location & Convenience (10)
+  location: [
+    'Walkable Neighborhood',
+    'Quiet Cul-de-sac',
+    'Corner Lot',
+    'Near Parks',
+    'School District Draw',
+    'Transit Accessible',
+    'Restaurant Row',
+    'Up-and-Coming Area',
+    'Established Community',
+    'Privacy & Space',
+  ],
+} as const
+
+// Flatten all tags into a single array for validation
+export const ALL_PROPERTY_TAGS = [
+  ...PROPERTY_TAGS.architectural,
+  ...PROPERTY_TAGS.outdoor,
+  ...PROPERTY_TAGS.interior,
+  ...PROPERTY_TAGS.lifestyle,
+  ...PROPERTY_TAGS.aesthetic,
+  ...PROPERTY_TAGS.location,
 ] as const
 
-export type LifestyleTag = (typeof LIFESTYLE_TAGS)[number]
+export type PropertyTag = (typeof ALL_PROPERTY_TAGS)[number]
+export type TagCategory = keyof typeof PROPERTY_TAGS
+
+// Legacy alias for backwards compatibility
+export const LIFESTYLE_TAGS = ALL_PROPERTY_TAGS
+export type LifestyleTag = PropertyTag
+
+// Lifestyle fit tiers (replacing arbitrary percentages)
+export const FIT_TIERS = ['perfect', 'strong', 'good', 'possible'] as const
+export type FitTier = (typeof FIT_TIERS)[number]
 
 // Individual vibe with intensity score
+// Note: name can be longer (80 chars) to allow unique, property-specific descriptors
 export const vibeSchema = z.object({
-  name: z.string().min(1).max(50),
+  name: z.string().min(1).max(80),
   intensity: z.number().min(0).max(1),
   source: z.enum(['interior', 'exterior', 'both']),
 })
 
-// Lifestyle fit indicator
+// Lifestyle fit indicator with tier-based scoring
 export const lifestyleFitSchema = z.object({
   category: z.string().min(1).max(50),
+  // Keep numeric score for sorting/filtering, but UI shows tier
   score: z.number().min(0).max(1),
+  // Tier is derived from score: perfect (0.9+), strong (0.7-0.89), good (0.5-0.69), possible (0.3-0.49)
+  tier: z.enum(FIT_TIERS).optional(),
   reason: z.string().min(1).max(200),
 })
+
+// Helper to convert score to tier
+export function scoreToTier(score: number): FitTier {
+  if (score >= 0.9) return 'perfect'
+  if (score >= 0.7) return 'strong'
+  if (score >= 0.5) return 'good'
+  return 'possible'
+}
+
+// Helper to get tier display info
+export function getTierDisplay(tier: FitTier): {
+  stars: string
+  label: string
+} {
+  switch (tier) {
+    case 'perfect':
+      return { stars: '★★★', label: 'Perfect Fit' }
+    case 'strong':
+      return { stars: '★★', label: 'Strong Fit' }
+    case 'good':
+      return { stars: '★', label: 'Good Fit' }
+    case 'possible':
+      return { stars: '○', label: 'Could Work' }
+  }
+}
 
 // Notable feature detected from images
 export const notableFeatureSchema = z.object({
@@ -70,12 +203,18 @@ export const aestheticsSchema = z.object({
 export const llmVibesOutputSchema = z.object({
   tagline: z.string().min(10).max(80),
   vibeStatement: z.string().min(20).max(200),
+  // Primary vibes: unique, property-specific descriptors (not generic)
   primaryVibes: z.array(vibeSchema).min(2).max(4),
+  // Lifestyle fits: who would love this home and why
   lifestyleFits: z.array(lifestyleFitSchema).min(2).max(6),
+  // Notable features: specific standout details
   notableFeatures: z.array(notableFeatureSchema).min(2).max(8),
+  // Aesthetics: visual analysis
   aesthetics: aestheticsSchema,
-  emotionalHooks: z.array(z.string().max(100)).min(2).max(4),
-  suggestedTags: z.array(z.string()).min(2).max(4),
+  // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
+  emotionalHooks: z.array(z.string().max(120)).min(2).max(4),
+  // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
+  suggestedTags: z.array(z.string()).min(4).max(8),
 })
 
 // LLM Input Schema - what we send to the model
