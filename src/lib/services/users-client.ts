@@ -70,32 +70,38 @@ export class UserServiceClient {
   }
 
   // Household Operations
+  /**
+   * Creates a household for the current user using the RPC function.
+   * This atomically creates the household AND links the user's profile to it.
+   * No need to call joinHousehold() after - the RPC handles that.
+   */
   static async createHousehold(household: HouseholdInsert): Promise<Household> {
     const supabase = createClient()
 
-    // RLS: household inserts must set created_by to the current user
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+    // Use the RPC function which handles RLS via SECURITY DEFINER
+    // and atomically links the user profile to the household
+    const { data: householdId, error: rpcError } = await supabase.rpc(
+      'create_household_for_user',
+      { p_name: household.name || null }
+    )
 
-    if (sessionError || !session?.user) {
-      throw new Error('Authentication required to create a household')
+    if (rpcError) {
+      throw new Error(`Failed to create household: ${rpcError.message}`)
     }
 
-    const payload: HouseholdInsert = {
-      ...household,
-      created_by: session.user.id,
+    if (!householdId) {
+      throw new Error('Failed to create household: no ID returned')
     }
 
+    // Fetch the created household to return full data
     const { data, error } = await supabase
       .from('households')
-      .insert(payload)
       .select()
+      .eq('id', householdId)
       .single()
 
     if (error) {
-      throw new Error(`Failed to create household: ${error.message}`)
+      throw new Error(`Failed to fetch created household: ${error.message}`)
     }
 
     return data

@@ -106,10 +106,7 @@ describe('HouseholdSection', () => {
 
       await waitFor(() => {
         expect(mockCreateHousehold).toHaveBeenCalledWith({ name: 'My Family' })
-        expect(mockJoinHousehold).toHaveBeenCalledWith(
-          TEST_USERS.withoutHousehold.id,
-          'household-123'
-        )
+        // Note: joinHousehold is no longer called - the RPC handles linking atomically
         expect(toast.success).toHaveBeenCalledWith(
           TEST_MESSAGES.household.created
         )

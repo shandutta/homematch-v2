@@ -129,6 +129,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
     setError(null)
 
     try {
+      // The RPC function atomically creates the household AND links the user
       const household = await userService.createHousehold({
         name: householdName,
       })
@@ -137,7 +138,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         throw new Error('Failed to create household')
       }
 
-      await userService.joinHousehold(profile.id, household.id)
+      // No need to call joinHousehold - the RPC handles linking the user profile
       toast.success('Household created successfully')
       router.refresh()
     } catch (err) {

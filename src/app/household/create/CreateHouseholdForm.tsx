@@ -11,11 +11,7 @@ import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
-interface CreateHouseholdFormProps {
-  userId: string
-}
-
-export function CreateHouseholdForm({ userId }: CreateHouseholdFormProps) {
+export function CreateHouseholdForm() {
   const [householdName, setHouseholdName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,6 +29,7 @@ export function CreateHouseholdForm({ userId }: CreateHouseholdFormProps) {
     setError(null)
 
     try {
+      // The RPC function atomically creates the household AND links the user
       const household = await UserServiceClient.createHousehold({
         name: householdName.trim(),
       })
@@ -41,7 +38,7 @@ export function CreateHouseholdForm({ userId }: CreateHouseholdFormProps) {
         throw new Error('Failed to create household')
       }
 
-      await UserServiceClient.joinHousehold(userId, household.id)
+      // No need to call joinHousehold - the RPC handles linking the user profile
       toast.success('Household created! Now invite your partner.')
       router.push('/couples')
       router.refresh()

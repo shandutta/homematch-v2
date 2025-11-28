@@ -1,11 +1,11 @@
 import { UserServiceClient } from '@/lib/services/users-client'
 
-const getSessionMock = jest.fn()
-const insertMock = jest.fn()
+const rpcMock = jest.fn()
+const fromMock = jest.fn()
 
 const supabaseMock = {
-  auth: { getSession: getSessionMock },
-  from: jest.fn(),
+  rpc: rpcMock,
+  from: fromMock,
 }
 
 jest.mock('@/lib/supabase/client', () => ({
@@ -15,52 +15,119 @@ jest.mock('@/lib/supabase/client', () => ({
 describe('UserServiceClient.createHousehold', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    supabaseMock.from.mockImplementation(() => ({
-      insert: insertMock,
-    }))
   })
 
-  it('adds created_by from the current session before inserting', async () => {
-    const userId = 'user-123'
+  it('calls the RPC with the household name and returns the created household', async () => {
+    const householdId = 'house-1'
     const returnedHousehold = {
-      id: 'house-1',
+      id: householdId,
       name: 'Home',
-      created_by: userId,
+      created_by: 'user-123',
     }
-    let capturedPayload: any = null
 
-    getSessionMock.mockResolvedValue({
-      data: { session: { user: { id: userId } } },
+    // Mock the RPC call
+    rpcMock.mockResolvedValue({
+      data: householdId,
       error: null,
     })
 
-    insertMock.mockImplementation((payload) => {
-      capturedPayload = payload
-      return {
-        select: () => ({
+    // Mock the fetch after RPC
+    fromMock.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
           single: () =>
             Promise.resolve({ data: returnedHousehold, error: null }),
         }),
-      }
-    })
+      }),
+    }))
 
     const result = await UserServiceClient.createHousehold({ name: 'Home' })
 
-    expect(insertMock).toHaveBeenCalledTimes(1)
-    expect(capturedPayload).toEqual({ name: 'Home', created_by: userId })
+    expect(rpcMock).toHaveBeenCalledWith('create_household_for_user', {
+      p_name: 'Home',
+    })
+    expect(fromMock).toHaveBeenCalledWith('households')
     expect(result).toEqual(returnedHousehold)
   })
 
-  it('throws when no authenticated session is available', async () => {
-    getSessionMock.mockResolvedValue({
-      data: { session: null },
+  it('passes null for p_name when no name is provided', async () => {
+    const householdId = 'house-2'
+    const returnedHousehold = {
+      id: householdId,
+      name: null,
+      created_by: 'user-456',
+    }
+
+    rpcMock.mockResolvedValue({
+      data: householdId,
+      error: null,
+    })
+
+    fromMock.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
+          single: () =>
+            Promise.resolve({ data: returnedHousehold, error: null }),
+        }),
+      }),
+    }))
+
+    const result = await UserServiceClient.createHousehold({})
+
+    expect(rpcMock).toHaveBeenCalledWith('create_household_for_user', {
+      p_name: null,
+    })
+    expect(result).toEqual(returnedHousehold)
+  })
+
+  it('throws when the RPC fails', async () => {
+    rpcMock.mockResolvedValue({
+      data: null,
+      error: { message: 'Not authenticated' },
+    })
+
+    await expect(
+      UserServiceClient.createHousehold({ name: 'Test' })
+    ).rejects.toThrow('Failed to create household: Not authenticated')
+
+    expect(fromMock).not.toHaveBeenCalled()
+  })
+
+  it('throws when no household ID is returned', async () => {
+    rpcMock.mockResolvedValue({
+      data: null,
       error: null,
     })
 
     await expect(
-      UserServiceClient.createHousehold({ name: 'No Session' })
-    ).rejects.toThrow('Authentication required to create a household')
+      UserServiceClient.createHousehold({ name: 'Test' })
+    ).rejects.toThrow('Failed to create household: no ID returned')
 
-    expect(insertMock).not.toHaveBeenCalled()
+    expect(fromMock).not.toHaveBeenCalled()
+  })
+
+  it('throws when fetching the created household fails', async () => {
+    const householdId = 'house-3'
+
+    rpcMock.mockResolvedValue({
+      data: householdId,
+      error: null,
+    })
+
+    fromMock.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: { message: 'Household not found' },
+            }),
+        }),
+      }),
+    }))
+
+    await expect(
+      UserServiceClient.createHousehold({ name: 'Test' })
+    ).rejects.toThrow('Failed to fetch created household: Household not found')
   })
 })
