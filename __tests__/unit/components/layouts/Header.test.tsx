@@ -10,12 +10,13 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-// Mock Supabase client
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      signOut: jest.fn().mockResolvedValue({ error: null }),
-    },
+// Mock the useCurrentUserAvatar hook to avoid Supabase auth calls
+jest.mock('@/hooks/useCurrentUserAvatar', () => ({
+  useCurrentUserAvatar: () => ({
+    displayName: null,
+    email: null,
+    avatar: null,
+    isLoading: false,
   }),
 }))
 

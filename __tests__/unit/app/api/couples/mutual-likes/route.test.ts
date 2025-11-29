@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
+import { NextRequest } from 'next/server'
 import { GET } from '@/app/api/couples/mutual-likes/route'
 
 const jsonMock = jest.fn((body, init) => ({
@@ -21,18 +22,28 @@ jest.mock('@/lib/middleware/rateLimiter', () => ({
   withRateLimit: (_req: unknown, handler: () => Promise<unknown>) => handler(),
 }))
 
+// Create a chainable mock that returns itself for chaining
+const createChainMock = () => {
+  const chain: any = {
+    select: jest.fn(() => chain),
+    in: jest.fn(() => chain),
+    eq: jest.fn(() => chain),
+    then: jest.fn((resolve) => resolve({ data: [], error: null })),
+  }
+  return chain
+}
+
 const supabaseMock: any = {
   auth: {
     getUser: jest.fn(),
   },
-  from: jest.fn(),
-  select: jest.fn(),
-  in: jest.fn(),
+  from: jest.fn(() => createChainMock()),
 }
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createApiClient: () => supabaseMock,
 }))
 
 jest.mock('@/lib/services/couples', () => ({
@@ -67,7 +78,8 @@ describe('couples mutual-likes API route', () => {
       error: null,
     })
 
-    await GET({ nextUrl: new URL('https://example.com') } as any)
+    const req = new NextRequest('https://example.com/api/couples/mutual-likes')
+    await GET(req)
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(401)
@@ -79,7 +91,7 @@ describe('couples mutual-likes API route', () => {
       data: { user: { id: 'u1' } },
       error: null,
     })
-    CouplesService.getMutualLikes.mockResolvedValue([
+    ;(CouplesService.getMutualLikes as jest.Mock).mockResolvedValue([
       { property_id: 'p1', liked_by_count: 2 },
     ])
     supabaseMock.in.mockResolvedValueOnce({
@@ -87,7 +99,8 @@ describe('couples mutual-likes API route', () => {
       error: { message: 'db-error' },
     })
 
-    await GET({ nextUrl: new URL('https://example.com') } as any)
+    const req = new NextRequest('https://example.com/api/couples/mutual-likes')
+    await GET(req)
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)

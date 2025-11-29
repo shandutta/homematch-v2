@@ -1,70 +1,35 @@
 /**
- * Landing Page E2E Tests
- * Tests the HomeMatch landing page navigation flows and interactive components
+ * Landing Page E2E Tests - Authenticated Redirect Flow
+ *
+ * Note: Basic landing page tests (hero, footer, CTAs) are covered in smoke-min.spec.ts
+ * This file focuses on authenticated user redirect behavior only.
  */
 
 import { test, expect } from '../fixtures/index'
 
-/* eslint-disable no-empty */
-test.describe('Landing Page Navigation', () => {
-  // Ensure first statement is a test to satisfy eslint no-empty
-  test('loads hero', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('[data-testid="hero"]')).toBeVisible()
-  })
-
+test.describe('Landing Page - Authenticated User Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Ensure we start with no authentication
     await page.context().clearCookies()
     await page.addInitScript(() => {
-      // clear localStorage/sessionStorage between tests
       try {
         localStorage.clear()
         sessionStorage.clear()
-      } catch {}
+      } catch {
+        // ignore
+      }
     })
   })
 
-  // Pruned: retain only targeted navigation and footer checks in this file
-
-  test('should navigate to signup from hero CTA', async ({ page }) => {
-    await page.goto('/')
-    const hero = page.locator('[data-testid="hero"]')
-    await expect(hero).toBeVisible()
-
-    // Click the main signup CTA scoped to the hero to avoid ambiguity
-    const heroSection = page.locator('[data-testid="hero"]')
-    const cta = heroSection.getByRole('link', { name: 'Start Swiping' })
-    await expect(cta).toBeVisible()
-    await expect(cta).toBeEnabled()
-    await Promise.all([page.waitForURL(/\/signup/), cta.click()])
-
-    // Should navigate to signup page
-    await expect(page).toHaveURL(/\/signup/)
-
-    // Verify we're on the signup page using resilient assertions
-    // Title may vary, assert URL and key copy instead
-    await expect(page.locator('body')).toContainText(
-      /create your account|sign up/i
-    )
-  })
-
-  // Removed secondary CTA navigation to reduce duplication with smoke tests
-
-  // Removed header navigation duplication
-
-  // Removed header login navigation duplication
-
-  // Removed footer navigation duplication
-
-  test('should redirect authenticated users to validation page', async ({
+  test('should redirect authenticated users to dashboard or validation page', async ({
     page,
   }) => {
-    // authenticate via UI to avoid custom fixtures types
+    // Authenticate via login UI
     await page.goto('/login')
-    // Fill typical login form fields if present; otherwise rely on middleware redirect when already logged
+
     const emailInput = page.getByLabel(/email/i)
     const passwordInput = page.getByLabel(/password/i)
+
     if ((await emailInput.count()) > 0) {
       await emailInput.first().fill('test1@example.com')
     }
@@ -72,7 +37,7 @@ test.describe('Landing Page Navigation', () => {
       await passwordInput.first().fill('testpassword123')
     }
 
-    // Try click submit, otherwise force form submission
+    // Submit login form
     const submitBtn = page.getByRole('button', { name: /log in|sign in/i })
     if ((await submitBtn.count()) > 0) {
       const btn = submitBtn.first()
@@ -92,9 +57,9 @@ test.describe('Landing Page Navigation', () => {
       })
     }
 
-    // WebKit can bounce through /login briefly; allow intermediate redirect and then assert final URL
     await page.waitForLoadState('domcontentloaded')
-    // If we land on /login, try a second submit once before asserting
+
+    // Handle potential WebKit redirect bounce
     if (/\/login$/.test(page.url())) {
       const btn = page.getByRole('button', { name: /log in|sign in/i }).first()
       const enabled =
@@ -112,42 +77,10 @@ test.describe('Landing Page Navigation', () => {
       await page.waitForLoadState('domcontentloaded')
     }
 
-    // Accept either validation or dashboard as valid authenticated redirects
+    // Authenticated users should be redirected to validation or dashboard
     await expect(page).toHaveURL(/\/(validation|dashboard)/, { timeout: 45000 })
 
-    // Should be redirected to validation page (allow for propagation)
-    // Already asserted above; keep a lightweight visibility check
+    // Verify we're on a valid authenticated page
     await expect(page.getByText('HomeMatch')).toBeVisible()
   })
-})
-
-test.describe('Landing Page Interactive Elements', () => {
-  // Ensure first statement is a test to satisfy eslint no-empty
-  test('loads homepage', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('body')).toBeVisible()
-  })
-
-  test.beforeEach(async ({ page }) => {
-    // Ensure a concrete action to avoid no-empty false positives
-    await page.goto('/')
-    await page.waitForLoadState('load')
-  })
-
-  // Removed feature grid specifics to reduce brittleness
-
-  // Removed swipe demo display (animation/fixture sensitive)
-
-  // Removed swipe interactions (animation-driven)
-
-  test('footer shows brand heading (robust)', async ({ page }) => {
-    await page.locator('footer').scrollIntoViewIfNeeded()
-    const brandHeading = page
-      .locator('footer')
-      .getByRole('heading', { name: /HomeMatch/i })
-      .first()
-    await expect(brandHeading).toBeVisible()
-  })
-
-  // Removed deep responsiveness checks to reduce flakiness
 })

@@ -261,10 +261,13 @@ describe('ProfilePageClient', () => {
   })
 
   it('copies the household code and shows transient feedback', async () => {
-    const user = userEvent.setup()
-    const writeText = jest.fn().mockResolvedValue(undefined)
-    ;(navigator as any).clipboard = { writeText }
+    // Use global clipboard mock from jest.setup.ts - spy on it to verify calls
+    const writeTextSpy = jest.spyOn(navigator.clipboard, 'writeText')
     jest.useFakeTimers()
+    // Configure userEvent to work with fake timers
+    const user = userEvent.setup({
+      advanceTimers: jest.advanceTimersByTime,
+    })
 
     render(
       <ProfilePageClient
@@ -281,7 +284,7 @@ describe('ProfilePageClient', () => {
 
     await user.click(copyButton)
 
-    expect(writeText).toHaveBeenCalledWith(mockProfile.household.id)
+    expect(writeTextSpy).toHaveBeenCalledWith(mockProfile.household.id)
     await waitFor(() =>
       expect(
         copyButton.querySelector('[data-lucide="check"]')

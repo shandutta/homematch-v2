@@ -166,6 +166,10 @@ export function createApiClient(request?: NextRequest) {
     // Debug logging for auth issues
     console.log('[createApiClient] Host:', host, 'Hostname:', hostname)
     console.log(
+      '[createApiClient] Auth header:',
+      authHeader ? 'present' : 'missing'
+    )
+    console.log(
       '[createApiClient] Cookies received:',
       cookieData.map((c) => c.name).join(', ')
     )

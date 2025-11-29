@@ -73,7 +73,10 @@ const createCachedClient = (
   key: string,
   options?: SupabaseCreateClientOptions
 ): CachedSupabaseClient => {
-  const cacheKey = `${url}:${key}:${storageKeyPrefix}`
+  // Include auth header in cache key to ensure different auth contexts get different clients
+  const authHeader = (options?.global as { headers?: { Authorization?: string } })?.headers?.Authorization
+  const authKey = authHeader ? `:auth:${authHeader.slice(-8)}` : ':noauth'
+  const cacheKey = `${url}:${key}:${storageKeyPrefix}${authKey}`
   if (!supabaseClientCache.has(cacheKey)) {
     const clientId = `${storageKeyPrefix}-${++clientCounter}`
     const mergedOptions: SupabaseCreateClientOptions = {
