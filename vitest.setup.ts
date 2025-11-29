@@ -132,19 +132,39 @@ vi.mock('@supabase/ssr', async () => {
   }
 })
 
-// Lightweight retry wrapper to smooth out transient Supabase "upstream" 502s
+// Resilient fetch wrapper with exponential backoff and jitter
+// Smooths out transient Supabase "upstream" 502s and network issues
 const RETRYABLE_STATUS = new Set([502, 503, 504])
 const RETRYABLE_ERROR =
-  /(ECONNREFUSED|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN)/i
-const maxFetchRetries = Number(process.env.SUPABASE_FETCH_RETRIES ?? 2)
-const fetchRetryDelayMs = Number(
-  process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 150
-)
+  /(ECONNREFUSED|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network timeout)/i
+
+// Configurable via environment variables for slow CI environments
+const maxFetchRetries = Number(process.env.SUPABASE_FETCH_RETRIES ?? 5) // Up from 2
+const fetchBaseDelayMs = Number(
+  process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 500
+) // Up from 150
+const fetchMaxDelayMs = 10000
+const fetchTimeoutMs = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS ?? 15000)
+const JITTER_PERCENT = 0.25 // Add 0-25% random jitter to prevent thundering herd
 
 const sleep = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+
+/**
+ * Calculate exponential backoff delay with jitter.
+ * @param attempt - Current attempt number (0-indexed)
+ * @returns Delay in milliseconds
+ */
+function calculateBackoffDelay(attempt: number): number {
+  const exponentialDelay = Math.min(
+    fetchBaseDelayMs * Math.pow(2, attempt),
+    fetchMaxDelayMs
+  )
+  const jitter = exponentialDelay * Math.random() * JITTER_PERCENT
+  return Math.round(exponentialDelay + jitter)
+}
 
 async function fetchWithRetry(
   input: RequestInfo | URL,
@@ -152,23 +172,37 @@ async function fetchWithRetry(
   attempt = 0
 ): Promise<UndiciFetchResponse> {
   try {
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs)
+
     const response = await undiciFetch(
       input as unknown as UndiciFetchInput,
-      init as unknown as UndiciFetchInit
+      {
+        ...init,
+        signal: controller.signal,
+      } as unknown as UndiciFetchInit
     )
+
+    clearTimeout(timeoutId)
+
     if (attempt < maxFetchRetries && RETRYABLE_STATUS.has(response.status)) {
       // Clean up the current response stream before retrying
       if (response.body && typeof response.body.cancel === 'function') {
         response.body.cancel()
       }
-      await sleep(fetchRetryDelayMs * (attempt + 1))
+      const delay = calculateBackoffDelay(attempt)
+      await sleep(delay)
       return fetchWithRetry(input, init, attempt + 1)
     }
     return response
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    if (attempt < maxFetchRetries && RETRYABLE_ERROR.test(message)) {
-      await sleep(fetchRetryDelayMs * (attempt + 1))
+    const isRetryable =
+      RETRYABLE_ERROR.test(message) || message.includes('aborted')
+    if (attempt < maxFetchRetries && isRetryable) {
+      const delay = calculateBackoffDelay(attempt)
+      await sleep(delay)
       return fetchWithRetry(input, init, attempt + 1)
     }
     throw error
@@ -598,9 +632,11 @@ async function ensureBaselinePropertyData(
     )
 
     // Seed multiple properties with diverse attributes for filter tests
+    // Include images to prevent marketing route from hitting slow fallback paths
     const testProperties = [
       {
         id: '99999999-aaaa-bbbb-cccc-000000000002',
+        zpid: 'test-zpid-1',
         address: '1 Integration Test Way',
         city: 'Test City',
         state: 'CA',
@@ -617,11 +653,13 @@ async function ensureBaselinePropertyData(
         lot_size_sqft: 5000,
         parking_spots: 2,
         amenities: ['pool', 'garage'],
+        images: ['https://example.com/test-property-1.jpg'],
         property_hash: 'integration-test-hash-1',
         is_active: true,
       },
       {
         id: '99999999-aaaa-bbbb-cccc-000000000003',
+        zpid: 'test-zpid-2',
         address: '2 Vintage Lane',
         city: 'Test City',
         state: 'CA',
@@ -638,11 +676,13 @@ async function ensureBaselinePropertyData(
         lot_size_sqft: null,
         parking_spots: 1,
         amenities: ['gym'],
+        images: ['https://example.com/test-property-2.jpg'],
         property_hash: 'integration-test-hash-2',
         is_active: true,
       },
       {
         id: '99999999-aaaa-bbbb-cccc-000000000004',
+        zpid: 'test-zpid-3',
         address: '3 Modern Ave',
         city: 'Test City',
         state: 'CA',
@@ -659,6 +699,7 @@ async function ensureBaselinePropertyData(
         lot_size_sqft: 8000,
         parking_spots: 3,
         amenities: ['pool', 'spa', 'smart-home'],
+        images: ['https://example.com/test-property-3.jpg'],
         property_hash: 'integration-test-hash-3',
         is_active: true,
       },

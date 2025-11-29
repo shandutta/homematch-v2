@@ -7,6 +7,11 @@ const { createClient } = require('@supabase/supabase-js')
 const dotenv = require('dotenv')
 const path = require('path')
 const fs = require('fs')
+const {
+  config: resilienceConfig,
+  isTransientError,
+  sleep,
+} = require('./test-resilience-config')
 
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
@@ -204,24 +209,76 @@ async function deleteExistingUser(email, maxRetries = 3) {
  * Wait for Supabase auth service to be ready after database reset.
  * This prevents race conditions where user creation fails with
  * "Database error checking email" due to auth service not being ready.
+ *
+ * Uses exponential backoff with configurable max attempts and delays.
+ * Can be tuned via environment variables:
+ *   - AUTH_READY_ATTEMPTS: Max attempts (default: 30)
+ *   - AUTH_READY_DELAY_MS: Base delay between attempts (default: 3000ms)
  */
-async function waitForAuthService(maxAttempts = 10) {
-  for (let i = 0; i < maxAttempts; i++) {
+async function waitForAuthService(
+  maxAttempts = resilienceConfig.authReadiness.maxAttempts,
+  baseDelayMs = resilienceConfig.authReadiness.retryDelayMs
+) {
+  const startTime = Date.now()
+  const maxWaitMs = resilienceConfig.authReadiness.maxWaitMs
+  const maxDelayMs = resilienceConfig.authReadiness.maxDelayMs
+  const backoffMultiplier = resilienceConfig.authReadiness.backoffMultiplier
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Check if we've exceeded max wait time
+    if (Date.now() - startTime > maxWaitMs) {
+      console.error(
+        `❌ Auth service did not become ready within ${maxWaitMs / 1000}s`
+      )
+      return false
+    }
+
     try {
       const { data, error } = await supabase.auth.admin.listUsers({
         perPage: 1,
       })
       if (!error && data) {
-        console.log('✅ Auth service ready')
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+        console.log(
+          `✅ Auth service ready after ${attempt} attempts (${elapsed}s)`
+        )
         return true
       }
-    } catch {
-      // Auth not ready yet
+
+      // Log the error for debugging
+      if (process.env.DEBUG_TEST_SETUP && error) {
+        console.debug(`   Auth check error: ${error.message}`)
+      }
+    } catch (err) {
+      const message = err?.message || String(err)
+
+      // Fail fast for non-transient errors after initial grace period
+      if (!isTransientError(err) && attempt > 5) {
+        console.error(`❌ Non-transient auth error: ${message}`)
+        console.error('   This may indicate a configuration problem.')
+        return false
+      }
+
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug(`   Auth exception: ${message}`)
+      }
     }
-    console.log(`⏳ Waiting for auth service... (${i + 1}/${maxAttempts})`)
-    await new Promise((r) => setTimeout(r, 2000))
+
+    console.log(`⏳ Waiting for auth service... (${attempt}/${maxAttempts})`)
+
+    // Exponential backoff with cap
+    const delay = Math.min(
+      baseDelayMs * Math.pow(backoffMultiplier, attempt - 1),
+      maxDelayMs
+    )
+    await sleep(delay)
   }
+
   console.error('❌ Auth service did not become ready in time')
+  console.error(
+    '   The auth service may still be initializing after database reset.'
+  )
+  console.error('   Try waiting a few seconds and running again.')
   return false
 }
 
@@ -237,10 +294,6 @@ async function setupTestUsers() {
   // Wait for auth service to be ready before creating users
   const authReady = await waitForAuthService()
   if (!authReady) {
-    console.error(
-      '   The auth service may still be initializing after database reset.'
-    )
-    console.error('   Try waiting a few seconds and running again.')
     process.exit(1)
   }
 

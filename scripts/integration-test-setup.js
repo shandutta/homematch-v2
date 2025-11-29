@@ -11,6 +11,7 @@ const fs = require('fs')
 const dotenv = require('dotenv')
 const { createClient } = require('@supabase/supabase-js')
 const { runCleanup } = require('./supabase-cleanup')
+const { config: resilienceConfig } = require('./test-resilience-config')
 
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 dotenv.config({ path: path.join(process.cwd(), '.env.local') })
@@ -85,11 +86,34 @@ const sleepSync = (ms) => {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Execute a shell command with timeout protection.
+ * Prevents commands from hanging indefinitely.
+ *
+ * @param {string} cmd - Command to execute
+ * @param {object} options - execSync options
+ * @param {number} timeoutMs - Timeout in milliseconds (default: 2 minutes)
+ * @returns {Buffer|string} Command output
+ */
+const safeExec = (
+  cmd,
+  options = {},
+  timeoutMs = resilienceConfig.shell.defaultTimeoutMs
+) => {
+  return execSync(cmd, {
+    timeout: timeoutMs,
+    ...options,
+  })
+}
+
 const findKongContainer = () => {
   try {
-    const names = execSync(
+    const names = safeExec(
       'docker ps --filter "name=supabase_kong" --format "{{.Names}}"',
-      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] },
+      resilienceConfig.shell.dockerTimeoutMs
     )
       .trim()
       .split('\n')
@@ -101,16 +125,73 @@ const findKongContainer = () => {
   }
 }
 
-const restartKong = () => {
+/**
+ * Wait for Kong gateway to become ready after restart.
+ * Polls the REST API endpoint until it responds.
+ *
+ * @returns {Promise<boolean>} True if Kong became ready
+ */
+const waitForKongReady = async () => {
+  const { maxReadinessAttempts, readinessDelayMs, healthCheckTimeoutMs } =
+    resilienceConfig.kong
+
+  for (let i = 0; i < maxReadinessAttempts; i++) {
+    await sleep(readinessDelayMs)
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), healthCheckTimeoutMs)
+
+      const response = await fetch(`${supabaseAdminUrl}/rest/v1/`, {
+        headers: { apikey: supabaseAnonKey || '' },
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeout)
+
+      // Accept any response that isn't a server error - 401 means auth required but Kong is working
+      if (response.ok || response.status === 401) {
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug(`✅ Kong is ready (attempt ${i + 1})`)
+        }
+        return true
+      }
+    } catch {
+      // Continue polling
+    }
+  }
+
+  if (process.env.DEBUG_TEST_SETUP) {
+    console.debug('⚠️ Kong may not be fully ready after restart')
+  }
+  return false
+}
+
+/**
+ * Restart Kong container and wait for it to become ready.
+ *
+ * @returns {Promise<boolean>} True if Kong was restarted and became ready
+ */
+const restartKong = async () => {
   const kongContainer = findKongContainer()
   if (!kongContainer) return false
 
   try {
-    execSync(`docker restart ${kongContainer}`, {
-      stdio: process.env.DEBUG_TEST_SETUP ? 'inherit' : 'ignore',
-    })
-    return true
-  } catch {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug('🔄 Restarting Kong gateway...')
+    }
+
+    safeExec(
+      `docker restart ${kongContainer}`,
+      { stdio: process.env.DEBUG_TEST_SETUP ? 'inherit' : 'ignore' },
+      resilienceConfig.shell.dockerTimeoutMs
+    )
+
+    // Wait for Kong to become ready after restart
+    return await waitForKongReady()
+  } catch (error) {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug('⚠️ Failed to restart Kong:', error?.message || error)
+    }
     return false
   }
 }
@@ -145,10 +226,14 @@ const resetDatabase = async () => {
   const cmd = 'pnpm dlx supabase@latest db reset --local --yes'
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      execSync(cmd, {
-        stdio: 'inherit',
-        cwd: path.join(__dirname, '..'),
-      })
+      safeExec(
+        cmd,
+        {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+        },
+        resilienceConfig.shell.dbResetTimeoutMs // 3 minutes for db reset
+      )
       runCleanup()
       return true
     } catch (error) {
@@ -171,7 +256,7 @@ const resetDatabase = async () => {
             `⚠️  Reset attempt ${attempt} hit storage timeout. Restarting Kong and retrying...`
           )
         }
-        restartKong()
+        await restartKong() // Now properly awaited
         await waitForStorage()
       }
 
@@ -219,7 +304,7 @@ const tryStartDocker = () => {
 
   for (const cmd of attempts) {
     try {
-      execSync(cmd, { stdio: 'ignore' })
+      safeExec(cmd, { stdio: 'ignore' }, resilienceConfig.shell.dockerTimeoutMs)
       return true
     } catch {
       // try next
@@ -230,7 +315,11 @@ const tryStartDocker = () => {
 
 const ensureDockerRunning = () => {
   try {
-    execSync('docker info', { stdio: 'pipe' })
+    safeExec(
+      'docker info',
+      { stdio: 'pipe' },
+      resilienceConfig.shell.dockerTimeoutMs
+    )
     return
   } catch {
     // Fall through
@@ -251,7 +340,11 @@ const ensureDockerRunning = () => {
 
   while (Date.now() - start < timeoutMs) {
     try {
-      execSync('docker info', { stdio: 'pipe' })
+      safeExec(
+        'docker info',
+        { stdio: 'pipe' },
+        resilienceConfig.shell.dockerTimeoutMs
+      )
       return
     } catch {
       sleepSync(pollMs)
@@ -309,27 +402,36 @@ async function setupIntegrationTests() {
 
       try {
         try {
-          execSync('docker version', { stdio: 'pipe' })
+          safeExec(
+            'docker version',
+            { stdio: 'pipe' },
+            resilienceConfig.shell.dockerTimeoutMs
+          )
         } catch {
           console.error('❌ Docker is not available or not running')
           process.exit(1)
         }
 
         try {
-          execSync('pnpm dlx supabase@latest stop', {
-            stdio: 'pipe',
-            cwd: path.join(__dirname, '..'),
-          })
+          safeExec(
+            'pnpm dlx supabase@latest stop',
+            {
+              stdio: 'pipe',
+              cwd: path.join(__dirname, '..'),
+            },
+            resilienceConfig.shell.dockerTimeoutMs
+          )
         } catch {
           // Ignore stop errors
         }
 
-        execSync(
+        safeExec(
           'pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime',
           {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..'),
-          }
+          },
+          resilienceConfig.shell.dbResetTimeoutMs // Supabase start can take a while
         )
 
         // Give the services a moment to settle
@@ -383,11 +485,15 @@ async function setupIntegrationTests() {
 
     try {
       // Run the setup-test-users-admin script
-      execSync('node scripts/setup-test-users-admin.js', {
-        stdio: 'inherit',
-        cwd: path.join(__dirname, '..'),
-        env: { ...process.env },
-      })
+      safeExec(
+        'node scripts/setup-test-users-admin.js',
+        {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..'),
+          env: { ...process.env },
+        },
+        resilienceConfig.shell.dbResetTimeoutMs
+      ) // Allow time for user creation
       if (process.env.DEBUG_TEST_SETUP) {
         console.debug('✅ Test users created')
       }

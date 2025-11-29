@@ -100,6 +100,11 @@ export abstract class BaseService implements IBaseService {
 
   /**
    * Sanitizes input data to prevent injection attacks
+   *
+   * Note: Supabase uses parameterized queries via PostgREST, so SQL injection
+   * via data values is already prevented. This sanitization is a defense-in-depth
+   * measure for edge cases. Single quotes (apostrophes) are allowed as they are
+   * common in names (O'Connor, D'Angelo) and safe with parameterized queries.
    */
   sanitizeInput<T>(input: T): T {
     if (input === null || input === undefined) {
@@ -107,8 +112,8 @@ export abstract class BaseService implements IBaseService {
     }
 
     if (typeof input === 'string') {
-      // Basic SQL injection prevention
-      return input.replace(/['"`;\\]/g, '') as T
+      // Remove potentially dangerous characters (but allow apostrophes for names)
+      return input.replace(/["`;\\/]/g, '') as T
     }
 
     if (Array.isArray(input)) {
