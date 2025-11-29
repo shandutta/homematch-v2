@@ -17,18 +17,11 @@ import {
   slideInRight,
   fastTransition,
 } from '@/components/ui/motion-components'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { signOut } from '@/lib/supabase/actions'
 import { useState, useEffect, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
-import { UserAvatar } from '@/components/shared/UserAvatar'
+import { ProfileMenu } from '@/components/shared/ProfileMenu'
 import { useCurrentUserAvatar } from '@/hooks/useCurrentUserAvatar'
 
 export function Header() {
@@ -164,62 +157,15 @@ export function Header() {
                 <Menu className="h-7 w-7" />
               </button>
 
-              {/* User Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="p-token-sm transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full text-white/80 hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95"
-                    data-testid="user-menu"
-                  >
-                    {isLoading ? (
-                      <User className="h-7 w-7" />
-                    ) : (
-                      <UserAvatar
-                        displayName={displayName}
-                        email={email}
-                        avatar={avatar}
-                        size="sm"
-                      />
-                    )}
-                    <span className="sr-only">User menu</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="border-token-primary/25 w-48 bg-[rgba(7,19,43,0.94)] shadow-[0_20px_45px_rgba(4,8,24,0.55)] backdrop-blur-xl"
-                  sideOffset={8}
-                  alignOffset={-4}
-                >
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/profile"
-                      className="p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center text-white/80 hover:text-white"
-                      data-testid="nav-profile"
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/settings"
-                      className="p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center text-white/80 hover:text-white"
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-token-primary/20" />
-                  <DropdownMenuItem
-                    disabled={isSigningOut}
-                    onClick={handleSignOut}
-                    className="p-token-md flex min-h-[44px] cursor-pointer touch-manipulation items-center text-white/80 hover:text-white"
-                    data-testid="logout-button"
-                  >
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* User Profile Menu */}
+              <ProfileMenu
+                displayName={displayName}
+                email={email}
+                avatar={avatar}
+                isLoading={isLoading}
+                isSigningOut={isSigningOut}
+                onSignOut={handleSignOut}
+              />
             </div>
           </div>
         </nav>
@@ -298,36 +244,78 @@ export function Header() {
                 </ul>
 
                 {/* Mobile Menu User Section */}
-                <div className="border-token-primary/20 mt-8 space-y-2 border-t pt-6">
-                  <Link
-                    href="/profile"
-                    onClick={closeMobileMenu}
-                    className="rounded-token-lg p-token-md transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
-                    data-testid="nav-profile"
-                  >
-                    <User className="h-6 w-6 flex-shrink-0" />
-                    <span className="text-token-lg font-medium">Profile</span>
-                  </Link>
-                  <Link
-                    href="/settings"
-                    onClick={closeMobileMenu}
-                    className="rounded-token-lg p-token-md transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <Settings className="h-6 w-6 flex-shrink-0" />
-                    <span className="text-token-lg font-medium">Settings</span>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleSignOut()
-                      closeMobileMenu()
-                    }}
-                    disabled={isSigningOut}
-                    className="rounded-token-lg p-token-md transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] w-full touch-manipulation items-center space-x-3 text-left text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
-                    type="button"
-                    data-testid="logout-button"
-                  >
-                    <span className="text-token-lg font-medium">Sign Out</span>
-                  </button>
+                <div className="mt-8 border-t border-white/[0.08] pt-6">
+                  {/* User Info */}
+                  <div className="mb-4 flex items-center gap-3 px-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-sm font-semibold text-white/90 ring-1 ring-white/10">
+                      {displayName?.[0]?.toUpperCase() ||
+                        email?.[0]?.toUpperCase() ||
+                        '?'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-white">
+                        {displayName || 'Welcome'}
+                      </p>
+                      {email && (
+                        <p className="truncate text-xs text-white/50">
+                          {email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      href="/profile"
+                      onClick={closeMobileMenu}
+                      className="group flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 text-white/75 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:bg-white/[0.06] focus-visible:text-white focus-visible:outline-none"
+                      data-testid="nav-profile"
+                    >
+                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.03] transition-all duration-200 group-hover:from-white/[0.12] group-hover:to-white/[0.06]">
+                        <User className="h-5 w-5" />
+                      </span>
+                      <span className="text-[15px] font-medium">Profile</span>
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={closeMobileMenu}
+                      className="group flex min-h-[52px] touch-manipulation items-center gap-3 rounded-xl px-3 py-3 text-white/75 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:bg-white/[0.06] focus-visible:text-white focus-visible:outline-none"
+                    >
+                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.03] transition-all duration-200 group-hover:from-white/[0.12] group-hover:to-white/[0.06]">
+                        <Settings className="h-5 w-5" />
+                      </span>
+                      <span className="text-[15px] font-medium">Settings</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleSignOut()
+                        closeMobileMenu()
+                      }}
+                      disabled={isSigningOut}
+                      className={cn(
+                        'group flex min-h-[52px] w-full touch-manipulation items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 focus-visible:outline-none',
+                        isSigningOut
+                          ? 'cursor-not-allowed opacity-50'
+                          : 'text-white/60 hover:bg-rose-500/10 hover:text-rose-400 focus-visible:bg-rose-500/10 focus-visible:text-rose-400'
+                      )}
+                      type="button"
+                      data-testid="logout-button"
+                    >
+                      <span
+                        className={cn(
+                          'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-200',
+                          isSigningOut
+                            ? 'bg-white/[0.05]'
+                            : 'bg-gradient-to-br from-white/[0.06] to-transparent group-hover:from-rose-500/15 group-hover:to-rose-500/5'
+                        )}
+                      >
+                        <X className="h-5 w-5" />
+                      </span>
+                      <span className="text-[15px] font-medium">
+                        {isSigningOut ? 'Signing out...' : 'Sign Out'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </nav>
             </MotionDiv>

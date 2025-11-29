@@ -20,11 +20,11 @@ export interface UserAvatarProps {
 }
 
 const sizeClasses = {
-  xs: 'h-6 w-6 text-xs',
-  sm: 'h-8 w-8 text-sm',
-  md: 'h-10 w-10 text-base',
-  lg: 'h-14 w-14 text-lg',
-  xl: 'h-20 w-20 sm:h-24 sm:w-24 text-2xl sm:text-3xl',
+  xs: 'h-6 w-6 text-[10px]',
+  sm: 'h-9 w-9 text-xs',
+  md: 'h-11 w-11 text-sm',
+  lg: 'h-14 w-14 text-base',
+  xl: 'h-20 w-20 sm:h-24 sm:w-24 text-xl sm:text-2xl',
 }
 
 const badgeSizeClasses = {
@@ -73,6 +73,7 @@ export function UserAvatar({
 
   // Use square rounded style for xl size to match current profile design
   const isXl = size === 'xl'
+  const isLarge = size === 'lg' || size === 'xl'
 
   return (
     <div className="relative inline-block">
@@ -80,6 +81,8 @@ export function UserAvatar({
         className={cn(
           sizeClass,
           isXl ? 'rounded-2xl' : 'rounded-full',
+          // Add subtle ring for larger sizes
+          isLarge && 'ring-1 ring-white/10',
           className
         )}
       >
@@ -92,9 +95,12 @@ export function UserAvatar({
         )}
         <AvatarFallback
           className={cn(
-            'flex items-center justify-center font-medium',
-            'border border-white/10 bg-gradient-to-br from-white/10 to-white/5',
-            'text-hm-stone-200 shadow-xl shadow-black/20 backdrop-blur-sm',
+            'flex items-center justify-center font-semibold tracking-wide',
+            // Refined gradient with more depth
+            'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900',
+            'text-white/90',
+            // Subtle inner shadow for depth
+            'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),inset_0_-1px_0_0_rgba(0,0,0,0.2)]',
             isXl ? 'rounded-2xl' : 'rounded-full'
           )}
         >
@@ -106,7 +112,7 @@ export function UserAvatar({
         <div
           className={cn(
             'absolute flex items-center justify-center',
-            'rounded-full border-2 border-[#0c0a09]',
+            'rounded-full border-2 border-[#0a1628]',
             'bg-gradient-to-br from-emerald-400 to-emerald-500',
             'shadow-lg shadow-emerald-500/30',
             badgeSizeClass

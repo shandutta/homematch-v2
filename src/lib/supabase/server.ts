@@ -1,7 +1,80 @@
 import { createServerClient } from '@supabase/ssr'
+import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from './auth-helpers'
+
+const clearStaleSession = async (supabase: SupabaseClient) => {
+  try {
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch (err) {
+    console.warn('[Supabase][Server] Failed to clear stale session', err)
+  }
+}
+
+const withRefreshRecovery = (
+  supabase: SupabaseClient,
+  context: 'server' | 'api' = 'server'
+) => {
+  const describe = (error: unknown) => ({
+    code: (error as AuthApiError | undefined)?.code,
+    message: (error as AuthApiError | undefined)?.message,
+  })
+
+  const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
+  supabase.auth.getSession = (async () => {
+    try {
+      const result = await originalGetSession()
+      if (result.error && isInvalidRefreshTokenError(result.error)) {
+        console.warn(
+          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
+          describe(result.error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { session: null }, error: null }
+      }
+      return result
+    } catch (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        console.warn(
+          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
+          describe(error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { session: null }, error: null }
+      }
+      throw error
+    }
+  }) as typeof supabase.auth.getSession
+
+  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
+  supabase.auth.getUser = (async () => {
+    try {
+      const result = await originalGetUser()
+      if (result.error && isInvalidRefreshTokenError(result.error)) {
+        console.warn(
+          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
+          describe(result.error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { user: null }, error: null }
+      }
+      return result
+    } catch (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        console.warn(
+          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
+          describe(error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { user: null }, error: null }
+      }
+      throw error
+    }
+  }) as typeof supabase.auth.getUser
+}
+
+export const __withRefreshRecovery = withRefreshRecovery
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
@@ -17,7 +90,7 @@ export async function createClient() {
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
 
-  return createServerClient(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -67,6 +140,10 @@ export async function createClient() {
         : undefined,
     }
   )
+
+  withRefreshRecovery(supabase)
+
+  return supabase
 }
 
 // API Route specific client that can handle NextRequest contexts
@@ -97,7 +174,7 @@ export function createApiClient(request?: NextRequest) {
   const bearerToken = authHeader?.replace('Bearer ', '')
   const cookieName = `sb-${hostname}-auth-token`
 
-  return createServerClient(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -132,6 +209,10 @@ export function createApiClient(request?: NextRequest) {
         : undefined,
     }
   )
+
+  withRefreshRecovery(supabase, 'api')
+
+  return supabase
 }
 
 // Alternative server client with service role for administrative operations

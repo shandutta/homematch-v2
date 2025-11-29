@@ -68,13 +68,13 @@ describe('UserAvatar Component', () => {
     test('applies sm size classes', () => {
       const { container } = render(<UserAvatar displayName="Test" size="sm" />)
       const avatar = container.querySelector('[data-slot="avatar"]')
-      expect(avatar).toHaveClass('h-8', 'w-8')
+      expect(avatar).toHaveClass('h-9', 'w-9')
     })
 
     test('applies md size classes (default)', () => {
       const { container } = render(<UserAvatar displayName="Test" />)
       const avatar = container.querySelector('[data-slot="avatar"]')
-      expect(avatar).toHaveClass('h-10', 'w-10')
+      expect(avatar).toHaveClass('h-11', 'w-11')
     })
 
     test('applies lg size classes', () => {

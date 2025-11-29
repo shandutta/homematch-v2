@@ -201,8 +201,8 @@ export const aestheticsSchema = z.object({
 
 // LLM Output Schema - what the model returns
 export const llmVibesOutputSchema = z.object({
-  tagline: z.string().min(10).max(80),
-  vibeStatement: z.string().min(20).max(200),
+  tagline: z.string().min(10).max(120),
+  vibeStatement: z.string().min(20).max(350),
   // Primary vibes: unique, property-specific descriptors (not generic)
   primaryVibes: z.array(vibeSchema).min(2).max(4),
   // Lifestyle fits: who would love this home and why
@@ -212,7 +212,7 @@ export const llmVibesOutputSchema = z.object({
   // Aesthetics: visual analysis
   aesthetics: aestheticsSchema,
   // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
-  emotionalHooks: z.array(z.string().max(120)).min(2).max(4),
+  emotionalHooks: z.array(z.string().max(200)).min(1).max(4),
   // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
   suggestedTags: z.array(z.string()).min(4).max(8),
 })
