@@ -133,12 +133,12 @@ describe('selectStrategicImages', () => {
   })
 
   describe('image count and limits', () => {
-    it('respects default maxImages of 10 (NVIDIA model limit)', () => {
+    it('respects default maxImages of 18', () => {
       const images = generateImages(25)
       const result = selectStrategicImages(images, 'single_family', 5000)
 
-      expect(result.selectedImages.length).toBeLessThanOrEqual(10)
-      expect(result.selectedImages.length).toBeGreaterThanOrEqual(8) // Should use most available slots
+      expect(result.selectedImages.length).toBeLessThanOrEqual(18)
+      expect(result.selectedImages.length).toBeGreaterThan(10) // Should use more than old NVIDIA limit
     })
 
     it('respects custom maxImages parameter', () => {
@@ -157,16 +157,16 @@ describe('selectStrategicImages', () => {
     })
 
     it('fills remaining slots with additional images when strategic slots exhausted', () => {
-      // With 30 images and maxImages=10, we should have some additional
+      // With 30 images and maxImages=18, we should have some additional
       const images = generateImages(30)
-      const result = selectStrategicImages(images, 'single_family', 5000, 10)
+      const result = selectStrategicImages(images, 'single_family', 5000, 18)
 
       const additionalImages = result.selectedImages.filter(
         (img) => img.category === 'additional'
       )
       // Should fill strategic categories first, then additional
-      expect(result.selectedImages.length).toBe(10)
-      expect(additionalImages.length).toBeGreaterThanOrEqual(0)
+      expect(result.selectedImages.length).toBe(18)
+      expect(additionalImages.length).toBeGreaterThan(0)
     })
   })
 
@@ -189,13 +189,12 @@ describe('selectStrategicImages', () => {
       expect(result.strategy).toBe('balanced')
     })
 
-    it('returns "comprehensive" strategy for 12+ selected images (when allowed)', () => {
-      // With custom maxImages=15, we can get comprehensive strategy
+    it('returns "comprehensive" strategy for 12+ selected images', () => {
+      // Default maxImages=18 allows comprehensive strategy
       const result = selectStrategicImages(
         generateImages(20),
         'single_family',
-        5000,
-        15 // Override to allow 12+ images
+        5000
       )
       expect(result.strategy).toBe('comprehensive')
       expect(result.selectedImages.length).toBeGreaterThanOrEqual(12)
@@ -268,15 +267,15 @@ describe('selectStrategicImages', () => {
 
   describe('randomization of additional images', () => {
     it('fills with additional images when more images than strategic slots', () => {
-      // With 40 images and maxImages=15, we should have additional images
+      // With 40 images and maxImages=18, we should have additional images
       const images = generateImages(40)
-      const result = selectStrategicImages(images, 'single_family', 5000, 15)
+      const result = selectStrategicImages(images, 'single_family', 5000, 18)
 
       // Should have strategic images plus some additional
       const categories = result.selectedImages.map((img) => img.category)
       expect(categories).toContain('hero')
       expect(categories).toContain('additional')
-      expect(result.selectedImages.length).toBe(15)
+      expect(result.selectedImages.length).toBe(18)
     })
 
     it('produces different additional images on multiple runs (probabilistic)', () => {
@@ -287,7 +286,7 @@ describe('selectStrategicImages', () => {
       const results: ImageSelectionResult[] = []
 
       for (let i = 0; i < 10; i++) {
-        results.push(selectStrategicImages(images, 'condo', null, 15))
+        results.push(selectStrategicImages(images, 'condo', null, 18))
       }
 
       // Get additional image indices from each run

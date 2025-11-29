@@ -4,8 +4,8 @@
  * Handles communication with OpenRouter to analyze property images
  * and extract vibes using vision-capable models.
  *
- * Default: NVIDIA Nemotron Nano 12B VL (free tier) for cost-efficient beta testing.
- * Alternative: xAI Grok 4.1 Fast (free), GPT-4o-mini (paid).
+ * Default: Qwen 3 VL 8B (cheap, good quality vision model).
+ * Fallbacks: Qwen 2.5 VL 32B, Llama 3.2 11B Vision, Gemma 3 27B (free).
  */
 
 export interface OpenRouterConfig {
@@ -65,18 +65,22 @@ export interface UsageInfo {
 // Pricing per 1M tokens (approximate, varies by model)
 // Free models have 0 cost but we track tokens for monitoring
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
-  // Free vision models (recommended for beta testing)
-  'nvidia/nemotron-nano-12b-v2-vl:free': { input: 0, output: 0 },
-  'x-ai/grok-4.1-fast:free': { input: 0, output: 0 },
-  // Paid models (fallbacks)
+  // Qwen vision models (cheap, recommended for beta)
+  'qwen/qwen3-vl-8b-instruct': { input: 0.1, output: 0.3 },
+  'qwen/qwen2.5-vl-32b-instruct': { input: 0.2, output: 0.6 },
+  // Llama vision (very cheap)
+  'meta-llama/llama-3.2-11b-vision-instruct': { input: 0.05, output: 0.05 },
+  // Free fallback
+  'google/gemma-3-27b-it:free': { input: 0, output: 0 },
+  // Paid models (higher quality fallbacks)
   'openai/gpt-4o-mini': { input: 0.15, output: 0.6 },
   'openai/gpt-4o': { input: 2.5, output: 10 },
   'anthropic/claude-3-haiku': { input: 0.25, output: 1.25 },
   'anthropic/claude-3-sonnet': { input: 3, output: 15 },
 }
 
-// Default model for vibes generation (free vision model)
-export const DEFAULT_VIBES_MODEL = 'nvidia/nemotron-nano-12b-v2-vl:free'
+// Default model for vibes generation (Qwen 3 VL - cheap and good quality)
+export const DEFAULT_VIBES_MODEL = 'qwen/qwen3-vl-8b-instruct'
 
 export class OpenRouterClient {
   private apiKey: string

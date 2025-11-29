@@ -214,8 +214,8 @@ export default function VibesTestPage() {
         <CardHeader>
           <CardTitle className="text-white">Generate Vibes</CardTitle>
           <CardDescription className="text-slate-300">
-            Generate vibes for properties using NVIDIA Nemotron vision (free
-            tier)
+            Generate vibes for properties using Qwen 3 VL vision (cheap, high
+            quality)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
