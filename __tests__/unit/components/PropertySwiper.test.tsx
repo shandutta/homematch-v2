@@ -1,21 +1,21 @@
+/**
+ * PropertySwiper Unit Tests
+ *
+ * These tests verify the component's state management and rendering:
+ * - Property card rendering (via mocked SwipeablePropertyCard)
+ * - Empty state when no properties are provided
+ *
+ * NOTE: Swipe gestures and animations are tested in E2E tests where real
+ * browser interactions work correctly. The framer-motion mock is provided
+ * globally in jest.setup.ts for JSDOM compatibility.
+ */
 import { jest, describe, test, expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
 import { Property } from '@/lib/schemas/property'
 import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
 
-// Mock framer-motion fully
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
-  useMotionValue: () => ({ get: () => 0, set: () => {}, on: () => {} }),
-  useAnimation: () => ({ start: jest.fn(), stop: jest.fn(), set: jest.fn() }),
-  useTransform: () => ({ get: () => 0, set: () => {}, on: () => {} }),
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-  useMotionValueEvent: jest.fn(),
-  PanInfo: {} as any,
-}))
+// NOTE: framer-motion is mocked globally in jest.setup.ts for JSDOM compatibility
 
 // Mock child components to avoid complex dependency chains
 jest.mock('@/components/property/PropertyCard', () => ({

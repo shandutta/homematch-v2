@@ -162,17 +162,6 @@ export function createApiClient(request?: NextRequest) {
     // Get hostname for consistent cookie naming
     const host = request.headers.get('host') || 'localhost:3000'
     hostname = host.split(':')[0].replace(/\./g, '-')
-
-    // Debug logging for auth issues
-    console.log('[createApiClient] Host:', host, 'Hostname:', hostname)
-    console.log(
-      '[createApiClient] Auth header:',
-      authHeader ? 'present' : 'missing'
-    )
-    console.log(
-      '[createApiClient] Cookies received:',
-      cookieData.map((c) => c.name).join(', ')
-    )
   }
 
   const bearerToken = authHeader?.replace('Bearer ', '')

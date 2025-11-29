@@ -572,13 +572,13 @@ async function ensureBaselinePropertyData(
       return
     }
 
-    if (count && count > 0) {
+    // Seed if we have fewer than 3 properties (ensures diverse test data)
+    if (count && count >= 3) {
       return
     }
 
-    // Minimal seed to keep data-integrity checks stable when a reset/seed fails
+    // Diverse test properties to support filter-builder-patterns.test.ts
     const neighborhoodId = '99999999-aaaa-bbbb-cccc-000000000001'
-    const propertyId = '99999999-aaaa-bbbb-cccc-000000000002'
 
     await adminClient.from('neighborhoods').upsert(
       [
@@ -597,30 +597,76 @@ async function ensureBaselinePropertyData(
       { onConflict: 'id' }
     )
 
-    await adminClient.from('properties').upsert(
-      [
-        {
-          id: propertyId,
-          address: '1 Integration Test Way',
-          city: 'Test City',
-          state: 'CA',
-          zip_code: '99999',
-          price: 825000,
-          bedrooms: 3,
-          bathrooms: 2.5,
-          square_feet: 1650,
-          property_type: 'single_family',
-          listing_status: 'active',
-          coordinates: '(-122.45,37.77)',
-          neighborhood_id: neighborhoodId,
-          parking_spots: 1,
-          amenities: ['test-fixture'],
-          property_hash: 'integration-test-hash-1',
-          is_active: true,
-        },
-      ],
-      { onConflict: 'id' }
-    )
+    // Seed multiple properties with diverse attributes for filter tests
+    const testProperties = [
+      {
+        id: '99999999-aaaa-bbbb-cccc-000000000002',
+        address: '1 Integration Test Way',
+        city: 'Test City',
+        state: 'CA',
+        zip_code: '99999',
+        price: 825000,
+        bedrooms: 3,
+        bathrooms: 2.5,
+        square_feet: 1650,
+        property_type: 'single_family',
+        listing_status: 'active',
+        coordinates: '(-122.45,37.77)',
+        neighborhood_id: neighborhoodId,
+        year_built: 2010,
+        lot_size_sqft: 5000,
+        parking_spots: 2,
+        amenities: ['pool', 'garage'],
+        property_hash: 'integration-test-hash-1',
+        is_active: true,
+      },
+      {
+        id: '99999999-aaaa-bbbb-cccc-000000000003',
+        address: '2 Vintage Lane',
+        city: 'Test City',
+        state: 'CA',
+        zip_code: '99999',
+        price: 450000,
+        bedrooms: 2,
+        bathrooms: 1,
+        square_feet: 1200,
+        property_type: 'condo',
+        listing_status: 'pending',
+        coordinates: '(-122.44,37.76)',
+        neighborhood_id: neighborhoodId,
+        year_built: 1985,
+        lot_size_sqft: null,
+        parking_spots: 1,
+        amenities: ['gym'],
+        property_hash: 'integration-test-hash-2',
+        is_active: true,
+      },
+      {
+        id: '99999999-aaaa-bbbb-cccc-000000000004',
+        address: '3 Modern Ave',
+        city: 'Test City',
+        state: 'CA',
+        zip_code: '99999',
+        price: 1200000,
+        bedrooms: 4,
+        bathrooms: 3,
+        square_feet: 2500,
+        property_type: 'single_family',
+        listing_status: 'active',
+        coordinates: '(-122.46,37.78)',
+        neighborhood_id: neighborhoodId,
+        year_built: 2022,
+        lot_size_sqft: 8000,
+        parking_spots: 3,
+        amenities: ['pool', 'spa', 'smart-home'],
+        property_hash: 'integration-test-hash-3',
+        is_active: true,
+      },
+    ]
+
+    await adminClient
+      .from('properties')
+      .upsert(testProperties, { onConflict: 'id' })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     console.warn('⚠️  Could not seed baseline property data:', message)

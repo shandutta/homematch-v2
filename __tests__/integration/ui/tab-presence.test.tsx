@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
@@ -45,7 +46,7 @@ function PresenceTabs() {
 
 describe('Tabs + AnimatePresence integration', () => {
   it('keeps a single tabpanel mounted and transitions without warnings', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const user = userEvent.setup()
 
     render(<PresenceTabs />)

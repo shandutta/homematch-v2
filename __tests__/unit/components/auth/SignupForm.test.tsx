@@ -1,3 +1,17 @@
+/**
+ * SignupForm Unit Tests
+ *
+ * These tests verify the Supabase auth integration flow including:
+ * - Email/password signup
+ * - OAuth (Google) signup
+ * - Error handling and display
+ * - Verification email resend functionality
+ * - Loading states and button disabling
+ *
+ * NOTE: Form inputs and Zod validation are mocked. The tests bypass actual
+ * user input and form validation to focus on the auth API interaction layer.
+ * For end-to-end form validation testing, see the E2E test suite.
+ */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SignupForm } from '@/components/features/auth/SignupForm'

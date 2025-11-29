@@ -200,6 +200,31 @@ async function deleteExistingUser(email, maxRetries = 3) {
   return false
 }
 
+/**
+ * Wait for Supabase auth service to be ready after database reset.
+ * This prevents race conditions where user creation fails with
+ * "Database error checking email" due to auth service not being ready.
+ */
+async function waitForAuthService(maxAttempts = 10) {
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const { data, error } = await supabase.auth.admin.listUsers({
+        perPage: 1,
+      })
+      if (!error && data) {
+        console.log('✅ Auth service ready')
+        return true
+      }
+    } catch {
+      // Auth not ready yet
+    }
+    console.log(`⏳ Waiting for auth service... (${i + 1}/${maxAttempts})`)
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  console.error('❌ Auth service did not become ready in time')
+  return false
+}
+
 async function setupTestUsers() {
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('🔧 Setting up test users with Admin API...')
@@ -207,6 +232,16 @@ async function setupTestUsers() {
     // Check if Supabase is accessible (skip listUsers check as it may fail on fresh setup)
     console.debug('   Supabase URL:', supabaseUrl)
     console.debug('   Attempting to create test users...')
+  }
+
+  // Wait for auth service to be ready before creating users
+  const authReady = await waitForAuthService()
+  if (!authReady) {
+    console.error(
+      '   The auth service may still be initializing after database reset.'
+    )
+    console.error('   Try waiting a few seconds and running again.')
+    process.exit(1)
   }
 
   // Note: We'll handle profile creation manually instead of relying on the trigger
