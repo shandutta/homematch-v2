@@ -3,58 +3,18 @@ import fs from 'fs'
 import path from 'path'
 import { NextRequest } from 'next/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  beforeEach,
-  afterEach,
-  vi,
-} from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
 
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
 import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'
 import type { Database } from '@/types/database'
 import { resetRateLimitStore } from '@/lib/utils/rate-limit'
 
-const headerStore = new Map<string, string>()
-const cookieStore = new Map<string, string>()
-
-vi.mock('next/headers', () => ({
-  headers: async () => ({
-    get: (name: string) => {
-      // Only return values if our test file is the active one
-      return headerStore.get(name.toLowerCase()) ?? null
-    },
-  }),
-  cookies: async () => ({
-    getAll: () =>
-      Array.from(cookieStore.entries()).map(([name, value]) => ({
-        name,
-        value,
-      })),
-    set: (name: string, value: string) => {
-      cookieStore.set(name, value)
-    },
-    setAll: (
-      cookiesToSet: {
-        name: string
-        value: string
-        options?: Record<string, unknown>
-      }[]
-    ) => {
-      cookiesToSet.forEach(({ name, value }) => cookieStore.set(name, value))
-    },
-  }),
-}))
+// Auth token stored for use in request headers
+let currentAuthToken: string | undefined
 
 const setAuthToken = (token?: string) => {
-  headerStore.clear()
-  cookieStore.clear()
-  if (token) {
-    headerStore.set('authorization', `Bearer ${token}`)
-  }
+  currentAuthToken = token
 }
 
 const loadTestAuthToken = () => {
@@ -136,9 +96,8 @@ describe.sequential('Integration: /api/interactions route', () => {
 
   const makeAuthHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {}
-    const authHeader = headerStore.get('authorization')
-    if (authHeader) {
-      headers['authorization'] = authHeader
+    if (currentAuthToken) {
+      headers['authorization'] = `Bearer ${currentAuthToken}`
     }
     return headers
   }
@@ -193,8 +152,6 @@ describe.sequential('Integration: /api/interactions route', () => {
         .in('id', createdPropertyIds)
       createdPropertyIds = []
     }
-    headerStore.clear()
-    cookieStore.clear()
   })
 
   it('rejects malformed requests with 400', async () => {
@@ -221,24 +178,8 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('rejects unauthorized interaction requests', async () => {
-    // Mock the server client to return no user for this test
-    // This is necessary because Supabase SSR client caches session state internally
-    const mockClient = {
-      auth: {
-        getUser: vi
-          .fn()
-          .mockResolvedValue({ data: { user: null }, error: null }),
-      },
-    }
-
-    const serverModule = await import('@/lib/supabase/server')
-    const createApiClientSpy = vi.spyOn(serverModule, 'createApiClient')
-    createApiClientSpy.mockReturnValue(
-      mockClient as ReturnType<typeof serverModule.createApiClient>
-    )
-
     const propertyId = randomUUID()
-    // Create request without auth header
+    // Create request without auth header - no mocking needed
     const req = new NextRequest('http://localhost/api/interactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -248,9 +189,6 @@ describe.sequential('Integration: /api/interactions route', () => {
     const res = await POST(req)
     // Route should return 401 for unauthenticated requests
     expect(res.status).toBe(401)
-
-    // Restore the original implementation
-    createApiClientSpy.mockRestore()
   })
 
   it('records interactions and returns summary plus paginated results', async () => {
@@ -261,7 +199,6 @@ describe.sequential('Integration: /api/interactions route', () => {
     const skippedPropertyId = await createTestProperty()
 
     // Seed interactions directly using admin client to avoid auth race conditions
-    // when tests run in parallel (mock headerStore can be cleared by other tests)
     for (const propertyId of likedPropertyIds) {
       const { data: _data, error } = await supabaseAdmin
         .from('user_property_interactions')
@@ -435,29 +372,13 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('returns 401 for unauthenticated reset requests', async () => {
-    // Mock the server client to return no user
-    const mockClient = {
-      auth: {
-        getUser: vi
-          .fn()
-          .mockResolvedValue({ data: { user: null }, error: null }),
-      },
-    }
-
-    const serverModule = await import('@/lib/supabase/server')
-    const createApiClientSpy = vi.spyOn(serverModule, 'createApiClient')
-    createApiClientSpy.mockReturnValue(
-      mockClient as ReturnType<typeof serverModule.createApiClient>
-    )
-
+    // Create request without auth header - no mocking needed
     const req = new NextRequest('http://localhost/api/interactions/reset', {
       method: 'DELETE',
     })
 
     const res = await RESET_DELETE(req)
     expect(res.status).toBe(401)
-
-    createApiClientSpy.mockRestore()
   })
 
   it('returns zero count when resetting with no interactions', async () => {

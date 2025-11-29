@@ -161,7 +161,6 @@ describe('useRecordInteraction', () => {
   const recordInteraction = InteractionService.recordInteraction as jest.Mock
 
   let queryClient: QueryClient
-  let invalidateQueriesSpy: jest.SpyInstance
 
   const createWrapper = () => {
     queryClient = new QueryClient({
@@ -175,20 +174,21 @@ describe('useRecordInteraction', () => {
         },
       },
     })
-    invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries')
     // eslint-disable-next-line react/display-name
     return ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
   }
 
+  // Helper to check if a query is invalidated (stale)
+  const isQueryInvalidated = (queryKey: readonly unknown[]) => {
+    const state = queryClient.getQueryState(queryKey)
+    return state?.isInvalidated === true
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     recordInteraction.mockResolvedValue({ success: true })
-  })
-
-  afterEach(() => {
-    invalidateQueriesSpy?.mockRestore()
   })
 
   test('calls InteractionService.recordInteraction with correct params', async () => {
@@ -204,8 +204,14 @@ describe('useRecordInteraction', () => {
     expect(recordInteraction).toHaveBeenCalledWith('prop-123', 'liked')
   })
 
-  test('invalidates summary query after recording interaction', async () => {
+  test('marks summary query as stale after recording interaction', async () => {
     const wrapper = createWrapper()
+    // Pre-populate cache so we can verify it becomes stale
+    queryClient.setQueryData(interactionKeys.summaries(), {
+      liked: 3,
+      viewed: 5,
+      passed: 2,
+    })
 
     const { result } = renderHook(() => useRecordInteraction(), { wrapper })
 
@@ -215,14 +221,17 @@ describe('useRecordInteraction', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // The summary query should be invalidated
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.summaries(),
-    })
+    // The summary query should be marked as stale (invalidated)
+    expect(isQueryInvalidated(interactionKeys.summaries())).toBe(true)
   })
 
-  test('invalidates target list query when recording a like', async () => {
+  test('marks target list as stale when recording a like', async () => {
     const wrapper = createWrapper()
+    // Pre-populate cache so we can verify it becomes stale
+    queryClient.setQueryData(interactionKeys.list('liked'), {
+      pages: [{ items: [], nextCursor: null }],
+      pageParams: [undefined],
+    })
 
     const { result } = renderHook(() => useRecordInteraction(), { wrapper })
 
@@ -232,14 +241,17 @@ describe('useRecordInteraction', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // The liked list should be invalidated
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.list('liked'),
-    })
+    // The liked list should be marked as stale
+    expect(isQueryInvalidated(interactionKeys.list('liked'))).toBe(true)
   })
 
-  test('invalidates viewed list query when recording any interaction (property may have been viewed first)', async () => {
+  test('marks viewed list as stale when recording any interaction', async () => {
     const wrapper = createWrapper()
+    // Pre-populate cache so we can verify it becomes stale
+    queryClient.setQueryData(interactionKeys.list('viewed'), {
+      pages: [{ items: [], nextCursor: null }],
+      pageParams: [undefined],
+    })
 
     const { result } = renderHook(() => useRecordInteraction(), { wrapper })
 
@@ -249,14 +261,26 @@ describe('useRecordInteraction', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // The viewed list should also be invalidated (since the property may have been viewed first)
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.list('viewed'),
-    })
+    // The viewed list should be marked as stale
+    expect(isQueryInvalidated(interactionKeys.list('viewed'))).toBe(true)
   })
 
-  test('invalidates all required queries when recording a skip', async () => {
+  test('marks all required queries as stale when recording a skip', async () => {
     const wrapper = createWrapper()
+    // Pre-populate caches so we can verify they become stale
+    queryClient.setQueryData(interactionKeys.summaries(), {
+      liked: 3,
+      viewed: 5,
+      passed: 2,
+    })
+    queryClient.setQueryData(interactionKeys.list('skip'), {
+      pages: [{ items: [], nextCursor: null }],
+      pageParams: [undefined],
+    })
+    queryClient.setQueryData(interactionKeys.list('viewed'), {
+      pages: [{ items: [], nextCursor: null }],
+      pageParams: [undefined],
+    })
 
     const { result } = renderHook(() => useRecordInteraction(), { wrapper })
 
@@ -266,16 +290,10 @@ describe('useRecordInteraction', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // Should invalidate: summaries, skip list, and viewed list
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.summaries(),
-    })
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.list('skip'),
-    })
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.list('viewed'),
-    })
+    // Should mark as stale: summaries, skip list, and viewed list
+    expect(isQueryInvalidated(interactionKeys.summaries())).toBe(true)
+    expect(isQueryInvalidated(interactionKeys.list('skip'))).toBe(true)
+    expect(isQueryInvalidated(interactionKeys.list('viewed'))).toBe(true)
   })
 
   test('optimistically updates summary before mutation completes', async () => {
@@ -316,7 +334,6 @@ describe('useDeleteInteraction', () => {
   const deleteInteraction = InteractionService.deleteInteraction as jest.Mock
 
   let queryClient: QueryClient
-  let invalidateQueriesSpy: jest.SpyInstance
 
   const createWrapper = () => {
     queryClient = new QueryClient({
@@ -330,20 +347,21 @@ describe('useDeleteInteraction', () => {
         },
       },
     })
-    invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries')
     // eslint-disable-next-line react/display-name
     return ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
   }
 
+  // Helper to check if a query is invalidated (stale)
+  const isQueryInvalidated = (queryKey: readonly unknown[]) => {
+    const state = queryClient.getQueryState(queryKey)
+    return state?.isInvalidated === true
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     deleteInteraction.mockResolvedValue({ deleted: true, count: 1 })
-  })
-
-  afterEach(() => {
-    invalidateQueriesSpy?.mockRestore()
   })
 
   test('calls InteractionService.deleteInteraction with correct params', async () => {
@@ -361,8 +379,18 @@ describe('useDeleteInteraction', () => {
     expect(deleteInteraction).toHaveBeenCalledWith('prop-123')
   })
 
-  test('invalidates summary and list queries after deleting interaction', async () => {
+  test('marks summary and list queries as stale after deleting interaction', async () => {
     const wrapper = createWrapper()
+    // Pre-populate caches so we can verify they become stale
+    queryClient.setQueryData(interactionKeys.summaries(), {
+      liked: 3,
+      viewed: 5,
+      passed: 2,
+    })
+    queryClient.setQueryData(interactionKeys.list('liked'), {
+      pages: [{ items: [{ id: 'prop-123' }], nextCursor: null }],
+      pageParams: [undefined],
+    })
 
     const { result } = renderHook(() => useDeleteInteraction('liked'), {
       wrapper,
@@ -374,13 +402,9 @@ describe('useDeleteInteraction', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    // Both summary and list should be invalidated
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.summaries(),
-    })
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: interactionKeys.list('liked'),
-    })
+    // Both summary and list should be marked as stale
+    expect(isQueryInvalidated(interactionKeys.summaries())).toBe(true)
+    expect(isQueryInvalidated(interactionKeys.list('liked'))).toBe(true)
   })
 
   test('optimistically removes item from list and decrements summary', async () => {
