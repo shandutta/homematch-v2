@@ -11,13 +11,10 @@ import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 
 test.describe('Properties Services UI Integration - Real Browser Tests', () => {
-  test.beforeEach(async ({ page, context }, testInfo) => {
-    // Clear cookies and auth state
-    await context.clearCookies()
-
-    // Use worker-specific authentication to prevent race conditions
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Use worker-specific authentication with cached storage state
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
-    await auth.login(testUser)
+    await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
     await auth.verifyAuthenticated()
   })
 
