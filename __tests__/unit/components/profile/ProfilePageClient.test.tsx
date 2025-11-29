@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { useRouter } from 'next/navigation'
@@ -107,11 +107,7 @@ describe('ProfilePageClient', () => {
     )
     expect(screen.getByTestId('profile-form')).toBeInTheDocument()
 
-    // The household section should be in the DOM but hidden (inactive tab)
-    const householdSection = screen.getByTestId('household-section')
-    expect(householdSection).toBeInTheDocument()
-    expect(householdSection).toHaveAttribute('hidden')
-
+    expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
     expect(screen.queryByTestId('activity-stats')).not.toBeInTheDocument()
   })
 
@@ -132,7 +128,7 @@ describe('ProfilePageClient', () => {
 
     // The household section should now be visible
     const householdSection = screen.getByTestId('household-section')
-    expect(householdSection).not.toHaveAttribute('hidden')
+    expect(householdSection).toBeInTheDocument()
 
     // Profile form should be hidden
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
@@ -155,7 +151,7 @@ describe('ProfilePageClient', () => {
     expect(activityTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByTestId('activity-stats')).toBeInTheDocument()
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
-    expect(screen.getByTestId('household-section')).toHaveAttribute('hidden')
+    expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
   })
 
   it('passes correct props to child components', async () => {
@@ -176,7 +172,6 @@ describe('ProfilePageClient', () => {
     const householdTab = screen.getByRole('tab', { name: /household/i })
     await user.click(householdTab)
 
-    // HouseholdSection receives profile prop
     expect(await screen.findByTestId('household-component')).toBeInTheDocument()
     expect(await screen.findByText(/Profile: profile-123/)).toBeInTheDocument()
 
@@ -236,6 +231,74 @@ describe('ProfilePageClient', () => {
       'border-white/[0.06]',
       'bg-white/[0.02]'
     )
+  })
+
+  it('keeps a single tabpanel mounted and avoids AnimatePresence wait warnings', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const user = userEvent.setup()
+
+    render(
+      <ProfilePageClient
+        user={mockUser}
+        profile={mockProfile}
+        activitySummary={mockActivitySummary}
+      />
+    )
+
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    await user.click(screen.getByRole('tab', { name: /household/i }))
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    await user.click(screen.getByRole('tab', { name: /activity/i }))
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    const warnedAboutAnimatePresence = warnSpy.mock.calls.some((call) =>
+      call.join(' ').includes('AnimatePresence')
+    )
+    expect(warnedAboutAnimatePresence).toBe(false)
+    warnSpy.mockRestore()
+  })
+
+  it('copies the household code and shows transient feedback', async () => {
+    const user = userEvent.setup()
+    const writeText = jest.fn().mockResolvedValue(undefined)
+    ;(navigator as any).clipboard = { writeText }
+    jest.useFakeTimers()
+
+    render(
+      <ProfilePageClient
+        user={mockUser}
+        profile={mockProfile}
+        activitySummary={mockActivitySummary}
+      />
+    )
+
+    const joinCodeSection = screen
+      .getByText(/join code/i)
+      .closest('div') as HTMLElement
+    const copyButton = within(joinCodeSection).getAllByRole('button')[0]
+
+    await user.click(copyButton)
+
+    expect(writeText).toHaveBeenCalledWith(mockProfile.household.id)
+    await waitFor(() =>
+      expect(
+        copyButton.querySelector('[data-lucide="check"]')
+      ).toBeInTheDocument()
+    )
+
+    act(() => {
+      jest.advanceTimersByTime(2100)
+    })
+
+    await waitFor(() =>
+      expect(
+        copyButton.querySelector('[data-lucide="copy"]')
+      ).toBeInTheDocument()
+    )
+
+    jest.useRealTimers()
   })
 
   it('handles profile without household', () => {

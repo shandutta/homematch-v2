@@ -231,6 +231,30 @@ describe('SettingsPageClient', () => {
     )
   })
 
+  it('keeps a single tabpanel mounted and avoids AnimatePresence wait warnings', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const user = userEvent.setup()
+
+    render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
+
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    await user.click(screen.getByRole('tab', { name: /notifications/i }))
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    await user.click(screen.getByRole('tab', { name: /saved searches/i }))
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    await user.click(screen.getByRole('tab', { name: /account/i }))
+    expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
+
+    const warnedAboutAnimatePresence = warnSpy.mock.calls.some((call) =>
+      call.join(' ').includes('AnimatePresence')
+    )
+    expect(warnedAboutAnimatePresence).toBe(false)
+    warnSpy.mockRestore()
+  })
+
   it('switches between all tabs correctly', async () => {
     const user = userEvent.setup()
     render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
