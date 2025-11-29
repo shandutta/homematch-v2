@@ -123,10 +123,15 @@ describe('E2E: /api/health', () => {
   test(
     'should have consistent response structure across calls',
     async () => {
-      const response1 = await client.get('/api/health')
-      const response2 = await client.get('/api/health')
-      const body1 = await response1.json()
-      const body2 = await response2.json()
+      // Make both requests concurrently to avoid sequential timeout stacking
+      const [response1, response2] = await Promise.all([
+        client.get('/api/health'),
+        client.get('/api/health'),
+      ])
+      const [body1, body2] = await Promise.all([
+        response1.json(),
+        response2.json(),
+      ])
 
       // Both responses should have the same structure
       const keys1 = Object.keys(body1).sort()

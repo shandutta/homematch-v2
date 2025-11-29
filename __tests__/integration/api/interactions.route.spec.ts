@@ -6,7 +6,7 @@
  * token expiration issues with static TEST_AUTH_TOKEN env var.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { E2EHttpClient } from '@/__tests__/utils/e2e-http-client'
+import { E2EHttpClient } from '../../utils/e2e-http-client'
 
 describe('Integration: /api/interactions (authenticated paths)', () => {
   let client: E2EHttpClient
