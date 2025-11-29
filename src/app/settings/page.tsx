@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { UserService } from '@/lib/services/users'
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams?: { tab?: string }
+}) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -31,7 +35,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="gradient-grid-bg dark min-h-screen">
-      <SettingsPageClient user={user} profile={profile!} />
+      <SettingsPageClient
+        user={user}
+        profile={profile!}
+        initialTab={searchParams?.tab}
+      />
     </div>
   )
 }

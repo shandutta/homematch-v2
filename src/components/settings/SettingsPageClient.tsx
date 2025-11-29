@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface SettingsPageClientProps {
   user: User
   profile: UserProfile
+  initialTab?: string
 }
 
 const containerVariants = {
@@ -51,9 +52,49 @@ const itemVariants = {
   },
 }
 
-export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
-  const [activeTab, setActiveTab] = useState('preferences')
+export function SettingsPageClient({
+  user,
+  profile,
+  initialTab,
+}: SettingsPageClientProps) {
+  const tabOptions = [
+    {
+      value: 'preferences',
+      label: 'Preferences',
+      description: 'Budget, beds & property types',
+      icon: Settings,
+    },
+    {
+      value: 'notifications',
+      label: 'Notifications',
+      description: 'Email, push & SMS alerts',
+      icon: Bell,
+    },
+    {
+      value: 'saved-searches',
+      label: 'Saved searches',
+      description: 'Manage dashboard alerts',
+      icon: Search,
+    },
+    {
+      value: 'account',
+      label: 'Account',
+      description: 'Security & sessions',
+      icon: UserIcon,
+    },
+  ] as const
+  type TabValue = (typeof tabOptions)[number]['value']
+
+  const isValidInitialTab = tabOptions.some((tab) => tab.value === initialTab)
+  const defaultTab: TabValue = isValidInitialTab
+    ? (initialTab as TabValue)
+    : 'preferences'
+
+  const [activeTab, setActiveTab] = useState<TabValue>(defaultTab)
   const [profileState, setProfileState] = useState(profile)
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as TabValue)
+  }
   type PreferencesSnapshot = UserPreferences & {
     priceRange?: [number, number]
     bedrooms?: number
@@ -81,33 +122,6 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
       return count + channelToggles.length
     }, 0)
   }, [preferences.notifications])
-
-  const tabOptions = [
-    {
-      value: 'preferences',
-      label: 'Preferences',
-      description: 'Budget, beds & property types',
-      icon: Settings,
-    },
-    {
-      value: 'notifications',
-      label: 'Notifications',
-      description: 'Email, push & SMS alerts',
-      icon: Bell,
-    },
-    {
-      value: 'saved-searches',
-      label: 'Saved searches',
-      description: 'Manage dashboard alerts',
-      icon: Search,
-    },
-    {
-      value: 'account',
-      label: 'Account',
-      description: 'Security & sessions',
-      icon: UserIcon,
-    },
-  ] as const
 
   const overviewCards = [
     {
@@ -263,7 +277,7 @@ export function SettingsPageClient({ user, profile }: SettingsPageClientProps) {
         >
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="space-y-8"
           >
             {/* Tab navigation */}

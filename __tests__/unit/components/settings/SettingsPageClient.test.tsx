@@ -95,6 +95,21 @@ describe('SettingsPageClient', () => {
     expect(screen.queryByTestId('account-section')).not.toBeInTheDocument()
   })
 
+  it('honors an initial tab when provided', () => {
+    render(
+      <SettingsPageClient
+        user={mockUser}
+        profile={mockProfile}
+        initialTab="saved-searches"
+      />
+    )
+
+    expect(
+      screen.getByRole('tab', { name: /saved searches/i })
+    ).toHaveAttribute('data-state', 'active')
+    expect(screen.getByTestId('saved-searches-section')).toBeInTheDocument()
+  })
+
   it('navigates to notifications tab when clicked', async () => {
     const user = userEvent.setup()
     render(<SettingsPageClient user={mockUser} profile={mockProfile} />)

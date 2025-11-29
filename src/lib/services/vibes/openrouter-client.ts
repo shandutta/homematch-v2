@@ -4,8 +4,8 @@
  * Handles communication with OpenRouter to analyze property images
  * and extract vibes using vision-capable models.
  *
- * Default: Qwen 2.5 VL 72B (free tier) for cost-efficient beta testing.
- * Fallback options: Kimi-VL, Llama 3.2 Vision, GPT-4o-mini (paid).
+ * Default: NVIDIA Nemotron Nano 12B VL (free tier) for cost-efficient beta testing.
+ * Alternative: xAI Grok 4.1 Fast (free), GPT-4o-mini (paid).
  */
 
 export interface OpenRouterConfig {
@@ -66,20 +66,17 @@ export interface UsageInfo {
 // Free models have 0 cost but we track tokens for monitoring
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   // Free vision models (recommended for beta testing)
-  'qwen/qwen2.5-vl-72b-instruct:free': { input: 0, output: 0 },
-  'qwen/qwen2.5-vl-32b-instruct:free': { input: 0, output: 0 },
-  'moonshotai/kimi-vl-a3b-thinking:free': { input: 0, output: 0 },
-  'meta-llama/llama-3.2-11b-vision-instruct:free': { input: 0, output: 0 },
-  'google/gemma-3-27b-it:free': { input: 0, output: 0 },
-  // Paid models
+  'nvidia/nemotron-nano-12b-v2-vl:free': { input: 0, output: 0 },
+  'x-ai/grok-4.1-fast:free': { input: 0, output: 0 },
+  // Paid models (fallbacks)
   'openai/gpt-4o-mini': { input: 0.15, output: 0.6 },
   'openai/gpt-4o': { input: 2.5, output: 10 },
   'anthropic/claude-3-haiku': { input: 0.25, output: 1.25 },
   'anthropic/claude-3-sonnet': { input: 3, output: 15 },
 }
 
-// Default model for vibes generation
-export const DEFAULT_VIBES_MODEL = 'qwen/qwen2.5-vl-72b-instruct:free'
+// Default model for vibes generation (free vision model)
+export const DEFAULT_VIBES_MODEL = 'nvidia/nemotron-nano-12b-v2-vl:free'
 
 export class OpenRouterClient {
   private apiKey: string

@@ -114,6 +114,7 @@ export function ProfilePageClient({
       gradient: 'from-emerald-500/20 to-emerald-600/5',
       iconColor: 'text-emerald-400',
       valueColor: 'text-emerald-300',
+      href: '/dashboard/liked',
     },
     {
       label: 'Viewed',
@@ -122,14 +123,16 @@ export function ProfilePageClient({
       gradient: 'from-amber-500/20 to-amber-600/5',
       iconColor: 'text-amber-400',
       valueColor: 'text-amber-300',
+      href: '/dashboard/viewed',
     },
     {
-      label: 'Saved',
+      label: 'Saved searches',
       value: activitySummary.saved_searches,
       icon: Search,
       gradient: 'from-sky-500/20 to-sky-600/5',
       iconColor: 'text-sky-400',
       valueColor: 'text-sky-300',
+      href: '/settings?tab=saved-searches',
     },
   ]
 
@@ -262,32 +265,38 @@ export function ProfilePageClient({
             {heroStats.map((stat, index) => {
               const Icon = stat.icon
               return (
-                <motion.div
+                <Link
                   key={stat.label}
-                  variants={statVariants}
-                  whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${stat.gradient} p-5 backdrop-blur-sm transition-all hover:border-white/10`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  href={stat.href}
+                  className="group block rounded-2xl focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black/0 focus-visible:outline-none"
+                  aria-label={`${stat.label} details`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  <div className="relative flex items-center justify-between">
-                    <div>
-                      <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
-                        {stat.label}
-                      </p>
-                      <p
-                        className={`font-display mt-2 text-4xl font-medium tracking-tight ${stat.valueColor}`}
+                  <motion.div
+                    variants={statVariants}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                    className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${stat.gradient} p-5 backdrop-blur-sm transition-all hover:border-white/10`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                          {stat.label}
+                        </p>
+                        <p
+                          className={`font-display mt-2 text-4xl font-medium tracking-tight ${stat.valueColor}`}
+                        >
+                          {stat.value.toLocaleString()}
+                        </p>
+                      </div>
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 ${stat.iconColor}`}
                       >
-                        {stat.value.toLocaleString()}
-                      </p>
+                        <Icon className="h-6 w-6" />
+                      </div>
                     </div>
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 ${stat.iconColor}`}
-                    >
-                      <Icon className="h-6 w-6" />
-                    </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </Link>
               )
             })}
           </motion.div>

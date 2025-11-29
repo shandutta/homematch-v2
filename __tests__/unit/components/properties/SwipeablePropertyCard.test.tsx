@@ -48,11 +48,14 @@ jest.mock('@/components/ui/motion-components', () => {
   const MockMotionDiv = React.forwardRef<
     HTMLDivElement,
     React.HTMLProps<HTMLDivElement>
-  >(({ children, ...rest }, ref) => (
-    <div ref={ref} {...rest} data-testid="motion-div">
-      {children}
-    </div>
-  ))
+  >(({ children, ...rest }, ref) => {
+    const { 'data-testid': dataTestId, ...restProps } = rest
+    return (
+      <div ref={ref} data-testid={dataTestId ?? 'motion-div'} {...restProps}>
+        {children}
+      </div>
+    )
+  })
   MockMotionDiv.displayName = 'MockMotionDiv'
   return { MotionDiv: MockMotionDiv }
 })
