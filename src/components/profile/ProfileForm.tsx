@@ -29,9 +29,35 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 
+// US phone format: (XXX) XXX-XXXX
+const US_PHONE_REGEX = /^\(\d{3}\) \d{3}-\d{4}$/
+
+/**
+ * Format a string of digits into US phone format: (XXX) XXX-XXXX
+ */
+function formatPhoneNumber(value: string): string {
+  // Remove all non-digit characters
+  const digits = value.replace(/\D/g, '')
+
+  // Limit to 10 digits
+  const truncated = digits.slice(0, 10)
+
+  // Format based on length
+  if (truncated.length === 0) return ''
+  if (truncated.length <= 3) return `(${truncated}`
+  if (truncated.length <= 6)
+    return `(${truncated.slice(0, 3)}) ${truncated.slice(3)}`
+  return `(${truncated.slice(0, 3)}) ${truncated.slice(3, 6)}-${truncated.slice(6)}`
+}
+
 const ProfileSchema = z.object({
   display_name: z.string().min(1, 'Display name is required').max(50),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || US_PHONE_REGEX.test(val), {
+      message: 'Please enter a valid US phone number: (XXX) XXX-XXXX',
+    }),
   bio: z.string().max(500).optional(),
 })
 
@@ -59,7 +85,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
 
   const form = useValidatedForm(ProfileSchema, {
     display_name: preferences.display_name || user.email?.split('@')[0] || '',
-    phone: preferences.phone || '',
+    phone: preferences.phone ? formatPhoneNumber(preferences.phone) : '',
     bio: preferences.bio || '',
   })
 
@@ -144,6 +170,10 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                     type="tel"
                     placeholder="(123) 456-7890"
                     className={inputStyles}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value)
+                      field.onChange(formatted)
+                    }}
                   />
                 </FormControl>
                 <FormMessage className="text-xs text-red-400" />

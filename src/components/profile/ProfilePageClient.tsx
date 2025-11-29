@@ -14,13 +14,11 @@ import {
   Activity,
   ArrowLeft,
   Mail,
-  Phone,
   Users,
   Heart,
   Eye,
   Search,
   Sparkles,
-  ChevronRight,
   Copy,
   Check,
 } from 'lucide-react'
@@ -103,7 +101,6 @@ export function ProfilePageClient({
     .slice(0, 2)
     .join('')
     .toUpperCase()
-  const phoneNumber = profilePreferences.phone
   const hasHousehold = Boolean(profile.household)
 
   const heroStats = [
@@ -313,74 +310,6 @@ export function ProfilePageClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            {/* Profile snapshot card */}
-            <div className="card-luxury overflow-hidden p-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                  <UserIcon className="text-hm-stone-400 h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-hm-stone-200 font-medium">
-                    Profile Snapshot
-                  </h3>
-                  <p className="text-hm-stone-500 text-xs">Quick overview</p>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-3">
-                {[
-                  {
-                    label: 'Primary email',
-                    value: user.email ?? 'Not provided',
-                    icon: Mail,
-                    muted: false,
-                  },
-                  {
-                    label: 'Phone number',
-                    value: phoneNumber || 'Add phone number',
-                    icon: Phone,
-                    muted: !phoneNumber,
-                  },
-                ].map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <div
-                      key={item.label}
-                      className="group flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
-                    >
-                      <div className="text-hm-stone-500 group-hover:text-hm-stone-400 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 transition-colors">
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-hm-stone-500 text-[10px] font-medium tracking-[0.15em] uppercase">
-                          {item.label}
-                        </p>
-                        <p
-                          className={`truncate text-sm ${
-                            item.muted
-                              ? 'text-hm-stone-500'
-                              : 'text-hm-stone-300'
-                          }`}
-                        >
-                          {item.value}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('profile')}
-                className="text-hm-stone-300 mt-5 w-full border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
-              >
-                Edit profile details
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-
             {/* Collaboration card */}
             <div className="card-luxury overflow-hidden p-6">
               <div className="flex items-center gap-3">

@@ -213,8 +213,9 @@ export default function VibesTestPage() {
       <Card className="border-slate-700 bg-slate-800/50">
         <CardHeader>
           <CardTitle className="text-white">Generate Vibes</CardTitle>
-          <CardDescription>
-            Generate vibes for properties using GPT-4o-mini vision
+          <CardDescription className="text-slate-300">
+            Generate vibes for properties using NVIDIA Nemotron vision (free
+            tier)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -290,7 +291,7 @@ export default function VibesTestPage() {
             <ExternalLink className="h-5 w-5" />
             Test with Real Zillow Listing
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-300">
             Paste a Zillow URL or zpid to generate vibes from a real listing
             (preview only, not saved)
           </CardDescription>

@@ -224,6 +224,9 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
                   className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
                 />
               </div>
+              <p className="text-hm-stone-500 mt-2 text-xs">
+                Percentage of viewed properties you liked
+              </p>
             </div>
           </div>
         </div>

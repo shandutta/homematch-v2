@@ -26,7 +26,7 @@ const mockProfile = {
   id: 'user-123',
   preferences: {
     display_name: 'Test User',
-    phone: '123-456-7890',
+    phone: '(123) 456-7890',
     bio: 'Test bio',
   },
 } as any
@@ -44,7 +44,7 @@ describe('ProfileForm', () => {
     render(<ProfileForm user={mockUser} profile={mockProfile} />)
 
     expect(screen.getByLabelText(/display name/i)).toHaveValue('Test User')
-    expect(screen.getByLabelText(/phone number/i)).toHaveValue('123-456-7890')
+    expect(screen.getByLabelText(/phone number/i)).toHaveValue('(123) 456-7890')
     expect(screen.getByLabelText(/bio/i)).toHaveValue('Test bio')
     expect(screen.getByText(mockUser.email)).toBeInTheDocument()
   })
@@ -83,7 +83,7 @@ describe('ProfileForm', () => {
     await user.clear(displayNameInput)
     await user.type(displayNameInput, 'New Name')
     await user.clear(phoneInput)
-    await user.type(phoneInput, '987-654-3210')
+    await user.type(phoneInput, '9876543210')
     await user.clear(bioInput)
     await user.type(bioInput, 'New bio text')
 
@@ -93,7 +93,7 @@ describe('ProfileForm', () => {
       expect(mockUpdateUserProfile).toHaveBeenCalledWith('user-123', {
         preferences: {
           display_name: 'New Name',
-          phone: '987-654-3210',
+          phone: '(987) 654-3210',
           bio: 'New bio text',
         },
         onboarding_completed: true,
@@ -141,6 +141,104 @@ describe('ProfileForm', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/failed to update profile/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Phone Number Formatting', () => {
+    it('auto-formats phone number as user types', async () => {
+      const user = userEvent.setup()
+      const profileWithoutPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '' },
+      }
+      render(<ProfileForm user={mockUser} profile={profileWithoutPhone} />)
+
+      const phoneInput = screen.getByLabelText(/phone number/i)
+
+      await user.type(phoneInput, '1234567890')
+
+      expect(phoneInput).toHaveValue('(123) 456-7890')
+    })
+
+    it('formats partial phone numbers correctly', async () => {
+      const user = userEvent.setup()
+      const profileWithoutPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '' },
+      }
+      render(<ProfileForm user={mockUser} profile={profileWithoutPhone} />)
+
+      const phoneInput = screen.getByLabelText(/phone number/i)
+
+      await user.type(phoneInput, '123')
+      expect(phoneInput).toHaveValue('(123')
+
+      await user.type(phoneInput, '456')
+      expect(phoneInput).toHaveValue('(123) 456')
+    })
+
+    it('shows validation error for incomplete phone number', async () => {
+      const user = userEvent.setup()
+      const profileWithoutPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '' },
+      }
+      render(<ProfileForm user={mockUser} profile={profileWithoutPhone} />)
+
+      const phoneInput = screen.getByLabelText(/phone number/i)
+
+      await user.type(phoneInput, '12345')
+      await user.click(screen.getByRole('button', { name: /save profile/i }))
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please enter a valid us phone number/i)
+        ).toBeInTheDocument()
+      })
+    })
+
+    it('allows empty phone number', async () => {
+      const user = userEvent.setup()
+      const profileWithoutPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '' },
+      }
+      render(<ProfileForm user={mockUser} profile={profileWithoutPhone} />)
+
+      await user.click(screen.getByRole('button', { name: /save profile/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateUserProfile).toHaveBeenCalled()
+      })
+    })
+
+    it('formats existing unformatted phone on load', () => {
+      const profileWithUnformattedPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '5551234567' },
+      }
+      render(
+        <ProfileForm user={mockUser} profile={profileWithUnformattedPhone} />
+      )
+
+      expect(screen.getByLabelText(/phone number/i)).toHaveValue(
+        '(555) 123-4567'
+      )
+    })
+
+    it('strips non-digit characters when formatting', async () => {
+      const user = userEvent.setup()
+      const profileWithoutPhone = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, phone: '' },
+      }
+      render(<ProfileForm user={mockUser} profile={profileWithoutPhone} />)
+
+      const phoneInput = screen.getByLabelText(/phone number/i)
+
+      await user.type(phoneInput, '(123) 456-7890')
+
+      expect(phoneInput).toHaveValue('(123) 456-7890')
     })
   })
 })
