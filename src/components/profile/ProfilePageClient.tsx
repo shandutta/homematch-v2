@@ -244,8 +244,8 @@ export function ProfilePageClient({
                 </Button>
               </Link>
               <Link href="/dashboard/liked">
-                <Button className="bg-gradient-to-r from-amber-500 to-amber-600 px-5 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30">
-                  <Heart className="mr-2 h-4 w-4" />
+                <Button className="border border-emerald-500/25 bg-gradient-to-r from-emerald-500/30 to-emerald-600/20 px-5 text-emerald-100 shadow-md shadow-emerald-900/25 backdrop-blur-sm transition-all hover:border-emerald-400/40 hover:from-emerald-500/35 hover:to-emerald-600/25 hover:shadow-emerald-900/35">
+                  <Heart className="mr-2 h-4 w-4 text-emerald-200" />
                   View Favorites
                 </Button>
               </Link>
@@ -505,6 +505,7 @@ export function ProfilePageClient({
 
               <AnimatePresence mode="wait">
                 <TabsContent
+                  key="profile"
                   value="profile"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
@@ -533,6 +534,7 @@ export function ProfilePageClient({
                 </TabsContent>
 
                 <TabsContent
+                  key="household"
                   value="household"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                   data-testid="household-section"
@@ -548,6 +550,7 @@ export function ProfilePageClient({
                 </TabsContent>
 
                 <TabsContent
+                  key="activity"
                   value="activity"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >

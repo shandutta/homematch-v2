@@ -34,6 +34,13 @@ export const EXIT_CONFIG = {
 
 export interface UseSwipePhysicsOptions {
   onSwipeComplete?: (direction: 'left' | 'right') => void
+  onSwipeStart?: (
+    direction: 'left' | 'right',
+    info: {
+      offset: { x: number; y: number }
+      velocity: { x: number; y: number }
+    }
+  ) => void
   onSwipeThresholdCrossed?: (direction: 'left' | 'right' | null) => void
   onDragStart?: () => void
   onDragEnd?: () => void
@@ -42,6 +49,7 @@ export interface UseSwipePhysicsOptions {
 
 export function useSwipePhysics({
   onSwipeComplete,
+  onSwipeStart,
   onSwipeThresholdCrossed,
   onDragStart,
   onDragEnd,
@@ -149,6 +157,8 @@ export function useSwipePhysics({
       if (shouldSwipe) {
         const direction = offset.x > 0 ? 'right' : 'left'
 
+        onSwipeStart?.(direction, { offset, velocity })
+
         // Fast exit animation with physics
         const exitX =
           direction === 'right'
@@ -201,12 +211,20 @@ export function useSwipePhysics({
         })
       }
     },
-    [controls, onDragEnd, onSwipeComplete, x, y]
+    [controls, onDragEnd, onSwipeComplete, onSwipeStart, x, y]
   )
 
   // Enhanced programmatic swipe function
   const swipeCard = useCallback(
     (direction: 'left' | 'right') => {
+      onSwipeStart?.(direction, {
+        offset: {
+          x: direction === 'right' ? SWIPE_THRESHOLD : -SWIPE_THRESHOLD,
+          y: 0,
+        },
+        velocity: { x: 0, y: 0 },
+      })
+
       const exitX =
         direction === 'right'
           ? window.innerWidth * 1.2
@@ -240,7 +258,7 @@ export function useSwipePhysics({
           })
         })
     },
-    [controls, onSwipeComplete, x, y]
+    [controls, onSwipeComplete, onSwipeStart, x, y]
   )
 
   // Reset function for when cards change

@@ -41,6 +41,11 @@ export function SwipeablePropertyCard({
   const haptic = useHapticFeedback()
   const isTopCard = currentIndex === 0
   const initialTopPropertyId = useRef<string | null>(null)
+  const [leavingCard, setLeavingCard] = useState<{
+    property: Property
+    direction: 'left' | 'right'
+  } | null>(null)
+  const isProcessingSwipeRef = useRef(false)
 
   // State for decision feedback
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(
@@ -66,6 +71,11 @@ export function SwipeablePropertyCard({
   const isInitialTopCard =
     !!currentProperty?.id && currentProperty.id === initialTopPropertyId.current
   const shouldShowHints = showHintsState && isTopCard && isInitialTopCard
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000
+
+  useEffect(() => {
+    isProcessingSwipeRef.current = false
+  }, [currentProperty?.id])
 
   // Initialize swipe physics with haptic feedback
   const {
@@ -82,8 +92,10 @@ export function SwipeablePropertyCard({
     handleDragEnd: physicsHandleDragEnd,
     swipeCard: physicsSwipeCard,
   } = useSwipePhysics({
-    onSwipeComplete: (direction) => {
-      if (!currentProperty) return
+    onSwipeStart: (direction) => {
+      if (!currentProperty || isProcessingSwipeRef.current) return
+      isProcessingSwipeRef.current = true
+      setLeavingCard({ property: currentProperty, direction })
       const type: InteractionType = direction === 'right' ? 'liked' : 'skip'
       if (type === 'liked') {
         haptic.success()
@@ -330,6 +342,42 @@ export function SwipeablePropertyCard({
             )}
           </div>
         </MotionDiv>
+
+        <AnimatePresence>
+          {leavingCard && (
+            <MotionDiv
+              key={`${leavingCard.property.id}-leaving`}
+              className="pointer-events-none absolute h-full w-full"
+              data-testid="leaving-card"
+              initial={{ x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }}
+              animate={{
+                x:
+                  leavingCard.direction === 'right'
+                    ? viewportWidth * 0.7
+                    : -viewportWidth * 0.7,
+                rotate: leavingCard.direction === 'right' ? 18 : -18,
+                opacity: 0,
+                scale: 0.9,
+              }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              style={{
+                zIndex: STACK_DEPTH + 2,
+                transformOrigin: 'center bottom',
+              }}
+              onAnimationComplete={() => {
+                setLeavingCard(null)
+                isProcessingSwipeRef.current = false
+              }}
+            >
+              <div className="h-full w-full transform-gpu">
+                <PropertyCard
+                  property={leavingCard.property}
+                  disableDetailModal
+                />
+              </div>
+            </MotionDiv>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Action Buttons */}

@@ -134,6 +134,7 @@ const mockSwipeCard = jest.fn()
 const mockHandleDragStart = jest.fn()
 const mockHandleDrag = jest.fn()
 const mockHandleDragEnd = jest.fn()
+let lastSwipeOptions: Record<string, any> | null = null
 
 const createMockProperty = (overrides: Partial<Property> = {}): Property => ({
   id: 'test-property-1',
@@ -169,26 +170,40 @@ describe('SwipeablePropertyCard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    lastSwipeOptions = null
 
     // Reset the mock to return fresh mock functions
-    mockUseSwipePhysics.mockReturnValue({
-      x: { set: jest.fn(), get: jest.fn(() => 0) },
-      y: { set: jest.fn(), get: jest.fn(() => 0) },
-      rotate: { set: jest.fn(), get: jest.fn(() => 0) },
-      opacity: { set: jest.fn(), get: jest.fn(() => 1) },
-      scale: { set: jest.fn(), get: jest.fn(() => 1) },
-      likeOpacity: { set: jest.fn(), get: jest.fn(() => 0) },
-      passOpacity: { set: jest.fn(), get: jest.fn(() => 0) },
-      controls: {
-        start: jest.fn().mockResolvedValue(undefined),
-        set: jest.fn(),
-      },
-      handleDragStart: mockHandleDragStart,
-      handleDrag: mockHandleDrag,
-      handleDragEnd: mockHandleDragEnd,
-      swipeCard: mockSwipeCard,
-      SWIPE_THRESHOLD: 120,
-      SWIPE_VELOCITY_THRESHOLD: 400,
+    mockUseSwipePhysics.mockImplementation((options = {}) => {
+      lastSwipeOptions = options
+
+      const motionValue = () => ({ set: jest.fn(), get: jest.fn(() => 0) })
+      const swipeCard = jest.fn((direction: 'left' | 'right') => {
+        mockSwipeCard(direction)
+        options?.onSwipeStart?.(direction, {
+          offset: { x: direction === 'right' ? 130 : -130, y: 0 },
+          velocity: { x: 500, y: 0 },
+        })
+      })
+
+      return {
+        x: motionValue(),
+        y: motionValue(),
+        rotate: motionValue(),
+        opacity: motionValue(),
+        scale: motionValue(),
+        likeOpacity: motionValue(),
+        passOpacity: motionValue(),
+        controls: {
+          start: jest.fn().mockResolvedValue(undefined),
+          set: jest.fn(),
+        },
+        handleDragStart: mockHandleDragStart,
+        handleDrag: mockHandleDrag,
+        handleDragEnd: mockHandleDragEnd,
+        swipeCard,
+        SWIPE_THRESHOLD: 120,
+        SWIPE_VELOCITY_THRESHOLD: 400,
+      }
     })
   })
 
@@ -328,6 +343,47 @@ describe('SwipeablePropertyCard', () => {
       fireEvent.click(likeButton)
 
       expect(mockSwipeCard).toHaveBeenCalledWith('right')
+    })
+
+    it('invokes onDecision when like button triggers swipe start', () => {
+      const property = createMockProperty()
+
+      render(
+        <SwipeablePropertyCard
+          properties={[property]}
+          currentIndex={0}
+          onDecision={mockOnDecision}
+        />
+      )
+
+      const likeButton = screen.getByRole('button', {
+        name: /like this property/i,
+      })
+      fireEvent.click(likeButton)
+
+      expect(mockOnDecision).toHaveBeenCalledWith(property.id, 'liked')
+    })
+
+    it('fires onDecision immediately when swipe starts via swipeCard', async () => {
+      const property = createMockProperty()
+
+      render(
+        <SwipeablePropertyCard
+          properties={[property]}
+          currentIndex={0}
+          onDecision={mockOnDecision}
+        />
+      )
+
+      // Simulate the hook calling onSwipeStart when swipe begins
+      lastSwipeOptions?.onSwipeStart?.('right', {
+        offset: { x: 150, y: 0 },
+        velocity: { x: 500, y: 0 },
+      })
+
+      expect(mockOnDecision).toHaveBeenCalledWith(property.id, 'liked')
+      const leavingCard = await screen.findByTestId('leaving-card')
+      expect(leavingCard).toHaveTextContent(property.address)
     })
 
     it('calls onUndo when undo button is clicked', () => {
