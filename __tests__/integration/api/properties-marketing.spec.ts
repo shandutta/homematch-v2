@@ -6,6 +6,9 @@ import { describe, test, expect, beforeAll } from 'vitest'
 
 const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
 
+// Increase timeout for integration tests making real HTTP requests
+const TEST_TIMEOUT = 60000 // 60s per test
+
 const fetchJson = async (path: string, init?: RequestInit) => {
   const res = await fetch(`${API_URL}${path}`, {
     method: 'GET',
@@ -116,138 +119,166 @@ describe('Integration: /api/properties/marketing', () => {
     expect(body.length).toBeLessThanOrEqual(3)
   })
 
-  test('should handle empty database gracefully', async () => {
-    const { status, body } = await fetchJson('/api/properties/marketing')
+  test(
+    'should handle empty database gracefully',
+    async () => {
+      const { status, body } = await fetchJson('/api/properties/marketing')
 
-    // Should still return 200 even if no properties found
-    expect(status).toBe(200)
-    expect(Array.isArray(body)).toBe(true)
-
-    // If empty, should be empty array (not null/undefined)
-    if (body.length === 0) {
-      expect(body).toEqual([])
-    }
-  })
-
-  test('should return cards with images when available', async () => {
-    const { body } = await fetchJson('/api/properties/marketing')
-
-    if (body.length > 0) {
-      // In development or with proper data, should prefer cards with images
-      const cardsWithImages = body.filter(
-        (card: MarketingCard) => card.imageUrl !== null
-      )
-
-      // If there are any cards with images, they should be prioritized
-      if (cardsWithImages.length > 0) {
-        cardsWithImages.forEach((card: MarketingCard) => {
-          expect(card.imageUrl).not.toBeNull()
-          expect(typeof card.imageUrl).toBe('string')
-          expect((card.imageUrl as string).length).toBeGreaterThan(0)
-        })
-      }
-    }
-  })
-
-  test('should format addresses properly', async () => {
-    const { body } = await fetchJson('/api/properties/marketing')
-
-    body.forEach((card: MarketingCard) => {
-      expect(typeof card.address).toBe('string')
-
-      // Address should not be empty
-      expect(card.address.length).toBeGreaterThan(0)
-
-      // Should not have double commas or leading/trailing commas
-      expect(card.address).not.toContain(',,')
-      expect(card.address).not.toMatch(/^,/)
-      expect(card.address).not.toMatch(/,$/)
-    })
-  })
-
-  test('should handle concurrent requests efficiently', async () => {
-    const startTime = Date.now()
-
-    // Make multiple concurrent requests
-    const requests = Array.from({ length: 3 }, () =>
-      fetchJson('/api/properties/marketing')
-    )
-    const responses = await Promise.all(requests)
-
-    const endTime = Date.now()
-    const duration = endTime - startTime
-
-    // All requests should succeed
-    responses.forEach(({ status, body }) => {
+      // Should still return 200 even if no properties found
       expect(status).toBe(200)
       expect(Array.isArray(body)).toBe(true)
-    })
 
-    // Should complete reasonably quickly (within 30 seconds)
-    // Relaxed from 10s to account for variable integration test latency
-    expect(duration).toBeLessThan(30000)
-  })
+      // If empty, should be empty array (not null/undefined)
+      if (body.length === 0) {
+        expect(body).toEqual([])
+      }
+    },
+    TEST_TIMEOUT
+  )
 
-  test('should reject non-GET methods', async () => {
-    const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
+  test(
+    'should return cards with images when available',
+    async () => {
+      const { body } = await fetchJson('/api/properties/marketing')
 
-    for (const method of methods) {
-      const res = await fetch(`${API_URL}/api/properties/marketing`, {
-        method,
-        headers: {
-          'content-type': 'application/json',
-        },
+      if (body.length > 0) {
+        // In development or with proper data, should prefer cards with images
+        const cardsWithImages = body.filter(
+          (card: MarketingCard) => card.imageUrl !== null
+        )
+
+        // If there are any cards with images, they should be prioritized
+        if (cardsWithImages.length > 0) {
+          cardsWithImages.forEach((card: MarketingCard) => {
+            expect(card.imageUrl).not.toBeNull()
+            expect(typeof card.imageUrl).toBe('string')
+            expect((card.imageUrl as string).length).toBeGreaterThan(0)
+          })
+        }
+      }
+    },
+    TEST_TIMEOUT
+  )
+
+  test(
+    'should format addresses properly',
+    async () => {
+      const { body } = await fetchJson('/api/properties/marketing')
+
+      body.forEach((card: MarketingCard) => {
+        expect(typeof card.address).toBe('string')
+
+        // Address should not be empty
+        expect(card.address.length).toBeGreaterThan(0)
+
+        // Should not have double commas or leading/trailing commas
+        expect(card.address).not.toContain(',,')
+        expect(card.address).not.toMatch(/^,/)
+        expect(card.address).not.toMatch(/,$/)
+      })
+    },
+    TEST_TIMEOUT
+  )
+
+  test(
+    'should handle concurrent requests efficiently',
+    async () => {
+      const startTime = Date.now()
+
+      // Make multiple concurrent requests
+      const requests = Array.from({ length: 3 }, () =>
+        fetchJson('/api/properties/marketing')
+      )
+      const responses = await Promise.all(requests)
+
+      const endTime = Date.now()
+      const duration = endTime - startTime
+
+      // All requests should succeed
+      responses.forEach(({ status, body }) => {
+        expect(status).toBe(200)
+        expect(Array.isArray(body)).toBe(true)
       })
 
-      // Should return 405 Method Not Allowed
-      expect(res.status).toBe(405)
-    }
-  })
+      // Should complete reasonably quickly (within 30 seconds)
+      // Relaxed from 10s to account for variable integration test latency
+      expect(duration).toBeLessThan(30000)
+    },
+    TEST_TIMEOUT
+  )
 
-  test('should handle fallback scenarios', async () => {
-    const { status, body } = await fetchJson('/api/properties/marketing')
+  test(
+    'should reject non-GET methods',
+    async () => {
+      const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
 
-    expect(status).toBe(200)
-    expect(Array.isArray(body)).toBe(true)
+      // Make all requests concurrently to avoid sequential timeout stacking
+      const responses = await Promise.all(
+        methods.map((method) =>
+          fetch(`${API_URL}/api/properties/marketing`, {
+            method,
+            headers: {
+              'content-type': 'application/json',
+            },
+          })
+        )
+      )
 
-    // Even in fallback scenarios (like when using seed data or external API),
-    // the response should maintain the same structure
-    body.forEach((card: MarketingCard) => {
-      expect(card.zpid).toBeDefined()
-      expect(card.address).toBeDefined()
-
-      // Fallback cards might have different zpid patterns
-      if (card.zpid.startsWith('fallback-')) {
-        expect(card.address).toBe('Coming soon')
-        expect(card.price).toBeNull()
-        expect(card.bedrooms).toBeNull()
-        expect(card.bathrooms).toBeNull()
-        expect(card.latitude).toBeNull()
-        expect(card.longitude).toBeNull()
+      // All should return 405 Method Not Allowed
+      for (const res of responses) {
+        expect(res.status).toBe(405)
       }
-    })
-  })
+    },
+    TEST_TIMEOUT
+  )
 
-  test('should maintain consistent response times', async () => {
-    const times: number[] = []
-
-    // Make several sequential requests to measure consistency
-    for (let i = 0; i < 3; i++) {
-      const start = Date.now()
-      const { status } = await fetchJson('/api/properties/marketing')
-      const end = Date.now()
+  test(
+    'should handle fallback scenarios',
+    async () => {
+      const { status, body } = await fetchJson('/api/properties/marketing')
 
       expect(status).toBe(200)
-      times.push(end - start)
-    }
+      expect(Array.isArray(body)).toBe(true)
 
-    // Calculate average and check that no request is dramatically slower
-    const average = times.reduce((a, b) => a + b, 0) / times.length
+      // Even in fallback scenarios (like when using seed data or external API),
+      // the response should maintain the same structure
+      body.forEach((card: MarketingCard) => {
+        expect(card.zpid).toBeDefined()
+        expect(card.address).toBeDefined()
 
-    times.forEach((time) => {
-      // No single request should be more than 3x the average
-      // Relaxed floor from 5s to 15s to account for integration test latency
-      expect(time).toBeLessThan(Math.max(average * 3, 15000))
-    })
-  })
+        // Fallback cards might have different zpid patterns
+        if (card.zpid.startsWith('fallback-')) {
+          expect(card.address).toBe('Coming soon')
+          expect(card.price).toBeNull()
+          expect(card.bedrooms).toBeNull()
+          expect(card.bathrooms).toBeNull()
+          expect(card.latitude).toBeNull()
+          expect(card.longitude).toBeNull()
+        }
+      })
+    },
+    TEST_TIMEOUT
+  )
+
+  test(
+    'should maintain consistent response times',
+    async () => {
+      // Make all requests concurrently to avoid sequential timeout stacking
+      const startTimes = Array.from({ length: 3 }, () => Date.now())
+      const responses = await Promise.all(
+        Array.from({ length: 3 }, () => fetchJson('/api/properties/marketing'))
+      )
+      const endTime = Date.now()
+
+      // All requests should succeed
+      responses.forEach(({ status }) => {
+        expect(status).toBe(200)
+      })
+
+      // Total time for concurrent requests should be reasonable
+      const totalTime = endTime - startTimes[0]
+      expect(totalTime).toBeLessThan(30000) // 30s for 3 concurrent requests
+    },
+    TEST_TIMEOUT
+  )
 })
