@@ -9,25 +9,23 @@ import fs from 'fs'
 
 const authDir = path.join(__dirname, '../../playwright/.auth')
 
-cleanup.describe('Auth Cleanup', () => {
-  cleanup('clean up auth storage files', async () => {
-    console.log('🧹 Cleaning up auth storage files...')
+cleanup('clean up auth storage files', async () => {
+  console.log('🧹 Cleaning up auth storage files...')
 
-    try {
-      if (fs.existsSync(authDir)) {
-        const files = fs.readdirSync(authDir)
-        for (const file of files) {
-          const filePath = path.join(authDir, file)
-          if (file.startsWith('user-worker-') && file.endsWith('.json')) {
-            fs.unlinkSync(filePath)
-            console.log(`   Removed ${file}`)
-          }
+  try {
+    if (fs.existsSync(authDir)) {
+      const files = fs.readdirSync(authDir)
+      for (const file of files) {
+        const filePath = path.join(authDir, file)
+        if (file.startsWith('user-worker-') && file.endsWith('.json')) {
+          fs.unlinkSync(filePath)
+          console.log(`   Removed ${file}`)
         }
       }
-      console.log('✅ Auth cleanup completed')
-    } catch (error) {
-      console.warn('⚠️  Auth cleanup warning:', error)
-      // Don't fail tests if cleanup has issues
     }
-  })
+    console.log('✅ Auth cleanup completed')
+  } catch (error) {
+    console.warn('⚠️  Auth cleanup warning:', error)
+    // Don't fail tests if cleanup has issues
+  }
 })

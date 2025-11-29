@@ -9,13 +9,15 @@ const jsonMock = jest.fn((body, init) => ({
 
 const createClientMock = jest.fn()
 
-jest.mock('next/server', () => ({
-  __esModule: true,
-  NextResponse: {
-    json: (...args: unknown[]) => jsonMock(...args),
-  },
-  NextRequest: class {},
-}))
+jest.mock('next/server', () => {
+  const actual = jest.requireActual('next/server')
+  return {
+    ...actual,
+    NextResponse: {
+      json: (...args: unknown[]) => jsonMock(...args),
+    },
+  }
+})
 
 jest.mock('@/lib/middleware/rateLimiter', () => ({
   __esModule: true,
@@ -58,12 +60,9 @@ import { CouplesService } from '@/lib/services/couples'
 const resetSupabase = () => {
   supabaseMock.auth.getUser.mockReset()
   supabaseMock.from.mockReset()
-  supabaseMock.select.mockReset()
-  supabaseMock.in.mockReset()
+  supabaseMock.from.mockImplementation(() => createChainMock())
 
   createClientMock.mockResolvedValue(supabaseMock)
-  supabaseMock.from.mockReturnValue(supabaseMock)
-  supabaseMock.select.mockReturnValue(supabaseMock)
 }
 
 describe('couples mutual-likes API route', () => {
@@ -94,10 +93,15 @@ describe('couples mutual-likes API route', () => {
     ;(CouplesService.getMutualLikes as jest.Mock).mockResolvedValue([
       { property_id: 'p1', liked_by_count: 2 },
     ])
-    supabaseMock.in.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'db-error' },
-    })
+    // Configure from() to return a chain that errors on .in()
+    const errorChain: any = {
+      select: jest.fn(() => errorChain),
+      in: jest.fn(() => errorChain),
+      then: jest.fn((resolve) =>
+        resolve({ data: null, error: { message: 'db-error' } })
+      ),
+    }
+    supabaseMock.from.mockReturnValueOnce(errorChain)
 
     const req = new NextRequest('https://example.com/api/couples/mutual-likes')
     await GET(req)
