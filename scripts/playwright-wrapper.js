@@ -13,15 +13,20 @@ const fs = require('fs')
 function findPlaywrightCli() {
   const pnpmDir = path.join(__dirname, '..', 'node_modules', '.pnpm')
 
-  // Find the @playwright+test directory (version may vary)
+  // Find all @playwright+test directories and use the latest version
   const entries = fs.readdirSync(pnpmDir)
-  const playwrightDir = entries.find((entry) =>
-    entry.startsWith('@playwright+test@')
-  )
+  const playwrightDirs = entries
+    .filter((entry) => entry.startsWith('@playwright+test@'))
+    .sort()
+    .reverse() // Sort in descending order to get latest version first
 
-  if (!playwrightDir) {
+  if (playwrightDirs.length === 0) {
     throw new Error('Could not find @playwright/test in node_modules/.pnpm')
   }
+
+  // Use the latest version (first after reverse sort)
+  const playwrightDir = playwrightDirs[0]
+  console.log(`Using Playwright from: ${playwrightDir}`)
 
   return path.join(
     pnpmDir,

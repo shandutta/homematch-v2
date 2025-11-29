@@ -4,8 +4,8 @@
  */
 
 import { test, expect, Page } from '@playwright/test'
-import { TEST_ROUTES } from '../fixtures/test-data'
-import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { TEST_ROUTES } from '../../fixtures/test-data'
+import { createWorkerAuthHelper } from '../../utils/auth-helper'
 
 // Helper function to simulate network failures
 async function simulateNetworkFailure(page: Page, pattern: string) {
