@@ -550,14 +550,11 @@ async function performSupabaseHealthCheck(
   }
 
   try {
-    const controller =
-      typeof AbortCtor === 'function' ? new AbortCtor() : new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
-    const response = await undiciFetch(`${url}/rest/v1/`, {
+    // Use fetchWithRetry for resilience against transient connection failures
+    // (Kong gateway may still be initializing after DB reset)
+    const response = await fetchWithRetry(`${url}/rest/v1/`, {
       headers: { apikey: anonKey },
-      signal: controller.signal,
     })
-    clearTimeout(timeoutId)
 
     const apiReachable = response.ok || response.status === 401
     if (!apiReachable) {

@@ -10,12 +10,18 @@ const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
 describe('E2E: /api/health', () => {
   let client: E2EHttpClient
 
-  beforeEach(() => {
+  // Use beforeAll/afterAll instead of beforeEach/afterEach to avoid
+  // redundant client creation overhead. Health tests don't authenticate,
+  // so a shared client is sufficient and saves ~5-8s in test execution.
+  beforeAll(() => {
     client = new E2EHttpClient(API_URL)
   })
 
-  afterEach(async () => {
-    await client.cleanup()
+  afterAll(async () => {
+    // Only cleanup if authenticated - health tests never authenticate
+    if (client.isAuthenticated()) {
+      await client.cleanup()
+    }
   })
 
   test('should return health status with proper structure', async () => {

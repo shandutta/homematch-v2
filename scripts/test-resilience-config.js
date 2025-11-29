@@ -52,11 +52,11 @@ const config = {
   // Health check settings
   healthCheck: {
     // Timeout for individual health check requests (ms)
-    timeoutMs: parseInt(process.env.HEALTH_CHECK_TIMEOUT_MS ?? '15000', 10), // Up from 5000
+    timeoutMs: parseInt(process.env.HEALTH_CHECK_TIMEOUT_MS ?? '20000', 10), // Up from 15000
     // Maximum attempts for health checks
-    maxAttempts: 3,
+    maxAttempts: 5, // Up from 3
     // Delay between health check attempts (ms)
-    retryDelayMs: 2000,
+    retryDelayMs: 3000, // Up from 2000
   },
 
   // Shell command execution settings

@@ -57,6 +57,51 @@ async function waitForDevServer(maxAttempts = 60, intervalMs = 2000) {
 }
 
 /**
+ * Verify Supabase API is accessible before starting tests.
+ * This catches cases where Kong gateway becomes unavailable after dev server starts.
+ */
+async function verifySupabaseReady(maxAttempts = 15, delayMs = 2000) {
+  const supabaseUrl =
+    process.env.SUPABASE_LOCAL_PROXY_TARGET ||
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    'http://127.0.0.1:54321'
+  const anonKey =
+    process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  console.log('🔒 Verifying Supabase connectivity before tests...')
+
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+
+      const res = await fetch(`${supabaseUrl}/rest/v1/`, {
+        headers: { apikey: anonKey },
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+
+      // 401 means Kong is working (auth required but reachable)
+      if (res.ok || res.status === 401) {
+        console.log('✅ Supabase API is accessible')
+        return true
+      }
+    } catch {
+      // Continue retrying on connection errors
+    }
+
+    if ((i + 1) % 3 === 0) {
+      console.log(`   Still waiting for Supabase... (${i + 1}/${maxAttempts})`)
+    }
+    await new Promise((r) => setTimeout(r, delayMs))
+  }
+
+  console.error('❌ Supabase API did not become accessible')
+  return false
+}
+
+/**
  * Start the Next.js dev server in the background
  */
 async function startDevServer() {
@@ -93,6 +138,9 @@ async function startDevServer() {
     SUPABASE_URL: supabaseUrl,
     SUPABASE_ANON_KEY: supabaseAnonKey,
     SUPABASE_SERVICE_ROLE_KEY: supabaseServiceRoleKey,
+    // Skip Zillow API fallback in tests - use seed data instead
+    // This prevents 3 sequential 503 failures per marketing request
+    MARKETING_USE_SEED: 'true',
   }
 
   // Remove production DB vars
@@ -176,6 +224,16 @@ async function run() {
 
   // Start dev server for E2E HTTP tests
   await startDevServer()
+
+  // Verify Supabase is accessible before starting tests
+  // This catches race conditions where Kong gateway isn't fully ready
+  const supabaseReady = await verifySupabaseReady()
+  if (!supabaseReady) {
+    await stopDevServer()
+    throw new Error(
+      'Supabase API not accessible - cannot run integration tests'
+    )
+  }
 
   // Handle cleanup on process termination
   const cleanup = async () => {
