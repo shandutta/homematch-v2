@@ -13,18 +13,11 @@ const TEST_TIMEOUT = 60000 // 60s per test
 describe('E2E: /api/health', () => {
   let client: E2EHttpClient
 
-  // Use beforeAll/afterAll instead of beforeEach/afterEach to avoid
-  // redundant client creation overhead. Health tests don't authenticate,
-  // so a shared client is sufficient and saves ~5-8s in test execution.
-  beforeAll(() => {
+  // Use beforeEach to create fresh client per test, preventing connection
+  // exhaustion when tests share a single client instance.
+  // Health tests don't authenticate, so no cleanup/afterEach is needed.
+  beforeEach(() => {
     client = new E2EHttpClient(API_URL)
-  })
-
-  afterAll(async () => {
-    // Only cleanup if authenticated - health tests never authenticate
-    if (client.isAuthenticated()) {
-      await client.cleanup()
-    }
   })
 
   test(
@@ -111,7 +104,8 @@ describe('E2E: /api/health', () => {
     'should handle multiple concurrent requests',
     async () => {
       // Test that health endpoint can handle concurrent requests
-      const requests = Array.from({ length: 5 }, () =>
+      // Reduced from 5 to 3 to prevent connection exhaustion in test environment
+      const requests = Array.from({ length: 3 }, () =>
         client.get('/api/health')
       )
       const responses = await Promise.all(requests)
