@@ -9,6 +9,9 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { E2EHttpClient } from '../../utils/e2e-http-client'
 
+// Increase timeout for integration tests making real HTTP requests
+const TEST_TIMEOUT = 60000 // 60s per test
+
 describe('E2E: /api/couples/mutual-likes', () => {
   let client: E2EHttpClient
 
@@ -242,22 +245,26 @@ describe('E2E: /api/couples/mutual-likes', () => {
   })
 
   describe('Rate Limiting', () => {
-    test('should have rate limiting middleware applied', async () => {
-      // Make multiple rapid requests to test rate limiting
-      // Reduced from 5 to 3 to prevent connection exhaustion in test environment
-      const rapidRequests = Array.from({ length: 3 }, () =>
-        client.unauthenticatedRequest('/api/couples/mutual-likes')
-      )
+    test(
+      'should have rate limiting middleware applied',
+      async () => {
+        // Make multiple rapid requests to test rate limiting
+        // Reduced from 5 to 3 to prevent connection exhaustion in test environment
+        const rapidRequests = Array.from({ length: 3 }, () =>
+          client.unauthenticatedRequest('/api/couples/mutual-likes')
+        )
 
-      const responses = await Promise.all(rapidRequests)
+        const responses = await Promise.all(rapidRequests)
 
-      // All should complete (rate limits are generous for tests)
-      // Server errors should not be accepted
-      responses.forEach((response) => {
-        expect(response.status).not.toBe(500)
-        expect(response.status).toBeOneOf([200, 401, 429])
-      })
-    })
+        // All should complete (rate limits are generous for tests)
+        // Server errors should not be accepted
+        responses.forEach((response) => {
+          expect(response.status).not.toBe(500)
+          expect(response.status).toBeOneOf([200, 401, 429])
+        })
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Authenticated Scenarios', () => {

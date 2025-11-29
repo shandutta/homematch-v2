@@ -9,6 +9,9 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { E2EHttpClient } from '../../utils/e2e-http-client'
 
+// Increase timeout for integration tests making real HTTP requests
+const TEST_TIMEOUT = 60000 // 60s per test
+
 describe('E2E: /api/couples/activity', () => {
   let client: E2EHttpClient
 
@@ -198,67 +201,79 @@ describe('E2E: /api/couples/activity', () => {
   })
 
   describe('Security', () => {
-    test('should not expose sensitive information in error messages', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
-      const data = await response.json()
+    test(
+      'should not expose sensitive information in error messages',
+      async () => {
+        const response = await client.unauthenticatedRequest(
+          '/api/couples/activity'
+        )
+        const data = await response.json()
 
-      expect(data.error).toBe('Unauthorized')
-      expect(data.error).not.toContain('password')
-      expect(data.error).not.toContain('token')
-      expect(data.error).not.toContain('secret')
-      expect(data.error).not.toContain('key')
+        expect(data.error).toBe('Unauthorized')
+        expect(data.error).not.toContain('password')
+        expect(data.error).not.toContain('token')
+        expect(data.error).not.toContain('secret')
+        expect(data.error).not.toContain('key')
 
-      // Should not include stack traces
-      expect(data).not.toHaveProperty('stack')
-      expect(data).not.toHaveProperty('trace')
-    })
+        // Should not include stack traces
+        expect(data).not.toHaveProperty('stack')
+        expect(data).not.toHaveProperty('trace')
+      },
+      TEST_TIMEOUT
+    )
 
-    test('should handle dangerous query parameters safely', async () => {
-      const dangerousQueries = [
-        { limit: 'true; DROP TABLE users;--' },
-        { offset: "'; SELECT * FROM users;--" },
-        { limit: '<script>alert(1)</script>' },
-        { offset: '../../../etc/passwd' },
-      ]
+    test(
+      'should handle dangerous query parameters safely',
+      async () => {
+        const dangerousQueries = [
+          { limit: 'true; DROP TABLE users;--' },
+          { offset: "'; SELECT * FROM users;--" },
+          { limit: '<script>alert(1)</script>' },
+          { offset: '../../../etc/passwd' },
+        ]
 
-      for (const query of dangerousQueries) {
-        try {
-          const response = await client.unauthenticatedRequest(
-            '/api/couples/activity',
-            {
-              query,
-            }
+        // Make all requests concurrently to avoid sequential timeout stacking
+        const results = await Promise.allSettled(
+          dangerousQueries.map((query) =>
+            client.unauthenticatedRequest('/api/couples/activity', { query })
           )
-          // Should not crash - server errors indicate broken code
-          expect(response.status).not.toBe(500)
-          expect(response.status).toBeOneOf([200, 400, 401, 422])
-        } catch (error) {
-          // It's acceptable for dangerous inputs to be rejected
-          expect(error).toBeDefined()
+        )
+
+        // All requests should either succeed or be rejected gracefully
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            // Should not crash - server errors indicate broken code
+            expect(result.value.status).not.toBe(500)
+            expect(result.value.status).toBeOneOf([200, 400, 401, 422])
+          }
+          // If rejected, that's acceptable for dangerous inputs
         }
-      }
-    })
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Rate Limiting', () => {
-    test('should have rate limiting middleware applied', async () => {
-      // Make multiple rapid requests to test rate limiting
-      // Reduced from 5 to 3 to prevent connection exhaustion in test environment
-      const rapidRequests = Array.from({ length: 3 }, () =>
-        client.unauthenticatedRequest('/api/couples/activity')
-      )
+    test(
+      'should have rate limiting middleware applied',
+      async () => {
+        // Make multiple rapid requests to test rate limiting
+        // Reduced from 5 to 3 to prevent connection exhaustion in test environment
+        const rapidRequests = Array.from({ length: 3 }, () =>
+          client.unauthenticatedRequest('/api/couples/activity')
+        )
 
-      const responses = await Promise.all(rapidRequests)
+        const responses = await Promise.all(rapidRequests)
 
-      // All should complete (rate limits are generous for tests)
-      // Server errors should not be accepted
-      responses.forEach((response) => {
-        expect(response.status).not.toBe(500)
-        expect(response.status).toBeOneOf([200, 401, 429])
-      })
-    })
+        // All should complete (rate limits are generous for tests)
+        // Server errors should not be accepted
+        responses.forEach((response) => {
+          expect(response.status).not.toBe(500)
+          expect(response.status).toBeOneOf([200, 401, 429])
+        })
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Authenticated Scenarios', () => {
