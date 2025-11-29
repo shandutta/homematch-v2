@@ -1,8 +1,8 @@
 /**
  * Strategic Image Selection for Property Vibes Analysis
  *
- * Selects 15-20 strategic images per property for comprehensive LLM analysis.
- * Expanded coverage for richer vibe extraction.
+ * Selects up to 10 strategic images per property for LLM analysis.
+ * Limited to 10 due to NVIDIA Nemotron free model constraints.
  */
 
 export interface SelectedImage {
@@ -47,13 +47,13 @@ function shuffleArray<T>(array: T[]): T[] {
  * @param images - Array of image URLs from Zillow
  * @param propertyType - Property type for selection strategy
  * @param lotSizeSqft - Lot size to determine outdoor relevance
- * @param maxImages - Maximum images to select (default 18)
+ * @param maxImages - Maximum images to select (default 10, limited by NVIDIA model)
  */
 export function selectStrategicImages(
   images: string[] | null,
   propertyType: string | null,
   lotSizeSqft: number | null,
-  maxImages: number = 18
+  maxImages: number = 10
 ): ImageSelectionResult {
   if (!images || images.length === 0) {
     return {

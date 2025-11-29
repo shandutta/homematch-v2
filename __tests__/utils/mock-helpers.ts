@@ -214,3 +214,16 @@ export function getToastCalls() {
 export function clearAllMocks() {
   jest.clearAllMocks()
 }
+
+/**
+ * Helper to create an invalid refresh token error object
+ * For use in tests that need to simulate stale sessions
+ */
+export function mockInvalidRefreshTokenError() {
+  return {
+    code: 'refresh_token_not_found',
+    message: 'Invalid Refresh Token: Refresh Token Not Found',
+    status: 400,
+    name: 'AuthApiError',
+  }
+}

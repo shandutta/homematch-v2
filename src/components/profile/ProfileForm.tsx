@@ -198,6 +198,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
           onClose={() => setIsAvatarPickerOpen(false)}
           onSelect={handleAvatarSelect}
           currentAvatar={avatar}
+          enableUpload
         />
 
         <div className="grid gap-6 sm:grid-cols-2">
