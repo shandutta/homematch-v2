@@ -158,7 +158,7 @@ export async function DELETE(request: NextRequest) {
     >
 
     // Remove avatar from preferences
-     
+
     const { avatar: _, ...preferencesWithoutAvatar } = currentPreferences
 
     const { error: updateError } = await supabase
