@@ -123,14 +123,14 @@ export function selectStrategicImages(
     addMultiple([9, 10, 11, 12, 8, 13, 14], 'bathroom', 2)
   }
 
-  // 6. Outdoor space (2) for houses with yards
+  // 6. Outdoor space (2) for houses with adequate yards
   const isHouse =
     propertyType === 'single_family' ||
     propertyType === 'house' ||
     propertyType === 'townhome'
   const hasYard = lotSizeSqft && lotSizeSqft > 3000
 
-  if (isHouse || hasYard) {
+  if (isHouse && hasYard) {
     // Outdoor shots are often at the end of the gallery
     const lastImages = [
       images.length - 1,

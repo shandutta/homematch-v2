@@ -28,11 +28,14 @@ import { signOut } from '@/lib/supabase/actions'
 import { useState, useEffect, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
+import { UserAvatar } from '@/components/shared/UserAvatar'
+import { useCurrentUserAvatar } from '@/hooks/useCurrentUserAvatar'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSigningOut, startTransition] = useTransition()
+  const { displayName, email, avatar, isLoading } = useCurrentUserAvatar()
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -168,7 +171,16 @@ export function Header() {
                     className="p-token-sm transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full text-white/80 hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95"
                     data-testid="user-menu"
                   >
-                    <User className="h-7 w-7" />
+                    {isLoading ? (
+                      <User className="h-7 w-7" />
+                    ) : (
+                      <UserAvatar
+                        displayName={displayName}
+                        email={email}
+                        avatar={avatar}
+                        size="sm"
+                      />
+                    )}
                     <span className="sr-only">User menu</span>
                   </button>
                 </DropdownMenuTrigger>

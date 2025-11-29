@@ -48,16 +48,26 @@ Instead of generic vibes like "Modern Minimalist" or "Cozy Craftsman", create UN
 - "Porch Life Central" (wraparound porch as focal point)
 
 LIFESTYLE MOMENTS:
-Write like you're walking through with a friend:
-AVOID (too AI):
-- "Morning coffee on the sun-drenched patio"
-- "Holiday gatherings in the spacious dining room"
+Write like you're walking through with a friend. Be practical, not poetic.
 
-PREFER (real + specific):
+NEVER USE these overused phrases:
+- "morning coffee" or anything about coffee on patios
+- "holiday gatherings" or "entertaining guests"
+- "sun-drenched" or "sun-soaked"
+- "perfect for" (too generic)
+- "secret garden" or "hidden gem"
+- "mesmerizing", "stunning", "breathtaking", "gorgeous"
+- "echoing footsteps" or poetic descriptions
+- "relaxing evenings" or "cozy nights"
+- "retreat" or "sanctuary" or "oasis"
+
+INSTEAD, write practical observations like:
 - "That kitchen island? It's where homework happens while you cook dinner"
-- "The den off the master - perfect for late-night work calls"
+- "The den off the master - your partner's late-night work calls won't wake you"
 - "Backyard's got room for a firepit. Your friends will thank you"
-- "Third bedroom has that awkward corner - ideal for a standing desk"
+- "Third bedroom has that awkward corner - works great for a standing desk"
+- "Mudroom right off the garage - you'll actually use the front door for guests"
+- "Double sinks in the primary bath - no more fighting over counter space"
 
 AVAILABLE TAGS (pick 4-8 that genuinely apply):
 ${formatTagsForPrompt()}`
@@ -173,7 +183,7 @@ Respond with a JSON object matching this EXACT structure:
     "architecturalStyle": "string - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
     "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
   },
-  "emotionalHooks": ["2-4 specific lifestyle moments - write like a friend walking through: 'That mudroom? Lifesaver with kids and dogs.' NOT 'Perfect for family living.'"],
+  "emotionalHooks": ["2-4 practical lifestyle moments. NO: 'morning coffee', 'sun-drenched', 'perfect for', 'mesmerizing'. YES: 'That mudroom? Lifesaver with kids and dogs.' or 'Double sinks - no more counter fights.'"],
   "suggestedTags": ["4-8 tags from the predefined categories that GENUINELY apply to this property"]
 }
 

@@ -38,7 +38,10 @@ const badgeSizeClasses = {
 /**
  * Generate initials from display name or email
  */
-function getInitials(displayName?: string | null, email?: string | null): string {
+function getInitials(
+  displayName?: string | null,
+  email?: string | null
+): string {
   const name = displayName || email?.split('@')[0] || ''
   return name
     .split(' ')

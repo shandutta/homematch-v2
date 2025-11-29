@@ -24,6 +24,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { UserAvatar } from '@/components/shared/UserAvatar'
+import { AvatarData } from '@/lib/constants/avatars'
 
 interface ProfilePageClientProps {
   user: User
@@ -41,6 +43,7 @@ type ProfilePreferences = Partial<{
   display_name: string
   phone: string
   bio: string
+  avatar: AvatarData
 }>
 
 const containerVariants = {
@@ -94,13 +97,6 @@ export function ProfilePageClient({
     user.user_metadata?.full_name ||
     user.email?.split('@')[0] ||
     'Your Profile'
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .map((part: string) => part[0] ?? '')
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
   const hasHousehold = Boolean(profile.household)
 
   const heroStats = [
@@ -186,16 +182,17 @@ export function ProfilePageClient({
             <motion.div variants={itemVariants} className="flex flex-col gap-6">
               <div className="flex items-start gap-5">
                 {/* Avatar */}
-                <div className="relative">
-                  <div className="text-hm-stone-200 flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 text-2xl font-medium shadow-xl shadow-black/20 backdrop-blur-sm sm:h-24 sm:w-24 sm:text-3xl">
-                    {initials}
-                  </div>
-                  {hasHousehold && (
-                    <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0c0a09] bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/30">
+                <UserAvatar
+                  displayName={displayName}
+                  email={user.email}
+                  avatar={profilePreferences.avatar}
+                  size="xl"
+                  badge={
+                    hasHousehold ? (
                       <Users className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  )}
-                </div>
+                    ) : undefined
+                  }
+                />
 
                 {/* Name and meta */}
                 <div className="flex-1 pt-1">
@@ -442,65 +439,71 @@ export function ProfilePageClient({
               </TabsList>
 
               <AnimatePresence mode="wait">
-                <TabsContent
-                  key="profile"
-                  value="profile"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="card-luxury overflow-hidden p-6 sm:p-8"
+                {activeTab === 'profile' && (
+                  <TabsContent
+                    key="profile"
+                    value="profile"
+                    className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                   >
-                    <div className="mb-6 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                        <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="card-luxury overflow-hidden p-6 sm:p-8"
+                    >
+                      <div className="mb-6 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                          <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                        </div>
+                        <div>
+                          <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                            Profile Information
+                          </h2>
+                          <p className="text-hm-stone-500 text-sm">
+                            Update your personal details
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
-                          Profile Information
-                        </h2>
-                        <p className="text-hm-stone-500 text-sm">
-                          Update your personal details
-                        </p>
-                      </div>
-                    </div>
-                    <ProfileForm user={user} profile={profile} />
-                  </motion.div>
-                </TabsContent>
+                      <ProfileForm user={user} profile={profile} />
+                    </motion.div>
+                  </TabsContent>
+                )}
 
-                <TabsContent
-                  key="household"
-                  value="household"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                  data-testid="household-section"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
+                {activeTab === 'household' && (
+                  <TabsContent
+                    key="household"
+                    value="household"
+                    className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                    data-testid="household-section"
                   >
-                    <HouseholdSection profile={profile} />
-                  </motion.div>
-                </TabsContent>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <HouseholdSection profile={profile} />
+                    </motion.div>
+                  </TabsContent>
+                )}
 
-                <TabsContent
-                  key="activity"
-                  value="activity"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
+                {activeTab === 'activity' && (
+                  <TabsContent
+                    key="activity"
+                    value="activity"
+                    className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                   >
-                    <ActivityStats summary={activitySummary} />
-                  </motion.div>
-                </TabsContent>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ActivityStats summary={activitySummary} />
+                    </motion.div>
+                  </TabsContent>
+                )}
               </AnimatePresence>
             </Tabs>
           </motion.div>

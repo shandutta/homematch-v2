@@ -305,69 +305,77 @@ export function SettingsPageClient({
 
             {/* Tab content */}
             <AnimatePresence mode="wait">
-              <TabsContent
-                value="preferences"
-                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
+              {activeTab === 'preferences' && (
+                <TabsContent
+                  value="preferences"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <PreferencesSection
-                    user={user}
-                    profile={profileState}
-                    onProfileUpdate={handleProfileUpdate}
-                  />
-                </motion.div>
-              </TabsContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <PreferencesSection
+                      user={user}
+                      profile={profileState}
+                      onProfileUpdate={handleProfileUpdate}
+                    />
+                  </motion.div>
+                </TabsContent>
+              )}
 
-              <TabsContent
-                value="notifications"
-                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
+              {activeTab === 'notifications' && (
+                <TabsContent
+                  value="notifications"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <NotificationsSection
-                    user={user}
-                    profile={profileState}
-                    onProfileUpdate={handleProfileUpdate}
-                  />
-                </motion.div>
-              </TabsContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <NotificationsSection
+                      user={user}
+                      profile={profileState}
+                      onProfileUpdate={handleProfileUpdate}
+                    />
+                  </motion.div>
+                </TabsContent>
+              )}
 
-              <TabsContent
-                value="saved-searches"
-                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
+              {activeTab === 'saved-searches' && (
+                <TabsContent
+                  value="saved-searches"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <SavedSearchesSection userId={user.id} />
-                </motion.div>
-              </TabsContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <SavedSearchesSection userId={user.id} />
+                  </motion.div>
+                </TabsContent>
+              )}
 
-              <TabsContent
-                value="account"
-                className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
+              {activeTab === 'account' && (
+                <TabsContent
+                  value="account"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <AccountSection user={user} />
-                </motion.div>
-              </TabsContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AccountSection user={user} />
+                  </motion.div>
+                </TabsContent>
+              )}
             </AnimatePresence>
           </Tabs>
         </motion.div>

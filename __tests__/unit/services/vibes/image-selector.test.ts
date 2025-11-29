@@ -133,11 +133,12 @@ describe('selectStrategicImages', () => {
   })
 
   describe('image count and limits', () => {
-    it('respects default maxImages of 8', () => {
-      const images = generateImages(20)
+    it('respects default maxImages of 18', () => {
+      const images = generateImages(25)
       const result = selectStrategicImages(images, 'single_family', 5000)
 
-      expect(result.selectedImages.length).toBeLessThanOrEqual(8)
+      expect(result.selectedImages.length).toBeLessThanOrEqual(18)
+      expect(result.selectedImages.length).toBeGreaterThan(8) // Should use more than old default
     })
 
     it('respects custom maxImages parameter', () => {
@@ -155,13 +156,16 @@ describe('selectStrategicImages', () => {
       expect(result.totalAvailable).toBe(4)
     })
 
-    it('fills remaining slots with additional images', () => {
-      const images = generateImages(15)
-      const result = selectStrategicImages(images, 'condo', null, 8)
+    it('fills remaining slots with additional images when strategic slots exhausted', () => {
+      // With 30 images and maxImages=18, we should have some additional
+      const images = generateImages(30)
+      const result = selectStrategicImages(images, 'single_family', 5000, 18)
 
       const additionalImages = result.selectedImages.filter(
         (img) => img.category === 'additional'
       )
+      // Should fill strategic categories first, then additional
+      expect(result.selectedImages.length).toBe(18)
       expect(additionalImages.length).toBeGreaterThan(0)
     })
   })
@@ -180,9 +184,19 @@ describe('selectStrategicImages', () => {
       expect(result3.strategy).toBe('limited')
     })
 
-    it('returns "balanced" strategy for 4+ images', () => {
+    it('returns "balanced" strategy for 6-11 selected images', () => {
       const result = selectStrategicImages(generateImages(10), 'condo', null)
       expect(result.strategy).toBe('balanced')
+    })
+
+    it('returns "comprehensive" strategy for 12+ selected images', () => {
+      const result = selectStrategicImages(
+        generateImages(20),
+        'single_family',
+        5000
+      )
+      expect(result.strategy).toBe('comprehensive')
+      expect(result.selectedImages.length).toBeGreaterThanOrEqual(12)
     })
   })
 
@@ -251,24 +265,27 @@ describe('selectStrategicImages', () => {
   })
 
   describe('randomization of additional images', () => {
-    it('fills with additional images when strategic slots are filled', () => {
-      const images = generateImages(20)
-      const result = selectStrategicImages(images, 'single_family', 5000, 8)
+    it('fills with additional images when more images than strategic slots', () => {
+      // With 40 images and maxImages=18, we should have additional images
+      const images = generateImages(40)
+      const result = selectStrategicImages(images, 'single_family', 5000, 18)
 
       // Should have strategic images plus some additional
       const categories = result.selectedImages.map((img) => img.category)
       expect(categories).toContain('hero')
       expect(categories).toContain('additional')
+      expect(result.selectedImages.length).toBe(18)
     })
 
     it('produces different additional images on multiple runs (probabilistic)', () => {
       // Run multiple times and check if we ever get different results
       // This is probabilistic but should pass with high probability
-      const images = generateImages(30)
+      // Use 50 images to ensure we have plenty of "additional" slots to randomize
+      const images = generateImages(50)
       const results: ImageSelectionResult[] = []
 
       for (let i = 0; i < 10; i++) {
-        results.push(selectStrategicImages(images, 'condo', null, 8))
+        results.push(selectStrategicImages(images, 'condo', null, 18))
       }
 
       // Get additional image indices from each run
@@ -280,7 +297,7 @@ describe('selectStrategicImages', () => {
           .join(',')
       )
 
-      // With 30 images and random selection, we should see some variation
+      // With 50 images and random selection, we should see some variation
       // Note: This could theoretically fail but is extremely unlikely
       const uniquePatterns = new Set(additionalIndices)
       expect(uniquePatterns.size).toBeGreaterThan(1)

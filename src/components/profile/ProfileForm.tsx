@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { UserProfile, UserPreferences } from '@/types/database'
+import { UserProfile, UserPreferences, Json } from '@/types/database'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -22,12 +22,16 @@ import {
   Mail,
   FileText,
   AlertCircle,
+  Camera,
 } from 'lucide-react'
 import { z } from 'zod'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { UserAvatar } from '@/components/shared/UserAvatar'
+import { AvatarPicker } from '@/components/profile/AvatarPicker'
+import { AvatarData } from '@/lib/constants/avatars'
 
 // US phone format: (XXX) XXX-XXXX
 const US_PHONE_REGEX = /^\(\d{3}\) \d{3}-\d{4}$/
@@ -71,6 +75,7 @@ interface ProfileFormProps {
 export function ProfileForm({ user, profile }: ProfileFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false)
   const router = useRouter()
   const userService = UserServiceClient
 
@@ -80,14 +85,40 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
       display_name?: string
       phone?: string
       bio?: string
+      avatar?: AvatarData
     }
   >
+
+  // Avatar state - separate from form since it updates immediately
+  const [avatar, setAvatar] = useState<AvatarData | null>(
+    preferences.avatar ?? null
+  )
 
   const form = useValidatedForm(ProfileSchema, {
     display_name: preferences.display_name || user.email?.split('@')[0] || '',
     phone: preferences.phone ? formatPhoneNumber(preferences.phone) : '',
     bio: preferences.bio || '',
   })
+
+  const handleAvatarSelect = async (newAvatar: AvatarData | null) => {
+    setAvatar(newAvatar)
+    // Save avatar immediately when selected
+    try {
+      await userService.updateUserProfile(user.id, {
+        preferences: {
+          ...preferences,
+          avatar: newAvatar ?? undefined,
+        } as unknown as Json,
+      })
+      toast.success('Avatar updated')
+      router.refresh()
+    } catch (err) {
+      console.error('Failed to update avatar:', err)
+      toast.error('Failed to update avatar')
+      // Revert on error
+      setAvatar(preferences.avatar ?? null)
+    }
+  }
 
   const onSubmit = async (data: ProfileData) => {
     setLoading(true)
@@ -98,7 +129,8 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
         preferences: {
           ...preferences,
           ...data,
-        },
+          avatar: avatar ?? undefined,
+        } as unknown as Json,
         onboarding_completed: true,
       })
 
@@ -132,6 +164,41 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
             </Alert>
           </motion.div>
         )}
+
+        {/* Avatar Section */}
+        <div className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4">
+          <UserAvatar
+            displayName={form.watch('display_name')}
+            email={user.email}
+            avatar={avatar}
+            size="lg"
+          />
+          <div className="flex-1">
+            <p className="text-hm-stone-400 text-xs font-medium tracking-wide uppercase">
+              Profile Picture
+            </p>
+            <p className="text-hm-stone-500 mt-1 text-xs">
+              Choose an avatar or use your initials
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAvatarPickerOpen(true)}
+            className="text-hm-stone-300 border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
+          >
+            <Camera className="mr-2 h-4 w-4" />
+            Change
+          </Button>
+        </div>
+
+        <AvatarPicker
+          isOpen={isAvatarPickerOpen}
+          onClose={() => setIsAvatarPickerOpen(false)}
+          onSelect={handleAvatarSelect}
+          currentAvatar={avatar}
+        />
 
         <div className="grid gap-6 sm:grid-cols-2">
           <FormField

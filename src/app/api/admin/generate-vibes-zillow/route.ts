@@ -23,8 +23,19 @@ interface ZillowPropertyResponse {
   homeType?: string
   propertyType?: string
   imgSrc?: string
-  originalPhotos?: Array<{ mixedSources?: { jpeg?: Array<{ url?: string }> } }>
+  // Simple flat array of URLs (most common)
+  images?: string[]
+  // Complex nested structure with multiple sizes
+  originalPhotos?: Array<{
+    mixedSources?: {
+      jpeg?: Array<{ url?: string; width?: number }>
+      webp?: Array<{ url?: string; width?: number }>
+    }
+  }>
+  // Object array with url field
   photos?: Array<{ url?: string }>
+  // Alternative media array format
+  media?: Array<{ url?: string; type?: string }>
   description?: string
   latitude?: number
   longitude?: number
@@ -83,39 +94,152 @@ async function fetchZillowProperty(
 }
 
 /**
+ * Fetch images from Zillow /images endpoint (separate from /property)
+ * Returns flat array of image URLs
+ */
+async function fetchZillowImages(
+  zpid: string,
+  rapidApiKey: string,
+  host: string
+): Promise<string[]> {
+  const url = `https://${host}/images?zpid=${zpid}`
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': rapidApiKey,
+        'X-RapidAPI-Host': host,
+      },
+    })
+
+    if (!response.ok) {
+      console.warn(
+        `[fetchZillowImages] Failed to fetch images: ${response.status}`
+      )
+      return []
+    }
+
+    const data = (await response.json()) as {
+      images?: string[]
+      [k: string]: unknown
+    }
+    const images = Array.isArray(data.images) ? data.images : []
+    console.log(
+      `[fetchZillowImages] Got ${images.length} images from /images endpoint`
+    )
+    return images
+  } catch (error) {
+    console.warn('[fetchZillowImages] Error fetching images:', error)
+    return []
+  }
+}
+
+/**
  * Extract images from Zillow property response
+ * Handles multiple response formats from different Zillow API endpoints
  */
 function extractImages(data: ZillowPropertyResponse): string[] {
   const images: string[] = []
+  const addedUrls = new Set<string>()
 
-  // Try originalPhotos first (highest quality)
-  if (data.originalPhotos) {
+  // Helper to add unique image URLs
+  const addImage = (url: string | undefined | null): boolean => {
+    if (url && typeof url === 'string' && !addedUrls.has(url)) {
+      images.push(url)
+      addedUrls.add(url)
+      return true
+    }
+    return false
+  }
+
+  // Log what fields are present for debugging
+  const presentFields: string[] = []
+  if (data.images)
+    presentFields.push(
+      `images(${Array.isArray(data.images) ? data.images.length : 'not array'})`
+    )
+  if (data.originalPhotos)
+    presentFields.push(`originalPhotos(${data.originalPhotos.length})`)
+  if (data.photos)
+    presentFields.push(
+      `photos(${Array.isArray(data.photos) ? data.photos.length : 'not array'})`
+    )
+  if (data.media)
+    presentFields.push(
+      `media(${Array.isArray(data.media) ? data.media.length : 'not array'})`
+    )
+  if (data.imgSrc) presentFields.push('imgSrc')
+  console.log(
+    `[extractImages] Available fields: ${presentFields.join(', ') || 'none'}`
+  )
+
+  // 1. Try simple flat array first (most common from /images endpoint)
+  if (Array.isArray(data.images) && data.images.length > 0) {
+    for (const url of data.images) {
+      if (typeof url === 'string') {
+        addImage(url)
+      }
+    }
+    console.log(`[extractImages] Found ${images.length} from images array`)
+  }
+
+  // 2. Try originalPhotos with nested structure (highest quality)
+  if (
+    images.length === 0 &&
+    data.originalPhotos &&
+    data.originalPhotos.length > 0
+  ) {
     for (const photo of data.originalPhotos) {
+      // Try jpeg first, then webp
       const jpegUrls = photo.mixedSources?.jpeg
+      const webpUrls = photo.mixedSources?.webp
+
       if (jpegUrls && jpegUrls.length > 0) {
-        // Get the largest jpeg
+        // Get the largest jpeg (last in array, sorted by width)
         const largest = jpegUrls[jpegUrls.length - 1]
-        if (largest?.url) {
-          images.push(largest.url)
-        }
+        addImage(largest?.url)
+      } else if (webpUrls && webpUrls.length > 0) {
+        // Fall back to webp
+        const largest = webpUrls[webpUrls.length - 1]
+        addImage(largest?.url)
       }
     }
+    console.log(`[extractImages] Found ${images.length} from originalPhotos`)
   }
 
-  // Fall back to photos array
-  if (images.length === 0 && data.photos) {
+  // 3. Try photos array with url field
+  if (
+    images.length === 0 &&
+    Array.isArray(data.photos) &&
+    data.photos.length > 0
+  ) {
     for (const photo of data.photos) {
-      if (photo.url) {
-        images.push(photo.url)
+      addImage(photo?.url)
+    }
+    console.log(`[extractImages] Found ${images.length} from photos array`)
+  }
+
+  // 4. Try media array (alternative format)
+  if (
+    images.length === 0 &&
+    Array.isArray(data.media) &&
+    data.media.length > 0
+  ) {
+    for (const item of data.media) {
+      if (!item.type || item.type === 'image') {
+        addImage(item?.url)
       }
     }
+    console.log(`[extractImages] Found ${images.length} from media array`)
   }
 
-  // Fall back to imgSrc
+  // 5. Final fallback to single imgSrc
   if (images.length === 0 && data.imgSrc) {
-    images.push(data.imgSrc)
+    addImage(data.imgSrc)
+    console.log(`[extractImages] Using imgSrc fallback`)
   }
 
+  console.log(`[extractImages] Total images extracted: ${images.length}`)
   return images.slice(0, 20) // Limit to 20 images for comprehensive analysis
 }
 
@@ -182,13 +306,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   const rapidApiHost = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
 
   try {
-    // Fetch property from Zillow
+    // Fetch property details and images in parallel
     console.log(`[generate-vibes-zillow] Fetching property ${zpid}...`)
-    const zillowData = await fetchZillowProperty(
-      zpid,
-      rapidApiKey,
-      rapidApiHost
-    )
+    const [zillowData, imagesFromEndpoint] = await Promise.all([
+      fetchZillowProperty(zpid, rapidApiKey, rapidApiHost),
+      fetchZillowImages(zpid, rapidApiKey, rapidApiHost),
+    ])
 
     // Extract address parts
     const address =
@@ -199,8 +322,23 @@ export async function POST(req: Request): Promise<NextResponse> {
     const state = zillowData.address?.state || zillowData.state || 'CA'
     const zipCode = zillowData.address?.zipcode || zillowData.zipcode || '00000'
 
-    // Extract images
-    const images = extractImages(zillowData)
+    // Extract images from both sources and merge
+    // Priority: /images endpoint (most complete), then /property response fields
+    let images: string[]
+    if (imagesFromEndpoint.length > 0) {
+      // Use images from dedicated /images endpoint
+      images = imagesFromEndpoint.slice(0, 20)
+      console.log(
+        `[generate-vibes-zillow] Using ${images.length} images from /images endpoint`
+      )
+    } else {
+      // Fall back to images from /property response
+      images = extractImages(zillowData)
+      console.log(
+        `[generate-vibes-zillow] Using ${images.length} images from /property response`
+      )
+    }
+
     if (images.length === 0) {
       return NextResponse.json(
         { ok: false, error: 'No images found for this property' },
