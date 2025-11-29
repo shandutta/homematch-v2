@@ -1,6 +1,7 @@
 import { describe, beforeEach, test, expect, jest } from '@jest/globals'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { __withRefreshRecovery } from '@/lib/supabase/server'
+
+jest.unmock('@/lib/supabase/server')
 
 const createServerClientMock = jest.fn()
 
@@ -30,9 +31,12 @@ type SupabaseStub = {
 
 describe('withRefreshRecovery', () => {
   let supabase: SupabaseStub
+  let applyRecovery: (client: SupabaseClient) => void
+  let warnSpy: jest.SpyInstance
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     supabase = {
       auth: {
         getUser: jest.fn(),
@@ -40,6 +44,13 @@ describe('withRefreshRecovery', () => {
         signOut: jest.fn().mockResolvedValue({}),
       },
     }
+
+    const { __withRefreshRecovery } = await import('@/lib/supabase/server')
+    applyRecovery = __withRefreshRecovery
+  })
+
+  afterEach(() => {
+    warnSpy.mockRestore()
   })
 
   test('clears invalid refresh token errors returned from getUser', async () => {
@@ -51,7 +62,7 @@ describe('withRefreshRecovery', () => {
       },
     })
 
-    __withRefreshRecovery(supabase as unknown as SupabaseClient)
+    applyRecovery(supabase as unknown as SupabaseClient)
 
     const result = await supabase.auth.getUser()
 
@@ -65,7 +76,7 @@ describe('withRefreshRecovery', () => {
       message: 'Invalid Refresh Token',
     })
 
-    __withRefreshRecovery(supabase as unknown as SupabaseClient)
+    applyRecovery(supabase as unknown as SupabaseClient)
 
     const result = await supabase.auth.getSession()
 

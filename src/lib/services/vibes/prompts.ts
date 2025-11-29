@@ -60,6 +60,9 @@ NEVER USE these overused phrases:
 - "echoing footsteps" or poetic descriptions
 - "relaxing evenings" or "cozy nights"
 - "retreat" or "sanctuary" or "oasis"
+- "This isn't X, it's Y" or "This isn't just a house" (AI cliché - NEVER use this pattern)
+- "More than just a house/home" or similar phrasings
+- Starting sentences with "This isn't" or "This is more than"
 
 INSTEAD, write practical observations like:
 - "That kitchen island? It's where homework happens while you cook dinner"
@@ -147,26 +150,18 @@ ${details}${descriptionSection}
 Respond with a JSON object matching this EXACT structure:
 {
   "tagline": "string (10-80 chars) - punchy headline that captures what makes THIS home special. Be specific, not generic.",
-  "vibeStatement": "string (20-200 chars) - 1-2 sentences describing the lifestyle this home offers. Write like you're telling a friend about it.",
+  "vibeStatement": "string (20-200 chars) - 1-2 sentences describing what daily life looks like here. NEVER start with 'This isn't' or 'More than'. Good examples: 'The kind of place where you host Sunday dinner and nobody wants to leave.' or 'Quiet mornings in the bay window, loud dinners on the deck.'",
   "primaryVibes": [
     {
       "name": "string - UNIQUE vibe descriptor for THIS home (not generic like 'Modern Minimalist'). Think: 'Gallery-Ready Walls' or 'Treehouse for Grownups'",
-      "intensity": "number 0.0-1.0 - how strongly this vibe defines the property:
-        0.85-1.0 = This IS the home's identity
-        0.65-0.84 = Major characteristic
-        0.45-0.64 = Noticeable element
-        0.25-0.44 = Subtle touch",
+      "intensity": "number 0.0-1.0 - internal ranking only, not shown to users. Just vary them meaningfully.",
       "source": "interior" | "exterior" | "both"
     }
   ],
   "lifestyleFits": [
     {
-      "category": "string - who would thrive here (e.g., 'Remote Worker', 'Home Chef', 'Dog Owner', 'Weekend Entertainer')",
-      "score": "number 0.0-1.0 - how well it fits:
-        0.9+ = Made for this lifestyle
-        0.7-0.89 = Really works well
-        0.5-0.69 = Would work
-        0.3-0.49 = Could make it work",
+      "category": "string - MUST be from predefined list: Remote Work Ready, Growing Family, Entertainer's Dream, Empty Nester, First-Time Buyer, Pet Paradise, Multi-Gen Living, Fitness Focused, Creative Studio, Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Indoor-Outdoor Flow",
+      "score": "number 0.0-1.0 - how well this property fits the lifestyle category",
       "reason": "string (max 200 chars) - be specific about WHY. 'The bonus room off the garage' not 'spacious layout'"
     }
   ],

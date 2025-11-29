@@ -12,6 +12,11 @@ const clearStaleSession = async (supabase: SupabaseClient) => {
 }
 
 const withRefreshRecovery = (supabase: SupabaseClient) => {
+  const describe = (error: unknown) => ({
+    code: (error as AuthApiError | undefined)?.code,
+    message: (error as AuthApiError | undefined)?.message,
+  })
+
   const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
 
   supabase.auth.getSession = (async () => {
@@ -21,10 +26,7 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
       if (result.error && isInvalidRefreshTokenError(result.error)) {
         console.warn(
           '[Supabase] Clearing invalid refresh token and signing out',
-          {
-            code: (result.error as AuthApiError).code,
-            message: result.error.message,
-          }
+          describe(result.error)
         )
         await clearStaleSession(supabase)
         return { data: { session: null }, error: null }
@@ -35,10 +37,7 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
       if (isInvalidRefreshTokenError(error)) {
         console.warn(
           '[Supabase] Clearing invalid refresh token and signing out',
-          {
-            code: (error as AuthApiError).code,
-            message: (error as AuthApiError).message,
-          }
+          describe(error)
         )
         await clearStaleSession(supabase)
         return { data: { session: null }, error: null }
@@ -46,7 +45,37 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
       throw error
     }
   }) as typeof supabase.auth.getSession
+
+  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
+  supabase.auth.getUser = (async () => {
+    try {
+      const result = await originalGetUser()
+
+      if (result.error && isInvalidRefreshTokenError(result.error)) {
+        console.warn(
+          '[Supabase] Clearing invalid refresh token and signing out',
+          describe(result.error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { user: null }, error: null }
+      }
+
+      return result
+    } catch (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        console.warn(
+          '[Supabase] Clearing invalid refresh token and signing out',
+          describe(error)
+        )
+        await clearStaleSession(supabase)
+        return { data: { user: null }, error: null }
+      }
+      throw error
+    }
+  }) as typeof supabase.auth.getUser
 }
+
+export const __withRefreshRecovery = withRefreshRecovery
 
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
