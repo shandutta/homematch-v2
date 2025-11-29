@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { NextRequest } from 'next/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
 
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
 import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'

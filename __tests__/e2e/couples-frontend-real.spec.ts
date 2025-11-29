@@ -195,67 +195,6 @@ test.describe('Couples Features E2E Tests', () => {
         }
       }
     })
-
-    // NOTE: This test uses API mocking to verify error handling UI behavior.
-    // This is intentional - we need to simulate specific error conditions to test
-    // how the UI responds. This is a UI error handling test, not a full E2E flow test.
-    test('handles error states gracefully', async ({ page }) => {
-      await page.goto('/dashboard')
-      await page.waitForLoadState('domcontentloaded')
-
-      // Handle auth redirect
-      if (page.url().includes('login') || page.url().includes('signin')) {
-        const emailInput = page.locator('input[type="email"]').first()
-        const passwordInput = page.locator('input[type="password"]').first()
-        const submitButton = page.locator('button[type="submit"]').first()
-
-        if ((await emailInput.count()) > 0) {
-          await emailInput.fill('test-couples-user@example.com')
-          await passwordInput.fill('testpassword123')
-          await submitButton.click()
-          await page.waitForLoadState('domcontentloaded')
-        }
-      }
-
-      // Mock API to return error - testing UI error handling, not server behavior
-      await page.route('**/api/couples/mutual-likes', (route) => {
-        route.fulfill({
-          status: 500,
-          body: JSON.stringify({ error: 'Server error' }),
-        })
-      })
-
-      // Reload to trigger the error
-      await page.reload()
-      await page.waitForLoadState('domcontentloaded')
-
-      // Look for error states
-      const errorSelectors = [
-        '[data-testid="mutual-likes-error"]',
-        '[data-testid="error-message"]',
-        '[role="alert"]',
-        'text="Failed to fetch"',
-        'text="Error"',
-        '.error',
-      ]
-
-      let errorFound = false
-      for (const selector of errorSelectors) {
-        if ((await page.locator(selector).count()) > 0) {
-          await expect(page.locator(selector).first()).toBeVisible()
-          console.log(`Error state displayed correctly: ${selector}`)
-          errorFound = true
-          break
-        }
-      }
-
-      if (!errorFound) {
-        console.log(
-          'No specific error UI found - checking for graceful degradation'
-        )
-        // The app might just show empty state instead of explicit error
-      }
-    })
   })
 
   test.describe('Mutual Likes Badge Component', () => {

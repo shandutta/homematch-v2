@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const startTime = Date.now()
 
     try {
-      const supabase = await createClient()
+      const supabase = createApiClient(request)
 
       // Get the current user
       const {
