@@ -11,28 +11,46 @@
  * - Route auth: Tests below verify auth handling via request headers
  */
 
-import fs from 'fs'
-import path from 'path'
 import { NextRequest } from 'next/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
 
 import { GET as getMutualLikes } from '@/app/api/couples/mutual-likes/route'
 import { resetRateLimitStore } from '@/lib/utils/rate-limit'
+import type { Database } from '@/types/database'
 
-// Auth token stored for use in request headers
+// Auth token stored for use in request headers - refreshed at test start
 let currentAuthToken: string | undefined
 
 const setAuthToken = (token?: string) => {
   currentAuthToken = token
 }
 
-const loadTestAuthToken = () => {
-  if (process.env.TEST_AUTH_TOKEN) return process.env.TEST_AUTH_TOKEN
-  const tokenPath = path.join(process.cwd(), '.test-auth-token')
-  if (fs.existsSync(tokenPath)) {
-    return fs.readFileSync(tokenPath, 'utf8').trim()
+/**
+ * Gets a fresh auth token by signing in as the test user.
+ * This avoids token expiration issues with the static .test-auth-token file.
+ */
+const getFreshAuthToken = async (): Promise<string> => {
+  const supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !anonKey) {
+    throw new Error('Missing Supabase configuration for auth')
   }
-  return null
+
+  const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: 'test1@example.com',
+    password: 'testpassword123',
+  })
+
+  if (error || !data.session) {
+    throw new Error(`Failed to get fresh auth token: ${error?.message}`)
+  }
+
+  return data.session.access_token
 }
 
 // Mock next/headers for module loading (createApiClient reads from request.headers)
@@ -66,14 +84,9 @@ describe.sequential('Integration: Couples API Routes', () => {
     })
   }
 
-  beforeAll(() => {
-    const token = loadTestAuthToken()
-    if (!token) {
-      throw new Error(
-        'Missing test auth token. Run integration setup to generate .test-auth-token.'
-      )
-    }
-    authToken = token
+  beforeAll(async () => {
+    // Get fresh token by signing in (avoids token expiration issues)
+    authToken = await getFreshAuthToken()
   })
 
   beforeEach(() => {

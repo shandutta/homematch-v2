@@ -1,6 +1,4 @@
 import { randomUUID } from 'crypto'
-import fs from 'fs'
-import path from 'path'
 import { NextRequest } from 'next/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
@@ -10,20 +8,35 @@ import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'
 import type { Database } from '@/types/database'
 import { resetRateLimitStore } from '@/lib/utils/rate-limit'
 
-// Auth token stored for use in request headers
+// Auth token stored for use in request headers - refreshed at test start
 let currentAuthToken: string | undefined
 
 const setAuthToken = (token?: string) => {
   currentAuthToken = token
 }
 
-const loadTestAuthToken = () => {
-  if (process.env.TEST_AUTH_TOKEN) return process.env.TEST_AUTH_TOKEN
-  const tokenPath = path.join(process.cwd(), '.test-auth-token')
-  if (fs.existsSync(tokenPath)) {
-    return fs.readFileSync(tokenPath, 'utf8').trim()
+/**
+ * Gets a fresh auth token by signing in as the test user.
+ * This avoids token expiration issues with the static .test-auth-token file.
+ */
+const getFreshAuthToken = async (
+  supabaseUrl: string,
+  anonKey: string
+): Promise<{ token: string; userId: string }> => {
+  const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: 'test1@example.com',
+    password: 'testpassword123',
+  })
+
+  if (error || !data.session) {
+    throw new Error(`Failed to get fresh auth token: ${error?.message}`)
   }
-  return null
+
+  return {
+    token: data.session.access_token,
+    userId: data.user.id,
+  }
 }
 
 // Use sequential to prevent race conditions between tests that share testUserId
@@ -45,16 +58,6 @@ describe.sequential('Integration: /api/interactions route', () => {
     }
 
     return { supabaseUrl, serviceKey, anonKey }
-  }
-
-  const decodeUserId = (token: string) => {
-    const parts = token.split('.')
-    if (parts.length < 2) throw new Error('Invalid JWT for test auth user')
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64').toString('utf8')
-    ) as { sub?: string }
-    if (!payload.sub) throw new Error('JWT missing subject')
-    return payload.sub
   }
 
   const createTestProperty = async () => {
@@ -121,21 +124,20 @@ describe.sequential('Integration: /api/interactions route', () => {
     })
   }
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const env = requireSupabaseEnv()
     supabaseAdmin = createSupabaseClient<Database>(
       env.supabaseUrl,
       env.serviceKey
     )
 
-    const token = loadTestAuthToken()
-    if (!token) {
-      throw new Error(
-        'Missing test auth token. Run integration setup to generate .test-auth-token.'
-      )
-    }
+    // Get fresh token by signing in (avoids token expiration issues)
+    const { token, userId } = await getFreshAuthToken(
+      env.supabaseUrl,
+      env.anonKey
+    )
     authToken = token
-    testUserId = decodeUserId(token)
+    testUserId = userId
   })
 
   beforeEach(async () => {
@@ -179,14 +181,12 @@ describe.sequential('Integration: /api/interactions route', () => {
 
   it('rejects unauthorized interaction requests', async () => {
     const propertyId = randomUUID()
-    // Create request without auth header - no mocking needed
-    const req = new NextRequest('http://localhost/api/interactions', {
+    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
+    const res = await fetch('http://localhost:3000/api/interactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ propertyId, type: 'liked' }),
     })
-
-    const res = await POST(req)
     // Route should return 401 for unauthenticated requests
     expect(res.status).toBe(401)
   })
@@ -372,12 +372,10 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('returns 401 for unauthenticated reset requests', async () => {
-    // Create request without auth header - no mocking needed
-    const req = new NextRequest('http://localhost/api/interactions/reset', {
+    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
+    const res = await fetch('http://localhost:3000/api/interactions/reset', {
       method: 'DELETE',
     })
-
-    const res = await RESET_DELETE(req)
     expect(res.status).toBe(401)
   })
 
