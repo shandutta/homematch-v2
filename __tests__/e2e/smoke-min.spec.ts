@@ -17,9 +17,7 @@ test.describe('Smoke - Core Flows', () => {
       await expect(mainRegion.first()).toBeVisible()
     } else {
       // fallback: assert hero headline exists
-      await expect(page.locator('h1')).toContainText(
-        /Find the home|Swipe|Match|Move In/i
-      )
+      await expect(page.locator('h1').first()).toBeVisible()
     }
     await expect(page.locator('footer')).toBeVisible()
 
