@@ -49,6 +49,14 @@ describe('ActivityStats', () => {
     expect(screen.getByText(`${engagementRate}%`)).toBeInTheDocument()
   })
 
+  it('displays engagement rate explanation text', () => {
+    render(<ActivityStats summary={mockSummary} />)
+
+    expect(
+      screen.getByText(/percentage of viewed properties you liked/i)
+    ).toBeInTheDocument()
+  })
+
   it('displays total interactions', () => {
     render(<ActivityStats summary={mockSummary} />)
 
