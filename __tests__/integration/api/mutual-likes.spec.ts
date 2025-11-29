@@ -244,7 +244,8 @@ describe('E2E: /api/couples/mutual-likes', () => {
   describe('Rate Limiting', () => {
     test('should have rate limiting middleware applied', async () => {
       // Make multiple rapid requests to test rate limiting
-      const rapidRequests = Array.from({ length: 5 }, () =>
+      // Reduced from 5 to 3 to prevent connection exhaustion in test environment
+      const rapidRequests = Array.from({ length: 3 }, () =>
         client.unauthenticatedRequest('/api/couples/mutual-likes')
       )
 

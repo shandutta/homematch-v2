@@ -363,14 +363,19 @@ describe('Integration: /api/performance/metrics', () => {
     test('should reject unsupported methods', async () => {
       const methods = ['PUT', 'DELETE', 'PATCH']
 
-      for (const method of methods) {
-        const res = await fetch(`${API_URL}/api/performance/metrics`, {
-          method,
-          headers: {
-            'content-type': 'application/json',
-          },
-        })
+      // Make all requests concurrently to avoid sequential timeout stacking
+      const responses = await Promise.all(
+        methods.map((method) =>
+          fetch(`${API_URL}/api/performance/metrics`, {
+            method,
+            headers: {
+              'content-type': 'application/json',
+            },
+          })
+        )
+      )
 
+      for (const res of responses) {
         expect(res.status).toBe(405)
       }
     })
@@ -380,7 +385,8 @@ describe('Integration: /api/performance/metrics', () => {
     test('should handle concurrent POST requests', async () => {
       const payload = createValidMetricsPayload()
 
-      const requests = Array.from({ length: 5 }, () =>
+      // Reduced from 5 to 3 to prevent connection exhaustion in test environment
+      const requests = Array.from({ length: 3 }, () =>
         fetchJson('/api/performance/metrics', {
           method: 'POST',
           body: JSON.stringify(payload),

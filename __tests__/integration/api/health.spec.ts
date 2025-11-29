@@ -148,8 +148,8 @@ describe('E2E: /api/health', () => {
         method: 'OPTIONS',
       })
 
-      // OPTIONS should be handled properly (204 for CORS preflight, or 200/405)
-      expect([200, 204, 405]).toContain(response.status)
+      // Next.js returns 405 for unhandled methods when no explicit OPTIONS export
+      expect(response.status).toBe(405)
     },
     TEST_TIMEOUT
   )
@@ -159,10 +159,13 @@ describe('E2E: /api/health', () => {
     async () => {
       const methods = ['POST', 'PUT', 'DELETE', 'PATCH'] as const
 
-      for (const method of methods) {
-        const response = await client.request('/api/health', { method })
+      // Make all requests concurrently to avoid sequential timeout stacking
+      const responses = await Promise.all(
+        methods.map((method) => client.request('/api/health', { method }))
+      )
 
-        // Should return 405 Method Not Allowed
+      // All should return 405 Method Not Allowed
+      for (const response of responses) {
         expect(response.status).toBe(405)
       }
     },

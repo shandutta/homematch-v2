@@ -10,7 +10,7 @@ import { IntegrationTestHelper } from './integration-test-helper'
 import { optimizedDbHelper } from './optimized-db-helper'
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS'
   headers?: Record<string, string>
   body?: any
   authenticated?: boolean
