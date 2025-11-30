@@ -25,7 +25,10 @@ let devServerProcess = null
 /**
  * Wait for the dev server to be ready by polling the health endpoint
  */
-async function waitForDevServer(maxAttempts = 60, intervalMs = 2000) {
+async function waitForDevServer(
+  maxAttempts = parseInt(process.env.DEV_SERVER_MAX_ATTEMPTS ?? '90', 10),
+  intervalMs = 2000
+) {
   console.log('⏳ Waiting for dev server to be ready...')
 
   for (let i = 0; i < maxAttempts; i++) {
