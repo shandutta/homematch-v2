@@ -356,7 +356,7 @@ describe('Avatar Upload API Integration', () => {
       )
 
       // User 1 trying to update User 2's profile should fail
-      // Using .select() to get the count of affected rows
+      // Using .select('id') to see which row was actually updated
       const { data: updateResult, error } = await user1Client
         .from('user_profiles')
         .update({
@@ -365,7 +365,7 @@ describe('Avatar Upload API Integration', () => {
           },
         })
         .eq('id', user2.id)
-        .select()
+        .select('id, preferences')
 
       console.log('[RLS Test] Update result:', {
         error: error?.message || null,
