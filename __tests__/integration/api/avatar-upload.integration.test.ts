@@ -333,12 +333,31 @@ describe('Avatar Upload API Integration', () => {
 
   describe('RLS Policy Verification', () => {
     test('user can only update their own avatar preferences', async () => {
-      const { supabase: user1Client, user: _user1 } =
+      const { supabase: user1Client, user: user1 } =
         await createAuthenticatedClient(5)
-      const { user: user2 } = await createAuthenticatedClient(6)
+      const { supabase: user2ClientInitial, user: user2 } =
+        await createAuthenticatedClient(6)
+
+      // Diagnostic: Verify we have two different users
+      console.log('[RLS Test] User 1 ID:', user1.id, 'Email:', user1.email)
+      console.log('[RLS Test] User 2 ID:', user2.id, 'Email:', user2.email)
+      expect(user1.id).not.toEqual(user2.id)
+
+      // Get user2's current preferences BEFORE the cross-user update attempt
+      const { data: user2ProfileBefore } = await user2ClientInitial
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', user2.id)
+        .single()
+
+      console.log(
+        '[RLS Test] User 2 preferences BEFORE:',
+        user2ProfileBefore?.preferences
+      )
 
       // User 1 trying to update User 2's profile should fail
-      const { error } = await user1Client
+      // Using .select() to get the count of affected rows
+      const { data: updateResult, error } = await user1Client
         .from('user_profiles')
         .update({
           preferences: {
@@ -346,19 +365,33 @@ describe('Avatar Upload API Integration', () => {
           },
         })
         .eq('id', user2.id)
+        .select()
+
+      console.log('[RLS Test] Update result:', {
+        error: error?.message || null,
+        affectedRows: updateResult?.length || 0,
+      })
 
       // Should either error or update 0 rows (RLS prevents cross-user updates)
-      // The actual behavior depends on RLS policy configuration
       if (error) {
+        console.log('[RLS Test] Update blocked with error:', error.code)
         expect(error.code).toBeTruthy() // Some error occurred
       } else {
-        // If no error, verify user2's profile wasn't actually changed
+        // RLS should have filtered to 0 rows - no rows should be affected
+        expect(updateResult?.length || 0).toBe(0)
+
+        // Double-check: verify user2's profile wasn't actually changed
         const { supabase: user2Client } = await createAuthenticatedClient(6)
         const { data: user2Profile } = await user2Client
           .from('user_profiles')
           .select('preferences')
           .eq('id', user2.id)
           .single()
+
+        console.log(
+          '[RLS Test] User 2 preferences AFTER:',
+          user2Profile?.preferences
+        )
 
         const preferences = (user2Profile?.preferences || {}) as Record<
           string,
