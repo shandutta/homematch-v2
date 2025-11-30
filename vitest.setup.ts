@@ -73,11 +73,19 @@ const createCachedClient = (
   key: string,
   options?: SupabaseCreateClientOptions
 ): CachedSupabaseClient => {
-  // Include auth header in cache key to ensure different auth contexts get different clients
-  const authHeader = (
-    options?.global as { headers?: { Authorization?: string } }
-  )?.headers?.Authorization
-  const authKey = authHeader ? `:auth:${authHeader.slice(-8)}` : ':noauth'
+  // Include auth header and test user index in cache key to ensure different auth contexts get different clients
+  const globalHeaders = (
+    options?.global as { headers?: Record<string, string> }
+  )?.headers
+  const authHeader = globalHeaders?.Authorization
+  const testUserIndex = globalHeaders?.['X-Test-User-Index']
+
+  // Build cache key suffix: prefer auth header, then test user index, then noauth
+  const authKey = authHeader
+    ? `:auth:${authHeader.slice(-8)}`
+    : testUserIndex
+      ? `:user:${testUserIndex}`
+      : ':noauth'
   const cacheKey = `${url}:${key}:${storageKeyPrefix}${authKey}`
   if (!supabaseClientCache.has(cacheKey)) {
     const clientId = `${storageKeyPrefix}-${++clientCounter}`
@@ -880,8 +888,8 @@ beforeEach(() => {
 afterEach(() => {
   // Add small delay between tests to prevent race conditions
   const testDuration = Date.now() - testStartTime
-  if (testDuration < 50) {
+  if (testDuration < 10) {
     // If test was very fast, add small delay to prevent DB race conditions
-    return new Promise((resolve) => setTimeout(resolve, 50 - testDuration))
+    return new Promise((resolve) => setTimeout(resolve, 10 - testDuration))
   }
 })

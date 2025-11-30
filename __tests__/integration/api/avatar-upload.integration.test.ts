@@ -335,28 +335,12 @@ describe('Avatar Upload API Integration', () => {
     test('user can only update their own avatar preferences', async () => {
       const { supabase: user1Client, user: user1 } =
         await createAuthenticatedClient(5)
-      const { supabase: user2ClientInitial, user: user2 } =
-        await createAuthenticatedClient(6)
+      const { user: user2 } = await createAuthenticatedClient(6)
 
-      // Diagnostic: Verify we have two different users
-      console.log('[RLS Test] User 1 ID:', user1.id, 'Email:', user1.email)
-      console.log('[RLS Test] User 2 ID:', user2.id, 'Email:', user2.email)
+      // Verify we have two different users
       expect(user1.id).not.toEqual(user2.id)
 
-      // Get user2's current preferences BEFORE the cross-user update attempt
-      const { data: user2ProfileBefore } = await user2ClientInitial
-        .from('user_profiles')
-        .select('preferences')
-        .eq('id', user2.id)
-        .single()
-
-      console.log(
-        '[RLS Test] User 2 preferences BEFORE:',
-        user2ProfileBefore?.preferences
-      )
-
       // User 1 trying to update User 2's profile should fail
-      // Using .select('id') to see which row was actually updated
       const { data: updateResult, error } = await user1Client
         .from('user_profiles')
         .update({
@@ -365,34 +349,11 @@ describe('Avatar Upload API Integration', () => {
           },
         })
         .eq('id', user2.id)
-        .select('id, preferences')
-
-      console.log('[RLS Test] Update result:', {
-        error: error?.message || null,
-        affectedRows: updateResult?.length || 0,
-        // Show which row(s) were actually updated
-        updatedRowIds: updateResult?.map((r: { id: string }) => r.id) || [],
-      })
-
-      // Also log user1's profile to see if it was accidentally updated
-      const { data: user1Profile } = await user1Client
-        .from('user_profiles')
-        .select('id, preferences')
-        .eq('id', user1.id)
-        .single()
-      console.log('[RLS Test] User 1 profile check:', {
-        id: user1Profile?.id,
-        hasOwlAvatar:
-          (user1Profile?.preferences as Record<string, unknown>)?.avatar
-            ?.type === 'preset' &&
-          (user1Profile?.preferences as Record<string, unknown>)?.avatar
-            ?.value === 'owl',
-      })
+        .select('id')
 
       // Should either error or update 0 rows (RLS prevents cross-user updates)
       if (error) {
-        console.log('[RLS Test] Update blocked with error:', error.code)
-        expect(error.code).toBeTruthy() // Some error occurred
+        expect(error.code).toBeTruthy()
       } else {
         // RLS should have filtered to 0 rows - no rows should be affected
         expect(updateResult?.length || 0).toBe(0)
@@ -404,11 +365,6 @@ describe('Avatar Upload API Integration', () => {
           .select('preferences')
           .eq('id', user2.id)
           .single()
-
-        console.log(
-          '[RLS Test] User 2 preferences AFTER:',
-          user2Profile?.preferences
-        )
 
         const preferences = (user2Profile?.preferences || {}) as Record<
           string,

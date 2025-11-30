@@ -3,7 +3,7 @@
  * Provides access to predefined test users created by setup scripts
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 // Test users created by setup-test-users-admin.js
 export const TEST_USERS = {
@@ -52,6 +52,13 @@ export const TEST_USERS = {
 
 export type TestUser = (typeof TEST_USERS)[keyof typeof TEST_USERS]
 
+type TestSupabaseClient = SupabaseClient
+type SignInResponse = Awaited<
+  ReturnType<TestSupabaseClient['auth']['signInWithPassword']>
+>
+type AuthUser = NonNullable<SignInResponse['data']['user']>
+type AuthSession = NonNullable<SignInResponse['data']['session']>
+
 /**
  * Get all available test users as an array
  */
@@ -79,13 +86,46 @@ export function getTestUsers(indices: number[]): TestUser[] {
   return indices.map((index) => getTestUser(index))
 }
 
+// Session cache to avoid repeated auth calls for the same user
+const sessionCache = new Map<
+  number,
+  {
+    supabase: TestSupabaseClient
+    user: AuthUser
+    session: AuthSession
+    timestamp: number
+  }
+>()
+const SESSION_TTL = 60000 // 1 minute TTL for cached sessions
+
 /**
  * Create an authenticated Supabase client for a specific test user
+ *
+ * IMPORTANT: Each user gets a unique client instance via X-Test-User-Index header.
+ * This ensures vitest's client caching doesn't share sessions between users.
+ * Sessions are cached for 1 minute to avoid repeated auth calls.
  */
 export async function createAuthenticatedClient(userIndex: number) {
+  // Check cache first
+  const cached = sessionCache.get(userIndex)
+  if (cached && Date.now() - cached.timestamp < SESSION_TTL) {
+    return {
+      supabase: cached.supabase,
+      user: cached.user,
+      session: cached.session,
+    }
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        headers: {
+          'X-Test-User-Index': userIndex.toString(),
+        },
+      },
+    }
   )
 
   const testUser = getTestUser(userIndex)
@@ -100,6 +140,14 @@ export async function createAuthenticatedClient(userIndex: number) {
       `Failed to authenticate test user ${userIndex}: ${error.message}`
     )
   }
+
+  // Cache the session
+  sessionCache.set(userIndex, {
+    supabase,
+    user: data.user!,
+    session: data.session!,
+    timestamp: Date.now(),
+  })
 
   return { supabase, user: data.user, session: data.session }
 }
