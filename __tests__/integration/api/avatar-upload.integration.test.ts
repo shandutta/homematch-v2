@@ -370,6 +370,23 @@ describe('Avatar Upload API Integration', () => {
       console.log('[RLS Test] Update result:', {
         error: error?.message || null,
         affectedRows: updateResult?.length || 0,
+        // Show which row(s) were actually updated
+        updatedRowIds: updateResult?.map((r: { id: string }) => r.id) || [],
+      })
+
+      // Also log user1's profile to see if it was accidentally updated
+      const { data: user1Profile } = await user1Client
+        .from('user_profiles')
+        .select('id, preferences')
+        .eq('id', user1.id)
+        .single()
+      console.log('[RLS Test] User 1 profile check:', {
+        id: user1Profile?.id,
+        hasOwlAvatar:
+          (user1Profile?.preferences as Record<string, unknown>)?.avatar
+            ?.type === 'preset' &&
+          (user1Profile?.preferences as Record<string, unknown>)?.avatar
+            ?.value === 'owl',
       })
 
       // Should either error or update 0 rows (RLS prevents cross-user updates)
