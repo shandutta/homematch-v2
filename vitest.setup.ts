@@ -146,11 +146,11 @@ const RETRYABLE_STATUS = new Set([502, 503, 504])
 const RETRYABLE_ERROR =
   /(ECONNREFUSED|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network timeout)/i
 
-// Configurable via environment variables for slow CI environments
-const maxFetchRetries = Number(process.env.SUPABASE_FETCH_RETRIES ?? 5) // Up from 2
+// Configurable via environment variables (CI can use higher values for resilience)
+const maxFetchRetries = Number(process.env.SUPABASE_FETCH_RETRIES ?? 3)
 const fetchBaseDelayMs = Number(
-  process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 500
-) // Up from 150
+  process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 100
+)
 const fetchMaxDelayMs = 10000
 const fetchTimeoutMs = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS ?? 15000)
 const JITTER_PERCENT = 0.25 // Add 0-25% random jitter to prevent thundering herd
