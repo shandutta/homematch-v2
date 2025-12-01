@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import type { PropertyInsert } from '@/types/database'
 
-const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
+const RAPIDAPI_HOST =
+  process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
 const CRON_SECRET =
   process.env.STATUS_REFRESH_CRON_SECRET || process.env.ZILLOW_CRON_SECRET

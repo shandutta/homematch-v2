@@ -83,7 +83,8 @@ async function main() {
   const { locations, pageSize, maxPages } = parseArgs(process.argv)
 
   const rapidApiKey = process.env.RAPIDAPI_KEY
-  const rapidApiHost = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
+  const rapidApiHost =
+    process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   if (!rapidApiKey) {
     throw new Error('RAPIDAPI_KEY not set; update .env.local with a valid key.')

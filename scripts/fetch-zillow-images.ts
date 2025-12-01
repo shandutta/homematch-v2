@@ -11,7 +11,7 @@ type ZillowImagesResponse = {
   [k: string]: unknown
 }
 
-const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
+const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'images', 'properties')
 const MAX_IMAGES = 6
 

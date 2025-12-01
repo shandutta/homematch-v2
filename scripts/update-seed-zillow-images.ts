@@ -39,7 +39,7 @@ type ZillowImagesResponse = {
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
+const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const SEED_PATH = path.join(
   process.cwd(),
   'migrated_data',

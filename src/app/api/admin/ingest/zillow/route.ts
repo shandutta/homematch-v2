@@ -56,7 +56,8 @@ export async function POST(req: Request) {
   }
 
   const rapidApiKey = process.env.RAPIDAPI_KEY
-  const rapidApiHost = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
+  const rapidApiHost =
+    process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   if (!rapidApiKey) {
     return NextResponse.json({ error: 'RAPIDAPI_KEY missing' }, { status: 503 })

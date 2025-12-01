@@ -27,7 +27,7 @@ export const setupTestEnvironment = () => {
 
     // Zillow/RapidAPI
     RAPIDAPI_KEY: 'test-rapidapi-key',
-    RAPIDAPI_HOST: 'zillow-com1.p.rapidapi.com',
+    RAPIDAPI_HOST: 'us-housing-market-data1.p.rapidapi.com',
 
     // Analytics (optional)
     NEXT_PUBLIC_GA_MEASUREMENT_ID: 'G-TEST123456',

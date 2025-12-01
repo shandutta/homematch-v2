@@ -303,7 +303,8 @@ export async function POST(req: Request): Promise<NextResponse> {
     )
   }
 
-  const rapidApiHost = process.env.RAPIDAPI_HOST || 'zillow-com1.p.rapidapi.com'
+  const rapidApiHost =
+    process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   try {
     // Fetch property details and images in parallel

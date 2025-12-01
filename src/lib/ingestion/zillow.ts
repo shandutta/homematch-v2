@@ -18,7 +18,7 @@ const ALLOWED_PROPERTY_TYPES = [
 ] as const
 type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
 
-const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
+const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
 const DEFAULT_MAX_PAGES = 5 // Increased from 2 to get more properties
 const DEFAULT_DELAY_MS = 1250

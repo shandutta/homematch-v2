@@ -27,8 +27,10 @@ export async function GET() {
         .from('properties')
         .select('id')
         .limit(1)
-        .single()
+        .maybeSingle()
 
+      // maybeSingle returns null (not error) when no rows exist
+      // Only throw on actual database errors, not empty tables
       if (error) {
         throw new Error(`Database connectivity test failed: ${error.message}`)
       }

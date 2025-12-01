@@ -157,7 +157,7 @@ export interface MarketTrends {
 }
 
 export class ZillowAPIClient {
-  private baseURL = 'https://zillow-com1.p.rapidapi.com'
+  private baseURL = 'https://us-housing-market-data1.p.rapidapi.com'
   private apiKey: string
   private rateLimitDelay = 2000 // 2 seconds between requests
   private maxRetries = 3
@@ -358,7 +358,7 @@ export class ZillowAPIClient {
           method: 'GET',
           headers: {
             'X-RapidAPI-Key': this.apiKey,
-            'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+            'X-RapidAPI-Host': 'us-housing-market-data1.p.rapidapi.com',
             Accept: 'application/json',
           },
         })

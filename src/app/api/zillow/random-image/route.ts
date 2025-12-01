@@ -21,7 +21,7 @@ type ZillowCard = {
  * This increases variety without exposing credentials client-side.
  */
 
-const DEFAULT_HOST = 'zillow-com1.p.rapidapi.com'
+const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_QUERY = 'San Francisco, CA'
 
 type ZillowSearchResult = {

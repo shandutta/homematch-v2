@@ -5,7 +5,7 @@
 HomeMatch uses the Zillow.com API via RapidAPI for comprehensive property data ingestion and real-time property information retrieval.
 
 **API Provider**: [Zillow.com API on RapidAPI](https://rapidapi.com/apimaker/api/zillow-com1/)  
-**Host**: `zillow-com1.p.rapidapi.com`  
+**Host**: `us-housing-market-data1.p.rapidapi.com`  
 **Authentication**: RapidAPI Key-based authentication
 
 ## Configuration
@@ -21,7 +21,7 @@ RAPIDAPI_KEY=your_rapidapi_key_here
 ```javascript
 {
   'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-  'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
+  'X-RapidAPI-Host': 'us-housing-market-data1.p.rapidapi.com'
 }
 ```
 
@@ -153,11 +153,11 @@ class ZillowAPIClient {
         await this.delay(this.rateLimitDelay)
 
         const response = await fetch(
-          `https://zillow-com1.p.rapidapi.com${endpoint}?${new URLSearchParams(params)}`,
+          `https://us-housing-market-data1.p.rapidapi.com${endpoint}?${new URLSearchParams(params)}`,
           {
             headers: {
               'X-RapidAPI-Key': process.env.RAPIDAPI_KEY!,
-              'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com',
+              'X-RapidAPI-Host': 'us-housing-market-data1.p.rapidapi.com',
             },
           }
         )

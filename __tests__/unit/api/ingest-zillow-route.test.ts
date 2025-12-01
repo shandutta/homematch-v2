@@ -15,7 +15,7 @@ describe('POST /api/admin/ingest/zillow', () => {
     jest.resetAllMocks()
     process.env.ZILLOW_CRON_SECRET = 'secret'
     process.env.RAPIDAPI_KEY = 'key'
-    process.env.RAPIDAPI_HOST = 'zillow-com1.p.rapidapi.com'
+    process.env.RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
   })
 
   test('rejects missing or invalid secret', async () => {
