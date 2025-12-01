@@ -37,16 +37,32 @@ export const dynamic = 'force-dynamic'
 export default async function LandingPage() {
   const structuredData = {
     '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    url: siteUrl,
-    name: 'HomeMatch',
-    description:
-      'HomeMatch helps couples swipe, match, and find a home together with collaborative search.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${siteUrl}/search?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        url: siteUrl,
+        name: 'HomeMatch',
+        description:
+          'HomeMatch helps couples swipe, match, and find a home together with collaborative search.',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${siteUrl}/search?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'HomeMatch',
+        applicationCategory: 'RealEstateApplication',
+        operatingSystem: 'Web',
+        url: siteUrl,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+      },
+    ],
   }
 
   const supabase = await createClient()
