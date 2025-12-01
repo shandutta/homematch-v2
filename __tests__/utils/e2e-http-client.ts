@@ -79,6 +79,7 @@ export class E2EHttpClient {
   /**
    * Make an authenticated HTTP request
    * Includes AbortController timeout to prevent hanging connections
+   * Retries on ECONNREFUSED to handle parallel test execution
    */
   async request(
     url: string,
@@ -98,33 +99,57 @@ export class E2EHttpClient {
 
     const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`
 
-    // Add timeout to prevent hanging connections and connection exhaustion
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
+    // Retry configuration for handling parallel test load
+    const maxRetries = 3
+    const baseDelayMs = 200
 
-    try {
-      const response = await fetch(fullUrl, {
-        method,
-        headers: requestHeaders,
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-      })
-      clearTimeout(timeoutId)
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      // Add timeout to prevent hanging connections and connection exhaustion
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
 
-      return {
-        status: response.status,
-        headers: response.headers,
-        json: () => response.json(),
-        text: () => response.text(),
-        ok: response.ok,
+      try {
+        const response = await fetch(fullUrl, {
+          method,
+          headers: requestHeaders,
+          body: body ? JSON.stringify(body) : undefined,
+          signal: controller.signal,
+        })
+        clearTimeout(timeoutId)
+
+        return {
+          status: response.status,
+          headers: response.headers,
+          json: () => response.json(),
+          text: () => response.text(),
+          ok: response.ok,
+        }
+      } catch (error) {
+        clearTimeout(timeoutId)
+
+        // Handle timeout
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error(`Request to ${fullUrl} timed out after 30s`)
+        }
+
+        // Retry on connection refused (server overwhelmed by parallel tests)
+        const isConnectionError =
+          error instanceof Error &&
+          'code' in error &&
+          (error as NodeJS.ErrnoException).code === 'ECONNREFUSED'
+
+        if (isConnectionError && attempt < maxRetries) {
+          const delay = baseDelayMs * Math.pow(2, attempt)
+          await new Promise((resolve) => setTimeout(resolve, delay))
+          continue
+        }
+
+        throw error
       }
-    } catch (error) {
-      clearTimeout(timeoutId)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Request to ${fullUrl} timed out after 30s`)
-      }
-      throw error
     }
+
+    // TypeScript: should never reach here, but satisfy return type
+    throw new Error(`Request to ${fullUrl} failed after ${maxRetries} retries`)
   }
 
   /**

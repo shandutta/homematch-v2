@@ -205,7 +205,18 @@ async function fetchWithRetry(
     }
     return response
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
+    // Handle AggregateError from Node fetch - errors are nested
+    let message = error instanceof Error ? error.message : String(error)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'errors' in error &&
+      Array.isArray((error as { errors: unknown[] }).errors)
+    ) {
+      const nestedErrors = (error as { errors: Error[] }).errors
+      message = nestedErrors.map((e) => e.message).join(' ')
+    }
+
     const isRetryable =
       RETRYABLE_ERROR.test(message) || message.includes('aborted')
     if (attempt < maxFetchRetries && isRetryable) {
