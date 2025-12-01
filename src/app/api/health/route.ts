@@ -23,11 +23,19 @@ export async function GET() {
     // Test database connectivity
     try {
       const supabase = await createClient()
-      const { error } = await supabase
-        .from('properties')
-        .select('id')
-        .limit(1)
-        .maybeSingle()
+      const query = supabase.from('properties').select('id').limit(1)
+
+      // Prefer maybeSingle to avoid false negatives on empty tables; fall back for older clients/mocks
+      const hasMaybeSingle = typeof query.maybeSingle === 'function'
+      const hasSingle = typeof query.single === 'function'
+
+      if (!hasMaybeSingle && !hasSingle) {
+        throw new Error('Health check query does not support single-row fetch')
+      }
+
+      const { error } = hasMaybeSingle
+        ? await query.maybeSingle()
+        : await query.single()
 
       // maybeSingle returns null (not error) when no rows exist
       // Only throw on actual database errors, not empty tables
