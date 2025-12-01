@@ -162,6 +162,7 @@
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "simple-git-hooks": "^2.13.0",
+    "supabase": "^2.64.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
