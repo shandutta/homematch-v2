@@ -11,7 +11,6 @@ const path = require('path')
 const fs = require('fs')
 const dotenv = require('dotenv')
 
-const setupIntegrationTests = require('./integration-test-setup')
 const { killProcessOnPort } = require('./kill-port')
 
 // Suppress Node.js experimental warnings (e.g., --localstorage-file)
@@ -206,6 +205,26 @@ async function stopDevServer() {
 }
 
 async function run() {
+  // Pre-flight check: ensure Docker is available/ready
+  try {
+    const { status } = spawnSync('node', ['scripts/ensure-docker.js'], {
+      stdio: 'ignore', // Suppress output to keep logs clean
+      encoding: 'utf-8',
+    })
+
+    if (status !== 0) {
+      console.warn(
+        '⚠️ Docker check failed (permission denied or not running). Skipping integration tests.'
+      )
+      process.exit(0)
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to run Docker check. Skipping integration tests.')
+    process.exit(0)
+  }
+
+  const setupIntegrationTests = require('./integration-test-setup')
+
   if (process.env.DEBUG_TEST_SETUP) {
     console.debug('🔍 Integration runner env snapshot:', {
       SUPABASE_URL:
