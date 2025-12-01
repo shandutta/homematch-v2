@@ -1,16 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState, useId } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 declare global {
   interface Window {
     adsbygoogle: Array<Record<string, unknown>>
   }
 }
-
-// Global Set to track which ad instances have been pushed
-// This persists across React re-renders and Strict Mode double-mounting
-const pushedAdIds = new Set<string>()
 
 interface InFeedAdProps {
   /** Position in the feed (for tracking) */
@@ -29,15 +25,14 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
   const adRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
-  // Use React's useId for a stable unique ID across renders
-  const adInstanceId = useId()
+  const isPushed = useRef(false)
 
   useEffect(() => {
     // Only run on client
     if (typeof window === 'undefined') return
 
-    // Check if we've already pushed for this specific ad instance
-    if (pushedAdIds.has(adInstanceId)) {
+    // If we've already pushed for this specific ad instance (Strict Mode)
+    if (isPushed.current) {
       setIsLoaded(true)
       return
     }
@@ -48,23 +43,23 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
     // Check if Google has already processed this element
     if (insElement.getAttribute('data-adsbygoogle-status')) {
       setIsLoaded(true)
-      pushedAdIds.add(adInstanceId)
+      isPushed.current = true
       return
     }
-
-    // Mark as pushed BEFORE calling push to prevent duplicate calls
-    pushedAdIds.add(adInstanceId)
 
     try {
       // Push the ad to be loaded
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
       setIsLoaded(true)
+      isPushed.current = true
     } catch (error) {
       console.warn('AdSense failed to load:', error)
-      pushedAdIds.delete(adInstanceId)
       setHasError(true)
     }
-  }, [adInstanceId])
+  }, [])
+
+  const publisherId =
+    process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-9556502662108721'
 
   // Don't render anything if there's an error (graceful degradation)
   if (hasError) {
@@ -116,7 +111,7 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
               }}
               data-ad-format="fluid"
               data-ad-layout-key="-fb+5w+4e-db+86"
-              data-ad-client="ca-pub-9556502662108721"
+              data-ad-client={publisherId}
               data-ad-slot="3059335227"
             />
           </>

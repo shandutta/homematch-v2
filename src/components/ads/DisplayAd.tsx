@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useId } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Share the window declaration
 declare global {
@@ -8,9 +8,6 @@ declare global {
     adsbygoogle: Array<Record<string, unknown>>
   }
 }
-
-// Track pushed ads to prevent double-push in React Strict Mode
-const pushedAdIds = new Set<string>()
 
 interface DisplayAdProps {
   /** The AdSense ad unit ID (e.g., "1234567890") */
@@ -37,35 +34,34 @@ export function DisplayAd({
 }: DisplayAdProps) {
   const adRef = useRef<HTMLDivElement>(null)
   const [hasError, setHasError] = useState(false)
-  const adInstanceId = useId()
+  // Track if pushed in this instance (persist across Strict Mode remount)
+  const isPushed = useRef(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-
-    if (pushedAdIds.has(adInstanceId)) {
-      return
-    }
+    if (isPushed.current) return
 
     const insElement = adRef.current?.querySelector('.adsbygoogle')
     if (!insElement) return
 
     if (insElement.getAttribute('data-adsbygoogle-status')) {
-      pushedAdIds.add(adInstanceId)
+      isPushed.current = true
       return
     }
 
-    pushedAdIds.add(adInstanceId)
-
     try {
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+      isPushed.current = true
     } catch (error) {
       console.warn('AdSense failed to load:', error)
-      pushedAdIds.delete(adInstanceId)
       setHasError(true)
     }
-  }, [adInstanceId])
+  }, [])
 
   if (hasError) return null
+
+  const publisherId =
+    process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-9556502662108721'
 
   return (
     <div
@@ -87,7 +83,7 @@ export function DisplayAd({
         <ins
           className="adsbygoogle"
           style={{ display: 'block', ...style }}
-          data-ad-client="ca-pub-9556502662108721"
+          data-ad-client={publisherId}
           data-ad-slot={slot}
           data-ad-format={format}
           data-full-width-responsive={responsive ? 'true' : 'false'}

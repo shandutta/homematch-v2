@@ -9,18 +9,6 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: [
-        '/dashboard/',
-        '/api/',
-        '/auth/',
-        '/settings/',
-        '/household/',
-        '/couples/',
-        '/verify-email/',
-        '/reset-password/',
-        '/invite/',
-        '/profile/',
-      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   }
