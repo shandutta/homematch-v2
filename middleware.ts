@@ -2,10 +2,75 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
 
+const SECURITY_HEADERS = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy':
+    'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+}
+
+const PUBLIC_BYPASS_PATHS = ['/api/performance/metrics', '/api/health']
+const SUPABASE_TIMEOUT_MS = parseInt(
+  process.env.MIDDLEWARE_SUPABASE_TIMEOUT_MS || '5000',
+  10
+)
+
+const applySecurityHeaders = (response: NextResponse) => {
+  Object.entries(SECURITY_HEADERS).forEach(([key, value]) =>
+    response.headers.set(key, value)
+  )
+
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Content-Security-Policy',
+      "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: https: blob:; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "frame-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "frame-ancestors 'none';"
+    )
+
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    )
+  }
+
+  return response
+}
+
+const withTimeout = async <T>(
+  promise: Promise<T>,
+  timeoutMs: number
+): Promise<T> => {
+  let timeoutId: NodeJS.Timeout
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error('Supabase auth timeout')),
+          timeoutMs
+        )
+      }),
+    ])
+  } finally {
+    clearTimeout(timeoutId!)
+  }
+}
+
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const pathname = request.nextUrl.pathname
+  let supabaseResponse = NextResponse.next({ request })
+
+  if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
+    return applySecurityHeaders(supabaseResponse)
+  }
 
   // Dynamic cookie name based on hostname
   const hostname = request.nextUrl.hostname.replace(/\./g, '-')
@@ -69,7 +134,10 @@ export async function middleware(request: NextRequest) {
   let authError = null
 
   try {
-    const result = await supabase.auth.getUser()
+    const result = await withTimeout(
+      supabase.auth.getUser(),
+      SUPABASE_TIMEOUT_MS
+    )
     user = result.data.user
     authError = result.error
 
@@ -92,6 +160,8 @@ export async function middleware(request: NextRequest) {
       })
     }
   } catch (e) {
+    const message = e instanceof Error ? e.message : String(e)
+
     // Handle thrown exceptions for invalid refresh tokens
     if (isInvalidRefreshTokenError(e)) {
       console.warn(
@@ -108,6 +178,12 @@ export async function middleware(request: NextRequest) {
           supabaseResponse.cookies.delete(cookie.name)
         }
       })
+    } else if (message.toLowerCase().includes('timeout')) {
+      console.warn(
+        '[Middleware] Supabase auth timed out - continuing as unauthenticated'
+      )
+      user = null
+      authError = null
     } else {
       throw e
     }
@@ -156,40 +232,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Add security headers
-  const response = supabaseResponse
-
-  // Security headers for protection against common attacks
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set(
-    'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
-  )
-
-  // Content Security Policy (adjust based on your needs)
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Content-Security-Policy',
-      "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
-        "img-src 'self' data: https: blob:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-ancestors 'none';"
-    )
-  }
-
-  // Strict Transport Security (HSTS) for production
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload'
-    )
-  }
+  const response = applySecurityHeaders(supabaseResponse)
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
