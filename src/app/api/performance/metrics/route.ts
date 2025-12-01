@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { createApiClient } from '@/lib/supabase/server'
 
 interface MetricsStoreEntry {
   metrics: Array<{
@@ -135,6 +136,16 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const supabase = createApiClient(request)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   // Get query parameters
   const { searchParams } = new URL(request.url)
   const page = searchParams.get('page')
@@ -165,7 +176,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     total: filtered.length,
-    metrics: filtered.slice(-100), // Return last 100
+    metrics: filtered.slice(-100).map(({ ip: _ip, ...rest }) => rest), // Return last 100, excluding IP
     aggregates,
   })
 }
