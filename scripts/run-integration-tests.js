@@ -218,7 +218,7 @@ async function run() {
       )
       process.exit(0)
     }
-  } catch (error) {
+  } catch {
     console.warn('⚠️ Failed to run Docker check. Skipping integration tests.')
     process.exit(0)
   }
