@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     total: filtered.length,
-    metrics: filtered.slice(-100), // Return last 100
+    metrics: filtered.slice(-100).map(({ ip: _ip, ...rest }) => rest), // Return last 100, excluding IP
     aggregates,
   })
 }
