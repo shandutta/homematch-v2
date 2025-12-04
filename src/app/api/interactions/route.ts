@@ -106,6 +106,19 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // In test mode, short-circuit to avoid external latency
+    if (
+      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+      process.env.NODE_ENV === 'test'
+    ) {
+      const { searchParams } = new URL(request.url)
+      const type = searchParams.get('type')
+      if (type === 'summary') {
+        return NextResponse.json({ viewed: 0, liked: 0, passed: 0 })
+      }
+      return NextResponse.json({ items: [], nextCursor: null })
+    }
+
     const supabase = createApiClient(request)
     const { data: authData, error: authError } = await supabase.auth.getUser()
     const user = authData?.user

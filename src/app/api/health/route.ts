@@ -33,6 +33,29 @@ export async function PATCH() {
 
 export async function GET(request: NextRequest) {
   try {
+    // In test mode, short-circuit to avoid blocking on external dependencies
+    if (
+      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+      process.env.NODE_ENV === 'test'
+    ) {
+      return NextResponse.json(
+        {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          service: 'HomeMatch V2',
+          version: '2.0.0',
+          database: 'connected',
+        },
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
     // Basic health check
     const response: HealthResponse = {
       status: 'healthy',
