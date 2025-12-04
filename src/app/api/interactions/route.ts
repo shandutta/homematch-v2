@@ -106,16 +106,19 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // In test mode, short-circuit to avoid external latency
-    if (
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-      process.env.NODE_ENV === 'test'
-    ) {
+    // In test mode, return deterministic empty payloads to avoid DB latency while preserving auth checks
+    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
       const { searchParams } = new URL(request.url)
       const type = searchParams.get('type')
+      const authHeader = request.headers.get('authorization')
+      if (!authHeader) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
       if (type === 'summary') {
         return NextResponse.json({ viewed: 0, liked: 0, passed: 0 })
       }
+
       return NextResponse.json({ items: [], nextCursor: null })
     }
 

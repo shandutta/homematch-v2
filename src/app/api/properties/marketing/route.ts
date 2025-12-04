@@ -48,26 +48,6 @@ interface DbPropertyRow {
 
 async function getMarketingProperties(): Promise<NextResponse> {
   try {
-    // In test mode, short-circuit to a small deterministic payload to avoid timeouts
-    if (
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-      process.env.NODE_ENV === 'test'
-    ) {
-      const seedCards: MarketingCard[] = [
-        {
-          zpid: 'test-seed-1',
-          imageUrl: 'https://example.com/test-seed-1.jpg',
-          price: 750000,
-          bedrooms: 3,
-          bathrooms: 2,
-          address: '123 Test Lane, Test City, CA, 99999',
-          latitude: 37.77,
-          longitude: -122.42,
-        },
-      ]
-      return NextResponse.json(seedCards, { status: 200 })
-    }
-
     const supabase = await createSupabaseServerClient()
 
     // Select top 3 active properties ordered by updated_at DESC NULLS LAST, price DESC
