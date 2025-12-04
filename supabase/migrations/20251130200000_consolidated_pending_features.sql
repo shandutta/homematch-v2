@@ -46,6 +46,11 @@ CREATE INDEX IF NOT EXISTS idx_property_vibes_model ON property_vibes(model_used
 
 ALTER TABLE property_vibes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "property_vibes_select_authenticated" ON property_vibes;
+DROP POLICY IF EXISTS "property_vibes_insert_service" ON property_vibes;
+DROP POLICY IF EXISTS "property_vibes_update_service" ON property_vibes;
+DROP POLICY IF EXISTS "property_vibes_delete_service" ON property_vibes;
+
 CREATE POLICY "property_vibes_select_authenticated"
   ON property_vibes FOR SELECT TO authenticated USING (true);
 
@@ -72,6 +77,8 @@ ALTER TABLE households
 
 ALTER TABLE households
   ALTER COLUMN name DROP NOT NULL;
+
+DROP POLICY IF EXISTS "Users can create households" ON households;
 
 CREATE POLICY "Users can create households" ON households
   FOR INSERT WITH CHECK (auth.uid() = created_by);
@@ -100,6 +107,10 @@ CREATE INDEX IF NOT EXISTS idx_household_invitations_token ON household_invitati
 CREATE INDEX IF NOT EXISTS idx_household_invitations_household ON household_invitations(household_id);
 
 ALTER TABLE household_invitations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their household invitations" ON household_invitations;
+DROP POLICY IF EXISTS "Users can create invitations for their household" ON household_invitations;
+DROP POLICY IF EXISTS "Users can update their own invitations" ON household_invitations;
 
 CREATE POLICY "Users can view their household invitations" ON household_invitations
   FOR SELECT USING (
@@ -211,6 +222,11 @@ COMMENT ON FUNCTION public.create_household_for_user(TEXT) IS
 -- ============================================================================
 -- 5. STORAGE RLS POLICIES FOR AVATARS BUCKET
 -- ============================================================================
+
+DROP POLICY IF EXISTS "Avatars are publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload own avatar" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own avatar" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own avatar" ON storage.objects;
 
 CREATE POLICY "Avatars are publicly accessible"
 ON storage.objects FOR SELECT
