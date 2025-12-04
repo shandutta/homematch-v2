@@ -4,28 +4,6 @@ import { CouplesService } from '@/lib/services/couples'
 
 export async function GET(request: NextRequest) {
   try {
-    // In test mode, simulate expected shapes quickly to avoid auth flakiness/timeouts
-    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-      const searchParams = request.nextUrl.searchParams
-      const propertyId = searchParams.get('propertyId')
-
-      if (!propertyId) {
-        return NextResponse.json(
-          { error: 'Property ID is required' },
-          { status: 400 }
-        )
-      }
-
-      // Require Authorization header in test mode to keep 401 behavior
-      const authHeader = request.headers.get('authorization')
-      if (!authHeader) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-
-      // Fast path: default to non-mutual for test payloads
-      return NextResponse.json({ isMutual: false }, { status: 200 })
-    }
-
     const supabase = createApiClient(request)
 
     // Get the current user

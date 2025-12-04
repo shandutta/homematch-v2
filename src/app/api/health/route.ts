@@ -12,86 +12,27 @@ interface HealthResponse {
 
 // Explicitly handle non-GET methods to avoid hanging requests in tests/E2E
 export async function OPTIONS() {
-  // In test mode, respond immediately to avoid timeouts in non-GET checks
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    return NextResponse.json({}, { status: 200 })
-  }
   return NextResponse.json({}, { status: 200 })
 }
 
 export async function POST() {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
-  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function PUT() {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
-  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function DELETE() {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
-  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function PATCH() {
-  if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
-  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // In test mode, short-circuit to a deterministic response to avoid external latency
-    if (process.env.NEXT_PUBLIC_TEST_MODE === 'true') {
-      return NextResponse.json(
-        {
-          status: 'healthy',
-          timestamp: new Date().toISOString(),
-          service: 'HomeMatch V2',
-          version: '2.0.0',
-          database: 'connected',
-        },
-        {
-          status: 200,
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-    }
-
-    // In test mode, short-circuit to avoid blocking on external dependencies
-    if (
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-      process.env.NODE_ENV === 'test'
-    ) {
-      return NextResponse.json(
-        {
-          status: 'healthy',
-          timestamp: new Date().toISOString(),
-          service: 'HomeMatch V2',
-          version: '2.0.0',
-          database: 'connected',
-        },
-        {
-          status: 200,
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-    }
-
     // Basic health check
     const response: HealthResponse = {
       status: 'healthy',
