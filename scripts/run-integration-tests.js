@@ -119,8 +119,12 @@ async function startDevServer() {
     console.debug(`🛠️ Using dev script: ${devScript}`)
   }
 
-  // Load env files in priority order
-  const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
+  // Load env files; prefer .env.test.local when present so .env.local can't override test keys
+  const envCandidates = fs.existsSync(
+    path.join(__dirname, '..', '.env.test.local')
+  )
+    ? ['.env.local', '.env.prod', '.env.test.local'] // later entries override earlier ones
+    : ['.env.prod', '.env.local']
   for (const file of envCandidates) {
     const envPath = path.join(__dirname, '..', file)
     if (fs.existsSync(envPath)) {
@@ -136,6 +140,11 @@ async function startDevServer() {
   const supabaseAnonKey =
     process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  // Force Next to load only the test env file when present to avoid .env.local overrides
+  if (fs.existsSync(path.join(__dirname, '..', '.env.test.local'))) {
+    process.env.NEXT_PRIVATE_ENV_FILES = '.env.test.local'
+  }
 
   // Build environment for dev server
   const testEnv = {
