@@ -12,18 +12,42 @@ interface HealthResponse {
 
 // Explicitly handle non-GET methods to avoid hanging requests in tests/E2E
 export async function OPTIONS() {
+  if (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    return NextResponse.json({}, { status: 200 })
+  }
   return NextResponse.json({}, { status: 200 })
 }
 
 export async function POST() {
+  if (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function PUT() {
+  if (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
 export async function DELETE() {
+  if (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  }
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
