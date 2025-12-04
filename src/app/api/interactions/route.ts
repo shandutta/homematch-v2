@@ -19,7 +19,11 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
-    const { data, error: authError } = await supabase.auth.getUser()
+    const authHeader = request.headers.get('authorization')
+    const bearer = authHeader?.replace('Bearer ', '')
+    const { data, error: authError } = bearer
+      ? await supabase.auth.getUser(bearer)
+      : await supabase.auth.getUser()
     const user = data?.user
 
     console.log('[Interactions POST] Auth result:', {
@@ -107,7 +111,11 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
-    const { data: authData, error: authError } = await supabase.auth.getUser()
+    const authHeader = request.headers.get('authorization')
+    const bearer = authHeader?.replace('Bearer ', '')
+    const { data: authData, error: authError } = bearer
+      ? await supabase.auth.getUser(bearer)
+      : await supabase.auth.getUser()
     const user = authData?.user
 
     console.log('[Interactions GET] Auth result:', {
@@ -299,7 +307,11 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
-    const { data, error: authError } = await supabase.auth.getUser()
+    const authHeader = request.headers.get('authorization')
+    const bearer = authHeader?.replace('Bearer ', '')
+    const { data, error: authError } = bearer
+      ? await supabase.auth.getUser(bearer)
+      : await supabase.auth.getUser()
     const user = data?.user
 
     console.log('[Interactions DELETE] Auth result:', {

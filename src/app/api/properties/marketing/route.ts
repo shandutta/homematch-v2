@@ -49,6 +49,7 @@ interface DbPropertyRow {
 async function getMarketingProperties(): Promise<NextResponse> {
   try {
     const supabase = await createSupabaseServerClient()
+    const QUERY_TIMEOUT_MS = 10000
 
     // Select top 3 active properties ordered by updated_at DESC NULLS LAST, price DESC
     // Execute standard query (no custom RPC in this project)
@@ -62,7 +63,7 @@ async function getMarketingProperties(): Promise<NextResponse> {
 
     if (!preferSeed && (error || data === null)) {
       // Fallback to standard query if RPC is not available
-      const { data: qData, error: qErr } = await supabase
+      const propertyQuery = supabase
         .from('properties')
         .select(
           `
@@ -83,6 +84,30 @@ async function getMarketingProperties(): Promise<NextResponse> {
         .order('price', { ascending: false, nullsFirst: false })
         .limit(10)
 
+      const queryResultPromise = Promise.race([
+        propertyQuery,
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Marketing properties query timed out')),
+            QUERY_TIMEOUT_MS
+          )
+        ),
+      ]) as Promise<{ data: DbPropertyRow[] | null; error: unknown }>
+
+      let qData: DbPropertyRow[] | null = null
+      let qErr: unknown = null
+      try {
+        const { data: qDataInner, error: qErrInner } = await queryResultPromise
+        qData = qDataInner
+        qErr = qErrInner
+      } catch (timeoutErr) {
+        console.error('Database query error:', timeoutErr)
+        return ApiErrorHandler.serverError(
+          'Failed to fetch properties',
+          timeoutErr
+        )
+      }
+
       if (qErr) {
         console.error('Database query error:', qErr)
         return ApiErrorHandler.serverError('Failed to fetch properties', qErr)
@@ -99,13 +124,17 @@ async function getMarketingProperties(): Promise<NextResponse> {
           const coords = r.coordinates
           if (coords && typeof coords === 'object') {
             // GeoJSON: { type: 'Point', coordinates: [lng, lat] }
+            const maybeGeo = coords as {
+              type?: unknown
+              coordinates?: unknown
+            }
             if (
-              coords.type === 'Point' &&
-              Array.isArray(coords.coordinates) &&
-              coords.coordinates.length === 2
+              maybeGeo.type === 'Point' &&
+              Array.isArray(maybeGeo.coordinates) &&
+              maybeGeo.coordinates.length === 2
             ) {
-              longitude = Number(coords.coordinates[0])
-              latitude = Number(coords.coordinates[1])
+              longitude = Number(maybeGeo.coordinates[0])
+              latitude = Number(maybeGeo.coordinates[1])
             }
           }
 
@@ -231,10 +260,15 @@ async function getMarketingProperties(): Promise<NextResponse> {
           : 'http://localhost:3000'
 
       for (let i = 0; i < 3; i++) {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), QUERY_TIMEOUT_MS)
+
         const res = await fetch(`${base}/api/zillow/random-image`, {
           method: 'GET',
           cache: 'no-store',
-        })
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeoutId))
+
         if (res.ok) {
           // Support both legacy single-card {url} and newer array of cards
           const payload = (await res.json()) as
