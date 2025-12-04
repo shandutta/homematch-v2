@@ -113,6 +113,12 @@ async function startDevServer() {
   // Kill any existing process on port 3000
   await killProcessOnPort(3000)
 
+  // Use a lightweight dev script that skips redundant resets during integration runs
+  const devScript = process.env.INTEGRATION_DEV_SCRIPT || 'dev:integration'
+  if (process.env.DEBUG_TEST_SETUP) {
+    console.debug(`🛠️ Using dev script: ${devScript}`)
+  }
+
   // Load env files in priority order
   const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
   for (const file of envCandidates) {
@@ -153,7 +159,7 @@ async function startDevServer() {
   delete testEnv.POSTGRES_PASSWORD
   delete testEnv.POSTGRES_PRISMA_URL
 
-  devServerProcess = spawn('pnpm', ['run', 'dev'], {
+  devServerProcess = spawn('pnpm', ['run', devScript], {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: testEnv,
     shell: true,

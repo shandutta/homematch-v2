@@ -52,6 +52,13 @@ function normalizeStatus(status?: string): {
   is_active: boolean
 } {
   const s = (status || '').toLowerCase()
+  if (
+    s.includes('off') ||
+    s.includes('not_for_sale') ||
+    s.includes('removed') ||
+    s === ''
+  )
+    return { listing_status: 'removed', is_active: false }
   if (s.includes('sold')) return { listing_status: 'sold', is_active: false }
   if (s.includes('pending') || s.includes('contingent'))
     return { listing_status: 'pending', is_active: true }

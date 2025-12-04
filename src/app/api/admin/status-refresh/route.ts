@@ -32,6 +32,14 @@ function normalizeStatus(detail: DetailsResponse): {
   is_active: boolean
 } {
   const s = (detail.homeStatus || '').toLowerCase()
+  if (
+    s.includes('off') ||
+    s.includes('not_for_sale') ||
+    s.includes('removed') ||
+    s === ''
+  ) {
+    return { listing_status: 'removed', is_active: false }
+  }
   if (s.includes('sold')) return { listing_status: 'sold', is_active: false }
   if (
     s.includes('pending') ||
@@ -52,7 +60,7 @@ async function fetchDetails(zpid: string) {
         'X-RapidAPI-Host': RAPIDAPI_HOST,
       },
     })
-    if (res.status === 404) return null
+    if (res.status === 404) return { homeStatus: 'off_market' }
     if (res.status === 429) {
       attempt++
       const backoff = 3000 * attempt
@@ -120,7 +128,7 @@ export async function POST(req: Request) {
   const { data, error } = await supabase
     .from('properties')
     .select(
-      'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price'
+      'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
     )
     .order('updated_at', { ascending: true, nullsFirst: true })
     .order('id', { ascending: true })
@@ -140,6 +148,17 @@ export async function POST(req: Request) {
   let processed = 0
   let offset = 0
   let rows = data
+  let changed = 0
+  let soldChanges = 0
+  let removedChanges = 0
+  let pendingChanges = 0
+  let activeChanges = 0
+  const changeSamples: {
+    zpid: string
+    from: string
+    to: string
+    is_active: boolean
+  }[] = []
 
   const shouldStop = () =>
     Date.now() >= deadline - stopWindowMs || processed >= maxItems
@@ -167,12 +186,12 @@ export async function POST(req: Request) {
         const details = await fetchDetails(zpid)
         requests++
         processed++
-        if (!details) {
-          await sleep(delayMs)
-          continue
-        }
-        const norm = normalizeStatus(details)
-        updates.push({
+        const norm = normalizeStatus(details || { homeStatus: 'off_market' })
+        const previousStatus = (row.listing_status as string | null) || ''
+        const previousActive =
+          typeof row.is_active === 'boolean' ? row.is_active : null
+
+        const record = {
           id: row.id,
           zpid,
           address: row.address,
@@ -187,7 +206,30 @@ export async function POST(req: Request) {
               : row.price,
           listing_status: norm.listing_status,
           is_active: norm.is_active,
-        })
+        }
+
+        const statusChanged =
+          previousStatus !== norm.listing_status ||
+          (previousActive !== null && previousActive !== norm.is_active)
+
+        if (statusChanged) {
+          changed++
+          if (norm.listing_status === 'sold') soldChanges++
+          else if (norm.listing_status === 'removed') removedChanges++
+          else if (norm.listing_status === 'pending') pendingChanges++
+          else if (norm.listing_status === 'active') activeChanges++
+
+          if (changeSamples.length < 50) {
+            changeSamples.push({
+              zpid,
+              from: previousStatus || 'unknown',
+              to: norm.listing_status,
+              is_active: norm.is_active,
+            })
+          }
+        }
+
+        updates.push(record)
         await sleep(delayMs)
       } catch (err) {
         if ((err as Error).message.includes('429')) rateLimitHits++
@@ -203,7 +245,7 @@ export async function POST(req: Request) {
     const { data: nextPage, error: nextError } = await supabase
       .from('properties')
       .select(
-        'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price'
+        'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
       )
       .order('updated_at', { ascending: true, nullsFirst: true })
       .order('id', { ascending: true })
@@ -244,6 +286,12 @@ export async function POST(req: Request) {
     updated: updates.length,
     skipped,
     processed,
+    changed,
+    soldChanges,
+    removedChanges,
+    pendingChanges,
+    activeChanges,
+    changeSamples,
     maxItems,
     batchSize,
     delayMs,

@@ -7,6 +7,7 @@
     "guard:supabase": "node scripts/guard-supabase-env.js",
     "ensure:docker": "node scripts/ensure-docker.js",
     "dev": "pnpm run guard:supabase && pnpm run ensure:docker && pnpm run db:reset && pnpm run test:setup-users && node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0 --port 3000",
+    "dev:integration": "pnpm run guard:supabase && node scripts/kill-port.js 3000 && next dev --turbopack --hostname 0.0.0.0 --port 3000",
     "dev:warmup": "node scripts/dev-warmup.js",
     "build": "next build",
     "start": "next start",

@@ -24,6 +24,13 @@ function normalizeStatus(status?: string): {
   is_active: boolean
 } {
   const s = (status || '').toLowerCase()
+  if (
+    s.includes('off') ||
+    s.includes('not_for_sale') ||
+    s.includes('removed') ||
+    s === ''
+  )
+    return { listing_status: 'removed', is_active: false }
   if (s.includes('sold')) return { listing_status: 'sold', is_active: false }
   if (s.includes('pending') || s.includes('contingent'))
     return { listing_status: 'pending', is_active: true }
@@ -38,7 +45,7 @@ async function fetchDetails(zpid: string) {
       'X-RapidAPI-Host': RAPIDAPI_HOST,
     },
   })
-  if (res.status === 404) return null
+  if (res.status === 404) return { listingStatus: 'off_market' }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return (await res.json()) as DetailsResponse
 }
@@ -67,10 +74,9 @@ async function main() {
         if (!zpid) return
         try {
           const details = await fetchDetails(zpid)
-          if (!details) return
-          const norm = normalizeStatus(details.listingStatus)
+          const norm = normalizeStatus(details?.listingStatus)
           const normalizedPrice: number | undefined =
-            typeof details.price === 'number'
+            typeof details?.price === 'number'
               ? Math.round(details.price)
               : undefined
           updates.push({
