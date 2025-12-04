@@ -3,6 +3,27 @@ import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 
+// Explicitly reject unsupported methods to avoid hanging requests in tests
+export async function POST() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function PATCH() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({ status: 'ok' }, { status: 200 })
+}
+
 export async function GET(request: NextRequest) {
   return withRateLimit(request, async () => {
     const startTime = Date.now()

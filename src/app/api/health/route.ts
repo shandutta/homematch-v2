@@ -10,6 +10,27 @@ interface HealthResponse {
   database_error?: string
 }
 
+// Explicitly handle non-GET methods to avoid hanging requests in tests/E2E
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200 })
+}
+
+export async function POST() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function PATCH() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Basic health check
