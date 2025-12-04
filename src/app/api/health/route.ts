@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiClient } from '@/lib/supabase/server'
 
 interface HealthResponse {
   status: string
@@ -31,7 +30,7 @@ export async function PATCH() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Basic health check
     const response: HealthResponse = {
@@ -43,35 +42,31 @@ export async function GET(request: NextRequest) {
 
     // Test database connectivity
     try {
-      const supabase = createApiClient(request)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-      // Add a timeout to the database query to prevent hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Database query timed out')), 5000)
-      )
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase environment variables are not configured')
+      }
 
-      const queryPromise = (async () => {
-        const query = supabase.from('properties').select('id').limit(1)
+      // Use a simple HEAD ping against PostgREST with a hard timeout to avoid long hangs
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000)
 
-        // Prefer maybeSingle to avoid false negatives on empty tables; fall back for older clients/mocks
-        const hasMaybeSingle = typeof query.maybeSingle === 'function'
-        const hasSingle = typeof query.single === 'function'
+      const ping = await fetch(`${supabaseUrl}/rest/v1/?select=id&limit=1`, {
+        method: 'HEAD',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        signal: controller.signal,
+      })
 
-        if (!hasMaybeSingle && !hasSingle) {
-          throw new Error(
-            'Health check query does not support single-row fetch'
-          )
-        }
+      clearTimeout(timeoutId)
 
-        const { error } = hasMaybeSingle
-          ? await query.maybeSingle()
-          : await query.single()
-
-        if (error) throw error
-        return true
-      })()
-
-      await Promise.race([queryPromise, timeoutPromise])
+      if (!ping.ok) {
+        throw new Error(`Supabase ping failed with status ${ping.status}`)
+      }
 
       response.database = 'connected'
     } catch (dbError) {
