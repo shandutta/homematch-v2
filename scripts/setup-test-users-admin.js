@@ -82,6 +82,10 @@ testUsers.push(
   {
     email: process.env.TEST_USER_2_EMAIL || 'test2@example.com',
     password: process.env.TEST_USER_2_PASSWORD || 'testpassword456',
+  },
+  {
+    email: process.env.TEST_USER_3_EMAIL || 'test3@example.com',
+    password: process.env.TEST_USER_3_PASSWORD || 'testpassword789',
   }
 )
 
