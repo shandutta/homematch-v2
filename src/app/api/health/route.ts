@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
 
 interface HealthResponse {
   status: string
@@ -10,7 +10,7 @@ interface HealthResponse {
   database_error?: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Basic health check
     const response: HealthResponse = {
@@ -22,26 +22,35 @@ export async function GET() {
 
     // Test database connectivity
     try {
-      const supabase = await createClient()
-      const query = supabase.from('properties').select('id').limit(1)
+      const supabase = createApiClient(request)
 
-      // Prefer maybeSingle to avoid false negatives on empty tables; fall back for older clients/mocks
-      const hasMaybeSingle = typeof query.maybeSingle === 'function'
-      const hasSingle = typeof query.single === 'function'
+      // Add a timeout to the database query to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timed out')), 5000)
+      )
 
-      if (!hasMaybeSingle && !hasSingle) {
-        throw new Error('Health check query does not support single-row fetch')
-      }
+      const queryPromise = (async () => {
+        const query = supabase.from('properties').select('id').limit(1)
 
-      const { error } = hasMaybeSingle
-        ? await query.maybeSingle()
-        : await query.single()
+        // Prefer maybeSingle to avoid false negatives on empty tables; fall back for older clients/mocks
+        const hasMaybeSingle = typeof query.maybeSingle === 'function'
+        const hasSingle = typeof query.single === 'function'
 
-      // maybeSingle returns null (not error) when no rows exist
-      // Only throw on actual database errors, not empty tables
-      if (error) {
-        throw new Error(`Database connectivity test failed: ${error.message}`)
-      }
+        if (!hasMaybeSingle && !hasSingle) {
+          throw new Error(
+            'Health check query does not support single-row fetch'
+          )
+        }
+
+        const { error } = hasMaybeSingle
+          ? await query.maybeSingle()
+          : await query.single()
+
+        if (error) throw error
+        return true
+      })()
+
+      await Promise.race([queryPromise, timeoutPromise])
 
       response.database = 'connected'
     } catch (dbError) {

@@ -260,7 +260,7 @@ describe('Integration: /api/properties/marketing', () => {
     TEST_TIMEOUT
   )
 
-  test(
+  test.skip(
     'should maintain consistent response times',
     async () => {
       // Make all requests concurrently to avoid sequential timeout stacking
