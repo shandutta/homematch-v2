@@ -120,15 +120,20 @@ async function startDevServer() {
   }
 
   // Load env files; prefer .env.test.local when present so .env.local can't override test keys
-  const envCandidates = fs.existsSync(
+  const hasTestEnv = fs.existsSync(
     path.join(__dirname, '..', '.env.test.local')
   )
-    ? ['.env.local', '.env.prod', '.env.test.local'] // later entries override earlier ones
+  const envCandidates = hasTestEnv
+    ? ['.env.test.local', '.env.prod', '.env.local']
     : ['.env.prod', '.env.local']
   for (const file of envCandidates) {
     const envPath = path.join(__dirname, '..', file)
     if (fs.existsSync(envPath)) {
-      dotenv.config({ path: envPath })
+      dotenv.config({
+        path: envPath,
+        // Ensure .env.test.local wins over any pre-existing vars (.env.local/host env)
+        override: file === '.env.test.local',
+      })
     }
   }
 
@@ -142,7 +147,7 @@ async function startDevServer() {
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   // Force Next to load only the test env file when present to avoid .env.local overrides
-  if (fs.existsSync(path.join(__dirname, '..', '.env.test.local'))) {
+  if (hasTestEnv) {
     process.env.NEXT_PRIVATE_ENV_FILES = '.env.test.local'
   }
 

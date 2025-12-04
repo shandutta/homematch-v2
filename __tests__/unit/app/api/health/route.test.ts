@@ -1,7 +1,7 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { GET as healthGet } from '@/app/api/health/route'
 
-const createClientMock = jest.fn()
+const createApiClientMock = jest.fn()
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
   json: async () => body,
@@ -17,7 +17,7 @@ jest.mock('next/server', () => ({
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
-  createClient: (...args: unknown[]) => createClientMock(...args),
+  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
 }))
 
 const mockFrom = jest.fn()
@@ -35,7 +35,7 @@ describe('GET /api/health', () => {
       limit: mockLimit,
       single: mockSingle,
     }
-    createClientMock.mockResolvedValue(supabaseMock)
+    createApiClientMock.mockReturnValue(supabaseMock)
     mockFrom.mockReturnValue(supabaseMock)
     mockSelect.mockReturnValue(supabaseMock)
     mockLimit.mockReturnValue(supabaseMock)

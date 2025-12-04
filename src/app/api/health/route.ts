@@ -55,8 +55,15 @@ export async function GET(request: NextRequest) {
       response.database = 'connected'
     } catch (dbError) {
       response.database = 'error'
-      response.database_error =
-        dbError instanceof Error ? dbError.message : 'Unknown database error'
+      const dbMessage =
+        dbError instanceof Error
+          ? dbError.message
+          : typeof (dbError as { message?: unknown })?.message === 'string'
+            ? (dbError as { message: string }).message
+            : typeof dbError === 'string'
+              ? dbError
+              : 'Unknown database error'
+      response.database_error = dbMessage
     }
 
     // Determine overall health status
