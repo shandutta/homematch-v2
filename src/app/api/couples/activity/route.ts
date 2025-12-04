@@ -44,12 +44,19 @@ export async function GET(request: NextRequest) {
       }
 
       // Get household activity (cached and optimized)
-      const activity = await CouplesService.getHouseholdActivity(
+      // Add timeout to prevent hanging
+      const activityPromise = CouplesService.getHouseholdActivity(
         supabase,
         user.id,
         limit,
         offset
       )
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Activity fetch timed out')), 10000)
+      )
+
+      const activity = await Promise.race([activityPromise, timeoutPromise])
 
       const totalTime = Date.now() - startTime
       console.log(

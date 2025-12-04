@@ -32,11 +32,32 @@ export async function DELETE(request: NextRequest) {
     )
 
     // Delete all interactions for this user
-    const { data: deletedRows, error } = await supabase
+    // Add timeout to prevent hanging
+    const deletePromise = supabase
       .from('user_property_interactions')
       .delete()
       .eq('user_id', user.id)
       .select('id')
+
+    type DeleteResult = Awaited<typeof deletePromise>
+
+    const timeoutPromise: Promise<DeleteResult> = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Reset interactions timed out')), 10000)
+    )
+
+    let deletedRows: DeleteResult['data']
+    let error: DeleteResult['error']
+    try {
+      const result = await Promise.race([deletePromise, timeoutPromise])
+      deletedRows = result.data
+      error = result.error
+    } catch (e) {
+      console.error('Reset interactions timed out or failed:', e)
+      return ApiErrorHandler.serverError(
+        'Failed to reset interactions (timeout)',
+        e
+      )
+    }
 
     console.log('[Interactions RESET] Result:', {
       deletedCount: deletedRows?.length ?? 0,

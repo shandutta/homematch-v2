@@ -137,12 +137,34 @@ export async function GET(request: NextRequest) {
       // Aggregate counts grouped by interaction_type for current user
       // Supabase JS doesn't support SQL GROUP BY directly via .group().
       // Use RPC to aggregate counts per type for the current user.
-      const { data, error } = await supabase.rpc(
-        'get_user_interaction_summary',
-        {
-          p_user_id: user.id,
-        }
+      type InteractionSummaryRow = {
+        interaction_type: DbInteractionType
+        count: number
+      }
+
+      // Add timeout for RPC call
+      const rpcPromise = supabase.rpc('get_user_interaction_summary', {
+        p_user_id: user.id,
+      })
+
+      type SummaryResult = Awaited<typeof rpcPromise>
+
+      const timeoutPromise: Promise<SummaryResult> = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Summary fetch timed out')), 10000)
       )
+
+      let rpcResult: SummaryResult
+      try {
+        rpcResult = await Promise.race([rpcPromise, timeoutPromise])
+      } catch (e) {
+        console.error('Summary fetch timed out or failed:', e)
+        return NextResponse.json(
+          { error: 'Failed to fetch summary' },
+          { status: 504 }
+        )
+      }
+
+      const { data, error } = rpcResult
 
       if (error) {
         console.error('Summary fetch failed:', error)
@@ -152,16 +174,11 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Define the expected shape of the RPC response for type safety
-      type InteractionSummaryRow = {
-        interaction_type: DbInteractionType
-        count: number
-      }
-      const typedData = data as InteractionSummaryRow[] | null
+      const summaryRows = data as InteractionSummaryRow[] | null
 
       const countFor = (...interactionTypes: DbInteractionType[]) => {
-        if (!typedData) return 0
-        return typedData
+        if (!summaryRows) return 0
+        return summaryRows
           .filter((row) => interactionTypes.includes(row.interaction_type))
           .reduce((total, row) => total + row.count, 0)
       }
@@ -193,6 +210,11 @@ export async function GET(request: NextRequest) {
     const { cursor, limit } = paginationQuery
     const dbInteractionFilters = getDbFiltersForInteractionType(type)
 
+    type InteractionWithProperty = {
+      created_at: string
+      property: Property | Property[] | null
+    }
+
     // Join interactions -> properties for the current user
     // Note: selecting nested properties requires a foreign key relationship in Supabase
     let query = supabase
@@ -218,7 +240,30 @@ export async function GET(request: NextRequest) {
       query = query.lt('created_at', cursor)
     }
 
-    const { data, error } = await query
+    type InteractionQueryResult = Awaited<typeof query>
+
+    // Add timeout for query execution
+    const timeoutPromise: Promise<InteractionQueryResult> = new Promise(
+      (_, reject) =>
+        setTimeout(
+          () => reject(new Error('Interactions list fetch timed out')),
+          10000
+        )
+    )
+
+    let queryResult: InteractionQueryResult
+    try {
+      queryResult = await Promise.race([query, timeoutPromise])
+    } catch (e) {
+      console.error('Interactions list fetch timed out or failed:', e)
+      return NextResponse.json(
+        { error: `Failed to fetch ${type} properties` },
+        { status: 504 }
+      )
+    }
+
+    const { data, error } = queryResult
+    const typedData = data as InteractionWithProperty[] | null
 
     if (error) {
       console.error('Interactions list failed:', error)
@@ -227,14 +272,6 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       )
     }
-
-    // Define the expected shape of the query response for type safety
-    // Supabase returns the joined table as an array, even for a to-one relationship.
-    type InteractionWithProperty = {
-      created_at: string
-      property: Property | Property[] | null
-    }
-    const typedData = data as InteractionWithProperty[] | null
 
     // Flatten the structure: take the first property from the array.
     const items = (typedData ?? [])
@@ -245,7 +282,9 @@ export async function GET(request: NextRequest) {
       .filter(Boolean)
 
     const nextCursor =
-      (data?.length ?? 0) === limit ? data?.[data.length - 1]?.created_at : null
+      (typedData?.length ?? 0) === limit
+        ? typedData?.[typedData.length - 1]?.created_at
+        : null
 
     return NextResponse.json({ items, nextCursor })
   } catch (err) {

@@ -82,7 +82,23 @@ export async function GET(request: NextRequest) {
         searchParams.get('includeProperties') !== 'false'
 
       // Get mutual likes for the user's household (now cached and optimized)
-      const mutualLikes = await CouplesService.getMutualLikes(supabase, user.id)
+      // Add timeout to prevent hanging
+      const mutualLikesPromise = CouplesService.getMutualLikes(
+        supabase,
+        user.id
+      )
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Mutual likes fetch timed out')),
+          10000
+        )
+      )
+
+      const mutualLikes = await Promise.race([
+        mutualLikesPromise,
+        timeoutPromise,
+      ])
 
       if (mutualLikes.length === 0) {
         return NextResponse.json({
