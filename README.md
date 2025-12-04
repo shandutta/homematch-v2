@@ -72,6 +72,11 @@ pnpm test:e2e           # Playwright E2E tests
 pnpm migrate            # Run migration script helper
 ```
 
+### Test runner notes
+
+- Integration: `pnpm test:integration` now spins the dev server via `pnpm dev:integration` (no extra db reset/user setup). Use `INTEGRATION_DEV_SCRIPT=dev` if you explicitly want the heavier path.
+- E2E (Playwright): the `webServer` uses `scripts/start-test-server-optimized.js`, which also skips db resets by default. Ensure Supabase is seeded first (run `pnpm test:integration` once), or force a reset/seed inline with `E2E_RESET_DB=true pnpm test:e2e`.
+
 ## Documentation
 
 - Setup: `docs/SETUP_GUIDE.md`
