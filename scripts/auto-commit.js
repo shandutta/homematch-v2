@@ -68,7 +68,7 @@ const AUTO_COMMIT_MODEL =
   process.env.AUTO_COMMIT_MODEL || 'google/gemini-2.0-flash-exp:free'
 const AUTO_COMMIT_FALLBACK_MODELS = (
   process.env.AUTO_COMMIT_FALLBACK_MODELS ||
-  'openai/gpt-4o-mini,openai/gpt-oss-20b'
+  'openai/gpt-oss-20b,meta-llama/llama-3.1-8b-instruct'
 )
   .split(',')
   .map((m) => m.trim())
