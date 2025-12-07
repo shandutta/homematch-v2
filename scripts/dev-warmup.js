@@ -10,8 +10,9 @@
  *   WARMUP_ROUTES            Comma-separated list of routes to hit
  *   WARMUP_READINESS_PATH    Path checked before warming (default /api/health)
  *   WARMUP_TIMEOUT_MS        Per-request timeout in ms (default 20000)
- *   WARMUP_WAIT_ATTEMPTS     How many times to poll for readiness (default 60)
+ *   WARMUP_WAIT_ATTEMPTS     How many times to poll for readiness (default 60; min wait enforced)
  *   WARMUP_WAIT_DELAY_MS     Delay between readiness polls (default 500)
+ *   WARMUP_WAIT_MAX_MS       Minimum total time to wait for readiness (default 180000)
  *   WARMUP_RETRY_ABORTED     Retry routes that timed out (default true)
  *   WARMUP_RETRY_TIMEOUT_MS  Timeout for retry attempts (default max(timeout*2, 30000))
  *   WARMUP_RETRY_DELAY_MS    Delay before retrying timed-out routes (default 1000)
@@ -45,6 +46,7 @@ const readinessPath = process.env.WARMUP_READINESS_PATH || '/api/health'
 const timeoutMs = Number(process.env.WARMUP_TIMEOUT_MS || 20000)
 const waitAttempts = Number(process.env.WARMUP_WAIT_ATTEMPTS || 60)
 const waitDelayMs = Number(process.env.WARMUP_WAIT_DELAY_MS || 500)
+const waitMaxMs = Number(process.env.WARMUP_WAIT_MAX_MS || 180_000) // allow dev+Supabase boot to finish
 const shouldStartDev =
   (process.env.WARMUP_START_DEV || 'true').toLowerCase() !== 'false'
 const devCommand = process.env.WARMUP_DEV_COMMAND || 'pnpm run dev'
@@ -60,6 +62,11 @@ const routes = (
     ? process.env.WARMUP_ROUTES.split(',').map((route) => route.trim())
     : DEFAULT_ROUTES
 ).filter(Boolean)
+
+const maxAttempts = Math.max(
+  waitAttempts,
+  Math.ceil(waitMaxMs / waitDelayMs)
+)
 
 function normalizeRoute(route) {
   if (route.startsWith('http')) return route
@@ -89,7 +96,7 @@ async function fetchWithTimeout(url, requestTimeoutMs = timeoutMs) {
 
 async function waitForServer() {
   const url = buildUrl(readinessPath)
-  for (let attempt = 1; attempt <= waitAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const res = await fetchWithTimeout(url)
       if (res.ok || res.status >= 400) {
@@ -217,7 +224,7 @@ async function main() {
   console.log(
     `Waiting for dev server at ${buildUrl(
       readinessPath
-    )} (attempts=${waitAttempts}, delay=${waitDelayMs}ms, timeout=${timeoutMs}ms; override with WARMUP_* env vars)...`
+    )} (attempts=${maxAttempts}, delay=${waitDelayMs}ms, timeout=${timeoutMs}ms; override with WARMUP_* env vars)...`
   )
 
   try {

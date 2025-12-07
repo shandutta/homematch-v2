@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
 
 interface HealthResponse {
   status: string
@@ -42,30 +43,15 @@ export async function GET(_request: NextRequest) {
 
     // Test database connectivity
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      const supabase = createApiClient()
+      const { error: dbError } = await supabase
+        .from('user_property_interactions')
+        .select('id')
+        .limit(1)
+        .single()
 
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Supabase environment variables are not configured')
-      }
-
-      // Use a simple HEAD ping against PostgREST with a hard timeout to avoid long hangs
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 3000)
-
-      const ping = await fetch(`${supabaseUrl}/rest/v1/?select=id&limit=1`, {
-        method: 'HEAD',
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-        },
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!ping.ok) {
-        throw new Error(`Supabase ping failed with status ${ping.status}`)
+      if (dbError) {
+        throw dbError
       }
 
       response.database = 'connected'

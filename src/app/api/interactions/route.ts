@@ -18,8 +18,13 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createApiClient(request)
-    const authHeader = request.headers.get('authorization')
+    const hasRequestContext =
+      typeof request?.headers?.get === 'function' &&
+      typeof request?.cookies?.getAll === 'function'
+    const supabase = createApiClient(hasRequestContext ? request : undefined)
+    const authHeader = hasRequestContext
+      ? request.headers.get('authorization')
+      : null
     const bearer = authHeader?.replace('Bearer ', '')
     const { data, error: authError } = bearer
       ? await supabase.auth.getUser(bearer)
@@ -110,8 +115,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createApiClient(request)
-    const authHeader = request.headers.get('authorization')
+    const hasRequestContext =
+      typeof request?.headers?.get === 'function' &&
+      typeof request?.cookies?.getAll === 'function'
+    const supabase = createApiClient(hasRequestContext ? request : undefined)
+    const authHeader = hasRequestContext
+      ? request.headers.get('authorization')
+      : null
     const bearer = authHeader?.replace('Bearer ', '')
     const { data: authData, error: authError } = bearer
       ? await supabase.auth.getUser(bearer)

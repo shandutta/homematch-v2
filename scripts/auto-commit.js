@@ -64,6 +64,23 @@ const timestamp = () =>
   })
 const log = (message) => console.log(`[${timestamp()}] ${message}`)
 
+const AUTO_COMMIT_MODEL =
+  process.env.AUTO_COMMIT_MODEL || 'google/gemini-2.0-flash-exp:free'
+const AUTO_COMMIT_FALLBACK_MODELS = (
+  process.env.AUTO_COMMIT_FALLBACK_MODELS ||
+  'openai/gpt-4o-mini,openai/gpt-oss-20b'
+)
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean)
+const OPENROUTER_RETRY_ATTEMPTS = Number(
+  process.env.AUTO_COMMIT_RETRY_ATTEMPTS || 2
+)
+const OPENROUTER_RETRY_BASE_DELAY_MS = Number(
+  process.env.AUTO_COMMIT_RETRY_BASE_DELAY_MS || 1200
+)
+const AUTO_COMMIT_MAX_TOKENS = Number(process.env.AUTO_COMMIT_MAX_TOKENS || 80)
+
 const resolveOpenRouterApiKey = () => {
   if (process.env.OPENROUTER_API_KEY) {
     return process.env.OPENROUTER_API_KEY
@@ -144,6 +161,43 @@ const ensureFetch = async () => {
   }
 }
 
+const parseRetryAfterMs = (response) => {
+  const header = response?.headers?.get?.('retry-after')
+  if (!header) return null
+  const seconds = Number(header)
+  if (!Number.isNaN(seconds) && seconds > 0) return seconds * 1000
+  const asDate = Date.parse(header)
+  if (!Number.isNaN(asDate)) return Math.max(0, asDate - Date.now())
+  return null
+}
+
+const backoffDelayMs = (attempt, retryAfterMs) => {
+  if (retryAfterMs && retryAfterMs > 0) return retryAfterMs
+  const base = OPENROUTER_RETRY_BASE_DELAY_MS * Math.max(1, attempt + 1)
+  const jitter = Math.floor(Math.random() * 200)
+  return Math.min(base + jitter, 10_000)
+}
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const isRetryableNetworkError = (error) => {
+  const message = (error?.message || String(error || '')).toLowerCase()
+  return (
+    message.includes('timeout') ||
+    message.includes('econnreset') ||
+    message.includes('fetch failed') ||
+    message.includes('etimedout') ||
+    message.includes('eai_again') ||
+    message.includes('network')
+  )
+}
+
+const shortenForLog = (input, max = 320) => {
+  if (!input) return ''
+  const clean = String(input).replace(/\s+/g, ' ').trim()
+  return clean.length > max ? `${clean.slice(0, max)}…` : clean
+}
+
 const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
   const apiKey = resolveOpenRouterApiKey()
   if (!apiKey) {
@@ -153,11 +207,8 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
     process.exit(1)
   }
 
-  const model =
-    process.env.AUTO_COMMIT_MODEL || 'google/gemini-2.0-flash-exp:free'
-  const payload = {
-    model,
-    max_tokens: 80,
+  const payloadBase = {
+    max_tokens: AUTO_COMMIT_MAX_TOKENS,
     temperature: 0.3,
     messages: [
       {
@@ -196,8 +247,72 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
     headers['X-Title'] = process.env.OPENROUTER_TITLE
   }
 
+  await ensureFetch()
+
+  const models = Array.from(
+    new Set([AUTO_COMMIT_MODEL, ...AUTO_COMMIT_FALLBACK_MODELS])
+  )
+  const errors = []
+
+  for (const model of models) {
+    const result = await requestCommitMessage({
+      model,
+      headers,
+      payloadBase,
+    })
+
+    if (result.ok) {
+      if (result.requestId) {
+        log(`OpenRouter request_id=${result.requestId} model=${model}`)
+      }
+      return result.message
+    }
+
+    errors.push(`${model}: ${result.error}`)
+  }
+
+  throw new Error(
+    errors.join(' | ') || 'OpenRouter failed to return commit message.'
+  )
+}
+
+const requestCommitMessage = async ({ model, headers, payloadBase }) => {
+  let lastError = 'unknown error'
+  let lastRequestId = null
+
+  for (let attempt = 0; attempt <= OPENROUTER_RETRY_ATTEMPTS; attempt++) {
+    const result = await sendOpenRouterRequest({
+      model,
+      headers,
+      payloadBase,
+    })
+
+    if (result.ok) {
+      return result
+    }
+
+    lastError = result.error || lastError
+    lastRequestId = result.requestId || lastRequestId
+
+    if (!result.retryable || attempt === OPENROUTER_RETRY_ATTEMPTS) break
+
+    const waitMs = backoffDelayMs(attempt, result.retryAfterMs)
+    log(
+      `Retrying OpenRouter (model=${model}) in ${waitMs}ms after error: ${shortenForLog(
+        lastError,
+        160
+      )}`
+    )
+    await delay(waitMs)
+  }
+
+  return { ok: false, error: lastError, requestId: lastRequestId }
+}
+
+const sendOpenRouterRequest = async ({ model, headers, payloadBase }) => {
+  const payload = { ...payloadBase, model }
+
   try {
-    await ensureFetch()
     const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
       {
@@ -207,32 +322,55 @@ const callOpenRouter = async ({ shortStatus, diffStat, diff }) => {
       }
     )
 
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(
-        `OpenRouter request failed (${response.status}): ${body || 'No body'}`
-      )
+    const requestId = response.headers.get('x-request-id') || 'n/a'
+    const responseText = await response.text()
+
+    let data = null
+    try {
+      data = JSON.parse(responseText)
+    } catch {
+      // ignore parse errors; data stays null
     }
 
-    const data = await response.json()
+    if (!response.ok) {
+      const message =
+        data?.error?.message || response.statusText || 'unknown error'
+      const retryable = response.status === 429 || response.status >= 500
+      return {
+        ok: false,
+        error: `${response.status} ${message}; request_id=${requestId}; body=${shortenForLog(
+          responseText
+        )}`,
+        retryable,
+        retryAfterMs: parseRetryAfterMs(response),
+        requestId,
+      }
+    }
+
     const message =
       data?.choices?.[0]?.message?.content?.split('\n')[0]?.trim() ?? ''
 
     if (!message) {
-      console.error(
-        `[${timestamp()}] OpenRouter response data:`,
-        JSON.stringify(data, null, 2)
-      )
-      throw new Error('OpenRouter returned an empty commit message.')
+      return {
+        ok: false,
+        error: `OpenRouter returned an empty commit message; request_id=${requestId}; body=${shortenForLog(
+          responseText
+        )}`,
+        retryable: false,
+        retryAfterMs: null,
+        requestId,
+      }
     }
 
-    return message.replace(/^"|"$/g, '')
+    return { ok: true, message: message.replace(/^"|"$/g, ''), requestId }
   } catch (error) {
-    console.error(
-      `[${timestamp()}] Failed to fetch commit message from OpenRouter:`,
-      error.message
-    )
-    process.exit(1)
+    return {
+      ok: false,
+      error: `OpenRouter request error: ${error?.message || 'unknown error'}`,
+      retryable: isRetryableNetworkError(error),
+      retryAfterMs: null,
+      requestId: null,
+    }
   }
 }
 
