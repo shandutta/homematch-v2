@@ -36,7 +36,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should accept authenticated requests', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
         const response = await client.get('/api/couples/mutual-likes')
 
         // Should not be 401 with valid auth, and should not be 500 (server error)
@@ -270,7 +270,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
   describe('Authenticated Scenarios', () => {
     test('should return mutual likes data for authenticated users', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get('/api/couples/mutual-likes')
 
@@ -301,7 +301,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should handle includeProperties parameter when authenticated', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         // Test with properties included
         const responseWithProps = await client.get(
@@ -333,7 +333,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should handle empty results gracefully', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get('/api/couples/mutual-likes')
 
@@ -359,7 +359,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
   describe('Data Structure Validation', () => {
     test('should have correct mutual likes structure when authenticated and data exists', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get('/api/couples/mutual-likes')
 

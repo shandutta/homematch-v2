@@ -66,6 +66,12 @@ export class IntegrationTestHelper {
     const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
     const supabaseKey = process.env.SUPABASE_ANON_KEY || null
 
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.log(
+        `[IntegrationTestHelper] authenticating against: ${supabaseUrl}`
+      )
+    }
+
     if (!supabaseKey) {
       throw new Error(
         'Missing SUPABASE_ANON_KEY for integration test helper. Set it via .env.test.local or .env.prod.'

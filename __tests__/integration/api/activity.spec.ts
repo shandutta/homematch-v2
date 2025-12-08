@@ -36,7 +36,7 @@ describe('E2E: /api/couples/activity', () => {
 
     test('should accept authenticated requests', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
         const response = await client.get('/api/couples/activity')
 
         // Should not be 401 with valid auth, and should not be 500 (server error)
@@ -279,7 +279,7 @@ describe('E2E: /api/couples/activity', () => {
   describe('Authenticated Scenarios', () => {
     test('should return activity data for authenticated users', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get('/api/couples/activity')
 
@@ -310,7 +310,7 @@ describe('E2E: /api/couples/activity', () => {
 
     test('should handle pagination correctly when authenticated', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get(
           '/api/couples/activity?limit=5&offset=0'

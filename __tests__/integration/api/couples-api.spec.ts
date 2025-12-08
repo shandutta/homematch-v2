@@ -334,7 +334,7 @@ describe('Couples API E2E Tests', () => {
     test('authenticated users should be able to access mutual-likes', async () => {
       try {
         // Use test user credentials
-        await client.authenticateAs('test1@example.com', 'password123')
+        await client.authenticateAs('test1@example.com', 'testpassword123')
 
         const response = await client.get('/api/couples/mutual-likes')
 

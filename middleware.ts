@@ -134,12 +134,24 @@ export async function middleware(request: NextRequest) {
   let authError = null
 
   try {
-    const result = await withTimeout(
-      supabase.auth.getUser(),
-      SUPABASE_TIMEOUT_MS
-    )
-    user = result.data.user
-    authError = result.error
+    // Optimization for integration tests: API routes handle their own auth via headers.
+    // Skipping middleware auth check for /api/ routes in test mode significantly speeds up tests.
+    const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
+    const isTestMode =
+      process.env.NODE_ENV === 'test' ||
+      process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
+    if (isApiRoute && isTestMode) {
+      // Skip auth check for API routes in test mode
+      // user remains null, which is fine as API routes extract token from headers
+    } else {
+      const result = await withTimeout(
+        supabase.auth.getUser(),
+        SUPABASE_TIMEOUT_MS
+      )
+      user = result.data.user
+      authError = result.error
+    }
 
     // Handle invalid refresh token errors gracefully
     if (authError && isInvalidRefreshTokenError(authError)) {

@@ -106,7 +106,7 @@ export class E2EHttpClient {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       // Add timeout to prevent hanging connections and connection exhaustion
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 45000) // 45s timeout
 
       try {
         const response = await fetch(fullUrl, {

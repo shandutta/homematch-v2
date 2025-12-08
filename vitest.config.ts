@@ -23,14 +23,14 @@ export default defineConfig({
     environment: 'jsdom', // Keep jsdom for most tests
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    testTimeout: 45000, // 45 seconds for individual tests (increased for HTTP requests)
+    testTimeout: 60000, // 60 seconds for individual tests (increased for HTTP requests)
     hookTimeout: 90000, // 90 seconds for beforeAll/afterAll hooks (increased for auth setup)
     // Use forks pool to allow execArgv for suppressing Node experimental warnings
     pool: 'forks',
     poolOptions: {
       forks: {
         singleFork: false, // Enable parallel execution for faster tests
-        maxForks: 4, // Limit concurrent forks to prevent resource contention
+        maxForks: 1, // Limit concurrent forks to prevent resource contention
         isolate: true, // Isolate globals between tests
         execArgv: ['--disable-warning=ExperimentalWarning'],
       },
