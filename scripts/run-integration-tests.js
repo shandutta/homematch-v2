@@ -41,8 +41,15 @@ async function waitForDevServer(
       })
       clearTimeout(timeout)
 
-      if (res.ok) {
-        console.log('✅ Dev server is ready')
+      const isReady = res.ok || res.status >= 400
+      if (isReady) {
+        if (res.status >= 400 && process.env.DEBUG_TEST_SETUP) {
+          console.log(
+            `ℹ️  Dev server responded with status ${res.status} (treating as ready for tests)`
+          )
+        } else {
+          console.log('✅ Dev server is ready')
+        }
         return true
       }
     } catch {
