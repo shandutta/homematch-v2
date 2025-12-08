@@ -53,6 +53,8 @@ supabase db reset --force   # apply migrations + seed fixtures
 
 # Run the dev server
 pnpm dev
+
+# The dev script will generate a stable NEXT_SERVER_ACTIONS_ENCRYPTION_KEY in .env.local if missing
 ```
 
 Visit `http://localhost:3000` to see the app.
