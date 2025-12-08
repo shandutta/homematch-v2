@@ -143,6 +143,10 @@ export async function middleware(request: NextRequest) {
 
     if (isApiRoute && isTestMode) {
       // Skip auth check for API routes in test mode
+      console.log(
+        '[Middleware] Skipping auth check for API route in test mode:',
+        request.nextUrl.pathname
+      )
       // user remains null, which is fine as API routes extract token from headers
     } else {
       const result = await withTimeout(
