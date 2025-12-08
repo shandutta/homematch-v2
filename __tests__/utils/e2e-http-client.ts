@@ -99,57 +99,36 @@ export class E2EHttpClient {
 
     const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`
 
-    // Retry configuration for handling parallel test load
-    const maxRetries = 3
-    const baseDelayMs = 200
+    // Add timeout to prevent hanging connections and connection exhaustion
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 45000) // 45s timeout
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      // Add timeout to prevent hanging connections and connection exhaustion
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 45000) // 45s timeout
+    try {
+      const response = await fetch(fullUrl, {
+        method,
+        headers: requestHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
 
-      try {
-        const response = await fetch(fullUrl, {
-          method,
-          headers: requestHeaders,
-          body: body ? JSON.stringify(body) : undefined,
-          signal: controller.signal,
-        })
-        clearTimeout(timeoutId)
-
-        return {
-          status: response.status,
-          headers: response.headers,
-          json: () => response.json(),
-          text: () => response.text(),
-          ok: response.ok,
-        }
-      } catch (error) {
-        clearTimeout(timeoutId)
-
-        // Handle timeout
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error(`Request to ${fullUrl} timed out after 30s`)
-        }
-
-        // Retry on connection refused (server overwhelmed by parallel tests)
-        const isConnectionError =
-          error instanceof Error &&
-          'code' in error &&
-          (error as NodeJS.ErrnoException).code === 'ECONNREFUSED'
-
-        if (isConnectionError && attempt < maxRetries) {
-          const delay = baseDelayMs * Math.pow(2, attempt)
-          await new Promise((resolve) => setTimeout(resolve, delay))
-          continue
-        }
-
-        throw error
+      return {
+        status: response.status,
+        headers: response.headers,
+        json: () => response.json(),
+        text: () => response.text(),
+        ok: response.ok,
       }
-    }
+    } catch (error) {
+      clearTimeout(timeoutId)
 
-    // TypeScript: should never reach here, but satisfy return type
-    throw new Error(`Request to ${fullUrl} failed after ${maxRetries} retries`)
+      // Handle timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request to ${fullUrl} timed out after 45s`)
+      }
+
+      throw error
+    }
   }
 
   /**

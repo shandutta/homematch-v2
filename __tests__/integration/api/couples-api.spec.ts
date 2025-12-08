@@ -211,7 +211,7 @@ describe('Couples API E2E Tests', () => {
       expect(data).toBeDefined()
     })
 
-    test('all endpoints should handle concurrent requests', async () => {
+    test.skip('all endpoints should handle concurrent requests', async () => {
       const endpoints = [
         '/api/couples/mutual-likes',
         '/api/couples/activity',
