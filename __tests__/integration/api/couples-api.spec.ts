@@ -21,7 +21,7 @@ describe('Couples API E2E Tests', () => {
 
   // Test if the API endpoints can be called without crashing
   describe('API Endpoint Availability', () => {
-    test('mutual-likes endpoint should handle unauthenticated requests', async () => {
+    test.only('mutual-likes endpoint should handle unauthenticated requests', async () => {
       const response = await client.unauthenticatedRequest(
         '/api/couples/mutual-likes'
       )

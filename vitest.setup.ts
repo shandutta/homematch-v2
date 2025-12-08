@@ -179,6 +179,14 @@ async function fetchWithRetry(
   init?: RequestInit,
   attempt = 0
 ): Promise<UndiciFetchResponse> {
+  const url = input.toString()
+  // Only log API requests to avoid noise
+  if (url.includes('/api/')) {
+    console.log(
+      `[Fetch] ${init?.method || 'GET'} ${url} (Attempt ${attempt + 1})`
+    )
+  }
+
   try {
     // Add timeout to prevent hanging requests
     const controller = new AbortController()
