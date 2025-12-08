@@ -97,7 +97,9 @@ async function main() {
   // Clear any cached modules to ensure fresh environment
   delete require.cache[require.resolve('dotenv')]
 
-  console.log('🧪 Starting Next.js in test mode (OPTIMIZED - No DB Reset)...')
+  console.log(
+    '🧪 Starting Next.js in test mode (OPTIMIZED - Warmup, no DB reset)...'
+  )
   console.log(`📦 Using Supabase at: ${supabaseServerUrl}`)
   console.log(`📱 Client URL: ${supabaseClientUrl}`)
 
@@ -122,27 +124,41 @@ async function main() {
   delete testEnv.POSTGRES_PASSWORD
   delete testEnv.POSTGRES_PRISMA_URL
 
-  // Start Next.js dev server with test environment on port 3000
-  // DIRECTLY calling next dev, skipping the heavy npm scripts
-  const nextProcess = spawn(
-    'npx',
-    ['next', 'dev', '--turbopack', '--hostname', '0.0.0.0', '--port', '3000'],
-    {
-      stdio: 'inherit',
-      env: testEnv,
-      shell: true,
-      cwd: path.join(__dirname, '..'),
-    }
+  const warmupDevCommand =
+    process.env.WARMUP_DEV_COMMAND ||
+    'npx next dev --turbopack --hostname 0.0.0.0 --port 3000'
+
+  const warmupEnv = { ...testEnv }
+  if (!warmupEnv.WARMUP_DEV_COMMAND) {
+    warmupEnv.WARMUP_DEV_COMMAND = warmupDevCommand
+  }
+
+  console.log(
+    `🔥 Launching dev:warmup (dev command: ${warmupEnv.WARMUP_DEV_COMMAND})...`
   )
 
+  const warmupProcess = spawn('pnpm', ['run', 'dev:warmup'], {
+    stdio: 'inherit',
+    env: warmupEnv,
+    shell: true,
+    cwd: path.join(__dirname, '..'),
+  })
+
   process.on('SIGINT', () => {
-    nextProcess.kill('SIGINT')
+    warmupProcess.kill('SIGINT')
     process.exit(0)
   })
 
-  nextProcess.on('error', (err) => {
-    console.error('❌ Failed to start Next.js:', err)
+  warmupProcess.on('error', (err) => {
+    console.error('❌ Failed to start Next.js via dev:warmup:', err)
     process.exit(1)
+  })
+
+  warmupProcess.on('exit', (code) => {
+    if (code) {
+      console.error(`❌ dev:warmup exited early with code ${code}`)
+      process.exit(code)
+    }
   })
 }
 

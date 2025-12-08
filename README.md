@@ -76,8 +76,8 @@ pnpm migrate            # Run migration script helper
 
 ### Test runner notes
 
-- Integration: `pnpm test:integration` now spins the dev server via `pnpm dev:integration` (no extra db reset/user setup). Use `INTEGRATION_DEV_SCRIPT=dev` if you explicitly want the heavier path.
-- E2E (Playwright): the `webServer` uses `scripts/start-test-server-optimized.js`, which also skips db resets by default. Ensure Supabase is seeded first (run `pnpm test:integration` once), or force a reset/seed inline with `E2E_RESET_DB=true pnpm test:e2e`.
+- Integration: `pnpm test:integration` starts the dev server through `pnpm dev:warmup`, which runs `pnpm dev:integration` by default to avoid extra resets while waiting for readiness. Override the script with `INTEGRATION_DEV_SCRIPT` or change the underlying dev command via `WARMUP_DEV_COMMAND`.
+- E2E (Playwright): the `webServer` uses `scripts/start-test-server-optimized.js`, which now launches `pnpm dev:warmup` (default dev command mirrors `npx next dev --turbopack`). Ensure Supabase is seeded first (run `pnpm test:integration` once), or force a reset/seed inline with `E2E_RESET_DB=true pnpm test:e2e`.
 
 ## Documentation
 

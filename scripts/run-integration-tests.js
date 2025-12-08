@@ -113,10 +113,14 @@ async function startDevServer() {
   // Kill any existing process on port 3000
   await killProcessOnPort(3000)
 
-  // Use a lightweight dev script that skips redundant resets during integration runs
-  const devScript = process.env.INTEGRATION_DEV_SCRIPT || 'dev:integration'
+  // Use warmup script so we wait for readiness; underlying command defaults to dev:integration to avoid redundant resets
+  const devScript = process.env.INTEGRATION_DEV_SCRIPT || 'dev:warmup'
+  const warmupDevCommand =
+    process.env.WARMUP_DEV_COMMAND || 'pnpm run dev:integration'
   if (process.env.DEBUG_TEST_SETUP) {
-    console.debug(`🛠️ Using dev script: ${devScript}`)
+    console.debug(
+      `🛠️ Using dev script: ${devScript} (warmup command: ${warmupDevCommand})`
+    )
   }
 
   // Load env files; prefer .env.test.local when present so .env.local can't override test keys
@@ -173,9 +177,14 @@ async function startDevServer() {
   delete testEnv.POSTGRES_PASSWORD
   delete testEnv.POSTGRES_PRISMA_URL
 
+  const warmupEnv = { ...testEnv }
+  if (!warmupEnv.WARMUP_DEV_COMMAND) {
+    warmupEnv.WARMUP_DEV_COMMAND = warmupDevCommand
+  }
+
   devServerProcess = spawn('pnpm', ['run', devScript], {
     stdio: ['pipe', 'pipe', 'pipe'],
-    env: testEnv,
+    env: warmupEnv,
     shell: true,
     cwd: path.join(__dirname, '..'),
     detached: false,
