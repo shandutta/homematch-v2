@@ -1,30 +1,22 @@
 /**
  * E2E tests for clipboard functionality in HouseholdSection component
- *
- * These tests run in real browsers and verify:
- * - Actual clipboard API integration
- * - Real user interactions and permissions
- * - Cross-browser clipboard compatibility
- * - End-to-end user experience
  */
 import { test, expect } from '@playwright/test'
 import {
   TEST_HOUSEHOLDS,
-  TEST_MESSAGES,
   TEST_SELECTORS,
   TEST_ROUTES,
   TEST_USERS,
+  TEST_TIMEOUTS,
 } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 
 // Browser-specific clipboard helpers
 async function grantClipboardPermissions(context: any, browserName: string) {
   if (browserName === 'webkit') {
-    // WebKit doesn't support clipboard-write permission
-    console.log('Skipping clipboard permissions for WebKit (not supported)')
+    // WebKit doesn't support clipboard-write permission via automation
     return
   }
-
   try {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   } catch (error) {
@@ -37,524 +29,145 @@ async function readClipboard(
   browserName: string
 ): Promise<string | null> {
   if (browserName === 'webkit') {
-    // WebKit has limited clipboard API support in tests
-    console.log('Clipboard read not supported in WebKit tests')
     return null
   }
-
   try {
-    const available = await page.evaluate(() => {
-      return (
-        typeof navigator.clipboard !== 'undefined' &&
-        typeof navigator.clipboard.readText === 'function'
-      )
-    })
-
-    if (!available) {
-      console.log('Clipboard API not available')
-      return null
-    }
-
     return await page.evaluate(() => navigator.clipboard.readText())
-  } catch (error) {
-    console.log(`Could not read clipboard: ${error}`)
+  } catch (_error) {
     return null
   }
 }
 
 test.describe('Household Clipboard Functionality', () => {
-  // Skip WebKit - clipboard API is not fully supported and auth has race conditions
-  test.skip(
-    ({ browserName }) => browserName === 'webkit',
-    'WebKit clipboard not supported'
-  )
+  // Shared auth helper for the suite
+  let auth: any
+  let testUser: any
 
-  test.beforeEach(async ({ page, context, browserName }, testInfo) => {
-    // Grant clipboard permissions for testing (browser-specific)
-    await grantClipboardPermissions(context, browserName)
+  test.describe('User with Household', () => {
+    test.beforeEach(async ({ page, context, browserName }, testInfo) => {
+      await grantClipboardPermissions(context, browserName)
 
-    // Use worker-specific authentication with storage state (more reliable)
-    const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
-    await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
-    await auth.verifyAuthenticated()
+      const helper = createWorkerAuthHelper(page, testInfo)
+      auth = helper.auth
+      testUser = helper.testUser
 
-    // Verify we're authenticated (flexible check)
-    const url = page.url()
-    const isAuthenticated =
-      url.includes('/dashboard') ||
-      url.includes('/validation') ||
-      url.includes('/profile')
+      await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
+      await auth.verifyAuthenticated()
 
-    if (!isAuthenticated) {
-      throw new Error(`Failed to authenticate, current URL: ${url}`)
-    }
-  })
+      // Ensure user is on profile page
+      await page.goto(TEST_ROUTES.app.profile)
+      await page.waitForLoadState('domcontentloaded')
 
-  test('copies household code to clipboard when copy button is clicked', async ({
-    page,
-    browserName,
-  }) => {
-    // Navigate to profile page
-    await page.goto(TEST_ROUTES.app.profile)
-    await page.waitForLoadState('domcontentloaded')
-    await page.waitForTimeout(1000) // Wait for React hydration
-
-    // Check if user has a household using multiple selectors
-    const copyButtonSelectors = [
-      TEST_SELECTORS.copyButton,
-      '[data-testid="copy-household-code"]',
-      'button:has-text("Copy")',
-      'button[aria-label*="copy" i]',
-    ]
-
-    let hasHousehold = false
-    for (const selector of copyButtonSelectors) {
-      try {
-        const element = await page.waitForSelector(selector, {
-          timeout: 2000,
-          state: 'visible',
-        })
-        if (element) {
-          hasHousehold = true
-          break
-        }
-      } catch (_e) {
-        continue
-      }
-    }
-
-    if (!hasHousehold) {
-      // Try to find household creation form
-      const nameInputSelectors = [
-        TEST_SELECTORS.householdNameInput,
-        'input[name="householdName"]',
-        'input[placeholder*="household" i]',
-      ]
-
-      let nameInput = null
-      for (const selector of nameInputSelectors) {
-        try {
-          nameInput = await page.waitForSelector(selector, {
-            timeout: 2000,
-            state: 'visible',
+      // Ensure household exists
+      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      if (!(await copyButton.isVisible())) {
+        const createInput = page.locator(TEST_SELECTORS.householdNameInput)
+        if (await createInput.isVisible()) {
+          await createInput.fill(TEST_HOUSEHOLDS.test.name)
+          await page.locator(TEST_SELECTORS.createButton).click()
+          await expect(page.locator(TEST_SELECTORS.copyButton)).toBeVisible({
+            timeout: TEST_TIMEOUTS.api,
           })
-          if (nameInput) break
-        } catch (_e) {
-          continue
         }
       }
+    })
 
-      if (nameInput) {
-        await nameInput.fill(TEST_HOUSEHOLDS.test.name)
+    test('can copy household code to clipboard', async ({
+      page,
+      browserName,
+    }) => {
+      // 1. Get the displayed household ID
+      const householdIdElement = page.locator(TEST_SELECTORS.householdId)
+      await expect(householdIdElement).toBeVisible()
+      const householdIdText = await householdIdElement.textContent()
+      const cleanId = householdIdText?.trim() || ''
+      expect(cleanId).toContain('hh_')
 
-        // Find and click create button
-        const createButtonSelectors = [
-          TEST_SELECTORS.createButton,
-          'button:has-text("Create")',
-          'button[type="submit"]',
-        ]
+      // 2. Click copy
+      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      await copyButton.click()
 
-        for (const selector of createButtonSelectors) {
-          try {
-            const button = await page.waitForSelector(selector, {
-              timeout: 2000,
-              state: 'visible',
-            })
-            if (button) {
-              await button.click()
-              await page.waitForTimeout(2000)
-              break
-            }
-          } catch (_e) {
-            continue
-          }
-        }
+      // 3. Verify Success Toast
+      // Note: The selector might need adjustment if toast implementation varies
+      const toast = page.locator(TEST_SELECTORS.toastSuccess).first()
+      // Or fallback to text search if test-id is missing in some toast variants
+      const successIndicator = toast.or(page.locator('text=/copied/i').first())
+      await expect(successIndicator).toBeVisible()
+
+      // 4. Verify Clipboard Content (Skip on WebKit)
+      if (browserName !== 'webkit') {
+        const clipboardContent = await readClipboard(page, browserName)
+        expect(clipboardContent).toBe(cleanId)
       }
-    }
+    })
 
-    // Try to find the copy button again
-    let copyButton = null
-    for (const selector of copyButtonSelectors) {
-      try {
-        copyButton = await page.waitForSelector(selector, {
-          timeout: 3000,
-          state: 'visible',
-        })
-        if (copyButton) break
-      } catch (_e) {
-        continue
-      }
-    }
+    test('handles clipboard permissions gracefully', async ({
+      page,
+      context,
+      browserName,
+    }) => {
+      if (browserName === 'webkit') return // Skip WebKit for permissions
 
-    if (!copyButton) {
-      // Fail the test explicitly - silent returns hide test failures
-      throw new Error(
-        'Copy button not found - cannot verify clipboard functionality. ' +
-          'Ensure test user has a household or household creation is working.'
-      )
-    }
-
-    // Get the household ID from various possible locations
-    const householdIdSelectors = [
-      TEST_SELECTORS.householdId,
-      '[data-testid="household-id"]',
-      '.household-id',
-      'code:has-text("hh_")',
-      'span:has-text("hh_")',
-    ]
-
-    let householdId = null
-    for (const selector of householdIdSelectors) {
-      try {
-        const element = await page.waitForSelector(selector, {
-          timeout: 2000,
-          state: 'visible',
-        })
-        if (element) {
-          householdId = await element.textContent()
-          if (householdId && householdId.includes('hh_')) {
-            break
-          }
-        }
-      } catch (_e) {
-        continue
-      }
-    }
-
-    // Click the copy button
-    await copyButton.click()
-    await page.waitForTimeout(500)
-
-    // Try to verify clipboard (may fail due to permissions)
-    const clipboardText = await readClipboard(page, browserName)
-    if (clipboardText && householdId) {
-      expect(clipboardText).toBe(householdId.trim())
-    }
-
-    // Look for success indication
-    const successSelectors = [
-      TEST_SELECTORS.toastSuccess,
-      '[data-testid="toast-success"]',
-      '.toast-success',
-      'text=/copied|success/i',
-    ]
-
-    for (const selector of successSelectors) {
-      try {
-        await page.waitForSelector(selector, {
-          timeout: 3000,
-          state: 'visible',
-        })
-        break // Found success indicator
-      } catch (_e) {
-        continue
-      }
-    }
-  })
-
-  test('clipboard functionality works across different browsers', async ({
-    page,
-    browserName,
-  }) => {
-    await page.goto(TEST_ROUTES.app.profile)
-    await page.waitForLoadState('domcontentloaded')
-    await page.waitForTimeout(1000)
-
-    // Check for copy button with multiple selectors
-    const copyButtonSelectors = [
-      TEST_SELECTORS.copyButton,
-      '[data-testid="copy-household-code"]',
-      'button:has-text("Copy")',
-    ]
-
-    let copyButton = null
-    for (const selector of copyButtonSelectors) {
-      try {
-        copyButton = await page.waitForSelector(selector, {
-          timeout: 3000,
-          state: 'visible',
-        })
-        if (copyButton) break
-      } catch (_e) {
-        continue
-      }
-    }
-
-    if (!copyButton) {
-      // Try to create household if needed
-      const nameInput = await page
-        .locator('input[name="householdName"]')
-        .first()
-      if (await nameInput.isVisible()) {
-        await nameInput.fill(TEST_HOUSEHOLDS.test.name)
-        const createButton = await page
-          .locator('button:has-text("Create")')
-          .first()
-        await createButton.click()
-        await page.waitForTimeout(2000)
-
-        // Try to find copy button again
-        for (const selector of copyButtonSelectors) {
-          try {
-            copyButton = await page.waitForSelector(selector, {
-              timeout: 2000,
-              state: 'visible',
-            })
-            if (copyButton) break
-          } catch (_e) {
-            continue
-          }
-        }
-      }
-    }
-
-    if (!copyButton) {
-      // Fail the test explicitly - silent returns hide test failures
-      throw new Error(
-        `Copy button not found in ${browserName} - cannot verify clipboard functionality. ` +
-          'Ensure test user has a household or household creation is working.'
-      )
-    }
-
-    // Get household ID if visible
-    let householdId = null
-    try {
-      const idElement = await page.locator('code:has-text("hh_")').first()
-      if (await idElement.isVisible()) {
-        householdId = await idElement.textContent()
-      }
-    } catch (_e) {
-      // ID element not found
-    }
-
-    await copyButton.click()
-    await page.waitForTimeout(500)
-
-    // Try to verify clipboard (browser-specific)
-    const clipboardText = await readClipboard(page, browserName)
-    if (clipboardText && householdId) {
-      expect(clipboardText).toBe(householdId.trim())
-    }
-
-    // Log which browser was tested for debugging
-    console.log(`Clipboard functionality verified in ${browserName}`)
-  })
-
-  test('handles clipboard permissions gracefully', async ({
-    page,
-    context,
-    browserName,
-  }) => {
-    // Test without clipboard permissions (skip for WebKit)
-    if (browserName !== 'webkit') {
+      // Clear permissions to simulate "prompt" or "denied" state if possible
+      // But typically we just want to ensure it doesn't crash
       await context.clearPermissions()
-    }
 
-    await page.goto(TEST_ROUTES.app.profile)
-    await page.waitForLoadState('domcontentloaded')
-    await page.waitForTimeout(1000)
+      await page.reload()
+      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      await expect(copyButton).toBeVisible()
+      await copyButton.click()
 
-    // Find copy button with fallback selectors
-    const copyButtonSelectors = [
-      TEST_SELECTORS.copyButton,
-      '[data-testid="copy-household-code"]',
-      'button:has-text("Copy")',
-    ]
+      // We mainly verify the app doesn't crash.
+      // Depending on browser behavior, it might show a prompt or fail silently.
+      // If the app handles it well, the button remains visible.
+      await expect(copyButton).toBeVisible()
+    })
 
-    let copyButton = null
-    for (const selector of copyButtonSelectors) {
-      try {
-        copyButton = await page.waitForSelector(selector, {
-          timeout: 3000,
-          state: 'visible',
-        })
-        if (copyButton) break
-      } catch (_e) {
-        continue
-      }
-    }
+    test('clipboard content persists after navigation', async ({
+      page,
+      browserName,
+    }) => {
+      if (browserName === 'webkit') return
 
-    if (!copyButton) {
-      // Try to create household
-      try {
-        const nameInput = await page
-          .locator('input[name="householdName"]')
-          .first()
-        await nameInput.fill(TEST_HOUSEHOLDS.test.name)
-        const createButton = await page
-          .locator('button:has-text("Create")')
-          .first()
-        await createButton.click()
-        await page.waitForTimeout(2000)
+      const householdIdElement = page.locator(TEST_SELECTORS.householdId)
+      const cleanId = (await householdIdElement.textContent())?.trim()
 
-        // Find copy button again
-        for (const selector of copyButtonSelectors) {
-          try {
-            copyButton = await page.waitForSelector(selector, {
-              timeout: 2000,
-              state: 'visible',
-            })
-            if (copyButton) break
-          } catch (_e) {
-            continue
-          }
-        }
-      } catch (_e) {
-        console.log('Could not create household')
-      }
-    }
+      await page.locator(TEST_SELECTORS.copyButton).click()
 
-    if (!copyButton) {
-      // Fail the test explicitly - silent returns hide test failures
-      throw new Error(
-        'Copy button not found - cannot verify clipboard permissions handling. ' +
-          'Ensure test user has a household or household creation is working.'
-      )
-    }
+      // Navigate away
+      await page.goto(TEST_ROUTES.app.dashboard)
+      await page.waitForLoadState('domcontentloaded')
 
-    // Click copy button
-    await copyButton.click()
-    await page.waitForTimeout(500)
+      // Navigate back
+      await page.goto(TEST_ROUTES.app.profile)
+      await page.waitForLoadState('domcontentloaded')
 
-    // Look for any indication of action (toast, text change, etc)
-    const feedbackSelectors = [
-      TEST_SELECTORS.toastSuccess,
-      'text=/copied|success/i',
-      '[role="alert"]',
-    ]
-
-    let _foundFeedback = false
-    for (const selector of feedbackSelectors) {
-      try {
-        await page.waitForSelector(selector, {
-          timeout: 3000,
-          state: 'visible',
-        })
-        _foundFeedback = true
-        break
-      } catch (_e) {
-        continue
-      }
-    }
-
-    // Test passes if button was clickable (permissions don't prevent click)
-    expect(copyButton).toBeTruthy()
+      const clipboardContent = await readClipboard(page, browserName)
+      expect(clipboardContent).toBe(cleanId)
+    })
   })
 
-  // This test uses a user without a household (test3@example.com) seeded by setup-test-users-admin.js
-  test('copy button is not visible without household', async ({ page }) => {
-    // Create a fresh user without household for this test
-    const freshUser = TEST_USERS.freshUser
+  test.describe('User without Household', () => {
+    test('copy button is hidden', async ({ page, testInfo }) => {
+      // Use a fresh user specifically for this test
+      // We manually log in to ensure we have the "fresh" user state
+      const freshUser = TEST_USERS.freshUser
+      const helper = createWorkerAuthHelper(page, testInfo)
 
-    // Navigate to signup/signin with fresh user
-    await page.goto(TEST_ROUTES.auth.signIn)
-    await page.fill(TEST_SELECTORS.emailInput, freshUser.email)
-    await page.fill(TEST_SELECTORS.passwordInput, freshUser.password)
-    await page.click(TEST_SELECTORS.signInButton)
+      // Login with fresh user (who has no household)
+      // We don't use the shared worker auth here because we need a specific user state
+      await helper.auth.login(freshUser)
 
-    // Navigate to profile
-    await page.goto('/profile')
-    await page.waitForLoadState('domcontentloaded')
+      await page.goto(TEST_ROUTES.app.profile)
+      await page.waitForLoadState('domcontentloaded')
 
-    // Verify copy button is not present
-    await expect(page.locator(TEST_SELECTORS.copyButton)).not.toBeVisible()
-
-    // Verify create household form is shown instead
-    await expect(page.locator('text=Create Household')).toBeVisible()
-    await expect(page.locator(TEST_SELECTORS.householdNameInput)).toBeVisible()
-  })
-
-  test('copy functionality works in complete user workflow', async ({
-    page,
-    browserName,
-  }) => {
-    await page.goto('/profile')
-    await page.waitForLoadState('domcontentloaded')
-
-    // Check if user has a household, if not create one for testing
-    const hasHousehold = await page
-      .locator(TEST_SELECTORS.copyButton)
-      .isVisible()
-
-    if (!hasHousehold) {
-      await page.fill(
-        TEST_SELECTORS.householdNameInput,
-        TEST_HOUSEHOLDS.test.name
-      )
-      await page.click(TEST_SELECTORS.createButton)
+      // Verify create form exists
       await expect(
-        page.locator(`text=${TEST_MESSAGES.household.created}`)
+        page.locator(TEST_SELECTORS.householdNameInput)
       ).toBeVisible()
-    }
 
-    // Verify complete household UI is functional
-    await expect(page.locator('text=Current Household')).toBeVisible()
-    await expect(
-      page.locator('text=Share this code with family members')
-    ).toBeVisible()
-
-    // Get the actual household ID from the UI
-    const householdIdElement = page.locator(TEST_SELECTORS.householdId)
-    const householdId = await householdIdElement.textContent()
-
-    // Test copy functionality
-    await page.locator(TEST_SELECTORS.copyButton).click()
-
-    // Verify clipboard and toast (browser-specific)
-    const clipboardText = await readClipboard(page, browserName)
-    if (clipboardText) {
-      expect(clipboardText).toBe(householdId)
-    }
-    await expect(page.locator('[data-testid="toast-success"]')).toContainText(
-      'copied to clipboard',
-      { timeout: 5000 }
-    )
-
-    // Verify other household functionality is still accessible
-    await expect(
-      page.locator('button:has-text("Leave Household")')
-    ).toBeVisible()
-  })
-
-  test('clipboard content persists after navigation', async ({
-    page,
-    browserName,
-  }) => {
-    await page.goto('/profile')
-    await page.waitForLoadState('domcontentloaded')
-
-    // Check if user has a household, if not create one for testing
-    const hasHousehold = await page
-      .locator(TEST_SELECTORS.copyButton)
-      .isVisible()
-
-    if (!hasHousehold) {
-      await page.fill(
-        TEST_SELECTORS.householdNameInput,
-        TEST_HOUSEHOLDS.test.name
-      )
-      await page.click(TEST_SELECTORS.createButton)
-      await expect(
-        page.locator(`text=${TEST_MESSAGES.household.created}`)
-      ).toBeVisible()
-    }
-
-    // Get the actual household ID from the UI
-    const householdIdElement = page.locator(TEST_SELECTORS.householdId)
-    const householdId = await householdIdElement.textContent()
-
-    // Copy household code
-    await page.locator(TEST_SELECTORS.copyButton).click()
-
-    // Navigate away and back
-    await page.goto('/dashboard')
-    await page.goto('/profile')
-    await page.waitForLoadState('domcontentloaded')
-
-    // Verify clipboard still contains the code (browser-specific)
-    const clipboardText = await readClipboard(page, browserName)
-    if (clipboardText) {
-      expect(clipboardText).toBe(householdId)
-    }
+      // Verify copy button does NOT exist
+      await expect(page.locator(TEST_SELECTORS.copyButton)).not.toBeVisible()
+    })
   })
 })

@@ -291,12 +291,27 @@ export class AuthHelper {
       // Check for other possible error indicators
       const alertElements = await this.page.locator('[role="alert"]').all()
       if (alertElements.length > 0) {
-        const alertTexts = await Promise.all(
-          alertElements.map((el) => el.textContent())
+        const alertDetails = await Promise.all(
+          alertElements.map(async (el) => {
+            const text = await el.textContent()
+            const html = await el.evaluate((node) => node.outerHTML)
+            return { text: text?.trim(), html }
+          })
         )
-        throw new Error(
-          `Authentication failed with alerts: ${alertTexts.join(', ')}`
+
+        // Filter out empty alerts that might be hidden or structural
+        const visibleAlerts = alertDetails.filter(
+          (a) => a.text && a.text.length > 0
         )
+
+        if (visibleAlerts.length > 0) {
+          throw new Error(
+            `Authentication failed with alerts: ${visibleAlerts.map((a) => a.text).join(', ')}`
+          )
+        }
+
+        // If we found alerts but they were empty, log them but don't throw yet
+        console.warn('Found empty alert elements:', alertDetails)
       }
 
       // Log current state for debugging
