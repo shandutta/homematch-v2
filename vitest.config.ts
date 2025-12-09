@@ -23,6 +23,7 @@ export default defineConfig({
     environment: 'jsdom', // Keep jsdom for most tests
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    reporters: ['default', './scripts/vitest-progress-reporter.ts'],
     testTimeout: 60000, // 60 seconds for individual tests (increased for HTTP requests)
     hookTimeout: 90000, // 90 seconds for beforeAll/afterAll hooks (increased for auth setup)
     // Use forks pool to allow execArgv for suppressing Node experimental warnings
