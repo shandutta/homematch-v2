@@ -258,45 +258,77 @@ export class AuthHelper {
     )
 
     // WebKit-specific: Wait for network to settle after form submission
+
     if (this.isWebKit) {
       await this.page
+
         .waitForLoadState('networkidle', { timeout: 10000 })
+
         .catch(() => {})
+
       await this.page.waitForTimeout(500) // Extra stabilization for WebKit
     }
 
+    // DEBUG: Log all network traffic to diagnose auth failure
+
+    this.page.on('request', (request) =>
+      console.log(`>> [REQUEST] ${request.method()} ${request.url()}`)
+    )
+
+    this.page.on('response', (response) =>
+      console.log(`<< [RESPONSE] ${response.status()} ${response.url()}`)
+    )
+
+    this.page.on('requestfailed', (request) =>
+      console.log(
+        `!! [FAILED] ${request.method()} ${request.url()} - ${
+          request.failure()?.errorText
+        }`
+      )
+    )
+
     // CRITICAL FIX: Wait for Supabase API response instead of client events
+
     // This avoids race conditions where navigation destroys the evaluate context
+
     try {
       // Capture ANY response to the token endpoint to debug failures
+
       const loginResponsePromise = this.page.waitForResponse(
         (response) =>
           response.url().includes('/token') &&
           response.request().method() === 'POST',
+
         { timeout: 15000 }
       )
 
       await submitButton.click()
 
       // Wait for the auth token API call
+
       const loginResponse = await loginResponsePromise
 
       if (!loginResponse.ok()) {
         const status = loginResponse.status()
+
         const body = await loginResponse.text().catch(() => 'No body')
+
         console.error(
           `❌ Auth API Request Failed: Status ${status}\nBody: ${body}`
         )
+
         throw new Error(`Auth API failed with status ${status}: ${body}`)
       }
 
       // console.log('✅ Auth API request succeeded')
     } catch (e) {
-      console.warn('⚠️ Warning: Auth API response wait failed or timed out:', e)
+      console.log('⚠️ Warning: Auth API response wait failed or timed out:', e)
+
       // Continue to navigation check - it might have succeeded anyway
     }
 
     // First, wait for navigation away from login (session establishment)
+
     try {
       await this.page.waitForFunction(
         () => !window.location.pathname.includes('/login'),
