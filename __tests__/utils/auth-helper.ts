@@ -257,9 +257,6 @@ export class AuthHelper {
       user.password
     )
 
-    // Submit form and wait for navigation away from login page
-    await submitButton.click()
-
     // WebKit-specific: Wait for network to settle after form submission
     if (this.isWebKit) {
       await this.page
@@ -268,38 +265,25 @@ export class AuthHelper {
       await this.page.waitForTimeout(500) // Extra stabilization for WebKit
     }
 
-    // CRITICAL FIX: Wait for Supabase SIGNED_IN event before navigation check
-    // This ensures the client library has processed the session and set cookies
+    // CRITICAL FIX: Wait for Supabase API response instead of client events
+    // This avoids race conditions where navigation destroys the evaluate context
     try {
-      await this.page.waitForFunction(
-        () => (window as any).createSupabaseClient !== undefined,
-        { timeout: 5000 }
+      const loginResponsePromise = this.page.waitForResponse(
+        (response) =>
+          response.url().includes('/auth/v1/token') &&
+          response.request().method() === 'POST' &&
+          response.status() === 200,
+        { timeout: 15000 }
       )
 
-      await this.page.evaluate(async () => {
-        const supabase = (window as any).createSupabaseClient()
-        return new Promise<void>((resolve, _reject) => {
-          const timeout = setTimeout(() => {
-            // Don't reject, just resolve to allow fallback to navigation check
-            // This handles cases where we might have missed the event or it's already signed in
-            console.warn('Auth event timeout - proceeding to navigation check')
-            resolve()
-          }, 10000)
+      await submitButton.click()
 
-          const {
-            data: { subscription },
-          } = supabase.auth.onAuthStateChange((event: string, session: any) => {
-            if (event === 'SIGNED_IN' && session) {
-              clearTimeout(timeout)
-              subscription.unsubscribe()
-              resolve()
-            }
-          })
-        })
-      })
-      // console.log('✅ Auth event confirmed')
+      // Wait for the auth token API call to succeed
+      await loginResponsePromise
+      // console.log('✅ Auth API request succeeded')
     } catch (e) {
-      console.warn('⚠️ Warning: Failed to wait for auth event:', e)
+      console.warn('⚠️ Warning: Auth API response wait failed or timed out:', e)
+      // Continue to navigation check - it might have succeeded anyway
     }
 
     // First, wait for navigation away from login (session establishment)
