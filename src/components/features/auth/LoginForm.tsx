@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
@@ -25,7 +24,6 @@ import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
   const supabase = createClient()
 
   // Use validated form with Zod schema
@@ -54,8 +52,9 @@ export function LoginForm() {
         return
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      // Use window.location to force a full page reload, ensuring cookies are sent
+      // This prevents race conditions with middleware
+      window.location.assign('/dashboard')
     } catch (networkError) {
       // Handle network errors or other exceptions
       setError(
