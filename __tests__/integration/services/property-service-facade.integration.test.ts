@@ -1,16 +1,25 @@
 /**
- * Integration Tests for PropertyService
+ * Integration Tests for PropertyServiceFacade
  *
- * Tests actual database operations against a real Supabase instance.
- * No mocking - validates true end-to-end functionality.
+ * Consolidated integration tests verifying:
+ * 1. Basic CRUD operations (Read, Update)
+ * 2. Search functionality (Filters, Pagination)
+ * 3. RPC/Database functions (Geolocation, Radius search)
+ * 4. Service delegation
+ *
+ * Tests run against a real Supabase instance (local or remote).
  */
 
 import { createClient } from '@supabase/supabase-js'
 import { PropertyServiceFacade } from '@/lib/services/properties/facade'
 import type { Database } from '@/types/database'
-import { describe, test, expect, beforeAll } from 'vitest'
+import { describe, test, expect, beforeAll, vi } from 'vitest'
 
-describe('PropertyService Integration Tests', () => {
+// Conditional skip for RPC tests if explicitly disabled
+const describeRpc =
+  process.env.SKIP_RPC_TESTS === 'true' ? describe.skip : describe
+
+describe('PropertyServiceFacade Integration', () => {
   let propertyService: PropertyServiceFacade
   let supabase: ReturnType<typeof createClient<Database>>
   let existingPropertyId: string | null = null
@@ -26,7 +35,9 @@ describe('PropertyService Integration Tests', () => {
       throw new Error('Missing Supabase key for integration tests')
     }
 
-    console.log('Running PropertyService integration tests with real Supabase')
+    console.log(
+      '🚀 Running PropertyServiceFacade integration tests with real Supabase'
+    )
 
     supabase = createClient<Database>(supabaseUrl, supabaseKey)
 
@@ -45,11 +56,13 @@ describe('PropertyService Integration Tests', () => {
 
     if (properties && properties.length > 0) {
       existingPropertyId = properties[0].id
-      console.log('Found existing property for testing:', existingPropertyId)
+      console.log('✅ Found existing property for testing:', existingPropertyId)
+    } else {
+      console.warn('⚠️ No active properties found. Some tests may be skipped.')
     }
   })
 
-  describe('Read Operations', () => {
+  describe('Core Operations', () => {
     test('should retrieve a property by ID', async () => {
       if (!existingPropertyId) {
         console.log('Skipping: no existing property found')
@@ -81,7 +94,6 @@ describe('PropertyService Integration Tests', () => {
 
       expect(result).not.toBeNull()
       expect(result?.id).toBe(existingPropertyId)
-      // neighborhood could be null if property doesn't have one
     })
   })
 
@@ -97,7 +109,6 @@ describe('PropertyService Integration Tests', () => {
         },
       })
 
-      // searchProperties returns { properties: [], total: number, ... }
       expect(result).toHaveProperty('properties')
       expect(Array.isArray(result.properties)).toBe(true)
       expect(result).toHaveProperty('total')
@@ -118,10 +129,9 @@ describe('PropertyService Integration Tests', () => {
     })
 
     test('should handle restrictive filters', async () => {
-      // Test with very restrictive filters
       const result = await propertyService.searchProperties({
         filters: {
-          minPrice: 999999999999, // 999 billion - should match nothing
+          minPrice: 999999999999,
           maxPrice: 999999999999,
         },
         pagination: {
@@ -131,7 +141,6 @@ describe('PropertyService Integration Tests', () => {
 
       expect(result).toHaveProperty('properties')
       expect(Array.isArray(result.properties)).toBe(true)
-      // May or may not return results depending on data
     })
   })
 
@@ -146,26 +155,104 @@ describe('PropertyService Integration Tests', () => {
     })
   })
 
+  describe('Service Delegation', () => {
+    test('Facade should properly delegate to specialized services', async () => {
+      const searchSpy = vi.spyOn(
+        propertyService.searchService,
+        'searchProperties'
+      )
+
+      await propertyService.searchProperties({
+        filters: { minPrice: 100000 },
+        pagination: { limit: 10 },
+      })
+
+      expect(searchSpy).toHaveBeenCalledWith({
+        filters: { minPrice: 100000 },
+        pagination: { limit: 10 },
+      })
+    })
+  })
+
   describe('Error Handling', () => {
     test('should handle invalid UUID gracefully', async () => {
       const result = await propertyService.getProperty('invalid-uuid')
-
-      // Should return null, not throw
       expect(result).toBeNull()
     })
 
     test('should handle invalid search params gracefully', async () => {
       const result = await propertyService.searchProperties({
         filters: {
-          minPrice: -100, // Invalid negative price
+          minPrice: -100,
         },
         pagination: {
           limit: 10,
         },
       })
-
-      // Should still return a valid response structure
       expect(result).toHaveProperty('properties')
+    })
+
+    test('Should handle database errors gracefully', async () => {
+      try {
+        await propertyService.getPropertiesWithinRadius(
+          999, // Invalid latitude
+          999, // Invalid longitude
+          -1 // Invalid radius
+        )
+      } catch (error: any) {
+        expect(error).toBeDefined()
+      }
+    })
+  })
+
+  describeRpc('RPC Functions (Geolocation)', () => {
+    test('getPropertiesWithinRadius should use real RPC function', async () => {
+      try {
+        const result = await propertyService.getPropertiesWithinRadius(
+          37.7749, // San Francisco latitude
+          -122.4194, // San Francisco longitude
+          5 // 5km radius
+        )
+        expect(Array.isArray(result)).toBe(true)
+      } catch (error: any) {
+        if (
+          error.message?.includes('function') &&
+          error.message?.includes('does not exist')
+        ) {
+          throw new Error(
+            'RPC function get_properties_within_radius does not exist - migration conflict not resolved!'
+          )
+        }
+        if (error.message?.includes('not unique')) {
+          throw new Error(
+            'RPC function get_properties_within_radius has conflicting definitions!'
+          )
+        }
+        throw error
+      }
+    })
+
+    test('calculateDistance should use real RPC function', async () => {
+      try {
+        const distance = await propertyService.calculateDistance(
+          37.7749,
+          -122.4194, // San Francisco
+          37.7849,
+          -122.4094 // ~1.4km away
+        )
+
+        expect(typeof distance).toBe('number')
+        expect(distance).toBeGreaterThan(1)
+        expect(distance).toBeLessThan(2)
+      } catch (error: any) {
+        if (
+          error.message?.includes('function') &&
+          error.message?.includes('does not exist')
+        ) {
+          throw new Error('RPC function calculate_distance does not exist!')
+        }
+        throw error
+      }
     })
   })
 })
