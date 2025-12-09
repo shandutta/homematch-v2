@@ -892,23 +892,13 @@ try {
 // Global test isolation: each test gets a clean database state
 import { beforeEach, afterEach } from 'vitest'
 
-let testStartTime = 0
+let _testStartTime = 0
 
 beforeEach(() => {
   // Record test start time for isolation
-  testStartTime = Date.now()
-
-  // Force garbage collection if available (helps with memory isolation)
-  if (global.gc) {
-    global.gc()
-  }
+  _testStartTime = Date.now()
 })
 
 afterEach(() => {
-  // Add small delay between tests to prevent race conditions
-  const testDuration = Date.now() - testStartTime
-  if (testDuration < 10) {
-    // If test was very fast, add small delay to prevent DB race conditions
-    return new Promise((resolve) => setTimeout(resolve, 10 - testDuration))
-  }
+  // No delay needed for sequential tests
 })
