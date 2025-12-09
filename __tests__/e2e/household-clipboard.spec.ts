@@ -148,7 +148,7 @@ test.describe('Household Clipboard Functionality', () => {
   })
 
   test.describe('User without Household', () => {
-    test('copy button is hidden', async ({ page, testInfo }) => {
+    test('copy button is hidden', async ({ page }, testInfo) => {
       // Use a fresh user specifically for this test
       // We manually log in to ensure we have the "fresh" user state
       const freshUser = TEST_USERS.freshUser
