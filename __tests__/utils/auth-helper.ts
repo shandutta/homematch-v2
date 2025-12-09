@@ -268,18 +268,28 @@ export class AuthHelper {
     // CRITICAL FIX: Wait for Supabase API response instead of client events
     // This avoids race conditions where navigation destroys the evaluate context
     try {
+      // Capture ANY response to the token endpoint to debug failures
       const loginResponsePromise = this.page.waitForResponse(
         (response) =>
-          response.url().includes('/auth/v1/token') &&
-          response.request().method() === 'POST' &&
-          response.status() === 200,
+          response.url().includes('/token') &&
+          response.request().method() === 'POST',
         { timeout: 15000 }
       )
 
       await submitButton.click()
 
-      // Wait for the auth token API call to succeed
-      await loginResponsePromise
+      // Wait for the auth token API call
+      const loginResponse = await loginResponsePromise
+
+      if (!loginResponse.ok()) {
+        const status = loginResponse.status()
+        const body = await loginResponse.text().catch(() => 'No body')
+        console.error(
+          `❌ Auth API Request Failed: Status ${status}\nBody: ${body}`
+        )
+        throw new Error(`Auth API failed with status ${status}: ${body}`)
+      }
+
       // console.log('✅ Auth API request succeeded')
     } catch (e) {
       console.warn('⚠️ Warning: Auth API response wait failed or timed out:', e)
