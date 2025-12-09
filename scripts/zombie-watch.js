@@ -110,6 +110,29 @@ function parsePsLine(line) {
   }
 }
 
+function readProcCmd(pid) {
+  if (!pid || Number.isNaN(pid)) return ''
+  try {
+    const raw = fs
+      .readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+      .replace(/\0/g, ' ')
+    const cleaned = raw.trim()
+    if (cleaned) return cleaned
+  } catch {
+    // Ignore read errors
+  }
+  try {
+    return fs.readFileSync(`/proc/${pid}/comm`, 'utf8').trim()
+  } catch {
+    return ''
+  }
+}
+
+function formatCmd(cmd) {
+  if (!cmd) return ''
+  return cmd.length > 200 ? `${cmd.slice(0, 197)}...` : cmd
+}
+
 function getZombies() {
   const output = run('ps -eo pid,ppid,stat,etimes,pcpu,pmem,comm,args')
   return output
@@ -136,7 +159,11 @@ function restartContainer(containerId, name, reason) {
 }
 
 function main() {
-  const zombies = getZombies()
+  const zombies = getZombies().map((proc) => ({
+    ...proc,
+    cmd: formatCmd(proc.cmd),
+    parentCmd: formatCmd(readProcCmd(proc.ppid)),
+  }))
   if (!zombies.length) {
     safeLog('No zombie processes found')
     return
@@ -144,6 +171,8 @@ function main() {
 
   const containerNames = loadContainerNames()
   const groups = new Map()
+
+  const parentGroups = new Map()
 
   zombies.forEach((proc) => {
     const containerId = findContainerIdForPid(proc.pid)
@@ -158,19 +187,39 @@ function main() {
       })
     }
     groups.get(key).zombies.push(proc)
+
+    const parentKey = `${proc.ppid || 0}:${proc.parentCmd || ''}`
+    if (!parentGroups.has(parentKey)) {
+      parentGroups.set(parentKey, {
+        ppid: proc.ppid,
+        cmd: proc.parentCmd,
+        children: [],
+      })
+    }
+    parentGroups.get(parentKey).children.push(proc.pid)
   })
 
   const summary = Array.from(groups.values()).map((group) => {
     const roster = group.zombies
       .map(
         (proc) =>
-          `pid=${proc.pid} ppid=${proc.ppid} age=${proc.etimes}s cmd="${proc.cmd}"`
+          `pid=${proc.pid} ppid=${proc.ppid} age=${proc.etimes}s cmd="${proc.cmd}" parent="${proc.parentCmd || 'unknown'}"`
       )
       .join('; ')
     return `${group.name || 'host'}: ${roster}`
   })
 
   safeLog(`Found ${zombies.length} zombie process(es): ${summary.join(' | ')}`)
+
+  if (parentGroups.size) {
+    const parentSummary = Array.from(parentGroups.values())
+      .map(
+        (parent) =>
+          `ppid=${parent.ppid} children=[${parent.children.join(',')}] parent="${parent.cmd || 'unknown'}"`
+      )
+      .join(' | ')
+    safeLog(`Zombie parents: ${parentSummary}`)
+  }
 
   groups.forEach((group) => {
     const { containerId, name, zombies: zs } = group
