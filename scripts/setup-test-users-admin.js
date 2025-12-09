@@ -114,12 +114,18 @@ async function ensureProfilesExist() {
   const profilesToUpsert = testUsers
     .map((user) => usersByEmail.get(user.email))
     .filter(Boolean)
-    .map((user) => ({
-      id: user.id,
-      onboarding_completed: true, // Set true so test users appear in partner search
-      preferences: user.user_metadata?.preferences || {},
-      updated_at: new Date().toISOString(),
-    }))
+    .map((user) => {
+      // Special handling for fresh user (test3) - needs to be NOT onboarded
+      const isFreshUser = user.email === 'test3@example.com'
+
+      return {
+        id: user.id,
+        onboarding_completed: !isFreshUser, // False for test3, True for others
+        household_id: isFreshUser ? null : undefined, // Explicitly null for test3
+        preferences: user.user_metadata?.preferences || {},
+        updated_at: new Date().toISOString(),
+      }
+    })
 
   if (profilesToUpsert.length === 0) {
     throw new Error('No test users found when ensuring profiles exist.')
@@ -345,6 +351,22 @@ async function setupTestUsers() {
             continue
           }
           throw error
+        }
+
+        // FORCE email confirmation to be 100% sure
+        // Some Supabase configs might ignore email_confirm: true in createUser
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          data.user.id,
+          {
+            email_confirm: true,
+            user_metadata: { ...data.user.user_metadata, email_verified: true },
+          }
+        )
+
+        if (updateError) {
+          console.warn(
+            `⚠️  Could not force-confirm email for ${user.email}: ${updateError.message}`
+          )
         }
 
         if (process.env.DEBUG_TEST_SETUP) {
