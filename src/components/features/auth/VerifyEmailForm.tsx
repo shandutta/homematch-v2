@@ -34,9 +34,9 @@ export function VerifyEmailForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const defaultEmail = searchParams.get('email') ?? ''
+  const defaultEmail = searchParams?.get('email') ?? ''
   const nextPath = useMemo(() => {
-    const next = searchParams.get('next')
+    const next = searchParams?.get('next')
     if (!next) return '/dashboard'
     return next.startsWith('/') ? next : `/${next}`
   }, [searchParams])

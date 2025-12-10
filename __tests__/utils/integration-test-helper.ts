@@ -231,7 +231,8 @@ export class IntegrationTestHelper {
 
     // Sign out if authenticated
     if (this.authenticatedClient) {
-      await this.authenticatedClient.auth.signOut()
+      // Use local scope so we don't revoke other workers' sessions when tests run in parallel
+      await this.authenticatedClient.auth.signOut({ scope: 'local' })
       this.authenticatedClient = null
       this.currentUser = null
     }

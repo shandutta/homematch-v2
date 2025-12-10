@@ -253,7 +253,7 @@ export class OptimizedDatabaseHelper {
     // Sign out all user clients
     for (const [email, client] of this.session.userClients) {
       try {
-        await client.auth.signOut()
+        await client.auth.signOut({ scope: 'local' })
       } catch (error) {
         console.warn(`Failed to sign out ${email}:`, error)
       }

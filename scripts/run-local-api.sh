@@ -130,6 +130,10 @@ done
 
 if [[ $curl_exit -eq 0 ]]; then
   echo "[run-local-api] [$(timestamp)] Done (success)."
+  echo "[run-local-api] EXIT_CODE=0 STATUS=success"
+  exit 0
 else
   echo "[run-local-api] [$(timestamp)] Done (curl exit code: $curl_exit)."
+  echo "[run-local-api] EXIT_CODE=$curl_exit STATUS=error"
+  exit "$curl_exit"
 fi

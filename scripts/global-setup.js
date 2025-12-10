@@ -19,6 +19,12 @@ const PLAYWRIGHT_BASELINE_FILE = path.join(
   os.tmpdir(),
   'homematch-v2-playwright-baseline.json'
 )
+const REQUIRED_TEST_EMAILS = [
+  'test1@example.com',
+  'test2@example.com',
+  'test3@example.com',
+  ...Array.from({ length: 8 }, (_, i) => `test-worker-${i}@example.com`),
+]
 
 function listPlaywrightLikeProcesses() {
   try {
@@ -108,11 +114,24 @@ async function checkTestUsersExist() {
     if (!response.ok) return false
 
     const data = await response.json()
-    return (
-      data.users &&
-      data.users.some((user) => user.email === 'test1@example.com')
+    const users = data.users || []
+    const missingUsers = REQUIRED_TEST_EMAILS.filter(
+      (email) => !users.some((user) => user.email === email)
     )
-  } catch {
+
+    if (missingUsers.length) {
+      console.log(
+        `   ⚠️  Missing ${missingUsers.length} test user(s): ${missingUsers.join(', ')}`
+      )
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.warn(
+      '   ⚠️  Could not verify existing test users:',
+      error?.message || error
+    )
     return false
   }
 }

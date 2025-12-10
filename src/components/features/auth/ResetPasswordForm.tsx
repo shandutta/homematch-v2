@@ -74,6 +74,8 @@ export function ResetPasswordForm() {
   const verifyForm = useValidatedForm(VerifySchema, { email: '', token: '' })
 
   useEffect(() => {
+    if (!searchParams) return
+
     const maybeCode = searchParams.get('code')
     const recoveryToken = searchParams.get('token')
     const recoveryTokenHash = searchParams.get('token_hash')
