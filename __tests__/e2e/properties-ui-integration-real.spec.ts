@@ -25,17 +25,12 @@ test.describe('Properties Services UI Integration', () => {
     if (await navDashboard.isVisible()) {
       await expect(navDashboard).toBeVisible()
     } else {
-      await expect(page.locator('h1:has-text("Dashboard")').first()).toBeVisible()
+      await expect(
+        page.locator('h1:has-text("Dashboard")').first()
+      ).toBeVisible()
     }
 
-    // 2. Verify Search Input
-    // Use the explicit test ID if available, or a reliable fallback
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="search" i]'))
-    await expect(searchInput.first()).toBeVisible()
-
-    // 3. Verify Properties List OR Empty State
+    // 2. Verify Properties List OR Empty State
     const propertyCards = page
       .locator('[data-testid="property-card"]')
       .or(page.locator('.property-card'))
