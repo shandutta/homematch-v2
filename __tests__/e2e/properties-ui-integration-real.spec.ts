@@ -21,13 +21,12 @@ test.describe('Properties Services UI Integration', () => {
     await page.waitForLoadState('domcontentloaded')
 
     // 1. Verify Header/Nav
-    // Adjust selector based on actual implementation
-    await expect(
-      page
-        .locator(TEST_SELECTORS.dashboardLink)
-        .first()
-        .or(page.locator('h1:has-text("Dashboard")'))
-    ).toBeVisible()
+    const navDashboard = page.locator(TEST_SELECTORS.dashboardLink).first()
+    if (await navDashboard.isVisible()) {
+      await expect(navDashboard).toBeVisible()
+    } else {
+      await expect(page.locator('h1:has-text("Dashboard")').first()).toBeVisible()
+    }
 
     // 2. Verify Search Input
     // Use the explicit test ID if available, or a reliable fallback

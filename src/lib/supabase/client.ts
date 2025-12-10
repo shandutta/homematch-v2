@@ -87,23 +87,16 @@ export function createClient() {
     )
   }
 
-  const isTestEnv =
-    process.env.NODE_ENV === 'test' ||
-    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-
-  const storageKey = isTestEnv
-    ? `supabase-browser-${process.env.VITEST_POOL_ID || '1'}-${supabaseAnonKey.slice(0, 6)}`
-    : undefined
-
-  // Dynamic cookie configuration for dev/prod
-  const cookieName =
+  const hostSlug =
     typeof window !== 'undefined' && window.location?.hostname
-      ? `sb-${window.location.hostname.replace(/\./g, '-')}-auth-token`
-      : 'sb-localhost-auth-token'
+      ? window.location.hostname.replace(/\./g, '-')
+      : 'localhost'
+  // Keep cookie/storage key aligned with middleware expectations
+  const storageKey = `sb-${hostSlug}-auth-token`
 
   const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {
-      name: cookieName,
+      name: storageKey,
       path: '/',
       sameSite: 'lax',
     },
@@ -117,10 +110,7 @@ export function createClient() {
 
   withRefreshRecovery(supabase)
 
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  return supabase
 }
 
 if (

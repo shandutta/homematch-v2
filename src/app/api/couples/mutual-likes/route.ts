@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 
@@ -67,12 +68,10 @@ export async function GET(request: NextRequest) {
       const supabase = createApiClient(request)
 
       // Get the current user
-      const authHeader = request.headers.get('authorization')
-      const bearer = authHeader?.replace('Bearer ', '')
       const {
         data: { user },
         error: authError,
-      } = await supabase.auth.getUser(bearer ?? undefined)
+      } = await getUserFromRequest(supabase, request)
 
       if (authError || !user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
