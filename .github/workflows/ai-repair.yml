@@ -1,0 +1,85 @@
+name: 🤖 AI Repair Agent
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+jobs:
+  analyze-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: 'Download Logs'
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          
+      # This step assumes we can access the failure details via GitHub API
+      - name: Analyze with LLM
+        uses: actions/github-script@v7
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 1. Get jobs for this run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: runId
+            });
+
+            // 2. Find failed job
+            const failedJob = jobs.data.jobs.find(j => j.conclusion === 'failure');
+            if (!failedJob) return;
+
+            // 3. Get logs (simplified - in reality you might need to fetch log URL)
+            const log = `Job ${failedJob.name} failed. Please check the logs.`; 
+            
+            // 4. Call OpenRouter
+            if (!process.env.OPENROUTER_API_KEY) {
+              console.log('No OpenRouter Key found. Skipping AI analysis.');
+              return;
+            }
+
+            try {
+              const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  model: 'google/gemini-flash-1.5', // Cheap & Fast
+                  messages: [
+                    {
+                      role: 'system',
+                      content: 'You are a senior software engineer. Analyze the CI failure and propose a fix. Be concise.'
+                    },
+                    {
+                      role: 'user',
+                      content: `The CI build failed. Job: ${failedJob.name}. Suggest a fix.`
+                    }
+                  ]
+                })
+              });
+              
+              const data = await response.json();
+              const analysis = data.choices[0].message.content;
+
+              // 5. Post Comment on the Commit/PR
+              // We need to find the PR or commit.
+              // For simplicity, we'll comment on the commit if possible, or just log it.
+              console.log("AI Analysis:", analysis);
+              
+              // Note: Posting to PR requires finding the PR number associated with the run
+              
+            } catch (error) {
+              console.error('Error calling LLM:', error);
+            }
