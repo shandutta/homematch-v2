@@ -2,7 +2,7 @@ name: 🤖 AI Repair Agent
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["Tests & Build Pipeline"]
     types:
       - completed
 
