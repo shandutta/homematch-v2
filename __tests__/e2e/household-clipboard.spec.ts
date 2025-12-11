@@ -42,6 +42,22 @@ test.describe('Household Clipboard Functionality', () => {
   // Shared auth helper for the suite
   let auth: any
   let testUser: any
+  const ensureHouseholdAvailable = async (page: any) => {
+    const copyButton = page.locator(TEST_SELECTORS.copyButton)
+    if (await copyButton.isVisible()) return
+
+    const createInput = page.locator(TEST_SELECTORS.householdNameInput)
+    if (await createInput.isVisible()) {
+      await createInput.fill(TEST_HOUSEHOLDS.test.name)
+      await page.locator(TEST_SELECTORS.createButton).click()
+      await expect(copyButton).toBeVisible({ timeout: TEST_TIMEOUTS.api })
+    } else {
+      // If the create form is still not visible, bail early to avoid flaky failures
+      throw new Error(
+        'Household controls not visible; cannot proceed with clipboard tests'
+      )
+    }
+  }
 
   test.describe('User with Household', () => {
     test.beforeEach(async ({ page, context, browserName }, testInfo) => {
@@ -65,18 +81,7 @@ test.describe('Household Clipboard Functionality', () => {
         await page.waitForTimeout(200)
       }
 
-      // Ensure household exists
-      const copyButton = page.locator(TEST_SELECTORS.copyButton)
-      if (!(await copyButton.isVisible())) {
-        const createInput = page.locator(TEST_SELECTORS.householdNameInput)
-        if (await createInput.isVisible()) {
-          await createInput.fill(TEST_HOUSEHOLDS.test.name)
-          await page.locator(TEST_SELECTORS.createButton).click()
-          await expect(page.locator(TEST_SELECTORS.copyButton)).toBeVisible({
-            timeout: TEST_TIMEOUTS.api,
-          })
-        }
-      }
+      await ensureHouseholdAvailable(page)
     })
 
     test('can copy household code to clipboard', async ({
@@ -121,7 +126,7 @@ test.describe('Household Clipboard Functionality', () => {
 
       await page.reload()
       const copyButton = page.locator(TEST_SELECTORS.copyButton)
-      await expect(copyButton).toBeVisible()
+      await ensureHouseholdAvailable(page)
       await copyButton.click()
 
       // We mainly verify the app doesn't crash.

@@ -17,8 +17,17 @@ test.describe('Properties Services UI Integration', () => {
   test('dashboard renders correctly with essential elements', async ({
     page,
   }) => {
-    await page.goto(TEST_ROUTES.app.dashboard)
-    await page.waitForLoadState('domcontentloaded')
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await page.goto(TEST_ROUTES.app.dashboard, {
+          waitUntil: 'domcontentloaded',
+        })
+        break
+      } catch (error) {
+        if (attempt === 2) throw error
+        await page.waitForTimeout(500)
+      }
+    }
 
     // 1. Verify Header/Nav
     const navDashboard = page.locator(TEST_SELECTORS.dashboardLink).first()

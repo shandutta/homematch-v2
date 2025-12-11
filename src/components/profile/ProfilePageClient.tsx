@@ -439,62 +439,70 @@ export function ProfilePageClient({
               </TabsList>
 
               <div className="space-y-6">
-                <TabsContent
-                  value="profile"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                  forceMount
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="card-luxury overflow-hidden p-6 sm:p-8"
-                  >
-                    <div className="mb-6 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                        <UserIcon className="text-hm-stone-400 h-5 w-5" />
-                      </div>
-                      <div>
-                        <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
-                          Profile Information
-                        </h2>
-                        <p className="text-hm-stone-500 text-sm">
-                          Update your personal details
-                        </p>
-                      </div>
-                    </div>
-                    <ProfileForm user={user} profile={profile} />
-                  </motion.div>
-                </TabsContent>
+                <AnimatePresence mode="wait">
+                  {activeTab === 'profile' && (
+                    <TabsContent
+                      key="profile"
+                      value="profile"
+                      className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="card-luxury overflow-hidden p-6 sm:p-8"
+                      >
+                        <div className="mb-6 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                            <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                          </div>
+                          <div>
+                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                              Profile Information
+                            </h2>
+                            <p className="text-hm-stone-500 text-sm">
+                              Update your personal details
+                            </p>
+                          </div>
+                        </div>
+                        <ProfileForm user={user} profile={profile} />
+                      </motion.div>
+                    </TabsContent>
+                  )}
 
-                <TabsContent
-                  value="household"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                  data-testid="household-section"
-                  forceMount
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <HouseholdSection profile={profile} />
-                  </motion.div>
-                </TabsContent>
+                  {activeTab === 'household' && (
+                    <TabsContent
+                      key="household"
+                      value="household"
+                      className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                      data-testid="household-section"
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <HouseholdSection profile={profile} />
+                      </motion.div>
+                    </TabsContent>
+                  )}
 
-                <TabsContent
-                  value="activity"
-                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
-                  forceMount
-                >
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ActivityStats summary={activitySummary} />
-                  </motion.div>
-                </TabsContent>
+                  {activeTab === 'activity' && (
+                    <TabsContent
+                      key="activity"
+                      value="activity"
+                      className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ActivityStats summary={activitySummary} />
+                      </motion.div>
+                    </TabsContent>
+                  )}
+                </AnimatePresence>
               </div>
             </Tabs>
           </motion.div>

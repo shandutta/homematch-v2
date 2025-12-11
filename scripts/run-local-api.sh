@@ -113,16 +113,31 @@ fi
 
 attempt=1
 curl_exit=1
+http_status=""
+response_file=""
 while (( attempt <= RETRIES )); do
   echo "[run-local-api] [$(timestamp)] Hitting endpoint (attempt $attempt/$RETRIES): $ENDPOINT"
-  curl -sS -X POST --max-time "$CURL_TIMEOUT" "$ENDPOINT"
+  response_file=$(mktemp)
+  set +e
+  http_status=$(curl -sS --fail-with-body -X POST --max-time "$CURL_TIMEOUT" -w '%{http_code}' -o "$response_file" "$ENDPOINT")
   curl_exit=$?
+  set -e
+  response_body="$(cat "$response_file")"
+  rm -f "$response_file"
+
+  if [[ $curl_exit -eq 0 && -z "${response_body//[[:space:]]/}" ]]; then
+    echo "[run-local-api] Empty response body; treating as failure"
+    curl_exit=52
+  fi
+
+  echo "$response_body"
   echo
+
   if [[ $curl_exit -eq 0 ]]; then
     break
   fi
   if (( attempt < RETRIES )); then
-    echo "[run-local-api] curl failed with exit code $curl_exit; retrying in ${RETRY_DELAY}s..."
+    echo "[run-local-api] curl failed (status: ${http_status:-unknown}, exit: $curl_exit); retrying in ${RETRY_DELAY}s..."
     sleep "$RETRY_DELAY"
   fi
   ((attempt++))

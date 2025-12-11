@@ -97,6 +97,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, summary }, { status: 200 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'unknown error'
+    console.error('[ingest-zillow] failed', {
+      error: message,
+      stack: err instanceof Error ? err.stack : undefined,
+    })
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
