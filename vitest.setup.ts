@@ -312,65 +312,10 @@ if (
 }
 
 // Mock window.matchMedia for framer-motion (required for prefers-reduced-motion detection)
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
+import { setupBrowserMocks } from './__tests__/utils/browser-mocks'
 
-// Mock ResizeObserver for framer-motion projection system
-class MockResizeObserver {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
-}
-Object.defineProperty(globalThis, 'ResizeObserver', {
-  writable: true,
-  configurable: true,
-  value: MockResizeObserver,
-})
-
-// Mock visualViewport for framer-motion resize listener
-Object.defineProperty(window, 'visualViewport', {
-  writable: true,
-  configurable: true,
-  value: {
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    width: 1024,
-    height: 768,
-    offsetLeft: 0,
-    offsetTop: 0,
-    pageLeft: 0,
-    pageTop: 0,
-    scale: 1,
-    onresize: null,
-    onscroll: null,
-  },
-})
-
-// Mock clipboard API for @testing-library/user-event
-Object.defineProperty(navigator, 'clipboard', {
-  writable: true,
-  configurable: true,
-  value: {
-    writeText: vi.fn().mockResolvedValue(undefined),
-    readText: vi.fn().mockResolvedValue(''),
-    write: vi.fn().mockResolvedValue(undefined),
-    read: vi.fn().mockResolvedValue([]),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  },
-})
+// Initialize shared browser mocks
+setupBrowserMocks()
 
 // Mock framer-motion to avoid projection system issues in JSDOM
 vi.mock('framer-motion', async () => {
@@ -446,43 +391,6 @@ vi.mock('framer-motion', async () => {
     domAnimation: {},
     domMax: {},
   }
-})
-
-// Mock canvas API for image-blur tests
-Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
-  value: () => {
-    return {
-      fillStyle: '',
-      fillRect: () => {},
-      getImageData: () => ({ data: new Uint8ClampedArray(4) }),
-      putImageData: () => {},
-      createImageData: () => ({ data: new Uint8ClampedArray(4) }),
-      setTransform: () => {},
-      drawImage: () => {},
-      save: () => {},
-      fillText: () => {},
-      restore: () => {},
-      beginPath: () => {},
-      moveTo: () => {},
-      lineTo: () => {},
-      closePath: () => {},
-      stroke: () => {},
-      translate: () => {},
-      scale: () => {},
-      rotate: () => {},
-      arc: () => {},
-      fill: () => {},
-      measureText: () => ({ width: 0 }),
-      transform: () => {},
-      rect: () => {},
-      clip: () => {},
-    }
-  },
-})
-
-// Mock HTMLCanvasElement.toDataURL
-Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
-  value: () => 'data:image/png;base64,test',
 })
 
 // Vitest is used for integration tests only

@@ -120,8 +120,9 @@ async function startDevServer() {
   // Kill any existing process on port 3000
   await killProcessOnPort(3000)
 
-  // Use warmup script so we wait for readiness; underlying command defaults to dev:integration to avoid redundant resets
-  const devScript = process.env.INTEGRATION_DEV_SCRIPT || 'dev:warmup'
+  // Use dev:integration directly to ensure the server stays alive
+  // dev:warmup was causing issues where the process would exit after warmup
+  const devScript = process.env.INTEGRATION_DEV_SCRIPT || 'dev:integration'
   const warmupDevCommand =
     process.env.WARMUP_DEV_COMMAND || 'pnpm run dev:integration'
   if (process.env.DEBUG_TEST_SETUP) {

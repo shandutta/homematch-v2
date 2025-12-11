@@ -16,7 +16,7 @@ const config = {
   // Auth service readiness settings
   authReadiness: {
     // Maximum number of attempts to check if auth service is ready
-    maxAttempts: parseInt(process.env.AUTH_READY_ATTEMPTS ?? '30', 10), // Up from 10
+    maxAttempts: parseInt(process.env.AUTH_READY_ATTEMPTS ?? '60', 10), // Up from 10 to 60 for 3 min wait
     // Initial delay between retry attempts (ms)
     retryDelayMs: parseInt(process.env.AUTH_READY_DELAY_MS ?? '3000', 10), // Up from 2000
     // Maximum total wait time (ms) - fail fast if exceeded

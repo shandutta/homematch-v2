@@ -11,6 +11,7 @@ export default class ProgressReporter implements Reporter {
   total = 0
   finished = 0
   processed = new Set<string>()
+  started = new Set<string>()
   tasksById = new Map<string, Task>()
 
   onInit() {
@@ -45,8 +46,24 @@ export default class ProgressReporter implements Reporter {
       task.result = result
 
       if (!this.isFileTask(task)) continue
-      const { id, result: fileResult } = task
+      const { id, result: fileResult, name } = task
       if (!id || !fileResult) continue
+
+      // Log start of file execution
+      if (
+        fileResult.state === 'run' ||
+        fileResult.state === 'pass' ||
+        fileResult.state === 'fail'
+      ) {
+        if (!this.started.has(id)) {
+          this.started.add(id)
+          // Clean up the name to be relative/shorter if possible
+          const shortName = name.split('/').slice(-2).join('/')
+          console.log(
+            `▶️  [${this.started.size}/${this.total}] Running: ${shortName}`
+          )
+        }
+      }
 
       // Check if file is completely done
       // The file.result.state will be 'pass' or 'fail' when the file execution is complete

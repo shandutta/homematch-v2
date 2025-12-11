@@ -5,6 +5,38 @@ import {
 } from '@/lib/image-blur'
 
 describe('image-blur utilities', () => {
+  // Helper to mock canvas for this suite
+  const mockCanvas = (shouldSucceed = true) => {
+    const originalCreateElement = document.createElement
+    const mockContext = {
+      createLinearGradient: jest.fn().mockReturnValue({
+        addColorStop: jest.fn(),
+      }),
+      fillStyle: null,
+      fillRect: jest.fn(),
+    }
+
+    document.createElement = jest.fn().mockImplementation((tagName: string) => {
+      if (tagName === 'canvas') {
+        return {
+          width: 0,
+          height: 0,
+          getContext: jest
+            .fn()
+            .mockReturnValue(shouldSucceed ? mockContext : null),
+          toDataURL: jest
+            .fn()
+            .mockReturnValue('data:image/png;base64,mockDataURL'),
+        }
+      }
+      return originalCreateElement.call(document, tagName)
+    })
+
+    return () => {
+      document.createElement = originalCreateElement
+    }
+  }
+
   describe('generateBlurDataURL', () => {
     test('returns server-side fallback when canvas creation returns null', () => {
       // Mock document.createElement to return null for canvas, simulating server-side
@@ -30,39 +62,44 @@ describe('image-blur utilities', () => {
     })
 
     test('creates canvas blur when browser environment is available', () => {
+      const restore = mockCanvas(true)
+
       // Ensure we have window/document available (jsdom provides this)
       expect(typeof window).toBe('object')
       expect(typeof document).toBe('object')
 
       const result = generateBlurDataURL()
 
-      // Should return our mocked canvas data URL from jest.setup.js
+      // Should return our mocked canvas data URL
       expect(result).toBe('data:image/png;base64,mockDataURL')
+
+      restore()
     })
 
     test('creates canvas with custom dimensions', () => {
+      const restore = mockCanvas(true)
       const result = generateBlurDataURL(16, 20)
 
       // Should still return mocked data URL regardless of dimensions
       expect(result).toBe('data:image/png;base64,mockDataURL')
+      restore()
     })
 
     test('handles getContext returning null', () => {
-      // Mock getContext to return null
-      const originalGetContext = HTMLCanvasElement.prototype.getContext
-      HTMLCanvasElement.prototype.getContext = jest.fn(() => null)
+      const restore = mockCanvas(false) // mock canvas where getContext returns null
 
       const result = generateBlurDataURL()
 
       // Should return empty string when context is null
       expect(result).toBe('')
 
-      // Restore original mock
-      HTMLCanvasElement.prototype.getContext = originalGetContext
+      restore()
     })
   })
 
   describe('getPropertyBlurPlaceholder', () => {
+    // We need mockCanvas for the fallback case
+
     test('returns house-1 placeholder for house-1 images', () => {
       const result = getPropertyBlurPlaceholder(
         '/images/house-1-living-room.jpg'
@@ -81,8 +118,10 @@ describe('image-blur utilities', () => {
     })
 
     test('returns generated blur for unknown images', () => {
+      const restore = mockCanvas(true)
       const result = getPropertyBlurPlaceholder('/images/random-property.jpg')
       expect(result).toBe('data:image/png;base64,mockDataURL')
+      restore()
     })
 
     test('matches house patterns anywhere in path', () => {
@@ -98,11 +137,13 @@ describe('image-blur utilities', () => {
     })
 
     test('is case sensitive', () => {
+      const restore = mockCanvas(true)
       const result = getPropertyBlurPlaceholder(
         '/images/House-1-living-room.jpg'
       )
       // Should not match because of capital H
       expect(result).toBe('data:image/png;base64,mockDataURL')
+      restore()
     })
   })
 
