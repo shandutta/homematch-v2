@@ -12,6 +12,7 @@ export default class ProgressReporter implements Reporter {
   finished = 0
   processed = new Set<string>()
   started = new Set<string>()
+  collectedFiles = new Set<string>()
   tasksById = new Map<string, Task>()
 
   onInit() {
@@ -19,18 +20,14 @@ export default class ProgressReporter implements Reporter {
   }
 
   onCollected(files: File[]) {
-    this.total = files.length
-    this.tasksById.clear()
-
     for (const file of files) {
+      if (!this.collectedFiles.has(file.id)) {
+        this.collectedFiles.add(file.id)
+      }
       this.collectTask(file)
     }
 
-    console.log(`
-📊  Test Suite Progress Tracker Initialized`)
-    console.log(`📝  Found ${this.total} test files to run. `)
-    console.log(`⏳  Estimating completion time...
-`)
+    this.total = this.collectedFiles.size
   }
 
   onTaskUpdate(packs: TaskResultPack[], _events: RunnerTaskEventPack[]) {
@@ -91,14 +88,16 @@ export default class ProgressReporter implements Reporter {
     const estRemainingMs = avgTimePerFile * remainingFiles
 
     const elapsedStr = this.formatTime(elapsedMs)
-    const estStr = this.formatTime(estRemainingMs)
     const percent = Math.round((this.finished / this.total) * 100)
 
-    console.log(
-      `⏱️  [${percent}%] ${this.finished}/${this.total} files. ` +
-        `Elapsed: ${elapsedStr}. ` +
-        `Est. Remaining: ${estStr}`
-    )
+    let msg = `⏱️  [${percent}%] ${this.finished}/${this.total} files. Elapsed: ${elapsedStr}.`
+
+    if (remainingFiles > 0) {
+      const estStr = this.formatTime(estRemainingMs)
+      msg += ` Est. Remaining: ${estStr}`
+    }
+
+    console.log(msg)
   }
 
   formatTime(ms: number): string {

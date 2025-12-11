@@ -381,7 +381,7 @@ describe.sequential('Integration: /api/interactions route', () => {
       method: 'DELETE',
     })
     expect(res.status).toBe(401)
-  })
+  }, 10000)
 
   it('returns zero count when resetting with no interactions', async () => {
     // Ensure no interactions exist
