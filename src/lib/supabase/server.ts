@@ -3,6 +3,7 @@ import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from './auth-helpers'
+import { getSupabaseAuthStorageKey } from './storage-keys'
 
 const clearStaleSession = async (supabase: SupabaseClient) => {
   try {
@@ -83,8 +84,8 @@ export async function createClient() {
 
   // Dynamic cookie name from host header
   const host = headerStore.get('host') || 'localhost:3000'
-  const hostname = host.split(':')[0].replace(/\./g, '-')
-  const cookieName = `sb-${hostname}-auth-token`
+  const hostname = host.split(':')[0]
+  const cookieName = getSupabaseAuthStorageKey(hostname)
 
   // Check for Authorization header (for API routes)
   const authHeader = headerStore.get('authorization')
@@ -161,11 +162,11 @@ export function createApiClient(request?: NextRequest) {
 
     // Get hostname for consistent cookie naming
     const host = request.headers.get('host') || 'localhost:3000'
-    hostname = host.split(':')[0].replace(/\./g, '-')
+    hostname = host.split(':')[0]
   }
 
   const bearerToken = authHeader?.replace('Bearer ', '')
-  const cookieName = `sb-${hostname}-auth-token`
+  const cookieName = getSupabaseAuthStorageKey(hostname)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

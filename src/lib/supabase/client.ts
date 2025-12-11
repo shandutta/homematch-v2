@@ -1,6 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
 import { isInvalidRefreshTokenError } from './auth-helpers'
+import { getSupabaseAuthStorageKey } from './storage-keys'
 
 const clearStaleSession = async (supabase: SupabaseClient) => {
   try {
@@ -87,12 +88,12 @@ export function createClient() {
     )
   }
 
-  const hostSlug =
+  const hostname =
     typeof window !== 'undefined' && window.location?.hostname
-      ? window.location.hostname.replace(/\./g, '-')
+      ? window.location.hostname
       : 'localhost'
-  // Keep cookie/storage key aligned with middleware expectations
-  const storageKey = `sb-${hostSlug}-auth-token`
+  // Keep cookie/storage key aligned with middleware expectations and Supabase project fingerprint
+  const storageKey = getSupabaseAuthStorageKey(hostname)
 
   const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {

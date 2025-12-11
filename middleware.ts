@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
+import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
 
 const SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
@@ -73,8 +74,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Dynamic cookie name based on hostname
-  const hostname = request.nextUrl.hostname.replace(/\./g, '-')
-  const cookieName = `sb-${hostname}-auth-token`
+  const hostname = request.nextUrl.hostname
+  const cookieName = getSupabaseAuthStorageKey(hostname)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

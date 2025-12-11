@@ -7,6 +7,10 @@ dotenv.config({ path: path.join(__dirname, '../.env.local') })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const appHost =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  'http://localhost:3000'
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase configuration')
@@ -16,6 +20,46 @@ if (!supabaseUrl || !supabaseAnonKey) {
 console.log('Supabase URL:', supabaseUrl)
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+const slugify = (value, fallback) => {
+  if (!value) return fallback
+
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || fallback
+  )
+}
+
+const getProjectFingerprint = () => {
+  let projectSlug = 'supabase'
+  if (supabaseUrl) {
+    try {
+      const parsed = new URL(supabaseUrl)
+      const hostSlug = slugify(parsed.hostname, 'supabase')
+      const pathSlug = slugify(
+        parsed.pathname === '/' ? '' : parsed.pathname,
+        ''
+      )
+      projectSlug = pathSlug ? `${hostSlug}-${pathSlug}` : hostSlug
+    } catch {
+      projectSlug = 'supabase'
+    }
+  }
+
+  const anonFingerprint = supabaseAnonKey
+    ? slugify(supabaseAnonKey.slice(0, 8), 'anon')
+    : 'anon'
+
+  return `${projectSlug}-${anonFingerprint}`
+}
+
+const getCookieName = (hostname) => {
+  const hostSlug = slugify(hostname || 'localhost', 'localhost')
+  return `sb-${hostSlug}-${getProjectFingerprint()}-auth-token`
+}
 
 async function testLogin() {
   const email = 'test1@example.com'
@@ -36,26 +80,30 @@ async function testLogin() {
   console.log('Login successful!')
   console.log('User ID:', data.user.id)
 
-  let projectId = '127.0.0.1'
+  let cookieHost = 'localhost'
+  let appUrl = { protocol: 'http:', hostname: 'localhost', port: '3000' }
   try {
-    const url = new URL(supabaseUrl)
-    const parts = url.hostname.split('.')
-    if (parts.length > 0) {
-      projectId = parts[0]
-    }
+    const url = new URL(appHost)
+    cookieHost = url.hostname
+    appUrl = url
   } catch {
-    projectId = '127.0.0.1'
+    cookieHost = 'localhost'
+    appUrl = { protocol: 'http:', hostname: 'localhost', port: '3000' }
   }
 
-  console.log('Project ID (guessed):', projectId)
+  console.log('Using cookie host:', cookieHost)
 
-  const cookieName = `sb-${projectId}-auth-token`
+  const cookieName = getCookieName(cookieHost)
   const cookieValue = JSON.stringify(data.session)
   // Encode the cookie value properly
   const cookieString = `${cookieName}=${encodeURIComponent(cookieValue)}`
 
+  const portSegment =
+    appUrl.port || (appUrl.protocol === 'https:' ? '443' : '80')
+  const curlTarget = `${appUrl.protocol}//${appUrl.hostname}:${portSegment}/dashboard`
+
   console.log('\n--- CURL COMMAND ---')
-  console.log(`curl -v -I -b "${cookieString}" http://localhost:3000/dashboard`)
+  console.log(`curl -v -I -b "${cookieString}" ${curlTarget}`)
   console.log('--------------------\n')
 }
 
