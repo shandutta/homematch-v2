@@ -21,6 +21,7 @@ const commands = [
   // Treat warnings as failures so Codex runs when lint can't fully fix
   { label: 'lint', cmd: 'pnpm exec eslint . --max-warnings=0' },
   { label: 'type-check', cmd: 'pnpm run type-check' },
+  { label: 'unit-test', cmd: 'pnpm test:unit' },
 ]
 
 const runCommand = (command) => {
