@@ -139,7 +139,11 @@ function getZombies() {
     .split('\n')
     .map(parsePsLine)
     .filter(
-      (proc) => proc && typeof proc.stat === 'string' && proc.stat.includes('Z')
+      (proc) =>
+        proc &&
+        typeof proc.stat === 'string' &&
+        proc.stat.includes('Z') &&
+        proc.etimes > 10 // Ignore transient zombies (<10s)
     )
 }
 

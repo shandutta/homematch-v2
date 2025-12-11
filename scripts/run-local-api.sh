@@ -10,8 +10,8 @@ ENDPOINT="${1:-}"
 ENV_FILE="${ENV_FILE:-.env.local}"
 MODE="${MODE:-prod}" # prod | dev
 CURL_TIMEOUT="${CURL_TIMEOUT:-600}" # 10 minute timeout for long-running API calls
-RETRIES="${RETRIES:-3}"
-RETRY_DELAY="${RETRY_DELAY:-10}" # seconds between retries
+RETRIES="${RETRIES:-5}"
+RETRY_DELAY="${RETRY_DELAY:-20}" # seconds between retries
 
 timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
