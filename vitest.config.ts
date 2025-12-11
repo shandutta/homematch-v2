@@ -35,7 +35,7 @@ export default defineConfig({
     poolOptions: {
       forks: {
         singleFork: false, // Enable parallel execution for faster tests
-        maxForks: 4, // Limit concurrent forks to prevent resource contention
+        maxForks: 1, // Run sequentially to prevent server overload on single port
         isolate: true, // Isolate globals between tests
         execArgv: ['--disable-warning=ExperimentalWarning'],
       },

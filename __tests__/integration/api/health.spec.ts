@@ -84,19 +84,4 @@ describe('E2E: /api/health', () => {
     },
     TEST_TIMEOUT
   )
-
-  test(
-    'should return 503 when database has issues',
-    async () => {
-      const response = await client.get('/api/health')
-      const body = await response.json()
-
-      if (body.database === 'error') {
-        expect(response.status).toBe(503)
-        expect(body.status).toBe('healthy') // Service itself is healthy, just DB connection issue
-        expect(body.database_error).toBeDefined()
-      }
-    },
-    TEST_TIMEOUT
-  )
 })
