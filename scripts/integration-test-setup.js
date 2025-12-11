@@ -108,6 +108,29 @@ const safeExec = (
   })
 }
 
+/**
+ * Resolve the Supabase CLI command to use, preferring a locally installed binary
+ * (useful in CI where we install a .deb) and falling back to pnpm dlx with the
+ * pinned SUPABASE_CLI_VERSION to avoid version drift between start/reset steps.
+ */
+const getSupabaseCli = () => {
+  if (process.env.SUPABASE_CLI_CMD) return process.env.SUPABASE_CLI_CMD
+
+  try {
+    safeExec(
+      'supabase --version',
+      { stdio: 'pipe' },
+      resilienceConfig.shell.dockerTimeoutMs
+    )
+    return 'supabase'
+  } catch {
+    const cliVersion = process.env.SUPABASE_CLI_VERSION || 'latest'
+    return `pnpm dlx supabase@${cliVersion}`
+  }
+}
+
+const supabaseCli = getSupabaseCli()
+
 const findKongContainer = () => {
   try {
     const names = safeExec(
@@ -223,7 +246,7 @@ const waitForStorage = async (attempts = 5) => {
 }
 
 const resetDatabase = async () => {
-  const cmd = 'pnpm dlx supabase@latest db reset --local --yes'
+  const cmd = `${supabaseCli} db reset --local --yes`
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       safeExec(
@@ -414,7 +437,7 @@ async function setupIntegrationTests() {
 
         try {
           safeExec(
-            'pnpm dlx supabase@latest stop',
+            `${supabaseCli} stop`,
             {
               stdio: 'pipe',
               cwd: path.join(__dirname, '..'),
@@ -426,7 +449,7 @@ async function setupIntegrationTests() {
         }
 
         safeExec(
-          'pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime',
+          `${supabaseCli} start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`,
           {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..'),
@@ -492,8 +515,8 @@ async function setupIntegrationTests() {
           cwd: path.join(__dirname, '..'),
           env: { ...process.env },
         },
-        resilienceConfig.shell.dbResetTimeoutMs
-      ) // Allow time for user creation
+        resilienceConfig.shell.userSetupTimeoutMs
+      ) // Allow extra time for auth readiness during user creation
       if (process.env.DEBUG_TEST_SETUP) {
         console.debug('✅ Test users created')
       }

@@ -15,15 +15,35 @@
  * SUPABASE_FETCH_RETRIES=10 pnpm run test:integration
  */
 
+const parseNumber = (value, fallback) => {
+  const parsed = parseInt(value ?? '', 10)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const authReadyMaxWaitMs = parseNumber(
+  process.env.AUTH_READY_MAX_WAIT_MS,
+  180000
+)
+const dbResetTimeoutMs = parseNumber(process.env.DB_RESET_TIMEOUT_MS, 180000)
+const defaultShellTimeoutMs = parseNumber(
+  process.env.SHELL_DEFAULT_TIMEOUT_MS,
+  120000
+)
+const dockerTimeoutMs = parseNumber(process.env.DOCKER_TIMEOUT_MS, 60000)
+const userSetupTimeoutMs = parseNumber(
+  process.env.USER_SETUP_TIMEOUT_MS,
+  Math.max(dbResetTimeoutMs, authReadyMaxWaitMs + 60000)
+)
+
 const config = {
   // Auth service readiness settings
   authReadiness: {
     // Maximum number of attempts to check if auth service is ready
-    maxAttempts: parseInt(process.env.AUTH_READY_ATTEMPTS ?? '60', 10), // Up from 10 to 60 for 3 min wait
+    maxAttempts: parseNumber(process.env.AUTH_READY_ATTEMPTS, 60), // Up from 10 to 60 for 3 min wait
     // Initial delay between retry attempts (ms)
-    retryDelayMs: parseInt(process.env.AUTH_READY_DELAY_MS ?? '3000', 10), // Up from 2000
+    retryDelayMs: parseNumber(process.env.AUTH_READY_DELAY_MS, 3000), // Up from 2000
     // Maximum total wait time (ms) - fail fast if exceeded
-    maxWaitMs: parseInt(process.env.AUTH_READY_MAX_WAIT_MS ?? '180000', 10), // Default 180 seconds; configurable for slow CI
+    maxWaitMs: authReadyMaxWaitMs, // Default 180 seconds; configurable for slow CI
     // Maximum delay between attempts after backoff (ms)
     maxDelayMs: 10000,
     // Backoff multiplier (e.g., 1.5 = 50% increase each attempt)
@@ -65,11 +85,13 @@ const config = {
   // Shell command execution settings
   shell: {
     // Default timeout for shell commands (ms)
-    defaultTimeoutMs: 120000, // 2 minutes
+    defaultTimeoutMs: defaultShellTimeoutMs, // 2 minutes
     // Timeout for database reset operations (ms)
-    dbResetTimeoutMs: 180000, // 3 minutes
+    dbResetTimeoutMs, // 3 minutes
+    // Timeout for scripted user creation (must exceed auth readiness wait)
+    userSetupTimeoutMs,
     // Timeout for Docker operations (ms)
-    dockerTimeoutMs: 60000, // 1 minute
+    dockerTimeoutMs, // 1 minute
   },
 
   // Kong gateway settings
