@@ -4,80 +4,96 @@
  * Intended to be run via Cron.
  */
 
-const { spawnSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-const LOG_DIR = path.join(__dirname, '..', '.logs')
+const LOG_DIR = path.join(__dirname, '..', '.logs');
 if (!fs.existsSync(LOG_DIR)) {
-  fs.mkdirSync(LOG_DIR, { recursive: true })
+  fs.mkdirSync(LOG_DIR, { recursive: true });
 }
 
-const REPORT_FILE = path.join(LOG_DIR, 'nightly-test-report.txt')
-const TIMESTAMP = new Date().toISOString()
+const REPORT_FILE = path.join(LOG_DIR, 'nightly-test-report.txt');
+const TIMESTAMP = new Date().toISOString();
 
 function appendLog(message) {
-  console.log(message)
-  fs.appendFileSync(REPORT_FILE, message + '\n')
+  // Write exactly what is received to file to preserve partial lines/progress bars
+  fs.appendFileSync(REPORT_FILE, message);
+  // Also echo to console for manual run visibility
+  process.stdout.write(message);
 }
 
 function runCommand(name, command, args) {
-  appendLog(`\n--- Running ${name} ---`)
-  const startTime = Date.now()
+  return new Promise((resolve) => {
+    appendLog(`\n--- Running ${name} ---\n`);
+    const startTime = Date.now();
+    
+    const child = spawn(command, args, {
+      cwd: path.join(__dirname, '..'),
+      shell: true,
+      env: {
+        ...process.env,
+        CI: 'true', // Force CI mode for headless E2E etc.
+        FORCE_COLOR: '0', // Disable color for log file readability
+      }
+    });
 
-  const result = spawnSync(command, args, {
-    cwd: path.join(__dirname, '..'),
-    encoding: 'utf8',
-    shell: true,
-    env: {
-      ...process.env,
-      CI: 'true', // Force CI mode for headless E2E etc.
-      FORCE_COLOR: '0', // Disable color for log file readability
-    },
-  })
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
 
-  const duration = ((Date.now() - startTime) / 1000).toFixed(2)
+    child.stdout.on('data', (data) => {
+      appendLog(data);
+    });
 
-  if (result.stdout) appendLog(result.stdout)
-  if (result.stderr) appendLog(result.stderr)
+    child.stderr.on('data', (data) => {
+      appendLog(data);
+    });
 
-  if (result.status === 0) {
-    appendLog(`✅ ${name} PASSED in ${duration}s`)
-    return true
-  } else {
-    appendLog(`❌ ${name} FAILED in ${duration}s (Exit Code: ${result.status})`)
-    return false
+    child.on('close', (code) => {
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+      if (code === 0) {
+        appendLog(`\n✅ ${name} PASSED in ${duration}s\n`);
+        resolve(true);
+      } else {
+        appendLog(`\n❌ ${name} FAILED in ${duration}s (Exit Code: ${code})\n`);
+        resolve(false);
+      }
+    });
+
+    child.on('error', (err) => {
+      appendLog(`\n❌ ${name} FAILED to start: ${err.message}\n`);
+      resolve(false);
+    });
+  });
+}
+
+(async () => {
+  // Initialize Report
+  fs.writeFileSync(REPORT_FILE, `Nightly Test Report - ${TIMESTAMP}\n========================================\n`);
+
+  let success = true;
+
+  // 1. Unit Tests
+  if (!await runCommand('Unit Tests', 'pnpm', ['test:unit'])) {
+    success = false;
   }
-}
 
-// Initialize Report
-fs.writeFileSync(
-  REPORT_FILE,
-  `Nightly Test Report - ${TIMESTAMP}\n========================================\n`
-)
+  // 2. Integration Tests
+  if (!await runCommand('Integration Tests', 'pnpm', ['test:integration'])) {
+    success = false;
+  }
 
-let success = true
+  // 3. E2E Tests (using headless mode explicitly if needed, but CI=true usually suffices)
+  // We use the direct playwright wrapper via pnpm script
+  if (!await runCommand('E2E Tests', 'pnpm', ['test:e2e'])) {
+    success = false;
+  }
 
-// 1. Unit Tests
-if (!runCommand('Unit Tests', 'pnpm', ['test:unit'])) {
-  success = false
-}
+  appendLog(`\n========================================\n`);
+  appendLog(`Final Status: ${success ? 'ALL PASSED' : 'FAILURES DETECTED'}\n`);
 
-// 2. Integration Tests
-if (!runCommand('Integration Tests', 'pnpm', ['test:integration'])) {
-  success = false
-}
-
-// 3. E2E Tests (using headless mode explicitly if needed, but CI=true usually suffices)
-// We use the direct playwright wrapper via pnpm script
-if (!runCommand('E2E Tests', 'pnpm', ['test:e2e'])) {
-  success = false
-}
-
-appendLog(`\n========================================`)
-appendLog(`Final Status: ${success ? 'ALL PASSED' : 'FAILURES DETECTED'}`)
-
-// Exit with 0 so cron doesn't think the script itself crashed,
-// unless you want cron to send an email on failure (which is default behavior).
-// If we return non-zero, cron usually emails the output.
-process.exit(success ? 0 : 1)
+  // Exit with 0 so cron doesn't think the script itself crashed, 
+  // unless you want cron to send an email on failure (which is default behavior).
+  // If we return non-zero, cron usually emails the output.
+  process.exit(success ? 0 : 1);
+})();
