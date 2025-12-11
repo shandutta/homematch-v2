@@ -1,5 +1,1 @@
-describe('Deliberate Failure', () => {
-  it('should fail', () => {
-    expect(true).toBe(true)
-  })
-})
+describe('Deliberate Failure', () => { it('should fail', () => { expect(true).toBe(false); }); });
