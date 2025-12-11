@@ -43,19 +43,36 @@ test.describe('Household Clipboard Functionality', () => {
   let auth: any
   let testUser: any
   const ensureHouseholdAvailable = async (page: any) => {
+    // Wait for either the copy button OR the create form to appear
     const copyButton = page.locator(TEST_SELECTORS.copyButton)
+    const createInput = page.locator(TEST_SELECTORS.householdNameInput)
+
+    // Check if we need to switch tabs first
+    if (!(await copyButton.isVisible()) && !(await createInput.isVisible())) {
+      const householdTab = page.getByRole('tab', { name: /household/i })
+      if (await householdTab.isVisible()) {
+        await householdTab.click()
+        // Wait for tab panel transition
+        await page.waitForTimeout(500)
+      }
+    }
+
+    try {
+      await expect(copyButton.or(createInput)).toBeVisible({
+        timeout: TEST_TIMEOUTS.navigation,
+      })
+    } catch {
+      throw new Error(
+        'Household controls not visible; cannot proceed with clipboard tests. Tab content may not have loaded.'
+      )
+    }
+
     if (await copyButton.isVisible()) return
 
-    const createInput = page.locator(TEST_SELECTORS.householdNameInput)
     if (await createInput.isVisible()) {
       await createInput.fill(TEST_HOUSEHOLDS.test.name)
       await page.locator(TEST_SELECTORS.createButton).click()
       await expect(copyButton).toBeVisible({ timeout: TEST_TIMEOUTS.api })
-    } else {
-      // If the create form is still not visible, bail early to avoid flaky failures
-      throw new Error(
-        'Household controls not visible; cannot proceed with clipboard tests'
-      )
     }
   }
 
