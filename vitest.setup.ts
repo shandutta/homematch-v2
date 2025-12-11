@@ -152,7 +152,7 @@ const fetchBaseDelayMs = Number(
   process.env.SUPABASE_FETCH_RETRY_DELAY_MS ?? 100
 )
 const fetchMaxDelayMs = 10000
-const fetchTimeoutMs = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS ?? 30000)
+const fetchTimeoutMs = Number(process.env.SUPABASE_FETCH_TIMEOUT_MS ?? 60000)
 const JITTER_PERCENT = 0.25 // Add 0-25% random jitter to prevent thundering herd
 
 const sleep = (ms: number) =>

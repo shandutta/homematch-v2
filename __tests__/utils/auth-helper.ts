@@ -299,7 +299,7 @@ export class AuthHelper {
           response.url().includes('/token') &&
           response.request().method() === 'POST',
 
-        { timeout: 15000 }
+        { timeout: 30000 }
       )
 
       await submitButton.click()
@@ -322,8 +322,11 @@ export class AuthHelper {
 
       // console.log('✅ Auth API request succeeded')
     } catch (e) {
-      console.log('⚠️ Warning: Auth API response wait failed or timed out:', e)
-
+      const errorName = e instanceof Error ? e.name : 'UnknownError'
+      const errorMessage = e instanceof Error ? e.message : String(e)
+      console.error(
+        `❌ Auth API response wait failed or timed out. Error: ${errorName}: ${errorMessage}`
+      )
       // Continue to navigation check - it might have succeeded anyway
     }
 

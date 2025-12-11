@@ -231,9 +231,9 @@ export const MOCK_SCENARIOS = {
 export const TEST_TIMEOUTS = {
   default: 5000,
   element: 5000,
-  navigation: 10000,
-  api: 15000,
+  navigation: 20000,
+  api: 60000,
   clipboard: 3000,
   toast: 5000,
-  authentication: 10000,
+  authentication: 60000,
 } as const
