@@ -34,9 +34,9 @@ describe('Interaction Pages Integration Tests', () => {
 
     supabase = createClient<Database>(supabaseUrl, supabaseKey)
 
-    // Find or create a test user
+    // Find a seeded test user (user_profiles is seeded in supabase/seed.sql)
     const { data: users } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('id')
       .limit(1)
 
