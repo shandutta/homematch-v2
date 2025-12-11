@@ -87,7 +87,8 @@ export async function rateLimit(
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
     process.env.NODE_ENV === 'test'
   ) {
-    tier = 'testing'
+    // In tests, skip rate limiting altogether to avoid external calls (e.g., Supabase auth)
+    return null
   }
   try {
     const clientId = await getClientIdentifier(request)

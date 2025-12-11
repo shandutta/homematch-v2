@@ -108,6 +108,7 @@ export default class ProgressReporter implements Reporter {
   }
 
   private isFileTask(task: Task): task is File {
-    return 'filepath' in task
+    // Vitest marks file-level tasks as suites with a filepath
+    return task.type === 'suite' && 'filepath' in task
   }
 }
