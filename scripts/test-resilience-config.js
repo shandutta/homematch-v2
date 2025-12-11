@@ -8,6 +8,9 @@
  * # Run with longer auth readiness timeout
  * AUTH_READY_ATTEMPTS=50 pnpm run test:integration
  *
+ * # Allow extra time for auth to come up after a Supabase reset (ms)
+ * AUTH_READY_MAX_WAIT_MS=240000 pnpm run test:integration
+ *
  * # Run with more fetch retries
  * SUPABASE_FETCH_RETRIES=10 pnpm run test:integration
  */
@@ -20,7 +23,7 @@ const config = {
     // Initial delay between retry attempts (ms)
     retryDelayMs: parseInt(process.env.AUTH_READY_DELAY_MS ?? '3000', 10), // Up from 2000
     // Maximum total wait time (ms) - fail fast if exceeded
-    maxWaitMs: 90000, // 90 seconds
+    maxWaitMs: parseInt(process.env.AUTH_READY_MAX_WAIT_MS ?? '180000', 10), // Default 180 seconds; configurable for slow CI
     // Maximum delay between attempts after backoff (ms)
     maxDelayMs: 10000,
     // Backoff multiplier (e.g., 1.5 = 50% increase each attempt)
