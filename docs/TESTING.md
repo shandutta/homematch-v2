@@ -99,9 +99,8 @@ HomeMatch is configured to run on **port 3000** by default. E2E tests include au
   "test:unit": "cross-env NODE_ENV=test pnpm exec jest __tests__/unit/",
   "test:unit:watch": "cross-env NODE_ENV=test pnpm exec jest __tests__/unit/ --watch",
   "test:integration": "node scripts/run-integration-tests.js",
-  "test:e2e": "pnpm run test:e2e:ui-tests && pnpm run test:e2e:api-tests",
+  "test:e2e": "pnpm run test:e2e:ui-tests",
   "test:e2e:ui-tests": "cross-env NEXT_PUBLIC_TEST_MODE=true node scripts/playwright-wrapper.js test",
-  "test:e2e:api-tests": "pnpm exec vitest run --config vitest.e2e.config.ts",
   "test:coverage": "pnpm exec jest --coverage"
 }
 ```
