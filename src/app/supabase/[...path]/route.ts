@@ -7,7 +7,7 @@ const getProxyConfig = () => {
   const enabled = process.env['SUPABASE_LOCAL_PROXY'] === 'true'
   const target =
     stripTrailingSlash(process.env['SUPABASE_LOCAL_PROXY_TARGET']) ||
-    'http://127.0.0.1:54321'
+    'http://127.0.0.1:54200'
 
   return { enabled, target }
 }

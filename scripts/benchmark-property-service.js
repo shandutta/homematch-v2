@@ -12,7 +12,7 @@ const { performance } = require('perf_hooks')
 
 // Local Supabase configuration
 const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321'
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54200'
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseKey) {

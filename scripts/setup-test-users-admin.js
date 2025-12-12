@@ -22,7 +22,7 @@ if (fs.existsSync(envTestPath)) {
   dotenv.config({ path: envTestPath, override: true })
 }
 
-let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
 const supabaseAdminUrl = process.env.SUPABASE_LOCAL_PROXY_TARGET || supabaseUrl
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 let isLocalSupabase =
@@ -41,7 +41,7 @@ if (!supabaseServiceKey) {
 
 if (!isLocalSupabase && !allowRemoteSupabase) {
   console.error(
-    '❌ Test user setup expects a local Supabase instance (e.g. http://127.0.0.1:54321).'
+    '❌ Test user setup expects a local Supabase instance (e.g. http://127.0.0.1:54200).'
   )
   console.error('   Detected SUPABASE_URL =', supabaseAdminUrl)
   console.error(

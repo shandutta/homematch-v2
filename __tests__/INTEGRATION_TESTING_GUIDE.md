@@ -21,8 +21,8 @@ This guide explains how to write integration tests that use real database connec
 pnpm dlx supabase@latest start
 
 # Database will be available at:
-# - PostgreSQL: localhost:54322
-# - API: localhost:54321
+# - PostgreSQL: localhost:54201
+# - API: localhost:54200
 ```
 
 ### 2. Environment Configuration
@@ -31,7 +31,7 @@ Create `.env.test.local` if it doesn't exist:
 
 ```env
 # Test Database Configuration
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54200
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-local-service-key
 

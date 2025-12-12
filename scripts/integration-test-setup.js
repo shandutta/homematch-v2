@@ -63,7 +63,7 @@ const supabaseAdminUrl =
 
 if (!isLocalSupabase && !allowRemoteSupabase) {
   console.error(
-    '❌ Integration tests expect a local Supabase instance (e.g. http://127.0.0.1:54321).'
+    '❌ Integration tests expect a local Supabase instance (e.g. http://127.0.0.1:54200).'
   )
   console.error('   Detected SUPABASE_URL =', supabaseUrl || '(not set)')
   console.error(

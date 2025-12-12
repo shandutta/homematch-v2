@@ -213,8 +213,8 @@ class WorkingInfrastructure {
 
         // Use timeout with curl to prevent hanging
         const services = [
-          'http://127.0.0.1:54321/rest/v1/',
-          'http://127.0.0.1:54321/auth/v1/health',
+          'http://127.0.0.1:54200/rest/v1/',
+          'http://127.0.0.1:54200/auth/v1/health',
         ]
 
         let allReady = true

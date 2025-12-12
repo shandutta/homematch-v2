@@ -63,7 +63,7 @@ async function main() {
   }
 
   // Server-side Supabase URL (for admin operations)
-  const supabaseServerUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+  const supabaseServerUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
 
   // Client-side Supabase URL - preserve proxy URL if configured
   const supabaseClientUrl =

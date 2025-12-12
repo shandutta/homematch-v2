@@ -427,7 +427,7 @@ let supabaseUrl =
   process.env.SUPABASE_LOCAL_PROXY_TARGET ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   process.env.SUPABASE_URL ||
-  'http://127.0.0.1:54321'
+  'http://127.0.0.1:54200'
 
 process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || supabaseUrl

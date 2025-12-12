@@ -8,7 +8,7 @@ const { createClient } = require('@supabase/supabase-js')
 async function testRLSPolicies() {
   console.log('🛡️ Testing Row Level Security policies...')
 
-  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
   const anonKey = process.env.SUPABASE_ANON_KEY
 
   if (!anonKey) {

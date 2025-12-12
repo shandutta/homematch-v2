@@ -10,7 +10,7 @@ const path = require('path')
 // Load test environment variables
 dotenv.config({ path: path.join(__dirname, '..', '.env.test.local') })
 
-const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseServiceKey) {

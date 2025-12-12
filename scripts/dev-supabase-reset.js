@@ -8,11 +8,14 @@
  */
 
 const { execSync } = require('child_process')
+const fs = require('fs')
+const path = require('path')
 const { runCleanup } = require('./supabase-cleanup')
 
 const START_CMD =
   'supabase start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime'
 const RESET_CMD = 'supabase db reset'
+const STATUS_CMDS = ['supabase status --output json', 'supabase status -o json']
 const START_RETRIES = 3
 const RETRY_DELAY_MS = 5_000
 const HEALTH_TIMEOUT_MS = 90_000
@@ -38,21 +41,67 @@ const parseSupabaseUrls = (text) => {
   }
 }
 
-const runCommand = (cmd) => {
+const runCommand = (cmd, options = {}) => {
+  const { silent = false } = options
   try {
     const stdout = execSync(cmd, {
       stdio: ['ignore', 'pipe', 'pipe'],
       encoding: 'utf8',
     })
-    process.stdout.write(stdout)
+    if (!silent) process.stdout.write(stdout)
     return { ok: true, output: stdout }
   } catch (error) {
     const stdout = error?.stdout?.toString?.() || ''
     const stderr = error?.stderr?.toString?.() || ''
     const output = `${stdout}${stderr}`
-    if (output) process.stdout.write(output)
+    if (output && !silent) process.stdout.write(output)
     return { ok: false, output, code: error?.status ?? 1 }
   }
+}
+
+const readApiBaseFromConfig = () => {
+  try {
+    const configPath = path.join(__dirname, '..', 'supabase', 'config.toml')
+    if (!fs.existsSync(configPath)) return null
+    const text = fs.readFileSync(configPath, 'utf8')
+    const match = text.match(/\[api\][\s\S]*?^\s*port\s*=\s*(\d+)/m)
+    if (!match) return null
+    const port = Number(match[1])
+    if (!Number.isFinite(port)) return null
+    return `http://127.0.0.1:${port}`
+  } catch {
+    return null
+  }
+}
+
+const getStatusJson = () => {
+  for (const cmd of STATUS_CMDS) {
+    const result = runCommand(cmd, { silent: true })
+    if (!result.ok || !result.output) continue
+    try {
+      return JSON.parse(result.output)
+    } catch {
+      continue
+    }
+  }
+  return null
+}
+
+const updateApiBaseFromStatus = () => {
+  const status = getStatusJson()
+  const apiUrl =
+    status?.API_URL ||
+    status?.api_url ||
+    status?.REST_URL?.replace(/\/rest\/v1\/?$/, '') ||
+    status?.rest_url?.replace(/\/rest\/v1\/?$/, '')
+
+  if (apiUrl) {
+    supabaseApiBase = apiUrl
+    log(`Using Supabase API base: ${supabaseApiBase}`)
+    return true
+  }
+
+  return false
 }
 
 const listSupabaseContainers = () => {
@@ -105,7 +154,8 @@ const getHealthEndpoints = () => {
   }
 
   if (bases.size === 0) {
-    bases.add('http://127.0.0.1:54321')
+    const configuredBase = readApiBaseFromConfig()
+    bases.add(configuredBase || 'http://127.0.0.1:54200')
   }
 
   const endpoints = []
@@ -173,6 +223,10 @@ const ensureSupabaseStarted = async () => {
       log(`Using Supabase API base: ${supabaseApiBase}`)
     }
 
+    if (!supabaseApiBase) {
+      updateApiBaseFromStatus()
+    }
+
     if (result.ok) {
       const ready = await waitForReadiness('Supabase stack')
       if (ready) return
@@ -188,6 +242,9 @@ const ensureSupabaseStarted = async () => {
       log(
         'Supabase CLI reports stack is already starting; waiting for health...'
       )
+      if (!supabaseApiBase) {
+        updateApiBaseFromStatus()
+      }
       const ready = await waitForReadiness('Supabase stack')
       if (ready) return
     }

@@ -40,7 +40,7 @@ export const createMockSupabaseClient = (): any => {
       maybeSingle: mockFn.mockImplementation(() =>
         Promise.resolve({ data: null, error: null })
       ),
-      url: new URL('http://localhost:54321'),
+      url: new URL('http://localhost:54200'),
       headers: {},
     }),
     rpc: mockFn.mockReturnThis(),
