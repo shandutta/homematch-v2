@@ -190,6 +190,8 @@ describe('POST /api/admin/generate-vibes', () => {
               estimatedCostUsd: 0.001,
             },
             processingTimeMs: 10,
+            rawOutput: JSON.stringify({ ok: true }),
+            repairApplied: false,
           },
         ],
         failed: [],

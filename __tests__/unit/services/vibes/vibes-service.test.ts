@@ -133,6 +133,75 @@ describe('VibesService', () => {
     expect(mockClient.chatCompletion).toHaveBeenCalled()
   })
 
+  test('generateVibes repairs minor schema violations', async () => {
+    const needsRepair = {
+      ...validVibesOutput,
+      primaryVibes: [
+        ...validVibesOutput.primaryVibes,
+        {
+          name: 'X'.repeat(120),
+          intensity: '1.5',
+          source: 'maybe',
+        },
+        {
+          name: 'Another',
+          intensity: '-0.25',
+          source: 'interior',
+        },
+      ],
+      aesthetics: {
+        ...validVibesOutput.aesthetics,
+        lightingQuality: 'weird',
+        architecturalStyle:
+          'Modernized Victorian with clean lines and updated finishes that keeps going',
+      },
+      suggestedTags: Array.from({ length: 12 }, (_, i) => `tag-${i}`),
+    }
+
+    const mockClient = {
+      createVisionMessage: jest.fn((_prompt, _urls) => ({
+        role: 'user',
+        content: [{ type: 'text', text: 'x' }],
+      })),
+      chatCompletion: jest.fn().mockResolvedValue({
+        response: {
+          id: 'r1',
+          model: 'test',
+          choices: [
+            {
+              index: 0,
+              message: {
+                role: 'assistant',
+                content: JSON.stringify(needsRepair),
+              },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+        },
+        usage: {
+          promptTokens: 1,
+          completionTokens: 1,
+          totalTokens: 2,
+          estimatedCostUsd: 0.001,
+        },
+      }),
+    } as any
+
+    const service = new VibesService(mockClient)
+    const result = await service.generateVibes(mockProperty())
+
+    expect(result.repairApplied).toBe(true)
+    expect(result.vibes.primaryVibes).toHaveLength(4)
+    expect(result.vibes.primaryVibes[2].intensity).toBe(1)
+    expect(result.vibes.primaryVibes[2].source).toBe('both')
+    expect(
+      result.vibes.aesthetics.architecturalStyle.length
+    ).toBeLessThanOrEqual(80)
+    expect(result.vibes.aesthetics.lightingQuality).toBe('mixed')
+    expect(result.vibes.suggestedTags).toHaveLength(8)
+  })
+
   test('generateVibes throws on invalid JSON', async () => {
     const mockClient = {
       createVisionMessage: jest.fn((_prompt, _urls) => ({
@@ -188,6 +257,8 @@ describe('VibesService', () => {
           estimatedCostUsd: 0,
         },
         processingTimeMs: 1,
+        rawOutput: JSON.stringify(validVibesOutput),
+        repairApplied: false,
       }))
 
     const beforeEachHook = jest.fn(

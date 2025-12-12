@@ -172,22 +172,23 @@ Respond with a JSON object matching this EXACT structure:
       "appealFactor": "string (max 200 chars) - why it matters to buyers"
     }
   ],
-  "aesthetics": {
-    "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
-    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
-    "architecturalStyle": "string - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
-    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
-  },
-  "emotionalHooks": ["2-4 practical lifestyle moments. NO: 'morning coffee', 'sun-drenched', 'perfect for', 'mesmerizing'. YES: 'That mudroom? Lifesaver with kids and dogs.' or 'Double sinks - no more counter fights.'"],
-  "suggestedTags": ["4-8 tags from the predefined categories that GENUINELY apply to this property"]
-}
+	  "aesthetics": {
+	    "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
+	    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
+	    "architecturalStyle": "string (max 80 chars) - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
+	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
+	  },
+	  "emotionalHooks": ["2-4 practical lifestyle moments. NO: 'morning coffee', 'sun-drenched', 'perfect for', 'mesmerizing'. YES: 'That mudroom? Lifesaver with kids and dogs.' or 'Double sinks - no more counter fights.'"],
+	  "suggestedTags": ["4-8 tags from the predefined categories that GENUINELY apply to this property"]
+	}
 
-Requirements:
-- primaryVibes: 2-4 items with UNIQUE names for this property. Vary intensities meaningfully.
-- lifestyleFits: 2-6 items. Be specific about WHY in the reason field.
-- notableFeatures: 2-8 specific features that would catch a buyer's eye
-- emotionalHooks: 2-4 moments written like you're walking through with a friend
-- suggestedTags: 4-8 tags from the predefined list. Pick from multiple categories.`
+	Requirements:
+	- primaryVibes: 2-4 items with UNIQUE names for this property. Vary intensities meaningfully.
+	- lifestyleFits: 2-6 items. Be specific about WHY in the reason field.
+	- notableFeatures: 2-8 specific features that would catch a buyer's eye
+	- Don’t fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
+	- emotionalHooks: 2-4 moments written like you're walking through with a friend
+	- suggestedTags: 4-8 tags from the predefined list. Pick from multiple categories.`
 }
 
 /**

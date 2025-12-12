@@ -18,12 +18,26 @@ export interface ImageSelectionResult {
 }
 
 /**
- * Fisher-Yates shuffle for random selection
+ * Simple seeded PRNG (mulberry32) for deterministic shuffles when desired.
+ * https://stackoverflow.com/a/47593316
  */
-function shuffleArray<T>(array: T[]): T[] {
+function mulberry32(seed: number): () => number {
+  let t = seed >>> 0
+  return () => {
+    t += 0x6d2b79f5
+    let r = Math.imul(t ^ (t >>> 15), 1 | t)
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r)
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
+ * Fisher-Yates shuffle for random selection.
+ */
+function shuffleArray<T>(array: T[], random: () => number): T[] {
   const shuffled = [...array]
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(random() * (i + 1))
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled
@@ -33,27 +47,22 @@ function shuffleArray<T>(array: T[]): T[] {
  * Select strategic images from property image array
  *
  * Expanded Strategy (15-20 images):
- * 1. Hero shot (exterior/facade) - always first
- * 2. Kitchen shots (2) - high buyer impact
- * 3. Living/great room (2) - lifestyle visualization
- * 4. Bedrooms (3) - primary + secondary
- * 5. Bathrooms (2) - primary + secondary
- * 6. Outdoor/yard (2) - for houses with yards
- * 7. Dining area (1) - if distinct from living
- * 8. Office/flex space (1) - common buyer need
- * 9. Garage/storage (1) - practical consideration
- * 10. Fill remaining with diverse shots
+ * - Prefer interior shots over repeating exterior hero photos.
+ * - Pull from across the gallery (not just sequential early photos),
+ *   to avoid skew (e.g., gate/facade dominance).
  *
  * @param images - Array of image URLs from Zillow
  * @param propertyType - Property type for selection strategy
  * @param lotSizeSqft - Lot size to determine outdoor relevance
  * @param maxImages - Maximum images to select (default 18 for comprehensive analysis)
+ * @param seed - Optional deterministic seed for repeatable selection
  */
 export function selectStrategicImages(
   images: string[] | null,
   propertyType: string | null,
   lotSizeSqft: number | null,
-  maxImages: number = 18
+  maxImages: number = 18,
+  seed?: number
 ): ImageSelectionResult {
   if (!images || images.length === 0) {
     return {
@@ -63,8 +72,11 @@ export function selectStrategicImages(
     }
   }
 
+  const random = seed == null ? Math.random : mulberry32(seed)
+
   const selected: SelectedImage[] = []
   const usedIndices = new Set<number>()
+  const maxAllowed = Math.min(maxImages, images.length)
 
   // Helper to add image if not already selected
   const addImage = (index: number, category: string): boolean => {
@@ -80,21 +92,38 @@ export function selectStrategicImages(
     return false
   }
 
-  // Helper to add multiple images from candidate positions
-  const addMultiple = (
-    candidates: number[],
-    category: string,
-    count: number
-  ): void => {
+  const nonHeroIndices: number[] = []
+  for (let i = 1; i < images.length; i++) {
+    nonHeroIndices.push(i)
+  }
+
+  // For larger galleries, prioritize interior-ish images first to avoid overweighting exterior hero shots.
+  // We don't have reliable room labels, so we use rough gallery-position heuristics.
+  const headCutoff = Math.min(
+    images.length - 1,
+    Math.max(1, Math.floor(images.length * 0.12))
+  )
+  const tailStart = Math.max(1, Math.floor(images.length * 0.82))
+  const interiorCandidates = nonHeroIndices.filter(
+    (i) => i >= headCutoff && i < tailStart
+  )
+  const exteriorCandidates = nonHeroIndices.filter((i) => i < headCutoff)
+  const tailCandidates = nonHeroIndices.filter((i) => i >= tailStart)
+
+  const addFromPools = (pools: number[][], category: string, count: number) => {
     let added = 0
-    for (const idx of candidates) {
+    for (const pool of pools) {
       if (added >= count) break
-      if (selected.length >= maxImages) break
-      if (addImage(idx, category)) added++
+      if (selected.length >= maxAllowed) break
+      for (const idx of shuffleArray(pool, random)) {
+        if (added >= count) break
+        if (selected.length >= maxAllowed) break
+        if (addImage(idx, category)) added++
+      }
     }
   }
 
-  // 1. Hero shot (exterior/facade) - always first
+  // Always include at least one hero (often exterior).
   addImage(0, 'hero')
 
   // If only 1 image, return early
@@ -106,22 +135,11 @@ export function selectStrategicImages(
     }
   }
 
-  // 2. Kitchen shots (2) - typically in positions 3-6 for Zillow
-  // Kitchen is high-impact, so we try to get multiple angles
-  addMultiple([3, 4, 5, 2, 6], 'kitchen', 2)
-
-  // 3. Living/great room (2) - typically positions 1-4
-  addMultiple([1, 2, 4, 5], 'living', 2)
-
-  // 4. Bedrooms (3) - typically middle positions 5-12
-  if (images.length > 5) {
-    addMultiple([6, 7, 8, 9, 10, 11, 5], 'bedroom', 3)
-  }
-
-  // 5. Bathrooms (2) - typically positions 8-14
-  if (images.length > 7) {
-    addMultiple([9, 10, 11, 12, 8, 13, 14], 'bathroom', 2)
-  }
+  // Interior-heavy selection (reduces exterior skew)
+  addFromPools([interiorCandidates, nonHeroIndices], 'kitchen', 2)
+  addFromPools([interiorCandidates, nonHeroIndices], 'living', 2)
+  addFromPools([interiorCandidates, nonHeroIndices], 'bedroom', 3)
+  addFromPools([interiorCandidates, nonHeroIndices], 'bathroom', 2)
 
   // 6. Outdoor space (2) for houses with adequate yards
   const isHouse =
@@ -131,47 +149,39 @@ export function selectStrategicImages(
   const hasYard = lotSizeSqft && lotSizeSqft > 3000
 
   if (isHouse && hasYard) {
-    // Outdoor shots are often at the end of the gallery
-    const lastImages = [
-      images.length - 1,
-      images.length - 2,
-      images.length - 3,
-      images.length - 4,
-    ].filter((i) => i > 0)
-    addMultiple(lastImages, 'outdoor', 2)
+    // Outdoor shots are often later in the gallery
+    addFromPools([tailCandidates, nonHeroIndices], 'outdoor', 2)
   }
 
   // 7. Dining area (1) - often near kitchen/living shots
-  if (images.length > 10) {
-    addMultiple([5, 6, 4, 7], 'dining', 1)
-  }
+  addFromPools([interiorCandidates, nonHeroIndices], 'dining', 1)
 
   // 8. Office/flex space (1) - common buyer need, often later in gallery
-  if (images.length > 12) {
-    addMultiple([12, 13, 14, 11, 15], 'office', 1)
-  }
+  addFromPools(
+    [interiorCandidates, tailCandidates, nonHeroIndices],
+    'office',
+    1
+  )
 
   // 9. Garage/storage (1) - practical, usually near end
-  if (images.length > 15) {
-    const nearEnd = [images.length - 5, images.length - 6, images.length - 4]
-    addMultiple(nearEnd, 'garage', 1)
-  }
+  addFromPools(
+    [tailCandidates, interiorCandidates, nonHeroIndices],
+    'garage',
+    1
+  )
 
   // 10. Fill remaining slots with diverse images
-  if (selected.length < Math.min(maxImages, images.length)) {
-    const unusedIndices: number[] = []
-    for (let i = 0; i < images.length; i++) {
-      if (!usedIndices.has(i)) {
-        unusedIndices.push(i)
+  if (selected.length < maxAllowed) {
+    const interiorUnused = interiorCandidates.filter((i) => !usedIndices.has(i))
+    const tailUnused = tailCandidates.filter((i) => !usedIndices.has(i))
+    const exteriorUnused = exteriorCandidates.filter((i) => !usedIndices.has(i))
+
+    for (const pool of [interiorUnused, tailUnused, exteriorUnused]) {
+      if (selected.length >= maxAllowed) break
+      for (const idx of shuffleArray(pool, random)) {
+        if (selected.length >= maxAllowed) break
+        addImage(idx, 'additional')
       }
-    }
-
-    // Shuffle for variety
-    const shuffledUnused = shuffleArray(unusedIndices)
-
-    for (const idx of shuffledUnused) {
-      if (selected.length >= maxImages) break
-      addImage(idx, 'additional')
     }
   }
 
@@ -187,8 +197,27 @@ export function selectStrategicImages(
     strategy = 'single'
   }
 
+  const categoryPriority: Record<string, number> = {
+    kitchen: 0,
+    living: 1,
+    dining: 2,
+    bedroom: 3,
+    bathroom: 4,
+    office: 5,
+    garage: 6,
+    hero: 7,
+    outdoor: 8,
+    additional: 9,
+  }
+
   return {
-    selectedImages: selected,
+    selectedImages: [...selected].sort((a, b) => {
+      const priorityDelta =
+        (categoryPriority[a.category] ?? 99) -
+        (categoryPriority[b.category] ?? 99)
+      if (priorityDelta !== 0) return priorityDelta
+      return a.index - b.index
+    }),
     strategy,
     totalAvailable: images.length,
   }

@@ -30,6 +30,8 @@ export interface VibesGenerationResult {
   images: ImageSelectionResult
   usage: UsageInfo
   processingTimeMs: number
+  rawOutput: string
+  repairApplied: boolean
 }
 
 export interface VibesGenerationError {
@@ -52,6 +54,171 @@ export class VibesService {
     this.client = client || createOpenRouterClient()
   }
 
+  private static isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value != null && !Array.isArray(value)
+  }
+
+  private static clampString(
+    value: unknown,
+    maxLength: number
+  ): string | undefined {
+    if (typeof value !== 'string') return
+    return value.length <= maxLength ? value : value.slice(0, maxLength)
+  }
+
+  private static parseAndClampNumber(
+    value: unknown,
+    min: number,
+    max: number
+  ): number | undefined {
+    const num =
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string'
+          ? Number(value)
+          : NaN
+    if (!Number.isFinite(num)) return
+    return Math.min(max, Math.max(min, num))
+  }
+
+  private static clampStringArray(
+    value: unknown,
+    maxItems: number,
+    maxItemLength: number
+  ): string[] | undefined {
+    if (!Array.isArray(value)) return
+    return value
+      .filter((v) => typeof v === 'string')
+      .map((s) => (s.length <= maxItemLength ? s : s.slice(0, maxItemLength)))
+      .slice(0, maxItems)
+  }
+
+  private static repairVibesCandidate(value: unknown): unknown {
+    if (!VibesService.isRecord(value)) return value
+
+    const obj = value
+    const repaired: Record<string, unknown> = { ...obj }
+
+    const tagline = VibesService.clampString(obj.tagline, 120)
+    if (tagline != null) repaired.tagline = tagline
+
+    const vibeStatement = VibesService.clampString(obj.vibeStatement, 350)
+    if (vibeStatement != null) repaired.vibeStatement = vibeStatement
+
+    if (Array.isArray(obj.primaryVibes)) {
+      repaired.primaryVibes = obj.primaryVibes.slice(0, 4).map((v) => {
+        if (!VibesService.isRecord(v)) return v
+        const next: Record<string, unknown> = { ...v }
+
+        const name = VibesService.clampString(v.name, 80)
+        if (name != null) next.name = name
+
+        const intensity = VibesService.parseAndClampNumber(v.intensity, 0, 1)
+        if (intensity != null) next.intensity = intensity
+
+        const source = v.source
+        if (
+          source !== 'interior' &&
+          source !== 'exterior' &&
+          source !== 'both'
+        ) {
+          next.source = 'both'
+        }
+
+        return next
+      })
+    }
+
+    if (Array.isArray(obj.lifestyleFits)) {
+      repaired.lifestyleFits = obj.lifestyleFits.slice(0, 6).map((f) => {
+        if (!VibesService.isRecord(f)) return f
+        const next: Record<string, unknown> = { ...f }
+
+        const category = VibesService.clampString(f.category, 50)
+        if (category != null) next.category = category
+
+        const score = VibesService.parseAndClampNumber(f.score, 0, 1)
+        if (score != null) next.score = score
+
+        const reason = VibesService.clampString(f.reason, 200)
+        if (reason != null) next.reason = reason
+
+        return next
+      })
+    }
+
+    if (Array.isArray(obj.notableFeatures)) {
+      repaired.notableFeatures = obj.notableFeatures.slice(0, 8).map((f) => {
+        if (!VibesService.isRecord(f)) return f
+        const next: Record<string, unknown> = { ...f }
+
+        const feature = VibesService.clampString(f.feature, 100)
+        if (feature != null) next.feature = feature
+
+        const location = VibesService.clampString(f.location, 50)
+        if (location != null) next.location = location
+
+        const appealFactor = VibesService.clampString(f.appealFactor, 200)
+        if (appealFactor != null) next.appealFactor = appealFactor
+
+        return next
+      })
+    }
+
+    if (VibesService.isRecord(obj.aesthetics)) {
+      const a = obj.aesthetics
+      const next: Record<string, unknown> = { ...a }
+
+      const lightingQuality = a.lightingQuality
+      if (
+        lightingQuality !== 'natural_abundant' &&
+        lightingQuality !== 'natural_moderate' &&
+        lightingQuality !== 'artificial_warm' &&
+        lightingQuality !== 'artificial_cool' &&
+        lightingQuality !== 'mixed'
+      ) {
+        next.lightingQuality = 'mixed'
+      }
+
+      const colorPalette = VibesService.clampStringArray(a.colorPalette, 4, 30)
+      if (colorPalette != null) next.colorPalette = colorPalette
+
+      const architecturalStyle = VibesService.clampString(
+        a.architecturalStyle,
+        80
+      )
+      if (architecturalStyle != null)
+        next.architecturalStyle = architecturalStyle
+
+      const overallCondition = a.overallCondition
+      if (
+        overallCondition !== 'pristine' &&
+        overallCondition !== 'well_maintained' &&
+        overallCondition !== 'dated_but_clean' &&
+        overallCondition !== 'needs_work'
+      ) {
+        next.overallCondition = 'well_maintained'
+      }
+
+      repaired.aesthetics = next
+    }
+
+    const emotionalHooks = VibesService.clampStringArray(
+      obj.emotionalHooks,
+      4,
+      200
+    )
+    if (emotionalHooks != null) repaired.emotionalHooks = emotionalHooks
+
+    if (Array.isArray(obj.suggestedTags)) {
+      repaired.suggestedTags = obj.suggestedTags
+        .filter((t) => typeof t === 'string')
+        .slice(0, 8)
+    }
+
+    return repaired
+  }
+
   /**
    * Generate vibes for a single property
    */
@@ -59,10 +226,16 @@ export class VibesService {
     const startTime = Date.now()
 
     // Select strategic images
+    const selectionSeed = Number.parseInt(
+      crypto.createHash('md5').update(property.id).digest('hex').slice(0, 8),
+      16
+    )
     const images = selectStrategicImages(
       property.images,
       property.property_type,
-      property.lot_size_sqft
+      property.lot_size_sqft,
+      18,
+      selectionSeed
     )
 
     if (images.selectedImages.length === 0) {
@@ -115,11 +288,30 @@ export class VibesService {
     }
 
     let parsedVibes: LLMVibesOutput
+    let repairApplied = false
     try {
-      const parsed = JSON.parse(rawContent)
-      parsedVibes = llmVibesOutputSchema.parse(parsed)
+      const parsed = JSON.parse(rawContent) as unknown
+
+      const firstPass = llmVibesOutputSchema.safeParse(parsed)
+      if (firstPass.success) {
+        parsedVibes = firstPass.data
+      } else {
+        const repaired = VibesService.repairVibesCandidate(parsed)
+        const repairedPass = llmVibesOutputSchema.safeParse(repaired)
+        if (!repairedPass.success) {
+          throw repairedPass.error
+        }
+        parsedVibes = repairedPass.data
+        repairApplied = true
+      }
     } catch (parseError) {
-      console.error('[VibesService] Failed to parse LLM response:', rawContent)
+      const preview =
+        rawContent.length > 2000 ? `${rawContent.slice(0, 2000)}…` : rawContent
+      console.error(
+        '[VibesService] Failed to parse/validate LLM response:',
+        `property=${property.id}`,
+        preview
+      )
       throw new Error(
         `Failed to parse LLM response: ${parseError instanceof Error ? parseError.message : String(parseError)}`
       )
@@ -133,6 +325,8 @@ export class VibesService {
       images,
       usage,
       processingTimeMs,
+      rawOutput: rawContent,
+      repairApplied,
     }
   }
 

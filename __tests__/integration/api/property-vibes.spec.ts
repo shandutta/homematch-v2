@@ -71,7 +71,8 @@ describe.sequential('Integration: /api/properties/vibes', () => {
   })
 
   it('rejects unauthenticated requests', async () => {
-    const res = await fetch('http://localhost:3000/api/properties/vibes')
+    const req = new NextRequest('http://localhost/api/properties/vibes')
+    const res = await GET(req)
     expect(res.status).toBe(401)
   })
 

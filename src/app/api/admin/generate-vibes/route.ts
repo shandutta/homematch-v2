@@ -248,7 +248,7 @@ export async function POST(
       const record = VibesService.toInsertRecord(
         result,
         property,
-        JSON.stringify(result.vibes)
+        result.rawOutput
       )
       insertRecords.push(record)
     }
