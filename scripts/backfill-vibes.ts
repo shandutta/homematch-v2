@@ -21,6 +21,8 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 config()
 
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import {
   fetchZillowImageUrls,
@@ -35,6 +37,7 @@ type Args = {
   batchSize: number
   delayMs: number
   force: boolean
+  propertyIds: string[] | null
   refreshImages: boolean
   forceImages: boolean
   minImages: number
@@ -47,6 +50,7 @@ function parseArgs(argv: string[]): Args {
     batchSize: 10,
     delayMs: 1500,
     force: false,
+    propertyIds: null,
     refreshImages: false,
     forceImages: false,
     minImages: 10,
@@ -68,6 +72,13 @@ function parseArgs(argv: string[]): Args {
   const batchSize = raw.batchSize ? Number(raw.batchSize) : defaults.batchSize
   const delayMs = raw.delayMs ? Number(raw.delayMs) : defaults.delayMs
   const force = raw.force === 'true' || defaults.force
+  const propertyIds =
+    raw.propertyIds != null
+      ? raw.propertyIds
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : defaults.propertyIds
   const refreshImages =
     raw.refreshImages != null
       ? raw.refreshImages === 'true'
@@ -88,6 +99,7 @@ function parseArgs(argv: string[]): Args {
     delayMs:
       Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : defaults.delayMs,
     force,
+    propertyIds: propertyIds && propertyIds.length > 0 ? propertyIds : null,
     refreshImages,
     forceImages,
     minImages: Number.isFinite(minImages) && minImages >= 0 ? minImages : 0,
@@ -126,7 +138,9 @@ async function main() {
   const supabase = createStandaloneClient()
   const vibesService = createVibesService()
 
-  const target = args.limit ?? Number.POSITIVE_INFINITY
+  const target = args.propertyIds?.length
+    ? args.propertyIds.length
+    : (args.limit ?? Number.POSITIVE_INFINITY)
 
   let attempted = 0
   let skipped = 0
@@ -134,22 +148,30 @@ async function main() {
   let failed = 0
   let totalCostUsd = 0
   const startTime = Date.now()
+  const reportFailures: Array<{
+    propertyId: string
+    zpid: string | null
+    error: string
+    code?: string
+  }> = []
 
   const pageSize = Math.max(args.batchSize * 5, 50)
   let offset = 0
 
   console.log(
-    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, refreshImages=${args.refreshImages}, minImages=${args.minImages})`
+    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, propertyIds=${args.propertyIds?.length ?? 0}, refreshImages=${args.refreshImages}, minImages=${args.minImages})`
   )
 
   while (attempted < target) {
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .not('zpid', 'is', null)
-      .gte('price', 100000)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + pageSize - 1)
+    const { data, error } = args.propertyIds
+      ? await supabase.from('properties').select('*').in('id', args.propertyIds)
+      : await supabase
+          .from('properties')
+          .select('*')
+          .not('zpid', 'is', null)
+          .gte('price', 100000)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1)
 
     if (error) {
       throw new Error(`Failed to read properties: ${error.message}`)
@@ -157,9 +179,12 @@ async function main() {
 
     const properties = (data || []) as Property[]
     if (properties.length === 0) break
-    offset += pageSize
+    if (!args.propertyIds) {
+      offset += pageSize
+    }
 
     const ids = properties.map((p) => p.id)
+    const propertyById = new Map(properties.map((p) => [p.id, p]))
 
     const { data: existing } = await supabase
       .from('property_vibes')
@@ -193,7 +218,7 @@ async function main() {
 
       attempted += batchLimited.length
       console.log(
-        `[backfill-vibes] Generating batch of ${batchLimited.length} (attempted ${attempted}/${args.limit ?? 'all'})`
+        `[backfill-vibes] Generating batch of ${batchLimited.length} (attempted ${attempted}/${args.propertyIds?.length ?? args.limit ?? 'all'})`
       )
 
       const batchResult = await vibesService.generateVibesBatch(batchLimited, {
@@ -278,6 +303,21 @@ async function main() {
       failed += batchResult.failed.length
       totalCostUsd += batchResult.totalCostUsd
 
+      if (batchResult.failed.length > 0) {
+        for (const f of batchResult.failed) {
+          const p = propertyById.get(f.propertyId)
+          reportFailures.push({
+            propertyId: f.propertyId,
+            zpid: p?.zpid ?? null,
+            error: f.error,
+            code: f.code,
+          })
+          console.warn(
+            `[backfill-vibes] FAILED property=${f.propertyId} zpid=${p?.zpid ?? 'null'}: ${f.error}`
+          )
+        }
+      }
+
       const insertRecords = batchResult.success.map((r) => {
         const property = batchLimited.find((p) => p.id === r.propertyId)
         if (!property) {
@@ -304,6 +344,10 @@ async function main() {
 
       if (attempted >= target) break
     }
+
+    if (args.propertyIds) {
+      break
+    }
   }
 
   const totalTimeMs = Date.now() - startTime
@@ -314,6 +358,35 @@ async function main() {
   console.log(
     `[backfill-vibes] cost=$${totalCostUsd.toFixed(4)} time=${(totalTimeMs / 1000).toFixed(1)}s`
   )
+
+  try {
+    const reportDir = path.join(process.cwd(), '.logs')
+    await fs.mkdir(reportDir, { recursive: true })
+    const reportPath = path.join(reportDir, 'backfill-vibes-report.json')
+    await fs.writeFile(
+      reportPath,
+      JSON.stringify(
+        {
+          finishedAt: new Date().toISOString(),
+          attempted,
+          success,
+          failed,
+          skipped,
+          totalCostUsd,
+          failures: reportFailures,
+        },
+        null,
+        2
+      )
+    )
+    console.log(
+      `[backfill-vibes] Report written: ${path.relative(process.cwd(), reportPath)}`
+    )
+  } catch (err) {
+    console.warn(
+      `[backfill-vibes] Failed to write report: ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
 }
 
 main().catch((err) => {
