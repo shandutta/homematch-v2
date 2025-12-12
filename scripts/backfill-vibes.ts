@@ -259,9 +259,10 @@ async function main() {
                 return
               }
 
-              const shouldUpdate =
-                args.forceImages || nextImages.length !== current.length
-              if (!shouldUpdate) return
+              const currentMatches =
+                current.length === nextImages.length &&
+                current.every((u, idx) => u === nextImages[idx])
+              if (currentMatches) return
 
               const { error: updateError } = await supabase
                 .from('properties')
@@ -279,8 +280,10 @@ async function main() {
               }
 
               property.images = nextImages
+              const note =
+                current.length === nextImages.length ? ' (content changed)' : ''
               console.log(
-                `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}`
+                `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}${note}`
               )
 
               if (args.imageDelayMs > 0) {
