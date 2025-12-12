@@ -199,7 +199,16 @@ describe('VibesService', () => {
       result.vibes.aesthetics.architecturalStyle.length
     ).toBeLessThanOrEqual(80)
     expect(result.vibes.aesthetics.lightingQuality).toBe('mixed')
-    expect(result.vibes.suggestedTags).toHaveLength(8)
+    expect(result.vibes.suggestedTags.length).toBeGreaterThanOrEqual(4)
+    expect(result.vibes.suggestedTags.length).toBeLessThanOrEqual(8)
+    expect(result.vibes.suggestedTags).toEqual(
+      expect.arrayContaining([
+        'Remote Work Ready',
+        'Growing Family',
+        "Chef's Kitchen",
+        'Porch Life Central',
+      ])
+    )
   })
 
   test('generateVibes throws on invalid JSON', async () => {
