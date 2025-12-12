@@ -148,13 +148,15 @@ if [[ -n "$endpoint_port" && -z "$PORT_FROM_ENV" ]]; then
 fi
 
 # Ensure we're not fooled by an existing process on the port
-kill_port_listeners "$PORT"
+if ! node scripts/kill-port.js "$PORT"; then
+  echo "[run-local-api] [$(timestamp)] Failed to free port $PORT via scripts/kill-port.js"
+  finish 1 error
+fi
 
-# If the port is still in use, fall back to an ephemeral free port and rewrite the endpoint.
+# If the port is still in use, fail loudly (cron should alert instead of silently changing ports).
 if port_in_use "$PORT"; then
-  free_port="$(get_free_port)"
-  echo "[run-local-api] [$(timestamp)] Port $PORT still in use; switching to free port $free_port"
-  PORT="$free_port"
+  echo "[run-local-api] [$(timestamp)] Failed to free port $PORT; refusing to start server on a different port."
+  finish 1 error
 fi
 
 # Always keep the endpoint port in sync with the server port we start.
