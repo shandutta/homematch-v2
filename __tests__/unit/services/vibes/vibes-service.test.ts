@@ -74,7 +74,12 @@ const validVibesOutput = {
     overallCondition: 'well_maintained',
   },
   emotionalHooks: ['Mudroom makes daily life easier.'],
-  suggestedTags: ['Ranch Style', "Chef's Kitchen", 'Remote Work Ready'],
+  suggestedTags: [
+    'Ranch Style',
+    "Chef's Kitchen",
+    'Remote Work Ready',
+    'Natural Light Filled',
+  ],
 }
 
 describe('VibesService', () => {
