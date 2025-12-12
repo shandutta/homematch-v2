@@ -144,6 +144,11 @@ export class VibesService {
     options?: {
       delayMs?: number
       onProgress?: (completed: number, total: number) => void
+      beforeEach?: (
+        property: Property,
+        index: number,
+        total: number
+      ) => Promise<Property | void> | Property | void
     }
   ): Promise<BatchGenerationResult> {
     const delayMs = options?.delayMs ?? 1000
@@ -157,9 +162,16 @@ export class VibesService {
     }
 
     for (let i = 0; i < properties.length; i++) {
-      const property = properties[i]
+      let property = properties[i]
 
       try {
+        const prepared = await options?.beforeEach?.(
+          property,
+          i,
+          properties.length
+        )
+        if (prepared) property = prepared
+
         const result = await this.generateVibes(property)
         results.success.push(result)
         results.totalCostUsd += result.usage.estimatedCostUsd

@@ -4,13 +4,17 @@
  * Backfill property vibes for existing properties.
  *
  * Safe defaults for manual runs:
- *   pnpm exec tsx scripts/backfill-vibes.ts --limit=10
+ *   pnpm exec tsx scripts/backfill-vibes.ts --limit=10 --force=true --refreshImages=true
  *
  * Options:
  *   --limit=10        Max properties to attempt (default 10; omit for all)
  *   --batchSize=10    How many to send per batch (default 10)
  *   --delayMs=1500    Delay between properties in a batch (default 1500)
  *   --force=true      Ignore source hash and regenerate
+ *   --refreshImages=true   Fetch full Zillow gallery via RapidAPI /images?zpid= and update `properties.images`
+ *   --forceImages=true     Update `properties.images` even if it already looks complete
+ *   --minImages=10         Skip refresh when current images >= this count (default 10)
+ *   --imageDelayMs=600     Delay between image fetches (default 600)
  */
 
 import { config } from 'dotenv'
@@ -18,6 +22,11 @@ config({ path: '.env.local' })
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import {
+  fetchZillowImageUrls,
+  isStreetViewImageUrl,
+  isZillowStaticImageUrl,
+} from '@/lib/ingestion/zillow-images'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
 import type { Property } from '@/lib/schemas/property'
 
@@ -26,6 +35,10 @@ type Args = {
   batchSize: number
   delayMs: number
   force: boolean
+  refreshImages: boolean
+  forceImages: boolean
+  minImages: number
+  imageDelayMs: number
 }
 
 function parseArgs(argv: string[]): Args {
@@ -34,6 +47,10 @@ function parseArgs(argv: string[]): Args {
     batchSize: 10,
     delayMs: 1500,
     force: false,
+    refreshImages: false,
+    forceImages: false,
+    minImages: 10,
+    imageDelayMs: 600,
   }
 
   const raw: Record<string, string> = {}
@@ -51,6 +68,16 @@ function parseArgs(argv: string[]): Args {
   const batchSize = raw.batchSize ? Number(raw.batchSize) : defaults.batchSize
   const delayMs = raw.delayMs ? Number(raw.delayMs) : defaults.delayMs
   const force = raw.force === 'true' || defaults.force
+  const refreshImages =
+    raw.refreshImages != null
+      ? raw.refreshImages === 'true'
+      : defaults.refreshImages
+  const forceImages =
+    raw.forceImages != null ? raw.forceImages === 'true' : defaults.forceImages
+  const minImages = raw.minImages ? Number(raw.minImages) : defaults.minImages
+  const imageDelayMs = raw.imageDelayMs
+    ? Number(raw.imageDelayMs)
+    : defaults.imageDelayMs
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
@@ -61,6 +88,13 @@ function parseArgs(argv: string[]): Args {
     delayMs:
       Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : defaults.delayMs,
     force,
+    refreshImages,
+    forceImages,
+    minImages: Number.isFinite(minImages) && minImages >= 0 ? minImages : 0,
+    imageDelayMs:
+      Number.isFinite(imageDelayMs) && imageDelayMs >= 0
+        ? imageDelayMs
+        : defaults.imageDelayMs,
   }
 }
 
@@ -72,11 +106,21 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return chunks
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 async function main() {
   const args = parseArgs(process.argv)
 
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error('OPENROUTER_API_KEY not set; add to .env.local')
+  }
+
+  const RAPIDAPI_HOST =
+    process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
+  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
+
+  if (args.refreshImages && !RAPIDAPI_KEY) {
+    throw new Error('RAPIDAPI_KEY not set; required for --refreshImages=true')
   }
 
   const supabase = createStandaloneClient()
@@ -95,14 +139,14 @@ async function main() {
   let offset = 0
 
   console.log(
-    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force})`
+    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, refreshImages=${args.refreshImages}, minImages=${args.minImages})`
   )
 
   while (attempted < target) {
     const { data, error } = await supabase
       .from('properties')
       .select('*')
-      .not('images', 'is', null)
+      .not('zpid', 'is', null)
       .gte('price', 100000)
       .order('created_at', { ascending: false })
       .range(offset, offset + pageSize - 1)
@@ -116,9 +160,6 @@ async function main() {
     offset += pageSize
 
     const ids = properties.map((p) => p.id)
-    const currentHashMap = new Map(
-      properties.map((p) => [p.id, VibesService.generateSourceHash(p)])
-    )
 
     const { data: existing } = await supabase
       .from('property_vibes')
@@ -129,11 +170,16 @@ async function main() {
       (existing || []).map((v) => [v.property_id, v.source_data_hash])
     )
 
-    const toProcess = args.force
-      ? properties
-      : properties.filter(
-          (p) => existingHashMap.get(p.id) !== currentHashMap.get(p.id)
-        )
+    const currentHashMap = new Map(
+      properties.map((p) => [p.id, VibesService.generateSourceHash(p)])
+    )
+
+    const toProcess =
+      args.force || args.refreshImages
+        ? properties
+        : properties.filter(
+            (p) => existingHashMap.get(p.id) !== currentHashMap.get(p.id)
+          )
 
     const newlySkipped = args.force ? 0 : properties.length - toProcess.length
     skipped += newlySkipped
@@ -152,6 +198,73 @@ async function main() {
 
       const batchResult = await vibesService.generateVibesBatch(batchLimited, {
         delayMs: args.delayMs,
+        beforeEach: args.refreshImages
+          ? async (property) => {
+              const zpid = property.zpid
+              if (!zpid || !RAPIDAPI_KEY) return
+
+              const current = Array.isArray(property.images)
+                ? property.images
+                : []
+              const looksComplete =
+                current.length >= args.minImages &&
+                current.some(
+                  (u) => typeof u === 'string' && isZillowStaticImageUrl(u)
+                )
+
+              if (looksComplete && !args.forceImages) return
+
+              const fetched = await fetchZillowImageUrls({
+                zpid,
+                rapidApiKey: RAPIDAPI_KEY,
+                host: RAPIDAPI_HOST,
+              })
+
+              const nonStreetView = fetched.filter(
+                (u) => !isStreetViewImageUrl(u)
+              )
+              const zillowPhotos = nonStreetView.filter(isZillowStaticImageUrl)
+              const nextImages =
+                zillowPhotos.length > 0 ? zillowPhotos : nonStreetView
+
+              if (nextImages.length === 0) {
+                console.log(
+                  `[backfill-vibes] [images] zpid=${zpid} no usable photos (skipping image update)`
+                )
+                return
+              }
+
+              const shouldUpdate =
+                args.forceImages || nextImages.length !== current.length
+              if (!shouldUpdate) return
+
+              const { error: updateError } = await supabase
+                .from('properties')
+                .update({
+                  images: nextImages,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', property.id)
+
+              if (updateError) {
+                console.warn(
+                  `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${updateError.message}`
+                )
+                return
+              }
+
+              property.images = nextImages
+              console.log(
+                `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}`
+              )
+
+              if (args.imageDelayMs > 0) {
+                await sleep(args.imageDelayMs)
+              }
+
+              return property
+            }
+          : undefined,
         onProgress: (completed, total) => {
           if (completed === total || completed % 5 === 0) {
             console.log(
