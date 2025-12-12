@@ -116,6 +116,7 @@ interface GenerateResponse {
     total: number
     success: number
     failed: number
+    skipped?: number
     totalCostUsd: number
     totalTimeMs: number
   }
@@ -125,6 +126,7 @@ interface GenerateResponse {
 export default function VibesTestPage() {
   const [cronSecret, setCronSecret] = useState('')
   const [zillowInput, setZillowInput] = useState('')
+  const [propertyIdInput, setPropertyIdInput] = useState('')
   const [zillowResult, setZillowResult] = useState<ZillowVibesResponse | null>(
     null
   )
@@ -142,10 +144,33 @@ export default function VibesTestPage() {
 
   // Generate vibes mutation
   const generateMutation = useMutation({
-    mutationFn: async (params: { count: number; diverse: boolean }) => {
+    mutationFn: async (params: {
+      count?: number
+      diverse?: boolean
+      propertyIds?: string[]
+      force?: boolean
+    }) => {
+      const searchParams = new URLSearchParams()
+      if (params.count) searchParams.set('count', params.count.toString())
+      if (params.diverse != null)
+        searchParams.set('diverse', params.diverse.toString())
+      if (params.force) searchParams.set('force', 'true')
+      searchParams.set('cron_secret', cronSecret)
+
+      const body = params.propertyIds
+        ? JSON.stringify({
+            propertyIds: params.propertyIds,
+            force: params.force,
+          })
+        : undefined
+
       const response = await fetch(
-        `/api/admin/generate-vibes?count=${params.count}&diverse=${params.diverse}&cron_secret=${cronSecret}`,
-        { method: 'POST' }
+        `/api/admin/generate-vibes?${searchParams.toString()}`,
+        {
+          method: 'POST',
+          headers: body ? { 'Content-Type': 'application/json' } : undefined,
+          body,
+        }
       )
       if (!response.ok) {
         const error = await response.json()
@@ -259,6 +284,34 @@ export default function VibesTestPage() {
             </Button>
           </div>
 
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Property ID to regenerate"
+              value={propertyIdInput}
+              onChange={(e) => setPropertyIdInput(e.target.value)}
+              className="flex-1 rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400"
+            />
+            <Button
+              onClick={() =>
+                generateMutation.mutate({
+                  propertyIds: [propertyIdInput.trim()],
+                  force: true,
+                })
+              }
+              disabled={
+                generateMutation.isPending ||
+                !cronSecret ||
+                !propertyIdInput.trim()
+              }
+              variant="secondary"
+              className="bg-slate-700 hover:bg-slate-600"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Regenerate
+            </Button>
+          </div>
+
           {generateMutation.isSuccess && generateMutation.data.summary && (
             <div className="rounded-md bg-green-900/30 p-3 text-green-300">
               Generated {generateMutation.data.summary.success} vibes
@@ -268,6 +321,12 @@ export default function VibesTestPage() {
                   ({generateMutation.data.summary.failed} failed)
                 </span>
               )}
+              {generateMutation.data.summary.skipped ? (
+                <span className="text-slate-400">
+                  {' '}
+                  ({generateMutation.data.summary.skipped} skipped)
+                </span>
+              ) : null}
               <span className="ml-2 text-slate-400">
                 Cost: ${generateMutation.data.summary.totalCostUsd.toFixed(4)} |
                 Time:{' '}

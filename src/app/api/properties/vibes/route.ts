@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { createStandaloneClient } from '@/lib/supabase/standalone'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/properties/vibes
@@ -11,35 +11,44 @@ import { createStandaloneClient } from '@/lib/supabase/standalone'
  * - offset: Number of records to skip (default 0)
  * - propertyId: Optional specific property ID
  */
-export async function GET(req: Request) {
-  const url = new URL(req.url)
+export async function GET(request: NextRequest) {
+  const hasRequestContext =
+    typeof request?.headers?.get === 'function' &&
+    typeof request?.cookies?.getAll === 'function'
+  const supabase = createApiClient(hasRequestContext ? request : undefined)
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const url = new URL(request.url)
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100)
   const offset = parseInt(url.searchParams.get('offset') || '0')
   const propertyId = url.searchParams.get('propertyId')
 
-  const supabase = createStandaloneClient()
-
-  // Note: property_vibes table is not in generated types yet
-  // Using type assertion until types are regenerated after migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (supabase as any)
+  let query = supabase
     .from('property_vibes')
     .select(
       `
-      *,
-      properties (
-        id,
-        address,
-        city,
-        state,
-        price,
-        bedrooms,
-        bathrooms,
-        square_feet,
-        property_type,
-        images
-      )
-    `
+        *,
+        properties (
+          id,
+          address,
+          city,
+          state,
+          price,
+          bedrooms,
+          bathrooms,
+          square_feet,
+          property_type,
+          images
+        )
+      `
     )
     .order('created_at', { ascending: false })
 
@@ -52,20 +61,6 @@ export async function GET(req: Request) {
   const { data, error } = await query
 
   if (error) {
-    const errorCode = (error as { code?: string }).code
-    if (errorCode === '42P01') {
-      console.error(
-        '[vibes API] property_vibes table missing - run migration 20251127150000_create_property_vibes_table.sql'
-      )
-      return NextResponse.json(
-        {
-          error:
-            'Vibes data not initialized. Run the property_vibes migration.',
-        },
-        { status: 503 }
-      )
-    }
-
     console.error('[vibes API] Error fetching vibes:', error)
     return NextResponse.json(
       { error: 'Failed to fetch vibes' },

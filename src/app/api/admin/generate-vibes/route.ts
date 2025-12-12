@@ -7,6 +7,7 @@ interface GenerateVibesRequest {
   propertyIds?: string[]
   count?: number
   diverseSelection?: boolean
+  force?: boolean
 }
 
 interface GenerateVibesResponse {
@@ -15,6 +16,7 @@ interface GenerateVibesResponse {
     total: number
     success: number
     failed: number
+    skipped: number
     totalCostUsd: number
     totalTimeMs: number
   }
@@ -86,6 +88,8 @@ export async function POST(
   )
   const diverse =
     url.searchParams.get('diverse') === 'true' || body.diverseSelection || false
+  const force =
+    url.searchParams.get('force') === 'true' || body.force === true || false
 
   const supabase = createStandaloneClient()
 
@@ -128,6 +132,7 @@ export async function POST(
           total: 0,
           success: 0,
           failed: 0,
+          skipped: 0,
           totalCostUsd: 0,
           totalTimeMs: 0,
         },
@@ -141,16 +146,86 @@ export async function POST(
       (p) => p.images && p.images.length > 0
     )
 
+    if (propertiesWithImages.length === 0) {
+      return NextResponse.json({
+        ok: true,
+        summary: {
+          total: 0,
+          success: 0,
+          failed: 0,
+          skipped: 0,
+          totalCostUsd: 0,
+          totalTimeMs: 0,
+        },
+        results: [],
+        errors: [],
+      })
+    }
+
+    // Skip properties whose source hash hasn't changed (unless forced)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existingVibes } = await (supabase as any)
+      .from('property_vibes')
+      .select('property_id, source_data_hash')
+      .in(
+        'property_id',
+        propertiesWithImages.map((p) => p.id)
+      )
+
+    const existingHashMap = new Map(
+      (existingVibes || []).map(
+        (v: { property_id: string; source_data_hash: string }) => [
+          v.property_id,
+          v.source_data_hash,
+        ]
+      )
+    )
+
+    const currentHashMap = new Map(
+      propertiesWithImages.map((p) => [
+        p.id,
+        VibesService.generateSourceHash(p),
+      ])
+    )
+
+    const skippedProperties = force
+      ? []
+      : propertiesWithImages.filter(
+          (p) => existingHashMap.get(p.id) === currentHashMap.get(p.id)
+        )
+
+    const propertiesToProcess = force
+      ? propertiesWithImages
+      : propertiesWithImages.filter(
+          (p) => existingHashMap.get(p.id) !== currentHashMap.get(p.id)
+        )
+
+    if (propertiesToProcess.length === 0) {
+      return NextResponse.json({
+        ok: true,
+        summary: {
+          total: propertiesWithImages.length,
+          success: 0,
+          failed: 0,
+          skipped: skippedProperties.length,
+          totalCostUsd: 0,
+          totalTimeMs: 0,
+        },
+        results: [],
+        errors: [],
+      })
+    }
+
     if (isDev) {
       console.log(
-        `[generate-vibes] Processing ${propertiesWithImages.length} properties...`
+        `[generate-vibes] Processing ${propertiesToProcess.length} properties (${skippedProperties.length} skipped)...`
       )
     }
 
     // Generate vibes
     const vibesService = createVibesService()
     const batchResult = await vibesService.generateVibesBatch(
-      propertiesWithImages,
+      propertiesToProcess,
       {
         delayMs: 1500,
         onProgress: (completed, total) => {
@@ -165,7 +240,7 @@ export async function POST(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const insertRecords: any[] = []
     for (const result of batchResult.success) {
-      const property = propertiesWithImages.find(
+      const property = propertiesToProcess.find(
         (p) => p.id === result.propertyId
       )
       if (!property) continue
@@ -209,9 +284,10 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       summary: {
-        total: propertiesWithImages.length,
+        total: propertiesToProcess.length + skippedProperties.length,
         success: batchResult.success.length,
         failed: batchResult.failed.length,
+        skipped: skippedProperties.length,
         totalCostUsd: batchResult.totalCostUsd,
         totalTimeMs: batchResult.totalTimeMs,
       },

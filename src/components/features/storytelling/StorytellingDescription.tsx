@@ -1,7 +1,12 @@
 'use client'
 
+import type { ComponentType } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
-import type { PropertyVibes } from '@/lib/schemas/property-vibes'
+import {
+  PROPERTY_TAGS,
+  type TagCategory,
+  type PropertyVibes,
+} from '@/lib/schemas/property-vibes'
 import { Badge } from '@/components/ui/badge'
 import {
   MotionDiv,
@@ -19,6 +24,7 @@ import {
   GraduationCap,
   Home,
   MapPin,
+  LayoutGrid,
   Utensils,
   Baby,
   Car,
@@ -44,9 +50,41 @@ interface StorytellingDescriptionProps {
   variant?: 'full' | 'compact' | 'minimal'
 }
 
-// Lifestyle tags with their associated icons and colors
-// Using saturated colors with white text for better readability on dark backgrounds
-const LIFESTYLE_TAGS = {
+type DisplayCategory = TagCategory | 'legacy' | 'unknown'
+type TagDisplayConfig = {
+  icon: ComponentType<{ className?: string }>
+  color: string
+  category: DisplayCategory
+}
+
+// Category-level display defaults for expanded PROPERTY_TAGS
+const CATEGORY_DISPLAY: Record<
+  TagCategory,
+  Omit<TagDisplayConfig, 'category'>
+> = {
+  architectural: { icon: Home, color: 'bg-slate-500 text-white' },
+  outdoor: { icon: TreePine, color: 'bg-emerald-500 text-white' },
+  interior: { icon: LayoutGrid, color: 'bg-amber-500 text-white' },
+  lifestyle: { icon: Heart, color: 'bg-purple-500 text-white' },
+  aesthetic: { icon: Sparkles, color: 'bg-pink-500 text-white' },
+  location: { icon: MapPin, color: 'bg-blue-500 text-white' },
+}
+
+// Build tag->category mapping from schema tags
+const TAG_CATEGORY_MAP: Record<string, TagCategory> = Object.entries(
+  PROPERTY_TAGS
+).reduce(
+  (acc, [category, tags]) => {
+    for (const tag of tags as readonly string[]) {
+      acc[tag] = category as TagCategory
+    }
+    return acc
+  },
+  {} as Record<string, TagCategory>
+)
+
+// Legacy lifestyle tags with custom icons/colors (kept for template fallbacks)
+const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
   'Work from Home Ready': { icon: Wifi, color: 'bg-blue-500 text-white' },
   "Entertainer's Dream": {
     icon: UtensilsCrossed,
@@ -88,7 +126,32 @@ const LIFESTYLE_TAGS = {
     color: 'bg-fuchsia-500 text-white',
   },
   'Tropical Vibes': { icon: Palmtree, color: 'bg-lime-500 text-white' },
-} as const
+}
+
+const TAG_DISPLAY_MAP: Record<string, TagDisplayConfig> = {
+  ...Object.fromEntries(
+    Object.entries(TAG_CATEGORY_MAP).map(([tag, category]) => [
+      tag,
+      { ...CATEGORY_DISPLAY[category], category },
+    ])
+  ),
+  ...Object.fromEntries(
+    Object.entries(LEGACY_TAG_DISPLAY).map(([tag, config]) => [
+      tag,
+      { ...config, category: 'legacy' as const },
+    ])
+  ),
+}
+
+function getTagDisplay(tag: string): TagDisplayConfig {
+  return (
+    TAG_DISPLAY_MAP[tag] || {
+      icon: Sparkles,
+      color: 'bg-slate-600 text-white',
+      category: 'unknown',
+    }
+  )
+}
 
 // Enhanced lifestyle story templates
 const LIFESTYLE_STORIES = {
@@ -679,9 +742,7 @@ export function StorytellingDescription({
 
   // Lifestyle tags: use vibes suggested_tags or generate from property
   const lifestyleTags = hasVibes
-    ? vibes.suggested_tags.filter(
-        (tag): tag is keyof typeof LIFESTYLE_TAGS => tag in LIFESTYLE_TAGS
-      )
+    ? vibes.suggested_tags
     : generateLifestyleTags(property, neighborhood)
 
   // Lifestyle story: use vibes vibe_statement or template
@@ -768,8 +829,7 @@ export function StorytellingDescription({
         {showLifestyleTags && lifestyleTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {lifestyleTags.slice(0, 2).map((tag, _index) => {
-              const tagConfig =
-                LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
+              const tagConfig = getTagDisplay(tag)
               const IconComponent = tagConfig.icon
 
               return (
@@ -926,7 +986,7 @@ export function StorytellingDescription({
           transition={{ duration: 0.4, delay: 0.6 }}
         >
           {lifestyleTags.map((tag, _index) => {
-            const tagConfig = LIFESTYLE_TAGS[tag as keyof typeof LIFESTYLE_TAGS]
+            const tagConfig = getTagDisplay(tag)
             const IconComponent = tagConfig.icon
 
             return (
