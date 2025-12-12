@@ -21,7 +21,7 @@ export const PROPERTY_TAGS = {
     'Brownstone Beauty',
   ],
 
-  // Outdoor & Views (12)
+  // Outdoor & Views (13)
   outdoor: [
     'Private Oasis',
     "Entertainer's Yard",
@@ -35,9 +35,10 @@ export const PROPERTY_TAGS = {
     'Desert Landscape',
     'Courtyard Living',
     'Wraparound Porch',
+    'Porch Life Central',
   ],
 
-  // Interior Features (15)
+  // Interior Features (17)
   interior: [
     "Chef's Kitchen",
     'Open Concept Flow',
@@ -54,6 +55,8 @@ export const PROPERTY_TAGS = {
     'Wine Storage',
     'Home Theater Ready',
     'Smart Home Wired',
+    'Gallery-Ready Walls',
+    'Sunday Morning Kitchen',
   ],
 
   // Lifestyle Fit (18)
@@ -214,7 +217,7 @@ export const llmVibesOutputSchema = z.object({
   // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
   emotionalHooks: z.array(z.string().max(200)).min(1).max(4),
   // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
-  suggestedTags: z.array(z.string()).min(4).max(8),
+  suggestedTags: z.array(z.enum(ALL_PROPERTY_TAGS)).min(2).max(8),
 })
 
 // LLM Input Schema - what we send to the model

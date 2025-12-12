@@ -8,6 +8,7 @@
 import crypto from 'node:crypto'
 import type { Property } from '@/lib/schemas/property'
 import {
+  ALL_PROPERTY_TAGS,
   llmVibesOutputSchema,
   type LLMVibesOutput,
   type PropertyVibesInsert,
@@ -23,6 +24,107 @@ import {
   selectStrategicImages,
   type ImageSelectionResult,
 } from './image-selector'
+
+type CanonicalTag = (typeof ALL_PROPERTY_TAGS)[number]
+
+function normalizeTagKey(tag: string): string {
+  return tag
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+const CANONICAL_TAG_BY_KEY = new Map<string, CanonicalTag>(
+  ALL_PROPERTY_TAGS.map((tag) => [normalizeTagKey(tag), tag])
+)
+
+const TAG_SYNONYMS: Record<string, CanonicalTag> = {
+  [normalizeTagKey('Commute Friendly')]: 'Commuter Friendly',
+  [normalizeTagKey('Rooftop Living')]: 'Urban Rooftop',
+  [normalizeTagKey('Outdoor Living')]: 'Indoor-Outdoor Flow',
+  [normalizeTagKey('Modern Minimalist')]: 'Minimalist Living',
+  [normalizeTagKey('Modernist Architecture')]: 'Contemporary Lines',
+  [normalizeTagKey('Architectural Details')]: 'Built-In Character',
+  [normalizeTagKey('City Skyline Perch')]: 'City Skyline',
+}
+
+function normalizeToCanonicalTag(tag: string): CanonicalTag | null {
+  const key = normalizeTagKey(tag)
+  const synonym = TAG_SYNONYMS[key]
+  if (synonym) return synonym
+  return CANONICAL_TAG_BY_KEY.get(key) ?? null
+}
+
+function uniquePush<T>(arr: T[], value: T): void {
+  if (!arr.includes(value)) arr.push(value)
+}
+
+function inferTagsFromText(text: string): CanonicalTag[] {
+  const out: CanonicalTag[] = []
+  const t = text.toLowerCase()
+
+  const rules: Array<[RegExp, CanonicalTag]> = [
+    [
+      /\bchef\b|\bkitchen island\b|\bdouble oven\b|\bgas cooktop\b/,
+      "Chef's Kitchen",
+    ],
+    [/\bopen concept\b|\bopen[- ]plan\b/, 'Open Concept Flow'],
+    [/\bhardwood\b/, 'Hardwood Throughout'],
+    [/\bfireplace\b/, 'Fireplace Focal Point'],
+    [/\bvaulted\s+ceil/i, 'Vaulted Ceilings'],
+    [
+      /\bnatural light\b|\bbright\b|\bfloor-to-ceiling\b/,
+      'Natural Light Filled',
+    ],
+    [/\bwalk[- ]in\b.*\bcloset\b/, 'Walk-In Closets'],
+    [/\bspa\b.*\bbath\b|\bsoaking tub\b/, 'Spa Bathroom'],
+    [/\bwine\b|\bcellar\b/, 'Wine Storage'],
+    [/\btheater\b|\bhome cinema\b|\bprojector\b/, 'Home Theater Ready'],
+    [/\bsmart home\b|\bwired\b/, 'Smart Home Wired'],
+    [/\bpool\b/, 'Pool Ready'],
+    [/\brooftop\b|\broof deck\b/, 'Urban Rooftop'],
+    [/\bporch\b/, 'Porch Life Central'],
+    [/\bgarden\b/, 'Garden Paradise'],
+    [/\bcourtyard\b/, 'Courtyard Living'],
+    [/\bmountain\b.*\bview|\bviews?\b.*\bmountain\b/, 'Mountain Views'],
+    [/\bwater\b.*\bview|\bviews?\b.*\bwater\b|\bbay\b.*\bview/, 'Water Views'],
+    [/\bskyline\b/, 'City Skyline'],
+    [/\bwalkable\b/, 'Walkable Neighborhood'],
+    [/\btransit\b|\btrain\b|\bsubway\b|\bbart\b/, 'Transit Accessible'],
+    [/\bminimalist\b|\bminimal\b/, 'Minimalist Living'],
+    [/\bvictorian\b/, 'Victorian Character'],
+    [/\bmid[- ]century\b|\bmidcentury\b|\bmcm\b/, 'Mid-Century Modern'],
+    [/\bcraftsman\b/, 'Craftsman Details'],
+    [/\bcolonial\b/, 'Colonial Elegance'],
+    [/\bfarmhouse\b/, 'Farmhouse Charm'],
+    [/\bart deco\b/, 'Art Deco Flair'],
+    [/\branch\b/, 'Ranch Style'],
+    [/\bmediterranean\b/, 'Mediterranean Influence'],
+    [/\bindustrial\b/, 'Industrial Loft'],
+    [/\btudor\b/, 'Tudor Elements'],
+    [/\bcape cod\b/, 'Cape Cod Classic'],
+    [/\bprairie\b/, 'Prairie Style'],
+    [/\bbrownstone\b/, 'Brownstone Beauty'],
+    [/\bspanish\b/, 'Spanish Revival'],
+    [/\bcoastal\b/, 'Coastal Casual'],
+    [/\bbohemian\b|\bboho\b/, 'Bohemian Spirit'],
+    [/\brustic\b/, 'Rustic Charm'],
+    [/\bbold\b|\bdramatic\b/, 'Bold & Dramatic'],
+    [/\bneutral\b/, 'Soft & Neutral'],
+    [/\bairy\b/, 'Bright & Airy'],
+    [/\bcozy\b|\bwarm\b/, 'Cozy & Warm'],
+    [/\beclectic\b/, 'Eclectic Mix'],
+    [/\btimeless\b|\bclassic\b/, 'Timeless Classic'],
+    [/\burban\b/, 'Urban Edge'],
+  ]
+
+  for (const [pattern, tag] of rules) {
+    if (pattern.test(t)) uniquePush(out, tag)
+  }
+
+  return out
+}
 
 export interface VibesGenerationResult {
   propertyId: string
@@ -52,6 +154,101 @@ export class VibesService {
 
   constructor(client?: OpenRouterClient) {
     this.client = client || createOpenRouterClient()
+  }
+
+  private static normalizeSuggestedTagsFromCandidate(
+    candidate: Record<string, unknown>,
+    repaired: Record<string, unknown>
+  ): CanonicalTag[] {
+    const normalized: CanonicalTag[] = []
+
+    const rawTags = candidate.suggestedTags
+    if (Array.isArray(rawTags)) {
+      for (const t of rawTags) {
+        if (typeof t !== 'string') continue
+        const canonical = normalizeToCanonicalTag(t)
+        if (canonical) uniquePush(normalized, canonical)
+      }
+    }
+
+    const fits = repaired.lifestyleFits
+    if (Array.isArray(fits)) {
+      const scored: Array<{ tag: CanonicalTag; score: number }> = []
+      for (const f of fits) {
+        if (!VibesService.isRecord(f)) continue
+        if (typeof f.category !== 'string') continue
+        const canonical = normalizeToCanonicalTag(f.category)
+        if (!canonical) continue
+        const score =
+          typeof f.score === 'number' && Number.isFinite(f.score) ? f.score : 0
+        scored.push({ tag: canonical, score })
+      }
+
+      scored
+        .sort((a, b) => b.score - a.score)
+        .forEach(({ tag }) => uniquePush(normalized, tag))
+    }
+
+    const textParts: string[] = []
+    if (typeof repaired.tagline === 'string') textParts.push(repaired.tagline)
+    if (typeof repaired.vibeStatement === 'string')
+      textParts.push(repaired.vibeStatement)
+
+    const notable = repaired.notableFeatures
+    if (Array.isArray(notable)) {
+      for (const n of notable) {
+        if (!VibesService.isRecord(n)) continue
+        for (const key of ['feature', 'location', 'appealFactor'] as const) {
+          const value = n[key]
+          if (typeof value === 'string') textParts.push(value)
+        }
+      }
+    }
+
+    const aesthetics = repaired.aesthetics
+    if (VibesService.isRecord(aesthetics)) {
+      const arch = aesthetics.architecturalStyle
+      if (typeof arch === 'string') textParts.push(arch)
+      const lighting = aesthetics.lightingQuality
+      if (lighting === 'natural_abundant' || lighting === 'natural_moderate') {
+        uniquePush(normalized, 'Natural Light Filled')
+      }
+    }
+
+    const inferred = inferTagsFromText(textParts.join('\n'))
+    for (const tag of inferred) uniquePush(normalized, tag)
+
+    return normalized.slice(0, 8)
+  }
+
+  private static finalizeSuggestedTags(vibes: LLMVibesOutput): LLMVibesOutput {
+    const unique: CanonicalTag[] = []
+    for (const tag of vibes.suggestedTags) {
+      uniquePush(unique, tag)
+    }
+
+    if (unique.length >= 4) {
+      return { ...vibes, suggestedTags: unique.slice(0, 8) }
+    }
+
+    const candidate: Record<string, unknown> = {
+      tagline: vibes.tagline,
+      vibeStatement: vibes.vibeStatement,
+      notableFeatures: vibes.notableFeatures,
+      lifestyleFits: vibes.lifestyleFits,
+      aesthetics: vibes.aesthetics,
+      suggestedTags: unique,
+    }
+
+    const filled = VibesService.normalizeSuggestedTagsFromCandidate(
+      candidate,
+      candidate
+    )
+
+    const merged: CanonicalTag[] = [...unique]
+    for (const tag of filled) uniquePush(merged, tag)
+
+    return { ...vibes, suggestedTags: merged.slice(0, 8) }
   }
 
   private static isRecord(value: unknown): value is Record<string, unknown> {
@@ -210,10 +407,12 @@ export class VibesService {
     )
     if (emotionalHooks != null) repaired.emotionalHooks = emotionalHooks
 
-    if (Array.isArray(obj.suggestedTags)) {
-      repaired.suggestedTags = obj.suggestedTags
-        .filter((t) => typeof t === 'string')
-        .slice(0, 8)
+    const normalizedTags = VibesService.normalizeSuggestedTagsFromCandidate(
+      obj,
+      repaired
+    )
+    if (normalizedTags.length > 0) {
+      repaired.suggestedTags = normalizedTags
     }
 
     return repaired
@@ -318,10 +517,11 @@ export class VibesService {
     }
 
     const processingTimeMs = Date.now() - startTime
+    const vibes = VibesService.finalizeSuggestedTags(parsedVibes)
 
     return {
       propertyId: property.id,
-      vibes: parsedVibes,
+      vibes,
       images,
       usage,
       processingTimeMs,

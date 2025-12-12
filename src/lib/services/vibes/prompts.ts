@@ -7,7 +7,7 @@
  * Key improvements:
  * - Uses 15-20 images for comprehensive analysis
  * - Includes listing description when available
- * - Expanded tag system (~80 tags across 6 categories)
+ * - Expanded tag system (~85 tags across 6 categories)
  * - Unique, property-specific vibes (not generic)
  * - Authentic lifestyle moments (real estate agent + friend voice)
  * - Tier-based lifestyle fit scoring
@@ -179,7 +179,7 @@ Respond with a JSON object matching this EXACT structure:
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
 	  "emotionalHooks": ["2-4 practical lifestyle moments. NO: 'morning coffee', 'sun-drenched', 'perfect for', 'mesmerizing'. YES: 'That mudroom? Lifesaver with kids and dogs.' or 'Double sinks - no more counter fights.'"],
-	  "suggestedTags": ["4-8 tags from the predefined categories that GENUINELY apply to this property"]
+	  "suggestedTags": ["4-8 tags EXACTLY from AVAILABLE TAGS list above (exact spelling/case). Do not invent new tags."]
 	}
 
 	Requirements:
@@ -188,7 +188,7 @@ Respond with a JSON object matching this EXACT structure:
 	- notableFeatures: 2-8 specific features that would catch a buyer's eye
 	- Don’t fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
 	- emotionalHooks: 2-4 moments written like you're walking through with a friend
-	- suggestedTags: 4-8 tags from the predefined list. Pick from multiple categories.`
+	- suggestedTags: 4-8 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories.`
 }
 
 /**
