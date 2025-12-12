@@ -85,22 +85,6 @@ jest.mock('@/lib/utils/haptic-feedback', () => ({
   }),
 }))
 
-// Mock the TinderCard component as it's a third-party library with its own tests
-jest.mock('react-tinder-card', () => ({
-  __esModule: true,
-  default: ({
-    children,
-    onSwipe,
-  }: {
-    children: React.ReactNode
-    onSwipe: (dir: string) => void
-  }) => (
-    <div data-testid="tinder-card" data-swipe={(dir: string) => onSwipe(dir)}>
-      {children}
-    </div>
-  ),
-}))
-
 const mockProperties: Property[] = [
   {
     id: 'prop-1',

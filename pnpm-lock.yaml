@@ -124,9 +124,6 @@ importers:
       react-hot-toast:
         specifier: ^2.5.2
         version: 2.5.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      react-tinder-card:
-        specifier: ^1.6.4
-        version: 1.6.4(react@19.1.1)
       sonner:
         specifier: ^2.0.6
         version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -194,9 +191,6 @@ importers:
       '@types/jest-axe':
         specifier: ^3.5.9
         version: 3.5.9
-      '@types/lru-cache':
-        specifier: ^7.10.10
-        version: 7.10.10
       '@types/node':
         specifier: ^20
         version: 20.19.9
@@ -4136,13 +4130,6 @@ packages:
       {
         integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==,
       }
-
-  '@types/lru-cache@7.10.10':
-    resolution:
-      {
-        integrity: sha512-nEpVRPWW9EBmx2SCfNn3ClYxPL7IktPX12HhIoSc/H5mMjdeW3+YsXIpseLQ2xF35+OcpwKQbEUw5VtqE4PDNA==,
-      }
-    deprecated: This is a stub types definition. lru-cache provides its own type definitions, so you do not need this installed.
 
   '@types/memcached@2.2.10':
     resolution:
@@ -8881,12 +8868,6 @@ packages:
       }
     engines: { node: ^12.20.0 || ^14.13.1 || >=16.0.0 }
 
-  p-sleep@1.1.0:
-    resolution:
-      {
-        integrity: sha512-bwP3GKZirBUYMtiUuBrheLUQdRXVeE/pmHOaLpNJzNfAD4b5AjDn6l823brXcQFade4G/g7GMNQ3KV86E8EaEw==,
-      }
-
   p-try@2.2.0:
     resolution:
       {
@@ -9492,21 +9473,6 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
-        optional: true
-
-  react-tinder-card@1.6.4:
-    resolution:
-      {
-        integrity: sha512-IC6YXoBZ+51jm7XsT8i+8G/ov8rvAob+kBRdp9unQyjsLc7jmuYb1cNfu95Q3mdFDgwE0AzTIyl1o2Klm61+aQ==,
-      }
-    peerDependencies:
-      '@react-spring/native': ^9.5.5
-      '@react-spring/web': ^9.5.5
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    peerDependenciesMeta:
-      '@react-spring/native':
-        optional: true
-      '@react-spring/web':
         optional: true
 
   react@19.1.1:
@@ -14151,10 +14117,6 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/lru-cache@7.10.10':
-    dependencies:
-      lru-cache: 11.1.0
-
   '@types/memcached@2.2.10':
     dependencies:
       '@types/node': 20.19.9
@@ -17281,8 +17243,6 @@ snapshots:
     dependencies:
       p-limit: 4.0.0
 
-  p-sleep@1.1.0: {}
-
   p-try@2.2.0: {}
 
   pac-proxy-agent@7.2.0:
@@ -17604,11 +17564,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.1.9
-
-  react-tinder-card@1.6.4(react@19.1.1):
-    dependencies:
-      p-sleep: 1.1.0
-      react: 19.1.1
 
   react@19.1.1: {}
 

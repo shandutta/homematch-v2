@@ -126,13 +126,13 @@ export class CouplesRealtime {
 
       // Notify about partner activity
       if (this.callbacks.onPartnerActivity) {
-        const { data: user } = await this.supabase.auth.admin.getUserById(
-          interaction.user_id
-        )
+        const { data: profile } = await this.supabase
+          .from('user_profiles')
+          .select('display_name, email')
+          .eq('id', interaction.user_id)
+          .single()
         const userDisplayName =
-          user?.user?.user_metadata?.display_name ||
-          user?.user?.email ||
-          'Partner'
+          profile?.display_name || profile?.email || 'Partner'
 
         this.callbacks.onPartnerActivity({
           userId: interaction.user_id,
@@ -158,13 +158,13 @@ export class CouplesRealtime {
 
         if (myLike) {
           // This creates a mutual like!
-          const { data: user } = await this.supabase.auth.admin.getUserById(
-            interaction.user_id
-          )
+          const { data: profile } = await this.supabase
+            .from('user_profiles')
+            .select('display_name, email')
+            .eq('id', interaction.user_id)
+            .single()
           const userDisplayName =
-            user?.user?.user_metadata?.display_name ||
-            user?.user?.email ||
-            'Partner'
+            profile?.display_name || profile?.email || 'Partner'
 
           const { data: property } = await this.supabase
             .from('properties')
