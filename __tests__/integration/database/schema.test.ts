@@ -13,7 +13,7 @@ describeOrSkip('Database Schema Validation - Integration Tests', () => {
     // Create real Supabase client for integration tests using local Docker
     // Use service role key to bypass RLS for schema validation
     supabase = createClient<Database>(
-      process.env.SUPABASE_URL || 'http://localhost:54321',
+      process.env.SUPABASE_URL || 'http://localhost:54200',
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
   })

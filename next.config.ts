@@ -43,7 +43,7 @@ const stripTrailingSlash = (value?: string | null) =>
 const SUPABASE_LOCAL_PROXY_ENABLED = process.env.SUPABASE_LOCAL_PROXY === 'true'
 const SUPABASE_LOCAL_PROXY_TARGET =
   stripTrailingSlash(process.env.SUPABASE_LOCAL_PROXY_TARGET) ||
-  'http://127.0.0.1:54321'
+  'http://127.0.0.1:54200'
 
 const nextConfig: NextConfig = {
   /* config options here */

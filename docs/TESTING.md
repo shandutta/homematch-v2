@@ -223,7 +223,7 @@ describe('Database Relationships', () => {
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │   Playwright    │────▶│  Next.js Server  │────▶│ Supabase Local  │
-│     Tests       │     │  (Port 3000)     │     │  (Port 54321)   │
+│     Tests       │     │  (Port 3000)     │     │  (Port 54200)   │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
         │                        │                         │
         │                        ▼                         │
@@ -298,12 +298,12 @@ E2E tests use `.env.test.local` for configuration:
 
 ```env
 # Supabase Configuration (Local)
-SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_URL=http://127.0.0.1:54200
 SUPABASE_ANON_KEY=<your_supabase_anon_key>
 SUPABASE_SERVICE_ROLE_KEY=<your_supabase_service_role_key>
 
 # Client-side environment variables (required for Next.js)
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54200
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_supabase_anon_key>
 
 # Test User Credentials

@@ -147,7 +147,7 @@ async function setupE2ETests() {
 
     console.log('\n✅ E2E test environment ready!')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📦 Supabase: http://127.0.0.1:54321')
+    console.log('📦 Supabase: http://127.0.0.1:54200')
     console.log('👤 Test user: test1@example.com')
     console.log('🔐 JWT token saved to .test-auth-token')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')

@@ -143,8 +143,8 @@ The pipeline uses these key environment variables:
 
 ```yaml
 # Database Configuration
-SUPABASE_URL: http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+SUPABASE_URL: http://127.0.0.1:54200
+NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54200
 SUPABASE_ANON_KEY: [local-test-key]
 SUPABASE_SERVICE_ROLE_KEY: [local-service-key]
 
@@ -201,8 +201,8 @@ CODECOV_TOKEN=your-codecov-token
 The pipeline uses local Supabase with:
 
 - **PostgreSQL 15** with PostGIS extensions
-- **Port 54321** for API server
-- **Port 54322** for direct database connection
+- **Port 54200** for API server
+- **Port 54201** for direct database connection
 - **All migrations applied** automatically
 - **Test data seeded** via test data factory
 
@@ -308,7 +308,7 @@ supabase status
 supabase restart
 
 # Check port availability
-netstat -tlnp | grep 54321
+netstat -tlnp | grep 54200
 ```
 
 #### Migration Failures

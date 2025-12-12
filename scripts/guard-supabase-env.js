@@ -107,7 +107,7 @@ if (matches.length || hostMatches || looksLikeProdSupabaseHost) {
     offenders.join(', ')
   )
   console.error(
-    '   Update .env.local to point at your local/proxy instance (e.g. SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 or your dev proxy).'
+    '   Update .env.local to point at your local/proxy instance (e.g. SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54200 or your dev proxy).'
   )
   console.error(
     '   This guard compares against .env.prod and blocks dev resets when values match production.'

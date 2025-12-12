@@ -18,7 +18,7 @@ export const setupTestEnvironment = () => {
     APP_URL: 'http://localhost:3000',
 
     // Supabase configuration
-    NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+    NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54200',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key-for-testing-only',
     SUPABASE_SERVICE_ROLE_KEY: 'test-service-role-key-for-testing-only',
 
@@ -44,7 +44,7 @@ export const setupTestEnvironment = () => {
     SUPPRESS_TEST_WARNINGS: 'true',
 
     // Database (for integration tests)
-    DATABASE_URL: 'postgresql://postgres:postgres@localhost:54322/postgres',
+    DATABASE_URL: 'postgresql://postgres:postgres@localhost:54201/postgres',
 
     // Redis (if used)
     REDIS_URL: 'redis://localhost:6379',

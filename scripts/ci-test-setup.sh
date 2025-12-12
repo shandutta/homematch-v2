@@ -52,8 +52,8 @@ NODE_ENV=test
 CI=true
 
 # Test Database Configuration
-SUPABASE_URL=${SUPABASE_URL:-http://127.0.0.1:54321}
-NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL:-http://127.0.0.1:54321}}
+SUPABASE_URL=${SUPABASE_URL:-http://127.0.0.1:54200}
+NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL:-http://127.0.0.1:54200}}
 SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}}
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
 SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
@@ -272,7 +272,7 @@ const { createClient } = require('@supabase/supabase-js')
 async function validateSchema() {
   console.log('🔍 Validating database schema...')
   
-  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   
   if (!supabaseKey) {
@@ -336,7 +336,7 @@ const { createClient } = require('@supabase/supabase-js')
 async function testRLSPolicies() {
   console.log('🛡️ Testing Row Level Security policies...')
   
-  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+  const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
   const anonKey = process.env.SUPABASE_ANON_KEY
   
   if (!anonKey) {

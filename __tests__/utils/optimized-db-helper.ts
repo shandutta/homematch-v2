@@ -90,7 +90,7 @@ export class OptimizedDatabaseHelper {
     }
 
     // Create new authenticated client
-    const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54321'
+    const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
     const supabaseKey = process.env.SUPABASE_ANON_KEY || null
 
     if (!supabaseKey) {

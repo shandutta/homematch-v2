@@ -155,7 +155,7 @@ const getHealthEndpoints = () => {
 
   if (bases.size === 0) {
     const configuredBase = readApiBaseFromConfig()
-    bases.add(configuredBase || 'http://127.0.0.1:54321')
+    bases.add(configuredBase || 'http://127.0.0.1:54200')
   }
 
   const endpoints = []
