@@ -5,7 +5,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PORT="${PORT:-3000}"
+PORT_FROM_ENV="${PORT-}"
+PORT="${PORT_FROM_ENV:-3000}"
 ENDPOINT="${1:-}"
 ENV_FILE="${ENV_FILE:-.env.local}"
 MODE="${MODE:-prod}" # prod | dev
@@ -15,6 +16,83 @@ RETRY_DELAY="${RETRY_DELAY:-20}" # seconds between retries
 
 timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
+}
+
+finish() {
+  local exit_code="${1:-1}"
+  local status="${2:-error}"
+  echo "[run-local-api] EXIT_CODE=$exit_code STATUS=$status"
+  exit "$exit_code"
+}
+
+redact_endpoint() {
+  local endpoint="$1"
+  # Redact cron secrets from logs (helps keep cron emails safe)
+  echo "$endpoint" | sed -E 's/(cron_secret=)[^& ]+/\1***REDACTED***/g'
+}
+
+redact_response_body() {
+  local body="$1"
+  local secret="${2:-}"
+  # Redact any cron_secret query params
+  local redacted
+  redacted="$(printf '%s' "$body" | sed -E 's/(cron_secret=)[^&\" ]+/\1***REDACTED***/g')"
+  # Redact the extracted secret value if it somehow appears elsewhere
+  if [[ -n "$secret" ]]; then
+    redacted="${redacted//$secret/***REDACTED***}"
+  fi
+  printf '%s' "$redacted"
+}
+
+port_in_use() {
+  local port="$1"
+  lsof -tiTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
+}
+
+kill_port_listeners() {
+  local port="$1"
+  local pids=()
+
+  mapfile -t pids < <(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
+  if (( ${#pids[@]} == 0 )); then
+    return 0
+  fi
+
+  echo "[run-local-api] [$(timestamp)] Killing existing listener(s) on port $port (PID(s): ${pids[*]})"
+  kill "${pids[@]}" 2>/dev/null || true
+  sleep 2
+
+  mapfile -t pids < <(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
+  if (( ${#pids[@]} == 0 )); then
+    return 0
+  fi
+
+  echo "[run-local-api] [$(timestamp)] Force killing remaining listener(s) on port $port (PID(s): ${pids[*]})"
+  kill -9 "${pids[@]}" 2>/dev/null || true
+  sleep 1
+}
+
+get_free_port() {
+  node - <<'NODE'
+const net = require('net')
+const server = net.createServer()
+server.listen(0, '127.0.0.1', () => {
+  const { port } = server.address()
+  server.close(() => process.stdout.write(String(port)))
+})
+NODE
+}
+
+rewrite_endpoint_port() {
+  local endpoint="$1"
+  local port="$2"
+  node - "$endpoint" "$port" <<'NODE'
+const endpoint = process.argv[2]
+const port = process.argv[3]
+const url = new URL(endpoint)
+url.port = String(port)
+process.stdout.write(url.toString())
+NODE
 }
 
 ensure_routes_manifest_defaults() {
@@ -48,19 +126,56 @@ NODE
 if [[ -z "$ENDPOINT" ]]; then
   echo "Usage: PORT=3000 $0 \"http://127.0.0.1:3000/api/...\""
   echo "Optional: ENV_FILE=.env.prod MODE=dev CURL_TIMEOUT=600"
-  exit 1
+  finish 1 error
 fi
 
 echo "[run-local-api] [$(timestamp)] Starting..."
 
 cd "$ROOT"
 
-# Kill any existing process on the port to prevent conflicts
-existing_pid=$(lsof -ti:"$PORT" 2>/dev/null || true)
-if [[ -n "$existing_pid" ]]; then
-  echo "[run-local-api] [$(timestamp)] Killing existing process on port $PORT (PID: $existing_pid)"
-  kill "$existing_pid" 2>/dev/null || true
-  sleep 2
+# If the endpoint specifies a port and PORT wasn't explicitly set, follow it.
+endpoint_port="$(node - "$ENDPOINT" <<'NODE'
+try {
+  const url = new URL(process.argv[2])
+  process.stdout.write(url.port || '')
+} catch {
+  process.stdout.write('')
+}
+NODE
+)"
+if [[ -n "$endpoint_port" && -z "$PORT_FROM_ENV" ]]; then
+  PORT="$endpoint_port"
+fi
+
+# Ensure we're not fooled by an existing process on the port
+kill_port_listeners "$PORT"
+
+# If the port is still in use, fall back to an ephemeral free port and rewrite the endpoint.
+if port_in_use "$PORT"; then
+  free_port="$(get_free_port)"
+  echo "[run-local-api] [$(timestamp)] Port $PORT still in use; switching to free port $free_port"
+  PORT="$free_port"
+fi
+
+# Always keep the endpoint port in sync with the server port we start.
+ENDPOINT="$(rewrite_endpoint_port "$ENDPOINT" "$PORT")"
+
+# Move cron_secret out of the URL (to avoid leaking secrets in 404/500 HTML pages and logs)
+CRON_SECRET_HEADER="$(node - "$ENDPOINT" <<'NODE'
+const url = new URL(process.argv[2])
+process.stdout.write(url.searchParams.get('cron_secret') || '')
+NODE
+)"
+ENDPOINT="$(node - "$ENDPOINT" <<'NODE'
+const url = new URL(process.argv[2])
+url.searchParams.delete('cron_secret')
+process.stdout.write(url.toString())
+NODE
+)"
+
+CURL_HEADERS=()
+if [[ -n "$CRON_SECRET_HEADER" ]]; then
+  CURL_HEADERS+=(-H "x-cron-secret: $CRON_SECRET_HEADER")
 fi
 
 # Load environment (defaults to .env.local; override with ENV_FILE=/path/to/env)
@@ -73,21 +188,26 @@ else
   echo "[run-local-api] Warning: env file '$ENV_FILE' not found; relying on current environment"
 fi
 
+SERVER_LOG="/tmp/homematch-local-server.log"
+BUILD_LOG="/tmp/homematch-local-build.log"
+
 if [[ "$MODE" == "dev" ]]; then
   echo "[run-local-api] [$(timestamp)] Starting dev server on port $PORT..."
-  HOSTNAME=127.0.0.1 PORT="$PORT" node_modules/.bin/next dev --turbopack -H 0.0.0.0 -p "$PORT" \
-    >/tmp/homematch-local-server.log 2>&1 &
+  unset NEXT_PUBLIC_TEST_MODE >/dev/null 2>&1 || true
+  NODE_ENV=development HOSTNAME=127.0.0.1 PORT="$PORT" node_modules/.bin/next dev --turbopack -H 0.0.0.0 -p "$PORT" \
+    >"$SERVER_LOG" 2>&1 &
 else
   if [[ "${FORCE_REBUILD:-0}" == "1" || ! -f ".next/BUILD_ID" ]]; then
     echo "[run-local-api] [$(timestamp)] Building Next.js app..."
-    pnpm build >/tmp/homematch-local-build.log 2>&1
+    pnpm build >"$BUILD_LOG" 2>&1
   else
     echo "[run-local-api] [$(timestamp)] Reusing existing build in .next (set FORCE_REBUILD=1 to rebuild)..."
   fi
   ensure_routes_manifest_defaults
   echo "[run-local-api] [$(timestamp)] Starting prod server on port $PORT..."
-  HOSTNAME=127.0.0.1 pnpm exec next start -H 0.0.0.0 -p "$PORT" \
-    >/tmp/homematch-local-server.log 2>&1 &
+  unset NEXT_PUBLIC_TEST_MODE >/dev/null 2>&1 || true
+  NODE_ENV=production HOSTNAME=127.0.0.1 pnpm exec next start -H 0.0.0.0 -p "$PORT" \
+    >"$SERVER_LOG" 2>&1 &
 fi
 
 SERVER_PID=$!
@@ -99,16 +219,34 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for _ in $(seq 1 30); do
-  if nc -z 127.0.0.1 "$PORT" >/dev/null 2>&1; then
+# Detect immediate startup failures (e.g., EADDRINUSE) before probing the port.
+sleep 1
+if ! ps -p "$SERVER_PID" >/dev/null 2>&1; then
+  echo "[run-local-api] Server failed to start (PID $SERVER_PID exited)"
+  echo "[run-local-api] Last server log lines:"
+  tail -n 50 "$SERVER_LOG" 2>/dev/null || true
+  finish 1 error
+fi
+
+# Wait for the server to be ready (health endpoint), not just the port.
+for _ in $(seq 1 45); do
+  if curl -sS --max-time 2 "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
     break
+  fi
+  if ! ps -p "$SERVER_PID" >/dev/null 2>&1; then
+    echo "[run-local-api] Server exited while waiting for readiness"
+    echo "[run-local-api] Last server log lines:"
+    tail -n 50 "$SERVER_LOG" 2>/dev/null || true
+    finish 1 error
   fi
   sleep 1
 done
 
-if ! nc -z 127.0.0.1 "$PORT" >/dev/null 2>&1; then
-  echo "[run-local-api] Server failed to start on port $PORT"
-  exit 1
+if ! curl -sS --max-time 2 "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
+  echo "[run-local-api] Server failed to become ready on port $PORT"
+  echo "[run-local-api] Last server log lines:"
+  tail -n 50 "$SERVER_LOG" 2>/dev/null || true
+  finish 1 error
 fi
 
 attempt=1
@@ -116,10 +254,10 @@ curl_exit=1
 http_status=""
 response_file=""
 while (( attempt <= RETRIES )); do
-  echo "[run-local-api] [$(timestamp)] Hitting endpoint (attempt $attempt/$RETRIES): $ENDPOINT"
+  echo "[run-local-api] [$(timestamp)] Hitting endpoint (attempt $attempt/$RETRIES): $(redact_endpoint "$ENDPOINT")"
   response_file=$(mktemp)
   set +e
-  http_status=$(curl -sS --fail-with-body -X POST --max-time "$CURL_TIMEOUT" -w '%{http_code}' -o "$response_file" "$ENDPOINT")
+  http_status=$(curl -sS --fail-with-body "${CURL_HEADERS[@]}" -X POST --max-time "$CURL_TIMEOUT" -w '%{http_code}' -o "$response_file" "$ENDPOINT")
   curl_exit=$?
   set -e
   response_body="$(cat "$response_file")"
@@ -130,7 +268,7 @@ while (( attempt <= RETRIES )); do
     curl_exit=52
   fi
 
-  echo "$response_body"
+  redact_response_body "$response_body" "$CRON_SECRET_HEADER"
   echo
 
   if [[ $curl_exit -eq 0 ]]; then
@@ -145,10 +283,8 @@ done
 
 if [[ $curl_exit -eq 0 ]]; then
   echo "[run-local-api] [$(timestamp)] Done (success)."
-  echo "[run-local-api] EXIT_CODE=0 STATUS=success"
-  exit 0
+  finish 0 success
 else
   echo "[run-local-api] [$(timestamp)] Done (curl exit code: $curl_exit)."
-  echo "[run-local-api] EXIT_CODE=$curl_exit STATUS=error"
-  exit "$curl_exit"
+  finish "$curl_exit" error
 fi

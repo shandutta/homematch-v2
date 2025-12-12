@@ -16,16 +16,30 @@ if (!fs.existsSync(LOG_DIR)) {
 const REPORT_FILE = path.join(LOG_DIR, 'nightly-test-report.txt')
 const TIMESTAMP = new Date().toISOString()
 
-function appendLog(message) {
+const echoRawOutput = Boolean(
+  process.env.NIGHTLY_FULL_TEST_ECHO === '1' || process.stdout.isTTY
+)
+
+function appendToReport(message) {
   // Write exactly what is received to file to preserve partial lines/progress bars
   fs.appendFileSync(REPORT_FILE, message)
-  // Also echo to console for manual run visibility
+}
+
+function appendToConsole(message) {
   process.stdout.write(message)
+}
+
+function logLine(message) {
+  const line = message.endsWith('\n') ? message : `${message}\n`
+  appendToReport(line)
+  appendToConsole(line)
 }
 
 function runCommand(name, command, args) {
   return new Promise((resolve) => {
-    appendLog(`\n--- Running ${name} ---\n`)
+    const header = `\n--- Running ${name} ---\n`
+    appendToReport(header)
+    appendToConsole(header)
     const startTime = Date.now()
 
     const child = spawn(command, args, {
@@ -42,26 +56,28 @@ function runCommand(name, command, args) {
     child.stderr.setEncoding('utf8')
 
     child.stdout.on('data', (data) => {
-      appendLog(data)
+      appendToReport(data)
+      if (echoRawOutput) appendToConsole(data)
     })
 
     child.stderr.on('data', (data) => {
-      appendLog(data)
+      appendToReport(data)
+      if (echoRawOutput) appendToConsole(data)
     })
 
     child.on('close', (code) => {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2)
       if (code === 0) {
-        appendLog(`\n✅ ${name} PASSED in ${duration}s\n`)
+        logLine(`✅ ${name} PASSED in ${duration}s`)
         resolve(true)
       } else {
-        appendLog(`\n❌ ${name} FAILED in ${duration}s (Exit Code: ${code})\n`)
+        logLine(`❌ ${name} FAILED in ${duration}s (Exit Code: ${code})`)
         resolve(false)
       }
     })
 
     child.on('error', (err) => {
-      appendLog(`\n❌ ${name} FAILED to start: ${err.message}\n`)
+      logLine(`❌ ${name} FAILED to start: ${err.message}`)
       resolve(false)
     })
   })
@@ -73,6 +89,9 @@ function runCommand(name, command, args) {
     REPORT_FILE,
     `Nightly Test Report - ${TIMESTAMP}\n========================================\n`
   )
+  if (!echoRawOutput) {
+    logLine(`[nightly-full-test] Writing full output to ${REPORT_FILE}`)
+  }
 
   let success = true
 
@@ -92,11 +111,15 @@ function runCommand(name, command, args) {
     success = false
   }
 
-  appendLog(`\n========================================\n`)
-  appendLog(`Final Status: ${success ? 'ALL PASSED' : 'FAILURES DETECTED'}\n`)
+  appendToReport(`\n========================================\n`)
+  logLine(`Final Status: ${success ? 'ALL PASSED' : 'FAILURES DETECTED'}`)
 
   // Exit with 0 so cron doesn't think the script itself crashed,
   // unless you want cron to send an email on failure (which is default behavior).
   // If we return non-zero, cron usually emails the output.
-  process.exit(success ? 0 : 1)
+  const exitCode = success ? 0 : 1
+  logLine(
+    `[nightly-full-test] EXIT_CODE=${exitCode} STATUS=${success ? 'success' : 'error'}`
+  )
+  process.exit(exitCode)
 })()

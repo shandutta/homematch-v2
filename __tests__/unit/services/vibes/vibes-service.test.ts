@@ -166,4 +166,76 @@ describe('VibesService', () => {
       /Failed to parse LLM response/
     )
   })
+
+  test('generateVibesBatch runs beforeEach and uses prepared property', async () => {
+    const mockClient = {
+      createVisionMessage: jest.fn(),
+      chatCompletion: jest.fn(),
+    } as any
+
+    const service = new VibesService(mockClient)
+
+    const generateSpy = jest
+      .spyOn(service, 'generateVibes')
+      .mockImplementation(async (property: Property) => ({
+        propertyId: property.id,
+        vibes: validVibesOutput as any,
+        images: { selectedImages: [], strategy: 'single', totalAvailable: 0 },
+        usage: {
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          estimatedCostUsd: 0,
+        },
+        processingTimeMs: 1,
+      }))
+
+    const beforeEachHook = jest.fn(
+      async (property: Property, _index: number, _total: number) => ({
+        ...property,
+        images: ['https://example.com/prepared.jpg'],
+      })
+    )
+
+    const result = await service.generateVibesBatch(
+      [mockProperty({ id: 'prop-a' }), mockProperty({ id: 'prop-b' })],
+      { delayMs: 0, beforeEach: beforeEachHook }
+    )
+
+    expect(beforeEachHook).toHaveBeenCalledTimes(2)
+    expect(generateSpy).toHaveBeenCalledTimes(2)
+    expect(generateSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        id: 'prop-a',
+        images: ['https://example.com/prepared.jpg'],
+      })
+    )
+    expect(result.success).toHaveLength(2)
+    expect(result.failed).toHaveLength(0)
+  })
+
+  test('generateVibesBatch records failure when beforeEach throws', async () => {
+    const mockClient = {
+      createVisionMessage: jest.fn(),
+      chatCompletion: jest.fn(),
+    } as any
+
+    const service = new VibesService(mockClient)
+    const generateSpy = jest.spyOn(service, 'generateVibes')
+
+    const beforeEachHook = jest.fn(async () => {
+      throw new Error('boom')
+    })
+
+    const result = await service.generateVibesBatch([mockProperty()], {
+      delayMs: 0,
+      beforeEach: beforeEachHook,
+    })
+
+    expect(generateSpy).not.toHaveBeenCalled()
+    expect(result.success).toHaveLength(0)
+    expect(result.failed).toHaveLength(1)
+    expect(result.failed[0].error).toContain('boom')
+  })
 })
