@@ -5,10 +5,7 @@
  * this is pure function testing with real inputs/outputs.
  */
 
-import {
-  selectStrategicImages,
-  type ImageSelectionResult,
-} from '@/lib/services/vibes/image-selector'
+import { selectStrategicImages } from '@/lib/services/vibes/image-selector'
 
 describe('selectStrategicImages', () => {
   // Helper to generate fake image URLs
@@ -48,52 +45,68 @@ describe('selectStrategicImages', () => {
   })
 
   describe('strategic selection', () => {
-    it('always includes hero image first', () => {
+    it('always includes hero image (index 0)', () => {
       const images = generateImages(10)
-      const result = selectStrategicImages(images, 'single_family', 5000)
+      const result = selectStrategicImages(
+        images,
+        'single_family',
+        5000,
+        18,
+        123
+      )
 
-      expect(result.selectedImages[0].category).toBe('hero')
-      expect(result.selectedImages[0].index).toBe(0)
-      expect(result.selectedImages[0].url).toBe(images[0])
+      const heroImage = result.selectedImages.find(
+        (img) => img.category === 'hero'
+      )
+      expect(heroImage).toBeDefined()
+      expect(heroImage!.index).toBe(0)
+      expect(heroImage!.url).toBe(images[0])
+
+      // We intentionally prioritize interior-ish images first to avoid
+      // overweighting exterior hero shots (e.g., gates/facades).
+      expect(result.selectedImages[0].category).not.toBe('hero')
     })
 
-    it('selects kitchen image from expected positions', () => {
+    it('selects kitchen images from non-hero indices', () => {
       const images = generateImages(10)
-      const result = selectStrategicImages(images, 'condo', null)
+      const result = selectStrategicImages(images, 'condo', null, 18, 123)
 
-      const kitchenImage = result.selectedImages.find(
+      const kitchenImages = result.selectedImages.filter(
         (img) => img.category === 'kitchen'
       )
-      expect(kitchenImage).toBeDefined()
-      // Kitchen should be at index 3, 4, 2, or 5 (in that order of preference)
-      expect([2, 3, 4, 5]).toContain(kitchenImage!.index)
+      expect(kitchenImages.length).toBeGreaterThan(0)
+      kitchenImages.forEach((img) => {
+        expect(img.index).not.toBe(0)
+        expect(img.index).toBeGreaterThanOrEqual(0)
+        expect(img.index).toBeLessThan(images.length)
+      })
     })
 
     it('selects living area image', () => {
       const images = generateImages(10)
-      const result = selectStrategicImages(images, 'condo', null)
+      const result = selectStrategicImages(images, 'condo', null, 18, 123)
 
       const livingImage = result.selectedImages.find(
         (img) => img.category === 'living'
       )
       expect(livingImage).toBeDefined()
-      expect([1, 2]).toContain(livingImage!.index)
+      expect(livingImage!.index).not.toBe(0)
     })
 
     it('selects bedroom image when enough images available', () => {
       const images = generateImages(10)
-      const result = selectStrategicImages(images, 'condo', null)
+      const result = selectStrategicImages(images, 'condo', null, 18, 123)
 
       const bedroomImage = result.selectedImages.find(
         (img) => img.category === 'bedroom'
       )
       expect(bedroomImage).toBeDefined()
-      expect([5, 6, 7, 8]).toContain(bedroomImage!.index)
+      expect(bedroomImage!.index).not.toBe(0)
     })
 
     it('selects bathroom image when enough images available', () => {
       const images = generateImages(12)
-      const result = selectStrategicImages(images, 'condo', null)
+      const result = selectStrategicImages(images, 'condo', null, 18, 123)
 
       const bathroomImage = result.selectedImages.find(
         (img) => img.category === 'bathroom'
@@ -103,7 +116,13 @@ describe('selectStrategicImages', () => {
 
     it('selects outdoor image for houses with yards', () => {
       const images = generateImages(15)
-      const result = selectStrategicImages(images, 'single_family', 5000)
+      const result = selectStrategicImages(
+        images,
+        'single_family',
+        5000,
+        18,
+        123
+      )
 
       const outdoorImage = result.selectedImages.find(
         (img) => img.category === 'outdoor'
@@ -113,7 +132,7 @@ describe('selectStrategicImages', () => {
 
     it('does not select outdoor image for condos', () => {
       const images = generateImages(15)
-      const result = selectStrategicImages(images, 'condo', null)
+      const result = selectStrategicImages(images, 'condo', null, 18, 123)
 
       const outdoorImage = result.selectedImages.find(
         (img) => img.category === 'outdoor'
@@ -123,7 +142,13 @@ describe('selectStrategicImages', () => {
 
     it('does not select outdoor image for houses without yards', () => {
       const images = generateImages(15)
-      const result = selectStrategicImages(images, 'single_family', 1000) // small lot
+      const result = selectStrategicImages(
+        images,
+        'single_family',
+        1000,
+        18,
+        123
+      ) // small lot
 
       const outdoorImage = result.selectedImages.find(
         (img) => img.category === 'outdoor'
@@ -159,7 +184,13 @@ describe('selectStrategicImages', () => {
     it('fills remaining slots with additional images when strategic slots exhausted', () => {
       // With 30 images and maxImages=18, we should have some additional
       const images = generateImages(30)
-      const result = selectStrategicImages(images, 'single_family', 5000, 18)
+      const result = selectStrategicImages(
+        images,
+        'single_family',
+        5000,
+        18,
+        123
+      )
 
       const additionalImages = result.selectedImages.filter(
         (img) => img.category === 'additional'
@@ -269,7 +300,13 @@ describe('selectStrategicImages', () => {
     it('fills with additional images when more images than strategic slots', () => {
       // With 40 images and maxImages=18, we should have additional images
       const images = generateImages(40)
-      const result = selectStrategicImages(images, 'single_family', 5000, 18)
+      const result = selectStrategicImages(
+        images,
+        'single_family',
+        5000,
+        18,
+        123
+      )
 
       // Should have strategic images plus some additional
       const categories = result.selectedImages.map((img) => img.category)
@@ -278,30 +315,33 @@ describe('selectStrategicImages', () => {
       expect(result.selectedImages.length).toBe(18)
     })
 
-    it('produces different additional images on multiple runs (probabilistic)', () => {
-      // Run multiple times and check if we ever get different results
-      // This is probabilistic but should pass with high probability
-      // Use 50 images to ensure we have plenty of "additional" slots to randomize
+    it('is deterministic with the same seed', () => {
       const images = generateImages(50)
-      const results: ImageSelectionResult[] = []
+      const r1 = selectStrategicImages(images, 'condo', null, 18, 123)
+      const r2 = selectStrategicImages(images, 'condo', null, 18, 123)
 
-      for (let i = 0; i < 10; i++) {
-        results.push(selectStrategicImages(images, 'condo', null, 18))
-      }
-
-      // Get additional image indices from each run
-      const additionalIndices = results.map((r) =>
-        r.selectedImages
-          .filter((img) => img.category === 'additional')
-          .map((img) => img.index)
-          .sort()
-          .join(',')
+      expect(r1.selectedImages.map((img) => img.index)).toEqual(
+        r2.selectedImages.map((img) => img.index)
       )
+    })
 
-      // With 50 images and random selection, we should see some variation
-      // Note: This could theoretically fail but is extremely unlikely
-      const uniquePatterns = new Set(additionalIndices)
-      expect(uniquePatterns.size).toBeGreaterThan(1)
+    it('changes additional selection with different seeds', () => {
+      const images = generateImages(50)
+      const r1 = selectStrategicImages(images, 'condo', null, 18, 123)
+      const r2 = selectStrategicImages(images, 'condo', null, 18, 124)
+
+      const additional1 = r1.selectedImages
+        .filter((img) => img.category === 'additional')
+        .map((img) => img.index)
+        .sort()
+        .join(',')
+      const additional2 = r2.selectedImages
+        .filter((img) => img.category === 'additional')
+        .map((img) => img.index)
+        .sort()
+        .join(',')
+
+      expect(additional1).not.toBe(additional2)
     })
   })
 

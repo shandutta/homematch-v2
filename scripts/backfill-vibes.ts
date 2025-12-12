@@ -323,7 +323,7 @@ async function main() {
         if (!property) {
           throw new Error(`Missing property for result ${r.propertyId}`)
         }
-        return VibesService.toInsertRecord(r, property, JSON.stringify(r.vibes))
+        return VibesService.toInsertRecord(r, property, r.rawOutput)
       })
 
       if (insertRecords.length > 0) {
