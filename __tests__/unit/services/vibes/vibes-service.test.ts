@@ -211,6 +211,96 @@ describe('VibesService', () => {
     )
   })
 
+  test('generateVibes normalizes suggestedTags to canonical tags', async () => {
+    const needsRepair = {
+      ...validVibesOutput,
+      suggestedTags: [
+        'Commute Friendly',
+        'Outdoor Living',
+        'Rooftop Living',
+        'City Skyline Perch',
+        'Modern Minimalist',
+        "Chef's Kitchen",
+      ],
+    }
+
+    const mockClient = {
+      createVisionMessage: jest.fn((_prompt, _urls) => ({
+        role: 'user',
+        content: [{ type: 'text', text: 'x' }],
+      })),
+      chatCompletion: jest.fn().mockResolvedValue({
+        response: {
+          id: 'r1',
+          model: 'test',
+          choices: [
+            {
+              index: 0,
+              message: {
+                role: 'assistant',
+                content: JSON.stringify(needsRepair),
+              },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+        },
+        usage: {
+          promptTokens: 1,
+          completionTokens: 1,
+          totalTokens: 2,
+          estimatedCostUsd: 0.001,
+        },
+      }),
+    } as any
+
+    const service = new VibesService(mockClient)
+    const result = await service.generateVibes(mockProperty())
+
+    expect(result.repairApplied).toBe(true)
+    expect(result.vibes.suggestedTags).toEqual(
+      expect.arrayContaining([
+        'Commuter Friendly',
+        'Indoor-Outdoor Flow',
+        'Urban Rooftop',
+        'City Skyline',
+        'Minimalist Living',
+        "Chef's Kitchen",
+      ])
+    )
+  })
+
+  test('toInsertRecord stores suggested tags as-is', () => {
+    const property = mockProperty()
+    const result = {
+      propertyId: property.id,
+      vibes: validVibesOutput as any,
+      images: {
+        selectedImages: [
+          { url: 'https://example.com/0.jpg', category: 'exterior' },
+        ],
+        strategy: 'single',
+        totalAvailable: 1,
+      },
+      usage: {
+        promptTokens: 1,
+        completionTokens: 1,
+        totalTokens: 2,
+        estimatedCostUsd: 0.001,
+      },
+      processingTimeMs: 1,
+      rawOutput: JSON.stringify(validVibesOutput),
+      repairApplied: false,
+    }
+
+    const insert = VibesService.toInsertRecord(
+      result as any,
+      property,
+      result.rawOutput
+    )
+    expect(insert.suggested_tags).toEqual(validVibesOutput.suggestedTags)
+  })
+
   test('generateVibes throws on invalid JSON', async () => {
     const mockClient = {
       createVisionMessage: jest.fn((_prompt, _urls) => ({
