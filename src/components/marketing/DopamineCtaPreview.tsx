@@ -2,12 +2,65 @@
 
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { useEffect } from 'react'
 
 type Props = {
   className?: string
 }
 
 export function DopamineCtaPreview({ className }: Props) {
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>('[data-cta="dopamine"]')
+    if (!root) return
+
+    const burst = () => {
+      const host = document.createElement('span')
+      host.style.position = 'absolute'
+      host.style.inset = '0'
+      host.style.pointerEvents = 'none'
+      root.appendChild(host)
+
+      const count = 12
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('span')
+        const angle = Math.PI * 2 * (i / count)
+        const radius = 18 + Math.random() * 12
+        const dx = Math.cos(angle) * radius
+        const dy = Math.sin(angle) * radius
+
+        el.style.position = 'absolute'
+        el.style.left = '50%'
+        el.style.top = '50%'
+        el.style.width = '4px'
+        el.style.height = '4px'
+        el.style.borderRadius = '9999px'
+        el.style.pointerEvents = 'none'
+        el.style.background = 'white'
+        el.style.opacity = '0.85'
+        el.style.boxShadow = '0 0 8px rgba(255,255,255,0.65)'
+        el.style.transform = 'translate(-50%, -50%)'
+        el.style.transition =
+          'transform 320ms cubic-bezier(0.2,0.6,0.2,1), opacity 320ms ease-out'
+        host.appendChild(el)
+
+        requestAnimationFrame(() => {
+          el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`
+          el.style.opacity = '0'
+        })
+      }
+
+      setTimeout(() => host.remove(), 360)
+    }
+
+    root.addEventListener('mousedown', burst)
+    root.addEventListener('touchstart', burst, { passive: true })
+
+    return () => {
+      root.removeEventListener('mousedown', burst)
+      root.removeEventListener('touchstart', burst)
+    }
+  }, [])
+
   return (
     <div className={cn('mt-4', className)} data-testid="dopamine-cta-preview">
       <Link
@@ -88,59 +141,6 @@ export function DopamineCtaPreview({ className }: Props) {
           }
         }
       `}</style>
-
-      {/* Micro-particles on press (reintroduced, improved visibility) */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function(){
-              const root = document.querySelector('[data-cta="dopamine"]');
-              if(!root) return;
-
-              function burst(){
-                const rect = root.getBoundingClientRect();
-                const host = document.createElement('span');
-                host.style.position = 'absolute';
-                host.style.inset = '0';
-                host.style.pointerEvents = 'none';
-                root.appendChild(host);
-
-                const count = 12;
-                for(let i=0;i<count;i++){
-                  const el = document.createElement('span');
-                  const angle = (Math.PI * 2) * (i / count);
-                  const radius = 18 + Math.random() * 12;
-                  const dx = Math.cos(angle) * radius;
-                  const dy = Math.sin(angle) * radius;
-
-                  el.style.position = 'absolute';
-                  el.style.left = '50%';
-                  el.style.top = '50%';
-                  el.style.width = '4px';
-                  el.style.height = '4px';
-                  el.style.borderRadius = '9999px';
-                  el.style.pointerEvents = 'none';
-                  el.style.background = 'white';
-                  el.style.opacity = '0.85';
-                  el.style.boxShadow = '0 0 8px rgba(255,255,255,0.65)';
-                  el.style.transform = 'translate(-50%, -50%)';
-                  el.style.transition = 'transform 320ms cubic-bezier(0.2,0.6,0.2,1), opacity 320ms ease-out';
-                  host.appendChild(el);
-
-                  requestAnimationFrame(() => {
-                    el.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
-                    el.style.opacity = '0';
-                  });
-                }
-                setTimeout(() => host.remove(), 360);
-              }
-
-              root.addEventListener('mousedown', burst);
-              root.addEventListener('touchstart', burst, {passive:true});
-            })();
-          `,
-        }}
-      />
     </div>
   )
 }

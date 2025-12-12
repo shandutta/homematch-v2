@@ -49,6 +49,7 @@ export async function POST(
 ): Promise<NextResponse<GenerateVibesResponse>> {
   // Authenticate - require cron secret for admin endpoints
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
+  const isDev = process.env.NODE_ENV === 'development'
   const url = new URL(req.url)
   const headerSecret = req.headers.get('x-cron-secret')
   const querySecret = url.searchParams.get('cron_secret')
@@ -140,9 +141,11 @@ export async function POST(
       (p) => p.images && p.images.length > 0
     )
 
-    console.log(
-      `[generate-vibes] Processing ${propertiesWithImages.length} properties...`
-    )
+    if (isDev) {
+      console.log(
+        `[generate-vibes] Processing ${propertiesWithImages.length} properties...`
+      )
+    }
 
     // Generate vibes
     const vibesService = createVibesService()
@@ -151,7 +154,9 @@ export async function POST(
       {
         delayMs: 1500,
         onProgress: (completed, total) => {
-          console.log(`[generate-vibes] Progress: ${completed}/${total}`)
+          if (isDev) {
+            console.log(`[generate-vibes] Progress: ${completed}/${total}`)
+          }
         },
       }
     )
@@ -174,9 +179,11 @@ export async function POST(
     }
 
     if (insertRecords.length > 0) {
-      console.log(
-        `[generate-vibes] Attempting to insert ${insertRecords.length} vibes records...`
-      )
+      if (isDev) {
+        console.log(
+          `[generate-vibes] Attempting to insert ${insertRecords.length} vibes records...`
+        )
+      }
       // Note: property_vibes table is not in generated types yet
       // Using type assertion until types are regenerated after migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,9 +198,11 @@ export async function POST(
       if (insertError) {
         console.error('[generate-vibes] Failed to store vibes:', insertError)
       } else {
-        console.log(
-          `[generate-vibes] Successfully stored ${insertData?.length || 0} vibes records`
-        )
+        if (isDev) {
+          console.log(
+            `[generate-vibes] Successfully stored ${insertData?.length || 0} vibes records`
+          )
+        }
       }
     }
 

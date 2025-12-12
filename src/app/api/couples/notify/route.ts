@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
       // In a real implementation, you would use Supabase Realtime here
       // For now, we'll prepare the notification data
-      const notificationData = {
+      const _notificationData = {
         type: 'mutual_like_created',
         from_user_id: user.id,
         to_user_id: partnerUserId,
@@ -74,11 +74,6 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString(),
       }
 
-      // Here you could send this via Supabase Realtime, push notifications, etc.
-      console.log(
-        '[CouplesNotify] Mutual like notification prepared:',
-        notificationData
-      )
       notificationSent = true
     }
 

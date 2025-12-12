@@ -80,9 +80,6 @@ export async function GET(request: NextRequest) {
       const activity = await Promise.race([activityPromise, timeoutPromise])
 
       const totalTime = Date.now() - startTime
-      console.log(
-        `[Activity API] Total request time: ${totalTime}ms for ${activity.length} activities`
-      )
 
       return NextResponse.json({
         activity,

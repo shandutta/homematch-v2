@@ -182,9 +182,11 @@ export class VibesService {
 
     results.totalTimeMs = Date.now() - startTime
 
-    console.log(
-      `[VibesService] Batch complete: ${results.success.length} success, ${results.failed.length} failed, $${results.totalCostUsd.toFixed(4)} total cost, ${results.totalTimeMs}ms`
-    )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `[VibesService] Batch complete: ${results.success.length} success, ${results.failed.length} failed, $${results.totalCostUsd.toFixed(4)} total cost, ${results.totalTimeMs}ms`
+      )
+    }
 
     return results
   }

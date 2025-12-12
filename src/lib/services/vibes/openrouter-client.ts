@@ -124,9 +124,11 @@ export class OpenRouterClient {
 
     const usage = this.calculateUsage(response.usage, model)
 
-    console.log(
-      `[OpenRouter] Model: ${model}, Tokens: ${response.usage.total_tokens}, Cost: $${usage.estimatedCostUsd.toFixed(4)}, Time: ${Date.now() - startTime}ms`
-    )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `[OpenRouter] Model: ${model}, Tokens: ${response.usage.total_tokens}, Cost: $${usage.estimatedCostUsd.toFixed(4)}, Time: ${Date.now() - startTime}ms`
+      )
+    }
 
     return { response, usage }
   }

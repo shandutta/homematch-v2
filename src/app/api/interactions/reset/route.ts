@@ -9,11 +9,6 @@ export async function DELETE(request: NextRequest) {
     const { data, error: authError } = await supabase.auth.getUser()
     const user = data?.user
 
-    console.log('[Interactions RESET] Auth result:', {
-      userId: user?.id,
-      error: authError?.message,
-    })
-
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
     }
@@ -25,11 +20,6 @@ export async function DELETE(request: NextRequest) {
         'Too many requests. Please try again later.'
       )
     }
-
-    console.log(
-      '[Interactions RESET] Deleting all interactions for user:',
-      user.id
-    )
 
     // Delete all interactions for this user
     // Add timeout to prevent hanging
@@ -58,11 +48,6 @@ export async function DELETE(request: NextRequest) {
         e
       )
     }
-
-    console.log('[Interactions RESET] Result:', {
-      deletedCount: deletedRows?.length ?? 0,
-      error: error?.message,
-    })
 
     if (error) {
       console.error('[Interactions RESET] Error:', error)

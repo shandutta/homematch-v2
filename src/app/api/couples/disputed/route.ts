@@ -274,9 +274,6 @@ export async function GET(request: NextRequest) {
     )
 
     const totalTime = Date.now() - startTime
-    console.log(
-      `[Disputed API] Found ${disputedProperties.length} disputed properties in ${totalTime}ms`
-    )
 
     return NextResponse.json({
       disputedProperties,

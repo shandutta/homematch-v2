@@ -313,9 +313,7 @@ function PropertyCard({
               }}
               onClick={() => {
                 try {
-                  // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
-                    // @ts-expect-error window.toast might not exist
                     window.toast({
                       title: 'Passed',
                       description: "We'll show you more like this.",
@@ -370,9 +368,7 @@ function PropertyCard({
                 setTimeout(() => burst.remove(), 420)
 
                 try {
-                  // @ts-expect-error window.toast might not exist
                   if (window?.toast) {
-                    // @ts-expect-error window.toast might not exist
                     window.toast({
                       title: "It's a Match!",
                       description: 'Saved to your likes.',
@@ -485,9 +481,7 @@ export function PhoneMockup() {
     try {
       // shadcn/ui toast usually via useToast, but on landing we might have a global
       // Fallback to a custom event if global isn't available.
-      // @ts-expect-error window.toast might not exist
       if (window?.toast) {
-        // @ts-expect-error window.toast might not exist
         window.toast({
           title: "It's a Match!",
           description: 'You and this home are a perfect fit.',

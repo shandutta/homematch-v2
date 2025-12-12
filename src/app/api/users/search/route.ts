@@ -51,9 +51,6 @@ export async function GET(request: NextRequest) {
       .ilike('email', `${query}%`)
       .limit(10)
 
-    console.log('[User Search] Query:', query, 'Current user:', user.id)
-    console.log('[User Search] Results:', users?.length ?? 0, 'users found')
-
     if (error) {
       console.error('Error searching users:', error)
       return NextResponse.json(

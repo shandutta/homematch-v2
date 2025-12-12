@@ -115,7 +115,6 @@ export async function GET(request: NextRequest) {
 
       // Fetch property details if requested
       if (includePropertyDetails) {
-        const propertyQueryStart = Date.now()
         const propertyIds = mutualLikes.map((ml) => ml.property_id)
 
         const { data: properties, error: propertiesError } = await supabase
@@ -141,16 +140,9 @@ export async function GET(request: NextRequest) {
             property: property || null,
           }
         })
-
-        console.log(
-          `[MutualLikes API] Property details fetched in ${Date.now() - propertyQueryStart}ms`
-        )
       }
 
       const totalTime = Date.now() - startTime
-      console.log(
-        `[MutualLikes API] Total request time: ${totalTime}ms for ${enrichedLikes.length} mutual likes`
-      )
 
       return NextResponse.json({
         mutualLikes: enrichedLikes,

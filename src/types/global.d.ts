@@ -23,6 +23,13 @@ declare global {
       onINP?: (metric: unknown) => void
     }
 
+    // Optional global toast API (used on marketing/landing pages)
+    toast?: (options: {
+      title: string
+      description?: string
+      variant?: string
+    }) => void
+
     // Note: Google Maps types are declared in google-maps.ts
   }
 }

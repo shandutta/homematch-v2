@@ -58,9 +58,6 @@ export class CouplesMiddleware {
   static async onHouseholdChange(householdId: string): Promise<void> {
     try {
       CouplesService.clearHouseholdCache(householdId)
-      console.log(
-        `[CouplesMiddleware] Cleared cache for household: ${householdId}`
-      )
     } catch (error) {
       console.error(
         '[CouplesMiddleware] Error clearing household cache:',
@@ -77,16 +74,12 @@ export class CouplesMiddleware {
     userId: string
   ): Promise<void> {
     try {
-      console.log(`[CouplesMiddleware] Warming cache for user: ${userId}`)
-
       // Trigger cache population by calling the main services
       await Promise.all([
         CouplesService.getMutualLikes(supabase, userId),
         CouplesService.getHouseholdActivity(supabase, userId, 20),
         CouplesService.getHouseholdStats(supabase, userId),
       ])
-
-      console.log(`[CouplesMiddleware] Cache warmed for user: ${userId}`)
     } catch (error) {
       console.error('[CouplesMiddleware] Error warming cache:', error)
     }

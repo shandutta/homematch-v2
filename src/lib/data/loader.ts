@@ -1,6 +1,10 @@
 import { PropertyService } from '@/lib/services/properties'
 import { Property, Neighborhood } from '@/types/database'
-import { PropertyFilters } from '@/lib/schemas/property'
+import {
+  PROPERTY_TYPE_VALUES,
+  type PropertyFilters,
+  type PropertyType,
+} from '@/lib/schemas/property'
 
 export interface DashboardData {
   properties: Property[]
@@ -63,13 +67,15 @@ export async function loadDashboardData(
         townhouse: 'townhome',
         condo: 'condo',
       }
+      const propertyTypeSet = new Set<PropertyType>(PROPERTY_TYPE_VALUES)
       const selectedTypes = Object.entries(prefs.propertyTypes)
         .filter(([_, selected]) => selected)
         .map(([type]) => typeMapping[type] || type)
-        .filter(Boolean)
+        .filter((type): type is PropertyType =>
+          propertyTypeSet.has(type as PropertyType)
+        )
 
       if (selectedTypes.length > 0) {
-        // @ts-expect-error - Type mapping might produce strings not in the strict enum, but valid for DB query
         filters.property_types = selectedTypes
       }
     }

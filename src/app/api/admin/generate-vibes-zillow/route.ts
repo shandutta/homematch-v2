@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createVibesService } from '@/lib/services/vibes'
 import type { Property } from '@/lib/schemas/property'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 interface ZillowPropertyResponse {
   zpid?: number | string
   address?: {
@@ -124,9 +126,11 @@ async function fetchZillowImages(
       [k: string]: unknown
     }
     const images = Array.isArray(data.images) ? data.images : []
-    console.log(
-      `[fetchZillowImages] Got ${images.length} images from /images endpoint`
-    )
+    if (isDev) {
+      console.log(
+        `[fetchZillowImages] Got ${images.length} images from /images endpoint`
+      )
+    }
     return images
   } catch (error) {
     console.warn('[fetchZillowImages] Error fetching images:', error)
@@ -169,9 +173,11 @@ function extractImages(data: ZillowPropertyResponse): string[] {
       `media(${Array.isArray(data.media) ? data.media.length : 'not array'})`
     )
   if (data.imgSrc) presentFields.push('imgSrc')
-  console.log(
-    `[extractImages] Available fields: ${presentFields.join(', ') || 'none'}`
-  )
+  if (isDev) {
+    console.log(
+      `[extractImages] Available fields: ${presentFields.join(', ') || 'none'}`
+    )
+  }
 
   // 1. Try simple flat array first (most common from /images endpoint)
   if (Array.isArray(data.images) && data.images.length > 0) {
@@ -180,7 +186,9 @@ function extractImages(data: ZillowPropertyResponse): string[] {
         addImage(url)
       }
     }
-    console.log(`[extractImages] Found ${images.length} from images array`)
+    if (isDev) {
+      console.log(`[extractImages] Found ${images.length} from images array`)
+    }
   }
 
   // 2. Try originalPhotos with nested structure (highest quality)
@@ -204,7 +212,9 @@ function extractImages(data: ZillowPropertyResponse): string[] {
         addImage(largest?.url)
       }
     }
-    console.log(`[extractImages] Found ${images.length} from originalPhotos`)
+    if (isDev) {
+      console.log(`[extractImages] Found ${images.length} from originalPhotos`)
+    }
   }
 
   // 3. Try photos array with url field
@@ -216,7 +226,9 @@ function extractImages(data: ZillowPropertyResponse): string[] {
     for (const photo of data.photos) {
       addImage(photo?.url)
     }
-    console.log(`[extractImages] Found ${images.length} from photos array`)
+    if (isDev) {
+      console.log(`[extractImages] Found ${images.length} from photos array`)
+    }
   }
 
   // 4. Try media array (alternative format)
@@ -230,16 +242,22 @@ function extractImages(data: ZillowPropertyResponse): string[] {
         addImage(item?.url)
       }
     }
-    console.log(`[extractImages] Found ${images.length} from media array`)
+    if (isDev) {
+      console.log(`[extractImages] Found ${images.length} from media array`)
+    }
   }
 
   // 5. Final fallback to single imgSrc
   if (images.length === 0 && data.imgSrc) {
     addImage(data.imgSrc)
-    console.log(`[extractImages] Using imgSrc fallback`)
+    if (isDev) {
+      console.log(`[extractImages] Using imgSrc fallback`)
+    }
   }
 
-  console.log(`[extractImages] Total images extracted: ${images.length}`)
+  if (isDev) {
+    console.log(`[extractImages] Total images extracted: ${images.length}`)
+  }
   return images.slice(0, 20) // Limit to 20 images for comprehensive analysis
 }
 
@@ -308,7 +326,9 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   try {
     // Fetch property details and images in parallel
-    console.log(`[generate-vibes-zillow] Fetching property ${zpid}...`)
+    if (isDev) {
+      console.log(`[generate-vibes-zillow] Fetching property ${zpid}...`)
+    }
     const [zillowData, imagesFromEndpoint] = await Promise.all([
       fetchZillowProperty(zpid, rapidApiKey, rapidApiHost),
       fetchZillowImages(zpid, rapidApiKey, rapidApiHost),
@@ -329,15 +349,19 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (imagesFromEndpoint.length > 0) {
       // Use images from dedicated /images endpoint
       images = imagesFromEndpoint.slice(0, 20)
-      console.log(
-        `[generate-vibes-zillow] Using ${images.length} images from /images endpoint`
-      )
+      if (isDev) {
+        console.log(
+          `[generate-vibes-zillow] Using ${images.length} images from /images endpoint`
+        )
+      }
     } else {
       // Fall back to images from /property response
       images = extractImages(zillowData)
-      console.log(
-        `[generate-vibes-zillow] Using ${images.length} images from /property response`
-      )
+      if (isDev) {
+        console.log(
+          `[generate-vibes-zillow] Using ${images.length} images from /property response`
+        )
+      }
     }
 
     if (images.length === 0) {
@@ -387,18 +411,22 @@ export async function POST(req: Request): Promise<NextResponse> {
       updated_at: new Date().toISOString(),
     }
 
-    console.log(
-      `[generate-vibes-zillow] Generating vibes for ${address}, ${city}...`
-    )
-    console.log(`[generate-vibes-zillow] Using ${images.length} images`)
+    if (isDev) {
+      console.log(
+        `[generate-vibes-zillow] Generating vibes for ${address}, ${city}...`
+      )
+      console.log(`[generate-vibes-zillow] Using ${images.length} images`)
+    }
 
     // Generate vibes
     const vibesService = createVibesService()
     const result = await vibesService.generateVibes(property)
 
-    console.log(
-      `[generate-vibes-zillow] Generated vibes in ${result.processingTimeMs}ms, cost: $${result.usage.estimatedCostUsd.toFixed(4)}`
-    )
+    if (isDev) {
+      console.log(
+        `[generate-vibes-zillow] Generated vibes in ${result.processingTimeMs}ms, cost: $${result.usage.estimatedCostUsd.toFixed(4)}`
+      )
+    }
 
     return NextResponse.json({
       ok: true,

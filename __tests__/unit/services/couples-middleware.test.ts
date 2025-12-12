@@ -298,22 +298,14 @@ describe('CouplesMiddleware', () => {
 
   describe('onHouseholdChange', () => {
     test('should clear household cache successfully', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesMiddleware.onHouseholdChange(mockHouseholdId)
 
       expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(
         mockHouseholdId
       )
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cleared cache for household: household-789'
-      )
-
-      consoleLogSpy.mockRestore()
     })
 
     test('should handle cache clearing errors gracefully', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       mockCouplesService.clearHouseholdCache.mockImplementation(() => {
@@ -332,20 +324,13 @@ describe('CouplesMiddleware', () => {
         '[CouplesMiddleware] Error clearing household cache:',
         expect.any(Error)
       )
-      expect(consoleLogSpy).not.toHaveBeenCalled()
 
-      consoleLogSpy.mockRestore()
       consoleErrorSpy.mockRestore()
     })
 
     test('should handle null or undefined household ID', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesMiddleware.onHouseholdChange(null as any)
       expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(null)
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cleared cache for household: null'
-      )
 
       jest.clearAllMocks()
 
@@ -353,38 +338,17 @@ describe('CouplesMiddleware', () => {
       expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(
         undefined
       )
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cleared cache for household: undefined'
-      )
-
-      consoleLogSpy.mockRestore()
     })
 
     test('should handle empty string household ID', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesMiddleware.onHouseholdChange('')
       expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith('')
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cleared cache for household: '
-      )
-
-      consoleLogSpy.mockRestore()
     })
   })
 
   describe('warmCache', () => {
     test('should warm cache successfully', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesMiddleware.warmCache(mockSupabaseClient, mockUserId)
-
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Warming cache for user: user-123'
-      )
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cache warmed for user: user-123'
-      )
 
       expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
         mockSupabaseClient,
@@ -399,12 +363,9 @@ describe('CouplesMiddleware', () => {
         mockSupabaseClient,
         mockUserId
       )
-
-      consoleLogSpy.mockRestore()
     })
 
     test('should handle individual service failures gracefully', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       mockCouplesService.getMutualLikes.mockRejectedValue(
@@ -415,23 +376,15 @@ describe('CouplesMiddleware', () => {
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, mockUserId)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Warming cache for user: user-123'
-      )
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[CouplesMiddleware] Error warming cache:',
         expect.any(Error)
       )
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cache warmed for user: user-123'
-      )
 
-      consoleLogSpy.mockRestore()
       consoleErrorSpy.mockRestore()
     })
 
     test('should handle all services failing', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const errorMessage = 'Database connection failed'
@@ -447,18 +400,11 @@ describe('CouplesMiddleware', () => {
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, mockUserId)
 
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Warming cache for user: user-123'
-      )
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[CouplesMiddleware] Error warming cache:',
         expect.any(Error)
       )
-      expect(consoleLogSpy).not.toHaveBeenCalledWith(
-        '[CouplesMiddleware] Cache warmed for user: user-123'
-      )
 
-      consoleLogSpy.mockRestore()
       consoleErrorSpy.mockRestore()
     })
 
@@ -513,12 +459,7 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle null or undefined user ID', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
       await CouplesMiddleware.warmCache(mockSupabaseClient, null as any)
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Warming cache for user: null'
-      )
       expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
         mockSupabaseClient,
         null
@@ -527,15 +468,10 @@ describe('CouplesMiddleware', () => {
       jest.clearAllMocks()
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, undefined as any)
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        '[CouplesMiddleware] Warming cache for user: undefined'
-      )
       expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
         mockSupabaseClient,
         undefined
       )
-
-      consoleLogSpy.mockRestore()
     })
 
     test('should use correct limit for getHouseholdActivity', async () => {
@@ -587,7 +523,6 @@ describe('CouplesMiddleware', () => {
 
     test('should maintain consistent logging prefix across methods', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
 
       // Test onPropertyInteraction error
       mockCouplesService.checkPotentialMutualLike.mockRejectedValue(
@@ -619,7 +554,6 @@ describe('CouplesMiddleware', () => {
       ).toBe(true)
 
       consoleErrorSpy.mockRestore()
-      consoleLogSpy.mockRestore()
     })
   })
 })

@@ -31,11 +31,6 @@ export async function POST(request: NextRequest) {
       : await supabase.auth.getUser()
     const user = data?.user
 
-    console.log('[Interactions POST] Auth result:', {
-      userId: user?.id,
-      error: authError?.message,
-    })
-
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
     }
@@ -127,11 +122,6 @@ export async function GET(request: NextRequest) {
       ? await supabase.auth.getUser(bearer)
       : await supabase.auth.getUser()
     const user = authData?.user
-
-    console.log('[Interactions GET] Auth result:', {
-      userId: user?.id,
-      error: authError?.message,
-    })
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -322,11 +312,6 @@ export async function DELETE(request: NextRequest) {
       : await supabase.auth.getUser()
     const user = data?.user
 
-    console.log('[Interactions DELETE] Auth result:', {
-      userId: user?.id,
-      error: authError?.message,
-    })
-
     if (authError || !user) {
       return ApiErrorHandler.unauthorized()
     }
@@ -345,22 +330,12 @@ export async function DELETE(request: NextRequest) {
 
     const { propertyId } = parsed.data
 
-    console.log('[Interactions DELETE] Attempting delete:', {
-      userId: user.id,
-      propertyId,
-    })
-
     // Use select() to get back deleted rows and verify the delete worked
     const { data: deletedRows, error } = await supabase
       .from('user_property_interactions')
       .delete()
       .match({ user_id: user.id, property_id: propertyId })
       .select()
-
-    console.log('[Interactions DELETE] Result:', {
-      deletedCount: deletedRows?.length ?? 0,
-      error: error?.message,
-    })
 
     if (error) {
       console.error('[Interactions DELETE] Error:', error)

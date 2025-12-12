@@ -120,10 +120,12 @@ export function useCouplesRealtime(options: UseCouplesRealtimeOptions = {}) {
 
             // Show notification
             if (enableNotifications) {
-              console.log(
-                '🎉 Mutual Like!',
-                `${data.partnerName} also liked ${data.propertyAddress}`
-              )
+              if (process.env.NODE_ENV === 'development') {
+                console.log(
+                  '🎉 Mutual Like!',
+                  `${data.partnerName} also liked ${data.propertyAddress}`
+                )
+              }
               // toast({
               //   title: "🎉 Mutual Like!",
               //   description: `${data.partnerName} also liked ${data.propertyAddress}`,
@@ -157,10 +159,12 @@ export function useCouplesRealtime(options: UseCouplesRealtimeOptions = {}) {
 
             // Show subtle notification for partner activity
             if (enableNotifications && data.interactionType === 'like') {
-              console.log(
-                'Partner Activity',
-                `${data.userName} liked a property`
-              )
+              if (process.env.NODE_ENV === 'development') {
+                console.log(
+                  'Partner Activity',
+                  `${data.userName} liked a property`
+                )
+              }
               // toast({
               //   title: "Partner Activity",
               //   description: `${data.userName} liked a property`,

@@ -196,12 +196,9 @@ export class CouplesService {
   private static handleMutualLikesCache(
     householdId: string,
     result: MutualLike[],
-    startTime: number
+    _startTime: number
   ): void {
     mutualLikesCache.set(householdId, result)
-    console.log(
-      `[CouplesService] Fetched ${result.length} mutual likes for household ${householdId} (${Date.now() - startTime}ms)`
-    )
   }
 
   /**
@@ -227,9 +224,6 @@ export class CouplesService {
       // Check cache first
       const cached = mutualLikesCache.get(householdId)
       if (cached) {
-        console.log(
-          `[CouplesService] Cache hit for mutual likes: ${householdId} (${Date.now() - startTime}ms)`
-        )
         return cached
       }
 
@@ -424,13 +418,10 @@ export class CouplesService {
   private static handleActivityCache(
     cacheKey: string,
     result: HouseholdActivity[],
-    householdId: string,
-    startTime: number
+    _householdId: string,
+    _startTime: number
   ): void {
     householdActivityCache.set(cacheKey, result)
-    console.log(
-      `[CouplesService] Fetched ${result.length} activities for household ${householdId} (${Date.now() - startTime}ms)`
-    )
   }
 
   /**
@@ -462,9 +453,6 @@ export class CouplesService {
       // Check cache first
       const cached = householdActivityCache.get(cacheKey)
       if (cached) {
-        console.log(
-          `[CouplesService] Cache hit for activity: ${cacheKey} (${Date.now() - startTime}ms)`
-        )
         return cached
       }
 
@@ -506,8 +494,6 @@ export class CouplesService {
     supabase: SupabaseClient,
     userId: string
   ): Promise<CouplesStats | null> {
-    const startTime = Date.now()
-
     try {
       const householdId = await this.getUserHousehold(supabase, userId)
       if (!householdId) return null
@@ -517,9 +503,6 @@ export class CouplesService {
       // Check cache first
       const cached = householdStatsCache.get(cacheKey)
       if (cached) {
-        console.log(
-          `[CouplesService] Cache hit for stats: ${cacheKey} (${Date.now() - startTime}ms)`
-        )
         return cached
       }
 
@@ -590,9 +573,6 @@ export class CouplesService {
       // Cache the result
       householdStatsCache.set(cacheKey, result)
 
-      console.log(
-        `[CouplesService] Generated stats for household ${householdId} (${Date.now() - startTime}ms)`
-      )
       return result
     } catch (error) {
       console.error(
@@ -680,9 +660,6 @@ export class CouplesService {
           await this.checkPotentialMutualLike(supabase, userId, propertyId)
 
         if (wouldBeMutual && partnerUserId) {
-          console.log(
-            `[CouplesService] Mutual like created: ${userId} + ${partnerUserId} for property ${propertyId}`
-          )
           // Here you could trigger real-time notifications to the partner
           // await this.sendRealtimeNotification(partnerUserId, 'mutual_like_created', { propertyId, partnerUserId: userId })
         }

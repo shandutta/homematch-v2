@@ -1,14 +1,19 @@
 import type { PropertyFilters } from '@/lib/schemas/property'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+type NonNullFilterValue = Exclude<
+  PropertyFilters[keyof PropertyFilters],
+  null | undefined
+>
+type InFilterValues = readonly (string | number)[]
+type ContainsValue = string | readonly unknown[] | Record<string, unknown>
+
 type FilterableQuery<T> = {
-  gte: (...args: any[]) => T
-  lte: (...args: any[]) => T
-  eq: (...args: any[]) => T
-  in: (...args: any[]) => T
-  contains: (...args: any[]) => T
+  gte(column: string, value: unknown): T
+  lte(column: string, value: unknown): T
+  eq(column: string, value: unknown): T
+  in(column: string, values: readonly unknown[]): T
+  contains(column: string, value: ContainsValue): T
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * Filter operation types supported by the PropertyFilterBuilder
@@ -143,21 +148,21 @@ export class PropertyFilterBuilder {
     // Apply the appropriate Supabase operation
     switch (rule.operation) {
       case 'gte':
-        return query.gte(rule.column, value)
+        return query.gte(rule.column, value as NonNullFilterValue)
 
       case 'lte':
-        return query.lte(rule.column, value)
+        return query.lte(rule.column, value as NonNullFilterValue)
 
       case 'eq':
-        return query.eq(rule.column, value)
+        return query.eq(rule.column, value as NonNullFilterValue)
 
       case 'in': {
-        const arrayValue = value as unknown[]
+        const arrayValue = value as unknown as InFilterValues
         return query.in(rule.column, arrayValue)
       }
 
       case 'contains':
-        return query.contains(rule.column, value)
+        return query.contains(rule.column, value as ContainsValue)
 
       default: {
         // TypeScript exhaustiveness check

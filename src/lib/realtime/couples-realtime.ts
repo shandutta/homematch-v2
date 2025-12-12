@@ -64,7 +64,8 @@ export class CouplesRealtime {
             table: 'user_property_interactions',
             filter: `household_id=eq.${householdId}`,
           },
-          this.handlePropertyInteraction.bind(this)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          this.handlePropertyInteraction.bind(this) as any
         )
         .on(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,10 +76,13 @@ export class CouplesRealtime {
             table: 'user_property_interactions',
             filter: `household_id=eq.${householdId}`,
           },
-          this.handlePropertyInteraction.bind(this)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          this.handlePropertyInteraction.bind(this) as any
         )
         .subscribe((status) => {
-          console.log(`[CouplesRealtime] Subscription status: ${status}`)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[CouplesRealtime] Subscription status: ${status}`)
+          }
         })
     } catch (error) {
       console.error(

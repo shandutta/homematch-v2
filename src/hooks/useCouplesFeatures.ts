@@ -168,7 +168,9 @@ export function useNotifyInteraction() {
 
       // Optionally show a notification or trigger a celebration
       if (data.mutual_like_created) {
-        console.log('🎉 Mutual like created!', data)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎉 Mutual like created!', data)
+        }
         // You could trigger a toast notification, confetti, etc.
       }
     },
