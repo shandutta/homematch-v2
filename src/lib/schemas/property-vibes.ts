@@ -190,7 +190,7 @@ export const aestheticsSchema = z.object({
     'mixed',
   ]),
   colorPalette: z.array(z.string().max(30)).max(4),
-  architecturalStyle: z.string().max(50),
+  architecturalStyle: z.string().max(80),
   overallCondition: z.enum([
     'pristine',
     'well_maintained',
