@@ -71,8 +71,9 @@ describe.sequential('Integration: /api/properties/vibes', () => {
   })
 
   it('rejects unauthenticated requests', async () => {
-    const req = new NextRequest('http://localhost/api/properties/vibes')
-    const res = await GET(req)
+    // Use a real HTTP request to avoid Supabase client caching leaking auth state
+    // when calling route handlers directly in Vitest.
+    const res = await fetch('http://localhost:3000/api/properties/vibes')
     expect(res.status).toBe(401)
   })
 
