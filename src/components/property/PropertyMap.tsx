@@ -11,7 +11,7 @@ import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
 
 import type {
   GoogleMapInstance,
-  GoogleMarkerInstance,
+  GoogleAnyMarkerInstance,
   GoogleInfoWindowInstance,
 } from '@/types/google-maps'
 
@@ -81,22 +81,11 @@ export function PropertyMap({
       })
 
       if (showMarker) {
-        const marker = new window.google.maps.Marker({
-          position: coords,
+        const title = property.address || 'Property'
+        const marker = createPropertyMarker({
+          coords,
           map,
-          title: property.address || 'Property',
-          icon: {
-            url:
-              'data:image/svg+xml;charset=UTF-8,' +
-              encodeURIComponent(`
-              <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="12" fill="#3b82f6" stroke="#ffffff" stroke-width="3"/>
-                <circle cx="16" cy="16" r="6" fill="#ffffff"/>
-              </svg>
-            `),
-            scaledSize: new window.google.maps.Size(32, 32),
-            anchor: new window.google.maps.Point(16, 16),
-          },
+          title,
         })
 
         const infoWindow = new window.google.maps.InfoWindow({
@@ -109,11 +98,11 @@ export function PropertyMap({
           `,
         })
 
-        ;(marker as GoogleMarkerInstance).addListener('click', () => {
-          ;(infoWindow as GoogleInfoWindowInstance).open(
-            map as GoogleMapInstance,
-            marker as GoogleMarkerInstance
-          )
+        marker.addListener('click', () => {
+          ;(infoWindow as GoogleInfoWindowInstance).open({
+            map: map as GoogleMapInstance,
+            anchor: marker as GoogleAnyMarkerInstance,
+          })
         })
       }
 
@@ -203,4 +192,53 @@ export function PropertyMap({
       </div>
     </SecureMapLoader>
   )
+}
+
+function createPropertyMarker({
+  coords,
+  map,
+  title,
+}: {
+  coords: { lat: number; lng: number }
+  map: GoogleMapInstance
+  title: string
+}) {
+  const maps = window.google?.maps
+  if (!maps) {
+    throw new Error('Google Maps API not available')
+  }
+
+  try {
+    const advancedMarkerCtor = maps.marker?.AdvancedMarkerElement
+    if (advancedMarkerCtor) {
+      return new advancedMarkerCtor({
+        position: coords,
+        map,
+        title,
+      })
+    }
+  } catch (error) {
+    console.warn(
+      '[PropertyMap] Advanced marker init failed, falling back',
+      error
+    )
+  }
+
+  return new maps.Marker({
+    position: coords,
+    map,
+    title,
+    icon: {
+      url:
+        'data:image/svg+xml;charset=UTF-8,' +
+        encodeURIComponent(`
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="12" fill="#3b82f6" stroke="#ffffff" stroke-width="3"/>
+            <circle cx="16" cy="16" r="6" fill="#ffffff"/>
+          </svg>
+        `),
+      scaledSize: new maps.Size(32, 32),
+      anchor: new maps.Point(16, 16),
+    },
+  })
 }
