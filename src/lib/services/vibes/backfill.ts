@@ -196,80 +196,85 @@ export async function backfillVibes(
         batchLimited,
         {
           delayMs: args.delayMs,
-          beforeEach: args.refreshImages
-            ? async (property) => {
-                const zpid = property.zpid
-                if (!zpid || !rapidApiKey) return
+          beforeEach: async (property, index, total) => {
+            const zpid = property.zpid
+            const imagesCount = Array.isArray(property.images)
+              ? property.images.length
+              : 0
+            const label =
+              property.address ||
+              [property.city, property.state].filter(Boolean).join(', ')
+            logger.log(
+              `[backfill-vibes] [property] ${index + 1}/${total} id=${property.id} zpid=${zpid ?? 'null'} imgs=${imagesCount}${label ? ` | ${label}` : ''}`
+            )
 
-                const current = Array.isArray(property.images)
-                  ? property.images
-                  : []
-                const looksComplete =
-                  current.length >= args.minImages &&
-                  current.some(
-                    (u) => typeof u === 'string' && isZillowStaticImageUrl(u)
-                  )
+            if (!args.refreshImages) return
+            if (!zpid || !rapidApiKey) return
 
-                if (looksComplete && !args.forceImages) return
+            const current = Array.isArray(property.images)
+              ? property.images
+              : []
+            const looksComplete =
+              current.length >= args.minImages &&
+              current.some(
+                (u) => typeof u === 'string' && isZillowStaticImageUrl(u)
+              )
 
-                const fetched = await fetchImages({
-                  zpid,
-                  rapidApiKey,
-                  host: rapidApiHost,
-                })
+            if (looksComplete && !args.forceImages) return
 
-                const nonStreetView = fetched.filter(
-                  (u) => !isStreetViewImageUrl(u)
-                )
-                const zillowPhotos = nonStreetView.filter(
-                  isZillowStaticImageUrl
-                )
-                const nextImages =
-                  zillowPhotos.length > 0 ? zillowPhotos : nonStreetView
+            const fetched = await fetchImages({
+              zpid,
+              rapidApiKey,
+              host: rapidApiHost,
+            })
 
-                if (nextImages.length === 0) {
-                  logger.log(
-                    `[backfill-vibes] [images] zpid=${zpid} no usable photos (skipping image update)`
-                  )
-                  return
-                }
+            const nonStreetView = fetched.filter(
+              (u) => !isStreetViewImageUrl(u)
+            )
+            const zillowPhotos = nonStreetView.filter(isZillowStaticImageUrl)
+            const nextImages =
+              zillowPhotos.length > 0 ? zillowPhotos : nonStreetView
 
-                const currentMatches =
-                  current.length === nextImages.length &&
-                  current.every((u, idx) => u === nextImages[idx])
-                if (currentMatches) return
+            if (nextImages.length === 0) {
+              logger.log(
+                `[backfill-vibes] [images] zpid=${zpid} no usable photos (skipping image update)`
+              )
+              return
+            }
 
-                const { error: updateError } = await deps.supabase
-                  .from('properties')
-                  .update({
-                    images: nextImages,
-                    updated_at: now().toISOString(),
-                  })
-                  .eq('id', property.id)
+            const currentMatches =
+              current.length === nextImages.length &&
+              current.every((u, idx) => u === nextImages[idx])
+            if (currentMatches) return
 
-                if (updateError) {
-                  logger.warn(
-                    `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${updateError.message}`
-                  )
-                  return
-                }
+            const { error: updateError } = await deps.supabase
+              .from('properties')
+              .update({
+                images: nextImages,
+                updated_at: now().toISOString(),
+              })
+              .eq('id', property.id)
 
-                property.images = nextImages
-                const note =
-                  current.length === nextImages.length
-                    ? ' (content changed)'
-                    : ''
-                logger.log(
-                  `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}${note}`
-                )
+            if (updateError) {
+              logger.warn(
+                `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${updateError.message}`
+              )
+              return
+            }
 
-                if (args.imageDelayMs > 0) {
-                  await sleep(args.imageDelayMs)
-                }
+            property.images = nextImages
+            const note =
+              current.length === nextImages.length ? ' (content changed)' : ''
+            logger.log(
+              `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}${note}`
+            )
 
-                return property
-              }
-            : undefined,
+            if (args.imageDelayMs > 0) {
+              await sleep(args.imageDelayMs)
+            }
+
+            return property
+          },
           onProgress: (completed, total) => {
             if (completed === total || completed % 5 === 0) {
               logger.log(

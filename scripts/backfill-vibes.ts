@@ -19,15 +19,22 @@
 
 import { config } from 'dotenv'
 const envFile = process.env.ENV_FILE || '.env.local'
-config({ path: envFile })
+config({ path: envFile, override: true })
+for (const key of ['OPENROUTER_API_KEY', 'RAPIDAPI_KEY']) {
+  if (process.env[key] != null && process.env[key].trim() === '') {
+    delete process.env[key]
+  }
+}
 // Allow keeping API keys (OpenRouter/RapidAPI) in .env.local while running against prod Supabase via ENV_FILE=.env.prod.
 if (envFile !== '.env.local') {
   config({ path: '.env.local' })
 }
 config()
 
+import fsSync from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import util from 'node:util'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService } from '@/lib/services/vibes'
 import { backfillVibes } from '@/lib/services/vibes/backfill'
@@ -54,6 +61,7 @@ type Args = {
   forceImages: boolean
   minImages: number
   imageDelayMs: number
+  logFile: string
 }
 
 function parseArgs(argv: string[]): Args {
@@ -67,6 +75,7 @@ function parseArgs(argv: string[]): Args {
     forceImages: false,
     minImages: 10,
     imageDelayMs: 600,
+    logFile: path.join('.logs', 'backfill-vibes.log'),
   }
 
   const raw: Record<string, string> = {}
@@ -101,6 +110,7 @@ function parseArgs(argv: string[]): Args {
   const imageDelayMs = raw.imageDelayMs
     ? Number(raw.imageDelayMs)
     : defaults.imageDelayMs
+  const logFile = raw.logFile?.trim() || defaults.logFile
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
@@ -119,14 +129,79 @@ function parseArgs(argv: string[]): Args {
       Number.isFinite(imageDelayMs) && imageDelayMs >= 0
         ? imageDelayMs
         : defaults.imageDelayMs,
+    logFile,
   }
 }
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms))
 
+function installFileLogger(logFilePath: string): {
+  close: () => Promise<void>
+} {
+  const resolvedPath = path.isAbsolute(logFilePath)
+    ? logFilePath
+    : path.join(process.cwd(), logFilePath)
+  const dir = path.dirname(resolvedPath)
+
+  fsSync.mkdirSync(dir, { recursive: true })
+  fsSync.appendFileSync(resolvedPath, '')
+
+  const stream = fsSync.createWriteStream(resolvedPath, { flags: 'a' })
+
+  const original = {
+    log: console.log.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+    info: console.info.bind(console),
+  }
+
+  function write(level: 'log' | 'warn' | 'error' | 'info', args: unknown[]) {
+    try {
+      stream.write(
+        `[${new Date().toISOString()}] [${level}] ${util.format(...args)}\n`
+      )
+    } catch {
+      // Ignore file write issues; never break the script.
+    }
+  }
+
+  console.log = (...args) => {
+    original.log(...args)
+    write('log', args)
+  }
+  console.warn = (...args) => {
+    original.warn(...args)
+    write('warn', args)
+  }
+  console.error = (...args) => {
+    original.error(...args)
+    write('error', args)
+  }
+  console.info = (...args) => {
+    original.info(...args)
+    write('info', args)
+  }
+
+  console.log(
+    `[backfill-vibes] Logging to ${path.relative(process.cwd(), resolvedPath)}`
+  )
+
+  async function close() {
+    console.log = original.log
+    console.warn = original.warn
+    console.error = original.error
+    console.info = original.info
+    await new Promise<void>((resolve) => stream.end(() => resolve()))
+  }
+
+  return { close }
+}
+
 async function main() {
   const args = parseArgs(process.argv)
+
+  const fileLogger = installFileLogger(args.logFile)
 
   if (args.propertyIds) {
     const invalid = args.propertyIds.filter((id) => !UUID_RE.test(id))
@@ -214,6 +289,8 @@ async function main() {
       `[backfill-vibes] Failed to write report: ${err instanceof Error ? err.message : String(err)}`
     )
   }
+
+  await fileLogger.close()
 }
 
 main().catch((err) => {
