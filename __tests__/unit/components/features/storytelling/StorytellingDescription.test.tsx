@@ -103,12 +103,18 @@ const mockVibes: PropertyVibes = {
       reason: 'Dedicated office space and strong natural light for long days.',
     },
   ],
-  suggested_tags: ["Chef's Kitchen", 'Remote Work Ready', 'Indoor-Outdoor Flow'],
+  suggested_tags: [
+    "Chef's Kitchen",
+    'Remote Work Ready',
+    'Indoor-Outdoor Flow',
+  ],
   emotional_hooks: [
     'That island is where laptops and dinner prep share space.',
     'The deck makes weeknights feel like weekends.',
   ],
-  primary_vibes: [{ name: 'Clean Lines, Warm Light', intensity: 0.8, source: 'both' }],
+  primary_vibes: [
+    { name: 'Clean Lines, Warm Light', intensity: 0.8, source: 'both' },
+  ],
   aesthetics: {
     lightingQuality: 'natural_abundant',
     colorPalette: ['warm gray', 'white trim'],
