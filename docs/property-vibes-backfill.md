@@ -49,6 +49,12 @@ ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes.ts --limit=200 --force=f
 
 Then repeat until the “missing” count in `scripts/property-vibes-review.sql` hits 0.
 
+Or run the loop automatically until completion (writes `.logs/backfill-vibes-resume-report.json`):
+
+```bash
+ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes-resume.ts --limit=200 --force=false --refreshImages=false
+```
+
 ## VPS cron (suggested)
 
 Example nightly job (uses a lock to prevent overlaps):
