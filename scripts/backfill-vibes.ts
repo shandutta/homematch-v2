@@ -20,6 +20,10 @@
 import { config } from 'dotenv'
 const envFile = process.env.ENV_FILE || '.env.local'
 config({ path: envFile })
+// Allow keeping API keys (OpenRouter/RapidAPI) in .env.local while running against prod Supabase via ENV_FILE=.env.prod.
+if (envFile !== '.env.local') {
+  config({ path: '.env.local' })
+}
 config()
 
 import fs from 'node:fs/promises'

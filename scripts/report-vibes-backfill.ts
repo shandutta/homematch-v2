@@ -11,6 +11,9 @@
 import { config } from 'dotenv'
 const envFile = process.env.ENV_FILE || '.env.local'
 config({ path: envFile })
+if (envFile !== '.env.local') {
+  config({ path: '.env.local' })
+}
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
