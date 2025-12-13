@@ -66,7 +66,8 @@ export interface UsageInfo {
 // Free models have 0 cost but we track tokens for monitoring
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   // Qwen vision models (cheap, recommended for beta)
-  'qwen/qwen3-vl-8b-instruct': { input: 0.1, output: 0.3 },
+  // Updated pricing: 131,072 context, $0.064/M input, $0.40/M output
+  'qwen/qwen3-vl-8b-instruct': { input: 0.064, output: 0.4 },
   'qwen/qwen2.5-vl-32b-instruct': { input: 0.2, output: 0.6 },
   // Llama vision (very cheap)
   'meta-llama/llama-3.2-11b-vision-instruct': { input: 0.05, output: 0.05 },

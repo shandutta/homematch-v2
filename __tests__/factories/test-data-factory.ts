@@ -87,6 +87,9 @@ export const createMockDatabaseProperty = (
   amenities: [faker.word.adjective(), faker.word.adjective()],
   parking_spots: faker.number.int({ min: 0, max: 10 }),
   property_hash: faker.string.alphanumeric(32),
+  zillow_images_refreshed_at: null,
+  zillow_images_refreshed_count: null,
+  zillow_images_refresh_status: null,
   ...overrides,
 })
 
