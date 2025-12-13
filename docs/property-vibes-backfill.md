@@ -23,6 +23,7 @@ Notes:
 
 - Don’t use angle brackets like `--propertyIds=<...>` in bash; `<` is shell redirection.
 - The script prints `supabaseHost=...` so you can confirm you’re pointed at prod.
+- If `OPENROUTER_API_KEY` isn’t in `.env.prod`, it can live in `.env.local` (the script loads `.env.local` as a non-overriding fallback for API keys).
 - A report is written to `.logs/backfill-vibes-report.json` and archived with a timestamp.
 
 ## Verify results (Supabase SQL Editor)
