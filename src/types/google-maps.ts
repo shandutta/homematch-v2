@@ -10,8 +10,24 @@ export interface GoogleMarkerInstance {
   addListener: (event: string, handler: () => void) => void
 }
 
+export interface GoogleAdvancedMarkerInstance {
+  addListener: (event: string, handler: () => void) => void
+}
+
+export type GoogleAnyMarkerInstance =
+  | GoogleMarkerInstance
+  | GoogleAdvancedMarkerInstance
+
 export interface GoogleInfoWindowInstance {
-  open: (map: GoogleMapInstance, marker?: GoogleMarkerInstance) => void
+  open: (
+    mapOrOptions:
+      | GoogleMapInstance
+      | {
+          map: GoogleMapInstance
+          anchor?: GoogleAnyMarkerInstance
+        },
+    marker?: GoogleMarkerInstance
+  ) => void
   close: () => void
 }
 
@@ -29,6 +45,11 @@ declare global {
         LatLngBounds: new (sw?: unknown, ne?: unknown) => unknown
         Size: new (width: number, height: number) => unknown
         Point: new (x: number, y: number) => unknown
+        marker?: {
+          AdvancedMarkerElement: new (
+            options?: unknown
+          ) => GoogleAdvancedMarkerInstance
+        }
         MapTypeId: {
           ROADMAP: string
           SATELLITE: string

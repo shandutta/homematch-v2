@@ -4,7 +4,33 @@ import { NextResponse } from 'next/server'
  * Google Maps Script Proxy
  * Proxies the Google Maps JavaScript API without exposing the API key
  */
-export async function GET() {
+function getGoogleReferer(request: Request): string | null {
+  const refererHeader = request.headers.get('referer')
+  if (refererHeader) {
+    try {
+      return `${new URL(refererHeader).origin}/`
+    } catch {
+      // Ignore invalid referer header
+    }
+  }
+
+  const originHeader = request.headers.get('origin')
+  if (originHeader) {
+    try {
+      return `${new URL(originHeader).origin}/`
+    } catch {
+      // Ignore invalid origin header
+    }
+  }
+
+  try {
+    return `${new URL(request.url).origin}/`
+  } catch {
+    return null
+  }
+}
+
+export async function GET(request: Request) {
   try {
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
 
@@ -19,9 +45,12 @@ export async function GET() {
     }
 
     // Fetch the actual Google Maps script
-    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=places&loading=async&callback=initGoogleMaps`
+    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=places,marker&loading=async&callback=initGoogleMaps`
 
-    const response = await fetch(scriptUrl)
+    const googleReferer = getGoogleReferer(request)
+    const response = await fetch(scriptUrl, {
+      headers: googleReferer ? { referer: googleReferer } : undefined,
+    })
 
     if (!response.ok) {
       return new NextResponse('// Failed to load maps script', {
