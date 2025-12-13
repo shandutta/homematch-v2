@@ -164,7 +164,7 @@ export default defineConfig({
     command: 'node scripts/start-test-server-optimized.js',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
-    timeout: isCI ? 120 * 1000 : 60 * 1000, // 60s locally, 120s CI
+    timeout: isCI ? 120 * 1000 : 120 * 1000, // cold starts can exceed 60s locally
     env: {
       NODE_ENV: 'test',
       NEXT_PUBLIC_TEST_MODE: 'true',
