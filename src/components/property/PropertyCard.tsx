@@ -290,7 +290,7 @@ export function PropertyCard({
               vibes={vibes}
               isMutualLike={isMutualLike}
               variant="compact"
-              showLifestyleTags={false}
+              showLifestyleTags={true}
               showFutureVision={storyVariant === 'futureVision'}
             />
           </div>
