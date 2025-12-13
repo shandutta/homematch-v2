@@ -10,14 +10,17 @@ import { GET } from '@/app/api/maps/proxy-script/route'
 
 describe('/api/maps/proxy-script', () => {
   const originalKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
+  const originalMapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
   const originalFetch = global.fetch
 
   beforeEach(() => {
     process.env.GOOGLE_MAPS_SERVER_API_KEY = 'test-maps-key'
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
   })
 
   afterEach(() => {
     process.env.GOOGLE_MAPS_SERVER_API_KEY = originalKey
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = originalMapId
     global.fetch = originalFetch
   })
 
@@ -44,7 +47,7 @@ describe('/api/maps/proxy-script', () => {
     ]
     expect(scriptUrl).toContain('https://maps.googleapis.com/maps/api/js?')
     expect(scriptUrl).toContain('key=test-maps-key')
-    expect(scriptUrl).toContain('libraries=places,marker')
+    expect(scriptUrl).toContain('libraries=places')
     expect(options.headers?.referer).toBe('https://homematch.pro/')
 
     expect(response.status).toBe(200)
@@ -52,5 +55,26 @@ describe('/api/maps/proxy-script', () => {
       'application/javascript'
     )
     await expect(response.text()).resolves.toBe('/* maps bootstrap */')
+  })
+
+  it('includes the marker library when a map ID is configured', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = 'test-map-id'
+
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => '/* maps bootstrap */',
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    const request = new Request('https://homematch.pro/api/maps/proxy-script', {
+      headers: {
+        referer: 'https://homematch.pro/dashboard',
+      },
+    })
+
+    await GET(request)
+
+    const [scriptUrl] = fetchMock.mock.calls[0] as [string]
+    expect(scriptUrl).toContain('libraries=places,marker')
   })
 })

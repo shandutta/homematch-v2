@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { shouldLoadGoogleMapsMarkerLibrary } from '@/lib/maps/config'
 
 /**
  * Google Maps Script Proxy
@@ -44,8 +45,12 @@ export async function GET(request: Request) {
       })
     }
 
+    const libraries = shouldLoadGoogleMapsMarkerLibrary()
+      ? 'places,marker'
+      : 'places'
+
     // Fetch the actual Google Maps script
-    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=places,marker&loading=async&callback=initGoogleMaps`
+    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=${libraries}&loading=async&callback=initGoogleMaps`
 
     const googleReferer = getGoogleReferer(request)
     const response = await fetch(scriptUrl, {

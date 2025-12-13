@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { MapPin, Loader2 } from 'lucide-react'
+import { getGoogleMapsMapId } from '@/lib/maps/config'
 
 // Strong typing for Google Maps
 interface Coordinates {
@@ -78,22 +79,29 @@ export function EnhancedPropertyMap({
         return
       }
 
+      const mapId = getGoogleMapsMapId()
+
       // Create map with proper typing
       const map = new window.google.maps.Map(mapRef.current, {
         center: coords,
         zoom,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'transit',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-        ],
+        ...(mapId ? { mapId } : {}),
+        ...(!mapId
+          ? {
+              styles: [
+                {
+                  featureType: 'poi',
+                  elementType: 'labels',
+                  stylers: [{ visibility: 'off' }],
+                },
+                {
+                  featureType: 'transit',
+                  elementType: 'labels',
+                  stylers: [{ visibility: 'off' }],
+                },
+              ],
+            }
+          : {}),
         disableDefaultUI: false,
         zoomControl: true,
         mapTypeControl: false,

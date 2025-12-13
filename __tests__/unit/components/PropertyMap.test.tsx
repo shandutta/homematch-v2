@@ -1,12 +1,30 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals'
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, waitFor, act } from '@testing-library/react'
 import { PropertyMap } from '@/components/property/PropertyMap'
+import { __resetSecureMapLoaderStateForTests } from '@/components/shared/SecureMapLoader'
 
 describe('PropertyMap', () => {
   beforeEach(() => {
+    __resetSecureMapLoaderStateForTests()
     // Clean any previous google mocks
     delete (global as any).window?.google
+  })
+
+  afterEach(() => {
+    document
+      .querySelectorAll('script[src="/api/maps/proxy-script"]')
+      .forEach((script) => script.remove())
+    delete (window as any).google
+    delete (window as any).initGoogleMaps
+    delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
   })
 
   it('renders safely when window.google is not available (jsdom/SSR guard)', () => {
@@ -45,9 +63,11 @@ describe('PropertyMap', () => {
     expect(container.firstChild).toBeTruthy()
   })
 
-  it('initializes map when window.google is available', () => {
+  it('initializes map when window.google is available', async () => {
     const mapCtor = jest.fn().mockImplementation(() => ({}))
-    const markerCtor = jest.fn().mockImplementation(() => ({}))
+    const markerCtor = jest.fn().mockImplementation(() => ({
+      addListener: jest.fn(),
+    }))
     const infoWindowCtor = jest.fn().mockImplementation(() => ({}))
     const sizeCtor = jest.fn().mockImplementation(() => ({}))
     const pointCtor = jest.fn().mockImplementation(() => ({}))
@@ -96,18 +116,84 @@ describe('PropertyMap', () => {
     )
 
     expect(container.firstChild).toBeTruthy()
-    // When google.maps is available and coordinates are provided, Map should be initialized
-    // Note: If the component uses lazy loading, this might be 0 initially
-    // but should eventually be called. For now, we verify no crash occurred
-    // and the map container is rendered.
-    // TODO: If lazy loading is used, add waitFor or test map initialization callback
-    if (mapCtor.mock.calls.length > 0) {
-      // Verify Map was called with correct initial options
-      expect(mapCtor).toHaveBeenCalled()
+
+    const script = document.querySelector(
+      'script[src="/api/maps/proxy-script"]'
+    ) as HTMLScriptElement
+    expect(script).toBeTruthy()
+
+    await act(async () => {
+      ;(window as any).initGoogleMaps?.()
+    })
+
+    await waitFor(() => expect(mapCtor).toHaveBeenCalled())
+    expect(markerCtor).toHaveBeenCalled()
+  })
+
+  it('includes mapId when configured (enables advanced markers)', async () => {
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = 'test-map-id'
+
+    const mapCtor = jest.fn().mockImplementation(() => ({}))
+    const markerCtor = jest.fn().mockImplementation(() => ({
+      addListener: jest.fn(),
+    }))
+    const infoWindowCtor = jest.fn().mockImplementation(() => ({}))
+    const sizeCtor = jest.fn().mockImplementation(() => ({}))
+    const pointCtor = jest.fn().mockImplementation(() => ({}))
+
+    ;(global as any).window = (global as any).window ?? {}
+    ;(global as any).window.google = {
+      maps: {
+        Map: mapCtor,
+        Marker: markerCtor,
+        InfoWindow: infoWindowCtor,
+        Size: sizeCtor,
+        Point: pointCtor,
+      },
     }
-    // Marker should be created when coordinates exist and map initializes
-    if (markerCtor.mock.calls.length > 0) {
-      expect(markerCtor).toHaveBeenCalled()
-    }
+
+    render(
+      <PropertyMap
+        property={{
+          id: 'p1',
+          address: '123 Main',
+          city: 'X',
+          state: 'CA',
+          zip_code: '00000',
+          price: 100,
+          bedrooms: 1,
+          bathrooms: 1,
+          square_feet: 500,
+          property_type: 'single_family',
+          listing_status: 'active',
+          is_active: true,
+          created_at: null,
+          updated_at: null,
+          zpid: null,
+          images: null,
+          description: null,
+          coordinates: { lat: 1, lng: 2 },
+          neighborhood_id: null,
+          amenities: null,
+          year_built: null,
+          lot_size_sqft: null,
+          parking_spots: null,
+          property_hash: null,
+        }}
+      />
+    )
+
+    const script = document.querySelector(
+      'script[src="/api/maps/proxy-script"]'
+    ) as HTMLScriptElement
+    expect(script).toBeTruthy()
+
+    await act(async () => {
+      ;(window as any).initGoogleMaps?.()
+    })
+
+    await waitFor(() => expect(mapCtor).toHaveBeenCalled())
+    const mapOptions = mapCtor.mock.calls[0]?.[1] as Record<string, unknown>
+    expect(mapOptions.mapId).toBe('test-map-id')
   })
 })
