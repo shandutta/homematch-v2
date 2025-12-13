@@ -352,12 +352,13 @@ async function main() {
     if (args.cursor && args.limit != null) {
       const loaded = await readOffsetCursorState(cursorFilePath)
       const mismatch =
-        loaded &&
-        (loaded.supabaseHost !== supabaseHost || loaded.minPrice !== args.minPrice)
+        loaded != null &&
+        (loaded.supabaseHost !== supabaseHost ||
+          loaded.minPrice !== args.minPrice)
 
       if (args.resetCursor || mismatch) {
         cursorOffset = 0
-        if (mismatch) {
+        if (mismatch && loaded) {
           console.warn(
             `[backfill-vibes-resume] Cursor mismatch (stateHost=${loaded.supabaseHost || 'unknown'} stateMinPrice=${loaded.minPrice}); resetting offset to 0`
           )
@@ -440,13 +441,20 @@ async function main() {
 
       if (args.cursor && args.limit != null) {
         const prevOffset = cursorOffset
-        cursorOffset = result.nextOffset ?? cursorOffset
+        const shouldAdvanceCursor = result.attempted === 0 || result.success > 0
 
-        if (result.attempted > 0 && cursorOffset === prevOffset) {
+        if (shouldAdvanceCursor) {
+          cursorOffset = result.nextOffset ?? cursorOffset
+          if (result.attempted > 0 && cursorOffset === prevOffset) {
+            console.warn(
+              `[backfill-vibes-resume] Cursor did not advance (offset=${cursorOffset}); stopping to avoid reprocessing the same page.`
+            )
+            break
+          }
+        } else {
           console.warn(
-            `[backfill-vibes-resume] Cursor did not advance (offset=${cursorOffset}); stopping to avoid reprocessing the same page.`
+            `[backfill-vibes-resume] No successes this run; keeping cursor at offset=${cursorOffset} so reruns retry the same batch.`
           )
-          break
         }
 
         await writeOffsetCursorState(cursorFilePath, {
@@ -457,7 +465,9 @@ async function main() {
           supabaseHost,
           minPrice: args.minPrice,
         })
-        console.log(`[backfill-vibes-resume] Cursor advanced to offset=${cursorOffset}`)
+        console.log(
+          `[backfill-vibes-resume] Cursor advanced to offset=${cursorOffset}`
+        )
       }
 
       if (args.limit == null) {
