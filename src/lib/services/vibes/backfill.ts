@@ -28,6 +28,7 @@ export type BackfillVibesArgs = {
   forceImages: boolean
   minImages: number
   imageDelayMs: number
+  offset?: number
   minPrice?: number
 }
 
@@ -46,6 +47,7 @@ export type BackfillVibesResult = {
   totalCostUsd: number
   totalTimeMs: number
   failures: BackfillVibesFailure[]
+  nextOffset: number | null
 }
 
 export type BackfillVibesDeps = {
@@ -126,13 +128,15 @@ export async function backfillVibes(
   const failures: BackfillVibesFailure[] = []
 
   const pageSize = Math.max(args.batchSize * 5, 50)
-  let offset = 0
+  let offset =
+    Number.isFinite(args.offset) && (args.offset ?? 0) > 0 ? args.offset! : 0
 
   logger.log(
-    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, propertyIds=${args.propertyIds?.length ?? 0}, refreshImages=${args.refreshImages}, minImages=${args.minImages})`
+    `[backfill-vibes] Starting (limit=${args.limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, propertyIds=${args.propertyIds?.length ?? 0}, refreshImages=${args.refreshImages}, minImages=${args.minImages}, offset=${args.propertyIds ? 'n/a' : offset})`
   )
 
   while (attempted < target) {
+    const pageStartOffset = offset
     const { data, error } = args.propertyIds
       ? await deps.supabase
           .from('properties')
@@ -144,7 +148,7 @@ export async function backfillVibes(
           .not('zpid', 'is', null)
           .gte('price', minPrice)
           .order('created_at', { ascending: false })
-          .range(offset, offset + pageSize - 1)
+          .range(pageStartOffset, pageStartOffset + pageSize - 1)
 
     if (error) {
       throw new Error(`Failed to read properties: ${error.message}`)
@@ -152,7 +156,7 @@ export async function backfillVibes(
 
     const properties = (data || []) as Property[]
     if (properties.length === 0) break
-    if (!args.propertyIds) offset += pageSize
+    const pageIndexById = new Map(properties.map((p, idx) => [p.id, idx]))
 
     const ids = properties.map((p) => p.id)
     const propertyById = new Map(properties.map((p) => [p.id, p]))
@@ -180,6 +184,9 @@ export async function backfillVibes(
     const newlySkipped = args.force ? 0 : properties.length - toProcess.length
     skipped += newlySkipped
 
+    let lastProcessedIndexInPage: number | null = null
+    let processedInPage = 0
+
     for (const batch of chunkArray(toProcess, args.batchSize)) {
       if (attempted >= target) break
 
@@ -188,6 +195,12 @@ export async function backfillVibes(
       if (batchLimited.length === 0) break
 
       attempted += batchLimited.length
+      processedInPage += batchLimited.length
+      const last = batchLimited[batchLimited.length - 1]
+      const lastIdx = pageIndexById.get(last.id)
+      if (typeof lastIdx === 'number') {
+        lastProcessedIndexInPage = lastIdx
+      }
       logger.log(
         `[backfill-vibes] Generating batch of ${batchLimited.length} (attempted ${attempted}/${args.propertyIds?.length ?? args.limit ?? 'all'})`
       )
@@ -331,6 +344,18 @@ export async function backfillVibes(
       if (attempted >= target) break
     }
 
+    if (!args.propertyIds) {
+      if (
+        attempted >= target &&
+        processedInPage < toProcess.length &&
+        lastProcessedIndexInPage != null
+      ) {
+        offset = pageStartOffset + lastProcessedIndexInPage + 1
+      } else {
+        offset = pageStartOffset + properties.length
+      }
+    }
+
     if (args.propertyIds) break
   }
 
@@ -351,5 +376,6 @@ export async function backfillVibes(
     totalCostUsd,
     totalTimeMs,
     failures,
+    nextOffset: args.propertyIds ? null : offset,
   }
 }

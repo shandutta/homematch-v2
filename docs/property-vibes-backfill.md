@@ -44,7 +44,7 @@ ENV_FILE=.env.prod pnpm exec tsx scripts/report-vibes-backfill.ts --limit=10
 Recommended pattern (resume-friendly):
 
 ```bash
-ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes.ts --limit=200 --force=false --refreshImages=false
+ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes.ts --limit=200
 ```
 
 Then repeat until the “missing” count in `scripts/property-vibes-review.sql` hits 0.
@@ -52,8 +52,35 @@ Then repeat until the “missing” count in `scripts/property-vibes-review.sql`
 Or run the loop automatically until completion (writes `.logs/backfill-vibes-resume-report.json`):
 
 ```bash
-ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes-resume.ts --limit=200 --force=false --refreshImages=false
+ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes-resume.ts --limit=200
 ```
+
+### Full refresh (regen vibes + refresh images)
+
+This walks through the entire DB without reprocessing the same newest rows, using an offset cursor stored at `.logs/backfill-vibes-resume-state.json`:
+
+```bash
+ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes-resume.ts --limit=200 --fullRefresh=true
+```
+
+Optional knobs:
+
+- Raise the “needs more images” threshold: `--minImages=30`
+- Force a refetch even when images look complete: `--forceImages=true`
+- Restart from the beginning: `--resetCursor=true`
+
+## Tail logs (recommended)
+
+The backfill scripts write a real log file you can `tail` (no `tee` needed):
+
+```bash
+tail -F .logs/backfill-vibes-resume.log
+```
+
+Optional:
+
+- Change the log path with `--logFile=.logs/my-run.log`
+- If you break commands across lines, use `\` for line continuation (otherwise bash treats the next line like a new command).
 
 ## VPS cron (suggested)
 
