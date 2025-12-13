@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import type { Property, Neighborhood } from '@/lib/schemas/property'
+import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 
 // Mock framer-motion to avoid animation complexity in tests
 jest.mock('framer-motion', () => ({
@@ -88,6 +89,43 @@ const mockNeighborhood: Neighborhood = {
   created_at: '2024-01-01T00:00:00Z',
 }
 
+const mockVibes: PropertyVibes = {
+  id: '123e4567-e89b-12d3-a456-426614174999',
+  property_id: mockProperty.id,
+  tagline: 'A bright, modern home with a real workspace.',
+  vibe_statement:
+    'Work in the quiet office, then cook on the big island and open the sliders to the deck.',
+  feature_highlights: [],
+  lifestyle_fits: [
+    {
+      category: 'Remote Work Ready',
+      score: 0.9,
+      reason: 'Dedicated office space and strong natural light for long days.',
+    },
+  ],
+  suggested_tags: ["Chef's Kitchen", 'Remote Work Ready', 'Indoor-Outdoor Flow'],
+  emotional_hooks: [
+    'That island is where laptops and dinner prep share space.',
+    'The deck makes weeknights feel like weekends.',
+  ],
+  primary_vibes: [{ name: 'Clean Lines, Warm Light', intensity: 0.8, source: 'both' }],
+  aesthetics: {
+    lightingQuality: 'natural_abundant',
+    colorPalette: ['warm gray', 'white trim'],
+    architecturalStyle: 'Updated contemporary with open-plan living',
+    overallCondition: 'pristine',
+  },
+  input_data: null,
+  raw_output: null,
+  model_used: 'qwen/qwen3-vl-8b-instruct',
+  images_analyzed: [],
+  source_data_hash: 'test-hash',
+  generation_cost_usd: 0.003,
+  confidence: 0.85,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+}
+
 describe('StorytellingDescription', () => {
   it('renders storytelling description for regular properties', () => {
     render(
@@ -104,6 +142,24 @@ describe('StorytellingDescription', () => {
       (p) => p.textContent && p.textContent.length > 20
     )
     expect(hasDescription).toBe(true)
+  })
+
+  it('uses LLM vibes when provided', () => {
+    render(
+      <StorytellingDescription
+        property={mockProperty}
+        neighborhood={mockNeighborhood}
+        vibes={mockVibes}
+        isMutualLike={false}
+        variant="full"
+        showLifestyleTags={true}
+        showFutureVision={true}
+      />
+    )
+
+    expect(screen.getByText(mockVibes.tagline)).toBeInTheDocument()
+    expect(screen.getByText(mockVibes.vibe_statement)).toBeInTheDocument()
+    expect(screen.getByText("Chef's Kitchen")).toBeInTheDocument()
   })
 
   it('renders different description for mutual likes', () => {
