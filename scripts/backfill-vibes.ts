@@ -203,97 +203,99 @@ async function main() {
 
   const fileLogger = installFileLogger(args.logFile)
 
-  if (args.propertyIds) {
-    const invalid = args.propertyIds.filter((id) => !UUID_RE.test(id))
-    if (invalid.length > 0) {
-      throw new Error(
-        `Invalid --propertyIds value(s): ${invalid.join(', ')} (expected UUIDs)`
+  try {
+    if (args.propertyIds) {
+      const invalid = args.propertyIds.filter((id) => !UUID_RE.test(id))
+      if (invalid.length > 0) {
+        throw new Error(
+          `Invalid --propertyIds value(s): ${invalid.join(', ')} (expected UUIDs)`
+        )
+      }
+    }
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new Error(`OPENROUTER_API_KEY not set; add to ${envFile}`)
+    }
+
+    const supabaseHost = safeHost(process.env.SUPABASE_URL)
+    console.log(
+      `[backfill-vibes] Env loaded from ${envFile} (supabaseHost=${supabaseHost || 'unknown'})`
+    )
+
+    const RAPIDAPI_HOST =
+      process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
+    const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
+
+    if (args.refreshImages && !RAPIDAPI_KEY) {
+      throw new Error('RAPIDAPI_KEY not set; required for --refreshImages=true')
+    }
+
+    const supabase = createStandaloneClient()
+    const vibesService = createVibesService()
+
+    const result = await backfillVibes(args, {
+      supabase,
+      vibesService,
+      rapidApiHost: RAPIDAPI_HOST,
+      rapidApiKey: RAPIDAPI_KEY,
+      sleep,
+    })
+
+    try {
+      const reportDir = path.join(process.cwd(), '.logs')
+      await fs.mkdir(reportDir, { recursive: true })
+
+      const finishedAt = new Date().toISOString()
+      const stamp = finishedAt.replace(/[:.]/g, '-')
+      const report = {
+        finishedAt,
+        envFile,
+        supabaseHost,
+        args: {
+          limit: args.limit,
+          batchSize: args.batchSize,
+          delayMs: args.delayMs,
+          force: args.force,
+          propertyIdsCount: args.propertyIds?.length ?? 0,
+          refreshImages: args.refreshImages,
+          forceImages: args.forceImages,
+          minImages: args.minImages,
+          imageDelayMs: args.imageDelayMs,
+        },
+        attempted: result.attempted,
+        success: result.success,
+        failed: result.failed,
+        skipped: result.skipped,
+        totalCostUsd: result.totalCostUsd,
+        totalTimeMs: result.totalTimeMs,
+        failures: result.failures,
+      }
+
+      const latestPath = path.join(reportDir, 'backfill-vibes-report.json')
+      const datedPath = path.join(
+        reportDir,
+        `backfill-vibes-report-${stamp}.json`
+      )
+      await fs.writeFile(latestPath, JSON.stringify(report, null, 2))
+      await fs.writeFile(datedPath, JSON.stringify(report, null, 2))
+
+      console.log(
+        `[backfill-vibes] Report written: ${path.relative(process.cwd(), latestPath)}`
+      )
+      console.log(
+        `[backfill-vibes] Report archived: ${path.relative(process.cwd(), datedPath)}`
+      )
+    } catch (err) {
+      console.warn(
+        `[backfill-vibes] Failed to write report: ${err instanceof Error ? err.message : String(err)}`
       )
     }
-  }
-
-  if (!process.env.OPENROUTER_API_KEY) {
-    throw new Error(`OPENROUTER_API_KEY not set; add to ${envFile}`)
-  }
-
-  const supabaseHost = safeHost(process.env.SUPABASE_URL)
-  console.log(
-    `[backfill-vibes] Env loaded from ${envFile} (supabaseHost=${supabaseHost || 'unknown'})`
-  )
-
-  const RAPIDAPI_HOST =
-    process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
-  const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
-
-  if (args.refreshImages && !RAPIDAPI_KEY) {
-    throw new Error('RAPIDAPI_KEY not set; required for --refreshImages=true')
-  }
-
-  const supabase = createStandaloneClient()
-  const vibesService = createVibesService()
-
-  const result = await backfillVibes(args, {
-    supabase,
-    vibesService,
-    rapidApiHost: RAPIDAPI_HOST,
-    rapidApiKey: RAPIDAPI_KEY,
-    sleep,
-  })
-
-  try {
-    const reportDir = path.join(process.cwd(), '.logs')
-    await fs.mkdir(reportDir, { recursive: true })
-
-    const finishedAt = new Date().toISOString()
-    const stamp = finishedAt.replace(/[:.]/g, '-')
-    const report = {
-      finishedAt,
-      envFile,
-      supabaseHost,
-      args: {
-        limit: args.limit,
-        batchSize: args.batchSize,
-        delayMs: args.delayMs,
-        force: args.force,
-        propertyIdsCount: args.propertyIds?.length ?? 0,
-        refreshImages: args.refreshImages,
-        forceImages: args.forceImages,
-        minImages: args.minImages,
-        imageDelayMs: args.imageDelayMs,
-      },
-      attempted: result.attempted,
-      success: result.success,
-      failed: result.failed,
-      skipped: result.skipped,
-      totalCostUsd: result.totalCostUsd,
-      totalTimeMs: result.totalTimeMs,
-      failures: result.failures,
-    }
-
-    const latestPath = path.join(reportDir, 'backfill-vibes-report.json')
-    const datedPath = path.join(
-      reportDir,
-      `backfill-vibes-report-${stamp}.json`
-    )
-    await fs.writeFile(latestPath, JSON.stringify(report, null, 2))
-    await fs.writeFile(datedPath, JSON.stringify(report, null, 2))
-
-    console.log(
-      `[backfill-vibes] Report written: ${path.relative(process.cwd(), latestPath)}`
-    )
-    console.log(
-      `[backfill-vibes] Report archived: ${path.relative(process.cwd(), datedPath)}`
-    )
   } catch (err) {
-    console.warn(
-      `[backfill-vibes] Failed to write report: ${err instanceof Error ? err.message : String(err)}`
-    )
+    console.error('[backfill-vibes] Fatal error:', err)
+    process.exitCode = 1
+  } finally {
+    await fileLogger.close()
   }
-
-  await fileLogger.close()
 }
 
-main().catch((err) => {
-  console.error('[backfill-vibes] Fatal error:', err)
-  process.exit(1)
-})
+void main()
