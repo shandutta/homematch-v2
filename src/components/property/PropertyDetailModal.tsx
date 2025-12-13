@@ -189,6 +189,8 @@ export function PropertyDetailModal({
               variant="full"
               showLifestyleTags={true}
               showFutureVision={true}
+              showVibeStatement={false}
+              showEmotionalHooks={false}
             />
           </div>
 
