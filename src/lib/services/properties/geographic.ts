@@ -159,6 +159,9 @@ function transformPropertyWithDistanceToProperty(
     coordinates: null,
     created_at: currentTimestamp,
     updated_at: currentTimestamp,
+    zillow_images_refreshed_at: null,
+    zillow_images_refreshed_count: null,
+    zillow_images_refresh_status: null,
   }
 }
 

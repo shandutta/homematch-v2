@@ -227,11 +227,29 @@ export async function backfillVibes(
             const current = Array.isArray(property.images)
               ? property.images
               : []
+            const hasZillowPhotos = current.some(
+              (u) => typeof u === 'string' && isZillowStaticImageUrl(u)
+            )
             const looksComplete =
-              current.length >= args.minImages &&
-              current.some(
-                (u) => typeof u === 'string' && isZillowStaticImageUrl(u)
+              current.length >= args.minImages && hasZillowPhotos
+
+            const refreshedAt = property.zillow_images_refreshed_at
+            const refreshedCount = property.zillow_images_refreshed_count
+            const refreshedStatus = property.zillow_images_refresh_status
+
+            const hasRefreshMarker =
+              typeof refreshedAt === 'string' && refreshedAt.length > 0
+            const shouldSkipDueToMarker =
+              !args.forceImages &&
+              hasRefreshMarker &&
+              (hasZillowPhotos || refreshedStatus === 'no_images')
+
+            if (shouldSkipDueToMarker) {
+              logger.log(
+                `[backfill-vibes] [images] Skip refresh zpid=${zpid} property=${property.id}: marker=(${refreshedStatus ?? 'unknown'}, ${refreshedCount ?? 'null'} imgs, ${refreshedAt})`
               )
+              return
+            }
 
             if (looksComplete && !args.forceImages) return
 
@@ -248,39 +266,91 @@ export async function backfillVibes(
             const nextImages =
               zillowPhotos.length > 0 ? zillowPhotos : nonStreetView
 
-            if (nextImages.length === 0) {
-              logger.log(
-                `[backfill-vibes] [images] zpid=${zpid} no usable photos (skipping image update)`
-              )
-              return
-            }
-
             const currentMatches =
               current.length === nextImages.length &&
               current.every((u, idx) => u === nextImages[idx])
-            if (currentMatches) return
+            const markerStatus: 'ok' | 'no_images' =
+              nextImages.length === 0 ? 'no_images' : 'ok'
+            const nowIso = now().toISOString()
+
+            const markerAlreadySet =
+              typeof property.zillow_images_refreshed_at === 'string' &&
+              property.zillow_images_refreshed_at.length > 0 &&
+              property.zillow_images_refreshed_count === nextImages.length &&
+              property.zillow_images_refresh_status === markerStatus
+
+            if (currentMatches && markerAlreadySet) return
+
+            const updatePayloadBase = {
+              updated_at: nowIso,
+              zillow_images_refreshed_at: nowIso,
+              zillow_images_refreshed_count: nextImages.length,
+              zillow_images_refresh_status: markerStatus,
+            }
+            const updatePayload =
+              nextImages.length > 0 && !currentMatches
+                ? { ...updatePayloadBase, images: nextImages }
+                : updatePayloadBase
 
             const { error: updateError } = await deps.supabase
               .from('properties')
-              .update({
-                images: nextImages,
-                updated_at: now().toISOString(),
-              })
+              .update(updatePayload)
               .eq('id', property.id)
 
-            if (updateError) {
+            if (updateError?.code === '42703') {
+              // Migration not applied yet; fall back to legacy update.
+              if (nextImages.length > 0 && !currentMatches) {
+                const { error: legacyError } = await deps.supabase
+                  .from('properties')
+                  .update({
+                    images: nextImages,
+                    updated_at: nowIso,
+                  })
+                  .eq('id', property.id)
+
+                if (legacyError) {
+                  logger.warn(
+                    `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${legacyError.message}`
+                  )
+                  return
+                }
+
+                property.images = nextImages
+              } else {
+                logger.warn(
+                  `[backfill-vibes] [images] Marker columns missing in DB (run Supabase migration). Skipping marker update for zpid=${zpid} property=${property.id}.`
+                )
+                return
+              }
+            } else if (updateError) {
               logger.warn(
                 `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${updateError.message}`
               )
               return
+            } else {
+              if (nextImages.length > 0 && !currentMatches) {
+                property.images = nextImages
+              }
+              property.zillow_images_refreshed_at = nowIso
+              property.zillow_images_refreshed_count = nextImages.length
+              property.zillow_images_refresh_status = markerStatus
             }
 
-            property.images = nextImages
-            const note =
-              current.length === nextImages.length ? ' (content changed)' : ''
-            logger.log(
-              `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}${note}`
-            )
+            if (nextImages.length === 0) {
+              logger.log(
+                `[backfill-vibes] [images] Refreshed zpid=${zpid} property=${property.id}: no usable photos (marked no_images)`
+              )
+            } else if (currentMatches) {
+              logger.log(
+                `[backfill-vibes] [images] Refreshed zpid=${zpid} property=${property.id}: images unchanged (marked ok, ${nextImages.length} imgs)`
+              )
+            } else {
+              const note =
+                current.length === nextImages.length ? ' (content changed)' : ''
+              logger.log(
+                `[backfill-vibes] [images] Updated zpid=${zpid} property=${property.id}: ${current.length} → ${nextImages.length}${note}`
+              )
+            }
 
             if (args.imageDelayMs > 0) {
               await sleep(args.imageDelayMs)

@@ -184,6 +184,9 @@ export type Database = {
           updated_at: string | null
           year_built: number | null
           zip_code: string
+          zillow_images_refreshed_at: string | null
+          zillow_images_refreshed_count: number | null
+          zillow_images_refresh_status: 'ok' | 'no_images' | null
           zpid: string | null
         }
         Insert: {
@@ -210,6 +213,9 @@ export type Database = {
           updated_at?: string | null
           year_built?: number | null
           zip_code: string
+          zillow_images_refreshed_at?: string | null
+          zillow_images_refreshed_count?: number | null
+          zillow_images_refresh_status?: 'ok' | 'no_images' | null
           zpid?: string | null
         }
         Update: {
@@ -236,6 +242,9 @@ export type Database = {
           updated_at?: string | null
           year_built?: number | null
           zip_code?: string
+          zillow_images_refreshed_at?: string | null
+          zillow_images_refreshed_count?: number | null
+          zillow_images_refresh_status?: 'ok' | 'no_images' | null
           zpid?: string | null
         }
         Relationships: [

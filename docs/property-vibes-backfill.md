@@ -63,6 +63,8 @@ This walks through the entire DB without reprocessing the same newest rows, usin
 ENV_FILE=.env.prod pnpm exec tsx scripts/backfill-vibes-resume.ts --limit=200 --fullRefresh=true
 ```
 
+Prereq (recommended): apply the migration `supabase/migrations/20251213034000_add_zillow_images_refresh_marker.sql` so properties with small Zillow galleries don’t re-hit RapidAPI forever.
+
 Optional knobs:
 
 - Raise the “needs more images” threshold: `--minImages=30`

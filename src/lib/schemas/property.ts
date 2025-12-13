@@ -71,6 +71,12 @@ export const propertySchema = z.object({
   is_active: z.boolean().default(true).nullable(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
+  zillow_images_refreshed_at: z.string().datetime().nullable().optional(),
+  zillow_images_refreshed_count: z.number().int().min(0).nullable().optional(),
+  zillow_images_refresh_status: z
+    .enum(['ok', 'no_images'])
+    .nullable()
+    .optional(),
 })
 
 export const propertyInsertSchema = propertySchema

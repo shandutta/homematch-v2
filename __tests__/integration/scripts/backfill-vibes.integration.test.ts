@@ -279,7 +279,7 @@ describe.sequential('Integration: backfill-vibes', () => {
     expect(byId.get(p2.id)).toContain(p2.id.slice(0, 8))
   })
 
-  it('refreshImages updates properties.images and passes updated images into generation', async () => {
+  it('refreshImages updates properties.images, sets a refresh marker, and skips repeated refreshes for small galleries', async () => {
     const property = makePropertyInsert({
       images: ['https://example.com/seed.jpg'],
     })
@@ -296,6 +296,7 @@ describe.sequential('Integration: backfill-vibes', () => {
     ]
 
     const mockService = new MockVibesService()
+    let fetchCalls = 0
 
     const result = await backfillVibes(
       {
@@ -314,7 +315,10 @@ describe.sequential('Integration: backfill-vibes', () => {
         vibesService: mockService,
         rapidApiKey: 'test',
         rapidApiHost: 'us-housing-market-data1.p.rapidapi.com',
-        fetchZillowImageUrls: async () => fetched,
+        fetchZillowImageUrls: async () => {
+          fetchCalls++
+          return fetched
+        },
         logger: silentLogger,
       }
     )
@@ -322,10 +326,13 @@ describe.sequential('Integration: backfill-vibes', () => {
     expect(result.success).toBe(1)
     expect(mockService.calls).toHaveLength(1)
     expect(mockService.calls[0].imageCount).toBe(11)
+    expect(fetchCalls).toBe(1)
 
     const { data: refreshed, error: refreshedError } = await supabaseAdmin
       .from('properties')
-      .select('images')
+      .select(
+        'images, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status'
+      )
       .eq('id', property.id)
       .single()
 
@@ -334,6 +341,37 @@ describe.sequential('Integration: backfill-vibes', () => {
     expect(
       refreshed.images?.every((u) => u.includes('photos.zillowstatic.com'))
     ).toBe(true)
+    expect(refreshed.zillow_images_refreshed_at).toBeTruthy()
+    expect(refreshed.zillow_images_refreshed_count).toBe(11)
+    expect(refreshed.zillow_images_refresh_status).toBe('ok')
+
+    // Run again with a higher minImages threshold; marker should prevent repeated RapidAPI refresh.
+    await backfillVibes(
+      {
+        limit: 10,
+        batchSize: 10,
+        delayMs: 0,
+        force: true,
+        propertyIds: [property.id],
+        refreshImages: true,
+        forceImages: false,
+        minImages: 50,
+        imageDelayMs: 0,
+      },
+      {
+        supabase: supabaseAdmin,
+        vibesService: mockService,
+        rapidApiKey: 'test',
+        rapidApiHost: 'us-housing-market-data1.p.rapidapi.com',
+        fetchZillowImageUrls: async () => {
+          fetchCalls++
+          return fetched
+        },
+        logger: silentLogger,
+      }
+    )
+
+    expect(fetchCalls).toBe(1)
   })
 
   it('records failures and does not upsert vibes for failed properties', async () => {
