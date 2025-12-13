@@ -3,6 +3,27 @@
 -- to quickly verify what changed and review the generated output.
 
 -- ============================================================================
+-- 0) Pick 10 properties to backfill (missing vibes)
+-- ============================================================================
+SELECT
+  p.id AS property_id,
+  p.zpid,
+  p.address,
+  p.city,
+  p.state,
+  p.price,
+  COALESCE(array_length(p.images, 1), 0) AS property_image_count,
+  p.created_at,
+  ('https://www.zillow.com/homedetails/' || p.zpid || '_zpid/') AS zillow_url
+FROM public.properties p
+LEFT JOIN public.property_vibes pv ON pv.property_id = p.id
+WHERE p.zpid IS NOT NULL
+  AND p.price >= 100000
+  AND pv.property_id IS NULL
+ORDER BY p.created_at DESC
+LIMIT 10;
+
+-- ============================================================================
 -- 1) Latest generated vibes (quick skim)
 -- ============================================================================
 SELECT
@@ -74,3 +95,15 @@ WHERE p.zpid IS NOT NULL
 ORDER BY COALESCE(array_length(p.images, 1), 0) ASC, p.updated_at DESC
 LIMIT 50;
 
+-- ============================================================================
+-- 4) Tag distribution (quick sanity check)
+-- ============================================================================
+-- Shows which tags are being emitted most often by the LLM.
+SELECT
+  tag,
+  COUNT(*) AS uses
+FROM public.property_vibes pv,
+  UNNEST(pv.suggested_tags) AS tag
+GROUP BY tag
+ORDER BY uses DESC, tag ASC
+LIMIT 200;
