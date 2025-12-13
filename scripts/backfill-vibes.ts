@@ -18,7 +18,8 @@
  */
 
 import { config } from 'dotenv'
-config({ path: '.env.local' })
+const envFile = process.env.ENV_FILE || '.env.local'
+config({ path: envFile })
 config()
 
 import fs from 'node:fs/promises'
@@ -26,6 +27,18 @@ import path from 'node:path'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService } from '@/lib/services/vibes'
 import { backfillVibes } from '@/lib/services/vibes/backfill'
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function safeHost(url?: string | null): string {
+  if (!url) return ''
+  try {
+    return new URL(url).host
+  } catch {
+    return ''
+  }
+}
 
 type Args = {
   limit: number | null
@@ -111,9 +124,23 @@ const sleep = (ms: number) =>
 async function main() {
   const args = parseArgs(process.argv)
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    throw new Error('OPENROUTER_API_KEY not set; add to .env.local')
+  if (args.propertyIds) {
+    const invalid = args.propertyIds.filter((id) => !UUID_RE.test(id))
+    if (invalid.length > 0) {
+      throw new Error(
+        `Invalid --propertyIds value(s): ${invalid.join(', ')} (expected UUIDs)`
+      )
+    }
   }
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error(`OPENROUTER_API_KEY not set; add to ${envFile}`)
+  }
+
+  const supabaseHost = safeHost(process.env.SUPABASE_URL)
+  console.log(
+    `[backfill-vibes] Env loaded from ${envFile} (supabaseHost=${supabaseHost || 'unknown'})`
+  )
 
   const RAPIDAPI_HOST =
     process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -137,25 +164,46 @@ async function main() {
   try {
     const reportDir = path.join(process.cwd(), '.logs')
     await fs.mkdir(reportDir, { recursive: true })
-    const reportPath = path.join(reportDir, 'backfill-vibes-report.json')
-    await fs.writeFile(
-      reportPath,
-      JSON.stringify(
-        {
-          finishedAt: new Date().toISOString(),
-          attempted: result.attempted,
-          success: result.success,
-          failed: result.failed,
-          skipped: result.skipped,
-          totalCostUsd: result.totalCostUsd,
-          failures: result.failures,
-        },
-        null,
-        2
-      )
+
+    const finishedAt = new Date().toISOString()
+    const stamp = finishedAt.replace(/[:.]/g, '-')
+    const report = {
+      finishedAt,
+      envFile,
+      supabaseHost,
+      args: {
+        limit: args.limit,
+        batchSize: args.batchSize,
+        delayMs: args.delayMs,
+        force: args.force,
+        propertyIdsCount: args.propertyIds?.length ?? 0,
+        refreshImages: args.refreshImages,
+        forceImages: args.forceImages,
+        minImages: args.minImages,
+        imageDelayMs: args.imageDelayMs,
+      },
+      attempted: result.attempted,
+      success: result.success,
+      failed: result.failed,
+      skipped: result.skipped,
+      totalCostUsd: result.totalCostUsd,
+      totalTimeMs: result.totalTimeMs,
+      failures: result.failures,
+    }
+
+    const latestPath = path.join(reportDir, 'backfill-vibes-report.json')
+    const datedPath = path.join(
+      reportDir,
+      `backfill-vibes-report-${stamp}.json`
+    )
+    await fs.writeFile(latestPath, JSON.stringify(report, null, 2))
+    await fs.writeFile(datedPath, JSON.stringify(report, null, 2))
+
+    console.log(
+      `[backfill-vibes] Report written: ${path.relative(process.cwd(), latestPath)}`
     )
     console.log(
-      `[backfill-vibes] Report written: ${path.relative(process.cwd(), reportPath)}`
+      `[backfill-vibes] Report archived: ${path.relative(process.cwd(), datedPath)}`
     )
   } catch (err) {
     console.warn(
