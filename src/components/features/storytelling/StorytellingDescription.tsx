@@ -47,6 +47,8 @@ interface StorytellingDescriptionProps {
   showNeighborhoodPerks?: boolean
   showFutureVision?: boolean
   showLifestyleTags?: boolean
+  showVibeStatement?: boolean
+  showEmotionalHooks?: boolean
   variant?: 'full' | 'compact' | 'minimal'
 }
 
@@ -216,7 +218,6 @@ const NEIGHBORHOOD_PERKS = {
   cultural: [
     'Surrounded by galleries, theaters, and cultural venues',
     'Rich arts scene perfect for date nights and exploration',
-    'Historic charm meets modern convenience',
     'Vibrant community with year-round festivals and events',
   ],
   quiet: [
@@ -730,6 +731,8 @@ export function StorytellingDescription({
   showNeighborhoodPerks = true,
   showFutureVision = true,
   showLifestyleTags = true,
+  showVibeStatement = true,
+  showEmotionalHooks = true,
   variant = 'full',
 }: StorytellingDescriptionProps) {
   // Use LLM-generated vibes when available, fallback to templates
@@ -886,7 +889,7 @@ export function StorytellingDescription({
       </MotionP>
 
       {/* Lifestyle Story - Only show if not a mutual like (avoid redundancy) */}
-      {!isMutualLike && (
+      {showVibeStatement && !isMutualLike && (
         <MotionP
           className="text-token-sm leading-relaxed text-slate-500 italic"
           initial={{ opacity: 0 }}
@@ -926,7 +929,7 @@ export function StorytellingDescription({
       )}
 
       {/* Emotional Hooks - LLM-generated lifestyle moments */}
-      {emotionalHooks && emotionalHooks.length > 0 && (
+      {showEmotionalHooks && emotionalHooks && emotionalHooks.length > 0 && (
         <MotionDiv
           className="space-y-1"
           initial={{ opacity: 0 }}
