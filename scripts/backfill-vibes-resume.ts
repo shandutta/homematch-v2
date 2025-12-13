@@ -10,15 +10,22 @@
 
 import { config } from 'dotenv'
 const envFile = process.env.ENV_FILE || '.env.local'
-config({ path: envFile })
+config({ path: envFile, override: true })
+for (const key of ['OPENROUTER_API_KEY', 'RAPIDAPI_KEY']) {
+  if (process.env[key] != null && process.env[key].trim() === '') {
+    delete process.env[key]
+  }
+}
 // Allow keeping API keys (OpenRouter/RapidAPI) in .env.local while running against prod Supabase via ENV_FILE=.env.prod.
 if (envFile !== '.env.local') {
   config({ path: '.env.local' })
 }
 config()
 
+import fsSync from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import util from 'node:util'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService } from '@/lib/services/vibes'
 import {
@@ -48,6 +55,7 @@ type Args = {
   maxRuns: number
   pauseMs: number
   stopAfterNoSuccessRuns: number
+  logFile: string
 }
 
 function parseArgs(argv: string[]): Args {
@@ -64,6 +72,7 @@ function parseArgs(argv: string[]): Args {
     maxRuns: 9999,
     pauseMs: 0,
     stopAfterNoSuccessRuns: 3,
+    logFile: path.join('.logs', 'backfill-vibes-resume.log'),
   }
 
   const raw: Record<string, string> = {}
@@ -97,6 +106,7 @@ function parseArgs(argv: string[]): Args {
   const stopAfterNoSuccessRuns = raw.stopAfterNoSuccessRuns
     ? Number(raw.stopAfterNoSuccessRuns)
     : defaults.stopAfterNoSuccessRuns
+  const logFile = raw.logFile?.trim() || defaults.logFile
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
@@ -124,11 +134,74 @@ function parseArgs(argv: string[]): Args {
       Number.isFinite(stopAfterNoSuccessRuns) && stopAfterNoSuccessRuns > 0
         ? stopAfterNoSuccessRuns
         : defaults.stopAfterNoSuccessRuns,
+    logFile,
   }
 }
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+function installFileLogger(logFilePath: string): {
+  close: () => Promise<void>
+} {
+  const resolvedPath = path.isAbsolute(logFilePath)
+    ? logFilePath
+    : path.join(process.cwd(), logFilePath)
+  const dir = path.dirname(resolvedPath)
+
+  fsSync.mkdirSync(dir, { recursive: true })
+  fsSync.appendFileSync(resolvedPath, '')
+
+  const stream = fsSync.createWriteStream(resolvedPath, { flags: 'a' })
+
+  const original = {
+    log: console.log.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+    info: console.info.bind(console),
+  }
+
+  function write(level: 'log' | 'warn' | 'error' | 'info', args: unknown[]) {
+    try {
+      stream.write(
+        `[${new Date().toISOString()}] [${level}] ${util.format(...args)}\n`
+      )
+    } catch {
+      // Ignore file write issues; never break the script.
+    }
+  }
+
+  console.log = (...args) => {
+    original.log(...args)
+    write('log', args)
+  }
+  console.warn = (...args) => {
+    original.warn(...args)
+    write('warn', args)
+  }
+  console.error = (...args) => {
+    original.error(...args)
+    write('error', args)
+  }
+  console.info = (...args) => {
+    original.info(...args)
+    write('info', args)
+  }
+
+  console.log(
+    `[backfill-vibes-resume] Logging to ${path.relative(process.cwd(), resolvedPath)}`
+  )
+
+  async function close() {
+    console.log = original.log
+    console.warn = original.warn
+    console.error = original.error
+    console.info = original.info
+    await new Promise<void>((resolve) => stream.end(() => resolve()))
+  }
+
+  return { close }
+}
 
 async function writeReport(report: Record<string, unknown>) {
   const reportDir = path.join(process.cwd(), '.logs')
@@ -156,6 +229,8 @@ async function writeReport(report: Record<string, unknown>) {
 
 async function main() {
   const args = parseArgs(process.argv)
+
+  const fileLogger = installFileLogger(args.logFile)
 
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error(`OPENROUTER_API_KEY not set; add to ${envFile}`)
@@ -295,6 +370,8 @@ async function main() {
   console.log(
     `[backfill-vibes-resume] cost=$${totals.totalCostUsd.toFixed(4)} wallTime=${(wallTimeMs / 1000).toFixed(1)}s`
   )
+
+  await fileLogger.close()
 }
 
 main().catch((err) => {
