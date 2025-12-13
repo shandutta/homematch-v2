@@ -8,6 +8,7 @@ import {
   useGoogleMapsLoader,
 } from '@/components/shared/SecureMapLoader'
 import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
+import { getGoogleMapsMapId } from '@/lib/maps/config'
 
 import type {
   GoogleMapInstance,
@@ -57,22 +58,28 @@ export function PropertyMap({
 
     try {
       const coords = parsedCoords!
+      const mapId = getGoogleMapsMapId()
 
       const map = new window.google.maps.Map(mapRef.current, {
         center: coords,
         zoom,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'transit',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-        ],
+        ...(mapId ? { mapId } : {}),
+        ...(!mapId
+          ? {
+              styles: [
+                {
+                  featureType: 'poi',
+                  elementType: 'labels',
+                  stylers: [{ visibility: 'off' }],
+                },
+                {
+                  featureType: 'transit',
+                  elementType: 'labels',
+                  stylers: [{ visibility: 'off' }],
+                },
+              ],
+            }
+          : {}),
         disableDefaultUI: false,
         zoomControl: true,
         mapTypeControl: false,
@@ -209,8 +216,9 @@ function createPropertyMarker({
   }
 
   try {
+    const mapId = getGoogleMapsMapId()
     const advancedMarkerCtor = maps.marker?.AdvancedMarkerElement
-    if (advancedMarkerCtor) {
+    if (mapId && advancedMarkerCtor) {
       return new advancedMarkerCtor({
         position: coords,
         map,
