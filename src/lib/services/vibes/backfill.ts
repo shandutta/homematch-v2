@@ -15,6 +15,9 @@ type Logger = {
   error: (...args: unknown[]) => void
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 export type BackfillVibesArgs = {
   limit: number | null
   batchSize: number
@@ -89,6 +92,15 @@ export async function backfillVibes(
   const logger = deps.logger ?? console
   const sleep = deps.sleep ?? defaultSleep
   const now = deps.now ?? (() => new Date())
+
+  if (args.propertyIds) {
+    const invalid = args.propertyIds.filter((id) => !UUID_RE.test(id))
+    if (invalid.length > 0) {
+      throw new Error(
+        `Invalid propertyIds: ${invalid.join(', ')} (expected UUIDs)`
+      )
+    }
+  }
 
   const minPrice = args.minPrice ?? 100000
   const rapidApiHost =

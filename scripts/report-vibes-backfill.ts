@@ -9,7 +9,8 @@
  */
 
 import { config } from 'dotenv'
-config({ path: '.env.local' })
+const envFile = process.env.ENV_FILE || '.env.local'
+config({ path: envFile })
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
@@ -51,6 +52,11 @@ function safeHost(url?: string | null): string {
 async function main() {
   const args = parseArgs(process.argv)
   const supabase = createStandaloneClient()
+
+  const supabaseHost = safeHost(process.env.SUPABASE_URL)
+  console.log(
+    `[report-vibes-backfill] Env loaded from ${envFile} (supabaseHost=${supabaseHost || 'unknown'})`
+  )
 
   const { data: properties, error: propsError } = await supabase
     .from('properties')
