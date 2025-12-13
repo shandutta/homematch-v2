@@ -68,7 +68,7 @@ export function PropertyCard({
   disableDetailModal = false,
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
-  const { data: vibes } = usePropertyVibes(property.id)
+  const { data: vibes } = usePropertyVibes(showStory ? property.id : undefined)
   const hasMapCoordinates = Boolean(property.coordinates)
   const propertyDetail = usePropertyDetailSafe()
 
