@@ -48,7 +48,7 @@ export interface CompletionResponse {
     }
     finish_reason: string
   }>
-  usage: {
+  usage?: {
     prompt_tokens: number
     completion_tokens: number
     total_tokens: number
@@ -127,7 +127,7 @@ export class OpenRouterClient {
 
     if (process.env.NODE_ENV === 'development') {
       console.log(
-        `[OpenRouter] Model: ${model}, Tokens: ${response.usage.total_tokens}, Cost: $${usage.estimatedCostUsd.toFixed(4)}, Time: ${Date.now() - startTime}ms`
+        `[OpenRouter] Model: ${model}, Tokens: ${usage.totalTokens}, Cost: $${usage.estimatedCostUsd.toFixed(4)}, Time: ${Date.now() - startTime}ms`
       )
     }
 
@@ -250,13 +250,28 @@ export class OpenRouterClient {
    * Calculate usage and cost from token counts
    */
   private calculateUsage(
-    usage: {
-      prompt_tokens: number
-      completion_tokens: number
-      total_tokens: number
-    },
+    usage:
+      | {
+          prompt_tokens: number
+          completion_tokens: number
+          total_tokens: number
+        }
+      | null
+      | undefined,
     model: string
   ): UsageInfo {
+    if (!usage) {
+      console.warn(
+        `[OpenRouter] Missing token usage for model=${model}; cost will be recorded as $0.00`
+      )
+      return {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+        estimatedCostUsd: 0,
+      }
+    }
+
     const pricing = MODEL_PRICING[model] || MODEL_PRICING['openai/gpt-4o-mini']
 
     const inputCost = (usage.prompt_tokens / 1_000_000) * pricing.input
