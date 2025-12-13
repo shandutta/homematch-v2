@@ -24,6 +24,18 @@ ORDER BY p.created_at DESC
 LIMIT 10;
 
 -- ============================================================================
+-- 0b) Coverage snapshot (how many are left?)
+-- ============================================================================
+SELECT
+  COUNT(*) FILTER (WHERE pv.property_id IS NOT NULL) AS properties_with_vibes,
+  COUNT(*) FILTER (WHERE pv.property_id IS NULL) AS properties_missing_vibes,
+  COUNT(*) AS total_properties_considered
+FROM public.properties p
+LEFT JOIN public.property_vibes pv ON pv.property_id = p.id
+WHERE p.zpid IS NOT NULL
+  AND p.price >= 100000;
+
+-- ============================================================================
 -- 1) Latest generated vibes (quick skim)
 -- ============================================================================
 SELECT
