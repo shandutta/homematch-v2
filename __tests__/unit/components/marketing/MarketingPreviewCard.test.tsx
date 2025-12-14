@@ -59,7 +59,7 @@ describe('MarketingPreviewCard', () => {
 
   test('renders property image with alt text', () => {
     render(<MarketingPreviewCard />)
-    expect(screen.getByAltText('Sample property interior')).toBeInTheDocument()
+    expect(screen.getByAltText('Sample home')).toBeInTheDocument()
   })
 
   test('renders property price', () => {

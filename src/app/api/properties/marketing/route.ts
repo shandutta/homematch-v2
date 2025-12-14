@@ -37,8 +37,8 @@ const MARKETING_CARDS: MarketingCard[] = [
     bedrooms: 4,
     bathrooms: 3,
     address: 'Palo Alto, CA',
-    latitude: null,
-    longitude: null,
+    latitude: 37.4419,
+    longitude: -122.143,
   },
   {
     zpid: 'mock-2',
@@ -47,8 +47,8 @@ const MARKETING_CARDS: MarketingCard[] = [
     bedrooms: 3,
     bathrooms: 2,
     address: 'Mountain View, CA',
-    latitude: null,
-    longitude: null,
+    latitude: 37.3861,
+    longitude: -122.0839,
   },
   {
     zpid: 'mock-3',
@@ -57,8 +57,8 @@ const MARKETING_CARDS: MarketingCard[] = [
     bedrooms: 3,
     bathrooms: 2,
     address: 'Sunnyvale, CA',
-    latitude: null,
-    longitude: null,
+    latitude: 37.3688,
+    longitude: -122.0363,
   },
 ]
 
