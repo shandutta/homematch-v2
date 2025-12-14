@@ -1,16 +1,42 @@
-import { NextResponse } from 'next/server'
-import { createStandaloneClient } from '@/lib/supabase/standalone'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
 
-export async function GET(req: Request) {
-  const url = new URL(req.url)
+function parsePositiveInt(value: string | null, fallback: number): number {
+  const parsed = Number.parseInt(value ?? '', 10)
+  if (!Number.isFinite(parsed)) return fallback
+  return Math.max(1, parsed)
+}
+
+function parseNonNegativeInt(value: string | null, fallback: number): number {
+  const parsed = Number.parseInt(value ?? '', 10)
+  if (!Number.isFinite(parsed)) return fallback
+  return Math.max(0, parsed)
+}
+
+export async function GET(request: NextRequest) {
+  const hasRequestContext =
+    typeof request?.headers?.get === 'function' &&
+    typeof request?.cookies?.getAll === 'function'
+  const supabase = createApiClient(hasRequestContext ? request : undefined)
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const url = new URL(request.url)
   const neighborhoodId = url.searchParams.get('neighborhoodId')
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100)
-  const offset = parseInt(url.searchParams.get('offset') || '0')
+  const limit = Math.min(
+    parsePositiveInt(url.searchParams.get('limit'), 20),
+    100
+  )
+  const offset = parseNonNegativeInt(url.searchParams.get('offset'), 0)
 
-  const supabase = createStandaloneClient()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query: any = (supabase as any)
+  let query = supabase
     .from('neighborhood_vibes')
     .select(
       `

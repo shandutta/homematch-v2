@@ -251,6 +251,18 @@ export function PropertyCard({
                 <p className="text-hm-stone-400 text-xs">
                   {neighborhoodVibes.vibe_statement}
                 </p>
+                {neighborhoodVibes.suggested_tags?.length ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {neighborhoodVibes.suggested_tags.slice(0, 4).map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/90"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
           )}
