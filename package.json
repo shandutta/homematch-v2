@@ -175,7 +175,7 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20 <26"
   },
   "simple-git-hooks": {
     "pre-commit": "node scripts/pre-commit-hook.js",
