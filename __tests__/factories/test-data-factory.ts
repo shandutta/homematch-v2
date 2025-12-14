@@ -122,6 +122,11 @@ export const createMockNeighborhood = (
   median_price: faker.number.int({ min: 200000, max: 2000000 }),
   walk_score: faker.number.int({ min: 0, max: 100 }),
   transit_score: faker.number.int({ min: 0, max: 100 }),
+  vibe_tagline: null,
+  vibe_summary: null,
+  vibe_keywords: null,
+  vibe_generated_at: null,
+  vibe_model: null,
   ...overrides,
 })
 

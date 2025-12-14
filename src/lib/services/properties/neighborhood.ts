@@ -15,7 +15,10 @@ import type {
   ISupabaseClientFactory,
 } from '@/lib/services/interfaces'
 import { BaseService } from '@/lib/services/base'
-import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
+import {
+  createTypedRPC,
+  type NeighborhoodBounds,
+} from '@/lib/services/supabase-rpc-types'
 
 export class NeighborhoodService
   extends BaseService
@@ -195,7 +198,7 @@ export class NeighborhoodService
   async getNeighborhoodsInBounds(
     northEast: { lat: number; lng: number },
     southWest: { lat: number; lng: number }
-  ): Promise<Neighborhood[]> {
+  ): Promise<NeighborhoodBounds[]> {
     this.validateRequired({ northEast, southWest })
 
     return this.executeArrayQuery(

@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useMemo, useState, useCallback } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { Neighborhood } from '@/lib/schemas/property'
-import { Bed, Bath, Square, ExternalLink, Heart, X } from 'lucide-react'
+import { Bed, Bath, Square, ExternalLink, Heart, X, MapPin } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
@@ -71,12 +71,19 @@ export function PropertyCard({
   const { data: vibes } = usePropertyVibes(property.id)
   const hasMapCoordinates = Boolean(property.coordinates)
   const propertyDetail = usePropertyDetailSafe()
+  const neighborhoodData =
+    neighborhood ||
+    (property as Property & { neighborhood?: Neighborhood | null })
+      .neighborhood ||
+    (property as Property & { neighborhoods?: Neighborhood | null })
+      .neighborhoods ||
+    null
 
   const handleCardClick = useCallback(() => {
     if (!disableDetailModal && propertyDetail) {
-      propertyDetail.openPropertyDetail(property, neighborhood)
+      propertyDetail.openPropertyDetail(property, neighborhoodData || undefined)
     }
-  }, [disableDetailModal, propertyDetail, property, neighborhood])
+  }, [disableDetailModal, propertyDetail, property, neighborhoodData])
 
   // Check if this property is a mutual like
   const isMutualLike = mutualLikes.some(
@@ -228,9 +235,46 @@ export function PropertyCard({
             {property.address}
           </h3>
           <p className="text-hm-stone-400 text-sm">
-            {neighborhood?.name || property.city}, {property.state}
+            {neighborhoodData?.name || property.city}, {property.state}
           </p>
         </div>
+
+        {neighborhoodData &&
+          (neighborhoodData.vibe_tagline || neighborhoodData.vibe_summary) && (
+            <div className="text-hm-stone-200 mb-4 rounded-xl border border-white/5 bg-white/5 p-3 text-sm">
+              <div className="mb-2 flex items-start gap-2 text-white">
+                <span className="mt-0.5 rounded-full bg-white/10 p-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                </span>
+                <div>
+                  <p className="font-semibold">
+                    {neighborhoodData.vibe_tagline || 'Neighborhood vibe'}
+                  </p>
+                  {neighborhoodData.vibe_summary && (
+                    <p className="text-hm-stone-300 line-clamp-2 text-xs leading-relaxed">
+                      {neighborhoodData.vibe_summary}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {neighborhoodData.vibe_keywords &&
+                neighborhoodData.vibe_keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {neighborhoodData.vibe_keywords
+                      .slice(0, 4)
+                      .map((keyword) => (
+                        <span
+                          key={keyword}
+                          className="rounded-full bg-white/10 px-3 py-1 text-xs text-white"
+                        >
+                          {keyword}
+                        </span>
+                      ))}
+                  </div>
+                )}
+            </div>
+          )}
 
         {/* Stats - Typography-focused horizontal layout */}
         <div className="text-hm-stone-300 mb-4 flex items-center text-sm">
@@ -286,7 +330,7 @@ export function PropertyCard({
           <div className="border-t border-white/5 pt-4">
             <StorytellingDescription
               property={property}
-              neighborhood={neighborhood}
+              neighborhood={neighborhoodData || undefined}
               vibes={vibes}
               isMutualLike={isMutualLike}
               variant="compact"

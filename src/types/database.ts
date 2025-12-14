@@ -132,6 +132,11 @@ export type Database = {
           state: string
           transit_score: number | null
           walk_score: number | null
+          vibe_generated_at: string | null
+          vibe_keywords: string[] | null
+          vibe_model: string | null
+          vibe_summary: string | null
+          vibe_tagline: string | null
         }
         Insert: {
           bounds?: unknown
@@ -144,6 +149,11 @@ export type Database = {
           state: string
           transit_score?: number | null
           walk_score?: number | null
+          vibe_generated_at?: string | null
+          vibe_keywords?: string[] | null
+          vibe_model?: string | null
+          vibe_summary?: string | null
+          vibe_tagline?: string | null
         }
         Update: {
           bounds?: unknown
@@ -156,6 +166,11 @@ export type Database = {
           state?: string
           transit_score?: number | null
           walk_score?: number | null
+          vibe_generated_at?: string | null
+          vibe_keywords?: string[] | null
+          vibe_model?: string | null
+          vibe_summary?: string | null
+          vibe_tagline?: string | null
         }
         Relationships: []
       }

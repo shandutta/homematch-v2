@@ -58,6 +58,14 @@ export function PropertyDetailModal({
 
   if (!property) return null
 
+  const neighborhoodData =
+    neighborhood ||
+    (property as Property & { neighborhood?: Neighborhood | null })
+      .neighborhood ||
+    (property as Property & { neighborhoods?: Neighborhood | null })
+      .neighborhoods ||
+    null
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -140,10 +148,47 @@ export function PropertyDetailModal({
             <div className="flex items-center gap-2 text-slate-400">
               <MapPin className="h-4 w-4" />
               <span>
-                {neighborhood?.name || property.city}, {property.state}{' '}
+                {neighborhoodData?.name || property.city}, {property.state}{' '}
                 {property.zip_code}
               </span>
             </div>
+            {neighborhoodData &&
+              (neighborhoodData.vibe_tagline ||
+                neighborhoodData.vibe_summary) && (
+                <div className="mt-3 rounded-lg border border-slate-800 bg-slate-800/80 p-3 text-left text-slate-200">
+                  <div className="flex items-start gap-2">
+                    <span className="rounded-full bg-slate-700/80 p-1">
+                      <MapPin className="h-4 w-4 text-emerald-300" />
+                    </span>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">
+                        {neighborhoodData.vibe_tagline || 'Neighborhood vibe'}
+                      </p>
+                      {neighborhoodData.vibe_summary && (
+                        <p className="text-sm leading-relaxed text-slate-300">
+                          {neighborhoodData.vibe_summary}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {neighborhoodData.vibe_keywords &&
+                    neighborhoodData.vibe_keywords.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {neighborhoodData.vibe_keywords
+                          .slice(0, 6)
+                          .map((keyword) => (
+                            <Badge
+                              key={keyword}
+                              variant="secondary"
+                              className="bg-slate-700/70 text-xs text-white"
+                            >
+                              {keyword}
+                            </Badge>
+                          ))}
+                      </div>
+                    )}
+                </div>
+              )}
           </DialogHeader>
 
           <div className="grid grid-cols-3 gap-3">
@@ -181,7 +226,7 @@ export function PropertyDetailModal({
             <h3 className="font-semibold text-white">About this home</h3>
             <StorytellingDescription
               property={property}
-              neighborhood={neighborhood}
+              neighborhood={neighborhoodData || undefined}
               vibes={vibes}
               isMutualLike={mutualLikes.some(
                 (ml) => ml.property_id === property.id && ml.liked_by_count >= 2

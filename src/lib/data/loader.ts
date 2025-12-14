@@ -1,5 +1,9 @@
 import { PropertyService } from '@/lib/services/properties'
-import { Property, Neighborhood } from '@/types/database'
+import {
+  Property,
+  Neighborhood,
+  PropertyWithNeighborhood,
+} from '@/types/database'
 import {
   PROPERTY_TYPE_VALUES,
   type PropertyFilters,
@@ -7,7 +11,7 @@ import {
 } from '@/lib/schemas/property'
 
 export interface DashboardData {
-  properties: Property[]
+  properties: PropertyWithNeighborhood[]
   neighborhoods: Neighborhood[]
   totalProperties: number
   scored: boolean
@@ -98,13 +102,32 @@ export async function loadDashboardData(
   }
 
   try {
-    const [{ properties, total }, neighborhoods] = await Promise.all([
-      propertyService.searchProperties({
-        filters,
-        pagination: { limit, page: offset / limit + 1 },
-      }),
-      propertyService.getNeighborhoodsByCity('San Francisco', 'CA'),
-    ])
+    const { properties, total } = await propertyService.searchProperties({
+      filters,
+      pagination: { limit, page: offset / limit + 1 },
+    })
+
+    const propertiesWithNeighborhoods: PropertyWithNeighborhood[] = (
+      properties || []
+    ).map((property) => {
+      const neighborhood =
+        (property as PropertyWithNeighborhood).neighborhood ||
+        (property as PropertyWithNeighborhood).neighborhoods ||
+        null
+
+      return { ...property, neighborhood }
+    })
+
+    const neighborhoods = propertiesWithNeighborhoods.reduce(
+      (unique, property) => {
+        const neighborhood = property.neighborhood
+        if (neighborhood && !unique.some((n) => n.id === neighborhood.id)) {
+          unique.push(neighborhood)
+        }
+        return unique
+      },
+      [] as Neighborhood[]
+    )
 
     // Fetch user stats (mock for now, can be implemented later)
     const userStats = {
@@ -114,7 +137,7 @@ export async function loadDashboardData(
     }
 
     return {
-      properties: properties || [],
+      properties: propertiesWithNeighborhoods || [],
       neighborhoods: neighborhoods || [],
       totalProperties: total || 0,
       scored: withScoring,
@@ -139,7 +162,7 @@ export async function loadDashboardData(
 // Load properties sorted by match score (called from dashboard)
 export async function loadScoredProperties(
   limit: number = 10
-): Promise<Property[]> {
+): Promise<PropertyWithNeighborhood[]> {
   try {
     const data = await loadDashboardData({ limit, withScoring: true })
 

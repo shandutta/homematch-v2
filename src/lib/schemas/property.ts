@@ -119,6 +119,11 @@ export const neighborhoodSchema = z.object({
   median_price: z.number().min(0).nullable(),
   walk_score: z.number().min(0).max(100).nullable(),
   transit_score: z.number().min(0).max(100).nullable(),
+  vibe_tagline: z.string().max(140).nullable(),
+  vibe_summary: z.string().max(500).nullable(),
+  vibe_keywords: z.array(z.string().max(40)).nullable(),
+  vibe_generated_at: z.string().datetime().nullable(),
+  vibe_model: z.string().max(120).nullable(),
   created_at: z.string().datetime().nullable(),
 })
 
