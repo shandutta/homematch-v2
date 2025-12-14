@@ -9,11 +9,14 @@ import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
-import { AdSenseRouteGuard } from '@/components/ads/AdSenseRouteGuard'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
+
+const ADSENSE_CLIENT_ID = 'ca-pub-9556502662108721'
+const ADSENSE_ENABLED = process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false'
+const ADSENSE_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -62,6 +65,12 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        {ADSENSE_ENABLED && process.env.NODE_ENV === 'production' ? (
+          <>
+            <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
+            <script async src={ADSENSE_SRC} crossOrigin="anonymous" />
+          </>
+        ) : null}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -85,8 +94,6 @@ export default function RootLayout({
         <ErrorBoundary>
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
-
-        <AdSenseRouteGuard />
       </body>
     </html>
   )

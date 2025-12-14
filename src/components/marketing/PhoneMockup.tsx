@@ -9,20 +9,9 @@ import Image from 'next/image'
 import { getPropertyBlurPlaceholder } from '@/lib/image-blur'
 
 /**
- * Runtime-fetched Zillow image URL (server-side API returns a random one)
- * Removed local real-#.jpg fallback per request for purely dynamic imagery.
+ * Marketing phone mockup uses local, rights-safe assets (no third-party listing
+ * imagery) and optionally swaps in cards from `/api/properties/marketing`.
  */
-type _ZillowCard = {
-  zpid: string
-  imageUrl: string
-  price?: number
-  bedrooms?: number
-  bathrooms?: number
-  address?: string
-  latitude?: number
-  longitude?: number
-}
-
 type MarketingCard = {
   zpid: string
   imageUrl: string | null
@@ -61,7 +50,7 @@ interface Property {
 const placeholderProperties: Property[] = [
   {
     id: 1,
-    image: '/images/properties/house-1.svg',
+    image: '/images/marketing/mock-home-1.svg',
     price: '$850,000',
     beds: 4,
     baths: 3,
@@ -69,7 +58,7 @@ const placeholderProperties: Property[] = [
   },
   {
     id: 2,
-    image: '/images/properties/house-2.svg',
+    image: '/images/marketing/mock-home-2.svg',
     price: '$1,200,000',
     beds: 3,
     baths: 2,
@@ -77,7 +66,7 @@ const placeholderProperties: Property[] = [
   },
   {
     id: 3,
-    image: '/images/properties/house-3.svg',
+    image: '/images/marketing/mock-home-3.svg',
     price: '$950,000',
     beds: 3,
     baths: 2,
@@ -231,8 +220,8 @@ function PropertyCard({
             draggable={false}
             onError={(e) => {
               const target = e.target as HTMLImageElement
-              if (target && target.src !== '/images/properties/house-1.svg') {
-                target.src = '/images/properties/house-1.svg'
+              if (target && target.src !== placeholderProperties[0]?.image) {
+                target.src = placeholderProperties[0]?.image
               }
             }}
           />
