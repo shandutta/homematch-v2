@@ -4,6 +4,7 @@ import type { Property, Neighborhood } from '@/lib/schemas/property'
 import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
+import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 
 // Mock Next.js Image component
 interface MockImageProps {
@@ -27,6 +28,10 @@ jest.mock('@/hooks/useCouples', () => ({
 
 jest.mock('@/hooks/usePropertyVibes', () => ({
   usePropertyVibes: jest.fn(),
+}))
+
+jest.mock('@/hooks/useNeighborhoodVibes', () => ({
+  useNeighborhoodVibes: jest.fn(),
 }))
 
 const mockProperty: Property = {
@@ -110,6 +115,7 @@ describe('PropertyDetailModal', () => {
   beforeEach(() => {
     ;(useMutualLikes as jest.Mock).mockReturnValue({ data: [] })
     ;(usePropertyVibes as jest.Mock).mockReturnValue({ data: mockVibes })
+    ;(useNeighborhoodVibes as jest.Mock).mockReturnValue({ data: null })
   })
 
   it('keeps tags and future vision, but hides vibe statement and quotes', () => {

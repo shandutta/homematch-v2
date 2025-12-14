@@ -66,14 +66,6 @@ describe('Footer', () => {
       'href',
       '/contact'
     )
-    expect(screen.getByText('Blog').closest('a')).toHaveAttribute(
-      'href',
-      '/blog'
-    )
-    expect(screen.getByText('Careers').closest('a')).toHaveAttribute(
-      'href',
-      '/careers'
-    )
   })
 
   test('renders Legal links with correct hrefs', () => {

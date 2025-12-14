@@ -52,6 +52,10 @@ vi.mock('@/hooks/usePropertyVibes', () => ({
   usePropertyVibes: () => ({ data: null }),
 }))
 
+vi.mock('@/hooks/useNeighborhoodVibes', () => ({
+  useNeighborhoodVibes: () => ({ data: null }),
+}))
+
 const baseProperty: Property = {
   id: 'prop-1',
   zpid: null,

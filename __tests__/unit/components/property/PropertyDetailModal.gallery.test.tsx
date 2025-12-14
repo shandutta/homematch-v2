@@ -56,6 +56,12 @@ jest.mock('@/hooks/usePropertyVibes', () => ({
   }),
 }))
 
+jest.mock('@/hooks/useNeighborhoodVibes', () => ({
+  useNeighborhoodVibes: () => ({
+    data: null,
+  }),
+}))
+
 const baseProperty: Property = {
   id: 'prop-1',
   zpid: null,
