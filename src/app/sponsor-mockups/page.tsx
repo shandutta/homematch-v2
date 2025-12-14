@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Sponsored moments preview | HomeMatch',
   description:
     'See how sponsor placements look inside the HomeMatch experience.',
+  robots: { index: false, follow: false },
 }
 
 export default function SponsorMockupsPage() {
