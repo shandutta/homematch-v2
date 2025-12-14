@@ -3,8 +3,8 @@
 set -euo pipefail
 
 PNPM_VERSION="10.23.0"
-NODE_MIN_MAJOR=18
-TARGET_NODE_VERSION="${TARGET_NODE_VERSION:-25.2.1}"
+NODE_MIN_MAJOR=24
+TARGET_NODE_VERSION="${TARGET_NODE_VERSION:-24}"
 SUPABASE_VERSION="2.58.5"
 INSTALL_OS_DEPS=false
 INSTALL_PLAYWRIGHT=true
@@ -154,7 +154,7 @@ install_node_pkg() {
     apt)
       run_sudo apt-get update
       run_sudo apt-get install -y ca-certificates curl gnupg
-      curl -fsSL https://deb.nodesource.com/setup_22.x | run_sudo bash -
+      curl -fsSL https://deb.nodesource.com/setup_24.x | run_sudo bash -
       run_sudo apt-get install -y nodejs
       ;;
     pacman) run_sudo pacman -Sy --noconfirm nodejs npm ;;
@@ -180,7 +180,7 @@ ensure_node() {
   if [[ $version =~ ^v([0-9]+) ]]; then
     major="${BASH_REMATCH[1]}"
     if (( major < NODE_MIN_MAJOR )); then
-      fail "Node.js $version detected. Please use Node ${NODE_MIN_MAJOR}+ (20+ recommended)."
+      fail "Node.js $version detected. Please use Node ${NODE_MIN_MAJOR}+."
     fi
   fi
   # Align to target version if possible and not already matched.

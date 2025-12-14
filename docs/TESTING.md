@@ -235,8 +235,8 @@ describe('Database Relationships', () => {
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 8+
+- Node.js 24.x
+- pnpm 10+
 - Supabase CLI
 - Git Bash (Windows) or Terminal (Mac/Linux)
 
