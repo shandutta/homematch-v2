@@ -47,7 +47,7 @@
 
 ### Prerequisites
 
-- Node.js 18+ with pnpm
+- Node.js 24.x with pnpm (matches Vercel)
 - Git Bash (Windows)
 - Supabase account
 - RapidAPI account (Zillow API)

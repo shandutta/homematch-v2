@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   PNPM_VERSION: '10.23.0'
   SUPABASE_URL: http://127.0.0.1:54321
   NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321

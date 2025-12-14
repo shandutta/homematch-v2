@@ -89,8 +89,8 @@ log "📋 Validating Node.js version..."
 NODE_VERSION=$(node --version)
 if [[ $NODE_VERSION =~ ^v([0-9]+) ]]; then
     MAJOR_VERSION=${BASH_REMATCH[1]}
-    if [ "$MAJOR_VERSION" -lt 18 ]; then
-        error "Node.js version $NODE_VERSION is not supported. Minimum version is 18.x"
+    if [ "$MAJOR_VERSION" -lt 24 ]; then
+        error "Node.js version $NODE_VERSION is not supported. Minimum version is 24.x"
         exit 1
     fi
     success "Node.js version $NODE_VERSION is supported"

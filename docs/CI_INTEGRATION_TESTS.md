@@ -73,7 +73,7 @@ This CI pipeline sets up a complete testing environment with:
 
 **Features**:
 
-- Sets up Ubuntu environment with Node.js 20 and pnpm
+- Sets up Ubuntu environment with Node.js 24 and pnpm
 - Installs and configures Supabase CLI
 - Creates isolated test database environment
 - Runs migrations and applies schema

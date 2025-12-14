@@ -49,7 +49,7 @@ Typical commands from inside `homematch-v2`:
 
 ## Node / pnpm bootstrap script
 
-I used a bootstrap script to set up Node via `nvm`, set Node 20 as default, and enable corepack (for pnpm).
+I used a bootstrap script to set up Node via `nvm`, set Node 24 as default, and enable corepack (for pnpm).
 
 The script is saved at:
 
@@ -73,7 +73,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 # 3) Install Node (LTS-ish) and set default
-NODE_VERSION=20
+NODE_VERSION=24
 
 if ! nvm ls "$NODE_VERSION" >/dev/null 2>&1; then
   echo "[bootstrap] Installing Node $NODE_VERSION..."
