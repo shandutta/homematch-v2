@@ -19,3 +19,9 @@
 - **Testing**: Jest (unit), Vitest (integration), Playwright (E2E).
 - **Error Handling**: Use Zod for validation; consistent errors via `lib/api/errors.ts`.
 - **Commits**: Conventional Commits (e.g., `feat: add login`).
+
+## DevTools MCP Auth (Dev Only)
+
+- When driving authenticated pages via the Chrome DevTools MCP, use the same local test users that are created by `scripts/setup-test-users-admin.js` (the primary user is `testUsers[0]` in that script).
+- Don’t store plaintext creds in `.env.local`, `.env.test.local`, or `/home/shan/.codex/config.toml`; treat `scripts/setup-test-users-admin.js` as the source of truth.
+- Login route is `/login`; a successful login should land on `/dashboard`.
