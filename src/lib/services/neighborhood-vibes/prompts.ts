@@ -20,6 +20,42 @@ export interface NeighborhoodContext {
   }>
 }
 
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
+}
+
+function formatUsd(value: unknown): string {
+  const num = toFiniteNumber(value)
+  if (num == null) return 'n/a'
+  return `$${Math.round(num).toLocaleString()}`
+}
+
+function formatUsdRange(min: unknown, max: unknown): string {
+  const minNum = toFiniteNumber(min)
+  const maxNum = toFiniteNumber(max)
+  if (minNum == null || maxNum == null) return 'n/a'
+  return `$${Math.round(minNum).toLocaleString()}-$${Math.round(maxNum).toLocaleString()}`
+}
+
+function formatAvgUnit(value: unknown, digits: number, unit: string): string {
+  const num = toFiniteNumber(value)
+  if (num == null) return 'n/a'
+  return `${num.toFixed(digits)}${unit}`
+}
+
+function formatRounded(value: unknown): string {
+  const num = toFiniteNumber(value)
+  if (num == null) return 'n/a'
+  return Math.round(num).toLocaleString()
+}
+
 export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
   systemPrompt: string
   userPrompt: string
@@ -36,7 +72,25 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
 
   const listingStats = context.listingStats
   const listingSnapshot = listingStats
-    ? `Listings snapshot: total ${listingStats.total_properties} | median $${Math.round(listingStats.median_price).toLocaleString()} | range $${Math.round(listingStats.price_range_min).toLocaleString()}-$${Math.round(listingStats.price_range_max).toLocaleString()} | avg ${listingStats.avg_bedrooms.toFixed(1)}bd ${listingStats.avg_bathrooms.toFixed(1)}ba | avg ${Math.round(listingStats.avg_square_feet).toLocaleString()} sqft`
+    ? (() => {
+        const avgBd = formatAvgUnit(listingStats.avg_bedrooms, 1, 'bd')
+        const avgBa = formatAvgUnit(listingStats.avg_bathrooms, 1, 'ba')
+        const avgBdBa =
+          avgBd === 'n/a' && avgBa === 'n/a'
+            ? 'n/a'
+            : [avgBd, avgBa].filter((v) => v !== 'n/a').join(' ')
+        const avgSqft = formatRounded(listingStats.avg_square_feet)
+        const avgSqftText = avgSqft === 'n/a' ? 'n/a' : `${avgSqft} sqft`
+
+        return `Listings snapshot: total ${formatRounded(
+          listingStats.total_properties
+        )} | median ${formatUsd(
+          listingStats.median_price
+        )} | range ${formatUsdRange(
+          listingStats.price_range_min,
+          listingStats.price_range_max
+        )} | avg ${avgBdBa} | avg ${avgSqftText}`
+      })()
     : null
 
   const sampleProps = context.sampleProperties
