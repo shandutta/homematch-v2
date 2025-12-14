@@ -220,7 +220,7 @@ describe('StorytellingDescription', () => {
         'Family Haven',
         'Work from Home Ready',
         "Entertainer's Dream",
-        'Love Nest',
+        'Couples Retreat',
         'Future Family Home',
         'Entertainment Haven',
       ]
@@ -276,8 +276,8 @@ describe('StorytellingDescription', () => {
         />
       )
 
-      // Small properties should get "Cozy Retreat", "Urban Love Nest", or "Love Nest"
-      const expectedTags = ['Cozy Retreat', 'Love Nest', 'Urban Love Nest']
+      // Small properties should get "Cozy Retreat", "City Hideaway", or "Couples Retreat"
+      const expectedTags = ['Cozy Retreat', 'Couples Retreat', 'City Hideaway']
       const foundTag = expectedTags.some((tag) => {
         try {
           screen.getByText(tag)

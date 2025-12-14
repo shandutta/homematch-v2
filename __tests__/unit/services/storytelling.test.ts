@@ -380,7 +380,7 @@ describe('StorytellingService', () => {
       expect(tagNames).not.toContain('Resort-Style Living')
     })
 
-    test('should include "Love Nest" tag when minimal conditions are met', () => {
+    test('should include "Couples Retreat" tag when minimal conditions are met', () => {
       const property = createMockProperty({
         bedrooms: 1,
         bathrooms: 1,
@@ -398,18 +398,18 @@ describe('StorytellingService', () => {
         neighborhood
       )
 
-      // Should include Love Nest tag (always added)
+      // Should include Couples Retreat tag (always added)
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Love Nest',
-          description: 'Your perfect space to build a life together',
+          tag: 'Couples Retreat',
+          description: 'Cozy home base for two',
           priority: 5,
         })
       )
       expect(tags.length).toBeGreaterThan(0)
     })
 
-    test('should generate "Urban Love Nest" at boundary conditions', () => {
+    test('should generate "City Hideaway" at boundary conditions', () => {
       const property = createMockProperty({
         bedrooms: 2, // <= 2
         square_feet: 1200, // <= 1200
@@ -420,8 +420,8 @@ describe('StorytellingService', () => {
       const tags = StorytellingService.generateLifestyleTags(property)
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Urban Love Nest',
-          description: 'Intimate space designed for two hearts as one',
+          tag: 'City Hideaway',
+          description: 'A cozy home base that keeps you close to the action',
           priority: 8,
         })
       )
@@ -524,10 +524,10 @@ describe('StorytellingService', () => {
       })
       const tags = StorytellingService.generateLifestyleTags(property)
 
-      // Should always include Love Nest
+      // Should always include Couples Retreat
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Love Nest',
+          tag: 'Couples Retreat',
           priority: 5,
         })
       )

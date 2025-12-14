@@ -155,8 +155,8 @@ export class StorytellingService {
       property.square_feet <= 1200
     ) {
       tags.push({
-        tag: 'Urban Love Nest',
-        description: 'Intimate space designed for two hearts as one',
+        tag: 'City Hideaway',
+        description: 'A cozy home base that keeps you close to the action',
         priority: 8,
       })
     }
@@ -202,8 +202,8 @@ export class StorytellingService {
 
     // Always include a romantic element
     tags.push({
-      tag: 'Love Nest',
-      description: 'Your perfect space to build a life together',
+      tag: 'Couples Retreat',
+      description: 'Cozy home base for two',
       priority: 5,
     })
 

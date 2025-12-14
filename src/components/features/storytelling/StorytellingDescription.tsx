@@ -7,6 +7,7 @@ import {
   type TagCategory,
   type PropertyVibes,
 } from '@/lib/schemas/property-vibes'
+import { normalizeStorytellingTag } from '@/lib/storytelling/tagAliases'
 import { Badge } from '@/components/ui/badge'
 import {
   MotionDiv,
@@ -100,7 +101,7 @@ const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
     icon: GraduationCap,
     color: 'bg-indigo-500 text-white',
   },
-  'Love Nest': { icon: Heart, color: 'bg-rose-500 text-white' },
+  'Couples Retreat': { icon: Heart, color: 'bg-fuchsia-500 text-white' },
   'Future Family Home': {
     icon: Baby,
     color: 'bg-emerald-500 text-white',
@@ -109,7 +110,7 @@ const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
     icon: Music,
     color: 'bg-violet-500 text-white',
   },
-  'Urban Love Nest': { icon: Home, color: 'bg-rose-500 text-white' },
+  'City Hideaway': { icon: Home, color: 'bg-sky-500 text-white' },
   'Weekend Retreat': { icon: Mountain, color: 'bg-slate-500 text-white' },
   'Culinary Paradise': { icon: Utensils, color: 'bg-amber-500 text-white' },
   'Commuter Friendly': { icon: Car, color: 'bg-cyan-500 text-white' },
@@ -146,8 +147,9 @@ const TAG_DISPLAY_MAP: Record<string, TagDisplayConfig> = {
 }
 
 function getTagDisplay(tag: string): TagDisplayConfig {
+  const normalizedTag = normalizeStorytellingTag(tag)
   return (
-    TAG_DISPLAY_MAP[tag] || {
+    TAG_DISPLAY_MAP[normalizedTag] || {
       icon: Sparkles,
       color: 'bg-slate-600 text-white',
       category: 'unknown',
@@ -247,11 +249,11 @@ const FUTURE_VISION_TAGS = {
     ],
   },
   romantic: {
-    tag: 'Urban Love Nest',
+    tag: 'City Hideaway',
     descriptions: [
-      'Intimate space designed for two hearts beating as one',
-      'Cozy sanctuary perfect for deepening your connection',
-      'Your private retreat from the busy world outside',
+      'A cozy home base that keeps you close to the action',
+      'Low-maintenance space that feels like a reset at the end of the day',
+      'Just-right size for two, without the fuss',
     ],
   },
   retreat: {
@@ -488,7 +490,7 @@ function generateLifestyleTags(
     property.square_feet <= 1200
   ) {
     tags.push('Cozy Retreat')
-    tags.push('Urban Love Nest')
+    tags.push('City Hideaway')
   }
 
   // Luxury kitchen/culinary focus
@@ -530,7 +532,7 @@ function generateLifestyleTags(
   }
 
   // Always include romantic options for couples
-  tags.push('Love Nest')
+  tags.push('Couples Retreat')
 
   // Return max 3 tags, with preference for unique/interesting ones
   const uniqueTags = [...new Set(tags)]
@@ -762,7 +764,7 @@ export function StorytellingDescription({
   const futureVision = showFutureVision
     ? hasVibes && vibes.lifestyle_fits?.length > 0
       ? {
-          tag: vibes.lifestyle_fits[0].category,
+          tag: normalizeStorytellingTag(vibes.lifestyle_fits[0].category),
           description: vibes.lifestyle_fits[0].reason,
         }
       : getFutureVisionTag(property)
@@ -818,7 +820,7 @@ export function StorytellingDescription({
               <Sparkles className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.2em] text-blue-700 uppercase">
-                  {futureVision.tag}
+                  {normalizeStorytellingTag(futureVision.tag)}
                 </p>
                 <p className="text-[11px] leading-snug text-slate-600">
                   {futureVision.description}
@@ -832,7 +834,8 @@ export function StorytellingDescription({
         {showLifestyleTags && lifestyleTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {lifestyleTags.slice(0, 2).map((tag, _index) => {
-              const tagConfig = getTagDisplay(tag)
+              const displayTag = normalizeStorytellingTag(tag)
+              const tagConfig = getTagDisplay(displayTag)
               const IconComponent = tagConfig.icon
 
               return (
@@ -842,7 +845,7 @@ export function StorytellingDescription({
                   className={`${tagConfig.color} text-token-xs flex items-center gap-1 px-2 py-0.5`}
                 >
                   <IconComponent className="h-2.5 w-2.5" />
-                  {tag}
+                  {displayTag}
                 </Badge>
               )
             })}
@@ -971,7 +974,7 @@ export function StorytellingDescription({
           <div className="mb-1 flex items-center gap-2">
             <Sparkles className="h-3 w-3 text-blue-600" />
             <span className="text-token-xs font-semibold text-blue-800">
-              {futureVision.tag}
+              {normalizeStorytellingTag(futureVision.tag)}
             </span>
           </div>
           <p className="text-token-xs leading-relaxed text-blue-700">
@@ -989,7 +992,8 @@ export function StorytellingDescription({
           transition={{ duration: 0.4, delay: 0.6 }}
         >
           {lifestyleTags.map((tag, _index) => {
-            const tagConfig = getTagDisplay(tag)
+            const displayTag = normalizeStorytellingTag(tag)
+            const tagConfig = getTagDisplay(displayTag)
             const IconComponent = tagConfig.icon
 
             return (
@@ -1010,7 +1014,7 @@ export function StorytellingDescription({
                   className={`${tagConfig.color} text-token-xs flex cursor-default items-center gap-1 px-2 py-1 font-medium transition-all hover:shadow-sm`}
                 >
                   <IconComponent className="h-3 w-3" />
-                  {tag}
+                  {displayTag}
                 </Badge>
               </MotionDiv>
             )
