@@ -9,7 +9,7 @@ import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
-import { AdSenseScript } from '@/components/ads/AdSenseScript'
+import { AdSenseRouteGuard } from '@/components/ads/AdSenseRouteGuard'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
@@ -86,7 +86,7 @@ export default function RootLayout({
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
 
-        <AdSenseScript />
+        <AdSenseRouteGuard />
       </body>
     </html>
   )
