@@ -168,6 +168,37 @@ describe('StorytellingDescription', () => {
     expect(screen.getByText("Chef's Kitchen")).toBeInTheDocument()
   })
 
+  it('aliases legacy couple-focused tags from stored vibes', () => {
+    const legacyVibes: PropertyVibes = {
+      ...mockVibes,
+      lifestyle_fits: [
+        {
+          category: 'Urban Love Nest',
+          score: 0.9,
+          reason: 'Compact space that keeps everything close.',
+        },
+      ],
+      suggested_tags: ['Love Nest', 'Urban Love Nest'],
+    }
+
+    render(
+      <StorytellingDescription
+        property={mockProperty}
+        neighborhood={mockNeighborhood}
+        vibes={legacyVibes}
+        isMutualLike={false}
+        variant="full"
+        showLifestyleTags={true}
+        showFutureVision={true}
+      />
+    )
+
+    expect(screen.getAllByText('Couples Retreat').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('City Hideaway').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Love Nest')).toBeNull()
+    expect(screen.queryByText('Urban Love Nest')).toBeNull()
+  })
+
   it('renders different description for mutual likes', () => {
     render(
       <StorytellingDescription
