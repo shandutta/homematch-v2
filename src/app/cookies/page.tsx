@@ -36,6 +36,20 @@ export default function CookiesPage() {
               Analytics: understanding feature usage and improving performance
               (no selling of personal data).
             </li>
+            <li>
+              Advertising (if enabled): partners like Google AdSense may use
+              cookies to serve and measure ads. You can manage ad
+              personalization at{' '}
+              <Link
+                href="https://adssettings.google.com/"
+                className="text-sky-700 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                adssettings.google.com
+              </Link>
+              .
+            </li>
           </ul>
         </section>
 
