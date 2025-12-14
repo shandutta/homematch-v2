@@ -17,6 +17,7 @@ import { Property } from '@/lib/schemas/property'
 
 /** Insert an ad after every N property cards within each section */
 const AD_FREQUENCY = 6
+const MIN_CONTENT_FOR_ADS = AD_FREQUENCY + 2
 
 interface PropertySectionProps {
   title: string
@@ -52,6 +53,8 @@ function PropertySection({
   queryClient,
 }: PropertySectionProps) {
   if (properties.length === 0) return null
+
+  const hasEnoughContentForAds = properties.length >= MIN_CONTENT_FOR_ADS
 
   const invalidateLists = (decision: 'liked' | 'skip') => {
     queryClient.invalidateQueries({
@@ -242,8 +245,9 @@ function PropertySection({
               />
             </div>
 
-            {/* Insert sponsored ad after every AD_FREQUENCY cards */}
-            {(index + 1) % AD_FREQUENCY === 0 &&
+            {/* Insert sponsored ad after every AD_FREQUENCY cards when there's enough organic content */}
+            {hasEnoughContentForAds &&
+              (index + 1) % AD_FREQUENCY === 0 &&
               index < properties.length - 1 && (
                 <InFeedAd position={Math.floor((index + 1) / AD_FREQUENCY)} />
               )}
