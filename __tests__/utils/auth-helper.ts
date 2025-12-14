@@ -228,6 +228,33 @@ export class AuthHelper {
     )
     await this.fillInputWithRetries(passwordInput, password, 'password')
 
+    // Hydration can occasionally clobber input values (especially under load).
+    // Re-check both fields and re-fill if needed before submitting.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await this.page.waitForTimeout(100 * attempt)
+
+      const [currentEmail, currentPassword] = await Promise.all([
+        emailInput.inputValue(),
+        passwordInput.inputValue(),
+      ])
+
+      const needsEmail = currentEmail !== email
+      const needsPassword = currentPassword !== password
+
+      if (!needsEmail && !needsPassword) break
+
+      if (needsEmail) {
+        await this.fillInputWithRetries(emailInput, email, 'email')
+      }
+      if (needsPassword) {
+        await this.fillInputWithRetries(passwordInput, password, 'password')
+      }
+
+      if (attempt === 3) {
+        throw new Error('Login inputs were clobbered during hydration')
+      }
+    }
+
     const submitButton = await this.findFirstVisible(
       [
         '[data-testid="signin-button"]',
