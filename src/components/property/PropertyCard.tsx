@@ -322,7 +322,7 @@ export function PropertyCard({
           <div className="border-t border-white/5 pt-4">
             <StorytellingDescription
               property={property}
-              neighborhood={neighborhood}
+              neighborhood={neighborhoodData || undefined}
               vibes={vibes}
               isMutualLike={isMutualLike}
               variant="compact"
