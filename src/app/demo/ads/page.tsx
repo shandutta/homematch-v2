@@ -1,4 +1,11 @@
+import { Metadata } from 'next'
 import { AdMonetizationMockup } from '@/components/marketing/AdMonetizationMockup'
+
+export const metadata: Metadata = {
+  title: 'Ads preview (internal) | HomeMatch',
+  description: 'Internal preview page for ad placements.',
+  robots: { index: false, follow: false },
+}
 
 export default function AdsPreviewPage() {
   return (

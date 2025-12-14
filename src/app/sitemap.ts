@@ -6,10 +6,10 @@ const siteUrl =
 
 const staticRoutes = [
   '/',
+  '/about',
+  '/contact',
   '/login',
   '/signup',
-  '/sponsor-mockups',
-  '/demo/ads',
   '/privacy',
   '/terms',
   '/cookies',
