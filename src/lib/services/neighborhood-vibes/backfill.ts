@@ -27,6 +27,7 @@ export type BackfillNeighborhoodVibesArgs = {
   neighborhoodIds: string[] | null
   offset?: number
   sampleLimit: number
+  includeStats?: boolean
 }
 
 export type BackfillNeighborhoodVibesFailure = {
@@ -88,22 +89,58 @@ function normalizeLimit(limit: number | null): number | null {
 }
 
 function maybeTableMissing(error: unknown): boolean {
-  return (error as { code?: string } | null)?.code === '42P01'
+  const maybe = error as { code?: string; message?: string } | null
+  if (maybe?.code === '42P01') return true
+  const message = maybe?.message
+  if (typeof message !== 'string') return false
+  return (
+    message.includes("Could not find the table 'public.neighborhood_vibes'") ||
+    message.includes('schema cache')
+  )
+}
+
+type StatsState = {
+  disabled: boolean
+  disableReason?: string
 }
 
 async function fetchNeighborhoodStats(
   supabase: SupabaseClient<Database>,
   neighborhoodId: string,
-  logger: Logger
+  logger: Logger,
+  state: StatsState
 ): Promise<NeighborhoodStatsResult | null> {
+  if (state.disabled) return null
+
   const { data, error } = await supabase.rpc('get_neighborhood_stats', {
     neighborhood_uuid: neighborhoodId,
   })
 
   if (error) {
+    const errorMessage = error.message
+    const errorCode = (error as { code?: string } | null)?.code
+
+    const isLikelyGlobalBug =
+      errorCode === '42702' || errorMessage.includes('is ambiguous')
+
+    if (isLikelyGlobalBug) {
+      state.disabled = true
+      state.disableReason = errorMessage
+      logger.warn(
+        '[backfill-neighborhood-vibes] Failed to fetch stats; disabling stats for remainder of run',
+        {
+          neighborhoodId,
+          error: errorMessage,
+          code: errorCode,
+        }
+      )
+      return null
+    }
+
     logger.warn('[backfill-neighborhood-vibes] Failed to fetch stats', {
       neighborhoodId,
-      error: error.message,
+      error: errorMessage,
+      code: errorCode,
     })
     return null
   }
@@ -119,8 +156,14 @@ async function buildNeighborhoodContext(
   supabase: SupabaseClient<Database>,
   neighborhood: NeighborhoodRow,
   sampleLimit: number,
-  logger: Logger
+  logger: Logger,
+  options: {
+    includeStats: boolean
+    statsState: StatsState
+  }
 ): Promise<NeighborhoodContext> {
+  const includeStats = options.includeStats
+
   const [{ data: listings, error: listingsError }, listingStats] =
     await Promise.all([
       supabase
@@ -128,7 +171,9 @@ async function buildNeighborhoodContext(
         .select('address, price, bedrooms, bathrooms, property_type')
         .eq('neighborhood_id', neighborhood.id)
         .limit(sampleLimit),
-      fetchNeighborhoodStats(supabase, neighborhood.id, logger),
+      includeStats
+        ? fetchNeighborhoodStats(supabase, neighborhood.id, logger, options.statsState)
+        : Promise.resolve(null),
     ])
 
   if (listingsError) {
@@ -173,6 +218,8 @@ export async function backfillNeighborhoodVibes(
   const logger = deps.logger ?? console
   const sleep = deps.sleep ?? defaultSleep
   const shouldStop = deps.shouldStop ?? (() => false)
+  const includeStats = args.includeStats !== false
+  const statsState: StatsState = { disabled: false }
 
   if (args.neighborhoodIds) {
     const invalid = args.neighborhoodIds.filter((id) => !UUID_RE.test(id))
@@ -204,7 +251,7 @@ export async function backfillNeighborhoodVibes(
   const startTime = Date.now()
 
   logger.log(
-    `[backfill-neighborhood-vibes] Starting (limit=${limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, neighborhoodIds=${args.neighborhoodIds?.length ?? 0}, offset=${args.neighborhoodIds ? 'n/a' : offset}, sampleLimit=${args.sampleLimit})`
+    `[backfill-neighborhood-vibes] Starting (limit=${limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, neighborhoodIds=${args.neighborhoodIds?.length ?? 0}, offset=${args.neighborhoodIds ? 'n/a' : offset}, sampleLimit=${args.sampleLimit}, includeStats=${includeStats})`
   )
 
   const emitCursor = async () => {
@@ -329,7 +376,8 @@ export async function backfillNeighborhoodVibes(
           deps.supabase,
           neighborhood,
           args.sampleLimit,
-          logger
+          logger,
+          { includeStats, statsState }
         )
 
         const result =
