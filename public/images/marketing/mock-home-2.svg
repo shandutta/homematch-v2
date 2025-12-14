@@ -1,0 +1,127 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1200 900"
+  role="img"
+  aria-label="Illustration of a warm modern home exterior"
+>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe7cf" />
+      <stop offset="1" stop-color="#ffffff" />
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f2937" />
+      <stop offset="1" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="1" stop-color="#f1f5f9" />
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed" />
+      <stop offset="1" stop-color="#fdba74" stop-opacity="0.45" />
+    </linearGradient>
+    <linearGradient id="lawn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dcfce7" />
+      <stop offset="1" stop-color="#bbf7d0" />
+    </linearGradient>
+    <filter
+      id="shadow"
+      x="-20%"
+      y="-20%"
+      width="140%"
+      height="140%"
+      color-interpolation-filters="sRGB"
+    >
+      <feDropShadow
+        dx="0"
+        dy="22"
+        stdDeviation="18"
+        flood-color="#0f172a"
+        flood-opacity="0.22"
+      />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#sky)" />
+  <circle cx="250" cy="170" r="78" fill="#fb923c" opacity="0.5" />
+  <circle cx="250" cy="170" r="120" fill="#fb923c" opacity="0.18" />
+
+  <path
+    d="M0 680 C 240 610, 440 655, 640 620 C 840 585, 980 600, 1200 540 L 1200 900 L 0 900 Z"
+    fill="url(#lawn)"
+    opacity="0.6"
+  />
+
+  <g filter="url(#shadow)">
+    <path d="M220 455 L 600 240 L 980 455 Z" fill="url(#roof)" />
+    <rect x="220" y="430" width="760" height="360" rx="36" fill="url(#wall)" />
+    <rect
+      x="220"
+      y="585"
+      width="760"
+      height="46"
+      fill="#f97316"
+      opacity="0.14"
+    />
+
+    <rect
+      x="300"
+      y="500"
+      width="320"
+      height="230"
+      rx="20"
+      fill="url(#glass)"
+      stroke="#94a3b8"
+      stroke-width="10"
+    />
+    <path
+      d="M460 500 V 730"
+      stroke="#94a3b8"
+      stroke-width="10"
+      opacity="0.7"
+    />
+
+    <rect
+      x="660"
+      y="500"
+      width="260"
+      height="230"
+      rx="20"
+      fill="url(#glass)"
+      stroke="#94a3b8"
+      stroke-width="10"
+    />
+    <path
+      d="M790 500 V 730"
+      stroke="#94a3b8"
+      stroke-width="10"
+      opacity="0.7"
+    />
+
+    <rect
+      x="545"
+      y="560"
+      width="126"
+      height="230"
+      rx="22"
+      fill="#fef3c7"
+      stroke="#b45309"
+      stroke-width="10"
+    />
+    <circle cx="650" cy="680" r="10" fill="#92400e" opacity="0.8" />
+  </g>
+
+  <path
+    d="M530 790 C 515 845, 530 880, 590 900 H 760 C 710 878, 660 845, 635 790 Z"
+    fill="#cbd5e1"
+    opacity="0.7"
+  />
+
+  <circle cx="1040" cy="740" r="36" fill="#22c55e" opacity="0.9" />
+  <circle cx="1090" cy="748" r="28" fill="#16a34a" opacity="0.9" />
+  <circle cx="1020" cy="770" r="26" fill="#15803d" opacity="0.85" />
+
+  <rect width="1200" height="900" fill="#0f172a" opacity="0.04" />
+</svg>
+
