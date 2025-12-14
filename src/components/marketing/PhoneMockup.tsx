@@ -50,7 +50,7 @@ interface Property {
 const placeholderProperties: Property[] = [
   {
     id: 1,
-    image: '/images/marketing/mock-home-1.svg',
+    image: '/images/marketing/mock-home-1.jpg',
     price: '$850,000',
     beds: 4,
     baths: 3,
@@ -58,7 +58,7 @@ const placeholderProperties: Property[] = [
   },
   {
     id: 2,
-    image: '/images/marketing/mock-home-2.svg',
+    image: '/images/marketing/mock-home-2.jpg',
     price: '$1,200,000',
     beds: 3,
     baths: 2,
@@ -66,7 +66,7 @@ const placeholderProperties: Property[] = [
   },
   {
     id: 3,
-    image: '/images/marketing/mock-home-3.svg',
+    image: '/images/marketing/mock-home-3.jpg',
     price: '$950,000',
     beds: 3,
     baths: 2,
