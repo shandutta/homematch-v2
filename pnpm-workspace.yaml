@@ -8,3 +8,6 @@ onlyBuiltDependencies:
   - simple-git-hooks
   - supabase
   - unrs-resolver
+
+ignoredBuiltDependencies:
+  - msw
