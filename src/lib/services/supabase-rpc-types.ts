@@ -142,14 +142,14 @@ export interface InteractionSummaryRow {
 }
 
 export interface NeighborhoodStatsResult {
-  total_properties: number
-  avg_price: number
-  median_price: number
-  price_range_min: number
-  price_range_max: number
-  avg_bedrooms: number
-  avg_bathrooms: number
-  avg_square_feet: number
+  total_properties: number | string | null
+  avg_price: number | string | null
+  median_price: number | string | null
+  price_range_min: number | string | null
+  price_range_max: number | string | null
+  avg_bedrooms: number | string | null
+  avg_bathrooms: number | string | null
+  avg_square_feet: number | string | null
 }
 
 export interface MarketTrend {

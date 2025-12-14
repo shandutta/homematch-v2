@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+const numberLikeSchema = z.union([z.number(), z.string()]).nullable()
+
 export const neighborhoodThemeSchema = z.object({
   name: z.string().min(2).max(80),
   whyItMatters: z.string().min(10).max(180),
@@ -42,14 +44,14 @@ export const neighborhoodVibesInputSchema = z.object({
   }),
   listingStats: z
     .object({
-      total_properties: z.number(),
-      avg_price: z.number(),
-      median_price: z.number(),
-      price_range_min: z.number(),
-      price_range_max: z.number(),
-      avg_bedrooms: z.number(),
-      avg_bathrooms: z.number(),
-      avg_square_feet: z.number(),
+      total_properties: numberLikeSchema,
+      avg_price: numberLikeSchema,
+      median_price: numberLikeSchema,
+      price_range_min: numberLikeSchema,
+      price_range_max: numberLikeSchema,
+      avg_bedrooms: numberLikeSchema,
+      avg_bathrooms: numberLikeSchema,
+      avg_square_feet: numberLikeSchema,
     })
     .nullable()
     .optional(),
