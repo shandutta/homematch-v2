@@ -99,8 +99,8 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
 
       <div className="relative aspect-[4/3]">
         <Image
-          src="/images/marketing/mock-home-1.svg"
-          alt="Sample home"
+          src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80"
+          alt="Sample property interior"
           fill
           sizes="(max-width: 768px) 100vw, 540px"
           className="object-cover"
