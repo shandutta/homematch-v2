@@ -52,6 +52,7 @@ export interface CompletionResponse {
     prompt_tokens: number
     completion_tokens: number
     total_tokens: number
+    cost?: number
   }
 }
 
@@ -113,6 +114,7 @@ export class OpenRouterClient {
       messages,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.maxTokens ?? 2000,
+      usage: { include: true },
       ...(options.responseFormat && {
         response_format: options.responseFormat,
       }),
@@ -255,6 +257,7 @@ export class OpenRouterClient {
           prompt_tokens: number
           completion_tokens: number
           total_tokens: number
+          cost?: number
         }
       | null
       | undefined,
@@ -269,6 +272,15 @@ export class OpenRouterClient {
         completionTokens: 0,
         totalTokens: 0,
         estimatedCostUsd: 0,
+      }
+    }
+
+    if (typeof usage.cost === 'number') {
+      return {
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+        totalTokens: usage.total_tokens,
+        estimatedCostUsd: usage.cost,
       }
     }
 
