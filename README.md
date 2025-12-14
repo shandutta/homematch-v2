@@ -74,6 +74,15 @@ pnpm test:e2e           # Playwright E2E tests
 pnpm migrate            # Run migration script helper
 ```
 
+## Vercel CLI (optional)
+
+If you want to run Vercel's build locally (matching Vercel settings), run:
+
+```bash
+vercel pull --yes
+vercel build
+```
+
 ### Test runner notes
 
 - Integration: `pnpm test:integration` starts the dev server through `pnpm dev:warmup`, which runs `pnpm dev:integration` by default to avoid extra resets while waiting for readiness. Override the script with `INTEGRATION_DEV_SCRIPT` or change the underlying dev command via `WARMUP_DEV_COMMAND`.
