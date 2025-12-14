@@ -172,7 +172,12 @@ async function buildNeighborhoodContext(
         .eq('neighborhood_id', neighborhood.id)
         .limit(sampleLimit),
       includeStats
-        ? fetchNeighborhoodStats(supabase, neighborhood.id, logger, options.statsState)
+        ? fetchNeighborhoodStats(
+            supabase,
+            neighborhood.id,
+            logger,
+            options.statsState
+          )
         : Promise.resolve(null),
     ])
 
