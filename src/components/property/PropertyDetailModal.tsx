@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import {
   Dialog,
@@ -19,6 +20,8 @@ import {
   Calendar,
   Heart,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
@@ -56,7 +59,27 @@ export function PropertyDetailModal({
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(property?.id)
 
-  if (!property) return null
+  const images = useMemo(
+    () => property?.images?.filter(Boolean) ?? [],
+    [property?.images]
+  )
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  useEffect(() => {
+    setCurrentImageIndex(0)
+  }, [property?.id])
+
+  const hasMultipleImages = images.length > 1
+
+  const showNextImage = () => {
+    if (!hasMultipleImages) return
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const showPreviousImage = () => {
+    if (!hasMultipleImages) return
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -78,12 +101,14 @@ export function PropertyDetailModal({
     return value.toFixed(1).replace(/\.0$/, '')
   }
 
+  if (!property) return null
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-slate-900 p-0 text-white">
         <div className="relative aspect-video w-full">
           <PropertyImage
-            src={property.images || undefined}
+            src={images[currentImageIndex] || images}
             alt={property.address || 'Property'}
             fill
             className="object-cover"
@@ -120,6 +145,56 @@ export function PropertyDetailModal({
           >
             <ExternalLink className="h-5 w-5" />
           </a>
+
+          {hasMultipleImages && (
+            <div className="absolute inset-0 flex items-center justify-between px-3">
+              <button
+                type="button"
+                onClick={showPreviousImage}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                aria-label="Previous image"
+                data-testid="previous-image"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={showNextImage}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                aria-label="Next image"
+                data-testid="next-image"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+
+          {hasMultipleImages && (
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
+              <div
+                className="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-medium text-white"
+                data-testid="image-counter"
+              >
+                {currentImageIndex + 1} / {images.length}
+              </div>
+              <div className="flex gap-2">
+                {images.map((_, index) => {
+                  const isActive = index === currentImageIndex
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      aria-label={`View image ${index + 1}`}
+                      data-testid={`image-dot-${index}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
+                      style={{ opacity: isActive ? 1 : 0.4 }}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="absolute bottom-4 left-4">
             <p className="text-3xl font-bold text-white">
