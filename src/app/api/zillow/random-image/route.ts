@@ -69,6 +69,12 @@ function pickRandom<T>(arr: T[]): T {
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export async function GET() {
+  // This demo endpoint fetches third-party listing data/images and should not be
+  // exposed on production deployments.
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
   const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || DEFAULT_HOST
 
