@@ -107,9 +107,9 @@ describe('PropertyDetailModal integration - carousel resilience', () => {
 
     const { rerender } = renderModal(firstProperty)
 
-    await userEvent.click(screen.getByLabelText('Next photo'))
-    await userEvent.click(screen.getByLabelText('Next photo'))
-    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    await userEvent.click(screen.getByTestId('next-image'))
+    await userEvent.click(screen.getByTestId('next-image'))
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('3 / 3')
 
     const singleImageProperty: Property = {
       ...baseProperty,
@@ -131,8 +131,8 @@ describe('PropertyDetailModal integration - carousel resilience', () => {
       'data-src',
       'https://img/solo.jpg'
     )
-    expect(screen.queryByLabelText('Next photo')).not.toBeInTheDocument()
-    expect(screen.queryByText(/\d+ \/ \d+/)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('next-image')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('image-counter')).not.toBeInTheDocument()
   })
 
   it('keeps the slide counter in sync when a property swap increases image count', async () => {
@@ -159,12 +159,12 @@ describe('PropertyDetailModal integration - carousel resilience', () => {
       />
     )
 
-    expect(screen.getByText('1 / 2')).toBeInTheDocument()
-    await userEvent.click(screen.getByLabelText('Next photo'))
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 2')
+    await userEvent.click(screen.getByTestId('next-image'))
     expect(screen.getByTestId('property-image')).toHaveAttribute(
       'data-src',
       'https://img/new-two.jpg'
     )
-    expect(screen.getByText('2 / 2')).toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('2 / 2')
   })
 })
