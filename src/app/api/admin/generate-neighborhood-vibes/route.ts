@@ -5,10 +5,13 @@ import {
   NeighborhoodVibesService,
   type NeighborhoodContext,
 } from '@/lib/services/neighborhood-vibes'
+import { type NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
 
 interface GenerateNeighborhoodVibesRequest {
   neighborhoodIds?: string[]
   limit?: number
+  force?: boolean
+  delayMs?: number
 }
 
 export async function POST(req: Request) {
@@ -39,11 +42,24 @@ export async function POST(req: Request) {
     // empty body is fine
   }
 
+  const limitParam = Number.parseInt(url.searchParams.get('limit') ?? '', 10)
   const limit = Math.min(
-    parseInt(url.searchParams.get('limit') || '') || body.limit || 25,
+    Math.max(Number.isFinite(limitParam) ? limitParam : (body.limit ?? 25), 1),
     50
   )
   const requestedIds = body.neighborhoodIds || []
+  const force = url.searchParams.get('force') === 'true' || body.force === true
+  const delayMsParam = Number.parseInt(
+    url.searchParams.get('delayMs') ?? '',
+    10
+  )
+  const delayMs = Math.min(
+    Math.max(
+      Number.isFinite(delayMsParam) ? delayMsParam : (body.delayMs ?? 800),
+      0
+    ),
+    5000
+  )
 
   const supabase = createStandaloneClient()
 
@@ -56,9 +72,10 @@ export async function POST(req: Request) {
   if (requestedIds.length > 0) {
     neighborhoodQuery = neighborhoodQuery.in('id', requestedIds.slice(0, 50))
   } else {
-    neighborhoodQuery = neighborhoodQuery
-      .is('neighborhood_vibes.id', null)
-      .limit(limit)
+    neighborhoodQuery = neighborhoodQuery.limit(limit)
+    if (!force) {
+      neighborhoodQuery = neighborhoodQuery.is('neighborhood_vibes.id', null)
+    }
   }
 
   const { data: neighborhoods, error } = await neighborhoodQuery
@@ -91,11 +108,14 @@ export async function POST(req: Request) {
   const contexts: NeighborhoodContext[] = []
 
   for (const neighborhood of neighborhoods) {
-    const { data: listings } = await supabase
-      .from('properties')
-      .select('address, price, bedrooms, bathrooms, property_type')
-      .eq('neighborhood_id', neighborhood.id)
-      .limit(12)
+    const [{ data: listings }, listingStats] = await Promise.all([
+      supabase
+        .from('properties')
+        .select('address, price, bedrooms, bathrooms, property_type')
+        .eq('neighborhood_id', neighborhood.id)
+        .limit(12),
+      fetchNeighborhoodStats(supabase, neighborhood.id),
+    ])
 
     contexts.push({
       neighborhoodId: neighborhood.id,
@@ -106,6 +126,7 @@ export async function POST(req: Request) {
       medianPrice: neighborhood.median_price,
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
+      listingStats,
       sampleProperties: (listings || []).map((p) => ({
         address: p.address,
         price: p.price,
@@ -118,7 +139,7 @@ export async function POST(req: Request) {
 
   const service = createNeighborhoodVibesService()
   const batch = await service.generateBatch(contexts, {
-    delayMs: 800,
+    delayMs,
     onProgress: (completed, total) => {
       if (process.env.NODE_ENV === 'development') {
         console.log(
@@ -128,8 +149,9 @@ export async function POST(req: Request) {
     },
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const inserts: any[] = []
+  const inserts: Array<
+    ReturnType<typeof NeighborhoodVibesService.toInsertRecord>
+  > = []
   for (const result of batch.success) {
     const context = contexts.find(
       (c) => c.neighborhoodId === result.neighborhoodId
@@ -138,14 +160,13 @@ export async function POST(req: Request) {
     const record = NeighborhoodVibesService.toInsertRecord(
       result,
       context,
-      JSON.stringify(result.vibes)
+      result.rawOutput
     )
     inserts.push(record)
   }
 
   if (inserts.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: insertError } = await (supabase as any)
+    const { error: insertError } = await supabase
       .from('neighborhood_vibes')
       .upsert(inserts, {
         onConflict: 'neighborhood_id',
@@ -177,4 +198,27 @@ export async function POST(req: Request) {
     })),
     errors: batch.failed,
   })
+}
+
+async function fetchNeighborhoodStats(
+  supabase: ReturnType<typeof createStandaloneClient>,
+  neighborhoodId: string
+): Promise<NeighborhoodStatsResult | null> {
+  const { data, error } = await supabase.rpc('get_neighborhood_stats', {
+    neighborhood_uuid: neighborhoodId,
+  })
+
+  if (error) {
+    console.warn('[generate-neighborhood-vibes] Failed to fetch stats', {
+      neighborhoodId,
+      error: error.message,
+    })
+    return null
+  }
+
+  if (Array.isArray(data)) {
+    return (data[0] as NeighborhoodStatsResult) || null
+  }
+
+  return (data as NeighborhoodStatsResult) || null
 }

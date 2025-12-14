@@ -159,6 +159,71 @@ export type Database = {
         }
         Relationships: []
       }
+      neighborhood_vibes: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          generation_cost_usd: number | null
+          id: string
+          input_data: Json | null
+          local_highlights: Json
+          model_used: string
+          neighborhood_id: string
+          neighborhood_themes: Json
+          raw_output: string | null
+          resident_fits: Json
+          source_data_hash: string
+          suggested_tags: string[]
+          tagline: string
+          updated_at: string | null
+          vibe_statement: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          generation_cost_usd?: number | null
+          id?: string
+          input_data?: Json | null
+          local_highlights?: Json
+          model_used: string
+          neighborhood_id: string
+          neighborhood_themes?: Json
+          raw_output?: string | null
+          resident_fits?: Json
+          source_data_hash: string
+          suggested_tags?: string[]
+          tagline: string
+          updated_at?: string | null
+          vibe_statement: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          generation_cost_usd?: number | null
+          id?: string
+          input_data?: Json | null
+          local_highlights?: Json
+          model_used?: string
+          neighborhood_id?: string
+          neighborhood_themes?: Json
+          raw_output?: string | null
+          resident_fits?: Json
+          source_data_hash?: string
+          suggested_tags?: string[]
+          tagline?: string
+          updated_at?: string | null
+          vibe_statement?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'neighborhood_vibes_neighborhood_id_fkey'
+            columns: ['neighborhood_id']
+            isOneToOne: true
+            referencedRelation: 'neighborhoods'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       properties: {
         Row: {
           address: string
@@ -1690,6 +1755,10 @@ export type SavedSearchUpdate = TablesUpdate<'saved_searches'>
 export type PropertyVibe = Tables<'property_vibes'>
 export type PropertyVibeInsert = TablesInsert<'property_vibes'>
 export type PropertyVibeUpdate = TablesUpdate<'property_vibes'>
+
+export type NeighborhoodVibe = Tables<'neighborhood_vibes'>
+export type NeighborhoodVibeInsert = TablesInsert<'neighborhood_vibes'>
+export type NeighborhoodVibeUpdate = TablesUpdate<'neighborhood_vibes'>
 
 export type NeighborhoodUpdate = TablesUpdate<'neighborhoods'>
 
