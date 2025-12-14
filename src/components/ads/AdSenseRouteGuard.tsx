@@ -15,7 +15,7 @@ const AD_ELIGIBLE_PREFIXES = ['/dashboard/properties']
 
 const ADSENSE_ENABLED = process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false'
 
-function isAdEligiblePath(pathname?: string) {
+function isAdEligiblePath(pathname?: string | null) {
   if (!pathname || !ADSENSE_ENABLED) return false
 
   const normalizedPath = pathname.replace(/\/?$/, '') || '/'
