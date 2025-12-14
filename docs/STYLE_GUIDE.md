@@ -233,7 +233,7 @@ A React component that generates personalized, emotional descriptions and lifest
    - "Family Haven" (3+ bed, 2+ bath)
    - "Cozy Retreat" (≤2 bed, ≤1200 sqft)
    - "Scholar's Den" (high walk score >80)
-   - "Love Nest" (always included for couples)
+   - "Couples Retreat" (always included for couples)
 
 3. **Couple-Specific Features**:
    - Special mutual like messages when both partners like a property
@@ -274,9 +274,9 @@ interface StorytellingDescriptionProps {
 
 **Example Outputs**:
 
-- **Starter Home**: "Perfect starter home where your love story begins" + Tags: "Love Nest", "Cozy Retreat"
+- **Starter Home**: "Perfect starter home where your love story begins" + Tags: "Couples Retreat", "Cozy Retreat"
 - **Family Home**: "Room to grow, laugh, and create lifelong memories" + Tags: "Family Haven", "Work from Home Ready", "Pet Paradise"
-- **Luxury Property**: "Elegant retreat for the refined couple" + Tags: "Entertainer's Dream", "Urban Oasis", "Love Nest"
+- **Luxury Property**: "Elegant retreat for the refined couple" + Tags: "Entertainer's Dream", "Urban Oasis", "Couples Retreat"
 - **Mutual Like**: "Both hearts say yes to this special place" (with heart icon) + Enhanced pink gradient styling
 
 **Dependencies**:
