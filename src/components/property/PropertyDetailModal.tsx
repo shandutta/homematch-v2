@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import {
   Dialog,
@@ -19,6 +20,8 @@ import {
   Calendar,
   Heart,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
@@ -56,6 +59,24 @@ export function PropertyDetailModal({
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(property?.id)
 
+  const [imageIndex, setImageIndex] = useState(0)
+
+  const images = useMemo(
+    () => property?.images?.filter(Boolean) ?? [],
+    [property?.images]
+  )
+
+  useEffect(() => {
+    setImageIndex(0)
+  }, [property?.id])
+
+  const { normalizedIndex, currentImage } = useMemo(() => {
+    if (!images.length) return { normalizedIndex: 0, currentImage: undefined }
+    const normalizedIndex =
+      ((imageIndex % images.length) + images.length) % images.length
+    return { normalizedIndex, currentImage: images[normalizedIndex] }
+  }, [images, imageIndex])
+
   if (!property) return null
 
   const formatPrice = (price: number) => {
@@ -83,13 +104,37 @@ export function PropertyDetailModal({
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-slate-900 p-0 text-white">
         <div className="relative aspect-video w-full">
           <PropertyImage
-            src={property.images || undefined}
+            src={currentImage || property.images || undefined}
             alt={property.address || 'Property'}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 672px"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
+
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setImageIndex((prev) => prev - 1)}
+                className="absolute top-1/2 left-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setImageIndex((prev) => prev + 1)}
+                className="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              <div className="absolute right-4 bottom-4 rounded-full bg-slate-900/80 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                {normalizedIndex + 1} / {images.length}
+              </div>
+            </>
+          )}
 
           {property.property_type && (
             <div className="absolute top-4 left-4">
