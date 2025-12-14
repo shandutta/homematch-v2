@@ -125,7 +125,9 @@ function parseArgs(argv: string[]): Args {
     ? Number(raw.sampleLimit)
     : defaults.sampleLimit
   const includeStats =
-    raw.includeStats != null ? raw.includeStats !== 'false' : defaults.includeStats
+    raw.includeStats != null
+      ? raw.includeStats !== 'false'
+      : defaults.includeStats
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
