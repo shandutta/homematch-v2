@@ -22,6 +22,8 @@ export default [
       'migrated_data/**/*',
       'playwright-report/**/*',
       'test-results/**/*',
+      '.vercel',
+      '.vercel/**/*',
       '.next',
       '.next/**/*',
       '.next-test',
@@ -242,6 +244,8 @@ export default [
   },
   {
     ignores: [
+      '.vercel',
+      '.vercel/**/*',
       '.next',
       '.next/**/*',
       '.next-test',
