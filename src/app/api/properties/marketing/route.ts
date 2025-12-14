@@ -32,7 +32,7 @@ type MarketingCard = {
 const MARKETING_CARDS: MarketingCard[] = [
   {
     zpid: 'mock-1',
-    imageUrl: '/images/marketing/mock-home-1.svg',
+    imageUrl: '/images/marketing/mock-home-1.jpg',
     price: 850000,
     bedrooms: 4,
     bathrooms: 3,
@@ -42,7 +42,7 @@ const MARKETING_CARDS: MarketingCard[] = [
   },
   {
     zpid: 'mock-2',
-    imageUrl: '/images/marketing/mock-home-2.svg',
+    imageUrl: '/images/marketing/mock-home-2.jpg',
     price: 1200000,
     bedrooms: 3,
     bathrooms: 2,
@@ -52,7 +52,7 @@ const MARKETING_CARDS: MarketingCard[] = [
   },
   {
     zpid: 'mock-3',
-    imageUrl: '/images/marketing/mock-home-3.svg',
+    imageUrl: '/images/marketing/mock-home-3.jpg',
     price: 950000,
     bedrooms: 3,
     bathrooms: 2,

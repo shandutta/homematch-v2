@@ -99,7 +99,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
 
       <div className="relative aspect-[4/3]">
         <Image
-          src="/images/marketing/mock-home-1.svg"
+          src="/images/marketing/mock-home-1.jpg"
           alt="Sample home"
           fill
           sizes="(max-width: 768px) 100vw, 540px"
