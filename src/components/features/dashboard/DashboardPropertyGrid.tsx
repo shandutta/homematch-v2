@@ -21,6 +21,7 @@ import { Heart, X } from 'lucide-react'
 
 /** Insert an ad after every N property cards */
 const AD_FREQUENCY = 4
+const MIN_CONTENT_FOR_ADS = AD_FREQUENCY + 2
 
 const FloatingHearts = lazy(() =>
   import('@/components/couples/CouplesMicroInteractions').then((m) => ({
@@ -53,6 +54,8 @@ export function DashboardPropertyGrid({
   celebrationTrigger,
   onView,
 }: DashboardPropertyGridProps) {
+  const hasEnoughContentForAds = properties.length >= MIN_CONTENT_FOR_ADS
+
   // Detect small screens to switch to swipe-first layout
   const [isMobile, setIsMobile] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'stack'>('grid')
@@ -240,8 +243,9 @@ export function DashboardPropertyGrid({
               />
             </PropertyViewTracker>
 
-            {/* Insert sponsored ad after every AD_FREQUENCY cards */}
-            {(index + 1) % AD_FREQUENCY === 0 &&
+            {/* Insert sponsored ad after every AD_FREQUENCY cards when there's enough organic content */}
+            {hasEnoughContentForAds &&
+              (index + 1) % AD_FREQUENCY === 0 &&
               index < properties.length - 1 && (
                 <InFeedAd position={Math.floor((index + 1) / AD_FREQUENCY)} />
               )}
