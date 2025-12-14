@@ -5,7 +5,6 @@ import {
   type NeighborhoodVibesOutput,
 } from '@/lib/schemas/neighborhood-vibes'
 import {
-  DEFAULT_VIBES_MODEL,
   OpenRouterClient,
   createOpenRouterClient,
   type UsageInfo,
@@ -20,6 +19,8 @@ export interface NeighborhoodVibesResult {
   vibes: NeighborhoodVibesOutput
   usage: UsageInfo
   processingTimeMs: number
+  rawOutput: string
+  modelUsed: string
 }
 
 export interface NeighborhoodVibesError {
@@ -65,6 +66,8 @@ export class NeighborhoodVibesService {
       throw new Error('Empty response from LLM')
     }
 
+    const rawOutput = content
+
     let parsed: NeighborhoodVibesOutput
     try {
       const json = JSON.parse(content)
@@ -84,6 +87,8 @@ export class NeighborhoodVibesService {
       vibes: parsed,
       usage,
       processingTimeMs: Date.now() - start,
+      rawOutput,
+      modelUsed: response.model,
     }
   }
 
@@ -137,6 +142,7 @@ export class NeighborhoodVibesService {
       medianPrice: context.medianPrice,
       walkScore: context.walkScore,
       transitScore: context.transitScore,
+      listingStats: context.listingStats,
       sampleProperties: context.sampleProperties.slice(0, 10),
     })
     return crypto.createHash('md5').update(payload).digest('hex')
@@ -167,11 +173,12 @@ export class NeighborhoodVibesService {
           walkScore: context.walkScore,
           transitScore: context.transitScore,
         },
+        listingStats: context.listingStats,
         sampleProperties: context.sampleProperties,
-        modelId: DEFAULT_VIBES_MODEL,
+        modelId: result.modelUsed,
       },
       raw_output: rawOutput,
-      model_used: DEFAULT_VIBES_MODEL,
+      model_used: result.modelUsed,
       source_data_hash: NeighborhoodVibesService.generateSourceHash(context),
       generation_cost_usd: result.usage.estimatedCostUsd,
       confidence: 0.82,

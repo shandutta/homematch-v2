@@ -1,4 +1,5 @@
 import { type NeighborhoodVibesOutput } from '@/lib/schemas/neighborhood-vibes'
+import { type NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
 
 export interface NeighborhoodContext {
   neighborhoodId: string
@@ -9,6 +10,7 @@ export interface NeighborhoodContext {
   medianPrice?: number | null
   walkScore?: number | null
   transitScore?: number | null
+  listingStats?: NeighborhoodStatsResult | null
   sampleProperties: Array<{
     address: string
     price?: number | null
@@ -32,6 +34,11 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
   if (transitScore != null) stats.push(`Transit Score: ${transitScore}`)
   if (metroArea) stats.push(`Metro area: ${metroArea}`)
 
+  const listingStats = context.listingStats
+  const listingSnapshot = listingStats
+    ? `Listings snapshot: total ${listingStats.total_properties} | median $${Math.round(listingStats.median_price).toLocaleString()} | range $${Math.round(listingStats.price_range_min).toLocaleString()}-$${Math.round(listingStats.price_range_max).toLocaleString()} | avg ${listingStats.avg_bedrooms.toFixed(1)}bd ${listingStats.avg_bathrooms.toFixed(1)}ba | avg ${Math.round(listingStats.avg_square_feet).toLocaleString()} sqft`
+    : null
+
   const sampleProps = context.sampleProperties
     .slice(0, 12)
     .map((p) =>
@@ -53,11 +60,12 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
 - Avoid overhyping or making up attractions. Use the provided context only.`
 
   const userPrompt = `Neighborhood: ${name} (${city}, ${state})
-${stats.length ? `Stats: ${stats.join(' | ')}` : 'Stats: n/a'}
-Sample listings (for texture, not for sales copy):
-${sampleProps.length ? sampleProps.map((p) => `- ${p}`).join('\n') : '- No listings available, focus on location vibe'}
+	${stats.length ? `Stats: ${stats.join(' | ')}` : 'Stats: n/a'}
+	${listingSnapshot ? listingSnapshot : 'Listings snapshot: n/a'}
+	Sample listings (for texture, not for sales copy):
+	${sampleProps.length ? sampleProps.map((p) => `- ${p}`).join('\n') : '- No listings available, focus on location vibe'}
 
-Return JSON strictly matching this shape:
+	Return JSON strictly matching this shape:
 {
   "tagline": "short hook (8-140 chars)",
   "vibeStatement": "1-2 sentence feel of daily life here",
