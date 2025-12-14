@@ -150,8 +150,6 @@ export function Footer() {
   const companyLinks = [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
-    { href: '/blog', label: 'Blog' },
-    { href: '/careers', label: 'Careers' },
   ]
 
   const legalLinks = [
