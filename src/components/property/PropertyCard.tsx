@@ -3,12 +3,13 @@
 import { ReactNode, useEffect, useMemo, useState, useCallback } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { Neighborhood } from '@/lib/schemas/property'
-import { Bed, Bath, Square, ExternalLink, Heart, X } from 'lucide-react'
+import { Bed, Bath, Square, ExternalLink, Heart, MapPin, X } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
+import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
@@ -69,6 +70,9 @@ export function PropertyCard({
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(property.id)
+  const { data: neighborhoodVibes } = useNeighborhoodVibes(
+    neighborhood?.id || property.neighborhood_id || undefined
+  )
   const hasMapCoordinates = Boolean(property.coordinates)
   const propertyDetail = usePropertyDetailSafe()
 
@@ -230,6 +234,19 @@ export function PropertyCard({
           <p className="text-hm-stone-400 text-sm">
             {neighborhood?.name || property.city}, {property.state}
           </p>
+          {neighborhoodVibes && (
+            <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/5 bg-white/5 p-2">
+              <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
+              <div className="space-y-1">
+                <p className="text-hm-stone-100 text-sm font-semibold">
+                  {neighborhoodVibes.tagline}
+                </p>
+                <p className="text-hm-stone-400 text-xs">
+                  {neighborhoodVibes.vibe_statement}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}

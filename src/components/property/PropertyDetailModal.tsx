@@ -26,6 +26,7 @@ import { StorytellingDescription } from '@/components/features/storytelling/Stor
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
+import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 import { InteractionType } from '@/types/app'
 
 interface PropertyDetailModalProps {
@@ -55,6 +56,9 @@ export function PropertyDetailModal({
 }: PropertyDetailModalProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(property?.id)
+  const { data: neighborhoodVibes } = useNeighborhoodVibes(
+    neighborhood?.id || property?.neighborhood_id || undefined
+  )
 
   if (!property) return null
 
@@ -144,6 +148,21 @@ export function PropertyDetailModal({
                 {property.zip_code}
               </span>
             </div>
+            {neighborhoodVibes && (
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-slate-700 bg-slate-800/60 p-3">
+                <div className="mt-0.5 rounded-full bg-purple-500/10 p-2 text-purple-300">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">
+                    {neighborhoodVibes.tagline}
+                  </p>
+                  <p className="text-sm text-slate-300">
+                    {neighborhoodVibes.vibe_statement}
+                  </p>
+                </div>
+              </div>
+            )}
           </DialogHeader>
 
           <div className="grid grid-cols-3 gap-3">

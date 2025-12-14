@@ -4,6 +4,7 @@ export const QUERY_STALE_TIMES = {
   INTERACTION_SUMMARY: 5 * 60 * 1000, // 5 minutes
   PROPERTY_LIST: 10 * 60 * 1000, // 10 minutes
   PROPERTY_VIBES: 30 * 60 * 1000, // 30 minutes - vibes don't change often
+  NEIGHBORHOOD_VIBES: 30 * 60 * 1000, // 30 minutes - neighborhood vibes are mostly static
   USER_PROFILE: 30 * 60 * 1000, // 30 minutes
   STATIC_DATA: 60 * 60 * 1000, // 1 hour
 } as const
