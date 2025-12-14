@@ -20,6 +20,7 @@
  *   --cursorFile=.logs/backfill-neighborhood-vibes-cursor.json
  *   --logFile=.logs/backfill-neighborhood-vibes.log
  *   --sampleLimit=12  Sample properties per neighborhood (default 12)
+ *   --includeStats=false  Skip get_neighborhood_stats RPC (default true)
  *   --neighborhoodIds=uuid,uuid   Target specific neighborhoods (disables offset/cursor)
  */
 
@@ -72,6 +73,7 @@ type Args = {
   cursorFile: string
   logFile: string
   sampleLimit: number
+  includeStats: boolean
 }
 
 function parseArgs(argv: string[]): Args {
@@ -87,6 +89,7 @@ function parseArgs(argv: string[]): Args {
     cursorFile: path.join('.logs', 'backfill-neighborhood-vibes-cursor.json'),
     logFile: path.join('.logs', 'backfill-neighborhood-vibes.log'),
     sampleLimit: 12,
+    includeStats: true,
   }
 
   const raw: Record<string, string> = {}
@@ -121,6 +124,8 @@ function parseArgs(argv: string[]): Args {
   const sampleLimit = raw.sampleLimit
     ? Number(raw.sampleLimit)
     : defaults.sampleLimit
+  const includeStats =
+    raw.includeStats != null ? raw.includeStats !== 'false' : defaults.includeStats
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
@@ -145,6 +150,7 @@ function parseArgs(argv: string[]): Args {
       Number.isFinite(sampleLimit) && sampleLimit > 0
         ? Math.floor(sampleLimit)
         : defaults.sampleLimit,
+    includeStats,
   }
 }
 
@@ -261,36 +267,86 @@ async function writeCursorFile(
   }
 }
 
+function writeCursorFileSync(
+  cursorFile: string,
+  cursor: BackfillNeighborhoodVibesCursor,
+  extra: {
+    envFile: string
+    supabaseHost: string
+    canceled: boolean
+  }
+): void {
+  const resolvedPath = path.isAbsolute(cursorFile)
+    ? cursorFile
+    : path.join(process.cwd(), cursorFile)
+  const dir = path.dirname(resolvedPath)
+
+  try {
+    fsSync.mkdirSync(dir, { recursive: true })
+    const payload = {
+      updatedAt: new Date().toISOString(),
+      envFile: extra.envFile,
+      supabaseHost: extra.supabaseHost,
+      canceled: extra.canceled,
+      ...cursor,
+    }
+
+    const tmpPath = `${resolvedPath}.tmp`
+    fsSync.writeFileSync(tmpPath, JSON.stringify(payload, null, 2))
+    fsSync.renameSync(tmpPath, resolvedPath)
+  } catch (error) {
+    console.warn(
+      `[backfill-neighborhood-vibes] Failed to write cursor file: ${error instanceof Error ? error.message : String(error)}`
+    )
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv)
   const fileLogger = installFileLogger(args.logFile)
 
   let shouldStop = false
-  let cancelSignals = 0
 
   const supabaseHost = safeHost(process.env.SUPABASE_URL)
 
   let lastCursor: BackfillNeighborhoodVibesCursor | null = null
 
-  const handleStopSignal = (signal: string) => {
-    cancelSignals += 1
-    shouldStop = true
-    console.warn(
-      `[backfill-neighborhood-vibes] Received ${signal}. Will stop after current neighborhood and persist cursor. (press again to force exit)`
-    )
+  const handleStopSignal = (signal: 'SIGINT' | 'SIGTERM') => {
+    if (!shouldStop) {
+      shouldStop = true
+      console.warn(
+        `[backfill-neighborhood-vibes] Received ${signal}. Will stop after current neighborhood and persist cursor. (press Ctrl+C again to force exit)`
+      )
 
-    if (cancelSignals >= 2) {
-      console.warn('[backfill-neighborhood-vibes] Forcing exit.')
-      process.exit(130)
+      if (lastCursor) {
+        writeCursorFileSync(args.cursorFile, lastCursor, {
+          envFile,
+          supabaseHost,
+          canceled: true,
+        })
+      }
+
+      return
     }
 
+    // NOTE: `pnpm exec` may forward SIGTERM after SIGINT. Treat SIGINT as the
+    // explicit "force exit" signal and ignore follow-up SIGTERM while stopping.
+    if (signal !== 'SIGINT') {
+      console.warn(
+        `[backfill-neighborhood-vibes] Received ${signal} while stopping; ignoring.`
+      )
+      return
+    }
+
+    console.warn('[backfill-neighborhood-vibes] Forcing exit.')
     if (lastCursor) {
-      void writeCursorFile(args.cursorFile, lastCursor, {
+      writeCursorFileSync(args.cursorFile, lastCursor, {
         envFile,
         supabaseHost,
         canceled: true,
       })
     }
+    process.exit(130)
   }
 
   const sigintHandler = () => handleStopSignal('SIGINT')
@@ -332,6 +388,18 @@ async function main() {
       }
     }
 
+    if (!args.neighborhoodIds) {
+      lastCursor = {
+        offset: startOffset,
+        lastNeighborhoodId: null,
+        attempted: 0,
+        skipped: 0,
+        success: 0,
+        failed: 0,
+        totalCostUsd: 0,
+      }
+    }
+
     const supabase = createStandaloneClient()
     const neighborhoodVibesService = createNeighborhoodVibesService()
 
@@ -344,6 +412,7 @@ async function main() {
         neighborhoodIds: args.neighborhoodIds,
         offset: startOffset,
         sampleLimit: args.sampleLimit,
+        includeStats: args.includeStats,
       },
       {
         supabase,
@@ -380,6 +449,7 @@ async function main() {
           resume: args.resume,
           neighborhoodIdsCount: args.neighborhoodIds?.length ?? 0,
           sampleLimit: args.sampleLimit,
+          includeStats: args.includeStats,
           cursorFile: args.neighborhoodIds ? null : args.cursorFile,
         },
         attempted: result.attempted,
