@@ -69,6 +69,38 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Advertising</h2>
+          <p className="text-slate-700">
+            If we show ads, they may be served by Google AdSense and other
+            advertising partners. These partners may use cookies or similar
+            technologies to provide, measure, and personalize ads. You can
+            manage ad personalization in your Google account at{' '}
+            <Link
+              href="https://adssettings.google.com/"
+              className="text-sky-600 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              adssettings.google.com
+            </Link>
+            .
+          </p>
+          <p className="text-slate-700">
+            For more on how Google uses information from sites that use its
+            services, see{' '}
+            <Link
+              href="https://policies.google.com/technologies/partner-sites"
+              className="text-sky-600 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              policies.google.com/technologies/partner-sites
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <h2 className="text-xl font-semibold">Your choices</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
