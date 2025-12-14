@@ -29,6 +29,7 @@ import { StorytellingDescription } from '@/components/features/storytelling/Stor
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
+import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 import { InteractionType } from '@/types/app'
 
 interface PropertyDetailModalProps {
@@ -63,6 +64,16 @@ export function PropertyDetailModal({
     [property?.images]
   )
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const neighborhoodData =
+    neighborhood ||
+    (property as (Property & { neighborhood?: Neighborhood | null }) | null)
+      ?.neighborhood ||
+    (property as (Property & { neighborhoods?: Neighborhood | null }) | null)
+      ?.neighborhoods ||
+    null
+  const { data: neighborhoodVibes } = useNeighborhoodVibes(
+    neighborhoodData?.id || property?.neighborhood_id || undefined
+  )
 
   useEffect(() => {
     setCurrentImageIndex(0)
@@ -221,10 +232,40 @@ export function PropertyDetailModal({
             <div className="flex items-center gap-2 text-slate-400">
               <MapPin className="h-4 w-4" />
               <span>
-                {neighborhood?.name || property.city}, {property.state}{' '}
+                {neighborhoodData?.name || property.city}, {property.state}{' '}
                 {property.zip_code}
               </span>
             </div>
+            {neighborhoodVibes && (
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-slate-700 bg-slate-800/60 p-3">
+                <div className="mt-0.5 rounded-full bg-purple-500/10 p-2 text-purple-300">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-white">
+                    {neighborhoodVibes.tagline}
+                  </p>
+                  <p className="text-sm text-slate-300">
+                    {neighborhoodVibes.vibe_statement}
+                  </p>
+                  {neighborhoodVibes.suggested_tags?.length ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {neighborhoodVibes.suggested_tags
+                        .slice(0, 6)
+                        .map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="bg-slate-700/70 text-xs text-white"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            )}
           </DialogHeader>
 
           <div className="grid grid-cols-3 gap-3">
@@ -262,7 +303,7 @@ export function PropertyDetailModal({
             <h3 className="font-semibold text-white">About this home</h3>
             <StorytellingDescription
               property={property}
-              neighborhood={neighborhood}
+              neighborhood={neighborhoodData || undefined}
               vibes={vibes}
               isMutualLike={mutualLikes.some(
                 (ml) => ml.property_id === property.id && ml.liked_by_count >= 2
