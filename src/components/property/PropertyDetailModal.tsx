@@ -58,7 +58,6 @@ export function PropertyDetailModal({
 }: PropertyDetailModalProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(property?.id)
-
   const images = useMemo(
     () => property?.images?.filter(Boolean) ?? [],
     [property?.images]
@@ -70,6 +69,13 @@ export function PropertyDetailModal({
   }, [property?.id])
 
   const hasMultipleImages = images.length > 1
+
+  const { normalizedIndex, currentImage } = useMemo(() => {
+    if (!images.length) return { normalizedIndex: 0, currentImage: undefined }
+    const normalizedIndex =
+      ((currentImageIndex % images.length) + images.length) % images.length
+    return { normalizedIndex, currentImage: images[normalizedIndex] }
+  }, [currentImageIndex, images])
 
   const showNextImage = () => {
     if (!hasMultipleImages) return
@@ -108,13 +114,13 @@ export function PropertyDetailModal({
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-slate-900 p-0 text-white">
         <div className="relative aspect-video w-full">
           <PropertyImage
-            src={images[currentImageIndex] || images}
+            src={currentImage || images}
             alt={property.address || 'Property'}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 672px"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
 
           {property.property_type && (
             <div className="absolute top-4 left-4">
@@ -140,18 +146,18 @@ export function PropertyDetailModal({
             href={buildZillowUrl(property)}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-900 backdrop-blur-sm transition-colors hover:bg-white"
+            className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-900 backdrop-blur-sm transition-colors hover:bg-white"
             aria-label="View on Zillow"
           >
             <ExternalLink className="h-5 w-5" />
           </a>
 
           {hasMultipleImages && (
-            <div className="absolute inset-0 flex items-center justify-between px-3">
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-between px-3">
               <button
                 type="button"
                 onClick={showPreviousImage}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
                 aria-label="Previous image"
                 data-testid="previous-image"
               >
@@ -160,7 +166,7 @@ export function PropertyDetailModal({
               <button
                 type="button"
                 onClick={showNextImage}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
                 aria-label="Next image"
                 data-testid="next-image"
               >
@@ -170,16 +176,16 @@ export function PropertyDetailModal({
           )}
 
           {hasMultipleImages && (
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
+            <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
               <div
                 className="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-medium text-white"
                 data-testid="image-counter"
               >
-                {currentImageIndex + 1} / {images.length}
+                {normalizedIndex + 1} / {images.length}
               </div>
               <div className="flex gap-2">
                 {images.map((_, index) => {
-                  const isActive = index === currentImageIndex
+                  const isActive = index === normalizedIndex
                   return (
                     <button
                       key={index}
