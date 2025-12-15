@@ -224,7 +224,7 @@ async function deleteExistingUser(email, maxRetries = 3) {
  * Can be tuned via environment variables:
  *   - AUTH_READY_ATTEMPTS: Max attempts (default: 60)
  *   - AUTH_READY_DELAY_MS: Base delay between attempts (default: 3000ms)
- *   - AUTH_READY_MAX_WAIT_MS: Max total wait time (default: 180000ms)
+ *   - AUTH_READY_MAX_WAIT_MS: Max total wait time (default: 300000ms)
  */
 async function waitForAuthService(
   maxAttempts = resilienceConfig.authReadiness.maxAttempts,

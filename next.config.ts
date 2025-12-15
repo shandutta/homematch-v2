@@ -45,6 +45,8 @@ const SUPABASE_LOCAL_PROXY_TARGET =
   stripTrailingSlash(process.env.SUPABASE_LOCAL_PROXY_TARGET) ||
   'http://127.0.0.1:54200'
 
+const distDir = process.env.NEXT_DIST_DIR?.trim()
+
 const nextConfig: NextConfig = {
   /* config options here */
   ...(allowedDevOrigins.length
@@ -52,6 +54,8 @@ const nextConfig: NextConfig = {
         allowedDevOrigins,
       }
     : {}),
+
+  ...(distDir ? { distDir } : {}),
 
   // Allow external Zillow image hosts for next/image
   images: {

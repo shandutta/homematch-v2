@@ -9,6 +9,8 @@ const { spawn, execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 
+const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
 // First, kill any process on port 3000
 console.log('🔪 Killing any process on port 3000...')
 try {
@@ -103,10 +105,9 @@ delete testEnv.POSTGRES_PRISMA_URL
 
 // Start Next.js dev server with test environment on port 3000
 // Use pnpm to avoid bash path issues
-const nextProcess = spawn('pnpm', ['run', 'dev'], {
+const nextProcess = spawn(pnpmCmd, ['run', 'dev'], {
   stdio: 'inherit',
   env: testEnv,
-  shell: true,
   cwd: path.join(__dirname, '..'),
 })
 

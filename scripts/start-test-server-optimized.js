@@ -14,6 +14,8 @@ const shouldResetForE2E =
   process.env.E2E_RESET_DB === 'true' ||
   process.env.PLAYWRIGHT_RESET_DB === 'true'
 
+const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
 async function main() {
   // First, kill any process on port 3000
   console.log('🔪 Killing any process on port 3000...')
@@ -137,10 +139,9 @@ async function main() {
     `🔥 Launching dev:warmup (dev command: ${warmupEnv.WARMUP_DEV_COMMAND})...`
   )
 
-  const warmupProcess = spawn('pnpm', ['run', 'dev:warmup'], {
+  const warmupProcess = spawn(pnpmCmd, ['run', 'dev:warmup'], {
     stdio: 'inherit',
     env: warmupEnv,
-    shell: true,
     cwd: path.join(__dirname, '..'),
   })
 
