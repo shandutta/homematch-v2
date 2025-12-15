@@ -16,6 +16,8 @@ type Logger = {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+const STATE_RE = /^[A-Z]{2}$/
+
 const defaultSleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -25,6 +27,7 @@ export type BackfillNeighborhoodVibesArgs = {
   delayMs: number
   force: boolean
   neighborhoodIds: string[] | null
+  states?: string[] | null
   offset?: number
   sampleLimit: number
   includeStats?: boolean
@@ -86,6 +89,21 @@ function normalizeLimit(limit: number | null): number | null {
   if (!Number.isFinite(limit)) return null
   const safe = Math.floor(limit)
   return safe > 0 ? safe : null
+}
+
+function normalizeStates(states: string[] | null | undefined): string[] | null {
+  if (!states || states.length === 0) return null
+
+  const normalized = Array.from(
+    new Set(states.map((s) => s.trim().toUpperCase()).filter(Boolean))
+  )
+  const invalid = normalized.filter((s) => !STATE_RE.test(s))
+  if (invalid.length > 0) {
+    throw new Error(
+      `Invalid states: ${invalid.join(', ')} (expected state codes like CA)`
+    )
+  }
+  return normalized.length > 0 ? normalized : null
 }
 
 function maybeTableMissing(error: unknown): boolean {
@@ -225,6 +243,7 @@ export async function backfillNeighborhoodVibes(
   const shouldStop = deps.shouldStop ?? (() => false)
   const includeStats = args.includeStats !== false
   const statsState: StatsState = { disabled: false }
+  const states = normalizeStates(args.states)
 
   if (args.neighborhoodIds) {
     const invalid = args.neighborhoodIds.filter((id) => !UUID_RE.test(id))
@@ -256,7 +275,7 @@ export async function backfillNeighborhoodVibes(
   const startTime = Date.now()
 
   logger.log(
-    `[backfill-neighborhood-vibes] Starting (limit=${limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, neighborhoodIds=${args.neighborhoodIds?.length ?? 0}, offset=${args.neighborhoodIds ? 'n/a' : offset}, sampleLimit=${args.sampleLimit}, includeStats=${includeStats})`
+    `[backfill-neighborhood-vibes] Starting (limit=${limit ?? 'all'}, batchSize=${args.batchSize}, delayMs=${args.delayMs}, force=${args.force}, neighborhoodIds=${args.neighborhoodIds?.length ?? 0}, states=${states?.join(',') ?? 'all'}, offset=${args.neighborhoodIds ? 'n/a' : offset}, sampleLimit=${args.sampleLimit}, includeStats=${includeStats})`
   )
 
   const emitCursor = async () => {
@@ -288,17 +307,22 @@ export async function backfillNeighborhoodVibes(
 
     const pageStartOffset = offset
 
+    let neighborhoodsQuery = deps.supabase.from('neighborhoods').select('*')
+
+    if (states) {
+      neighborhoodsQuery = neighborhoodsQuery.in('state', states)
+    }
+
+    if (args.neighborhoodIds) {
+      neighborhoodsQuery = neighborhoodsQuery.in('id', args.neighborhoodIds)
+    } else {
+      neighborhoodsQuery = neighborhoodsQuery
+        .order('created_at', { ascending: false })
+        .range(pageStartOffset, pageStartOffset + pageSize - 1)
+    }
+
     const { data: rawNeighborhoods, error: neighborhoodsError } =
-      args.neighborhoodIds
-        ? await deps.supabase
-            .from('neighborhoods')
-            .select('*')
-            .in('id', args.neighborhoodIds)
-        : await deps.supabase
-            .from('neighborhoods')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .range(pageStartOffset, pageStartOffset + pageSize - 1)
+      await neighborhoodsQuery
 
     if (neighborhoodsError) {
       throw new Error(
