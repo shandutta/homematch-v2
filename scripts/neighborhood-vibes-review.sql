@@ -55,6 +55,19 @@ ORDER BY nv.created_at DESC
 LIMIT 25;
 
 -- ============================================================================
+-- 1b) When vibes were populated (time window)
+-- ============================================================================
+-- Tip: add a state filter (e.g. `WHERE n.state = 'CA'`) to focus on California.
+SELECT
+  MIN(nv.created_at) AS first_vibes_at,
+  MAX(nv.created_at) AS latest_vibes_at,
+  COUNT(*) FILTER (WHERE nv.created_at >= NOW() - INTERVAL '24 hours') AS vibes_last_24h,
+  COUNT(*) AS total_vibes
+FROM public.neighborhood_vibes nv
+JOIN public.neighborhoods n ON n.id = nv.neighborhood_id
+-- WHERE n.state = 'CA';
+
+-- ============================================================================
 -- 2) Deep dive one neighborhood
 -- ============================================================================
 -- Replace the UUID below with a `neighborhood_id` from query #1.
