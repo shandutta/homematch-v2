@@ -22,6 +22,8 @@
  *   --sampleLimit=12  Sample properties per neighborhood (default 12)
  *   --includeStats=false  Skip get_neighborhood_stats RPC (default true)
  *   --neighborhoodIds=uuid,uuid   Target specific neighborhoods (disables offset/cursor)
+ *   --states=CA,NY       Only process neighborhoods in these states
+ *   --state=CA           Alias for --states=CA
  */
 
 import { config } from 'dotenv'
@@ -67,6 +69,7 @@ type Args = {
   delayMs: number
   force: boolean
   neighborhoodIds: string[] | null
+  states: string[] | null
   offset: number
   offsetProvided: boolean
   resume: boolean
@@ -83,6 +86,7 @@ function parseArgs(argv: string[]): Args {
     delayMs: 800,
     force: false,
     neighborhoodIds: null,
+    states: null,
     offset: 0,
     offsetProvided: false,
     resume: false,
@@ -115,6 +119,28 @@ function parseArgs(argv: string[]): Args {
           .filter(Boolean)
       : defaults.neighborhoodIds
 
+  const statesRaw = (raw.states ?? raw.state)?.trim()
+  const states =
+    statesRaw != null && statesRaw.length > 0
+      ? Array.from(
+          new Set(
+            statesRaw
+              .split(',')
+              .map((s) => s.trim().toUpperCase())
+              .filter(Boolean)
+          )
+        )
+      : defaults.states
+
+  if (states) {
+    const invalid = states.filter((s) => !/^[A-Z]{2}$/.test(s))
+    if (invalid.length > 0) {
+      throw new Error(
+        `Invalid --states value(s): ${invalid.join(', ')} (expected state codes like CA)`
+      )
+    }
+  }
+
   const offsetProvided = raw.offset != null
   const offset = offsetProvided ? Number(raw.offset) : defaults.offset
 
@@ -140,6 +166,7 @@ function parseArgs(argv: string[]): Args {
     force,
     neighborhoodIds:
       neighborhoodIds && neighborhoodIds.length > 0 ? neighborhoodIds : null,
+    states: states && states.length > 0 ? states : null,
     offset:
       Number.isFinite(offset) && offset >= 0
         ? Math.floor(offset)
@@ -221,17 +248,59 @@ function installFileLogger(logFilePath: string): {
   return { close }
 }
 
-async function readCursorOffset(cursorFile: string): Promise<number | null> {
+function normalizeStatesFilter(states: unknown): string[] | null {
+  if (!Array.isArray(states)) return null
+  const normalized = Array.from(
+    new Set(
+      states
+        .map((s) => (typeof s === 'string' ? s.trim().toUpperCase() : ''))
+        .filter(Boolean)
+    )
+  )
+  return normalized.length > 0 ? normalized : null
+}
+
+function areStateFiltersEqual(a: string[] | null, b: string[] | null): boolean {
+  const aKey = (a ?? []).slice().sort().join(',')
+  const bKey = (b ?? []).slice().sort().join(',')
+  return aKey === bKey
+}
+
+async function readCursorOffset(
+  cursorFile: string,
+  expectedFilters: {
+    states: string[] | null
+  }
+): Promise<{
+  offset: number | null
+  reason: 'ok' | 'missing' | 'invalid' | 'filters_mismatch'
+  cursorStates: string[] | null
+}> {
   const resolvedPath = path.isAbsolute(cursorFile)
     ? cursorFile
     : path.join(process.cwd(), cursorFile)
   try {
     const text = await fs.readFile(resolvedPath, 'utf8')
-    const parsed = JSON.parse(text) as { offset?: unknown }
+    const parsed = JSON.parse(text) as {
+      offset?: unknown
+      filters?: { states?: unknown }
+    }
+    const cursorStates = normalizeStatesFilter(parsed.filters?.states)
+
+    if (!areStateFiltersEqual(cursorStates, expectedFilters.states)) {
+      return {
+        offset: null,
+        reason: 'filters_mismatch',
+        cursorStates,
+      }
+    }
+
     const offset = Number(parsed.offset)
-    return Number.isFinite(offset) && offset >= 0 ? Math.floor(offset) : null
+    return Number.isFinite(offset) && offset >= 0
+      ? { offset: Math.floor(offset), reason: 'ok', cursorStates }
+      : { offset: null, reason: 'invalid', cursorStates }
   } catch {
-    return null
+    return { offset: null, reason: 'missing', cursorStates: null }
   }
 }
 
@@ -242,6 +311,9 @@ async function writeCursorFile(
     envFile: string
     supabaseHost: string
     canceled: boolean
+    filters: {
+      states: string[] | null
+    }
   }
 ): Promise<void> {
   const resolvedPath = path.isAbsolute(cursorFile)
@@ -256,6 +328,7 @@ async function writeCursorFile(
       envFile: extra.envFile,
       supabaseHost: extra.supabaseHost,
       canceled: extra.canceled,
+      filters: extra.filters,
       ...cursor,
     }
 
@@ -276,6 +349,9 @@ function writeCursorFileSync(
     envFile: string
     supabaseHost: string
     canceled: boolean
+    filters: {
+      states: string[] | null
+    }
   }
 ): void {
   const resolvedPath = path.isAbsolute(cursorFile)
@@ -290,6 +366,7 @@ function writeCursorFileSync(
       envFile: extra.envFile,
       supabaseHost: extra.supabaseHost,
       canceled: extra.canceled,
+      filters: extra.filters,
       ...cursor,
     }
 
@@ -325,6 +402,9 @@ async function main() {
           envFile,
           supabaseHost,
           canceled: true,
+          filters: {
+            states: args.states,
+          },
         })
       }
 
@@ -346,6 +426,9 @@ async function main() {
         envFile,
         supabaseHost,
         canceled: true,
+        filters: {
+          states: args.states,
+        },
       })
     }
     process.exit(130)
@@ -377,11 +460,17 @@ async function main() {
 
     let startOffset = args.offset
     if (!args.neighborhoodIds && args.resume && !args.offsetProvided) {
-      const fromCursor = await readCursorOffset(args.cursorFile)
-      if (fromCursor != null) {
-        startOffset = fromCursor
+      const fromCursor = await readCursorOffset(args.cursorFile, {
+        states: args.states,
+      })
+      if (fromCursor.reason === 'ok' && fromCursor.offset != null) {
+        startOffset = fromCursor.offset
         console.log(
           `[backfill-neighborhood-vibes] Resuming from cursor offset=${startOffset} (${args.cursorFile})`
+        )
+      } else if (fromCursor.reason === 'filters_mismatch') {
+        console.log(
+          `[backfill-neighborhood-vibes] Resume requested but cursor filters mismatch (cursorStates=${fromCursor.cursorStates?.join(',') || 'all'} expectedStates=${args.states?.join(',') || 'all'}); starting offset=${startOffset}`
         )
       } else {
         console.log(
@@ -412,6 +501,7 @@ async function main() {
         delayMs: args.delayMs,
         force: args.force,
         neighborhoodIds: args.neighborhoodIds,
+        states: args.states,
         offset: startOffset,
         sampleLimit: args.sampleLimit,
         includeStats: args.includeStats,
@@ -427,6 +517,9 @@ async function main() {
             envFile,
             supabaseHost,
             canceled: false,
+            filters: {
+              states: args.states,
+            },
           })
         },
       }
@@ -450,6 +543,7 @@ async function main() {
           offset: args.neighborhoodIds ? null : startOffset,
           resume: args.resume,
           neighborhoodIdsCount: args.neighborhoodIds?.length ?? 0,
+          states: args.states,
           sampleLimit: args.sampleLimit,
           includeStats: args.includeStats,
           cursorFile: args.neighborhoodIds ? null : args.cursorFile,
@@ -493,6 +587,9 @@ async function main() {
         envFile,
         supabaseHost,
         canceled: result.canceled,
+        filters: {
+          states: args.states,
+        },
       })
     }
   } catch (error) {
