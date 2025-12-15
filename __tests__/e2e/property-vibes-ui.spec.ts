@@ -69,6 +69,31 @@ function generateSourceHash(property: {
   return crypto.createHash('md5').update(hashInput).digest('hex')
 }
 
+function generateNeighborhoodSourceHash(neighborhood: {
+  name: string
+  city: string
+  state: string
+  metro_area: string | null
+  median_price: number | null
+  walk_score: number | null
+  transit_score: number | null
+}): string {
+  return crypto
+    .createHash('md5')
+    .update(
+      JSON.stringify({
+        name: neighborhood.name,
+        city: neighborhood.city,
+        state: neighborhood.state,
+        metro_area: neighborhood.metro_area,
+        median_price: neighborhood.median_price,
+        walk_score: neighborhood.walk_score,
+        transit_score: neighborhood.transit_score,
+      })
+    )
+    .digest('hex')
+}
+
 test.describe('Property Vibes - UI', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
@@ -83,13 +108,34 @@ test.describe('Property Vibes - UI', () => {
     const { testUser } = createWorkerAuthHelper(page, testInfo)
 
     const propertyId = crypto.randomUUID()
+    const neighborhoodId = crypto.randomUUID()
     const createdAt = new Date().toISOString()
     const address = `Playwright Vibes Test ${propertyId.slice(0, 8)}`
     const tagline = `PLAYWRIGHT_TAGLINE_${propertyId.slice(0, 8)}`
     const vibeStatement =
       'A bright, calm home that feels ready for both workdays and weekend hosting.'
     const tag = "Chef's Kitchen"
+    const neighborhoodTagline = `PLAYWRIGHT_NEIGHBORHOOD_${neighborhoodId.slice(
+      0,
+      8
+    )}`
+    const neighborhoodVibeStatement =
+      'A walkable pocket with quick errands and an easy commute.'
+    const neighborhoodTag = 'Walkable'
     const userId = await getAuthUserIdByEmail(supabase, testUser.email)
+
+    const neighborhoodRecord = {
+      id: neighborhoodId,
+      name: `Playwright Neighborhood ${neighborhoodId.slice(0, 8)}`,
+      city: 'San Francisco',
+      state: 'CA',
+      metro_area: 'Bay Area',
+      bounds: null,
+      median_price: 1500000,
+      walk_score: 92,
+      transit_score: 80,
+      created_at: createdAt,
+    }
 
     const propertyRecord = {
       id: propertyId,
@@ -105,14 +151,45 @@ test.describe('Property Vibes - UI', () => {
       listing_status: 'active',
       images: ['/images/properties/house-1.svg'],
       description: 'Playwright seeded property for vibes UI verification.',
+      neighborhood_id: neighborhoodId,
       is_active: true,
       created_at: createdAt,
       updated_at: createdAt,
     }
 
     const sourceHash = generateSourceHash(propertyRecord)
+    const neighborhoodSourceHash =
+      generateNeighborhoodSourceHash(neighborhoodRecord)
 
     try {
+      const { error: insertNeighborhoodError } = await supabase
+        .from('neighborhoods')
+        .insert(neighborhoodRecord)
+      if (insertNeighborhoodError)
+        throw new Error(insertNeighborhoodError.message)
+
+      const { error: insertNeighborhoodVibesError } = await supabase
+        .from('neighborhood_vibes')
+        .insert({
+          neighborhood_id: neighborhoodId,
+          tagline: neighborhoodTagline,
+          vibe_statement: neighborhoodVibeStatement,
+          suggested_tags: [neighborhoodTag, 'Food', 'Transit'],
+          neighborhood_themes: [],
+          local_highlights: [],
+          resident_fits: [],
+          input_data: { neighborhood: { id: neighborhoodId } },
+          raw_output: '{}',
+          model_used: 'qwen/qwen3-vl-8b-instruct',
+          source_data_hash: neighborhoodSourceHash,
+          generation_cost_usd: 0,
+          confidence: 0.9,
+          created_at: createdAt,
+          updated_at: createdAt,
+        })
+      if (insertNeighborhoodVibesError)
+        throw new Error(insertNeighborhoodVibesError.message)
+
       const { error: insertPropertyError } = await supabase
         .from('properties')
         .insert(propertyRecord)
@@ -171,6 +248,9 @@ test.describe('Property Vibes - UI', () => {
 
       await expect(card).toBeVisible()
       await expect(card).toContainText(tagline)
+      await expect(card).toContainText(neighborhoodTagline)
+      await expect(card).toContainText(neighborhoodVibeStatement)
+      await expect(card).toContainText(neighborhoodTag)
 
       await card.click({ force: true })
 
@@ -179,6 +259,9 @@ test.describe('Property Vibes - UI', () => {
       await expect(dialog).toContainText('About this home')
       await expect(dialog).toContainText(tagline)
       await expect(dialog).toContainText(tag)
+      await expect(dialog).toContainText(neighborhoodTagline)
+      await expect(dialog).toContainText(neighborhoodVibeStatement)
+      await expect(dialog).toContainText(neighborhoodTag)
     } finally {
       await supabase
         .from('user_property_interactions')
@@ -188,7 +271,12 @@ test.describe('Property Vibes - UI', () => {
         .from('property_vibes')
         .delete()
         .eq('property_id', propertyId)
+      await supabase
+        .from('neighborhood_vibes')
+        .delete()
+        .eq('neighborhood_id', neighborhoodId)
       await supabase.from('properties').delete().eq('id', propertyId)
+      await supabase.from('neighborhoods').delete().eq('id', neighborhoodId)
     }
   })
 })
