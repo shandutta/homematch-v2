@@ -92,9 +92,10 @@ function runIsolated(command, args = []) {
 async function checkSupabaseStatus() {
   try {
     const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-      timeout: 2000,
+      headers: supabaseAnonKey ? { apikey: supabaseAnonKey } : undefined,
+      signal: AbortSignal.timeout(2000),
     })
-    return response.ok
+    return response.ok || response.status === 401
   } catch {
     return false
   }
@@ -108,7 +109,7 @@ async function checkTestUsersExist() {
         Authorization: `Bearer ${supabaseServiceRoleKey}`,
         apikey: supabaseServiceRoleKey,
       },
-      timeout: 2000,
+      signal: AbortSignal.timeout(2000),
     })
 
     if (!response.ok) return false

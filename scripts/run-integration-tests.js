@@ -21,6 +21,7 @@ const maskKey = (value = '') =>
   value ? `${value.slice(0, 4)}…${value.slice(-4)}` : '(empty)'
 
 let devServerProcess = null
+const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 
 /**
  * Wait for the dev server to be ready by polling the health endpoint
@@ -190,10 +191,9 @@ async function startDevServer() {
     warmupEnv.WARMUP_DEV_COMMAND = warmupDevCommand
   }
 
-  devServerProcess = spawn('pnpm', ['run', devScript], {
+  devServerProcess = spawn(pnpmCmd, ['run', devScript], {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: warmupEnv,
-    shell: true,
     cwd: path.join(__dirname, '..'),
     detached: false,
   })
@@ -296,7 +296,7 @@ async function run() {
 
   let exitCode = 0
   try {
-    const result = spawnSync('pnpm', vitestArgs, {
+    const result = spawnSync(pnpmCmd, vitestArgs, {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
       env: { ...process.env },

@@ -20,6 +20,8 @@ const echoRawOutput = Boolean(
   process.env.NIGHTLY_FULL_TEST_ECHO === '1' || process.stdout.isTTY
 )
 
+const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
 function appendToReport(message) {
   // Write exactly what is received to file to preserve partial lines/progress bars
   fs.appendFileSync(REPORT_FILE, message)
@@ -44,7 +46,6 @@ function runCommand(name, command, args) {
 
     const child = spawn(command, args, {
       cwd: path.join(__dirname, '..'),
-      shell: true,
       env: {
         ...process.env,
         CI: 'true', // Force CI mode for headless E2E etc.
@@ -96,18 +97,18 @@ function runCommand(name, command, args) {
   let success = true
 
   // 1. Unit Tests
-  if (!(await runCommand('Unit Tests', 'pnpm', ['test:unit']))) {
+  if (!(await runCommand('Unit Tests', pnpmCmd, ['test:unit']))) {
     success = false
   }
 
   // 2. Integration Tests
-  if (!(await runCommand('Integration Tests', 'pnpm', ['test:integration']))) {
+  if (!(await runCommand('Integration Tests', pnpmCmd, ['test:integration']))) {
     success = false
   }
 
   // 3. E2E Tests (using headless mode explicitly if needed, but CI=true usually suffices)
   // We use the direct playwright wrapper via pnpm script
-  if (!(await runCommand('E2E Tests', 'pnpm', ['test:e2e']))) {
+  if (!(await runCommand('E2E Tests', pnpmCmd, ['test:e2e']))) {
     success = false
   }
 

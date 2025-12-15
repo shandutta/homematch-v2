@@ -22,7 +22,7 @@ const parseNumber = (value, fallback) => {
 
 const authReadyMaxWaitMs = parseNumber(
   process.env.AUTH_READY_MAX_WAIT_MS,
-  180000
+  300000
 )
 const dbResetTimeoutMs = parseNumber(process.env.DB_RESET_TIMEOUT_MS, 180000)
 const defaultShellTimeoutMs = parseNumber(
@@ -39,11 +39,11 @@ const config = {
   // Auth service readiness settings
   authReadiness: {
     // Maximum number of attempts to check if auth service is ready
-    maxAttempts: parseNumber(process.env.AUTH_READY_ATTEMPTS, 60), // Up from 10 to 60 for 3 min wait
+    maxAttempts: parseNumber(process.env.AUTH_READY_ATTEMPTS, 60),
     // Initial delay between retry attempts (ms)
     retryDelayMs: parseNumber(process.env.AUTH_READY_DELAY_MS, 3000), // Up from 2000
     // Maximum total wait time (ms) - fail fast if exceeded
-    maxWaitMs: authReadyMaxWaitMs, // Default 180 seconds; configurable for slow CI
+    maxWaitMs: authReadyMaxWaitMs, // Default 300 seconds; configurable for slow CI
     // Maximum delay between attempts after backoff (ms)
     maxDelayMs: 10000,
     // Backoff multiplier (e.g., 1.5 = 50% increase each attempt)
