@@ -153,4 +153,34 @@ describe('PropertyDetailModal', () => {
       screen.queryByText('Historic charm meets modern convenience')
     ).not.toBeInTheDocument()
   })
+
+  it('renders neighborhood vibes when available', () => {
+    const neighborhoodVibes = {
+      tagline: 'Transit-friendly and snackable streets',
+      vibe_statement: 'Low-friction errands with a strong local food scene.',
+      suggested_tags: ['Walkable', 'Food', 'Transit'],
+    }
+
+    ;(useNeighborhoodVibes as jest.Mock).mockReturnValue({
+      data: neighborhoodVibes,
+    })
+
+    render(
+      <PropertyDetailModal
+        property={mockProperty}
+        neighborhood={mockNeighborhood}
+        open={true}
+        onOpenChange={jest.fn()}
+      />
+    )
+
+    expect(useNeighborhoodVibes).toHaveBeenCalledWith(mockNeighborhood.id)
+    expect(screen.getByText(neighborhoodVibes.tagline)).toBeInTheDocument()
+    expect(
+      screen.getByText(neighborhoodVibes.vibe_statement)
+    ).toBeInTheDocument()
+    expect(screen.getByText('Walkable')).toBeInTheDocument()
+    expect(screen.getByText('Food')).toBeInTheDocument()
+    expect(screen.getByText('Transit')).toBeInTheDocument()
+  })
 })
