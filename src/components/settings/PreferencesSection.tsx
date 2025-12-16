@@ -1,11 +1,13 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { UserProfile, UserPreferences } from '@/types/database'
+import { Neighborhood, UserProfile, UserPreferences } from '@/types/database'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -15,6 +17,10 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
+import {
+  LocationsClient,
+  type CityOption,
+} from '@/lib/services/locations-client'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import { toast } from 'sonner'
 import {
@@ -101,6 +107,8 @@ export function PreferencesSection({
     propertyTypes?: PropertyTypePreferences
     mustHaves?: Record<string, boolean>
     searchRadius?: number
+    cities?: CityOption[]
+    neighborhoods?: string[]
   }
 
   const preferences = useMemo(
@@ -109,6 +117,15 @@ export function PreferencesSection({
   )
 
   const [loading, setLoading] = useState(false)
+  const [citiesLoading, setCitiesLoading] = useState(false)
+  const [neighborhoodsLoading, setNeighborhoodsLoading] = useState(false)
+  const [availableCities, setAvailableCities] = useState<CityOption[]>([])
+  const [availableNeighborhoods, setAvailableNeighborhoods] = useState<
+    Neighborhood[]
+  >([])
+  const [citySearch, setCitySearch] = useState('')
+  const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
+
   const [priceRange, setPriceRange] = useState<[number, number]>(
     preferences.priceRange || [200000, 800000]
   )
@@ -149,6 +166,12 @@ export function PreferencesSection({
   )
   const [searchRadius, setSearchRadius] = useState(
     preferences.searchRadius || 10
+  )
+  const [selectedCities, setSelectedCities] = useState<CityOption[]>(
+    preferences.cities || []
+  )
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
+    preferences.neighborhoods || []
   )
 
   const propertyTypeOptions: Array<{
@@ -193,6 +216,121 @@ export function PreferencesSection({
     },
   ]
 
+  useEffect(() => {
+    let cancelled = false
+
+    const loadCities = async () => {
+      setCitiesLoading(true)
+      try {
+        const cities = await LocationsClient.getCities()
+        if (!cancelled) setAvailableCities(cities)
+      } catch (_error) {
+        toast.error('Failed to load cities')
+      } finally {
+        if (!cancelled) setCitiesLoading(false)
+      }
+    }
+
+    void loadCities()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadNeighborhoods = async () => {
+      if (selectedCities.length === 0) {
+        setAvailableNeighborhoods([])
+        setSelectedNeighborhoods([])
+        return
+      }
+
+      setNeighborhoodsLoading(true)
+      try {
+        const neighborhoods =
+          await LocationsClient.getNeighborhoodsForCities(selectedCities)
+        if (cancelled) return
+
+        setAvailableNeighborhoods(neighborhoods)
+        setSelectedNeighborhoods((prev) => {
+          const allowed = new Set(neighborhoods.map((n) => n.id))
+          return prev.filter((id) => allowed.has(id))
+        })
+      } catch (_error) {
+        toast.error('Failed to load neighborhoods')
+      } finally {
+        if (!cancelled) setNeighborhoodsLoading(false)
+      }
+    }
+
+    void loadNeighborhoods()
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedCities])
+
+  const cityKey = (city: CityOption) =>
+    `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
+
+  const toggleCity = (city: CityOption) => {
+    setSelectedCities((prev) => {
+      const key = cityKey(city)
+      if (prev.some((item) => cityKey(item) === key)) {
+        return prev.filter((item) => cityKey(item) !== key)
+      }
+      return [...prev, city]
+    })
+  }
+
+  const toggleNeighborhood = (neighborhoodId: string) => {
+    setSelectedNeighborhoods((prev) => {
+      if (prev.includes(neighborhoodId)) {
+        return prev.filter((id) => id !== neighborhoodId)
+      }
+      return [...prev, neighborhoodId]
+    })
+  }
+
+  const filteredCities = useMemo(() => {
+    const query = citySearch.trim().toLowerCase()
+    if (!query) return availableCities
+
+    return availableCities.filter((city) => {
+      const label = `${city.city}, ${city.state}`.toLowerCase()
+      return label.includes(query)
+    })
+  }, [availableCities, citySearch])
+
+  const filteredNeighborhoods = useMemo(() => {
+    const query = neighborhoodSearch.trim().toLowerCase()
+    if (!query) return availableNeighborhoods
+
+    return availableNeighborhoods.filter((neighborhood) =>
+      `${neighborhood.name} ${neighborhood.city} ${neighborhood.state}`
+        .toLowerCase()
+        .includes(query)
+    )
+  }, [availableNeighborhoods, neighborhoodSearch])
+
+  const neighborhoodGroups = useMemo(() => {
+    const grouped = new Map<string, { label: string; items: Neighborhood[] }>()
+    for (const neighborhood of filteredNeighborhoods) {
+      const key = `${neighborhood.city.toLowerCase()}|${neighborhood.state.toLowerCase()}`
+      const label = `${neighborhood.city}, ${neighborhood.state}`
+      const existing = grouped.get(key) || { label, items: [] }
+      existing.items.push(neighborhood)
+      grouped.set(key, existing)
+    }
+
+    return Array.from(grouped.values()).sort((a, b) =>
+      a.label.localeCompare(b.label)
+    )
+  }, [filteredNeighborhoods])
+
   const toPersistedPropertyTypes = (
     types: Record<PropertyTypeKey, boolean>
   ): PropertyTypePreferences => {
@@ -226,6 +364,8 @@ export function PreferencesSection({
           propertyTypes: propertyTypesPayload,
           mustHaves,
           searchRadius,
+          cities: selectedCities,
+          neighborhoods: selectedNeighborhoods,
         },
       })
       if (updatedProfile && onProfileUpdate) {
@@ -258,6 +398,175 @@ export function PreferencesSection({
         </div>
 
         <div className="space-y-6 rounded-xl border border-white/5 bg-white/[0.02] p-5">
+          {/* Location Preferences */}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+                <MapPin className="h-4 w-4 text-amber-400" />
+                Locations
+              </Label>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-white/80">
+                {selectedCities.length}{' '}
+                {selectedCities.length === 1 ? 'city' : 'cities'} ·{' '}
+                {selectedNeighborhoods.length}{' '}
+                {selectedNeighborhoods.length === 1
+                  ? 'neighborhood'
+                  : 'neighborhoods'}
+              </span>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                    Cities
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCities([])}
+                    className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors disabled:opacity-40"
+                    disabled={selectedCities.length === 0}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <Input
+                  value={citySearch}
+                  onChange={(e) => setCitySearch(e.target.value)}
+                  placeholder="Search cities…"
+                  aria-label="Search cities"
+                  data-testid="city-search"
+                  className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5"
+                />
+
+                <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                  {citiesLoading ? (
+                    <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading cities…
+                    </div>
+                  ) : filteredCities.length === 0 ? (
+                    <p className="text-hm-stone-500 text-sm">No cities found</p>
+                  ) : (
+                    filteredCities.map((city) => {
+                      const key = cityKey(city)
+                      const checked = selectedCities.some(
+                        (item) => cityKey(item) === key
+                      )
+                      const testIdKey = key
+                        .replace(/[^a-z0-9|]/g, '-')
+                        .replace(/\|/g, '--')
+                      return (
+                        <div
+                          key={key}
+                          className="flex cursor-pointer items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+                          onClick={() => toggleCity(city)}
+                          data-testid={`city-option-${testIdKey}`}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleCity(city)}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`${city.city}, ${city.state}`}
+                          />
+                          <span className="text-hm-stone-200 text-sm">
+                            {city.city}, {city.state}
+                          </span>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                    Neighborhoods
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNeighborhoods([])}
+                    className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors disabled:opacity-40"
+                    disabled={selectedNeighborhoods.length === 0}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <Input
+                  value={neighborhoodSearch}
+                  onChange={(e) => setNeighborhoodSearch(e.target.value)}
+                  placeholder={
+                    selectedCities.length === 0
+                      ? 'Select a city first…'
+                      : 'Search neighborhoods…'
+                  }
+                  aria-label="Search neighborhoods"
+                  data-testid="neighborhood-search"
+                  disabled={selectedCities.length === 0}
+                  className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
+                />
+
+                <div className="max-h-64 space-y-3 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                  {selectedCities.length === 0 ? (
+                    <p className="text-hm-stone-500 text-sm">
+                      Choose one or more cities to see neighborhoods.
+                    </p>
+                  ) : neighborhoodsLoading ? (
+                    <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading neighborhoods…
+                    </div>
+                  ) : neighborhoodGroups.length === 0 ? (
+                    <p className="text-hm-stone-500 text-sm">
+                      No neighborhoods found
+                    </p>
+                  ) : (
+                    neighborhoodGroups.map((group) => (
+                      <div key={group.label} className="space-y-2">
+                        <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                          {group.label}
+                        </p>
+                        <div className="space-y-2">
+                          {group.items.map((neighborhood) => (
+                            <div
+                              key={neighborhood.id}
+                              className="flex cursor-pointer items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
+                              onClick={() =>
+                                toggleNeighborhood(neighborhood.id)
+                              }
+                              data-testid={`neighborhood-option-${neighborhood.id}`}
+                            >
+                              <Checkbox
+                                checked={selectedNeighborhoods.includes(
+                                  neighborhood.id
+                                )}
+                                onCheckedChange={() =>
+                                  toggleNeighborhood(neighborhood.id)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={neighborhood.name}
+                              />
+                              <span className="text-hm-stone-200 text-sm">
+                                {neighborhood.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-hm-stone-500 text-xs">
+              Neighborhood picks override city-level matching.
+            </p>
+          </div>
+
           {/* Price Range */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -474,6 +783,7 @@ export function PreferencesSection({
           onClick={savePreferences}
           disabled={loading}
           className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
+          data-testid="save-preferences"
         >
           {loading ? (
             <>

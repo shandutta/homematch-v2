@@ -144,6 +144,40 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         amenities: ['laundry'],
         is_active: true,
       },
+      {
+        address: '600 Filter Test Way',
+        city: 'Other City',
+        state: 'CA',
+        zip_code: '90214',
+        price: 625000,
+        bedrooms: 3,
+        bathrooms: 2,
+        square_feet: 1600,
+        property_type: 'condo',
+        listing_status: 'active',
+        year_built: 2016,
+        lot_size_sqft: 2500,
+        parking_spots: 1,
+        amenities: ['gym'],
+        is_active: true,
+      },
+      {
+        address: '700 Filter Test Way',
+        city: 'Other City',
+        state: 'TX',
+        zip_code: '75001',
+        price: 575000,
+        bedrooms: 4,
+        bathrooms: 3,
+        square_feet: 2100,
+        property_type: 'single_family',
+        listing_status: 'active',
+        year_built: 2019,
+        lot_size_sqft: 6000,
+        parking_spots: 2,
+        amenities: ['garage'],
+        is_active: true,
+      },
     ]
 
     for (const propertyData of properties) {
@@ -251,6 +285,50 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
       expect(
         result.properties.every((p) => p.bathrooms >= 2 && p.bathrooms <= 3)
       ).toBe(true)
+    })
+  })
+
+  describe('City Filtering', () => {
+    test('should filter by multiple city/state pairs', async () => {
+      const result = await propertyService.searchProperties({
+        filters: {
+          cities: [
+            { city: 'Filter City', state: 'CA' },
+            { city: 'Other City', state: 'TX' },
+          ],
+        },
+      })
+
+      expect(result.properties.length).toBeGreaterThan(0)
+      expect(
+        result.properties.every(
+          (p) =>
+            (p.city === 'Filter City' && p.state === 'CA') ||
+            (p.city === 'Other City' && p.state === 'TX')
+        )
+      ).toBe(true)
+
+      expect(
+        result.properties.some(
+          (p) => p.city === 'Filter City' && p.state === 'CA'
+        )
+      ).toBe(true)
+      expect(
+        result.properties.some(
+          (p) => p.city === 'Other City' && p.state === 'TX'
+        )
+      ).toBe(true)
+
+      expect(
+        result.properties.some(
+          (p) => p.city === 'Filter City' && p.state === 'NY'
+        )
+      ).toBe(false)
+      expect(
+        result.properties.some(
+          (p) => p.city === 'Other City' && p.state === 'CA'
+        )
+      ).toBe(false)
     })
   })
 
