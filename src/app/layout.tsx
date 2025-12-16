@@ -9,6 +9,7 @@ import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
+import { Toaster } from '@/components/ui/sonner'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
@@ -94,6 +95,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
+        <Toaster position="top-right" />
       </body>
     </html>
   )

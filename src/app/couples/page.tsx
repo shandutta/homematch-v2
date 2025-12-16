@@ -7,7 +7,6 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { createQueryClient } from '@/lib/query/config'
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
 import { CouplesErrorBoundary } from '@/components/couples/CouplesErrorBoundary'
-import { Toaster } from '@/components/ui/sonner'
 
 export default function CouplesPage() {
   const [queryClient] = useState(() => createQueryClient())
@@ -21,7 +20,6 @@ export default function CouplesPage() {
             <CouplesPageClient />
           </CouplesErrorBoundary>
         </QueryClientProvider>
-        <Toaster position="top-right" />
       </main>
       <Footer />
     </div>
