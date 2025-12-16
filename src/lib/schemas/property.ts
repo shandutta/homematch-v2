@@ -148,6 +148,11 @@ export const neighborhoodUpdateSchema = neighborhoodSchema
   })
   .partial()
 
+const cityStatePairSchema = z.object({
+  city: z.string().min(1).max(100),
+  state: z.string().length(2),
+})
+
 // Property with Neighborhood (joined)
 export const propertyWithNeighborhoodSchema = propertySchema.extend({
   neighborhood: neighborhoodSchema.nullable(),
@@ -164,6 +169,7 @@ export const propertyFiltersSchema = z.object({
   square_feet_min: z.number().min(0).optional(),
   square_feet_max: z.number().min(0).optional(),
   property_types: z.array(propertyTypeEnum).optional(),
+  cities: z.array(cityStatePairSchema).optional(),
   neighborhoods: z.array(z.string().uuid()).optional(),
   amenities: z.array(z.string()).optional(),
   year_built_min: z.number().min(1800).optional(),

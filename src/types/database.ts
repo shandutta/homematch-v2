@@ -1774,6 +1774,7 @@ export interface UserPreferences {
   bedrooms?: { min: number; max: number }
   bathrooms?: { min: number; max: number }
   propertyTypes?: string[]
+  cities?: { city: string; state: string }[]
   neighborhoods?: string[]
   amenities?: string[]
   notifications?: {

@@ -25,6 +25,76 @@ export interface DashboardPreferences {
   propertyTypes?: Record<string, boolean>
   mustHaves?: Record<string, boolean>
   searchRadius?: number
+  cities?: NonNullable<PropertyFilters['cities']>
+  neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
+}
+
+export function buildPropertyFiltersFromPreferences(
+  userPreferences?: DashboardPreferences | null
+): PropertyFilters {
+  const filters: PropertyFilters = {}
+
+  if (!userPreferences) {
+    return filters
+  }
+
+  const prefs = userPreferences
+
+  if (prefs.neighborhoods && prefs.neighborhoods.length > 0) {
+    filters.neighborhoods = prefs.neighborhoods
+  } else if (prefs.cities && prefs.cities.length > 0) {
+    filters.cities = prefs.cities
+  }
+
+  if (prefs.priceRange) {
+    filters.price_min = prefs.priceRange[0]
+    filters.price_max = prefs.priceRange[1]
+  }
+
+  if (prefs.bedrooms) {
+    filters.bedrooms_min = prefs.bedrooms
+  }
+
+  if (prefs.bathrooms) {
+    filters.bathrooms_min = prefs.bathrooms
+  }
+
+  if (prefs.propertyTypes) {
+    const typeMapping: Record<string, string> = {
+      house: 'single_family',
+      townhouse: 'townhome',
+      condo: 'condo',
+    }
+    const propertyTypeSet = new Set<PropertyType>(PROPERTY_TYPE_VALUES)
+    const selectedTypes = Object.entries(prefs.propertyTypes)
+      .filter(([_, selected]) => selected)
+      .map(([type]) => typeMapping[type] || type)
+      .filter((type): type is PropertyType =>
+        propertyTypeSet.has(type as PropertyType)
+      )
+
+    if (selectedTypes.length > 0) {
+      filters.property_types = selectedTypes
+    }
+  }
+
+  if (prefs.mustHaves) {
+    const amenityMapping: Record<string, string> = {
+      parking: 'Parking',
+      pool: 'Pool',
+      gym: 'Gym',
+      petFriendly: 'Pet Friendly',
+    }
+    const selectedAmenities = Object.entries(prefs.mustHaves)
+      .filter(([_, selected]) => selected)
+      .map(([amenity]) => amenityMapping[amenity] || amenity)
+
+    if (selectedAmenities.length > 0) {
+      filters.amenities = selectedAmenities
+    }
+  }
+
+  return filters
 }
 
 export async function loadDashboardData(
@@ -43,67 +113,32 @@ export async function loadDashboardData(
   } = options
   const propertyService = new PropertyService()
 
-  const filters: PropertyFilters = {}
-
-  if (userPreferences) {
-    const prefs = userPreferences
-
-    if (prefs.priceRange) {
-      filters.price_min = prefs.priceRange[0]
-      filters.price_max = prefs.priceRange[1]
-    }
-
-    if (prefs.bedrooms) {
-      filters.bedrooms_min = prefs.bedrooms
-    }
-
-    if (prefs.bathrooms) {
-      filters.bathrooms_min = prefs.bathrooms
-    }
-
-    if (prefs.propertyTypes) {
-      const typeMapping: Record<string, string> = {
-        house: 'single_family',
-        townhouse: 'townhome',
-        condo: 'condo',
-      }
-      const propertyTypeSet = new Set<PropertyType>(PROPERTY_TYPE_VALUES)
-      const selectedTypes = Object.entries(prefs.propertyTypes)
-        .filter(([_, selected]) => selected)
-        .map(([type]) => typeMapping[type] || type)
-        .filter((type): type is PropertyType =>
-          propertyTypeSet.has(type as PropertyType)
-        )
-
-      if (selectedTypes.length > 0) {
-        filters.property_types = selectedTypes
-      }
-    }
-
-    if (prefs.mustHaves) {
-      const amenityMapping: Record<string, string> = {
-        parking: 'Parking',
-        pool: 'Pool',
-        gym: 'Gym',
-        petFriendly: 'Pet Friendly',
-      }
-      const selectedAmenities = Object.entries(prefs.mustHaves)
-        .filter(([_, selected]) => selected)
-        .map(([amenity]) => amenityMapping[amenity] || amenity)
-
-      if (selectedAmenities.length > 0) {
-        filters.amenities = selectedAmenities
-      }
-    }
-  }
+  const filters = buildPropertyFiltersFromPreferences(userPreferences)
 
   try {
+    const neighborhoodsPromise = async () => {
+      if (userPreferences?.cities && userPreferences.cities.length > 0) {
+        const results = await Promise.all(
+          userPreferences.cities.map(({ city, state }) =>
+            propertyService.getNeighborhoodsByCity(city, state)
+          )
+        )
+        const deduped = new Map<string, Neighborhood>()
+        results.flat().forEach((neighborhood) => {
+          deduped.set(neighborhood.id, neighborhood)
+        })
+        return Array.from(deduped.values())
+      }
+
+      return await propertyService.getNeighborhoodsByCity('San Francisco', 'CA')
+    }
+
     const [{ properties, total }, neighborhoods] = await Promise.all([
       propertyService.searchProperties({
         filters,
         pagination: { limit, page: offset / limit + 1 },
       }),
-      propertyService.getNeighborhoodsByCity('San Francisco', 'CA'),
+      neighborhoodsPromise(),
     ])
 
     // Fetch user stats (mock for now, can be implemented later)
