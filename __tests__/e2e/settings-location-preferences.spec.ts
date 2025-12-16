@@ -146,7 +146,8 @@ test.describe('Settings location preferences', () => {
             created_at: createdAt,
           },
         ])
-      if (insertNeighborhoodsError) throw new Error(insertNeighborhoodsError.message)
+      if (insertNeighborhoodsError)
+        throw new Error(insertNeighborhoodsError.message)
 
       const { error: insertPropertiesError } = await supabase
         .from('properties')
@@ -164,7 +165,8 @@ test.describe('Settings location preferences', () => {
             property_type: 'single_family',
             listing_status: 'active',
             images: ['/images/properties/house-1.svg'],
-            description: 'Playwright seeded property for location preferences verification.',
+            description:
+              'Playwright seeded property for location preferences verification.',
             neighborhood_id: neighborhoodA1Id,
             is_active: true,
             created_at: createdAt,
@@ -183,7 +185,8 @@ test.describe('Settings location preferences', () => {
             property_type: 'condo',
             listing_status: 'active',
             images: ['/images/properties/house-2.svg'],
-            description: 'Playwright seeded property for location preferences verification.',
+            description:
+              'Playwright seeded property for location preferences verification.',
             neighborhood_id: neighborhoodA2Id,
             is_active: true,
             created_at: createdAt,
@@ -202,7 +205,8 @@ test.describe('Settings location preferences', () => {
             property_type: 'single_family',
             listing_status: 'active',
             images: ['/images/properties/house-3.svg'],
-            description: 'Playwright seeded property for location preferences verification.',
+            description:
+              'Playwright seeded property for location preferences verification.',
             neighborhood_id: neighborhoodB1Id,
             is_active: true,
             created_at: createdAt,
@@ -221,7 +225,8 @@ test.describe('Settings location preferences', () => {
             property_type: 'townhome',
             listing_status: 'active',
             images: ['/images/properties/house-1.svg'],
-            description: 'Playwright seeded property for location preferences verification.',
+            description:
+              'Playwright seeded property for location preferences verification.',
             neighborhood_id: neighborhoodC1Id,
             is_active: true,
             created_at: createdAt,
@@ -231,18 +236,26 @@ test.describe('Settings location preferences', () => {
       if (insertPropertiesError) throw new Error(insertPropertiesError.message)
 
       // Phase 1: cities only (no neighborhood picks)
-      await page.goto(TEST_ROUTES.app.settings, { waitUntil: 'domcontentloaded' })
+      await page.goto(TEST_ROUTES.app.settings, {
+        waitUntil: 'domcontentloaded',
+      })
       await expect(page.getByTestId('city-search')).toBeVisible()
 
       await page.getByTestId('city-search').fill(runId)
-      await expect(page.getByTestId(cityOptionTestId(cityA, stateA))).toBeVisible()
-      await expect(page.getByTestId(cityOptionTestId(cityB, stateB))).toBeVisible()
+      await expect(
+        page.getByTestId(cityOptionTestId(cityA, stateA))
+      ).toBeVisible()
+      await expect(
+        page.getByTestId(cityOptionTestId(cityB, stateB))
+      ).toBeVisible()
 
       await page.getByTestId(cityOptionTestId(cityA, stateA)).click()
       await page.getByTestId(cityOptionTestId(cityB, stateB)).click()
 
       await page.getByTestId('save-preferences').click()
-      await expect(page.getByText('Preferences saved successfully')).toBeVisible({
+      await expect(
+        page.getByText('Preferences saved successfully')
+      ).toBeVisible({
         timeout: 15000,
       })
 
@@ -269,11 +282,15 @@ test.describe('Settings location preferences', () => {
           .first()
       ).toBeVisible()
       await expect(
-        page.locator('[data-testid="property-address"]').filter({ hasText: addressC1 })
+        page
+          .locator('[data-testid="property-address"]')
+          .filter({ hasText: addressC1 })
       ).toHaveCount(0)
 
       // Phase 2: neighborhoods override cities
-      await page.goto(TEST_ROUTES.app.settings, { waitUntil: 'domcontentloaded' })
+      await page.goto(TEST_ROUTES.app.settings, {
+        waitUntil: 'domcontentloaded',
+      })
       await expect(page.getByTestId('neighborhood-search')).toBeVisible()
 
       await expect(
@@ -287,7 +304,9 @@ test.describe('Settings location preferences', () => {
       await page.getByTestId(`neighborhood-option-${neighborhoodB1Id}`).click()
 
       await page.getByTestId('save-preferences').click()
-      await expect(page.getByText('Preferences saved successfully')).toBeVisible({
+      await expect(
+        page.getByText('Preferences saved successfully')
+      ).toBeVisible({
         timeout: 15000,
       })
 
@@ -309,24 +328,29 @@ test.describe('Settings location preferences', () => {
       ).toBeVisible()
 
       await expect(
-        page.locator('[data-testid="property-address"]').filter({ hasText: addressA2 })
+        page
+          .locator('[data-testid="property-address"]')
+          .filter({ hasText: addressA2 })
       ).toHaveCount(0)
       await expect(
-        page.locator('[data-testid="property-address"]').filter({ hasText: addressC1 })
+        page
+          .locator('[data-testid="property-address"]')
+          .filter({ hasText: addressC1 })
       ).toHaveCount(0)
     } finally {
-      await supabase.from('properties').delete().in('id', [
-        propertyA1Id,
-        propertyA2Id,
-        propertyB1Id,
-        propertyC1Id,
-      ])
-      await supabase.from('neighborhoods').delete().in('id', [
-        neighborhoodA1Id,
-        neighborhoodA2Id,
-        neighborhoodB1Id,
-        neighborhoodC1Id,
-      ])
+      await supabase
+        .from('properties')
+        .delete()
+        .in('id', [propertyA1Id, propertyA2Id, propertyB1Id, propertyC1Id])
+      await supabase
+        .from('neighborhoods')
+        .delete()
+        .in('id', [
+          neighborhoodA1Id,
+          neighborhoodA2Id,
+          neighborhoodB1Id,
+          neighborhoodC1Id,
+        ])
       await supabase
         .from('user_profiles')
         .update({ preferences: existingProfile?.preferences ?? null })
@@ -334,4 +358,3 @@ test.describe('Settings location preferences', () => {
     }
   })
 })
-
