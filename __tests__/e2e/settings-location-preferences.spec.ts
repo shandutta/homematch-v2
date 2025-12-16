@@ -51,6 +51,44 @@ function cityOptionTestId(city: string, state: string) {
   return `city-option-${testIdKey}`
 }
 
+async function fetchUserPreferences(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  userId: string
+): Promise<any> {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('preferences')
+    .eq('id', userId)
+    .single()
+  if (error) throw new Error(error.message)
+  return data?.preferences ?? null
+}
+
+async function waitForUserPreferences(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  userId: string,
+  predicate: (preferences: any) => boolean,
+  options: { timeoutMs?: number; intervalMs?: number } = {}
+): Promise<any> {
+  const timeoutMs = options.timeoutMs ?? 15_000
+  const intervalMs = options.intervalMs ?? 500
+  const start = Date.now()
+
+  let lastPreferences: any = null
+
+  while (Date.now() - start < timeoutMs) {
+    lastPreferences = await fetchUserPreferences(supabase, userId)
+    if (predicate(lastPreferences)) return lastPreferences
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+
+  throw new Error(
+    `Timed out waiting for preferences update. Last preferences: ${JSON.stringify(
+      lastPreferences
+    )}`
+  )
+}
+
 test.describe('Settings location preferences', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
@@ -252,11 +290,24 @@ test.describe('Settings location preferences', () => {
       await page.getByTestId(cityOptionTestId(cityA, stateA)).click()
       await page.getByTestId(cityOptionTestId(cityB, stateB)).click()
 
-      await page.getByTestId('save-preferences').click()
+      const saveButton = page.getByTestId('save-preferences')
+      await saveButton.click()
       await expect(
-        page.getByText('Preferences saved successfully')
-      ).toBeVisible({
-        timeout: 15000,
+        saveButton,
+        'Save button should re-enable after persistence completes'
+      ).toBeEnabled({ timeout: 15000 })
+
+      await waitForUserPreferences(supabase, userId, (preferences) => {
+        const cities = preferences?.cities
+        const neighborhoods = preferences?.neighborhoods
+
+        return (
+          Array.isArray(cities) &&
+          cities.some((c: any) => c?.city === cityA && c?.state === stateA) &&
+          cities.some((c: any) => c?.city === cityB && c?.state === stateB) &&
+          Array.isArray(neighborhoods) &&
+          neighborhoods.length === 0
+        )
       })
 
       await page.goto(TEST_ROUTES.app.dashboard, {
@@ -303,11 +354,20 @@ test.describe('Settings location preferences', () => {
       await page.getByTestId(`neighborhood-option-${neighborhoodA1Id}`).click()
       await page.getByTestId(`neighborhood-option-${neighborhoodB1Id}`).click()
 
-      await page.getByTestId('save-preferences').click()
+      await saveButton.click()
       await expect(
-        page.getByText('Preferences saved successfully')
-      ).toBeVisible({
-        timeout: 15000,
+        saveButton,
+        'Save button should re-enable after persistence completes'
+      ).toBeEnabled({ timeout: 15000 })
+
+      await waitForUserPreferences(supabase, userId, (preferences) => {
+        const neighborhoods = preferences?.neighborhoods
+
+        return (
+          Array.isArray(neighborhoods) &&
+          neighborhoods.includes(neighborhoodA1Id) &&
+          neighborhoods.includes(neighborhoodB1Id)
+        )
       })
 
       await page.goto(TEST_ROUTES.app.dashboard, {
