@@ -1,57 +1,102 @@
-<svg width="400" height="350" viewBox="0 0 400 350" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background gradient -->
+<svg
+  width="400"
+  height="350"
+  viewBox="0 0 400 350"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
   <defs>
-    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e0f2fe;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#b3e5fc;stop-opacity:1" />
+    <linearGradient
+      id="bg"
+      x1="0"
+      y1="0"
+      x2="400"
+      y2="350"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#0c0a09" />
+      <stop offset="1" stop-color="#1c1917" />
     </linearGradient>
-    <linearGradient id="house1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#f5f5f5;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#e0e0e0;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="roof1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#8d6e63;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#5d4037;stop-opacity:1" />
-    </linearGradient>
+
+    <radialGradient
+      id="glow"
+      cx="0"
+      cy="0"
+      r="1"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(200 30) rotate(90) scale(180 240)"
+    >
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.18" />
+      <stop offset="0.55" stop-color="#fbbf24" stop-opacity="0.06" />
+      <stop offset="1" stop-color="#fbbf24" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient
+      id="vignette"
+      cx="0"
+      cy="0"
+      r="1"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(200 175) rotate(90) scale(220 280)"
+    >
+      <stop offset="0" stop-color="#000000" stop-opacity="0" />
+      <stop offset="1" stop-color="#000000" stop-opacity="0.55" />
+    </radialGradient>
+
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path
+        d="M36 0H0V36"
+        fill="none"
+        stroke="#ffffff"
+        stroke-opacity="0.08"
+        stroke-width="1"
+      />
+    </pattern>
   </defs>
-  
-  <!-- Sky background -->
-  <rect width="400" height="350" fill="url(#bg1)"/>
-  
-  <!-- Ground -->
-  <rect x="0" y="280" width="400" height="70" fill="#4caf50"/>
-  
-  <!-- House body -->
-  <rect x="120" y="180" width="160" height="120" fill="url(#house1)" stroke="#bdbdbd" stroke-width="2"/>
-  
-  <!-- Roof -->
-  <polygon points="100,180 200,120 300,180" fill="url(#roof1)" stroke="#424242" stroke-width="2"/>
-  
-  <!-- Door -->
-  <rect x="180" y="240" width="40" height="60" fill="#795548" stroke="#5d4037" stroke-width="1"/>
-  <circle cx="210" cy="270" r="2" fill="#ffeb3b"/>
-  
-  <!-- Windows -->
-  <rect x="140" y="200" width="30" height="25" fill="#81d4fa" stroke="#0277bd" stroke-width="1"/>
-  <rect x="230" y="200" width="30" height="25" fill="#81d4fa" stroke="#0277bd" stroke-width="1"/>
-  <line x1="155" y1="200" x2="155" y2="225" stroke="#0277bd" stroke-width="1"/>
-  <line x1="140" y1="212" x2="170" y2="212" stroke="#0277bd" stroke-width="1"/>
-  <line x1="245" y1="200" x2="245" y2="225" stroke="#0277bd" stroke-width="1"/>
-  <line x1="230" y1="212" x2="260" y2="212" stroke="#0277bd" stroke-width="1"/>
-  
-  <!-- Trees -->
-  <circle cx="60" cy="200" r="25" fill="#4caf50"/>
-  <rect x="55" y="225" width="10" height="35" fill="#8d6e63"/>
-  
-  <circle cx="340" cy="210" r="30" fill="#4caf50"/>
-  <rect x="335" y="240" width="10" height="40" fill="#8d6e63"/>
-  
-  <!-- Clouds -->
-  <circle cx="80" cy="60" r="15" fill="white" opacity="0.8"/>
-  <circle cx="95" cy="55" r="20" fill="white" opacity="0.8"/>
-  <circle cx="110" cy="60" r="15" fill="white" opacity="0.8"/>
-  
-  <circle cx="280" cy="40" r="18" fill="white" opacity="0.8"/>
-  <circle cx="300" cy="35" r="25" fill="white" opacity="0.8"/>
-  <circle cx="320" cy="40" r="18" fill="white" opacity="0.8"/>
+
+  <rect width="400" height="350" fill="url(#bg)" />
+  <rect width="400" height="350" fill="url(#glow)" />
+  <rect width="400" height="350" fill="url(#grid)" opacity="0.35" />
+  <rect width="400" height="350" fill="url(#vignette)" />
+
+  <g opacity="0.9">
+    <path
+      d="M95 176L200 92L305 176"
+      stroke="#f5f5f4"
+      stroke-opacity="0.75"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M125 168V274H275V168"
+      stroke="#f5f5f4"
+      stroke-opacity="0.75"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M187 274V226C187 219 193 214 200 214C207 214 213 219 213 226V274"
+      stroke="#f5f5f4"
+      stroke-opacity="0.7"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M152 198H188V226H152V198Z"
+      stroke="#f5f5f4"
+      stroke-opacity="0.5"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M212 198H248V226H212V198Z"
+      stroke="#f5f5f4"
+      stroke-opacity="0.5"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+  </g>
 </svg>
