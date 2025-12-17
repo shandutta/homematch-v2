@@ -76,6 +76,7 @@ describe('PropertyCard Component', () => {
     renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByText('123 Main St')).toBeDefined()
     expect(screen.getByText('$500,000')).toBeDefined()
+    expect(screen.getByText('Single Family')).toBeDefined()
     // New layout uses lowercase labels: "bed", "bath", "sqft"
     expect(getStatValueByLabel('bed')).toHaveTextContent('3')
     expect(getStatValueByLabel('bath')).toHaveTextContent('2')

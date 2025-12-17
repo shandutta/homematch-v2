@@ -129,6 +129,7 @@ describe('PropertyDetailModal', () => {
     )
 
     expect(screen.getByText('About this home')).toBeInTheDocument()
+    expect(screen.getByText('Single Family')).toBeInTheDocument()
 
     // Keep: tagline + useful tags/box
     expect(screen.getByText(mockVibes.tagline)).toBeInTheDocument()

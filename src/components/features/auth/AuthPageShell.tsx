@@ -34,9 +34,7 @@ export function AuthPageShell({
 
       <div className={cn('relative w-full space-y-8', maxWidthClassName)}>
         <div className="space-y-3 text-center">
-          <Link href="/" className="inline-flex items-center justify-center">
-            <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-          </Link>
+          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
           <p className="text-muted-foreground text-sm sm:text-base">
             {subtitle}
           </p>
