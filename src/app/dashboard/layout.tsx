@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const footerVariant = pathname === '/dashboard' ? 'cta' : 'minimal'
 
   return (
-    <div className="gradient-grid-bg flex min-h-screen flex-col text-white">
+    <div className="gradient-grid-bg dark text-foreground flex min-h-screen flex-col">
       <Header />
       <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
         <QueryClientProvider client={queryClient}>
