@@ -334,7 +334,9 @@ test.describe('Couples full journey (real UI)', () => {
 
       // The invite page pushes to /dashboard client-side; if that navigation flakes,
       // keep the journey moving once the DB confirms membership.
-      await partnerPage.waitForURL(/\/dashboard/, { timeout: 5000 }).catch(() => {})
+      await partnerPage
+        .waitForURL(/\/dashboard/, { timeout: 5000 })
+        .catch(() => {})
       if (!partnerPage.url().includes('/dashboard')) {
         await partnerPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
       }
@@ -342,6 +344,9 @@ test.describe('Couples full journey (real UI)', () => {
       // Inviter should now see an active couples page after refresh
       await page.reload({ waitUntil: 'domcontentloaded' })
       await expect(page.getByText(/your love story/i)).toBeVisible()
+      await expect(page.getByText(/stay in sync/i)).toBeVisible({
+        timeout: 20000,
+      })
 
       // Like the seeded property as inviter
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
