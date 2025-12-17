@@ -9,6 +9,7 @@ import {
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
+import { toast } from '@/lib/utils/toast'
 
 // Mock the child components and dependencies
 jest.mock('@/components/features/couples/MutualLikesBadge', () => ({
@@ -241,6 +242,37 @@ describe('MutualLikesSection Component', () => {
         expect(
           screen.getByText('Server error - please try again later')
         ).toBeInTheDocument()
+      })
+    })
+
+    test('should prompt sign-in when API returns 401', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+      } as Response)
+
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Please sign in to view mutual likes')
+        ).toBeInTheDocument()
+      })
+
+      expect(toast.authRequired).toHaveBeenCalled()
+    })
+
+    test('should surface API-provided error messages', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ error: 'Forbidden' }),
+      } as Response)
+
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Forbidden')).toBeInTheDocument()
       })
     })
 

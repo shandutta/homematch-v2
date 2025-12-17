@@ -395,8 +395,8 @@ export function GroupedViewedPropertiesPage() {
 
           {/* Section 3: Viewed Only (not liked or passed) */}
           <PropertySection
-            title="Viewed Properties"
-            description="Properties you've seen but haven't decided on yet."
+            title="Undecided"
+            description="Homes you've seen but haven't decided on yet."
             properties={viewedOnlyProperties}
             type="viewed-only"
             {...sharedSectionProps}

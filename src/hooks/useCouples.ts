@@ -76,16 +76,17 @@ export function useMutualLikes() {
           throw new Error('Server error - please try again later')
         }
 
+        let apiError: string | null = null
         try {
           const data = await response.json()
           if (typeof data?.error === 'string' && data.error.length > 0) {
-            throw new Error(data.error)
+            apiError = data.error
           }
         } catch {
           // ignore parsing errors
         }
 
-        throw new Error('Failed to fetch mutual likes')
+        throw new Error(apiError ?? 'Failed to fetch mutual likes')
       }
       const data = await response.json()
       return data.mutualLikes || []
