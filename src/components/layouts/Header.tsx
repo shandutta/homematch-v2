@@ -23,11 +23,13 @@ import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 import { ProfileMenu } from '@/components/shared/ProfileMenu'
 import { useCurrentUserAvatar } from '@/hooks/useCurrentUserAvatar'
+import { usePathname } from 'next/navigation'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSigningOut, startTransition] = useTransition()
+  const pathname = usePathname() ?? ''
   const { displayName, email, avatar, isLoading } = useCurrentUserAvatar()
 
   const handleSignOut = () => {
@@ -85,21 +87,25 @@ export function Header() {
       href: '/dashboard/viewed',
       icon: History,
       label: 'Viewed',
+      matchPrefixes: ['/dashboard/viewed'],
     },
     {
       href: '/dashboard/liked',
       icon: Heart,
       label: 'Liked',
+      matchPrefixes: ['/dashboard/liked'],
     },
     {
       href: '/dashboard/passed',
       icon: X,
       label: 'Passed',
+      matchPrefixes: ['/dashboard/passed'],
     },
     {
       href: '/couples',
       icon: HeartHandshake,
       label: 'Matches',
+      matchPrefixes: ['/couples', '/household'],
     },
   ]
 
@@ -130,12 +136,22 @@ export function Header() {
             <div className="hidden md:flex md:items-center md:space-x-4">
               {navigationLinks.map((link) => {
                 const Icon = link.icon
+                const isActive = link.matchPrefixes.some(
+                  (prefix) =>
+                    pathname === prefix || pathname.startsWith(`${prefix}/`)
+                )
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="p-token-md transition-token-colors hover:bg-token-primary/20 rounded-token-md focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    className={cn(
+                      'p-token-md rounded-token-md focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                      isActive
+                        ? 'relative bg-white/[0.06] text-white shadow-[0_12px_30px_rgba(0,0,0,0.25)] ring-1 ring-white/10 after:absolute after:inset-x-4 after:bottom-1 after:h-[2px] after:rounded-full after:bg-amber-400/70 after:content-[""]'
+                        : 'hover:bg-token-primary/20'
+                    )}
                     aria-label={link.label}
+                    aria-current={isActive ? 'page' : undefined}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="hidden lg:inline">{link.label}</span>
@@ -226,12 +242,22 @@ export function Header() {
                 <ul className="space-y-2">
                   {navigationLinks.map((link) => {
                     const Icon = link.icon
+                    const isActive = link.matchPrefixes.some(
+                      (prefix) =>
+                        pathname === prefix || pathname.startsWith(`${prefix}/`)
+                    )
                     return (
                       <li key={link.href}>
                         <Link
                           href={link.href}
                           onClick={closeMobileMenu}
-                          className="rounded-token-lg p-token-md transition-token-all hover:bg-token-primary/20 active:bg-token-primary/30 focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none"
+                          className={cn(
+                            'rounded-token-lg p-token-md transition-token-all focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none',
+                            isActive
+                              ? 'bg-white/[0.06] text-white ring-1 ring-white/10'
+                              : 'hover:bg-token-primary/20 active:bg-token-primary/30'
+                          )}
+                          aria-current={isActive ? 'page' : undefined}
                         >
                           <Icon className="h-6 w-6 flex-shrink-0" />
                           <span className="text-token-lg font-medium">

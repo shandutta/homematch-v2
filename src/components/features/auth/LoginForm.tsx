@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
@@ -21,6 +20,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
+import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
@@ -97,7 +97,10 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="mx-auto w-full" data-testid="login-form">
+    <Card
+      className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full shadow-lg backdrop-blur"
+      data-testid="login-form"
+    >
       <CardHeader>
         <CardTitle className="text-center text-2xl font-bold">
           {CouplesMessages.welcome.returning}
@@ -171,12 +174,7 @@ export function LoginForm() {
             </Button>
 
             <div className="flex justify-end text-sm">
-              <Link
-                href="/reset-password"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Forgot password?
-              </Link>
+              <AuthLink href="/reset-password">Forgot password?</AuthLink>
             </div>
           </form>
         </Form>

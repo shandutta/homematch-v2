@@ -14,14 +14,7 @@ import { StorytellingDescription } from '@/components/features/storytelling/Stor
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
 import { usePropertyDetail } from './PropertyDetailProvider'
-
-const formatPropertyType = (type: string) => {
-  return type
-    .replace(/_/g, ' ')
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-}
+import { formatPropertyType } from '@/lib/utils/formatPropertyType'
 
 interface PropertyCardProps {
   property: Property

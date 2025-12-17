@@ -1,42 +1,28 @@
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
 
+import {
+  AuthLink,
+  AuthPageShell,
+} from '@/components/features/auth/AuthPageShell'
 import { LoginForm } from '@/components/features/auth/LoginForm'
-import Link from 'next/link'
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 py-12 sm:px-8 lg:px-12">
-      <div className="w-full max-w-lg space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">HomeMatch</h1>
-          <p className="mt-3 text-gray-600">Sign in to your account</p>
-        </div>
-
+    <AuthPageShell title="HomeMatch" subtitle="Sign in to your account">
+      <div className="space-y-6">
         <LoginForm />
 
-        <div className="text-center text-sm text-gray-600">
+        <p className="text-muted-foreground text-center text-sm">
           Have a verification code?{' '}
-          <Link
-            href="/verify-email"
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            Verify email
-          </Link>
-        </div>
+          <AuthLink href="/verify-email">Verify email</AuthLink>
+        </p>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/signup"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+        <p className="text-muted-foreground text-center text-sm">
+          Don&apos;t have an account?{' '}
+          <AuthLink href="/signup">Sign up</AuthLink>
+        </p>
       </div>
-    </div>
+    </AuthPageShell>
   )
 }

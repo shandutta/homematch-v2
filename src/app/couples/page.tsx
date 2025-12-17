@@ -21,7 +21,7 @@ export default function CouplesPage() {
           </CouplesErrorBoundary>
         </QueryClientProvider>
       </main>
-      <Footer />
+      <Footer variant="minimal" />
     </div>
   )
 }

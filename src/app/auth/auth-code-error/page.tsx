@@ -1,26 +1,28 @@
 export const dynamic = 'force-dynamic'
 
+import {
+  AuthLink,
+  AuthPageShell,
+} from '@/components/features/auth/AuthPageShell'
+
 export default function AuthCodeError() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Authentication Error
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sorry, we could not authenticate you. Please try again.
-          </p>
-          <div className="mt-4">
-            <a
-              href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Back to login
-            </a>
-          </div>
+    <AuthPageShell
+      title="HomeMatch"
+      subtitle="We couldn’t authenticate you. Please try again."
+      maxWidthClassName="max-w-md"
+    >
+      <div className="bg-card/80 rounded-token-xl border-border/60 p-token-lg text-center shadow-lg backdrop-blur">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Authentication error
+        </h2>
+        <p className="text-muted-foreground mt-2 text-sm">
+          The login link may have expired or already been used.
+        </p>
+        <div className="mt-6">
+          <AuthLink href="/login">Back to login</AuthLink>
         </div>
       </div>
-    </div>
+    </AuthPageShell>
   )
 }
