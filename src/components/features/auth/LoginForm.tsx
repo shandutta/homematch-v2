@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Form,
   FormControl,
@@ -22,10 +22,28 @@ import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
 import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
+const getSafeRedirectPath = (value: string | null) => {
+  if (!value) return null
+
+  let decoded = value
+  try {
+    decoded = decodeURIComponent(value)
+  } catch {
+    return null
+  }
+
+  if (!decoded.startsWith('/')) return null
+  if (decoded.startsWith('//')) return null
+  if (decoded.includes('://')) return null
+
+  return decoded
+}
+
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const isTestMode =
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
@@ -36,6 +54,12 @@ export function LoginForm() {
     email: '',
     password: '',
   })
+
+  const dashboardPath = '/dashboard'
+  const redirectPath =
+    getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
+    getSafeRedirectPath(searchParams?.get('redirect') ?? null) ||
+    dashboardPath
 
   const handleEmailLogin = async (data: LoginData) => {
     setLoading(true)
@@ -57,17 +81,15 @@ export function LoginForm() {
         return
       }
 
-      const dashboardPath = '/dashboard'
-
       if (isTestMode || typeof window === 'undefined') {
         // In tests, rely on client routing for easier assertions
-        router.push(dashboardPath)
+        router.push(redirectPath)
         return
       }
 
       // Use window.location to force a full page reload, ensuring cookies are sent
       // This prevents race conditions with middleware
-      window.location.assign(dashboardPath)
+      window.location.assign(redirectPath)
     } catch (networkError) {
       // Handle network errors or other exceptions
       setError(

@@ -4,6 +4,7 @@
 
 - Generates `property_vibes` rows for `properties` using a vision LLM (Qwen3-VL via OpenRouter).
 - Optionally refreshes `properties.images` by fetching the full Zillow gallery via RapidAPI.
+- When `--refreshImages=true` and `--force=false`, it only regenerates vibes for properties that are missing, stale (source hash changed), or had images change during the refresh (so you don’t overwrite existing vibes / burn tokens unnecessarily).
 
 ## Run manually (start with 10)
 
