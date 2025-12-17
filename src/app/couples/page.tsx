@@ -5,10 +5,13 @@ import { redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 interface CouplesPageProps {
-  searchParams?: Record<string, string | string[] | undefined>
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function CouplesPage({ searchParams }: CouplesPageProps) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -18,7 +21,7 @@ export default async function CouplesPage({ searchParams }: CouplesPageProps) {
     const params = new URLSearchParams()
 
     const redirectParams = new URLSearchParams()
-    Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+    Object.entries(resolvedSearchParams ?? {}).forEach(([key, value]) => {
       if (typeof value === 'string') {
         redirectParams.set(key, value)
         return

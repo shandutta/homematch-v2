@@ -31,7 +31,32 @@ export async function PATCH() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const expectTestMode = searchParams.get('expectTest') === 'true'
+  const isTestMode =
+    process.env.NODE_ENV === 'test' ||
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
+  if (expectTestMode && !isTestMode) {
+    return NextResponse.json(
+      {
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        service: 'HomeMatch V2',
+        version: '2.0.0',
+        error: 'Test mode expected',
+      },
+      {
+        status: 503,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+
   try {
     // Basic health check
     const response: HealthResponse = {
