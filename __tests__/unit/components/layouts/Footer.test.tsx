@@ -33,13 +33,13 @@ describe('Footer', () => {
     ).toHaveAttribute('href', '/profile')
 
     expect(
-      screen.getByRole('link', { name: 'Keep exploring' })
+      screen.getByRole('link', { name: /Keep exploring/i })
     ).toHaveAttribute('href', '/dashboard')
     expect(
-      screen.getByRole('link', { name: 'Review favorites' })
+      screen.getByRole('link', { name: /Review favorites/i })
     ).toHaveAttribute('href', '/dashboard/liked')
     expect(
-      screen.getByRole('link', { name: 'Couples journey' })
+      screen.getByRole('link', { name: /Couples journey/i })
     ).toHaveAttribute('href', '/couples')
 
     expect(

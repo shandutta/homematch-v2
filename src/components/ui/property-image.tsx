@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { Home } from 'lucide-react'
 
@@ -68,6 +68,18 @@ export function PropertyImage({
 }: PropertyImageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
+  const [allFallbacksFailed, setAllFallbacksFailed] = useState(false)
+
+  const srcKey = useMemo(() => {
+    if (Array.isArray(src)) return src.filter(Boolean).join('|')
+    return src ?? ''
+  }, [src])
+
+  useEffect(() => {
+    setCurrentImageIndex(0)
+    setHasError(false)
+    setAllFallbacksFailed(false)
+  }, [srcKey])
 
   // Determine the image source to use
   const getImageSrc = useCallback(() => {
@@ -110,6 +122,7 @@ export function PropertyImage({
     } else {
       // All fallbacks failed, show placeholder
       console.warn('All image fallbacks failed for:', alt)
+      setAllFallbacksFailed(true)
     }
 
     onError?.()
@@ -127,7 +140,7 @@ export function PropertyImage({
   }
 
   // If all images fail, show a placeholder
-  if (hasError && currentImageIndex >= FALLBACK_IMAGES.length - 1) {
+  if (allFallbacksFailed) {
     return (
       <div
         className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}
