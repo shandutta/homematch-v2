@@ -111,11 +111,156 @@ export class UserServiceClient {
     userId: string,
     householdId: string
   ): Promise<UserProfile> {
-    return this.updateProfile(userId, { household_id: householdId })
+    const supabase = createClient()
+
+    const { data: existingProfile, error: existingProfileError } =
+      await supabase
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', userId)
+        .single()
+
+    if (existingProfileError) {
+      throw new Error(
+        `Failed to load your profile before joining: ${existingProfileError.message}`
+      )
+    }
+
+    if (existingProfile?.household_id) {
+      if (existingProfile.household_id === householdId) {
+        const profile = await this.getProfile(userId)
+        if (!profile) {
+          throw new Error('Failed to load profile after joining household')
+        }
+        return profile
+      }
+
+      throw new Error(
+        'You already belong to a household. Leave it before joining another.'
+      )
+    }
+
+    const { data: updatedProfile, error: updateProfileError } = await supabase
+      .from('user_profiles')
+      .update({ household_id: householdId })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (updateProfileError) {
+      throw new Error(`Failed to join household: ${updateProfileError.message}`)
+    }
+
+    // Ensure households.user_count reflects the latest membership (used to gate couples features).
+    // NOTE: This is best-effort but we roll back the profile join if updating the household fails.
+    const { data: household, error: householdError } = await supabase
+      .from('households')
+      .select('user_count')
+      .eq('id', householdId)
+      .single()
+
+    if (householdError) {
+      await supabase
+        .from('user_profiles')
+        .update({ household_id: null })
+        .eq('id', userId)
+      throw new Error(
+        `Failed to finalize household join (household lookup failed): ${householdError.message}`
+      )
+    }
+
+    const currentUserCount = household.user_count ?? 1
+    const nextUserCount = currentUserCount + 1
+
+    const { error: updateHouseholdError } = await supabase
+      .from('households')
+      .update({ user_count: nextUserCount })
+      .eq('id', householdId)
+
+    if (updateHouseholdError) {
+      await supabase
+        .from('user_profiles')
+        .update({ household_id: null })
+        .eq('id', userId)
+      throw new Error(
+        `Failed to finalize household join (count update failed): ${updateHouseholdError.message}`
+      )
+    }
+
+    return updatedProfile
   }
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
-    return this.updateProfile(userId, { household_id: null })
+    const supabase = createClient()
+
+    const { data: existingProfile, error: existingProfileError } =
+      await supabase
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', userId)
+        .single()
+
+    if (existingProfileError) {
+      throw new Error(
+        `Failed to load your profile before leaving: ${existingProfileError.message}`
+      )
+    }
+
+    const householdId = existingProfile?.household_id
+    if (!householdId) {
+      const profile = await this.getProfile(userId)
+      if (!profile) {
+        throw new Error('Failed to load profile after leaving household')
+      }
+      return profile
+    }
+
+    const { data: household, error: householdError } = await supabase
+      .from('households')
+      .select('user_count')
+      .eq('id', householdId)
+      .single()
+
+    if (householdError) {
+      throw new Error(
+        `Failed to load household before leaving: ${householdError.message}`
+      )
+    }
+
+    const currentUserCount = household.user_count ?? 1
+    const nextUserCount = Math.max(currentUserCount - 1, 0)
+
+    const { error: updateHouseholdError } = await supabase
+      .from('households')
+      .update({ user_count: nextUserCount })
+      .eq('id', householdId)
+
+    if (updateHouseholdError) {
+      throw new Error(
+        `Failed to update household before leaving: ${updateHouseholdError.message}`
+      )
+    }
+
+    const { data: updatedProfile, error: updateProfileError } = await supabase
+      .from('user_profiles')
+      .update({ household_id: null })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (updateProfileError) {
+      // Roll back user_count decrement if profile update fails.
+      await supabase
+        .from('households')
+        .update({ user_count: currentUserCount })
+        .eq('id', householdId)
+
+      throw new Error(
+        `Failed to leave household: ${updateProfileError.message}`
+      )
+    }
+
+    return updatedProfile
   }
 
   // Household invitations

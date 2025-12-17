@@ -6,6 +6,7 @@
  * request parsing, business logic, and response formatting.
  */
 
+import { randomUUID } from 'crypto'
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { E2EHttpClient } from '../../utils/e2e-http-client'
 
@@ -354,6 +355,153 @@ describe('E2E: /api/couples/mutual-likes', () => {
         )
       }
     })
+
+    test(
+      'returns a mutual like after two household members like the same property',
+      async () => {
+        const helper = client.getHelper()
+        const serviceClient = helper.getServiceClient()
+
+        const test1 = await helper.getTestUser('test1@example.com')
+        const test2 = await helper.getTestUser('test2@example.com')
+
+        const householdId = randomUUID()
+        const propertyId = randomUUID()
+
+        const { data: existingProfiles, error: existingProfilesError } =
+          await serviceClient
+            .from('user_profiles')
+            .select('id, household_id')
+            .in('id', [test1.id, test2.id])
+
+        expect(existingProfilesError).toBeNull()
+
+        const originalHouseholdByUserId = new Map<string, string | null>(
+          (existingProfiles ?? []).map((row) => [
+            row.id,
+            row.household_id ?? null,
+          ])
+        )
+
+        let client2: E2EHttpClient | null = null
+
+        try {
+          // Create a fresh household and link both users to it
+          const { error: createHouseholdError } = await serviceClient
+            .from('households')
+            .insert({
+              id: householdId,
+              name: `E2E Mutual Likes ${householdId.slice(0, 8)}`,
+              created_by: test1.id,
+              user_count: 2,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+
+          expect(createHouseholdError).toBeNull()
+
+          const { error: linkProfilesError } = await serviceClient
+            .from('user_profiles')
+            .update({ household_id: householdId })
+            .in('id', [test1.id, test2.id])
+
+          expect(linkProfilesError).toBeNull()
+
+          // Create a property to like
+          const { error: createPropertyError } = await serviceClient
+            .from('properties')
+            .upsert({
+              id: propertyId,
+              address: `E2E Mutual Like ${propertyId.slice(0, 8)}`,
+              city: 'Test City',
+              state: 'TS',
+              zip_code: '12345',
+              price: 500000,
+              bedrooms: 3,
+              bathrooms: 2,
+              square_feet: 1500,
+              property_type: 'single_family',
+              listing_status: 'active',
+              is_active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+
+          expect(createPropertyError).toBeNull()
+
+          // Authenticate both users
+          await client.authenticateAs('test1@example.com', 'testpassword123')
+          client2 = new E2EHttpClient()
+          await client2.authenticateAs('test2@example.com', 'testpassword456')
+
+          // Prime mutual likes cache for this household
+          const emptyRes = await client.get(
+            '/api/couples/mutual-likes?includeProperties=false'
+          )
+          expect(emptyRes.status).toBe(200)
+          const emptyData = await emptyRes.json()
+          expect(Array.isArray(emptyData.mutualLikes)).toBe(true)
+          expect(emptyData.mutualLikes.length).toBe(0)
+
+          // Like as user 1
+          const like1 = await client.post('/api/interactions', {
+            propertyId,
+            type: 'liked',
+          })
+          expect(like1.status).toBe(200)
+
+          // Like as user 2
+          const like2 = await client2.post('/api/interactions', {
+            propertyId,
+            type: 'liked',
+          })
+          expect(like2.status).toBe(200)
+
+          // Verify mutual likes now includes the property (cache must be invalidated)
+          const mutualRes = await client.get(
+            '/api/couples/mutual-likes?includeProperties=false'
+          )
+          expect(mutualRes.status).toBe(200)
+          const mutualData = await mutualRes.json()
+
+          const match = (mutualData.mutualLikes ?? []).find(
+            (ml: any) => ml.property_id === propertyId
+          )
+
+          expect(match).toBeDefined()
+          expect(match.liked_by_count).toBeGreaterThanOrEqual(2)
+        } finally {
+          if (client2) {
+            await client2.cleanup()
+          }
+
+          // Cleanup: remove interactions + restore profiles + delete household/property
+          await serviceClient
+            .from('user_property_interactions')
+            .delete()
+            .eq('property_id', propertyId)
+            .in('user_id', [test1.id, test2.id])
+
+          await serviceClient
+            .from('user_profiles')
+            .update({
+              household_id: originalHouseholdByUserId.get(test1.id) ?? null,
+            })
+            .eq('id', test1.id)
+
+          await serviceClient
+            .from('user_profiles')
+            .update({
+              household_id: originalHouseholdByUserId.get(test2.id) ?? null,
+            })
+            .eq('id', test2.id)
+
+          await serviceClient.from('properties').delete().eq('id', propertyId)
+          await serviceClient.from('households').delete().eq('id', householdId)
+        }
+      },
+      TEST_TIMEOUT
+    )
   })
 
   describe('Data Structure Validation', () => {

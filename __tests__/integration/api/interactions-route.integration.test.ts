@@ -257,6 +257,69 @@ describe.sequential('Integration: /api/interactions route', () => {
     expect(dbLiked?.length).toBeGreaterThanOrEqual(0)
   })
 
+  it('records household_id when the user belongs to a household', async () => {
+    const { data: originalProfile, error: originalProfileError } =
+      await supabaseAdmin
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', testUserId)
+        .single()
+
+    expect(originalProfileError).toBeNull()
+
+    const householdId = randomUUID()
+    const propertyId = await createTestProperty()
+
+    try {
+      const { error: householdError } = await supabaseAdmin
+        .from('households')
+        .insert({
+          id: householdId,
+          name: `Interactions Household Test ${householdId.slice(0, 8)}`,
+          created_by: testUserId,
+          user_count: 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+
+      expect(householdError).toBeNull()
+
+      const { error: linkError } = await supabaseAdmin
+        .from('user_profiles')
+        .update({ household_id: householdId })
+        .eq('id', testUserId)
+
+      expect(linkError).toBeNull()
+
+      const res = await POST(
+        makeJsonRequest('http://localhost/api/interactions', 'POST', {
+          propertyId,
+          type: 'liked',
+        })
+      )
+
+      expect(res.status).toBe(200)
+
+      const { data: interactionRow, error: interactionError } =
+        await supabaseAdmin
+          .from('user_property_interactions')
+          .select('household_id')
+          .eq('user_id', testUserId)
+          .eq('property_id', propertyId)
+          .maybeSingle()
+
+      expect(interactionError).toBeNull()
+      expect(interactionRow?.household_id).toBe(householdId)
+    } finally {
+      await supabaseAdmin
+        .from('user_profiles')
+        .update({ household_id: originalProfile?.household_id ?? null })
+        .eq('id', testUserId)
+
+      await supabaseAdmin.from('households').delete().eq('id', householdId)
+    }
+  })
+
   it('deletes interactions for the authenticated user', async () => {
     const propertyId = await createTestProperty()
     // Seed an interaction directly to avoid flakiness from route setup
