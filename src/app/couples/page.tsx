@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Header } from '@/components/layouts/Header'
 import { Footer } from '@/components/layouts/Footer'
+import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createQueryClient } from '@/lib/query/config'
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
@@ -22,6 +23,8 @@ export default function CouplesPage() {
         </QueryClientProvider>
       </main>
       <Footer variant="minimal" />
+      <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <MobileBottomNav />
     </div>
   )
 }

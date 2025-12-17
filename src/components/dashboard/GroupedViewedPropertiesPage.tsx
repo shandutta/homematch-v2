@@ -229,7 +229,7 @@ function PropertySection({
   return (
     <section data-testid={`section-${type}`} className="space-y-4">
       <div>
-        <h2 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight">
+        <h2 className="font-display text-hm-stone-200 text-xl font-medium tracking-tight sm:text-2xl">
           {title}
         </h2>
         <p className="text-hm-stone-500 text-sm">{description}</p>
@@ -337,8 +337,8 @@ export function GroupedViewedPropertiesPage() {
   }
 
   return (
-    <div className="space-y-12">
-      <h1 className="font-display text-hm-stone-200 text-4xl font-medium tracking-tight">
+    <div className="space-y-10 sm:space-y-12">
+      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
         Viewed Properties
       </h1>
 

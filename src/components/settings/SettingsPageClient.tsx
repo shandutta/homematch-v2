@@ -21,6 +21,7 @@ import {
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 
 interface SettingsPageClientProps {
   user: User
@@ -160,7 +161,7 @@ export function SettingsPageClient({
   }
 
   return (
-    <div className="gradient-grid-bg min-h-screen pb-16 text-white">
+    <div className="gradient-grid-bg min-h-screen pb-6 text-white">
       {/* Hero Header */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -380,6 +381,9 @@ export function SettingsPageClient({
           </Tabs>
         </motion.div>
       </div>
+
+      <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <MobileBottomNav />
     </div>
   )
 }

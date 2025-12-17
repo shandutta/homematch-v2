@@ -3,6 +3,7 @@
 import { ReactNode, useState } from 'react'
 import { Header } from '@/components/layouts/Header'
 import { Footer } from '@/components/layouts/Footer'
+import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { createQueryClient } from '@/lib/query/config'
@@ -29,6 +30,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </QueryClientProvider>
       </main>
       <Footer variant={footerVariant} />
+      <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <MobileBottomNav />
     </div>
   )
 }

@@ -87,8 +87,8 @@ export function InteractionsListPage({
     Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-display text-hm-stone-200 text-4xl font-medium tracking-tight">
+    <div className="space-y-6 sm:space-y-8">
+      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
         {title}
       </h1>
 
