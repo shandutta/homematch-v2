@@ -15,18 +15,6 @@ import { AcceptInviteForm } from './AcceptInviteForm'
 
 type InviteRecord = HouseholdInvitation & {
   household?: Pick<Household, 'id' | 'name' | 'collaboration_mode'> | null
-  inviter?: Pick<UserProfile, 'id' | 'preferences'> | null
-}
-
-const getInviterName = (preferences: UserProfile['preferences']) => {
-  if (!preferences || typeof preferences !== 'object')
-    return 'A household member'
-  const prefRecord = preferences as Record<string, unknown>
-  const displayName = prefRecord.display_name
-  if (typeof displayName === 'string' && displayName.trim().length > 0) {
-    return displayName
-  }
-  return 'A household member'
 }
 
 const formatDate = (value: string) =>
@@ -47,8 +35,7 @@ export default async function InvitePage({
     .select(
       `
         *,
-        household:households(id, name, collaboration_mode),
-        inviter:user_profiles!household_invitations_invited_by_fkey(id, preferences)
+        household:households(id, name, collaboration_mode)
       `
     )
     .eq('token', params.token)
@@ -58,6 +45,12 @@ export default async function InvitePage({
     notFound()
   }
 
+  const { data: inviterProfile } = await serviceClient
+    .from('user_profiles')
+    .select('display_name, email')
+    .eq('id', invite.created_by)
+    .maybeSingle<Pick<UserProfile, 'display_name' | 'email'>>()
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -65,7 +58,10 @@ export default async function InvitePage({
 
   const isExpired = new Date(invite.expires_at) < new Date()
   const canAccept = invite.status === 'pending' && !isExpired
-  const inviterName = getInviterName(invite.inviter?.preferences ?? null)
+  const inviterName =
+    inviterProfile?.display_name ||
+    inviterProfile?.email ||
+    'A household member'
 
   return (
     <div className="min-h-screen bg-[#030c24] px-4 py-10 text-white">

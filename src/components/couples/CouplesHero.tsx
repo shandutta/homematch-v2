@@ -13,6 +13,8 @@ interface CouplesHeroProps {
 }
 
 export function CouplesHero({ stats, loading }: CouplesHeroProps) {
+  const floatingHeartXPositions = ['12%', '34%', '58%', '82%'] as const
+
   if (loading) {
     return (
       <Card className="bg-hm-obsidian-900 relative overflow-hidden rounded-xl border border-white/5">
@@ -46,7 +48,7 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
             key={i}
             className="absolute text-pink-400/10"
             initial={{
-              x: Math.random() * 100 + '%',
+              x: floatingHeartXPositions[i % floatingHeartXPositions.length],
               y: '100%',
               scale: 0,
               rotate: 0,
@@ -57,7 +59,7 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
               rotate: 360,
             }}
             transition={{
-              duration: 10 + Math.random() * 4,
+              duration: 10 + i,
               repeat: Infinity,
               delay: i * 2.5,
               ease: 'linear',
