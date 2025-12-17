@@ -529,10 +529,13 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/couples/mutual-likes')
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/couples/mutual-likes',
+          expect.objectContaining({ credentials: 'include' })
+        )
       })
     })
 
@@ -542,7 +545,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({}), // Missing mutualLikes property
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('No mutual likes yet!')).toBeInTheDocument()
@@ -567,7 +570,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: partialMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         // Should display property ID when no address available (first 8 chars)
@@ -581,7 +584,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      const { container } = render(
+      const { container } = renderWithQueryClient(
         <MutualLikesSection {...defaultProps} className="custom-class" />
       )
 
@@ -594,7 +597,7 @@ describe('MutualLikesSection Component', () => {
     test('should handle network errors gracefully', async () => {
       mockFetch.mockRejectedValueOnce(new TypeError('Network error'))
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('Network error')).toBeInTheDocument()
@@ -609,7 +612,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText(/Both Liked/)).toBeInTheDocument()
@@ -622,7 +625,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const propertyLinks = screen.getAllByRole('link')
@@ -640,7 +643,9 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection {...defaultProps} />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection {...defaultProps} />
+      )
 
       await waitFor(() => {
         const cardElement = container.querySelector(

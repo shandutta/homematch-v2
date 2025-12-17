@@ -2,13 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DisputedPropertiesView } from '@/components/couples/DisputedPropertiesView'
 
-const mockToastAuthRequired = jest.fn()
-const mockToastError = jest.fn()
-
 jest.mock('@/lib/utils/toast', () => ({
   toast: {
-    authRequired: mockToastAuthRequired,
-    error: mockToastError,
+    authRequired: jest.fn(),
+    error: jest.fn(),
     success: jest.fn(),
   },
 }))

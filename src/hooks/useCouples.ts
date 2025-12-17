@@ -68,6 +68,23 @@ export function useMutualLikes() {
         credentials: 'include',
       })
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please sign in to view mutual likes')
+        }
+
+        if (response.status >= 500) {
+          throw new Error('Server error - please try again later')
+        }
+
+        try {
+          const data = await response.json()
+          if (typeof data?.error === 'string' && data.error.length > 0) {
+            throw new Error(data.error)
+          }
+        } catch {
+          // ignore parsing errors
+        }
+
         throw new Error('Failed to fetch mutual likes')
       }
       const data = await response.json()
