@@ -185,9 +185,8 @@ describe('GroupedViewedPropertiesPage', () => {
       // Check section titles (using getAllByText for "Viewed Properties" since page title also uses it)
       expect(screen.getByText('Liked Properties')).toBeTruthy()
       expect(screen.getByText('Passed Properties')).toBeTruthy()
-      // "Viewed Properties" appears both as page title and section title
-      const viewedTexts = screen.getAllByText('Viewed Properties')
-      expect(viewedTexts.length).toBeGreaterThanOrEqual(2) // Page title + section title
+      expect(screen.getByText('Viewed Properties')).toBeTruthy()
+      expect(screen.getByText('Undecided')).toBeTruthy()
     })
 
     it('does not render empty sections', () => {

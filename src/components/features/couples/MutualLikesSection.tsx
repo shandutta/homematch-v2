@@ -51,6 +51,7 @@ export function MutualLikesSection({
   isLoading: propIsLoading,
   error: propError,
 }: MutualLikesSectionProps) {
+  const isServerRender = typeof window === 'undefined'
   const usingExternalState =
     propMutualLikes !== undefined ||
     propIsLoading !== undefined ||
@@ -59,10 +60,17 @@ export function MutualLikesSection({
   const query = useMutualLikes()
   const previousFetchCount = useRef(0)
 
+  // `useMutualLikes` is disabled during SSR to avoid unauthenticated server fetches.
+  // Render the same loading state on the server to prevent hydration mismatches.
+  const shouldForceLoading = !usingExternalState && isServerRender
+
   const mutualLikes: MutualLike[] =
-    propMutualLikes ?? ((query.data ?? []) as MutualLike[])
-  const loading = propIsLoading ?? query.isLoading
-  const error = propError ?? (query.error ? query.error.message : null)
+    propMutualLikes ??
+    ((shouldForceLoading ? [] : (query.data ?? [])) as MutualLike[])
+  const loading = propIsLoading ?? (shouldForceLoading ? true : query.isLoading)
+  const error =
+    propError ??
+    (shouldForceLoading ? null : query.error ? query.error.message : null)
 
   useEffect(() => {
     if (usingExternalState) return
