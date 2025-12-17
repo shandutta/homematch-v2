@@ -173,7 +173,11 @@ async function seedLikedPropertyWithVibes({
     tagline: propertyTagline,
     vibe_statement:
       'A bright, calm home that feels ready for both workdays and weekend hosting.',
-    suggested_tags: ["Chef's Kitchen", 'Remote Work Ready', 'Open Concept Flow'],
+    suggested_tags: [
+      "Chef's Kitchen",
+      'Remote Work Ready',
+      'Open Concept Flow',
+    ],
     feature_highlights: [],
     lifestyle_fits: [],
     primary_vibes: [],
@@ -210,7 +214,10 @@ async function seedLikedPropertyWithVibes({
         .from('user_property_interactions')
         .delete()
         .match({ user_id: userId, property_id: propertyId })
-      await supabase.from('property_vibes').delete().eq('property_id', propertyId)
+      await supabase
+        .from('property_vibes')
+        .delete()
+        .eq('property_id', propertyId)
       await supabase
         .from('neighborhood_vibes')
         .delete()
@@ -353,4 +360,3 @@ test.describe('UI regressions', () => {
     }
   })
 })
-
