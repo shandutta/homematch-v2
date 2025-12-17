@@ -237,36 +237,6 @@ export class UserService extends BaseService {
       household_id: householdId,
     })
 
-    if (!updatedProfile) return null
-
-    // Best-effort increment of households.user_count (used for couples feature gating).
-    // This mirrors the client implementation but runs in server contexts too.
-    const { data: household, error: householdError } = await supabase
-      .from('households')
-      .select('user_count')
-      .eq('id', householdId)
-      .single()
-
-    if (householdError) {
-      console.error('Error fetching household after join:', householdError)
-      return updatedProfile
-    }
-
-    const currentUserCount = household.user_count ?? 1
-    const nextUserCount = currentUserCount + 1
-
-    const { error: updateHouseholdError } = await supabase
-      .from('households')
-      .update({ user_count: nextUserCount })
-      .eq('id', householdId)
-
-    if (updateHouseholdError) {
-      console.error(
-        'Error updating household user_count:',
-        updateHouseholdError
-      )
-    }
-
     return updatedProfile
   }
 
@@ -287,32 +257,6 @@ export class UserService extends BaseService {
     const householdId = profile?.household_id
     if (!householdId) {
       return this.getUserProfile(userId)
-    }
-
-    const { data: household, error: householdError } = await supabase
-      .from('households')
-      .select('user_count')
-      .eq('id', householdId)
-      .single()
-
-    if (householdError) {
-      console.error('Error fetching household before leave:', householdError)
-      return this.updateUserProfile(userId, { household_id: null })
-    }
-
-    const currentUserCount = household.user_count ?? 1
-    const nextUserCount = Math.max(currentUserCount - 1, 0)
-
-    const { error: updateHouseholdError } = await supabase
-      .from('households')
-      .update({ user_count: nextUserCount })
-      .eq('id', householdId)
-
-    if (updateHouseholdError) {
-      console.error(
-        'Error updating household user_count before leave:',
-        updateHouseholdError
-      )
     }
 
     return this.updateUserProfile(userId, { household_id: null })

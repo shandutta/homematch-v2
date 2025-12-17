@@ -113,22 +113,6 @@ export function CouplesPageClient() {
 
         if (!memberCountError && typeof memberCount === 'number') {
           householdUserCount = Math.max(householdUserCount, memberCount)
-
-          if (
-            typeof household?.user_count === 'number' &&
-            memberCount > 0 &&
-            memberCount !== household.user_count
-          ) {
-            // Best-effort sync; UI doesn't depend on this succeeding.
-            supabase
-              .from('households')
-              .update({ user_count: memberCount })
-              .eq('id', userProfile.household_id)
-              .then(
-                () => undefined,
-                () => undefined
-              )
-          }
         }
       }
 
