@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         .from('user_property_interactions')
         .select('id')
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (dbError) {
         throw dbError

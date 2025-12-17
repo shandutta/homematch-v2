@@ -27,8 +27,11 @@ const formatDate = (value: string) =>
 export default async function InvitePage({
   params,
 }: {
-  params: { token: string }
+  params: { token: string } | Promise<{ token: string }>
 }) {
+  const resolvedParams = await params
+  const token = resolvedParams.token
+
   const serviceClient = await getServiceRoleClient()
   const { data: invite, error } = await serviceClient
     .from('household_invitations')
@@ -38,7 +41,7 @@ export default async function InvitePage({
         household:households(id, name, collaboration_mode)
       `
     )
-    .eq('token', params.token)
+    .eq('token', token)
     .maybeSingle<InviteRecord>()
 
   if (error || !invite) {
@@ -146,7 +149,7 @@ export default async function InvitePage({
 
             {canAccept ? (
               <AcceptInviteForm
-                token={params.token}
+                token={token}
                 householdName={invite.household?.name || 'your household'}
               />
             ) : (
@@ -165,7 +168,7 @@ export default async function InvitePage({
               <p className="text-center text-sm text-slate-500">
                 Already have an account?{' '}
                 <Link
-                  href={`/login?redirectTo=/invite/${params.token}`}
+                  href={`/login?redirectTo=/invite/${token}`}
                   className="font-semibold text-slate-900 underline"
                 >
                   Sign in to accept
