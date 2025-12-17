@@ -13,6 +13,7 @@ MODE="${MODE:-prod}" # prod | dev
 CURL_TIMEOUT="${CURL_TIMEOUT:-600}" # 10 minute timeout for long-running API calls
 RETRIES="${RETRIES:-5}"
 RETRY_DELAY="${RETRY_DELAY:-20}" # seconds between retries
+SHOW_SERVER_LOG_ON_ERROR="${SHOW_SERVER_LOG_ON_ERROR:-1}"
 
 timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
@@ -47,6 +48,15 @@ redact_response_body() {
 port_in_use() {
   local port="$1"
   lsof -tiTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
+}
+
+has_turbopack_runtime_reference() {
+  local dist_dir="${1:-.next}"
+  local document_file="$ROOT/$dist_dir/server/pages/_document.js"
+  if [[ ! -f "$document_file" ]]; then
+    return 1
+  fi
+  grep -q '\[turbopack\]_runtime' "$document_file" 2>/dev/null
 }
 
 kill_port_listeners() {
@@ -96,7 +106,8 @@ NODE
 }
 
 ensure_routes_manifest_defaults() {
-  local manifest="$ROOT/.next/routes-manifest.json"
+  local dist_dir="${NEXT_DIST_DIR:-.next}"
+  local manifest="$ROOT/$dist_dir/routes-manifest.json"
   if [[ ! -f "$manifest" ]]; then
     return
   fi
@@ -148,6 +159,11 @@ if [[ -n "$endpoint_port" && -z "$PORT_FROM_ENV" ]]; then
 fi
 
 # Ensure we're not fooled by an existing process on the port
+port_was_in_use=0
+if port_in_use "$PORT"; then
+  port_was_in_use=1
+fi
+
 if ! node scripts/kill-port.js "$PORT"; then
   echo "[run-local-api] [$(timestamp)] Failed to free port $PORT via scripts/kill-port.js"
   finish 1 error
@@ -199,11 +215,30 @@ if [[ "$MODE" == "dev" ]]; then
   NODE_ENV=development HOSTNAME=127.0.0.1 PORT="$PORT" node_modules/.bin/next dev --turbopack -H 0.0.0.0 -p "$PORT" \
     >"$SERVER_LOG" 2>&1 &
 else
-  if [[ "${FORCE_REBUILD:-0}" == "1" || ! -f ".next/BUILD_ID" ]]; then
+  dist_dir="${NEXT_DIST_DIR:-.next}"
+  build_id_file="$dist_dir/BUILD_ID"
+  should_rebuild=0
+
+  if [[ "${FORCE_REBUILD:-0}" == "1" ]]; then
+    should_rebuild=1
+  fi
+  # If we had to kill a running server, the existing `.next` output may be
+  # from `next dev --turbopack` (or otherwise stale). Prefer a clean build.
+  if [[ "$port_was_in_use" == "1" ]]; then
+    should_rebuild=1
+  fi
+  if [[ ! -f "$build_id_file" ]]; then
+    should_rebuild=1
+  fi
+  if has_turbopack_runtime_reference "$dist_dir"; then
+    should_rebuild=1
+  fi
+
+  if [[ "$should_rebuild" == "1" ]]; then
     echo "[run-local-api] [$(timestamp)] Building Next.js app..."
     pnpm build >"$BUILD_LOG" 2>&1
   else
-    echo "[run-local-api] [$(timestamp)] Reusing existing build in .next (set FORCE_REBUILD=1 to rebuild)..."
+    echo "[run-local-api] [$(timestamp)] Reusing existing build in $dist_dir (set FORCE_REBUILD=1 to rebuild)..."
   fi
   ensure_routes_manifest_defaults
   echo "[run-local-api] [$(timestamp)] Starting prod server on port $PORT..."
@@ -287,6 +322,10 @@ if [[ $curl_exit -eq 0 ]]; then
   echo "[run-local-api] [$(timestamp)] Done (success)."
   finish 0 success
 else
+  if [[ "$SHOW_SERVER_LOG_ON_ERROR" == "1" ]]; then
+    echo "[run-local-api] Last server log lines:"
+    tail -n 120 "$SERVER_LOG" 2>/dev/null || true
+  fi
   echo "[run-local-api] [$(timestamp)] Done (curl exit code: $curl_exit)."
   finish "$curl_exit" error
 fi
