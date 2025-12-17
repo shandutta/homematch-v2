@@ -8,6 +8,7 @@ jest.mock('next/navigation', () => ({
     push: jest.fn(),
     refresh: jest.fn(),
   }),
+  usePathname: () => '/dashboard',
 }))
 
 // Mock the useCurrentUserAvatar hook to avoid Supabase auth calls

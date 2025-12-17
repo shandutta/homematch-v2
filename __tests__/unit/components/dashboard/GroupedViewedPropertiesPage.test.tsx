@@ -158,10 +158,8 @@ describe('GroupedViewedPropertiesPage', () => {
 
       renderWithQuery(<GroupedViewedPropertiesPage />)
 
-      expect(screen.getByText(/No viewed properties yet\./i)).toBeTruthy()
-      expect(
-        screen.getByText(/Start swiping to see properties here!/i)
-      ).toBeTruthy()
+      expect(screen.getByText(/No viewed properties yet/i)).toBeTruthy()
+      expect(screen.getByText(/Swipe through recommendations/i)).toBeTruthy()
     })
   })
 
