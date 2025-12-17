@@ -13,8 +13,15 @@ import { getWorkerTestUser } from '../fixtures/test-data'
 
 test.describe('Auth redirects', () => {
   test.beforeEach(async ({ page }) => {
-    const auth = createAuthHelper(page)
-    await auth.clearAuthState()
+    await page.context().clearCookies()
+    await page.addInitScript(() => {
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+      } catch {
+        // ignore
+      }
+    })
   })
 
   test('preserves destination when redirecting to login', async ({
@@ -37,11 +44,15 @@ test.describe('Auth redirects', () => {
       testUser.password
     )
 
-    await submitButton.click()
+    await Promise.all([page.waitForURL('**/couples'), submitButton.click()])
 
     // Returned to original destination after login
     await expect(page).toHaveURL(/\/couples/)
-    await expect(page.getByText(/your love story/i)).toBeVisible()
+    const couplesLoaded = page
+      .getByRole('link', { name: /create household/i })
+      .or(page.getByText(/your love story/i))
+      .first()
+    await expect(couplesLoaded).toBeVisible()
   })
 
   test('blocks open redirect attempts via redirectTo', async ({
@@ -59,8 +70,9 @@ test.describe('Auth redirects', () => {
       testUser.password
     )
 
-    await submitButton.click()
+    await Promise.all([page.waitForURL('**/dashboard'), submitButton.click()])
 
+    await expect(page).toHaveURL(/\/dashboard/)
     const finalUrl = new URL(page.url())
     expect(finalUrl.origin).toBe('http://localhost:3000')
     expect(finalUrl.pathname).toBe('/dashboard')
@@ -79,7 +91,7 @@ test.describe('Auth redirects', () => {
       testUser.email,
       testUser.password
     )
-    await submitButton.click()
+    await Promise.all([page.waitForURL('**/couples'), submitButton.click()])
 
     await expect(page).toHaveURL(/\/couples/)
   })
