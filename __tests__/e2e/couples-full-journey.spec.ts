@@ -148,7 +148,24 @@ async function likePropertyFromDashboard(page: Page, address: string) {
     .first()
 
   await expect(card).toBeVisible({ timeout: 20000 })
+
+  const likeResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/interactions') &&
+      response.request().method() === 'POST' &&
+      (response.request().postData() || '').includes('"type":"liked"'),
+    { timeout: 20000 }
+  )
+
   await card.locator('button[aria-label="Like this home"]').click()
+
+  const likeResponse = await likeResponsePromise
+  if (!likeResponse.ok()) {
+    const body = await likeResponse.text().catch(() => '')
+    throw new Error(
+      `Failed to record like via /api/interactions (status ${likeResponse.status()}): ${body}`
+    )
+  }
 }
 
 async function getHouseholdIdFromWaitingState(page: Page): Promise<string> {
@@ -314,9 +331,11 @@ test.describe('Couples full journey (real UI)', () => {
       await submitButton.click()
 
       await expect(partnerPage).toHaveURL(new RegExp(`/invite/${inviteToken}`))
-      await partnerPage
-        .getByRole('button', { name: /accept invitation/i })
-        .click()
+      const acceptButton = partnerPage.getByRole('button', {
+        name: /accept invitation/i,
+      })
+      await expect(acceptButton).toBeVisible({ timeout: 30000 })
+      await acceptButton.click()
 
       // Confirm household link is in place for partner (RLS-safe via service role)
       await waitFor(
