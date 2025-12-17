@@ -100,8 +100,9 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
 
           {/* Stats */}
           <AnimatePresence mode="wait">
-            {stats && (
+            {stats ? (
               <MotionDiv
+                key="stats"
                 className="flex flex-wrap items-center justify-center gap-6"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -191,11 +192,9 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
                   </MotionDiv>
                 )}
               </MotionDiv>
-            )}
-
-            {/* Empty state message */}
-            {(!stats || stats.total_mutual_likes === 0) && (
+            ) : (
               <MotionDiv
+                key="empty"
                 className="text-center"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -214,10 +213,8 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
                     <Sparkles className="text-hm-amber-400 h-5 w-5" />
                   </MotionDiv>
                   <span className="text-base">
-                    {stats?.total_household_likes &&
-                    stats.total_household_likes > 0
-                      ? "You're both active! Keep swiping to find your first match."
-                      : 'Start your journey together - swipe to find homes you both love!'}
+                    Start your journey together - swipe to find homes you both
+                    love!
                   </span>
                   <MotionDiv
                     animate={{ rotate: -360 }}
@@ -230,22 +227,59 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
                     <Sparkles className="text-hm-amber-400 h-5 w-5" />
                   </MotionDiv>
                 </div>
-
-                {stats?.total_household_likes &&
-                  stats.total_household_likes > 0 && (
-                    <MotionDiv
-                      className="text-hm-stone-500 text-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      You&apos;ve liked {stats.total_household_likes} properties
-                      between you
-                    </MotionDiv>
-                  )}
               </MotionDiv>
             )}
           </AnimatePresence>
+
+          {/* Encouragement message when stats exist but no mutual likes yet */}
+          {stats && stats.total_mutual_likes === 0 && (
+            <MotionDiv
+              className="text-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <div className="text-hm-stone-400 mb-2 flex items-center justify-center gap-2">
+                <MotionDiv
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                >
+                  <Sparkles className="text-hm-amber-400 h-5 w-5" />
+                </MotionDiv>
+                <span className="text-base">
+                  {stats.total_household_likes > 0
+                    ? "You're both active! Keep swiping to find your first match."
+                    : 'Start your journey together - swipe to find homes you both love!'}
+                </span>
+                <MotionDiv
+                  animate={{ rotate: -360 }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                >
+                  <Sparkles className="text-hm-amber-400 h-5 w-5" />
+                </MotionDiv>
+              </div>
+
+              {stats.total_household_likes > 0 && (
+                <MotionDiv
+                  className="text-hm-stone-500 text-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  You&apos;ve liked {stats.total_household_likes} properties
+                  between you
+                </MotionDiv>
+              )}
+            </MotionDiv>
+          )}
         </MotionDiv>
       </CardContent>
     </Card>
