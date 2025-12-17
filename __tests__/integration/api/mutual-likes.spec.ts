@@ -457,6 +457,20 @@ describe('E2E: /api/couples/mutual-likes', () => {
           })
           expect(like2.status).toBe(200)
 
+          // Sanity-check that the interactions were persisted with the household context
+          const { data: dbLikes, error: dbLikesError } = await serviceClient
+            .from('user_property_interactions')
+            .select('user_id, household_id, interaction_type')
+            .eq('property_id', propertyId)
+            .in('user_id', [test1.id, test2.id])
+
+          expect(dbLikesError).toBeNull()
+          expect(dbLikes?.length).toBe(2)
+          ;(dbLikes ?? []).forEach((row) => {
+            expect(row.household_id).toBe(householdId)
+            expect(row.interaction_type).toBe('like')
+          })
+
           // Verify mutual likes now includes the property (cache must be invalidated)
           const mutualRes = await client.get(
             '/api/couples/mutual-likes?includeProperties=false'

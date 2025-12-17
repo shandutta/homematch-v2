@@ -7,6 +7,7 @@ import {
   afterEach,
 } from '@jest/globals'
 import { render, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 
 // Mock the child components and dependencies
@@ -139,6 +140,19 @@ jest.mock('lucide-react', () => ({
 const mockFetch = jest.fn()
 global.fetch = mockFetch as jest.MockedFunction<typeof fetch>
 
+const renderWithQueryClient = (ui: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: 0 },
+      mutations: { retry: false },
+    },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  )
+}
+
 describe('MutualLikesSection Component', () => {
   const defaultProps = {
     userId: 'user-123',
@@ -185,7 +199,7 @@ describe('MutualLikesSection Component', () => {
     test('should show loading state initially', () => {
       mockFetch.mockImplementation(() => new Promise(() => {})) // Never resolves
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       expect(screen.getByText('Both Liked')).toBeInTheDocument()
       expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0)
@@ -194,7 +208,7 @@ describe('MutualLikesSection Component', () => {
     test('should show skeleton placeholders during loading', () => {
       mockFetch.mockImplementation(() => new Promise(() => {}))
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       const skeletons = screen.getAllByRole('presentation') // Skeleton components
       expect(skeletons.length).toBeGreaterThan(0)
@@ -206,7 +220,7 @@ describe('MutualLikesSection Component', () => {
       const errorMessage = 'Failed to fetch mutual likes'
       mockFetch.mockRejectedValueOnce(new Error(errorMessage))
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(
@@ -221,7 +235,7 @@ describe('MutualLikesSection Component', () => {
         status: 500,
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(
@@ -233,7 +247,7 @@ describe('MutualLikesSection Component', () => {
     test('should maintain header structure in error state', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Test error'))
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('Both Liked')).toBeInTheDocument()
@@ -251,7 +265,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('No mutual likes yet!')).toBeInTheDocument()
@@ -267,7 +281,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const emptyStateContainer = screen
@@ -283,7 +297,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const usersIcon = document.querySelector('.lucide-users')
@@ -300,7 +314,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('Both Liked (2)')).toBeInTheDocument()
@@ -313,7 +327,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('123 Main St')).toBeInTheDocument()
@@ -333,7 +347,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const images = screen.getAllByTestId('property-image')
@@ -358,7 +372,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mutualLikesNoImages }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         // The PropertyImage component with undefined image_urls will still try to render an image
@@ -376,7 +390,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const badges = screen.getAllByTestId('mutual-likes-badge')
@@ -392,7 +406,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         const links = screen.getAllByRole('link')
@@ -406,7 +420,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should format dates correctly', async () => {
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         // Check for date display (format may vary by locale)
@@ -423,7 +437,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }), // 2 items
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.queryByText('View all')).not.toBeInTheDocument()
@@ -466,7 +480,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: manyMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         expect(screen.getByText('View all')).toBeInTheDocument()
@@ -495,7 +509,7 @@ describe('MutualLikesSection Component', () => {
         json: async () => ({ mutualLikes: manyMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection {...defaultProps} />)
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
         // Should only show first 3 properties
