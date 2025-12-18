@@ -149,18 +149,20 @@ async function likePropertyFromDashboard(page: Page, address: string) {
 
   await expect(card).toBeVisible({ timeout: 20000 })
 
-  const likeResponsePromise = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/interactions') &&
-      response.request().method() === 'POST' &&
-      (response.request().postData() || '').includes('"type":"liked"'),
+  const likeRequestPromise = page.waitForRequest(
+    (request) =>
+      request.url().includes('/api/interactions') &&
+      request.method() === 'POST' &&
+      (request.postData() || '').includes('"type":"liked"'),
     { timeout: 20000 }
   )
 
   await card.locator('button[aria-label="Like this home"]').click()
 
-  const likeResponse = await likeResponsePromise
-  if (!likeResponse.ok()) {
+  const likeRequest = await likeRequestPromise
+  const likeResponse = await likeRequest.response().catch(() => null)
+
+  if (likeResponse && !likeResponse.ok()) {
     const body = await likeResponse.text().catch(() => '')
     throw new Error(
       `Failed to record like via /api/interactions (status ${likeResponse.status()}): ${body}`

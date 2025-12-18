@@ -166,13 +166,25 @@ test.describe('Couples invite acceptance (leave household first)', () => {
       // Leave household via Profile UI
       await page.goto('/profile', { waitUntil: 'domcontentloaded' })
 
-      const householdTab = page.getByRole('tab', { name: /household/i })
-      if (await householdTab.isVisible()) {
-        await householdTab.click()
-        await page.waitForTimeout(200)
+      const householdSection = page.getByTestId('household-section')
+      let leaveButton = householdSection.getByTestId('leave-household-button')
+
+      // Profile has a shortcut button that switches tabs; prefer it over Radix tab triggers
+      // to avoid clicking before hydration attaches handlers.
+      const householdShortcut = page.getByRole('button', {
+        name: /^household$/i,
+      })
+      if (await householdShortcut.isVisible()) {
+        await householdShortcut.click()
+      } else {
+        const householdTab = page.getByRole('tab', { name: /^household$/i })
+        if (await householdTab.isVisible()) {
+          await householdTab.click()
+        }
       }
 
-      const leaveButton = page.getByTestId('leave-household-button')
+      await expect(householdSection).toBeVisible({ timeout: 30000 })
+
       await expect(leaveButton).toBeVisible({ timeout: 30000 })
 
       page.once('dialog', async (dialog) => {
