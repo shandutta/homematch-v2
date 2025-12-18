@@ -341,6 +341,19 @@ test.describe('UI regressions', () => {
 
       await expect(card).toBeVisible()
 
+      const propertyIdPrefix = seeded.propertyId.slice(0, 8)
+      const neighborhoodIdPrefix = seeded.neighborhoodId.slice(0, 8)
+      const expectedPropertyTagline = `PLAYWRIGHT_UI_TAGLINE_${propertyIdPrefix}`
+      const expectedNeighborhoodTagline = `PLAYWRIGHT_UI_NEIGHBORHOOD_${neighborhoodIdPrefix}`
+
+      // Ensure async vibes content has rendered before taking visual snapshots
+      await expect(card).toContainText(expectedPropertyTagline, {
+        timeout: 15000,
+      })
+      await expect(card).toContainText(expectedNeighborhoodTagline, {
+        timeout: 15000,
+      })
+
       await expect(card).toHaveScreenshot('liked-card-desktop.png', {
         animations: 'disabled',
         caret: 'hide',
