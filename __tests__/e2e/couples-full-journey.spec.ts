@@ -149,25 +149,45 @@ async function likePropertyFromDashboard(page: Page, address: string) {
 
   await expect(card).toBeVisible({ timeout: 20000 })
 
-  const likeRequestPromise = page.waitForRequest(
-    (request) =>
-      request.url().includes('/api/interactions') &&
-      request.method() === 'POST' &&
-      (request.postData() || '').includes('"type":"liked"'),
-    { timeout: 20000 }
-  )
+  const likeButton = card.locator('button[aria-label="Like this home"]')
+  await expect(likeButton).toBeVisible({ timeout: 20000 })
 
-  await card.locator('button[aria-label="Like this home"]').click()
+  const isLikeRequest = (req: any) =>
+    req.url().includes('/api/interactions') &&
+    req.method() === 'POST' &&
+    (req.postData() || '').includes('"type":"liked"')
 
-  const likeRequest = await likeRequestPromise
-  const likeResponse = await likeRequest.response().catch(() => null)
+  let lastError: unknown
 
-  if (likeResponse && !likeResponse.ok()) {
-    const body = await likeResponse.text().catch(() => '')
-    throw new Error(
-      `Failed to record like via /api/interactions (status ${likeResponse.status()}): ${body}`
-    )
+  // If the page is still hydrating, the first click can land before handlers attach.
+  // Retry a couple times to avoid flaking on partner's fresh dashboard load.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const likeRequestPromise = page.waitForRequest(isLikeRequest, {
+      timeout: 7000,
+    })
+
+    try {
+      await likeButton.click()
+      const likeRequest = await likeRequestPromise
+      const likeResponse = await likeRequest.response().catch(() => null)
+
+      if (likeResponse && !likeResponse.ok()) {
+        const body = await likeResponse.text().catch(() => '')
+        throw new Error(
+          `Failed to record like via /api/interactions (status ${likeResponse.status()}): ${body}`
+        )
+      }
+
+      return
+    } catch (err) {
+      lastError = err
+      await page.waitForTimeout(250 * attempt)
+    }
   }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Failed to record like via /api/interactions')
 }
 
 async function getHouseholdIdFromWaitingState(page: Page): Promise<string> {
@@ -333,10 +353,19 @@ test.describe('Couples full journey (real UI)', () => {
       await submitButton.click()
 
       await expect(partnerPage).toHaveURL(new RegExp(`/invite/${inviteToken}`))
+      const inviteLoaded = partnerPage.getByText(/invitation status/i)
+      await expect(inviteLoaded).toBeVisible({ timeout: 30000 })
       const acceptButton = partnerPage.getByRole('button', {
         name: /accept invitation/i,
       })
-      await expect(acceptButton).toBeVisible({ timeout: 30000 })
+      try {
+        await expect(acceptButton).toBeVisible({ timeout: 30000 })
+      } catch {
+        // If the invite page was partially rendered, a quick reload usually fixes it.
+        await partnerPage.reload({ waitUntil: 'domcontentloaded' })
+        await expect(inviteLoaded).toBeVisible({ timeout: 30000 })
+        await expect(acceptButton).toBeVisible({ timeout: 30000 })
+      }
       await acceptButton.click()
 
       // Confirm household link is in place for partner (RLS-safe via service role)

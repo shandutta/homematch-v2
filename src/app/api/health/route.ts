@@ -32,7 +32,16 @@ export async function PATCH() {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const searchParams =
+    request?.nextUrl?.searchParams ??
+    (() => {
+      try {
+        if (request?.url) return new URL(request.url).searchParams
+      } catch {
+        // Ignore malformed/undefined URLs in tests
+      }
+      return new URLSearchParams()
+    })()
   const expectTestMode = searchParams.get('expectTest') === 'true'
   const isTestMode =
     process.env.NODE_ENV === 'test' ||

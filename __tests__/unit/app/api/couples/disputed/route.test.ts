@@ -23,7 +23,9 @@ const createChainMock = (result: any) => {
     eq: jest.fn(() => chain),
     in: jest.fn(() => chain),
     order: jest.fn(() => chain),
+    upsert: jest.fn(() => chain),
     single: jest.fn(async () => result),
+    maybeSingle: jest.fn(async () => result),
     then: jest.fn((resolve) => resolve(result)),
   }
 
@@ -37,14 +39,24 @@ const supabaseMock: any = {
   from: jest.fn(),
 }
 
+const serviceClientMock: any = {
+  from: jest.fn(),
+}
+
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
   createApiClient: () => supabaseMock,
 }))
 
+jest.mock('@/lib/supabase/service-role-client', () => ({
+  __esModule: true,
+  getServiceRoleClient: async () => serviceClientMock,
+}))
+
 const resetSupabase = () => {
   supabaseMock.auth.getUser.mockReset()
   supabaseMock.from.mockReset()
+  serviceClientMock.from.mockReset()
 }
 
 describe('couples disputed API route', () => {
@@ -105,12 +117,13 @@ describe('couples disputed API route', () => {
           error: null,
         })
       )
-      .mockReturnValueOnce(
-        createChainMock({
-          data: [{ id: 'user-1', display_name: 'User 1', email: 'u1@test' }],
-          error: null,
-        })
-      )
+
+    serviceClientMock.from.mockReturnValueOnce(
+      createChainMock({
+        data: [{ id: 'user-1', display_name: 'User 1', email: 'u1@test' }],
+        error: null,
+      })
+    )
 
     const req = new NextRequest('https://example.com/api/couples/disputed')
     await GET(req)
@@ -173,6 +186,8 @@ describe('couples disputed API route', () => {
           error: null,
         })
       )
+
+    serviceClientMock.from
       .mockReturnValueOnce(
         createChainMock({
           data: [
@@ -182,6 +197,7 @@ describe('couples disputed API route', () => {
           error: null,
         })
       )
+      .mockReturnValueOnce(createChainMock({ data: [], error: null }))
       .mockReturnValueOnce(createChainMock({ data: interactions, error: null }))
 
     const req = new NextRequest('https://example.com/api/couples/disputed')
@@ -243,6 +259,19 @@ describe('couples disputed API route', () => {
       data: { user: { id: 'user-1' } },
       error: null,
     })
+
+    supabaseMock.from.mockReturnValueOnce(
+      createChainMock({
+        data: { household_id: 'household-1' },
+        error: null,
+      })
+    )
+
+    serviceClientMock.from.mockReturnValueOnce(
+      createChainMock({
+        error: null,
+      })
+    )
 
     const req = {
       json: async () => ({
