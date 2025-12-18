@@ -168,24 +168,34 @@ export class AuthHelper {
    * Clear all authentication state (cookies, localStorage, sessionStorage)
    */
   async clearAuthState(): Promise<void> {
+    await this.page.addInitScript(() => {
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+      } catch {
+        // ignore
+      }
+    })
+
     await this.page.context().clearCookies()
 
-    // Navigate to a valid origin first to access localStorage
+    // Navigate to a valid origin to clear any storage that may already exist.
     try {
       await this.navigateWithRetry('/', 'root')
       await this.page.evaluate(() => {
         try {
           localStorage.clear()
           sessionStorage.clear()
-        } catch (_e) {
-          // localStorage might not be available in some contexts
-          console.log('Could not clear storage:', _e)
+        } catch {
+          // ignore
         }
       })
-    } catch (_e) {
-      // Storage operations failed, continue without clearing
-      console.log('Storage operations failed:', _e)
+    } catch {
+      // ignore
     }
+
+    // Clear cookies again in case hydration re-created auth cookies before storage was wiped.
+    await this.page.context().clearCookies()
   }
 
   /**

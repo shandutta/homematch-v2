@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { PropertyDetailModal } from '@/components/property/PropertyDetailModal'
 import type { Property, Neighborhood } from '@/lib/schemas/property'
 import type { PropertyVibes } from '@/lib/schemas/property-vibes'
@@ -129,6 +130,7 @@ describe('PropertyDetailModal', () => {
     )
 
     expect(screen.getByText('About this home')).toBeInTheDocument()
+    expect(screen.getByText('Single Family')).toBeInTheDocument()
 
     // Keep: tagline + useful tags/box
     expect(screen.getByText(mockVibes.tagline)).toBeInTheDocument()
@@ -182,5 +184,57 @@ describe('PropertyDetailModal', () => {
     expect(screen.getByText('Walkable')).toBeInTheDocument()
     expect(screen.getByText('Food')).toBeInTheDocument()
     expect(screen.getByText('Transit')).toBeInTheDocument()
+  })
+
+  it('collapses the map by default on small screens and toggles it open', async () => {
+    const user = userEvent.setup()
+    const originalMatchMedia = window.matchMedia
+
+    window.matchMedia = jest.fn().mockImplementation(() => {
+      return {
+        matches: false,
+        media: '(min-width: 640px)',
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      }
+    })
+
+    try {
+      render(
+        <PropertyDetailModal
+          property={mockProperty}
+          neighborhood={mockNeighborhood}
+          open={true}
+          onOpenChange={jest.fn()}
+          onDecision={jest.fn()}
+        />
+      )
+
+      expect(screen.getByText('Map preview')).toBeInTheDocument()
+
+      await user.click(screen.getByTestId('toggle-map'))
+      expect(screen.getByText('Map unavailable')).toBeInTheDocument()
+    } finally {
+      window.matchMedia = originalMatchMedia
+    }
+  })
+
+  it('renders decision actions when onDecision is provided', () => {
+    render(
+      <PropertyDetailModal
+        property={mockProperty}
+        neighborhood={mockNeighborhood}
+        open={true}
+        onOpenChange={jest.fn()}
+        onDecision={jest.fn()}
+      />
+    )
+
+    expect(screen.getByTestId('pass-button')).toBeInTheDocument()
+    expect(screen.getByTestId('like-button')).toBeInTheDocument()
   })
 })

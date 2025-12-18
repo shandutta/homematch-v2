@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 // Mock dependencies
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  usePathname: jest.fn(() => '/profile'),
 }))
 
 jest.mock('next/link', () => {
@@ -215,7 +216,7 @@ describe('ProfilePageClient', () => {
     expect(container.firstChild).toHaveClass(
       'gradient-grid-bg',
       'min-h-screen',
-      'pb-16',
+      'pb-6',
       'text-white'
     )
 

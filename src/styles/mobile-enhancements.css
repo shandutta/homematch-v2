@@ -249,3 +249,12 @@ body {
     padding: 0 16px;
   }
 }
+
+/* Reserve space for fixed bottom navigation bars */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav-spacer {
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+}

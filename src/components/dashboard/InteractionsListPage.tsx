@@ -1,6 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
+import Link from 'next/link'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   interactionKeys,
@@ -10,7 +11,7 @@ import {
 } from '@/hooks/useInteractions'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
-import { Skeleton } from '@/components/ui/skeleton'
+import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { Button } from '@/components/ui/button'
 import { Heart, HeartOff, X } from 'lucide-react'
 import { InFeedAd } from '@/components/ads/InFeedAd'
@@ -48,17 +49,46 @@ export function InteractionsListPage({
   const properties = data?.pages.flatMap((page) => page.items) ?? []
   const hasEnoughContentForAds = properties.length >= MIN_CONTENT_FOR_ADS
 
+  const emptyState = (() => {
+    if (type === 'liked') {
+      return {
+        title: 'No favorites yet',
+        description:
+          'Tap Like on homes you love — your shortlist will stay in sync with your household.',
+        icon: (
+          <Heart
+            className="text-hm-success mx-auto h-10 w-10"
+            fill="currentColor"
+          />
+        ),
+        cta: 'Start exploring',
+      }
+    }
+
+    if (type === 'skip') {
+      return {
+        title: 'No passes yet',
+        description:
+          'Pass on homes that aren’t your vibe to keep your feed focused and fresh.',
+        icon: <X className="text-hm-error mx-auto h-10 w-10" />,
+        cta: 'Keep swiping',
+      }
+    }
+
+    return {
+      title: `No ${title.toLowerCase()} yet`,
+      description: 'Start swiping to see properties here.',
+      icon: <Heart className="text-hm-amber-400 mx-auto h-10 w-10" />,
+      cta: 'Explore',
+    }
+  })()
+
   const renderSkeletons = () =>
-    Array.from({ length: 6 }).map((_, i) => (
-      <Skeleton
-        key={i}
-        className="aspect-[3/4] w-full rounded-xl bg-white/5 md:aspect-[4/5] lg:aspect-[4/3]"
-      />
-    ))
+    Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-display text-hm-stone-200 text-4xl font-medium tracking-tight">
+    <div className="space-y-6 sm:space-y-8">
+      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
         {title}
       </h1>
 
@@ -67,13 +97,30 @@ export function InteractionsListPage({
           {renderSkeletons()}
         </div>
       ) : properties.length === 0 ? (
-        <div className="py-20 text-center">
-          <h2 className="font-display text-hm-stone-300 text-2xl font-medium">
-            No {title.toLowerCase()} yet
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur">
+          {emptyState.icon}
+          <h2 className="font-display text-hm-stone-200 mt-5 text-2xl font-medium tracking-tight">
+            {emptyState.title}
           </h2>
-          <p className="text-hm-stone-500 mt-2">
-            Start swiping to see properties here
+          <p className="text-hm-stone-500 mx-auto mt-2 max-w-xl text-sm sm:text-base">
+            {emptyState.description}
           </p>
+
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              asChild
+              className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+            >
+              <Link href="/dashboard">{emptyState.cta}</Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              className="text-hm-stone-400 hover:text-hm-stone-200"
+            >
+              <Link href="/couples">Couples journey</Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>

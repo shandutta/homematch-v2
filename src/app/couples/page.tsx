@@ -1,27 +1,44 @@
-'use client'
-
-import { useState } from 'react'
-import { Header } from '@/components/layouts/Header'
-import { Footer } from '@/components/layouts/Footer'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { createQueryClient } from '@/lib/query/config'
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
-import { CouplesErrorBoundary } from '@/components/couples/CouplesErrorBoundary'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function CouplesPage() {
-  const [queryClient] = useState(() => createQueryClient())
+export const dynamic = 'force-dynamic'
 
-  return (
-    <div className="gradient-grid-bg flex min-h-screen flex-col text-white">
-      <Header />
-      <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
-        <QueryClientProvider client={queryClient}>
-          <CouplesErrorBoundary>
-            <CouplesPageClient />
-          </CouplesErrorBoundary>
-        </QueryClientProvider>
-      </main>
-      <Footer />
-    </div>
-  )
+interface CouplesPageProps {
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function CouplesPage({ searchParams }: CouplesPageProps) {
+  const resolvedSearchParams = await searchParams
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    const params = new URLSearchParams()
+
+    const redirectParams = new URLSearchParams()
+    Object.entries(resolvedSearchParams ?? {}).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        redirectParams.set(key, value)
+        return
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach((item) => redirectParams.append(key, item))
+      }
+    })
+
+    const redirectTo = redirectParams.toString()
+      ? `/couples?${redirectParams.toString()}`
+      : '/couples'
+
+    params.set('redirectTo', redirectTo)
+    redirect(`/login?${params.toString()}`)
+  }
+
+  return <CouplesPageClient />
 }

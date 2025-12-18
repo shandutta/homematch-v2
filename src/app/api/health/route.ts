@@ -31,7 +31,41 @@ export async function PATCH() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const searchParams =
+    request?.nextUrl?.searchParams ??
+    (() => {
+      try {
+        if (request?.url) return new URL(request.url).searchParams
+      } catch {
+        // Ignore malformed/undefined URLs in tests
+      }
+      return new URLSearchParams()
+    })()
+  const expectTestMode = searchParams.get('expectTest') === 'true'
+  const isTestMode =
+    process.env.NODE_ENV === 'test' ||
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
+  if (expectTestMode && !isTestMode) {
+    return NextResponse.json(
+      {
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        service: 'HomeMatch V2',
+        version: '2.0.0',
+        error: 'Test mode expected',
+      },
+      {
+        status: 503,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
+
   try {
     // Basic health check
     const response: HealthResponse = {
@@ -48,7 +82,7 @@ export async function GET(_request: NextRequest) {
         .from('user_property_interactions')
         .select('id')
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (dbError) {
         throw dbError

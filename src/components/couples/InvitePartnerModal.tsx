@@ -53,7 +53,9 @@ export function InvitePartnerModal({
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [inviteSubmitting, setInviteSubmitting] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
+  const [copiedInviteToken, setCopiedInviteToken] = useState<string | null>(
+    null
+  )
   const [pendingInvites, setPendingInvites] = useState<HouseholdInvitation[]>(
     []
   )
@@ -180,18 +182,32 @@ export function InvitePartnerModal({
   }
 
   const copyHouseholdCode = async () => {
-    await navigator.clipboard.writeText(householdId)
-    setCodeCopied(true)
-    toast.success('Household code copied!')
-    setTimeout(() => setCodeCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(householdId)
+      setCodeCopied(true)
+      toast.success('Household code copied!')
+      setTimeout(() => setCodeCopied(false), 2000)
+    } catch {
+      toast.error('Could not copy household code', {
+        description:
+          'Please copy it manually or check your browser permissions.',
+      })
+    }
   }
 
   const copyInviteLink = async (token: string) => {
     const link = `${inviteLinkBase}/invite/${token}`
-    await navigator.clipboard.writeText(link)
-    setLinkCopied(true)
-    toast.success('Invite link copied!')
-    setTimeout(() => setLinkCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(link)
+      setCopiedInviteToken(token)
+      toast.success('Invite link copied!')
+      setTimeout(() => setCopiedInviteToken(null), 2000)
+    } catch {
+      toast.error('Could not copy invite link', {
+        description:
+          'Please copy it manually or check your browser permissions.',
+      })
+    }
   }
 
   return (
@@ -403,8 +419,9 @@ export function InvitePartnerModal({
                         size="sm"
                         variant="outline"
                         onClick={() => copyInviteLink(invite.token)}
+                        aria-label={`Copy invite link for ${invite.invited_name || invite.invited_email}`}
                       >
-                        {linkCopied ? (
+                        {copiedInviteToken === invite.token ? (
                           <Check className="h-4 w-4" />
                         ) : (
                           <Copy className="h-4 w-4" />
@@ -431,6 +448,7 @@ export function InvitePartnerModal({
                 variant="outline"
                 onClick={copyHouseholdCode}
                 className="shrink-0"
+                aria-label="Copy household code"
               >
                 {codeCopied ? (
                   <Check className="h-4 w-4 text-green-500" />

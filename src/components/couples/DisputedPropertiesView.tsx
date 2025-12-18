@@ -21,6 +21,11 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/lib/utils/toast'
 import type { DisputedProperty } from '@/app/api/couples/disputed/route'
+import {
+  NoHouseholdState,
+  WaitingForPartnerState,
+} from '@/components/couples/CouplesEmptyStates'
+import { InvitePartnerModal } from '@/components/couples/InvitePartnerModal'
 
 interface DisputedPropertiesViewProps {
   className?: string
@@ -38,11 +43,21 @@ export function DisputedPropertiesView({
   const [resolutionLoading, setResolutionLoading] = useState<string | null>(
     null
   )
+  const [householdStatus, setHouseholdStatus] = useState<
+    'loading' | 'no-household' | 'waiting-partner' | 'active' | 'error'
+  >('loading')
+  const [householdId, setHouseholdId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false)
 
   const fetchDisputedProperties = async () => {
     try {
       setLoading(true)
       setError(null)
+      setExpandedProperty(null)
+      setHouseholdStatus('loading')
+      setHouseholdId(null)
+      setUserId(null)
 
       const supabase = createClient()
       const {
@@ -52,8 +67,48 @@ export function DisputedPropertiesView({
       if (!session?.access_token) {
         toast.authRequired()
         setError('Authentication required')
+        setHouseholdStatus('error')
         return
       }
+
+      setUserId(session.user.id)
+
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      if (profileError) {
+        throw new Error(profileError.message)
+      }
+
+      if (!profile?.household_id) {
+        setHouseholdStatus('no-household')
+        setDisputedProperties([])
+        return
+      }
+
+      setHouseholdId(profile.household_id)
+
+      const { data: household, error: householdError } = await supabase
+        .from('households')
+        .select('user_count')
+        .eq('id', profile.household_id)
+        .maybeSingle()
+
+      if (householdError) {
+        throw new Error(householdError.message)
+      }
+
+      const householdUserCount = household?.user_count ?? 1
+      if (householdUserCount < 2) {
+        setHouseholdStatus('waiting-partner')
+        setDisputedProperties([])
+        return
+      }
+
+      setHouseholdStatus('active')
 
       const response = await fetch('/api/couples/disputed', {
         headers: {
@@ -71,6 +126,7 @@ export function DisputedPropertiesView({
     } catch (err) {
       console.error('Error fetching disputed properties:', err)
       setError('Failed to load disputed properties')
+      setHouseholdStatus('error')
       toast.error('Failed to load disputed properties')
     } finally {
       setLoading(false)
@@ -170,6 +226,29 @@ export function DisputedPropertiesView({
           </p>
         </div>
       </div>
+    )
+  }
+
+  if (householdStatus === 'no-household') {
+    return <NoHouseholdState />
+  }
+
+  if (householdStatus === 'waiting-partner') {
+    return (
+      <>
+        <WaitingForPartnerState
+          householdId={householdId || undefined}
+          onInvite={() => setInviteModalOpen(true)}
+        />
+        {inviteModalOpen && householdId && userId && (
+          <InvitePartnerModal
+            open={inviteModalOpen}
+            onOpenChange={setInviteModalOpen}
+            householdId={householdId}
+            userId={userId}
+          />
+        )}
+      </>
     )
   }
 

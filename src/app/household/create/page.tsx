@@ -25,7 +25,7 @@ export default async function CreateHouseholdPage() {
   }
 
   return (
-    <div className="gradient-grid-bg flex min-h-screen items-center justify-center p-4">
+    <div className="gradient-grid-bg dark text-foreground flex min-h-screen items-center justify-center p-4">
       <CreateHouseholdForm />
     </div>
   )

@@ -72,34 +72,49 @@ export interface CouplesStats {
 }
 
 /**
- * LRU Cache for storing mutual likes data
- * @constant
- * @description Caches mutual likes for 5 minutes to reduce database queries
+ * In-memory caches (global singleton).
+ *
+ * Next.js route handlers can be bundled/executed in different module contexts in dev,
+ * so module-level caches may not be shared between routes. To make cache invalidation
+ * reliable across endpoints (e.g. clearing after `/api/interactions` so it affects
+ * `/api/couples/mutual-likes`), store the caches on `globalThis`.
  */
-const mutualLikesCache = new LRUCache<string, MutualLike[]>({
-  max: 1000,
-  ttl: 5 * 60 * 1000, // 5 minutes
-})
+type CouplesServiceCaches = {
+  mutualLikesCache: LRUCache<string, MutualLike[]>
+  householdActivityCache: LRUCache<string, HouseholdActivity[]>
+  householdStatsCache: LRUCache<string, CouplesStats>
+}
 
-/**
- * LRU Cache for storing household activity timeline
- * @constant
- * @description Caches household activity for 2 minutes for quick timeline access
- */
-const householdActivityCache = new LRUCache<string, HouseholdActivity[]>({
-  max: 500,
-  ttl: 2 * 60 * 1000, // 2 minutes
-})
+const getCouplesServiceCaches = (): CouplesServiceCaches => {
+  const globalForCouples = globalThis as typeof globalThis & {
+    __homematchCouplesCaches?: CouplesServiceCaches
+  }
 
-/**
- * LRU Cache for storing household statistics
- * @constant
- * @description Caches household stats for 10 minutes to optimize dashboard loading
- */
-const householdStatsCache = new LRUCache<string, CouplesStats>({
-  max: 1000,
-  ttl: 10 * 60 * 1000, // 10 minutes
-})
+  if (!globalForCouples.__homematchCouplesCaches) {
+    globalForCouples.__homematchCouplesCaches = {
+      mutualLikesCache: new LRUCache<string, MutualLike[]>({
+        max: 1000,
+        ttl: 5 * 60 * 1000, // 5 minutes
+      }),
+      householdActivityCache: new LRUCache<string, HouseholdActivity[]>({
+        max: 500,
+        ttl: 2 * 60 * 1000, // 2 minutes
+      }),
+      householdStatsCache: new LRUCache<string, CouplesStats>({
+        max: 1000,
+        ttl: 10 * 60 * 1000, // 10 minutes
+      }),
+    }
+  }
+
+  return globalForCouples.__homematchCouplesCaches
+}
+
+const getMutualLikesCache = () => getCouplesServiceCaches().mutualLikesCache
+const getHouseholdActivityCache = () =>
+  getCouplesServiceCaches().householdActivityCache
+const getHouseholdStatsCache = () =>
+  getCouplesServiceCaches().householdStatsCache
 
 /**
  * Service class for managing household property interactions and couples' features
@@ -112,11 +127,23 @@ export class CouplesService {
    * Clears all cached data for a specific household
    * @param {string} householdId - The unique identifier of the household
    * @description Should be called when interactions change to ensure fresh data
-   * @complexity O(1)
+   * @complexity O(n) where n is cached pages
    */
   static clearHouseholdCache(householdId: string): void {
+    const mutualLikesCache = getMutualLikesCache()
     mutualLikesCache.delete(householdId)
-    householdActivityCache.delete(`activity_${householdId}`)
+
+    const householdActivityCache = getHouseholdActivityCache()
+    const activityPrefix = `activity_${householdId}_`
+    const activityKeysToDelete: string[] = []
+    for (const key of householdActivityCache.keys()) {
+      if (key === `activity_${householdId}` || key.startsWith(activityPrefix)) {
+        activityKeysToDelete.push(key)
+      }
+    }
+    activityKeysToDelete.forEach((key) => householdActivityCache.delete(key))
+
+    const householdStatsCache = getHouseholdStatsCache()
     householdStatsCache.delete(`stats_${householdId}`)
   }
 
@@ -198,6 +225,7 @@ export class CouplesService {
     result: MutualLike[],
     _startTime: number
   ): void {
+    const mutualLikesCache = getMutualLikesCache()
     mutualLikesCache.set(householdId, result)
   }
 
@@ -222,6 +250,7 @@ export class CouplesService {
       if (!householdId) return []
 
       // Check cache first
+      const mutualLikesCache = getMutualLikesCache()
       const cached = mutualLikesCache.get(householdId)
       if (cached) {
         return cached
@@ -421,6 +450,7 @@ export class CouplesService {
     _householdId: string,
     _startTime: number
   ): void {
+    const householdActivityCache = getHouseholdActivityCache()
     householdActivityCache.set(cacheKey, result)
   }
 
@@ -451,6 +481,7 @@ export class CouplesService {
       const cacheKey = `activity_${householdId}_${limit}_${offset}`
 
       // Check cache first
+      const householdActivityCache = getHouseholdActivityCache()
       const cached = householdActivityCache.get(cacheKey)
       if (cached) {
         return cached
@@ -501,6 +532,7 @@ export class CouplesService {
       const cacheKey = `stats_${householdId}`
 
       // Check cache first
+      const householdStatsCache = getHouseholdStatsCache()
       const cached = householdStatsCache.get(cacheKey)
       if (cached) {
         return cached

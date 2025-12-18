@@ -241,7 +241,7 @@ export function ResetPasswordForm() {
   const showResetForm = phase === 'reset' && sessionReady
 
   return (
-    <Card className="mx-auto w-full">
+    <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full shadow-lg backdrop-blur">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">
           {isRequestPhase ? 'Reset your password' : 'Set a new password'}

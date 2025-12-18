@@ -123,11 +123,8 @@ describe('InteractionsListPage', () => {
 
     renderWithQuery(<InteractionsListPage type="liked" title="Liked" />)
 
-    // Updated to match new UI text (no period/exclamation marks)
-    expect(screen.getByText(/No liked yet/i)).toBeTruthy()
-    expect(
-      screen.getByText(/Start swiping to see properties here/i)
-    ).toBeTruthy()
+    expect(screen.getByText(/No favorites yet/i)).toBeTruthy()
+    expect(screen.getByText(/Tap Like on homes you love/i)).toBeTruthy()
   })
 
   it('renders PropertyCard for each item when data present', () => {
@@ -333,7 +330,7 @@ describe('InteractionsListPage', () => {
       // Property should no longer be visible
       expect(screen.queryByText('100 Liked St')).toBeNull()
       // Empty state should show
-      expect(screen.getByText(/No liked properties yet/i)).toBeTruthy()
+      expect(screen.getByText(/No favorites yet/i)).toBeTruthy()
     })
   })
 

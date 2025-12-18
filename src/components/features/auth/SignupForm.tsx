@@ -112,7 +112,7 @@ export function SignupForm() {
       : '/verify-email'
 
     return (
-      <Card className="mx-auto w-full max-w-md">
+      <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full max-w-md shadow-lg backdrop-blur">
         <CardContent className="space-y-4 pt-6">
           <Alert>
             <AlertDescription>
@@ -166,7 +166,7 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
+    <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full max-w-md shadow-lg backdrop-blur">
       <CardHeader>
         <CardTitle className="text-center text-2xl font-bold">
           Create Account

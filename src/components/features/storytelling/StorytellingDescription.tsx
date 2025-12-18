@@ -784,7 +784,7 @@ export function StorytellingDescription({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <p className="text-token-sm leading-relaxed text-slate-600">
+        <p className="text-token-sm dark:text-hm-stone-400 leading-relaxed text-slate-600">
           {isMutualLike ? description : lifestyleStory}
         </p>
       </MotionDiv>
@@ -803,8 +803,8 @@ export function StorytellingDescription({
         <p
           className={`text-token-sm leading-relaxed font-medium ${
             isMutualLike
-              ? 'rounded-md border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-2 py-1 text-pink-700'
-              : 'text-slate-600'
+              ? 'rounded-md border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-2 py-1 text-pink-700 dark:border-pink-500/30 dark:from-pink-500/10 dark:via-purple-500/5 dark:to-slate-900/0 dark:text-pink-200'
+              : 'dark:text-hm-stone-400 text-slate-600'
           }`}
         >
           {isMutualLike && (
@@ -815,14 +815,14 @@ export function StorytellingDescription({
 
         {/* Future vision tag - show as subtle pill when enabled */}
         {futureVision && (
-          <div className="rounded-token-2xl shadow-token-sm border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60">
+          <div className="rounded-token-2xl shadow-token-sm dark:text-hm-stone-200 border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:ring-white/10">
             <div className="flex items-start gap-2">
-              <Sparkles className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
+              <Sparkles className="dark:text-hm-amber-400 mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
               <div>
-                <p className="text-[11px] font-semibold tracking-[0.2em] text-blue-700 uppercase">
+                <p className="dark:text-hm-stone-200 text-[11px] font-semibold tracking-[0.2em] text-blue-700 uppercase">
                   {normalizeStorytellingTag(futureVision.tag)}
                 </p>
-                <p className="text-[11px] leading-snug text-slate-600">
+                <p className="dark:text-hm-stone-400 text-[11px] leading-snug text-slate-600">
                   {futureVision.description}
                 </p>
               </div>
@@ -866,8 +866,8 @@ export function StorytellingDescription({
       <MotionP
         className={`text-token-sm leading-relaxed font-medium ${
           isMutualLike
-            ? 'rounded-lg border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-3 py-2 text-pink-700'
-            : 'text-slate-600'
+            ? 'rounded-lg border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-3 py-2 text-pink-700 dark:border-pink-500/30 dark:from-pink-500/10 dark:via-purple-500/5 dark:to-slate-900/0 dark:text-pink-200'
+            : 'dark:text-hm-stone-400 text-slate-600'
         }`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -894,7 +894,7 @@ export function StorytellingDescription({
       {/* Lifestyle Story - Only show if not a mutual like (avoid redundancy) */}
       {showVibeStatement && !isMutualLike && (
         <MotionP
-          className="text-token-sm leading-relaxed text-slate-500 italic"
+          className="text-token-sm dark:text-hm-stone-500 leading-relaxed text-slate-500 italic"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -914,12 +914,12 @@ export function StorytellingDescription({
           {primaryVibes.slice(0, 4).map((vibe, i) => (
             <div
               key={i}
-              className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1"
+              className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 dark:bg-white/[0.05]"
             >
-              <span className="text-token-xs font-medium text-slate-700">
+              <span className="text-token-xs dark:text-hm-stone-200 font-medium text-slate-700">
                 {vibe.name}
               </span>
-              <span className="text-token-xs text-slate-400">
+              <span className="text-token-xs dark:text-hm-stone-500 text-slate-400">
                 {vibe.source === 'both'
                   ? '↔'
                   : vibe.source === 'interior'
@@ -942,7 +942,7 @@ export function StorytellingDescription({
           {emotionalHooks.slice(0, 2).map((hook, i) => (
             <p
               key={i}
-              className="text-token-xs leading-relaxed text-slate-400 italic"
+              className="text-token-xs dark:text-hm-stone-500 leading-relaxed text-slate-400 italic"
             >
               &quot;{hook}&quot;
             </p>
@@ -953,12 +953,12 @@ export function StorytellingDescription({
       {/* Neighborhood Perks */}
       {neighborhoodPerk && (
         <MotionP
-          className="text-token-sm flex items-start gap-2 leading-relaxed text-slate-500"
+          className="text-token-sm dark:text-hm-stone-500 flex items-start gap-2 leading-relaxed text-slate-500"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.4 }}
         >
-          <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0 text-slate-400" />
+          <MapPin className="dark:text-hm-stone-500 mt-0.5 h-3 w-3 flex-shrink-0 text-slate-400" />
           {neighborhoodPerk}
         </MotionP>
       )}
@@ -966,18 +966,18 @@ export function StorytellingDescription({
       {/* Future Vision Tag */}
       {futureVision && (
         <MotionDiv
-          className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-2"
+          className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}
         >
           <div className="mb-1 flex items-center gap-2">
-            <Sparkles className="h-3 w-3 text-blue-600" />
-            <span className="text-token-xs font-semibold text-blue-800">
+            <Sparkles className="dark:text-hm-amber-400 h-3 w-3 text-blue-600" />
+            <span className="text-token-xs dark:text-hm-stone-200 font-semibold text-blue-800">
               {normalizeStorytellingTag(futureVision.tag)}
             </span>
           </div>
-          <p className="text-token-xs leading-relaxed text-blue-700">
+          <p className="text-token-xs dark:text-hm-stone-400 leading-relaxed text-blue-700">
             {futureVision.description}
           </p>
         </MotionDiv>

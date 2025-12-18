@@ -3,10 +3,12 @@
 import { ReactNode, useState } from 'react'
 import { Header } from '@/components/layouts/Header'
 import { Footer } from '@/components/layouts/Footer'
+import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { createQueryClient } from '@/lib/query/config'
 import { PropertyDetailProvider } from '@/components/property/PropertyDetailProvider'
+import { usePathname } from 'next/navigation'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -14,9 +16,11 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [queryClient] = useState(() => createQueryClient())
+  const pathname = usePathname()
+  const footerVariant = pathname === '/dashboard' ? 'cta' : 'minimal'
 
   return (
-    <div className="gradient-grid-bg flex min-h-screen flex-col text-white">
+    <div className="gradient-grid-bg dark text-foreground flex min-h-screen flex-col">
       <Header />
       <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
         <QueryClientProvider client={queryClient}>
@@ -25,7 +29,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </PropertyDetailProvider>
         </QueryClientProvider>
       </main>
-      <Footer />
+      <Footer variant={footerVariant} />
+      <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <MobileBottomNav />
     </div>
   )
 }

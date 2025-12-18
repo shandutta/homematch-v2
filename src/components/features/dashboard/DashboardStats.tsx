@@ -46,14 +46,14 @@ const StatTile = ({
   return (
     <Link
       href={href}
-      className={`group bg-hm-obsidian-900 block rounded-xl border border-white/5 p-5 transition-all duration-300 hover:-translate-y-0.5 ${colors.glow} ${colors.border}`}
+      className={`group bg-hm-obsidian-900 block rounded-xl border border-white/5 p-3 transition-all duration-300 hover:-translate-y-0.5 sm:p-5 ${colors.glow} ${colors.border}`}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-hm-stone-500 text-xs font-medium tracking-widest uppercase">
+          <p className="text-hm-stone-500 text-[10px] font-medium tracking-widest uppercase sm:text-xs">
             {label}
           </p>
-          <div className="font-display text-hm-stone-200 mt-1 text-3xl font-medium tracking-tight">
+          <div className="font-display text-hm-stone-200 mt-0.5 text-xl font-medium tracking-tight sm:mt-1 sm:text-3xl">
             {value !== undefined ? (
               value
             ) : (
@@ -62,9 +62,9 @@ const StatTile = ({
           </div>
         </div>
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ${colors.icon} transition-all duration-300 group-hover:scale-110`}
+          className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/5 ${colors.icon} transition-all duration-300 group-hover:scale-110 sm:h-12 sm:w-12`}
         >
-          <Icon className="h-5 w-5" strokeWidth={1.5} />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.5} />
         </div>
       </div>
     </Link>
@@ -74,17 +74,17 @@ const StatTile = ({
 export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
   if (isLoading && !summary) {
     return (
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
-        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
-        <Skeleton className="h-24 w-full rounded-xl bg-white/5" />
+      <div className="mb-6 grid grid-cols-3 gap-3 sm:mb-8 sm:gap-4">
+        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
+        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
+        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
       </div>
     )
   }
 
   return (
     <div
-      className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3"
+      className="mb-6 grid grid-cols-3 gap-3 sm:mb-8 sm:gap-4"
       data-testid="dashboard-stats"
     >
       <StatTile

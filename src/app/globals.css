@@ -1341,6 +1341,9 @@
   }
 
   /* Stone text colors */
+  .text-hm-stone-100 {
+    color: var(--hm-stone-100);
+  }
   .text-hm-stone-200 {
     color: var(--hm-stone-200);
   }
@@ -1352,6 +1355,9 @@
   }
   .text-hm-stone-500 {
     color: var(--hm-stone-500);
+  }
+  .text-hm-stone-600 {
+    color: var(--hm-stone-600);
   }
 
   /* Amber accent colors */

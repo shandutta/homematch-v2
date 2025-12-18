@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 export interface DisputedProperty {
   property_id: string
@@ -66,11 +67,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No household found' }, { status: 404 })
     }
 
+    const serviceClient = await getServiceRoleClient()
+
     // Get all household members
-    const { data: householdMembers } = await supabase
-      .from('user_profiles')
-      .select('id, display_name, email')
-      .eq('household_id', userProfile.household_id)
+    const { data: householdMembers, error: householdMembersError } =
+      await serviceClient
+        .from('user_profiles')
+        .select('id, display_name, email')
+        .eq('household_id', userProfile.household_id)
+
+    if (householdMembersError) {
+      console.error(
+        '[Disputed API] Error fetching household members:',
+        householdMembersError
+      )
+      return NextResponse.json(
+        { error: 'Failed to fetch household members' },
+        { status: 500 }
+      )
+    }
 
     if (!householdMembers || householdMembers.length < 2) {
       return NextResponse.json({
@@ -81,9 +96,28 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const resolvedPropertyIds = new Set<string>()
+    const { data: resolutions, error: resolutionsError } = await serviceClient
+      .from('household_property_resolutions')
+      .select('property_id')
+      .eq('household_id', userProfile.household_id)
+
+    if (resolutionsError) {
+      console.error(
+        '[Disputed API] Error fetching resolutions:',
+        resolutionsError
+      )
+    } else {
+      for (const resolution of resolutions ?? []) {
+        if (resolution?.property_id) {
+          resolvedPropertyIds.add(resolution.property_id as string)
+        }
+      }
+    }
+
     // Query to find properties with conflicting reactions (like vs dislike/skip)
     // or properties where only one person has interacted
-    const { data: interactions, error: interactionsError } = await supabase
+    const { data: interactions, error: interactionsError } = await serviceClient
       .from('user_property_interactions')
       .select(
         `
@@ -144,6 +178,8 @@ export async function GET(request: NextRequest) {
     interactions?.forEach((interaction) => {
       const propertyId = interaction.property_id
 
+      if (resolvedPropertyIds.has(propertyId)) return
+
       if (!propertiesMap.has(propertyId)) {
         propertiesMap.set(propertyId, {
           property: Array.isArray(interaction.properties)
@@ -156,8 +192,8 @@ export async function GET(request: NextRequest) {
       propertiesMap.get(propertyId)!.interactions.push({
         user_id: interaction.user_id,
         interaction_type: interaction.interaction_type,
-        created_at: interaction.created_at,
-        score_data: interaction.score_data,
+        created_at: interaction.created_at as string,
+        score_data: interaction.score_data as Record<string, unknown>,
       })
     })
 
@@ -315,15 +351,62 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Here you could update a property_resolutions table or add metadata
-    // For now, we'll just return success
-    // In a full implementation, you'd want to track resolution decisions
+    const allowedResolutionTypes = new Set([
+      'scheduled_viewing',
+      'saved_for_later',
+      'final_pass',
+      'discussion_needed',
+    ])
+
+    if (!allowedResolutionTypes.has(resolution_type)) {
+      return NextResponse.json(
+        { error: 'Invalid resolution type' },
+        { status: 400 }
+      )
+    }
+
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('household_id')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !userProfile?.household_id) {
+      return NextResponse.json({ error: 'No household found' }, { status: 404 })
+    }
+
+    const now = new Date().toISOString()
+    const serviceClient = await getServiceRoleClient()
+    const { error: upsertError } = await serviceClient
+      .from('household_property_resolutions')
+      .upsert(
+        {
+          household_id: userProfile.household_id,
+          property_id,
+          resolution_type,
+          resolved_by: user.id,
+          resolved_at: now,
+          updated_at: now,
+        },
+        { onConflict: 'household_id,property_id' }
+      )
+
+    if (upsertError) {
+      console.error(
+        '[Disputed API] Error saving resolution:',
+        upsertError.message
+      )
+      return NextResponse.json(
+        { error: 'Failed to save resolution' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
       property_id,
       resolution_type,
-      timestamp: new Date().toISOString(),
+      timestamp: now,
     })
   } catch (error) {
     console.error('Error updating disputed property resolution:', error)
