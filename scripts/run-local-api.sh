@@ -14,6 +14,7 @@ CURL_TIMEOUT="${CURL_TIMEOUT:-600}" # 10 minute timeout for long-running API cal
 RETRIES="${RETRIES:-5}"
 RETRY_DELAY="${RETRY_DELAY:-20}" # seconds between retries
 SHOW_SERVER_LOG_ON_ERROR="${SHOW_SERVER_LOG_ON_ERROR:-1}"
+NEXT_DIST_DIR_FROM_ENV="${NEXT_DIST_DIR-}"
 
 timestamp() {
   date -u "+%Y-%m-%d %H:%M:%S UTC"
@@ -51,7 +52,7 @@ port_in_use() {
 }
 
 has_turbopack_runtime_reference() {
-  local dist_dir="${1:-.next}"
+  local dist_dir="${1:-$NEXT_DIST_DIR}"
   local document_file="$ROOT/$dist_dir/server/pages/_document.js"
   if [[ ! -f "$document_file" ]]; then
     return 1
@@ -205,6 +206,14 @@ if [[ -f "$ENV_FILE" ]]; then
 else
   echo "[run-local-api] Warning: env file '$ENV_FILE' not found; relying on current environment"
 fi
+
+# Use a dedicated dist directory so cron runs can't accidentally reuse a `.next`
+# produced by `next dev --turbopack` (which can serve dev/HMR assets and 404 API routes).
+NEXT_DIST_DIR="${NEXT_DIST_DIR_FROM_ENV:-.next-run-local-api}"
+export NEXT_DIST_DIR
+
+# Ensure we don't accidentally build or run in test mode.
+unset NEXT_PUBLIC_TEST_MODE >/dev/null 2>&1 || true
 
 SERVER_LOG="/tmp/homematch-local-server.log"
 BUILD_LOG="/tmp/homematch-local-build.log"
