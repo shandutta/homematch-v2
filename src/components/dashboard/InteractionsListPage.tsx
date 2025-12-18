@@ -17,6 +17,7 @@ import { InFeedAd } from '@/components/ads/InFeedAd'
 
 /** Insert an ad after every N property cards */
 const AD_FREQUENCY = 6
+const MIN_CONTENT_FOR_ADS = AD_FREQUENCY + 2
 
 interface InteractionsListPageProps {
   type: InteractionType
@@ -45,6 +46,7 @@ export function InteractionsListPage({
 
   // Items come from API typed to the Zod Property schema used across UI
   const properties = data?.pages.flatMap((page) => page.items) ?? []
+  const hasEnoughContentForAds = properties.length >= MIN_CONTENT_FOR_ADS
 
   const renderSkeletons = () =>
     Array.from({ length: 6 }).map((_, i) => (
@@ -254,8 +256,9 @@ export function InteractionsListPage({
                     />
                   </div>
 
-                  {/* Insert sponsored ad after every AD_FREQUENCY cards */}
-                  {(index + 1) % AD_FREQUENCY === 0 &&
+                  {/* Insert sponsored ad after every AD_FREQUENCY cards when there's enough organic content */}
+                  {hasEnoughContentForAds &&
+                    (index + 1) % AD_FREQUENCY === 0 &&
                     index < properties.length - 1 && (
                       <InFeedAd
                         position={Math.floor((index + 1) / AD_FREQUENCY)}
