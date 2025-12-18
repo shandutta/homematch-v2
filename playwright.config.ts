@@ -4,6 +4,29 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 
+const resolveBaseUrl = () => {
+  const rawBaseUrl =
+    process.env.BASE_URL ||
+    process.env.PLAYWRIGHT_BASE_URL ||
+    process.env.E2E_BASE_URL ||
+    'http://localhost:3000'
+
+  try {
+    const url = new URL(rawBaseUrl)
+
+    // Playwright's webServer availability checks can resolve `localhost` to ::1,
+    // which is blocked in some sandboxed environments (EPERM). Force IPv4 loopback.
+    if (url.hostname === 'localhost') {
+      url.hostname = '127.0.0.1'
+    }
+
+    // Strip trailing slash for consistent joins.
+    return url.toString().replace(/\/$/, '')
+  } catch {
+    return rawBaseUrl
+  }
+}
+
 // Load test environment variables with fallbacks
 // Note: .env.test.local uses override:true to ensure test config takes precedence
 // over any shell environment variables (e.g., NEXT_PUBLIC_SUPABASE_URL)
@@ -52,6 +75,8 @@ if (!process.env.TEST_WORKER_INDEX) {
   )
 }
 
+const baseUrl = resolveBaseUrl()
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -86,7 +111,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: baseUrl,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: isCI ? 'on-first-retry' : 'off', // Skip traces locally for speed
@@ -162,12 +187,16 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'node scripts/start-test-server-optimized.js',
-    url: 'http://localhost:3000/api/health?expectTest=true',
+    url: `${baseUrl}/api/health?expectTest=true`,
     reuseExistingServer: true,
     timeout: isCI ? 120 * 1000 : 120 * 1000, // cold starts can exceed 60s locally
     env: {
       NODE_ENV: 'test',
       NEXT_PUBLIC_TEST_MODE: 'true',
+      BASE_URL: baseUrl,
+      APP_URL: baseUrl,
+      NEXT_PUBLIC_APP_URL: baseUrl,
+      WARMUP_BASE_URL: baseUrl,
       FORCE_COLOR: '0',
       // Pass Supabase environment variables
       NEXT_PUBLIC_SUPABASE_URL:
