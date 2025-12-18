@@ -158,9 +158,12 @@ describe('create_household_for_user RPC', () => {
       })
 
       // Try to create another household
-      const { data, error } = await anonClient.rpc('create_household_for_user', {
-        p_name: null,
-      })
+      const { data, error } = await anonClient.rpc(
+        'create_household_for_user',
+        {
+          p_name: null,
+        }
+      )
 
       expect(data).toBeNull()
       expect(error).toBeTruthy()

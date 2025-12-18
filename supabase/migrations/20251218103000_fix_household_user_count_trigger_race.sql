@@ -3,12 +3,13 @@
 -- snapshot-stale under concurrent transactions (e.g. two users joining the same
 -- household at the same time), leaving user_count incorrect.
 --
--- This migration switches to atomic +/- updates which are concurrency-safe due to
--- row-level locking on the households row. This does require user_count to start
--- at 0 for new households (and be managed by membership changes), so we also:
---   - Set households.user_count default to 0
---   - Update create_household_for_user() to insert user_count=0 before linking
---     the creator's user_profile (the trigger increments it to 1).
+-- This migration keeps the COUNT(*) semantics but makes the trigger concurrency-safe by:
+--   - Acquiring the households row lock first (may block)
+--   - Recomputing COUNT(*) in a separate statement after the lock is acquired
+-- This avoids snapshot-stale counts under concurrent joins.
+--
+-- We also set households.user_count default to 0 and update create_household_for_user()
+-- to insert user_count=0 before linking the creator; the trigger will recompute to 1.
 
 -- Backfill existing households (correct any drift).
 UPDATE households
@@ -33,8 +34,19 @@ AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.household_id IS NOT NULL THEN
+      -- Split lock + recount into separate statements so the COUNT(*) runs
+      -- after any wait on the row lock (avoids snapshot-stale counts).
+      PERFORM 1
+      FROM households
+      WHERE id = NEW.household_id
+      FOR UPDATE;
+
       UPDATE households
-      SET user_count = COALESCE(user_count, 0) + 1,
+      SET user_count = (
+        SELECT COUNT(*)
+        FROM user_profiles
+        WHERE household_id = NEW.household_id
+      ),
       updated_at = NOW()
       WHERE id = NEW.household_id;
     END IF;
@@ -44,16 +56,32 @@ BEGIN
 
   IF TG_OP = 'UPDATE' THEN
     IF NEW.household_id IS DISTINCT FROM OLD.household_id THEN
+      -- Lock both potentially affected households in a deterministic order to
+      -- reduce deadlock risk when two users swap households concurrently.
+      PERFORM 1
+      FROM households
+      WHERE id IN (OLD.household_id, NEW.household_id)
+      ORDER BY id
+      FOR UPDATE;
+
       IF OLD.household_id IS NOT NULL THEN
         UPDATE households
-        SET user_count = GREATEST(COALESCE(user_count, 0) - 1, 0),
+        SET user_count = (
+          SELECT COUNT(*)
+          FROM user_profiles
+          WHERE household_id = OLD.household_id
+        ),
         updated_at = NOW()
         WHERE id = OLD.household_id;
       END IF;
 
       IF NEW.household_id IS NOT NULL THEN
         UPDATE households
-        SET user_count = COALESCE(user_count, 0) + 1,
+        SET user_count = (
+          SELECT COUNT(*)
+          FROM user_profiles
+          WHERE household_id = NEW.household_id
+        ),
         updated_at = NOW()
         WHERE id = NEW.household_id;
       END IF;
@@ -64,8 +92,17 @@ BEGIN
 
   IF TG_OP = 'DELETE' THEN
     IF OLD.household_id IS NOT NULL THEN
+      PERFORM 1
+      FROM households
+      WHERE id = OLD.household_id
+      FOR UPDATE;
+
       UPDATE households
-      SET user_count = GREATEST(COALESCE(user_count, 0) - 1, 0),
+      SET user_count = (
+        SELECT COUNT(*)
+        FROM user_profiles
+        WHERE household_id = OLD.household_id
+      ),
       updated_at = NOW()
       WHERE id = OLD.household_id;
     END IF;
@@ -151,7 +188,7 @@ BEGIN
   VALUES (p_name, current_user_id, 0)
   RETURNING id INTO new_household_id;
 
-  -- Link the user profile to the new household (trigger increments user_count to 1)
+  -- Link the user profile to the new household (trigger recomputes user_count to 1)
   UPDATE user_profiles
   SET household_id = new_household_id
   WHERE id = current_user_id;
