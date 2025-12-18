@@ -60,6 +60,35 @@ test.describe('Couples invite acceptance (leave household first)', () => {
   test('leave household → accept invite', async ({ page }, testInfo) => {
     test.setTimeout(120000)
 
+    const switchToHouseholdTab = async () => {
+      const tabTrigger = page.getByRole('tab', { name: /^household$/i })
+      const tabPanel = page.getByTestId('household-section')
+
+      await expect(tabTrigger).toBeVisible({ timeout: 30000 })
+
+      // In dev mode, hydration can lag and swallow the first click.
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        await tabTrigger.click()
+
+        try {
+          await expect(tabTrigger).toHaveAttribute('data-state', 'active', {
+            timeout: 5000,
+          })
+        } catch {
+          // continue; we'll check the panel directly below
+        }
+
+        if (await tabPanel.isVisible().catch(() => false)) return
+        await page.waitForTimeout(250 * attempt)
+      }
+
+      // As a last resort, a reload usually re-syncs the tab state + handlers.
+      await page.reload({ waitUntil: 'domcontentloaded' })
+      await expect(tabTrigger).toBeVisible({ timeout: 30000 })
+      await tabTrigger.click()
+      await expect(tabPanel).toBeVisible({ timeout: 30000 })
+    }
+
     const service = createServiceRoleClient()
 
     const inviteeUser = getWorkerTestUser(testInfo.workerIndex)
@@ -166,25 +195,10 @@ test.describe('Couples invite acceptance (leave household first)', () => {
       // Leave household via Profile UI
       await page.goto('/profile', { waitUntil: 'domcontentloaded' })
 
+      await switchToHouseholdTab()
+
       const householdSection = page.getByTestId('household-section')
-      let leaveButton = householdSection.getByTestId('leave-household-button')
-
-      // Profile has a shortcut button that switches tabs; prefer it over Radix tab triggers
-      // to avoid clicking before hydration attaches handlers.
-      const householdShortcut = page.getByRole('button', {
-        name: /^household$/i,
-      })
-      if (await householdShortcut.isVisible()) {
-        await householdShortcut.click()
-      } else {
-        const householdTab = page.getByRole('tab', { name: /^household$/i })
-        if (await householdTab.isVisible()) {
-          await householdTab.click()
-        }
-      }
-
-      await expect(householdSection).toBeVisible({ timeout: 30000 })
-
+      const leaveButton = householdSection.getByTestId('leave-household-button')
       await expect(leaveButton).toBeVisible({ timeout: 30000 })
 
       page.once('dialog', async (dialog) => {

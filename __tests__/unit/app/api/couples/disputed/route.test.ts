@@ -106,17 +106,16 @@ describe('couples disputed API route', () => {
       error: null,
     })
 
-    supabaseMock.from
-      .mockReturnValueOnce(
-        createChainMock({
-          data: {
-            household_id: 'household-1',
-            display_name: 'User 1',
-            email: 'u1@test',
-          },
-          error: null,
-        })
-      )
+    supabaseMock.from.mockReturnValueOnce(
+      createChainMock({
+        data: {
+          household_id: 'household-1',
+          display_name: 'User 1',
+          email: 'u1@test',
+        },
+        error: null,
+      })
+    )
 
     serviceClientMock.from.mockReturnValueOnce(
       createChainMock({
@@ -175,17 +174,16 @@ describe('couples disputed API route', () => {
       },
     ]
 
-    supabaseMock.from
-      .mockReturnValueOnce(
-        createChainMock({
-          data: {
-            household_id: 'household-1',
-            display_name: 'User 1',
-            email: 'u1@test',
-          },
-          error: null,
-        })
-      )
+    supabaseMock.from.mockReturnValueOnce(
+      createChainMock({
+        data: {
+          household_id: 'household-1',
+          display_name: 'User 1',
+          email: 'u1@test',
+        },
+        error: null,
+      })
+    )
 
     serviceClientMock.from
       .mockReturnValueOnce(
