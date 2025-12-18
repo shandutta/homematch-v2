@@ -65,6 +65,11 @@ export default async function InvitePage({
     inviterProfile?.display_name ||
     inviterProfile?.email ||
     'A household member'
+  const statusLabel = isExpired
+    ? 'Expired'
+    : invite.status === 'pending'
+      ? 'Pending'
+      : invite.status.charAt(0).toUpperCase() + invite.status.slice(1)
 
   return (
     <div className="min-h-screen bg-[#030c24] px-4 py-10 text-white">
@@ -132,11 +137,7 @@ export default async function InvitePage({
                       : 'bg-slate-200 text-slate-600'
                   }
                 >
-                  {isExpired
-                    ? 'Expired'
-                    : invite.status === 'pending'
-                      ? 'Pending'
-                      : invite.status}
+                  {statusLabel}
                 </Badge>
               </span>
             </div>
