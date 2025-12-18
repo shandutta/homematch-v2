@@ -88,8 +88,11 @@ setup(
     const storageKey = getSupabaseAuthStorageKey(hostname)
 
     const totalWorkers = Math.max(1, testInfo.config.workers ?? 1)
+    // Playwright worker indices can be offset by the setup/teardown projects.
+    // Seed one extra auth state so the first Chromium worker after setup has a cache hit.
+    const workersToSeed = Math.min(totalWorkers + 1, 8)
 
-    for (let workerIndex = 0; workerIndex < totalWorkers; workerIndex++) {
+    for (let workerIndex = 0; workerIndex < workersToSeed; workerIndex++) {
       const authFile = path.join(authDir, `user-worker-${workerIndex}.json`)
       let lastError: unknown
 
