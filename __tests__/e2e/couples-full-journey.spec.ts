@@ -237,7 +237,7 @@ test.describe('Couples full journey (real UI)', () => {
     page,
     browser,
   }, testInfo) => {
-    test.setTimeout(120000)
+    test.setTimeout(180000)
 
     const service = createServiceRoleClient()
 
@@ -424,21 +424,50 @@ test.describe('Couples full journey (real UI)', () => {
         await expect(inviteLoaded).toBeVisible({ timeout: 30000 })
         await expect(acceptButton).toBeVisible({ timeout: 30000 })
       }
+
+      const waitForPartnerHouseholdJoin = (timeoutMs: number) =>
+        waitFor(
+          async () => {
+            const { data: profile } = await service
+              .from('user_profiles')
+              .select('household_id')
+              .eq('id', partnerId)
+              .maybeSingle()
+
+            if (profile?.household_id !== householdId) return null
+
+            const { data: invite } = await service
+              .from('household_invitations')
+              .select('status, accepted_by')
+              .eq('token', inviteToken!)
+              .maybeSingle()
+
+            return invite?.status === 'accepted' &&
+              invite.accepted_by === partnerId
+              ? true
+              : null
+          },
+          { timeoutMs, label: 'partner household join' }
+        )
+
       await acceptButton.click()
 
-      // Confirm household link is in place for partner (RLS-safe via service role)
-      await waitFor(
-        async () => {
-          const { data } = await service
-            .from('user_profiles')
-            .select('household_id')
-            .eq('id', partnerId)
-            .maybeSingle()
-
-          return data?.household_id === householdId ? true : null
-        },
-        { timeoutMs: 15000, label: 'partner household join' }
-      )
+      // Confirm household link is in place for partner (RLS-safe via service role).
+      // Retry once if hydration swallowed the first click.
+      try {
+        await waitForPartnerHouseholdJoin(30000)
+      } catch {
+        await partnerPage
+          .reload({ waitUntil: 'domcontentloaded' })
+          .catch(() => {})
+        const retryAccept = partnerPage.getByRole('button', {
+          name: /accept invitation/i,
+        })
+        if (await retryAccept.isVisible().catch(() => false)) {
+          await retryAccept.click()
+        }
+        await waitForPartnerHouseholdJoin(45000)
+      }
 
       // The invite page pushes to /dashboard client-side; if that navigation flakes,
       // keep the journey moving once the DB confirms membership.
@@ -516,6 +545,26 @@ test.describe('Couples full journey (real UI)', () => {
       const mutualLikesList = partnerPage.getByTestId('mutual-likes-list')
       await expect(mutualLikesList).toBeVisible({ timeout: 30000 })
       await expect(mutualLikesList.getByText(propertyAddress!)).toBeVisible()
+
+      // Dashboard mutual-like cards should deep-link to property detail and keep returnTo intact
+      const dashboardMutualLink = mutualLikesList
+        .locator(`a[href^="/properties/${propertyId!}"]`)
+        .filter({ hasText: propertyAddress! })
+        .first()
+      await dashboardMutualLink.click()
+      await expect(partnerPage).toHaveURL(
+        new RegExp(`/properties/${propertyId!}.*returnTo=(%2F|\\/)?dashboard`)
+      )
+      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
+        {
+          timeout: 30000,
+        }
+      )
+      await partnerPage
+        .getByRole('button', { name: /^close$/i })
+        .first()
+        .click()
+      await partnerPage.waitForURL(/\/dashboard/, { timeout: 15000 })
 
       // Couples page should surface the same mutual like
       await partnerPage.goto('/couples', { waitUntil: 'domcontentloaded' })

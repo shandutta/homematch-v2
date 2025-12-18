@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   MutualLikesBadge,
   MutualLikesIndicator,
@@ -81,9 +82,26 @@ const mockFetch = vi.fn()
 global.fetch = mockFetch as any
 
 describe('Couples Components Accessibility Tests', () => {
+  let queryClient: QueryClient
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
     vi.clearAllMocks()
   })
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    )
+  }
 
   describe('MutualLikesBadge Accessibility', () => {
     test('should have no accessibility violations with default props', async () => {
@@ -206,7 +224,9 @@ describe('Couples Components Accessibility Tests', () => {
       // Mock never-resolving fetch for loading state
       mockFetch.mockImplementation(() => new Promise(() => {}))
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       const results = await axe(container)
       expect(results).toHaveNoViolations()
@@ -215,7 +235,9 @@ describe('Couples Components Accessibility Tests', () => {
     test('should have no accessibility violations in error state', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Test error'))
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for error state
       await screen.findByText("Couldn't load mutual likes")
@@ -230,7 +252,9 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for empty state
       await screen.findByText('No mutual likes yet!')
@@ -245,7 +269,9 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for content to load
       await screen.findByText('123 Accessible St')
@@ -260,7 +286,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for content
       await screen.findByText('123 Accessible St')
@@ -275,7 +301,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for content
       await screen.findByText('123 Accessible St')
@@ -290,7 +316,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for content
       await screen.findByText('123 Accessible St')
@@ -309,7 +335,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for content
       await screen.findByText('123 Accessible St')
@@ -343,7 +369,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: manyMutualLikes }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for content and "View all" link
       await screen.findByText('View all')
@@ -359,7 +385,9 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: mockMutualLikes }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for content
       await screen.findByText('123 Accessible St')
@@ -377,7 +405,7 @@ describe('Couples Components Accessibility Tests', () => {
         json: async () => ({ mutualLikes: [] }),
       } as Response)
 
-      render(<MutualLikesSection userId="user-123" />)
+      renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
       // Wait for empty state
       await screen.findByText('No mutual likes yet!')
@@ -412,7 +440,9 @@ describe('Couples Components Accessibility Tests', () => {
         }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for content
       await screen.findByText('123 Glass St')
@@ -490,7 +520,9 @@ describe('Couples Components Accessibility Tests', () => {
         }),
       } as Response)
 
-      const { container } = render(<MutualLikesSection userId="user-123" />)
+      const { container } = renderWithQueryClient(
+        <MutualLikesSection userId="user-123" />
+      )
 
       // Wait for content
       await screen.findByText('123 Mobile St')

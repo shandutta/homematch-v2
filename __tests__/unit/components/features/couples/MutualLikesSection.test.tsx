@@ -446,12 +446,23 @@ describe('MutualLikesSection Component', () => {
           link.getAttribute('href')?.includes('/properties/')
         )
         expect(propertyLinks).toHaveLength(2)
-        expect(propertyLinks[0]).toHaveAttribute('href', '/properties/prop-1')
-        expect(propertyLinks[1]).toHaveAttribute('href', '/properties/prop-2')
+        expect(propertyLinks[0]).toHaveAttribute(
+          'href',
+          '/properties/prop-1?returnTo=/dashboard'
+        )
+        expect(propertyLinks[1]).toHaveAttribute(
+          'href',
+          '/properties/prop-2?returnTo=/dashboard'
+        )
       })
     })
 
     test('should format dates correctly', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ mutualLikes: mockMutualLikes }),
+      } as Response)
+
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
@@ -459,6 +470,21 @@ describe('MutualLikesSection Component', () => {
         const dateTexts = screen.getAllByText(/Liked/i)
         expect(dateTexts.length).toBeGreaterThan(0)
       })
+    })
+
+    test('should not show a success toast on load', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ mutualLikes: mockMutualLikes }),
+      } as Response)
+
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Both Liked (2)')).toBeInTheDocument()
+      })
+
+      expect(toast.success).not.toHaveBeenCalled()
     })
   })
 

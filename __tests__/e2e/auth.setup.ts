@@ -4,12 +4,14 @@
  */
 
 import { test as setup } from '@playwright/test'
-import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { TEST_USERS } from '../fixtures/test-data'
+import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 import path from 'path'
 import fs from 'fs'
 
 // Auth storage file paths for each worker
 const authDir = path.join(__dirname, '../../playwright/.auth')
+const FRESH_USER_STORAGE_INDEX = 99
 
 setup(
   'authenticate users for parallel workers',
@@ -45,6 +47,32 @@ setup(
       } finally {
         await context.close()
       }
+    }
+
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    const auth = createAuthHelper(page)
+
+    console.log(
+      `Setting up auth for fresh user ${TEST_USERS.freshUser.email} (storage index ${FRESH_USER_STORAGE_INDEX})`
+    )
+
+    try {
+      await auth.login(TEST_USERS.freshUser)
+      await auth.verifyAuthenticated()
+
+      const authFile = path.join(
+        authDir,
+        `user-worker-${FRESH_USER_STORAGE_INDEX}.json`
+      )
+      await context.storageState({ path: authFile })
+
+      console.log(`✅ Auth state saved for fresh user`)
+    } catch (error) {
+      console.error(`❌ Auth setup failed for fresh user:`, error)
+      throw error
+    } finally {
+      await context.close()
     }
   }
 )
