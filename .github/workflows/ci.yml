@@ -18,8 +18,8 @@ concurrency:
 env:
   NODE_VERSION: '24'
   PNPM_VERSION: '10.23.0'
-  SUPABASE_URL: http://127.0.0.1:54321
-  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  SUPABASE_URL: http://127.0.0.1:54200
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54200
 
 jobs:
   lint-and-typecheck:
@@ -113,10 +113,6 @@ jobs:
     needs: unit-tests
     timeout-minutes: 40
     env:
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
       GOOGLE_MAPS_SERVER_API_KEY: ${{ secrets.GOOGLE_MAPS_SERVER_API_KEY }}
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -152,15 +148,6 @@ jobs:
           set -o pipefail
           pnpm install --frozen-lockfile | tee artifacts/install.log
 
-      - name: Verify required secrets
-        run: |
-          for var in SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_JWT_SECRET; do
-            if [ -z "${!var}" ]; then
-              echo "❌ Missing required secret: $var"
-              exit 1
-            fi
-          done
-
       - name: Setup Supabase CLI
         run: |
           curl -fsSL https://github.com/supabase/cli/releases/download/v${{ env.SUPABASE_CLI_VERSION }}/supabase_${{ env.SUPABASE_CLI_VERSION }}_linux_amd64.deb -o supabase.deb
@@ -192,14 +179,36 @@ jobs:
             docker logs --tail 50 "$container" 2>&1 || true
           done
 
-      - name: Export Supabase URL from status
+      - name: Export Supabase env from status
         run: |
-          STATUS_ENV="$(supabase status -o env --override-name api.url=SUPABASE_URL)"
-          echo "$STATUS_ENV"
-          # Extract URL and strip any surrounding quotes
-          SUPABASE_URL_VALUE="$(echo "$STATUS_ENV" | grep '^SUPABASE_URL=' | cut -d= -f2- | tr -d '"')"
+          STATUS_ENV="$(supabase status -o env)"
+          echo "$STATUS_ENV" | tee artifacts/supabase-status.env
+
+          declare -A vals
+          while IFS= read -r line; do
+            line="${line#export }"
+            [ -z "$line" ] && continue
+            key="${line%%=*}"
+            value="${line#*=}"
+            value="${value%\"}"
+            value="${value#\"}"
+            vals["$key"]="$value"
+          done <<< "$STATUS_ENV"
+
+          SUPABASE_URL_VALUE="${vals[SUPABASE_URL]:-${vals[API_URL]}}"
+          SUPABASE_ANON_KEY_VALUE="${vals[SUPABASE_ANON_KEY]:-${vals[ANON_KEY]}}"
+          SUPABASE_SERVICE_ROLE_KEY_VALUE="${vals[SUPABASE_SERVICE_ROLE_KEY]:-${vals[SERVICE_ROLE_KEY]}}"
+
+          if [ -z "$SUPABASE_URL_VALUE" ] || [ -z "$SUPABASE_ANON_KEY_VALUE" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY_VALUE" ]; then
+            echo "❌ Failed to extract local Supabase env from: supabase status -o env"
+            exit 1
+          fi
+
           echo "SUPABASE_URL=${SUPABASE_URL_VALUE}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL_VALUE}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VALUE}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY_VALUE}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY_VALUE}" >> $GITHUB_ENV
 
       - name: Write test env file
         run: |
@@ -209,7 +218,6 @@ jobs:
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
           SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-          SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
           GOOGLE_MAPS_SERVER_API_KEY=${GOOGLE_MAPS_SERVER_API_KEY}
           RAPIDAPI_KEY=${RAPIDAPI_KEY}
           GEMINI_API_KEY=${GEMINI_API_KEY}
