@@ -8,6 +8,9 @@ const { execSync } = require('child_process')
 
 const log = (message) => console.log(`🧹 ${message}`)
 
+const isTruthy = (value) =>
+  ['1', 'true', 'yes'].includes(String(value || '').toLowerCase())
+
 const getSupabaseContainerIds = (includeStopped = false) => {
   const psFlags = includeStopped ? '-a ' : ''
   try {
@@ -96,6 +99,13 @@ const pruneSupabaseImages = () => {
   }
 }
 
+const shouldDisableRestartPolicy = () => {
+  if (isTruthy(process.env.SUPABASE_CLEANUP_KEEP_RESTART_POLICY)) return false
+  // CI should preserve restart policies so services can recover from transient crashes.
+  if (isTruthy(process.env.CI)) return false
+  return true
+}
+
 const systemPruneIfRequested = () => {
   if (
     !['1', 'true'].includes(
@@ -112,7 +122,9 @@ const systemPruneIfRequested = () => {
 const runCleanup = () => {
   if (!dockerAvailable()) return
   try {
-    disableRestartPolicy()
+    if (shouldDisableRestartPolicy()) {
+      disableRestartPolicy()
+    }
   } catch (error) {
     log(`Could not disable restart policy: ${error.message}`)
   }

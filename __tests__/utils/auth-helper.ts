@@ -29,6 +29,22 @@ function isWebKit(page: Page): boolean {
   return browserName === 'webkit'
 }
 
+function getWorkerPoolSize(): number {
+  const requestedPoolSize = Number(process.env.TEST_WORKER_POOL_SIZE)
+  if (Number.isFinite(requestedPoolSize) && requestedPoolSize > 0) {
+    return Math.floor(requestedPoolSize)
+  }
+
+  // Fallback: setup script provisions 8 worker users by default (0-7)
+  return 8
+}
+
+function normalizeWorkerIndex(workerIndex: number): number {
+  const poolSize = getWorkerPoolSize()
+  const safeIndex = Number.isFinite(workerIndex) && workerIndex >= 0 ? workerIndex : 0
+  return safeIndex % poolSize
+}
+
 export class AuthHelper {
   constructor(private page: Page) {}
 
@@ -759,7 +775,8 @@ export class AuthHelper {
    * Get the auth storage file path for a worker
    */
   static getAuthFilePath(workerIndex: number): string {
-    return path.join(AUTH_DIR, `user-worker-${workerIndex}.json`)
+    const normalizedWorkerIndex = normalizeWorkerIndex(workerIndex)
+    return path.join(AUTH_DIR, `user-worker-${normalizedWorkerIndex}.json`)
   }
 
   /**
@@ -775,6 +792,7 @@ export class AuthHelper {
    * This is faster and more reliable than logging in again, especially for WebKit
    */
   async useStorageState(workerIndex: number): Promise<boolean> {
+    const normalizedWorkerIndex = normalizeWorkerIndex(workerIndex)
     const authFile = AuthHelper.getAuthFilePath(workerIndex)
 
     if (!fs.existsSync(authFile)) {
@@ -829,7 +847,7 @@ export class AuthHelper {
       const isAuth = await this.isAuthenticated()
       if (isAuth) {
         console.log(
-          `✅ Restored auth state from storage for worker ${workerIndex}`
+          `✅ Restored auth state from storage for worker ${workerIndex} (mapped to ${normalizedWorkerIndex})`
         )
         return true
       }
