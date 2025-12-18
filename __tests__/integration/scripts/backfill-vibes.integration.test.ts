@@ -339,7 +339,13 @@ describe.sequential('Integration: backfill-vibes', () => {
     if (refreshedError) throw refreshedError
     expect(refreshed.images).toHaveLength(11)
     expect(
-      refreshed.images?.every((u) => u.includes('photos.zillowstatic.com'))
+      refreshed.images?.every((u) => {
+        try {
+          return new URL(u).hostname === 'photos.zillowstatic.com'
+        } catch {
+          return false
+        }
+      })
     ).toBe(true)
     expect(refreshed.zillow_images_refreshed_at).toBeTruthy()
     expect(refreshed.zillow_images_refreshed_count).toBe(11)
