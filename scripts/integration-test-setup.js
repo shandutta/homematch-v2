@@ -148,6 +148,23 @@ const findKongContainer = () => {
   }
 }
 
+const findAuthContainer = () => {
+  try {
+    const names = safeExec(
+      'docker ps -a --filter "name=supabase_auth" --format "{{.Names}}"',
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] },
+      resilienceConfig.shell.dockerTimeoutMs
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+
+    return names[0] || null
+  } catch {
+    return null
+  }
+}
+
 /**
  * Wait for Kong gateway to become ready after restart.
  * Polls the REST API endpoint until it responds.
@@ -219,6 +236,86 @@ const restartKong = async () => {
   }
 }
 
+const restartAuth = async () => {
+  const authContainer = findAuthContainer()
+  if (!authContainer) return false
+
+  try {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug('🔄 Restarting Supabase auth service...')
+    }
+
+    safeExec(
+      `docker restart ${authContainer}`,
+      { stdio: process.env.DEBUG_TEST_SETUP ? 'inherit' : 'ignore' },
+      resilienceConfig.shell.dockerTimeoutMs
+    )
+
+    return true
+  } catch (error) {
+    if (process.env.DEBUG_TEST_SETUP) {
+      console.debug('⚠️ Failed to restart auth:', error?.message || error)
+    }
+    return false
+  }
+}
+
+const isAuthHealthy = async () => {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+
+  try {
+    const response = await fetch(`${supabaseAdminUrl}/auth/v1/health`, {
+      signal: controller.signal,
+    })
+    return response.ok
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+const waitForAuthReady = async () => {
+  const startTime = Date.now()
+  const maxWaitMs = resilienceConfig.authReadiness.maxWaitMs
+  const maxAttempts = resilienceConfig.authReadiness.maxAttempts
+  const baseDelayMs = resilienceConfig.authReadiness.retryDelayMs
+  const maxDelayMs = resilienceConfig.authReadiness.maxDelayMs
+  const backoffMultiplier = resilienceConfig.authReadiness.backoffMultiplier
+
+  let didRestart = false
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (Date.now() - startTime > maxWaitMs) {
+      return false
+    }
+
+    if (await isAuthHealthy()) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+        console.debug(`✅ Auth health ready (${elapsed}s)`)
+      }
+      return true
+    }
+
+    if (!didRestart && attempt >= 5) {
+      // If Kong comes up before auth, it can keep returning 502 until the auth container recovers.
+      await restartKong()
+      await restartAuth()
+      didRestart = true
+    }
+
+    const delay = Math.min(
+      baseDelayMs * Math.pow(backoffMultiplier, attempt - 1),
+      maxDelayMs
+    )
+    await sleep(delay)
+  }
+
+  return false
+}
+
 const isStorageHealthy = async () => {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 5000)
@@ -257,6 +354,13 @@ const resetDatabase = async () => {
         },
         resilienceConfig.shell.dbResetTimeoutMs // 3 minutes for db reset
       )
+      // Wait for gateways/services to settle after reset before doing any cleanup.
+      await waitForKongReady()
+      const authReady = await waitForAuthReady()
+      if (!authReady) {
+        throw new Error('Auth service did not become ready after db reset')
+      }
+
       runCleanup()
       return true
     } catch (error) {

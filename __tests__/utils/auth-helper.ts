@@ -41,7 +41,8 @@ function getWorkerPoolSize(): number {
 
 function normalizeWorkerIndex(workerIndex: number): number {
   const poolSize = getWorkerPoolSize()
-  const safeIndex = Number.isFinite(workerIndex) && workerIndex >= 0 ? workerIndex : 0
+  const safeIndex =
+    Number.isFinite(workerIndex) && workerIndex >= 0 ? workerIndex : 0
   return safeIndex % poolSize
 }
 
