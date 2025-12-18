@@ -160,7 +160,11 @@ async function seedNeighborhoodAndProperty(
   return { neighborhoodId, propertyId, address }
 }
 
-async function likePropertyFromDashboard(page: Page, address: string) {
+async function likePropertyFromDashboard(
+  page: Page,
+  address: string,
+  expectedPropertyId?: string
+) {
   const card = page
     .getByTestId('property-card')
     .filter({
@@ -173,10 +177,16 @@ async function likePropertyFromDashboard(page: Page, address: string) {
   const likeButton = card.locator('button[aria-label="Like this home"]')
   await expect(likeButton).toBeVisible({ timeout: 20000 })
 
-  const isLikeRequest = (req: any) =>
-    req.url().includes('/api/interactions') &&
-    req.method() === 'POST' &&
-    (req.postData() || '').includes('"type":"liked"')
+  const isLikeRequest = (req: any) => {
+    if (!req.url().includes('/api/interactions')) return false
+    if (req.method() !== 'POST') return false
+
+    const body = req.postData() || ''
+    if (!body.includes('"type":"liked"')) return false
+    if (expectedPropertyId && !body.includes(expectedPropertyId)) return false
+
+    return true
+  }
 
   let lastError: unknown
 
@@ -448,7 +458,7 @@ test.describe('Couples full journey (real UI)', () => {
 
       // Like the seeded property as inviter
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
-      await likePropertyFromDashboard(page, propertyAddress)
+      await likePropertyFromDashboard(page, propertyAddress!, propertyId!)
       await waitFor(
         async () => {
           const { data } = await service
@@ -466,7 +476,11 @@ test.describe('Couples full journey (real UI)', () => {
 
       // Like the same seeded property as partner (triggers mutual-like flow)
       await partnerPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
-      await likePropertyFromDashboard(partnerPage, propertyAddress)
+      await likePropertyFromDashboard(
+        partnerPage,
+        propertyAddress!,
+        propertyId!
+      )
       await waitFor(
         async () => {
           const { data } = await service
@@ -567,7 +581,7 @@ test.describe('Couples full journey (real UI)', () => {
         waitUntil: 'domcontentloaded',
       })
       await expect(
-        partnerPage.getByRole('heading', { name: /mutual likes/i })
+        partnerPage.getByRole('heading', { name: /^mutual likes$/i })
       ).toBeVisible({ timeout: 30000 })
       await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
         {

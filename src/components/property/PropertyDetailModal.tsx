@@ -173,7 +173,7 @@ export function PropertyDetailModal({
                 href={buildZillowUrl(property)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white"
+                className="absolute top-4 right-16 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white"
                 aria-label="View on Zillow"
               >
                 <ExternalLink className="h-5 w-5" />
