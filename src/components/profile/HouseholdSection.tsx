@@ -201,7 +201,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         setTimeout(() => setCodeCopied(false), 2000)
       } catch {
         toast.error('Could not copy household code', {
-          description: 'Please copy it manually or check your browser permissions.',
+          description:
+            'Please copy it manually or check your browser permissions.',
         })
       }
     }
@@ -249,7 +250,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
       setTimeout(() => setLinkCopied(null), 2000)
     } catch {
       toast.error('Could not copy invite link', {
-        description: 'Please copy it manually or check your browser permissions.',
+        description:
+          'Please copy it manually or check your browser permissions.',
       })
     }
   }
