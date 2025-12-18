@@ -75,12 +75,6 @@ if (!process.env.TEST_WORKER_INDEX) {
   )
 }
 
-if (!process.env.TEST_WORKER_POOL_SIZE) {
-  // Keep worker-scoped test users/storage bounded even if Playwright restarts workers
-  // (workerIndex can grow beyond `workers` over long runs).
-  process.env.TEST_WORKER_POOL_SIZE = String(workers)
-}
-
 const baseUrl = resolveBaseUrl()
 
 // Keep all test helpers/fixtures aligned to the same origin as Playwright `baseURL`.

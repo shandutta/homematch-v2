@@ -12,21 +12,14 @@
  * Get worker-specific test user to prevent auth race conditions
  * Each Playwright worker gets its own isolated test user
  */
-const getWorkerPoolSize = () => {
-  const requestedPoolSize = Number(process.env.TEST_WORKER_POOL_SIZE)
-  if (Number.isFinite(requestedPoolSize) && requestedPoolSize > 0) {
-    return Math.floor(requestedPoolSize)
-  }
-
-  // Fallback: the setup script provisions 8 worker users by default (0-7)
-  return 8
-}
+const WORKER_TEST_USER_COUNT = 8
 
 const normalizeWorkerIndex = (workerIndex: number) => {
-  const poolSize = getWorkerPoolSize()
   const safeIndex =
-    Number.isFinite(workerIndex) && workerIndex >= 0 ? workerIndex : 0
-  return safeIndex % poolSize
+    Number.isFinite(workerIndex) && workerIndex >= 0
+      ? Math.floor(workerIndex)
+      : 0
+  return safeIndex % WORKER_TEST_USER_COUNT
 }
 
 export const getWorkerTestUser = (workerIndex: number = 0) => {
