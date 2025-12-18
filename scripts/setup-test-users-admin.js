@@ -234,6 +234,7 @@ async function waitForAuthService(
   const maxWaitMs = resilienceConfig.authReadiness.maxWaitMs
   const maxDelayMs = resilienceConfig.authReadiness.maxDelayMs
   const backoffMultiplier = resilienceConfig.authReadiness.backoffMultiplier
+  let lastErrorSummary = ''
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     // Check if we've exceeded max wait time
@@ -256,12 +257,33 @@ async function waitForAuthService(
         return true
       }
 
-      // Log the error for debugging
-      if (process.env.DEBUG_TEST_SETUP && error) {
-        console.debug(`   Auth check error: ${error.message}`)
+      if (error) {
+        const status = error?.status
+        const message = error?.message || 'unknown error'
+        lastErrorSummary = status ? `HTTP ${status} ${message}` : message
+
+        if (status === 401 || status === 403) {
+          console.error(
+            `❌ Supabase auth is reachable but rejected the service role key (HTTP ${status}).`
+          )
+          console.error(
+            '   This usually means SUPABASE_SERVICE_ROLE_KEY does not match the running Supabase instance.'
+          )
+          console.error(`   Supabase URL: ${supabaseAdminUrl}`)
+          console.error(
+            '   In CI, prefer deriving SUPABASE_* keys from `supabase status -o env` for the local stack.'
+          )
+          return false
+        }
+
+        // Log the error for debugging
+        if (process.env.DEBUG_TEST_SETUP) {
+          console.debug(`   Auth check error: ${lastErrorSummary}`)
+        }
       }
     } catch (err) {
       const message = err?.message || String(err)
+      lastErrorSummary = message
 
       // Fail fast for non-transient errors after initial grace period
       if (!isTransientError(err) && attempt > 5) {
@@ -275,7 +297,10 @@ async function waitForAuthService(
       }
     }
 
-    console.log(`⏳ Waiting for auth service... (${attempt}/${maxAttempts})`)
+    const suffix = lastErrorSummary ? ` (${lastErrorSummary})` : ''
+    console.log(
+      `⏳ Waiting for auth service... (${attempt}/${maxAttempts})${suffix}`
+    )
 
     // Exponential backoff with cap
     const delay = Math.min(
