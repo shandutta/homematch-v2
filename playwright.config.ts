@@ -83,6 +83,13 @@ if (!process.env.TEST_WORKER_POOL_SIZE) {
 
 const baseUrl = resolveBaseUrl()
 
+// Keep all test helpers/fixtures aligned to the same origin as Playwright `baseURL`.
+// Some e2e fixtures read BASE_URL directly and will otherwise default to localhost,
+// which breaks cookie/localStorage-based auth when baseURL is 127.0.0.1.
+if (!process.env.BASE_URL) process.env.BASE_URL = baseUrl
+if (!process.env.APP_URL) process.env.APP_URL = baseUrl
+if (!process.env.NEXT_PUBLIC_APP_URL) process.env.NEXT_PUBLIC_APP_URL = baseUrl
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
