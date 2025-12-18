@@ -306,23 +306,29 @@ export class AuthHelper {
       await this.page.waitForTimeout(500) // Extra stabilization for WebKit
     }
 
-    // DEBUG: Log all network traffic to diagnose auth failure
+    // Debug network logging is noisy; only enable when troubleshooting auth failures.
+    const shouldLogNetwork =
+      process.env.PW_AUTH_DEBUG === '1' ||
+      process.env.PLAYWRIGHT_AUTH_DEBUG === 'true' ||
+      process.env.PLAYWRIGHT_AUTH_NETWORK_LOG === 'true'
 
-    this.page.on('request', (request) =>
-      console.log(`>> [REQUEST] ${request.method()} ${request.url()}`)
-    )
-
-    this.page.on('response', (response) =>
-      console.log(`<< [RESPONSE] ${response.status()} ${response.url()}`)
-    )
-
-    this.page.on('requestfailed', (request) =>
-      console.log(
-        `!! [FAILED] ${request.method()} ${request.url()} - ${
-          request.failure()?.errorText
-        }`
+    if (shouldLogNetwork) {
+      this.page.on('request', (request) =>
+        console.log(`>> [REQUEST] ${request.method()} ${request.url()}`)
       )
-    )
+
+      this.page.on('response', (response) =>
+        console.log(`<< [RESPONSE] ${response.status()} ${response.url()}`)
+      )
+
+      this.page.on('requestfailed', (request) =>
+        console.log(
+          `!! [FAILED] ${request.method()} ${request.url()} - ${
+            request.failure()?.errorText
+          }`
+        )
+      )
+    }
 
     // CRITICAL FIX: Wait for Supabase API response instead of client events
 
