@@ -296,7 +296,9 @@ export function CouplesMutualLikesSection({
                   transition: { duration: 0.2 },
                 }}
               >
-                <Link href={`/properties/${like.property_id}`}>
+                <Link
+                  href={`/properties/${like.property_id}?returnTo=/couples`}
+                >
                   <div className="group relative rounded-lg border border-pink-500/20 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-rose-500/5 p-4 transition-all hover:border-pink-400/40 hover:bg-gradient-to-br hover:from-pink-500/10 hover:via-purple-500/10 hover:to-rose-500/10 hover:shadow-lg hover:shadow-pink-500/10">
                     <div className="flex gap-4">
                       <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">

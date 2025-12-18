@@ -35,6 +35,27 @@ function createServiceRoleClient() {
   })
 }
 
+async function grantClipboardPermissions(
+  context: BrowserContext,
+  projectName: string
+) {
+  if (projectName === 'webkit') return
+  try {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  } catch {
+    // ignore - clipboard permissions can be flaky across environments
+  }
+}
+
+async function readClipboard(page: Page, projectName: string) {
+  if (projectName === 'webkit') return null
+  try {
+    return await page.evaluate(() => navigator.clipboard.readText())
+  } catch {
+    return null
+  }
+}
+
 async function getAuthUserIdByEmail(
   supabase: ReturnType<typeof createServiceRoleClient>,
   email: string
@@ -270,6 +291,8 @@ test.describe('Couples full journey (real UI)', () => {
       await auth.authenticateWithStorageState(testInfo.workerIndex, testUser)
       await auth.verifyAuthenticated()
 
+      await grantClipboardPermissions(page.context(), testInfo.project.name)
+
       // Couples entry point (no household yet)
       await page.goto('/couples', { waitUntil: 'domcontentloaded' })
       await expect(
@@ -325,6 +348,31 @@ test.describe('Couples full journey (real UI)', () => {
         },
         { timeoutMs: 15000, label: 'invite token' }
       )
+
+      // Clipboard regression coverage: buttons should be accessible + copy expected values
+      await inviteDialog
+        .getByRole('button', { name: /copy invite link/i })
+        .first()
+        .click()
+
+      if (testInfo.project.name !== 'webkit') {
+        const inviteLinkClipboard = await readClipboard(
+          page,
+          testInfo.project.name
+        )
+        expect(inviteLinkClipboard).toContain(`/invite/${inviteToken}`)
+      }
+
+      await inviteDialog
+        .getByRole('button', { name: /copy household code/i })
+        .click()
+      if (testInfo.project.name !== 'webkit') {
+        const householdCodeClipboard = await readClipboard(
+          page,
+          testInfo.project.name
+        )
+        expect(householdCodeClipboard).toBe(householdId)
+      }
 
       // Close the modal before continuing the inviter flow
       await page.keyboard.press('Escape').catch(() => {})
@@ -453,13 +501,93 @@ test.describe('Couples full journey (real UI)', () => {
       await partnerPage.reload({ waitUntil: 'domcontentloaded' })
       const mutualLikesList = partnerPage.getByTestId('mutual-likes-list')
       await expect(mutualLikesList).toBeVisible({ timeout: 30000 })
-      await expect(mutualLikesList.getByText(propertyAddress)).toBeVisible()
+      await expect(mutualLikesList.getByText(propertyAddress!)).toBeVisible()
 
       // Couples page should surface the same mutual like
       await partnerPage.goto('/couples', { waitUntil: 'domcontentloaded' })
       await expect(partnerPage.getByText(/your love story/i)).toBeVisible()
-      await expect(partnerPage.getByText(propertyAddress).first()).toBeVisible({
-        timeout: 20000,
+      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
+        {
+          timeout: 20000,
+        }
+      )
+
+      // Mutual-like cards should deep-link to property detail and return to /couples on close
+      const couplesMutualLink = partnerPage
+        .locator(`a[href^="/properties/${propertyId!}"]`)
+        .filter({ hasText: propertyAddress! })
+        .first()
+      await couplesMutualLink.click()
+      await expect(partnerPage).toHaveURL(
+        new RegExp(`/properties/${propertyId!}`)
+      )
+      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
+        {
+          timeout: 30000,
+        }
+      )
+      await partnerPage
+        .getByRole('button', { name: /^close$/i })
+        .first()
+        .click()
+      await partnerPage.waitForURL(/\/couples/, { timeout: 15000 })
+
+      // Activity page should render + property links should return to /dashboard/activity
+      await partnerPage
+        .getByRole('link', { name: /view all activity/i })
+        .first()
+        .click()
+      await expect(partnerPage).toHaveURL(/\/dashboard\/activity/)
+      await expect(
+        partnerPage.getByRole('heading', { name: /^activity$/i })
+      ).toBeVisible({
+        timeout: 30000,
+      })
+      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
+        {
+          timeout: 30000,
+        }
+      )
+      await partnerPage
+        .locator(`a[href^="/properties/${propertyId!}"]`)
+        .filter({ hasText: propertyAddress! })
+        .first()
+        .click()
+      await expect(partnerPage).toHaveURL(
+        new RegExp(`/properties/${propertyId!}`)
+      )
+      await partnerPage
+        .getByRole('button', { name: /^close$/i })
+        .first()
+        .click()
+      await partnerPage.waitForURL(/\/dashboard\/activity/, { timeout: 15000 })
+
+      // Mutual-likes page should render + property links should return to /dashboard/mutual-likes
+      await partnerPage.goto('/dashboard/mutual-likes', {
+        waitUntil: 'domcontentloaded',
+      })
+      await expect(
+        partnerPage.getByRole('heading', { name: /mutual likes/i })
+      ).toBeVisible({ timeout: 30000 })
+      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
+        {
+          timeout: 30000,
+        }
+      )
+      await partnerPage
+        .locator(`a[href^="/properties/${propertyId!}"]`)
+        .filter({ hasText: propertyAddress! })
+        .first()
+        .click()
+      await expect(partnerPage).toHaveURL(
+        new RegExp(`/properties/${propertyId!}`)
+      )
+      await partnerPage
+        .getByRole('button', { name: /^close$/i })
+        .first()
+        .click()
+      await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
+        timeout: 15000,
       })
     } finally {
       if (partnerContext) {

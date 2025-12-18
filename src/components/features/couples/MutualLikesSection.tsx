@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Heart,
@@ -58,7 +58,6 @@ export function MutualLikesSection({
     propError !== undefined
 
   const query = useMutualLikes()
-  const previousFetchCount = useRef(0)
 
   // `useMutualLikes` is disabled during SSR to avoid unauthenticated server fetches.
   // Render the same loading state on the server to prevent hydration mismatches.
@@ -71,19 +70,6 @@ export function MutualLikesSection({
   const error =
     propError ??
     (shouldForceLoading ? null : query.error ? query.error.message : null)
-
-  useEffect(() => {
-    if (usingExternalState) return
-    if (!query.isFetched) return
-    if (query.isFetching) return
-
-    const fetchCount = previousFetchCount.current
-    previousFetchCount.current = fetchCount + 1
-
-    if (!query.error && fetchCount > 0) {
-      toast.success('Mutual likes loaded successfully!')
-    }
-  }, [query.error, query.isFetched, query.isFetching, usingExternalState])
 
   useEffect(() => {
     if (usingExternalState) return
@@ -347,7 +333,9 @@ export function MutualLikesSection({
                 transition: { duration: 0.2 },
               }}
             >
-              <Link href={`/properties/${like.property_id}`}>
+              <Link
+                href={`/properties/${like.property_id}?returnTo=/dashboard`}
+              >
                 <div className="group hover:border-couples-primary/30 relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">

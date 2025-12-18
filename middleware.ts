@@ -250,6 +250,7 @@ export async function middleware(request: NextRequest) {
     '/helloworld_notes',
     '/validation',
     '/couples',
+    '/properties',
   ]
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
