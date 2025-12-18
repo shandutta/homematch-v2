@@ -44,7 +44,9 @@ test.describe('Household Clipboard Functionality', () => {
   let testUser: any
   const ensureHouseholdAvailable = async (page: any) => {
     // Wait for either the copy button OR the create form to appear
-    const copyButton = page.locator(TEST_SELECTORS.copyButton)
+    const copyButton = page.getByRole('button', {
+      name: /copy household code/i,
+    })
     const createInput = page.locator(TEST_SELECTORS.householdNameInput)
 
     // Check if we need to switch tabs first
@@ -113,7 +115,9 @@ test.describe('Household Clipboard Functionality', () => {
       expect(cleanId.length).toBeGreaterThan(0)
 
       // 2. Click copy
-      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      const copyButton = page.getByRole('button', {
+        name: /copy household code/i,
+      })
       await copyButton.click()
 
       // 3. Verify UI feedback (toast may be disabled in test mode)
@@ -142,7 +146,9 @@ test.describe('Household Clipboard Functionality', () => {
       await context.clearPermissions()
 
       await page.reload()
-      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      const copyButton = page.getByRole('button', {
+        name: /copy household code/i,
+      })
       await ensureHouseholdAvailable(page)
       await copyButton.click()
 
@@ -161,7 +167,7 @@ test.describe('Household Clipboard Functionality', () => {
       const householdIdElement = page.locator(TEST_SELECTORS.householdId)
       const cleanId = (await householdIdElement.textContent())?.trim()
 
-      await page.locator(TEST_SELECTORS.copyButton).click()
+      await page.getByRole('button', { name: /copy household code/i }).click()
 
       // Navigate away
       await page.goto(TEST_ROUTES.app.dashboard)
