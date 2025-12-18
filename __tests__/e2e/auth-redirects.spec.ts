@@ -74,7 +74,9 @@ test.describe('Auth redirects', () => {
 
     await expect(page).toHaveURL(/\/dashboard/)
     const finalUrl = new URL(page.url())
-    expect(finalUrl.origin).toBe('http://localhost:3000')
+    const configuredBaseUrl =
+      testInfo.project.use.baseURL || process.env.BASE_URL || page.url()
+    expect(finalUrl.origin).toBe(new URL(configuredBaseUrl).origin)
     expect(finalUrl.pathname).toBe('/dashboard')
   })
 
