@@ -196,7 +196,8 @@ export default defineConfig({
     command: 'node scripts/start-test-server-optimized.js',
     url: `${baseUrl}/api/health?expectTest=true`,
     reuseExistingServer: true,
-    timeout: isCI ? 120 * 1000 : 120 * 1000, // cold starts can exceed 60s locally
+    // Turbopack cold starts + warmup can exceed 2 minutes on busy devboxes.
+    timeout: isCI ? 240 * 1000 : 240 * 1000,
     env: {
       NODE_ENV: 'test',
       NEXT_PUBLIC_TEST_MODE: 'true',
