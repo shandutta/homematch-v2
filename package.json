@@ -71,8 +71,7 @@
     "normalize:cities": "pnpm exec tsx scripts/normalize-cities.ts",
     "report:properties": "pnpm exec tsx scripts/report-properties.ts",
     "cron:zombie-watch": "node scripts/zombie-watch.js",
-    "cron:nightly-shutdown": "node scripts/nightly-shutdown.js",
-    "cron:status-email": "node /home/shan/Personal-Projects/cron-status-email.js"
+    "cron:nightly-shutdown": "node scripts/nightly-shutdown.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
