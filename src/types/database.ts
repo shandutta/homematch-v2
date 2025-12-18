@@ -90,6 +90,54 @@ export type Database = {
           },
         ]
       }
+      household_property_resolutions: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          property_id: string
+          resolution_type: string
+          resolved_at: string
+          resolved_by: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          property_id: string
+          resolution_type: string
+          resolved_at?: string
+          resolved_by: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          property_id?: string
+          resolution_type?: string
+          resolved_at?: string
+          resolved_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'household_property_resolutions_household_id_fkey'
+            columns: ['household_id']
+            isOneToOne: false
+            referencedRelation: 'households'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'household_property_resolutions_property_id_fkey'
+            columns: ['property_id']
+            isOneToOne: false
+            referencedRelation: 'properties'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       households: {
         Row: {
           collaboration_mode: string | null

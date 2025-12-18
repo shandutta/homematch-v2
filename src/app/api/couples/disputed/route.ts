@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 export interface DisputedProperty {
   property_id: string
@@ -66,11 +67,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No household found' }, { status: 404 })
     }
 
+    const serviceClient = await getServiceRoleClient()
+
     // Get all household members
-    const { data: householdMembers } = await supabase
-      .from('user_profiles')
-      .select('id, display_name, email')
-      .eq('household_id', userProfile.household_id)
+    const { data: householdMembers, error: householdMembersError } =
+      await serviceClient
+        .from('user_profiles')
+        .select('id, display_name, email')
+        .eq('household_id', userProfile.household_id)
+
+    if (householdMembersError) {
+      console.error(
+        '[Disputed API] Error fetching household members:',
+        householdMembersError
+      )
+      return NextResponse.json(
+        { error: 'Failed to fetch household members' },
+        { status: 500 }
+      )
+    }
 
     if (!householdMembers || householdMembers.length < 2) {
       return NextResponse.json({
@@ -82,7 +97,7 @@ export async function GET(request: NextRequest) {
     }
 
     const resolvedPropertyIds = new Set<string>()
-    const { data: resolutions, error: resolutionsError } = await supabase
+    const { data: resolutions, error: resolutionsError } = await serviceClient
       .from('household_property_resolutions')
       .select('property_id')
       .eq('household_id', userProfile.household_id)
@@ -102,7 +117,7 @@ export async function GET(request: NextRequest) {
 
     // Query to find properties with conflicting reactions (like vs dislike/skip)
     // or properties where only one person has interacted
-    const { data: interactions, error: interactionsError } = await supabase
+    const { data: interactions, error: interactionsError } = await serviceClient
       .from('user_property_interactions')
       .select(
         `
@@ -177,8 +192,8 @@ export async function GET(request: NextRequest) {
       propertiesMap.get(propertyId)!.interactions.push({
         user_id: interaction.user_id,
         interaction_type: interaction.interaction_type,
-        created_at: interaction.created_at,
-        score_data: interaction.score_data,
+        created_at: interaction.created_at as string,
+        score_data: interaction.score_data as Record<string, unknown>,
       })
     })
 
@@ -361,7 +376,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const now = new Date().toISOString()
-    const { error: upsertError } = await supabase
+    const serviceClient = await getServiceRoleClient()
+    const { error: upsertError } = await serviceClient
       .from('household_property_resolutions')
       .upsert(
         {
