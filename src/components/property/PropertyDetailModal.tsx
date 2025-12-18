@@ -37,6 +37,7 @@ interface PropertyDetailModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onDecision?: (propertyId: string, type: InteractionType) => void
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 function buildZillowUrl(property: Property): string {
@@ -62,6 +63,7 @@ export function PropertyDetailModal({
   open,
   onOpenChange,
   onDecision,
+  onCloseAutoFocus,
 }: PropertyDetailModalProps) {
   const propertyId = property?.id
   const { data: mutualLikes = [] } = useMutualLikes()
@@ -140,7 +142,10 @@ export function PropertyDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-hm-obsidian-900 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none border-white/10 p-0 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl">
+      <DialogContent
+        className="bg-hm-obsidian-900 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none border-white/10 p-0 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-y-auto">
             <div className="relative aspect-video w-full">

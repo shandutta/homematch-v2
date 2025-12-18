@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useRef,
   ReactNode,
 } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
@@ -45,11 +46,17 @@ export function PropertyDetailProvider({
     Neighborhood | undefined
   >()
   const [isOpen, setIsOpen] = useState(false)
+  const returnFocusToRef = useRef<HTMLElement | null>(null)
 
   const recordInteraction = useRecordInteraction()
 
   const openPropertyDetail = useCallback(
     (property: Property, neighborhood?: Neighborhood) => {
+      if (typeof document !== 'undefined') {
+        const activeElement = document.activeElement
+        returnFocusToRef.current =
+          activeElement instanceof HTMLElement ? activeElement : null
+      }
       setSelectedProperty(property)
       setSelectedNeighborhood(neighborhood)
       setIsOpen(true)
@@ -89,6 +96,17 @@ export function PropertyDetailProvider({
         neighborhood={selectedNeighborhood}
         open={isOpen}
         onOpenChange={handleOpenChange}
+        onCloseAutoFocus={(event) => {
+          const target = returnFocusToRef.current
+          if (!target || typeof document === 'undefined') {
+            return
+          }
+          if (!document.contains(target)) {
+            return
+          }
+          event.preventDefault()
+          target.focus()
+        }}
         onDecision={handleDecision}
       />
     </PropertyDetailContext.Provider>

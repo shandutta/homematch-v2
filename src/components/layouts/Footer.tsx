@@ -79,9 +79,9 @@ export function Footer({ variant = 'cta' }: FooterProps) {
               <p className="text-[11px] tracking-[0.45em] text-cyan-200/80 uppercase">
                 Keep the journey going
               </p>
-              <p className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+              <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
                 Finish decisions later without losing the vibe.
-              </p>
+              </h2>
               <p className="mt-2 text-sm text-white/70">
                 Everything you care about—mutual likes, household progress, and
                 saved searches—stays in sync across the app.
