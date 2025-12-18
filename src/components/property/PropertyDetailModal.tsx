@@ -9,12 +9,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import {
   Bed,
   Bath,
   Square,
-  Home,
   ExternalLink,
   MapPin,
   Calendar,
@@ -31,6 +29,7 @@ import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 import { InteractionType } from '@/types/app'
+import { formatPropertyType } from '@/lib/utils/formatPropertyType'
 
 interface PropertyDetailModalProps {
   property: Property | null
@@ -38,6 +37,7 @@ interface PropertyDetailModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onDecision?: (propertyId: string, type: InteractionType) => void
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 function buildZillowUrl(property: Property): string {
@@ -50,15 +50,24 @@ function buildZillowUrl(property: Property): string {
   return `https://www.zillow.com/homes/${q}_rb/`
 }
 
+function buildGoogleMapsUrl(property: Property): string {
+  const q = encodeURIComponent(
+    `${property.address}, ${property.city}, ${property.state} ${property.zip_code}`
+  )
+  return `https://www.google.com/maps/search/?api=1&query=${q}`
+}
+
 export function PropertyDetailModal({
   property,
   neighborhood,
   open,
   onOpenChange,
   onDecision,
+  onCloseAutoFocus,
 }: PropertyDetailModalProps) {
+  const propertyId = property?.id
   const { data: mutualLikes = [] } = useMutualLikes()
-  const { data: vibes } = usePropertyVibes(property?.id)
+  const { data: vibes } = usePropertyVibes(propertyId)
   const images = useMemo(
     () => property?.images?.filter(Boolean) ?? [],
     [property?.images]
@@ -74,10 +83,21 @@ export function PropertyDetailModal({
   const { data: neighborhoodVibes } = useNeighborhoodVibes(
     neighborhoodData?.id || property?.neighborhood_id || undefined
   )
+  const [isMapExpanded, setIsMapExpanded] = useState(false)
 
   useEffect(() => {
     setCurrentImageIndex(0)
-  }, [property?.id])
+  }, [propertyId])
+
+  useEffect(() => {
+    if (!open || !propertyId) return
+    if (typeof window === 'undefined' || !('matchMedia' in window)) {
+      setIsMapExpanded(true)
+      return
+    }
+    const mq = window.matchMedia?.('(min-width: 640px)')
+    setIsMapExpanded(mq?.matches ?? true)
+  }, [open, propertyId])
 
   const hasMultipleImages = images.length > 1
 
@@ -122,237 +142,298 @@ export function PropertyDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-slate-900 p-0 text-white">
-        <div className="relative aspect-video w-full">
-          <PropertyImage
-            src={currentImage || images}
-            alt={property.address || 'Property'}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 672px"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
+      <DialogContent
+        className="bg-hm-obsidian-900 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none border-white/10 p-0 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <div className="relative aspect-video w-full">
+              <PropertyImage
+                src={currentImage || images}
+                alt={property.address || 'Property'}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 672px"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
 
-          {property.property_type && (
-            <div className="absolute top-4 left-4">
-              <Badge
-                variant="secondary"
-                className="bg-white/90 text-slate-900 backdrop-blur-sm"
-              >
-                <Home className="mr-1 h-3 w-3" />
-                {property.property_type}
-              </Badge>
-            </div>
-          )}
-
-          <div className="absolute top-4 left-1/2 -translate-x-1/2">
-            <MutualLikesIndicator
-              propertyId={property.id}
-              mutualLikes={mutualLikes}
-              variant="compact"
-            />
-          </div>
-
-          <a
-            href={buildZillowUrl(property)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-900 backdrop-blur-sm transition-colors hover:bg-white"
-            aria-label="View on Zillow"
-          >
-            <ExternalLink className="h-5 w-5" />
-          </a>
-
-          {hasMultipleImages && (
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-between px-3">
-              <button
-                type="button"
-                onClick={showPreviousImage}
-                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
-                aria-label="Previous image"
-                data-testid="previous-image"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={showNextImage}
-                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/70 text-white shadow-lg transition hover:bg-slate-900"
-                aria-label="Next image"
-                data-testid="next-image"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          )}
-
-          {hasMultipleImages && (
-            <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
-              <div
-                className="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-medium text-white"
-                data-testid="image-counter"
-              >
-                {normalizedIndex + 1} / {images.length}
-              </div>
-              <div className="flex gap-2">
-                {images.map((_, index) => {
-                  const isActive = index === normalizedIndex
-                  return (
-                    <button
-                      key={index}
-                      type="button"
-                      aria-label={`View image ${index + 1}`}
-                      data-testid={`image-dot-${index}`}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
-                      style={{ opacity: isActive ? 1 : 0.4 }}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="absolute bottom-4 left-4">
-            <p className="text-3xl font-bold text-white">
-              {formatPrice(property.price)}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6 p-6 pt-2">
-          <DialogHeader className="text-left">
-            <DialogTitle className="text-2xl font-bold text-white">
-              {property.address}
-            </DialogTitle>
-            <DialogDescription className="text-slate-300">
-              Detailed view of {property.address} in {property.city},{' '}
-              {property.state}. See photos, specs, and nearby highlights.
-            </DialogDescription>
-            <div className="flex items-center gap-2 text-slate-400">
-              <MapPin className="h-4 w-4" />
-              <span>
-                {neighborhoodData?.name || property.city}, {property.state}{' '}
-                {property.zip_code}
-              </span>
-            </div>
-            {neighborhoodVibes && (
-              <div className="mt-3 flex items-start gap-2 rounded-lg border border-slate-700 bg-slate-800/60 p-3">
-                <div className="mt-0.5 rounded-full bg-purple-500/10 p-2 text-purple-300">
-                  <MapPin className="h-4 w-4" />
+              {property.property_type && (
+                <div className="absolute top-4 left-4">
+                  <span className="rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium tracking-wide text-white/90 backdrop-blur-sm">
+                    {formatPropertyType(property.property_type)}
+                  </span>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-white">
-                    {neighborhoodVibes.tagline}
-                  </p>
-                  <p className="text-sm text-slate-300">
-                    {neighborhoodVibes.vibe_statement}
-                  </p>
-                  {neighborhoodVibes.suggested_tags?.length ? (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {neighborhoodVibes.suggested_tags
-                        .slice(0, 6)
-                        .map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="secondary"
-                            className="bg-slate-700/70 text-xs text-white"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            )}
-          </DialogHeader>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center">
-              <Bed className="mx-auto mb-2 h-6 w-6 text-purple-400" />
-              <p className="text-2xl font-bold">
-                {formatCount(property.bedrooms)}
-              </p>
-              <p className="text-xs text-slate-400">Beds</p>
-            </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center">
-              <Bath className="mx-auto mb-2 h-6 w-6 text-purple-400" />
-              <p className="text-2xl font-bold">
-                {formatCount(property.bathrooms)}
-              </p>
-              <p className="text-xs text-slate-400">Baths</p>
-            </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center">
-              <Square className="mx-auto mb-2 h-6 w-6 text-purple-400" />
-              <p className="text-2xl font-bold">
-                {formatSquareFeet(property.square_feet)}
-              </p>
-              <p className="text-xs text-slate-400">Sq Ft</p>
-            </div>
-          </div>
-
-          {property.year_built && (
-            <div className="flex items-center gap-2 text-slate-400">
-              <Calendar className="h-4 w-4" />
-              <span>Built in {property.year_built}</span>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-white">About this home</h3>
-            <StorytellingDescription
-              property={property}
-              neighborhood={neighborhoodData || undefined}
-              vibes={vibes}
-              isMutualLike={mutualLikes.some(
-                (ml) => ml.property_id === property.id && ml.liked_by_count >= 2
               )}
-              variant="full"
-              showLifestyleTags={true}
-              showFutureVision={true}
-              showVibeStatement={false}
-              showEmotionalHooks={false}
-            />
-          </div>
 
-          <div className="space-y-3">
-            <h3 className="font-semibold text-white">Location</h3>
-            <PropertyMap
-              property={property}
-              className="h-48 w-full rounded-xl border border-slate-700"
-            />
+              <div className="absolute top-4 left-1/2 -translate-x-1/2">
+                <MutualLikesIndicator
+                  propertyId={property.id}
+                  mutualLikes={mutualLikes}
+                  variant="compact"
+                />
+              </div>
+
+              <a
+                href={buildZillowUrl(property)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-4 right-16 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white"
+                aria-label="View on Zillow"
+              >
+                <ExternalLink className="h-5 w-5" />
+              </a>
+
+              {hasMultipleImages && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-between px-3">
+                  <button
+                    type="button"
+                    onClick={showPreviousImage}
+                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    aria-label="Previous image"
+                    data-testid="previous-image"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNextImage}
+                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    aria-label="Next image"
+                    data-testid="next-image"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+
+              {hasMultipleImages && (
+                <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
+                  <div
+                    className="rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white/90"
+                    data-testid="image-counter"
+                  >
+                    {normalizedIndex + 1} / {images.length}
+                  </div>
+                  <div className="flex gap-2">
+                    {images.map((_, index) => {
+                      const isActive = index === normalizedIndex
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          aria-label={`View image ${index + 1}`}
+                          data-testid={`image-dot-${index}`}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
+                          style={{ opacity: isActive ? 1 : 0.4 }}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="absolute bottom-4 left-4">
+                <p className="price-display text-3xl text-white drop-shadow-lg">
+                  {formatPrice(property.price)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6 p-4 sm:p-6">
+              <DialogHeader className="text-left">
+                <DialogTitle className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight">
+                  {property.address}
+                </DialogTitle>
+                <DialogDescription className="text-hm-stone-400">
+                  Explore photos, key stats, and the story behind this listing.
+                </DialogDescription>
+                <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4" />
+                  <span>
+                    {neighborhoodData?.name || property.city}, {property.state}{' '}
+                    {property.zip_code}
+                  </span>
+                </div>
+                {neighborhoodVibes && (
+                  <div className="mt-3 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+                    <div className="text-hm-amber-400 mt-0.5 rounded-full bg-amber-400/10 p-2">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-hm-stone-200 text-sm font-semibold">
+                        {neighborhoodVibes.tagline}
+                      </p>
+                      <p className="text-hm-stone-400 text-sm">
+                        {neighborhoodVibes.vibe_statement}
+                      </p>
+                      {neighborhoodVibes.suggested_tags?.length ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {neighborhoodVibes.suggested_tags
+                            .slice(0, 6)
+                            .map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/90"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+              </DialogHeader>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center">
+                  <Bed className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-stone-200 text-2xl font-semibold">
+                    {formatCount(property.bedrooms)}
+                  </p>
+                  <p className="text-hm-stone-500 text-xs">Beds</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center">
+                  <Bath className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-stone-200 text-2xl font-semibold">
+                    {formatCount(property.bathrooms)}
+                  </p>
+                  <p className="text-hm-stone-500 text-xs">Baths</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center">
+                  <Square className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-stone-200 text-2xl font-semibold">
+                    {formatSquareFeet(property.square_feet)}
+                  </p>
+                  <p className="text-hm-stone-500 text-xs">Sq Ft</p>
+                </div>
+              </div>
+
+              {property.year_built && (
+                <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4" />
+                  <span>Built in {property.year_built}</span>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h3 className="font-display text-hm-stone-200 text-lg font-medium">
+                  About this home
+                </h3>
+                <StorytellingDescription
+                  property={property}
+                  neighborhood={neighborhoodData || undefined}
+                  vibes={vibes}
+                  isMutualLike={mutualLikes.some(
+                    (ml) =>
+                      ml.property_id === property.id && ml.liked_by_count >= 2
+                  )}
+                  variant="full"
+                  showLifestyleTags={true}
+                  showFutureVision={true}
+                  showVibeStatement={false}
+                  showEmotionalHooks={false}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-display text-hm-stone-200 text-lg font-medium">
+                  Location
+                </h3>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-hm-stone-500 text-xs">
+                    Tap for details, or open in Google Maps.
+                  </p>
+                  <button
+                    type="button"
+                    className="text-hm-stone-300 hover:text-hm-stone-200 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium transition sm:hidden"
+                    onClick={() => setIsMapExpanded((prev) => !prev)}
+                    aria-label={isMapExpanded ? 'Hide map' : 'Show map'}
+                    data-testid="toggle-map"
+                  >
+                    {isMapExpanded ? 'Hide map' : 'Show map'}
+                  </button>
+                </div>
+
+                {isMapExpanded ? (
+                  <PropertyMap
+                    property={property}
+                    className="h-48 w-full rounded-xl border border-white/10"
+                  />
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="text-hm-amber-400 rounded-full bg-amber-400/10 p-2">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="text-hm-stone-200 text-sm font-semibold">
+                          Map preview
+                        </p>
+                        <p className="text-hm-stone-400 text-sm">
+                          <span className="font-medium text-white/80">
+                            {property.city}, {property.state}
+                          </span>
+                          <span className="text-hm-stone-500">
+                            {' '}
+                            • {property.zip_code}
+                          </span>
+                        </p>
+                        <a
+                          href={buildGoogleMapsUrl(property)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-hm-amber-400 hover:text-hm-amber-300 inline-flex items-center gap-1 text-sm font-medium"
+                          aria-label="Open in Google Maps"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Open in Google Maps
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {onDecision && (
-            <div className="flex gap-4 pt-4">
-              <button
-                onClick={() => {
-                  onDecision(property.id, 'skip')
-                  onOpenChange(false)
-                }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/80 bg-red-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
-                aria-label="Pass property"
-              >
-                <X className="h-6 w-6" strokeWidth={2.5} />
-                Pass
-              </button>
-              <button
-                onClick={() => {
-                  onDecision(property.id, 'liked')
-                  onOpenChange(false)
-                }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
-                aria-label="Like property"
-                data-testid="like-button"
-              >
-                <Heart
-                  className="h-6 w-6"
-                  strokeWidth={2.5}
-                  fill="currentColor"
-                />
-                Like
-              </button>
+            <div className="safe-area-bottom bg-hm-obsidian-900/95 border-t border-white/10 px-4 py-4 backdrop-blur sm:px-6">
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDecision(property.id, 'skip')
+                    onOpenChange(false)
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/80 bg-red-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
+                  aria-label="Pass property"
+                  data-testid="pass-button"
+                >
+                  <X className="h-6 w-6" strokeWidth={2.5} />
+                  Pass
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDecision(property.id, 'liked')
+                    onOpenChange(false)
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
+                  aria-label="Like property"
+                  data-testid="like-button"
+                >
+                  <Heart
+                    className="h-6 w-6"
+                    strokeWidth={2.5}
+                    fill="currentColor"
+                  />
+                  Like
+                </button>
+              </div>
             </div>
           )}
         </div>

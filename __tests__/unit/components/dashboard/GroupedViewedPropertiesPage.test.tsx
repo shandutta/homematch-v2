@@ -158,10 +158,8 @@ describe('GroupedViewedPropertiesPage', () => {
 
       renderWithQuery(<GroupedViewedPropertiesPage />)
 
-      expect(screen.getByText(/No viewed properties yet\./i)).toBeTruthy()
-      expect(
-        screen.getByText(/Start swiping to see properties here!/i)
-      ).toBeTruthy()
+      expect(screen.getByText(/No viewed properties yet/i)).toBeTruthy()
+      expect(screen.getByText(/Swipe through recommendations/i)).toBeTruthy()
     })
   })
 
@@ -187,9 +185,8 @@ describe('GroupedViewedPropertiesPage', () => {
       // Check section titles (using getAllByText for "Viewed Properties" since page title also uses it)
       expect(screen.getByText('Liked Properties')).toBeTruthy()
       expect(screen.getByText('Passed Properties')).toBeTruthy()
-      // "Viewed Properties" appears both as page title and section title
-      const viewedTexts = screen.getAllByText('Viewed Properties')
-      expect(viewedTexts.length).toBeGreaterThanOrEqual(2) // Page title + section title
+      expect(screen.getByText('Viewed Properties')).toBeTruthy()
+      expect(screen.getByText('Undecided')).toBeTruthy()
     })
 
     it('does not render empty sections', () => {

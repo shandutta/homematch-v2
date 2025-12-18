@@ -215,10 +215,50 @@ export class UserService extends BaseService {
     userId: string,
     householdId: string
   ): Promise<UserProfile | null> {
-    return this.updateUserProfile(userId, { household_id: householdId })
+    const supabase = await this.getSupabase()
+
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('household_id')
+      .eq('id', userId)
+      .single()
+
+    if (profileError) {
+      console.error('Error checking existing household:', profileError)
+      return null
+    }
+
+    if (profile?.household_id) {
+      // Already in a household (either the same or different) - no-op here.
+      return this.getUserProfile(userId)
+    }
+
+    const updatedProfile = await this.updateUserProfile(userId, {
+      household_id: householdId,
+    })
+
+    return updatedProfile
   }
 
   async leaveHousehold(userId: string): Promise<UserProfile | null> {
+    const supabase = await this.getSupabase()
+
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('household_id')
+      .eq('id', userId)
+      .single()
+
+    if (profileError) {
+      console.error('Error checking household before leave:', profileError)
+      return null
+    }
+
+    const householdId = profile?.household_id
+    if (!householdId) {
+      return this.getUserProfile(userId)
+    }
+
     return this.updateUserProfile(userId, { household_id: null })
   }
 

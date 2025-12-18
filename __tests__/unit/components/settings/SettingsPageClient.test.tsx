@@ -213,7 +213,7 @@ describe('SettingsPageClient', () => {
     expect(container.firstChild).toHaveClass(
       'gradient-grid-bg',
       'min-h-screen',
-      'pb-16',
+      'pb-6',
       'text-white'
     )
 

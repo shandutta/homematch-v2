@@ -111,11 +111,88 @@ export class UserServiceClient {
     userId: string,
     householdId: string
   ): Promise<UserProfile> {
-    return this.updateProfile(userId, { household_id: householdId })
+    const supabase = createClient()
+
+    const { data: existingProfile, error: existingProfileError } =
+      await supabase
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', userId)
+        .single()
+
+    if (existingProfileError) {
+      throw new Error(
+        `Failed to load your profile before joining: ${existingProfileError.message}`
+      )
+    }
+
+    if (existingProfile?.household_id) {
+      if (existingProfile.household_id === householdId) {
+        const profile = await this.getProfile(userId)
+        if (!profile) {
+          throw new Error('Failed to load profile after joining household')
+        }
+        return profile
+      }
+
+      throw new Error(
+        'You already belong to a household. Leave it before joining another.'
+      )
+    }
+
+    const { data: updatedProfile, error: updateProfileError } = await supabase
+      .from('user_profiles')
+      .update({ household_id: householdId })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (updateProfileError) {
+      throw new Error(`Failed to join household: ${updateProfileError.message}`)
+    }
+
+    return updatedProfile
   }
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
-    return this.updateProfile(userId, { household_id: null })
+    const supabase = createClient()
+
+    const { data: existingProfile, error: existingProfileError } =
+      await supabase
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', userId)
+        .single()
+
+    if (existingProfileError) {
+      throw new Error(
+        `Failed to load your profile before leaving: ${existingProfileError.message}`
+      )
+    }
+
+    const householdId = existingProfile?.household_id
+    if (!householdId) {
+      const profile = await this.getProfile(userId)
+      if (!profile) {
+        throw new Error('Failed to load profile after leaving household')
+      }
+      return profile
+    }
+
+    const { data: updatedProfile, error: updateProfileError } = await supabase
+      .from('user_profiles')
+      .update({ household_id: null })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (updateProfileError) {
+      throw new Error(
+        `Failed to leave household: ${updateProfileError.message}`
+      )
+    }
+
+    return updatedProfile
   }
 
   // Household invitations

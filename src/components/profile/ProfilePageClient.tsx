@@ -26,6 +26,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
+import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 
 interface ProfilePageClientProps {
   user: User
@@ -138,7 +139,7 @@ export function ProfilePageClient({
   }
 
   return (
-    <div className="gradient-grid-bg min-h-screen pb-16 text-white">
+    <div className="gradient-grid-bg min-h-screen pb-6 text-white">
       {/* Hero Header */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -508,6 +509,9 @@ export function ProfilePageClient({
           </motion.div>
         </div>
       </div>
+
+      <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <MobileBottomNav />
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge
 // Mock the hooks with Vitest patterns
 vi.mock('@/hooks/useCouples', () => ({
   useCouples: vi.fn(),
+  useMutualLikes: vi.fn(),
 }))
 
 vi.mock('@/hooks/useCouplesFeatures', () => ({
@@ -33,7 +34,7 @@ describe('Couples Frontend Integration', () => {
     vi.clearAllMocks()
 
     // Setup default mock implementations
-    const { useCouples } = await import('@/hooks/useCouples')
+    const { useCouples, useMutualLikes } = await import('@/hooks/useCouples')
     const { useCouplesFeatures } = await import('@/hooks/useCouplesFeatures')
 
     ;(useCouples as any).mockReturnValue({
@@ -41,6 +42,12 @@ describe('Couples Frontend Integration', () => {
       householdActivity: [],
       isLoading: false,
       error: null,
+    })
+    ;(useMutualLikes as any).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
     })
     ;(useCouplesFeatures as any).mockReturnValue({
       mutualLikesCount: 0,

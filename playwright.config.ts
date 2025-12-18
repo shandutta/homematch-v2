@@ -162,7 +162,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'node scripts/start-test-server-optimized.js',
-    url: 'http://localhost:3000',
+    url: 'http://localhost:3000/api/health?expectTest=true',
     reuseExistingServer: true,
     timeout: isCI ? 120 * 1000 : 120 * 1000, // cold starts can exceed 60s locally
     env: {

@@ -1,6 +1,7 @@
 'use client'
 
 import { Fragment, useState } from 'react'
+import Link from 'next/link'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   interactionKeys,
@@ -9,9 +10,9 @@ import {
   useRecordInteraction,
 } from '@/hooks/useInteractions'
 import { PropertyCard } from '@/components/property/PropertyCard'
-import { Skeleton } from '@/components/ui/skeleton'
+import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { Button } from '@/components/ui/button'
-import { Heart, HeartOff, X } from 'lucide-react'
+import { Heart, HeartOff, History, X } from 'lucide-react'
 import { InFeedAd } from '@/components/ads/InFeedAd'
 import { Property } from '@/lib/schemas/property'
 
@@ -228,8 +229,10 @@ function PropertySection({
   return (
     <section data-testid={`section-${type}`} className="space-y-4">
       <div>
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
-        <p className="text-sm text-purple-300/80">{description}</p>
+        <h2 className="font-display text-hm-stone-200 text-xl font-medium tracking-tight sm:text-2xl">
+          {title}
+        </h2>
+        <p className="text-hm-stone-500 text-sm">{description}</p>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {properties.map((property, index) => (
@@ -319,12 +322,7 @@ export function GroupedViewedPropertiesPage() {
   }
 
   const renderSkeletons = () =>
-    Array.from({ length: 6 }).map((_, i) => (
-      <Skeleton
-        key={i}
-        className="aspect-[3/4] w-full rounded-xl bg-white/5 md:aspect-[4/5] lg:aspect-[4/3]"
-      />
-    ))
+    Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)
 
   const sharedSectionProps = {
     pendingPropertyId,
@@ -339,21 +337,41 @@ export function GroupedViewedPropertiesPage() {
   }
 
   return (
-    <div className="space-y-12">
-      <h1 className="text-4xl font-bold text-white">Viewed Properties</h1>
+    <div className="space-y-10 sm:space-y-12">
+      <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
+        Viewed Properties
+      </h1>
 
       {isLoading && !hasAnyProperties ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderSkeletons()}
         </div>
       ) : !hasAnyProperties ? (
-        <div className="py-20 text-center">
-          <h2 className="text-2xl font-semibold text-white">
-            No viewed properties yet.
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur">
+          <History className="text-hm-amber-400 mx-auto h-10 w-10" />
+          <h2 className="font-display text-hm-stone-200 mt-5 text-2xl font-medium tracking-tight">
+            No viewed properties yet
           </h2>
-          <p className="mt-2 text-purple-300/80">
-            Start swiping to see properties here!
+          <p className="text-hm-stone-500 mx-auto mt-2 max-w-xl text-sm sm:text-base">
+            Swipe through recommendations, then come back here to refine your
+            shortlist with your partner.
           </p>
+
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              asChild
+              className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
+            >
+              <Link href="/dashboard">Start swiping</Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              className="text-hm-stone-400 hover:text-hm-stone-200"
+            >
+              <Link href="/dashboard/liked">Review favorites</Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>
@@ -377,8 +395,8 @@ export function GroupedViewedPropertiesPage() {
 
           {/* Section 3: Viewed Only (not liked or passed) */}
           <PropertySection
-            title="Viewed Properties"
-            description="Properties you've seen but haven't decided on yet."
+            title="Undecided"
+            description="Homes you've seen but haven't decided on yet."
             properties={viewedOnlyProperties}
             type="viewed-only"
             {...sharedSectionProps}
@@ -389,7 +407,7 @@ export function GroupedViewedPropertiesPage() {
               <Button
                 onClick={fetchAllNextPages}
                 disabled={isFetchingNextPage}
-                className="bg-purple-600 text-white hover:bg-purple-700"
+                className="border-hm-amber-400/30 bg-hm-amber-400/10 text-hm-amber-400 hover:border-hm-amber-400/50 hover:bg-hm-amber-400/20 rounded-full border px-8 py-2 font-medium transition-all duration-200"
               >
                 {isFetchingNextPage ? 'Loading more...' : 'Load More'}
               </Button>

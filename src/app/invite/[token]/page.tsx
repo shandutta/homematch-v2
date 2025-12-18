@@ -15,18 +15,6 @@ import { AcceptInviteForm } from './AcceptInviteForm'
 
 type InviteRecord = HouseholdInvitation & {
   household?: Pick<Household, 'id' | 'name' | 'collaboration_mode'> | null
-  inviter?: Pick<UserProfile, 'id' | 'preferences'> | null
-}
-
-const getInviterName = (preferences: UserProfile['preferences']) => {
-  if (!preferences || typeof preferences !== 'object')
-    return 'A household member'
-  const prefRecord = preferences as Record<string, unknown>
-  const displayName = prefRecord.display_name
-  if (typeof displayName === 'string' && displayName.trim().length > 0) {
-    return displayName
-  }
-  return 'A household member'
 }
 
 const formatDate = (value: string) =>
@@ -39,24 +27,32 @@ const formatDate = (value: string) =>
 export default async function InvitePage({
   params,
 }: {
-  params: { token: string }
+  params: { token: string } | Promise<{ token: string }>
 }) {
+  const resolvedParams = await params
+  const token = resolvedParams.token
+
   const serviceClient = await getServiceRoleClient()
   const { data: invite, error } = await serviceClient
     .from('household_invitations')
     .select(
       `
         *,
-        household:households(id, name, collaboration_mode),
-        inviter:user_profiles!household_invitations_invited_by_fkey(id, preferences)
+        household:households(id, name, collaboration_mode)
       `
     )
-    .eq('token', params.token)
+    .eq('token', token)
     .maybeSingle<InviteRecord>()
 
   if (error || !invite) {
     notFound()
   }
+
+  const { data: inviterProfile } = await serviceClient
+    .from('user_profiles')
+    .select('display_name, email')
+    .eq('id', invite.created_by)
+    .maybeSingle<Pick<UserProfile, 'display_name' | 'email'>>()
 
   const supabase = await createClient()
   const {
@@ -65,7 +61,15 @@ export default async function InvitePage({
 
   const isExpired = new Date(invite.expires_at) < new Date()
   const canAccept = invite.status === 'pending' && !isExpired
-  const inviterName = getInviterName(invite.inviter?.preferences ?? null)
+  const inviterName =
+    inviterProfile?.display_name ||
+    inviterProfile?.email ||
+    'A household member'
+  const statusLabel = isExpired
+    ? 'Expired'
+    : invite.status === 'pending'
+      ? 'Pending'
+      : invite.status.charAt(0).toUpperCase() + invite.status.slice(1)
 
   return (
     <div className="min-h-screen bg-[#030c24] px-4 py-10 text-white">
@@ -133,11 +137,7 @@ export default async function InvitePage({
                       : 'bg-slate-200 text-slate-600'
                   }
                 >
-                  {isExpired
-                    ? 'Expired'
-                    : invite.status === 'pending'
-                      ? 'Pending'
-                      : invite.status}
+                  {statusLabel}
                 </Badge>
               </span>
             </div>
@@ -150,7 +150,7 @@ export default async function InvitePage({
 
             {canAccept ? (
               <AcceptInviteForm
-                token={params.token}
+                token={token}
                 householdName={invite.household?.name || 'your household'}
               />
             ) : (
@@ -169,7 +169,7 @@ export default async function InvitePage({
               <p className="text-center text-sm text-slate-500">
                 Already have an account?{' '}
                 <Link
-                  href={`/login?redirectTo=/invite/${params.token}`}
+                  href={`/login?redirectTo=/invite/${token}`}
                   className="font-semibold text-slate-900 underline"
                 >
                   Sign in to accept

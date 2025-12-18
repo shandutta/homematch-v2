@@ -194,10 +194,17 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
 
   const copyHouseholdCode = async () => {
     if (profile.household) {
-      await navigator.clipboard.writeText(profile.household.id)
-      setCodeCopied(true)
-      toast.success('Household code copied to clipboard')
-      setTimeout(() => setCodeCopied(false), 2000)
+      try {
+        await navigator.clipboard.writeText(profile.household.id)
+        setCodeCopied(true)
+        toast.success('Household code copied to clipboard')
+        setTimeout(() => setCodeCopied(false), 2000)
+      } catch {
+        toast.error('Could not copy household code', {
+          description:
+            'Please copy it manually or check your browser permissions.',
+        })
+      }
     }
   }
 
@@ -236,10 +243,17 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
 
   const handleCopyInviteLink = async (token: string) => {
     const link = `${inviteLinkBase}/invite/${token}`
-    await navigator.clipboard.writeText(link)
-    setLinkCopied(token)
-    toast.success('Invitation link copied')
-    setTimeout(() => setLinkCopied(null), 2000)
+    try {
+      await navigator.clipboard.writeText(link)
+      setLinkCopied(token)
+      toast.success('Invitation link copied')
+      setTimeout(() => setLinkCopied(null), 2000)
+    } catch {
+      toast.error('Could not copy invite link', {
+        description:
+          'Please copy it manually or check your browser permissions.',
+      })
+    }
   }
 
   const handleRevokeInvite = async (inviteId: string) => {
@@ -314,9 +328,11 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                   {profile.household.id}
                 </code>
                 <button
+                  type="button"
                   onClick={copyHouseholdCode}
                   className="text-hm-stone-400 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                   data-testid="copy-household-code"
+                  aria-label="Copy household code"
                 >
                   <AnimatePresence mode="wait">
                     {codeCopied ? (

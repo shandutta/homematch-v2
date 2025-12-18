@@ -26,6 +26,8 @@ import type { HouseholdActivity } from '@/lib/services/couples'
 
 interface CouplesActivityFeedProps {
   activity: HouseholdActivity[]
+  showViewAllLink?: boolean
+  returnToPath?: string
 }
 
 const interactionIcons = {
@@ -49,7 +51,11 @@ const interactionText = {
   view: 'viewed',
 }
 
-export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
+export function CouplesActivityFeed({
+  activity,
+  showViewAllLink = true,
+  returnToPath = '/couples',
+}: CouplesActivityFeedProps) {
   if (activity.length === 0) {
     return (
       <Card className="card-glassmorphism-style border-couples-secondary/20">
@@ -98,14 +104,16 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
             <Activity className="h-6 w-6 text-purple-400" />
             Recent Activity
           </CardTitle>
-          <Button variant="ghost" size="sm" asChild>
-            <Link
-              href="/dashboard/activity"
-              className="text-purple-400 hover:text-purple-300"
-            >
-              View all activity
-            </Link>
-          </Button>
+          {showViewAllLink && (
+            <Button variant="ghost" size="sm" asChild>
+              <Link
+                href="/dashboard/activity"
+                className="text-purple-400 hover:text-purple-300"
+              >
+                View all activity
+              </Link>
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -122,7 +130,9 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
               animate="animate"
               transition={{ ...normalTransition, delay: index * 0.05 }}
             >
-              <Link href={`/properties/${item.property_id}`}>
+              <Link
+                href={`/properties/${item.property_id}?returnTo=${encodeURIComponent(returnToPath)}`}
+              >
                 <div className="group relative rounded-lg border border-white/5 bg-white/5 p-3 transition-all hover:border-purple-400/30 hover:bg-white/10">
                   <div className="flex items-start gap-3">
                     <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
@@ -204,18 +214,20 @@ export function CouplesActivityFeed({ activity }: CouplesActivityFeedProps) {
           )
         })}
 
-        <div className="pt-4 text-center">
-          <Button
-            variant="outline"
-            asChild
-            className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-          >
-            <Link href="/dashboard/activity">
-              View Full Activity History
-              <Activity className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        {showViewAllLink && (
+          <div className="pt-4 text-center">
+            <Button
+              variant="outline"
+              asChild
+              className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+            >
+              <Link href="/dashboard/activity">
+                View Full Activity History
+                <Activity className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

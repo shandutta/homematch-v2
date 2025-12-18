@@ -30,8 +30,40 @@ const legalLinks = [
   { href: '/privacy', label: 'Privacy Policy' },
 ]
 
-export function Footer() {
+interface FooterProps {
+  variant?: 'cta' | 'minimal'
+}
+
+export function Footer({ variant = 'cta' }: FooterProps) {
   const currentYear = new Date().getFullYear()
+
+  if (variant === 'minimal') {
+    return (
+      <footer className="pb-10 text-white/70">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <HomeMatchLogo size="sm" textClassName="text-white" />
+              <p className="text-white/60">
+                &copy; {currentYear} HomeMatch. All rights reserved.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {legalLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-white/60 transition hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    )
+  }
 
   return (
     <footer className="relative mt-2 pb-16 text-white/80">
@@ -47,9 +79,9 @@ export function Footer() {
               <p className="text-[11px] tracking-[0.45em] text-cyan-200/80 uppercase">
                 Keep the journey going
               </p>
-              <p className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+              <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
                 Finish decisions later without losing the vibe.
-              </p>
+              </h2>
               <p className="mt-2 text-sm text-white/70">
                 Everything you care about—mutual likes, household progress, and
                 saved searches—stays in sync across the app.

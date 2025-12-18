@@ -181,14 +181,18 @@ async function globalSetup() {
     // Step 3: Quick schema validation (skip full reset unless broken)
     console.log('\n2️⃣  Validating database schema...')
     try {
-      const response = await fetch(
-        `${supabaseUrl}/rest/v1/user_profiles?limit=1`,
-        {
+      const [profilesResponse, resolutionsResponse] = await Promise.all([
+        fetch(`${supabaseUrl}/rest/v1/user_profiles?limit=1`, {
           headers: { apikey: supabaseAnonKey },
           signal: AbortSignal.timeout(2000),
-        }
-      )
-      if (response.ok) {
+        }),
+        fetch(`${supabaseUrl}/rest/v1/household_property_resolutions?limit=1`, {
+          headers: { apikey: supabaseAnonKey },
+          signal: AbortSignal.timeout(2000),
+        }),
+      ])
+
+      if (profilesResponse.ok && resolutionsResponse.ok) {
         console.log('   ✅ Database schema valid')
       } else {
         throw new Error('Schema check failed')
@@ -196,6 +200,13 @@ async function globalSetup() {
     } catch {
       console.log('   🔄 Applying database migrations...')
       await runIsolated('scripts/infrastructure-working.js', ['reset-db'])
+
+      // `supabase db reset` can wipe auth/users; ensure our test users exist after migrations.
+      const usersStillExist = await checkTestUsersExist().catch(() => false)
+      if (!usersStillExist) {
+        console.log('   Re-creating test users after DB reset...')
+        await runIsolated('scripts/setup-test-users-admin.js')
+      }
     }
 
     // Step 4: Quick service readiness check (3 attempts max, parallel checks)

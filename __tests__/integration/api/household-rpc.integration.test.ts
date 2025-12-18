@@ -77,55 +77,57 @@ describe('create_household_for_user RPC', () => {
       auth: { persistSession: false },
     })
 
-    // Sign in as test user
-    const { error: signInError } = await anonClient.auth.signInWithPassword({
-      email: testUserEmail,
-      password: testUserPassword,
-    })
-    expect(signInError).toBeNull()
+    try {
+      // Sign in as test user
+      const { error: signInError } = await anonClient.auth.signInWithPassword({
+        email: testUserEmail,
+        password: testUserPassword,
+      })
+      expect(signInError).toBeNull()
 
-    // Verify user has no household initially
-    const { data: profileBefore } = await anonClient
-      .from('user_profiles')
-      .select('household_id')
-      .eq('id', testUserId)
-      .single()
+      // Verify user has no household initially
+      const { data: profileBefore } = await anonClient
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', testUserId)
+        .single()
 
-    expect(profileBefore?.household_id).toBeNull()
+      expect(profileBefore?.household_id).toBeNull()
 
-    // Call the RPC function
-    const { data: householdId, error: rpcError } = await anonClient.rpc(
-      'create_household_for_user',
-      { p_name: null }
-    )
+      // Call the RPC function
+      const { data: householdId, error: rpcError } = await anonClient.rpc(
+        'create_household_for_user',
+        { p_name: null }
+      )
 
-    expect(rpcError).toBeNull()
-    expect(householdId).toBeTruthy()
-    expect(typeof householdId).toBe('string')
+      expect(rpcError).toBeNull()
+      expect(householdId).toBeTruthy()
+      expect(typeof householdId).toBe('string')
 
-    createdHouseholdId = householdId
+      createdHouseholdId = householdId
 
-    // Verify household was created
-    const { data: household } = await serviceClient
-      .from('households')
-      .select('*')
-      .eq('id', householdId)
-      .single()
+      // Verify household was created
+      const { data: household } = await serviceClient
+        .from('households')
+        .select('*')
+        .eq('id', householdId)
+        .single()
 
-    expect(household).toBeTruthy()
-    expect(household?.created_by).toBe(testUserId)
-    expect(household?.user_count).toBe(1)
+      expect(household).toBeTruthy()
+      expect(household?.created_by).toBe(testUserId)
+      expect(household?.user_count).toBe(1)
 
-    // Verify user profile was updated
-    const { data: profileAfter } = await anonClient
-      .from('user_profiles')
-      .select('household_id')
-      .eq('id', testUserId)
-      .single()
+      // Verify user profile was updated
+      const { data: profileAfter } = await anonClient
+        .from('user_profiles')
+        .select('household_id')
+        .eq('id', testUserId)
+        .single()
 
-    expect(profileAfter?.household_id).toBe(householdId)
-
-    await anonClient.auth.signOut()
+      expect(profileAfter?.household_id).toBe(householdId)
+    } finally {
+      await anonClient.auth.signOut()
+    }
   })
 
   it('should reject unauthenticated calls', async () => {
@@ -149,20 +151,25 @@ describe('create_household_for_user RPC', () => {
       auth: { persistSession: false },
     })
 
-    await anonClient.auth.signInWithPassword({
-      email: testUserEmail,
-      password: testUserPassword,
-    })
+    try {
+      await anonClient.auth.signInWithPassword({
+        email: testUserEmail,
+        password: testUserPassword,
+      })
 
-    // Try to create another household
-    const { data, error } = await anonClient.rpc('create_household_for_user', {
-      p_name: null,
-    })
+      // Try to create another household
+      const { data, error } = await anonClient.rpc(
+        'create_household_for_user',
+        {
+          p_name: null,
+        }
+      )
 
-    expect(data).toBeNull()
-    expect(error).toBeTruthy()
-    expect(error?.message).toContain('already belongs to a household')
-
-    await anonClient.auth.signOut()
+      expect(data).toBeNull()
+      expect(error).toBeTruthy()
+      expect(error?.message).toContain('already belongs to a household')
+    } finally {
+      await anonClient.auth.signOut()
+    }
   })
 })

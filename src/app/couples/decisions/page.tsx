@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function DecisionsPage() {
-  return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <DisputedPropertiesView />
-    </div>
-  )
+  return <DisputedPropertiesView />
 }

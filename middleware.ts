@@ -18,6 +18,23 @@ const SUPABASE_TIMEOUT_MS = parseInt(
   10
 )
 
+const getSafeRedirectPath = (value: string | null) => {
+  if (!value) return null
+
+  let decoded = value
+  try {
+    decoded = decodeURIComponent(value)
+  } catch {
+    return null
+  }
+
+  if (!decoded.startsWith('/')) return null
+  if (decoded.startsWith('//')) return null
+  if (decoded.includes('://')) return null
+
+  return decoded
+}
+
 const applySecurityHeaders = (response: NextResponse) => {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) =>
     response.headers.set(key, value)
@@ -206,16 +223,24 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  console.log('[Middleware] Path:', request.nextUrl.pathname)
-  console.log('[Middleware] User ID:', user?.id)
-  if (authError) console.warn('[Middleware] Auth Error:', authError.message)
-  console.log(
-    '[Middleware] Cookies:',
-    request.cookies
-      .getAll()
-      .map((c) => c.name)
-      .join(', ')
-  )
+  const shouldLog =
+    process.env.DEBUG_MIDDLEWARE === 'true' ||
+    process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
+
+  if (shouldLog) {
+    const cookieNames = request.cookies.getAll().map((c) => c.name)
+    const hasSupabaseAuthCookie = cookieNames.some(
+      (name) => name.startsWith('sb-') && name.includes('-auth-token')
+    )
+
+    console.log('[Middleware][Auth]', {
+      path: request.nextUrl.pathname,
+      userPresent: Boolean(user),
+      authError: authError?.message ?? null,
+      cookieCount: cookieNames.length,
+      hasSupabaseAuthCookie,
+    })
+  }
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = [
@@ -225,6 +250,7 @@ export async function middleware(request: NextRequest) {
     '/helloworld_notes',
     '/validation',
     '/couples',
+    '/properties',
   ]
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
@@ -234,6 +260,10 @@ export async function middleware(request: NextRequest) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    url.searchParams.set(
+      'redirectTo',
+      `${request.nextUrl.pathname}${request.nextUrl.search}`
+    )
     return NextResponse.redirect(url)
   }
 
@@ -242,7 +272,14 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some((path) => request.nextUrl.pathname === path)
 
   if (isAuthPath && user) {
-    // user is logged in, redirect to validation dashboard
+    const redirectTo =
+      getSafeRedirectPath(request.nextUrl.searchParams.get('redirectTo')) ||
+      getSafeRedirectPath(request.nextUrl.searchParams.get('redirect'))
+
+    if (redirectTo) {
+      return NextResponse.redirect(new URL(redirectTo, request.nextUrl))
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

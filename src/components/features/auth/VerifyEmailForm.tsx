@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -25,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 export function VerifyEmailForm() {
   const supabase = createClient()
@@ -88,7 +88,7 @@ export function VerifyEmailForm() {
   }
 
   return (
-    <Card className="mx-auto w-full">
+    <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full shadow-lg backdrop-blur">
       <CardHeader className="space-y-2 text-center">
         <CardTitle className="text-2xl font-bold">Verify your email</CardTitle>
         <CardDescription>
@@ -174,13 +174,7 @@ export function VerifyEmailForm() {
         </Form>
 
         <p className="text-muted-foreground text-center text-sm">
-          Already confirmed?{' '}
-          <Link
-            href="/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            Back to sign in
-          </Link>
+          Already confirmed? <AuthLink href="/login">Back to sign in</AuthLink>
         </p>
       </CardContent>
     </Card>

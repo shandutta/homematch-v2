@@ -441,20 +441,15 @@ async function main() {
 
       if (args.cursor && args.limit != null) {
         const prevOffset = cursorOffset
-        const shouldAdvanceCursor = result.attempted === 0 || result.success > 0
+        if (result.nextOffset != null) {
+          cursorOffset = result.nextOffset
+        }
 
-        if (shouldAdvanceCursor) {
-          cursorOffset = result.nextOffset ?? cursorOffset
-          if (result.attempted > 0 && cursorOffset === prevOffset) {
-            console.warn(
-              `[backfill-vibes-resume] Cursor did not advance (offset=${cursorOffset}); stopping to avoid reprocessing the same page.`
-            )
-            break
-          }
-        } else {
+        if (result.attempted > 0 && cursorOffset === prevOffset) {
           console.warn(
-            `[backfill-vibes-resume] No successes this run; keeping cursor at offset=${cursorOffset} so reruns retry the same batch.`
+            `[backfill-vibes-resume] Cursor did not advance (offset=${cursorOffset}); stopping to avoid reprocessing the same page.`
           )
+          break
         }
 
         await writeOffsetCursorState(cursorFilePath, {
@@ -480,7 +475,13 @@ async function main() {
         break
       }
 
-      if (result.success === 0 && result.failed > 0) {
+      const hasOnlyFailuresThisRun =
+        result.attempted > 0 &&
+        result.success === 0 &&
+        result.failed > 0 &&
+        result.skipped === 0
+
+      if (hasOnlyFailuresThisRun) {
         consecutiveNoSuccessRuns++
         console.warn(
           `[backfill-vibes-resume] No successes this run (${consecutiveNoSuccessRuns}/${args.stopAfterNoSuccessRuns})`

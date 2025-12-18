@@ -108,9 +108,9 @@ export function EnhancedDashboardPageImpl({
   )
 
   return (
-    <div className="space-y-8" data-testid="dashboard-content">
+    <div className="space-y-6 sm:space-y-8" data-testid="dashboard-content">
       <h1
-        className="mb-6 text-3xl font-bold text-white"
+        className="mb-4 text-2xl font-bold text-white sm:mb-6 sm:text-3xl"
         data-testid="dashboard-header"
       >
         Dashboard

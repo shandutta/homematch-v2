@@ -110,7 +110,7 @@ describe('CouplesPageClient Integration Tests', () => {
       const { error: createError } = await supabase.from('households').insert({
         id: testHouseholdId,
         name: 'Integration Test Household',
-        user_count: 2,
+        user_count: 0,
       })
 
       expect(createError).toBeNull()
@@ -126,7 +126,7 @@ describe('CouplesPageClient Integration Tests', () => {
       expect(household).toMatchObject({
         id: testHouseholdId,
         name: 'Integration Test Household',
-        user_count: 2,
+        user_count: 0,
       })
     })
   })
@@ -134,10 +134,11 @@ describe('CouplesPageClient Integration Tests', () => {
   describe('User Household Status Flow', () => {
     test('should correctly detect no-household state', async () => {
       // Ensure test user 1 has no household
-      await supabase
+      const { error: clearHouseholdError } = await supabase
         .from('user_profiles')
         .update({ household_id: null })
         .eq('id', testUserId1)
+      expect(clearHouseholdError).toBeNull()
 
       // Verify the state
       const { data: profile } = await supabase
@@ -150,20 +151,24 @@ describe('CouplesPageClient Integration Tests', () => {
     })
 
     test('should correctly detect waiting-partner state (household with 1 user)', async () => {
-      // Create a household with user_count = 1
+      // Create a household starting at 0; trigger increments on join
       const soloHouseholdId = randomUUID()
 
-      await supabase.from('households').insert({
-        id: soloHouseholdId,
-        name: 'Solo Household',
-        user_count: 1,
-      })
+      const { error: createSoloHouseholdError } = await supabase
+        .from('households')
+        .insert({
+          id: soloHouseholdId,
+          name: 'Solo Household',
+          user_count: 0,
+        })
+      expect(createSoloHouseholdError).toBeNull()
 
       // Assign to user
-      await supabase
+      const { error: assignHouseholdError } = await supabase
         .from('user_profiles')
         .update({ household_id: soloHouseholdId })
         .eq('id', testUserId1)
+      expect(assignHouseholdError).toBeNull()
 
       // Verify the state
       const { data: profile } = await supabase
@@ -181,16 +186,22 @@ describe('CouplesPageClient Integration Tests', () => {
       expect(household?.user_count).toBe(1)
 
       // Cleanup
-      await supabase
+      const { error: clearSoloHouseholdError } = await supabase
         .from('user_profiles')
         .update({ household_id: null })
         .eq('id', testUserId1)
-      await supabase.from('households').delete().eq('id', soloHouseholdId)
+      expect(clearSoloHouseholdError).toBeNull()
+
+      const { error: deleteSoloHouseholdError } = await supabase
+        .from('households')
+        .delete()
+        .eq('id', soloHouseholdId)
+      expect(deleteSoloHouseholdError).toBeNull()
     })
 
     test('should correctly detect active state (household with 2+ users)', async () => {
       // Assign both users to the test household
-      await Promise.all([
+      const [user1Update, user2Update] = await Promise.all([
         supabase
           .from('user_profiles')
           .update({ household_id: testHouseholdId })
@@ -200,6 +211,8 @@ describe('CouplesPageClient Integration Tests', () => {
           .update({ household_id: testHouseholdId })
           .eq('id', testUserId2),
       ])
+      expect(user1Update.error).toBeNull()
+      expect(user2Update.error).toBeNull()
 
       // Verify the household has 2 members
       const { data: household } = await supabase

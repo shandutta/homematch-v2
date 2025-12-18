@@ -374,6 +374,71 @@ describe.sequential('Integration: backfill-vibes', () => {
     expect(fetchCalls).toBe(1)
   })
 
+  it('refreshImages does not regenerate vibes when images are unchanged and hash matches (force=false)', async () => {
+    const property = makePropertyInsert({
+      images: Array.from(
+        { length: 11 },
+        (_, idx) => `https://photos.zillowstatic.com/fp/${idx}.jpg`
+      ),
+    })
+    createdPropertyIds.push(property.id)
+
+    await supabaseAdmin.from('properties').upsert([property])
+
+    const { data: inserted, error: readError } = await supabaseAdmin
+      .from('properties')
+      .select('*')
+      .eq('id', property.id)
+      .single()
+
+    if (readError) throw readError
+
+    const matchingHash = VibesService.generateSourceHash(inserted as any)
+
+    await supabaseAdmin.from('property_vibes').insert({
+      property_id: property.id,
+      tagline: 'OLD TAGLINE',
+      vibe_statement: 'Old statement for refreshImages skip coverage.',
+      model_used: 'test',
+      source_data_hash: matchingHash,
+    })
+
+    const mockService = new MockVibesService()
+    let fetchCalls = 0
+
+    const result = await backfillVibes(
+      {
+        limit: 10,
+        batchSize: 10,
+        delayMs: 0,
+        force: false,
+        propertyIds: [property.id],
+        refreshImages: true,
+        forceImages: false,
+        minImages: 10,
+        imageDelayMs: 0,
+      },
+      {
+        supabase: supabaseAdmin,
+        vibesService: mockService,
+        rapidApiKey: 'test',
+        rapidApiHost: 'us-housing-market-data1.p.rapidapi.com',
+        fetchZillowImageUrls: async () => {
+          fetchCalls++
+          return []
+        },
+        logger: silentLogger,
+      }
+    )
+
+    expect(result.attempted).toBe(1)
+    expect(result.success).toBe(0)
+    expect(result.failed).toBe(0)
+    expect(result.skipped).toBe(1)
+    expect(mockService.calls).toHaveLength(0)
+    expect(fetchCalls).toBe(0)
+  })
+
   it('records failures and does not upsert vibes for failed properties', async () => {
     const property = makePropertyInsert({
       images: ['https://example.com/0.jpg'],

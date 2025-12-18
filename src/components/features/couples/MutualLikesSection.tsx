@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Heart,
@@ -19,6 +19,7 @@ import { MutualLikesBadge } from './MutualLikesBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/utils/toast'
 import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
+import { useMutualLikes } from '@/hooks/useCouples'
 
 interface MutualLike {
   property_id: string
@@ -27,6 +28,8 @@ interface MutualLike {
     price: number
     bedrooms: number
     bathrooms: number
+    images?: string[]
+    // Backward-compat for older payloads
     image_urls?: string[]
   }
   liked_by_count: number
@@ -43,93 +46,58 @@ interface MutualLikesSectionProps {
 }
 
 export function MutualLikesSection({
-  userId,
   className = '',
   mutualLikes: propMutualLikes,
   isLoading: propIsLoading,
   error: propError,
 }: MutualLikesSectionProps) {
-  const [stateMutualLikes, setStateMutualLikes] = useState<MutualLike[]>([])
-  const [stateLoading, setStateLoading] = useState(true)
-  const [stateError, setStateError] = useState<string | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const isServerRender = typeof window === 'undefined'
+  const usingExternalState =
+    propMutualLikes !== undefined ||
+    propIsLoading !== undefined ||
+    propError !== undefined
 
-  // Use props if provided, otherwise use state
-  const mutualLikes =
-    propMutualLikes !== undefined ? propMutualLikes : stateMutualLikes
-  const loading = propIsLoading !== undefined ? propIsLoading : stateLoading
-  const error = propError !== undefined ? propError : stateError
+  const query = useMutualLikes()
 
-  const fetchMutualLikes = useCallback(async () => {
-    try {
-      setStateLoading(true)
-      setStateError(null)
+  // `useMutualLikes` is disabled during SSR to avoid unauthenticated server fetches.
+  // Render the same loading state on the server to prevent hydration mismatches.
+  const shouldForceLoading = !usingExternalState && isServerRender
 
-      const response = await fetch('/api/couples/mutual-likes')
-
-      if (response.status === 401) {
-        toast.authRequired()
-        throw new Error('Please sign in again')
-      }
-
-      if (response.status === 403) {
-        toast.householdRequired()
-        throw new Error('Join a household to see mutual likes')
-      }
-
-      if (!response.ok) {
-        if (response.status >= 500) {
-          throw new Error('Server error - please try again later')
-        }
-        throw new Error('Failed to fetch mutual likes')
-      }
-
-      const data = await response.json()
-      setStateMutualLikes(data.mutualLikes || [])
-
-      // Success toast on retry
-      if (retryCount > 0) {
-        toast.success('Mutual likes loaded successfully!')
-      }
-    } catch (err) {
-      console.error('Error fetching mutual likes:', err)
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load mutual likes'
-      setStateError(errorMessage)
-
-      // Show appropriate toast
-      if (
-        errorMessage.includes('fetch') ||
-        errorMessage.includes('network') ||
-        !navigator.onLine
-      ) {
-        toast.networkError()
-      } else if (
-        !errorMessage.includes('sign in') &&
-        !errorMessage.includes('household')
-      ) {
-        toast.error('Failed to load mutual likes', errorMessage)
-      }
-    } finally {
-      setStateLoading(false)
-    }
-  }, [retryCount])
-
-  const handleRetry = () => {
-    setRetryCount((prev) => prev + 1)
-    fetchMutualLikes()
-  }
+  const mutualLikes: MutualLike[] =
+    propMutualLikes ??
+    ((shouldForceLoading ? [] : (query.data ?? [])) as MutualLike[])
+  const loading = propIsLoading ?? (shouldForceLoading ? true : query.isLoading)
+  const error =
+    propError ??
+    (shouldForceLoading ? null : query.error ? query.error.message : null)
 
   useEffect(() => {
-    // Only fetch if props are not provided
-    if (
-      propMutualLikes === undefined &&
-      propIsLoading === undefined &&
-      propError === undefined
-    ) {
-      fetchMutualLikes()
+    if (usingExternalState) return
+    if (!query.error) return
+
+    const message = query.error.message || 'Failed to load mutual likes'
+    if (message.includes('sign in')) {
+      toast.authRequired()
+      return
     }
-  }, [userId, propMutualLikes, propIsLoading, propError, fetchMutualLikes])
+
+    if (message.includes('household')) {
+      toast.householdRequired()
+      return
+    }
+
+    if (message.toLowerCase().includes('network') || !navigator.onLine) {
+      toast.networkError()
+      return
+    }
+
+    toast.error('Failed to load mutual likes', message)
+  }, [query.error, usingExternalState])
+
+  const handleRetry = () => {
+    if (usingExternalState) return
+    query.refetch()
+  }
 
   if (loading) {
     return (
@@ -365,12 +333,14 @@ export function MutualLikesSection({
                 transition: { duration: 0.2 },
               }}
             >
-              <Link href={`/properties/${like.property_id}`}>
+              <Link
+                href={`/properties/${like.property_id}?returnTo=/dashboard`}
+              >
                 <div className="group hover:border-couples-primary/30 relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage
-                        src={like.property?.image_urls}
+                        src={like.property?.images || like.property?.image_urls}
                         alt={like.property?.address || 'Property'}
                         fill
                         className="object-cover"

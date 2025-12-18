@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { CouplesService } from '@/lib/services/couples'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function DELETE(request: NextRequest) {
       .from('user_property_interactions')
       .delete()
       .eq('user_id', user.id)
-      .select('id')
+      .select('id, household_id')
 
     type DeleteResult = Awaited<typeof deletePromise>
 
@@ -53,6 +54,13 @@ export async function DELETE(request: NextRequest) {
       console.error('[Interactions RESET] Error:', error)
       return ApiErrorHandler.serverError('Failed to reset interactions', error)
     }
+
+    const householdIdsToClear = new Set(
+      (deletedRows ?? [])
+        .map((row) => row.household_id)
+        .filter((id): id is string => Boolean(id))
+    )
+    householdIdsToClear.forEach((id) => CouplesService.clearHouseholdCache(id))
 
     return ApiErrorHandler.success({
       deleted: true,

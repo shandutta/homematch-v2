@@ -403,29 +403,25 @@ test.describe('Authentication Flow E2E Tests', () => {
       await page.goto('/login')
       await page.waitForLoadState('domcontentloaded')
 
+      const emailInput = page.getByTestId('email-input')
+      const passwordInput = page.getByTestId('password-input')
+      const submitButton = page.getByTestId('signin-button')
+
       // Tab navigation should work
       await page.keyboard.press('Tab')
 
       // Should focus on first input (email)
-      const focusedElement = page.locator(':focus')
-      const inputType = await focusedElement.getAttribute('type')
-      expect(['email', 'text']).toContain(inputType)
+      await expect(emailInput).toBeFocused()
 
       await page.keyboard.press('Tab')
 
       // Should focus on password input
-      const secondFocused = page.locator(':focus')
-      const secondType = await secondFocused.getAttribute('type')
-      expect(secondType).toBe('password')
+      await expect(passwordInput).toBeFocused()
 
       await page.keyboard.press('Tab')
 
       // Should focus on submit button
-      const thirdFocused = page.locator(':focus')
-      const tagName = await thirdFocused.evaluate((el) =>
-        el.tagName.toLowerCase()
-      )
-      expect(tagName).toBe('button')
+      await expect(submitButton).toBeFocused()
     })
 
     test('handles screen reader announcements for errors', async ({ page }) => {

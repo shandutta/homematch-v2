@@ -23,7 +23,7 @@ jest.mock('@/lib/supabase/server', () => ({
 const mockFrom = jest.fn()
 const mockSelect = jest.fn()
 const mockLimit = jest.fn()
-const mockSingle = jest.fn()
+const mockMaybeSingle = jest.fn()
 let supabaseMock: any
 
 describe('GET /api/health', () => {
@@ -33,13 +33,13 @@ describe('GET /api/health', () => {
       from: mockFrom,
       select: mockSelect,
       limit: mockLimit,
-      single: mockSingle,
+      maybeSingle: mockMaybeSingle,
     }
     createApiClientMock.mockReturnValue(supabaseMock)
     mockFrom.mockReturnValue(supabaseMock)
     mockSelect.mockReturnValue(supabaseMock)
     mockLimit.mockReturnValue(supabaseMock)
-    mockSingle.mockResolvedValue({ error: null })
+    mockMaybeSingle.mockResolvedValue({ error: null })
   })
 
   test('returns healthy response when DB connectivity succeeds', async () => {
@@ -52,7 +52,7 @@ describe('GET /api/health', () => {
   })
 
   test('returns degraded response when DB connectivity fails', async () => {
-    mockSingle.mockResolvedValueOnce({ error: { message: 'db down' } })
+    mockMaybeSingle.mockResolvedValueOnce({ error: { message: 'db down' } })
 
     await healthGet({} as any)
     const [body, init] = jsonMock.mock.calls.at(-1)!

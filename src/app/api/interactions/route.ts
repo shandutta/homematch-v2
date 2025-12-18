@@ -15,6 +15,7 @@ import {
   mapInteractionTypeToDb,
   normalizeInteractionType,
 } from '@/lib/utils/interaction-type'
+import { CouplesService } from '@/lib/services/couples'
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,6 +65,23 @@ export async function POST(request: NextRequest) {
 
     const dbInteractionType = mapInteractionTypeToDb(normalizedType)
 
+    // Attach household_id for couples features (mutual likes, activity, stats)
+    // Best-effort: if the profile is missing or inaccessible, fall back to null.
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('household_id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profileError) {
+      console.warn(
+        '[Interactions API] Failed to fetch user household_id:',
+        profileError.message
+      )
+    }
+
+    const householdId = userProfile?.household_id ?? null
+
     // Clear any previous interaction for this user/property to enforce a single definitive state
     const { error: deleteError } = await supabase
       .from('user_property_interactions')
@@ -84,6 +102,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.id,
         property_id: propertyId,
+        household_id: householdId,
         interaction_type: dbInteractionType,
       })
       .select()
@@ -100,6 +119,10 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to record interaction' },
         { status: 500 }
       )
+    }
+
+    if (householdId) {
+      CouplesService.clearHouseholdCache(householdId)
     }
 
     return ApiErrorHandler.success({ interaction: newInteraction })
@@ -347,6 +370,13 @@ export async function DELETE(request: NextRequest) {
         '[Interactions DELETE] No rows deleted - interaction may not exist or RLS blocked'
       )
     }
+
+    const householdIdsToClear = new Set(
+      (deletedRows ?? [])
+        .map((row) => row.household_id)
+        .filter((id): id is string => Boolean(id))
+    )
+    householdIdsToClear.forEach((id) => CouplesService.clearHouseholdCache(id))
 
     return ApiErrorHandler.success({
       deleted: true,

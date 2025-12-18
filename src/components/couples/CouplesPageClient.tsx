@@ -101,7 +101,21 @@ export function CouplesPageClient() {
         console.error('[Couples] Household fetch error:', householdError)
       }
 
-      const householdUserCount = household?.user_count || 1
+      let householdUserCount = household?.user_count ?? 1
+
+      // `households.user_count` can drift (e.g. seed/test data or older joins).
+      // If it looks like the user is alone, double-check membership via profiles.
+      if (householdUserCount < 2) {
+        const { count: memberCount, error: memberCountError } = await supabase
+          .from('user_profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('household_id', userProfile.household_id)
+
+        if (!memberCountError && typeof memberCount === 'number') {
+          householdUserCount = Math.max(householdUserCount, memberCount)
+        }
+      }
+
       if (householdUserCount < 2) {
         setUserHouseholdStatus('waiting-partner')
         return

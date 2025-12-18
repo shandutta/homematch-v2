@@ -1,79 +1,102 @@
-<svg width="400" height="350" viewBox="0 0 400 350" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background gradient -->
+<svg
+  width="400"
+  height="350"
+  viewBox="0 0 400 350"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
   <defs>
-    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#fce4ec;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f8bbd9;stop-opacity:1" />
+    <linearGradient
+      id="bg"
+      x1="0"
+      y1="0"
+      x2="400"
+      y2="350"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#0c0a09" />
+      <stop offset="1" stop-color="#1c1917" />
     </linearGradient>
-    <linearGradient id="house3" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#fff8e1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f0f4c3;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="roof3" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#2e7d32;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1b5e20;stop-opacity:1" />
-    </linearGradient>
+
+    <radialGradient
+      id="glow"
+      cx="0"
+      cy="0"
+      r="1"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(310 85) rotate(90) scale(190 260)"
+    >
+      <stop offset="0" stop-color="#a78bfa" stop-opacity="0.16" />
+      <stop offset="0.6" stop-color="#a78bfa" stop-opacity="0.05" />
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient
+      id="vignette"
+      cx="0"
+      cy="0"
+      r="1"
+      gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(200 175) rotate(90) scale(220 280)"
+    >
+      <stop offset="0" stop-color="#000000" stop-opacity="0" />
+      <stop offset="1" stop-color="#000000" stop-opacity="0.55" />
+    </radialGradient>
+
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path
+        d="M36 0H0V36"
+        fill="none"
+        stroke="#ffffff"
+        stroke-opacity="0.08"
+        stroke-width="1"
+      />
+    </pattern>
   </defs>
-  
-  <!-- Sky background -->
-  <rect width="400" height="350" fill="url(#bg3)"/>
-  
-  <!-- Ground -->
-  <rect x="0" y="270" width="400" height="80" fill="#81c784"/>
-  
-  <!-- Multi-level house -->
-  <!-- Lower level -->
-  <rect x="80" y="200" width="120" height="80" fill="url(#house3)" stroke="#c5e1a5" stroke-width="2"/>
-  <!-- Upper level -->
-  <rect x="140" y="160" width="120" height="80" fill="url(#house3)" stroke="#c5e1a5" stroke-width="2"/>
-  
-  <!-- Roofs -->
-  <polygon points="70,200 80,180 200,180 210,200" fill="url(#roof3)" stroke="#1b5e20" stroke-width="2"/>
-  <polygon points="120,160 140,140 260,140 280,160" fill="url(#roof3)" stroke="#1b5e20" stroke-width="2"/>
-  
-  <!-- Chimney -->
-  <rect x="240" y="120" width="15" height="30" fill="#795548" stroke="#5d4037" stroke-width="1"/>
-  <rect x="235" y="115" width="25" height="8" fill="#8d6e63"/>
-  
-  <!-- Main entrance -->
-  <rect x="160" y="220" width="40" height="60" fill="#6d4c41" stroke="#5d4037" stroke-width="2"/>
-  <circle cx="190" cy="250" r="3" fill="#ffeb3b"/>
-  
-  <!-- Windows -->
-  <!-- Ground floor -->
-  <rect x="100" y="220" width="30" height="30" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <rect x="220" y="220" width="30" height="30" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  
-  <!-- Upper floor -->
-  <rect x="160" y="180" width="30" height="25" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <rect x="210" y="180" width="30" height="25" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  
-  <!-- Window details -->
-  <line x1="115" y1="220" x2="115" y2="250" stroke="#1976d2" stroke-width="1"/>
-  <line x1="100" y1="235" x2="130" y2="235" stroke="#1976d2" stroke-width="1"/>
-  <line x1="235" y1="220" x2="235" y2="250" stroke="#1976d2" stroke-width="1"/>
-  <line x1="220" y1="235" x2="250" y2="235" stroke="#1976d2" stroke-width="1"/>
-  
-  <!-- Landscaping -->
-  <!-- Flower bed -->
-  <ellipse cx="320" cy="290" rx="40" ry="15" fill="#4caf50"/>
-  <circle cx="310" cy="285" r="3" fill="#e91e63"/>
-  <circle cx="320" cy="282" r="4" fill="#ff5722"/>
-  <circle cx="330" cy="285" r="3" fill="#9c27b0"/>
-  <circle cx="325" cy="290" r="3" fill="#ffeb3b"/>
-  
-  <!-- Tree -->
-  <ellipse cx="50" cy="220" rx="20" ry="25" fill="#388e3c"/>
-  <rect x="47" y="245" width="6" height="25" fill="#8d6e63"/>
-  
-  <!-- Pathway -->
-  <ellipse cx="200" cy="310" rx="80" ry="20" fill="#bcaaa4"/>
-  
-  <!-- Decorative bushes -->
-  <circle cx="280" cy="250" r="12" fill="#4caf50"/>
-  <circle cx="120" cy="260" r="10" fill="#4caf50"/>
-  
-  <!-- Birds -->
-  <path d="M 320 80 Q 325 75 330 80" stroke="#424242" stroke-width="2" fill="none"/>
-  <path d="M 335 75 Q 340 70 345 75" stroke="#424242" stroke-width="2" fill="none"/>
+
+  <rect width="400" height="350" fill="url(#bg)" />
+  <rect width="400" height="350" fill="url(#glow)" />
+  <rect width="400" height="350" fill="url(#grid)" opacity="0.3" />
+  <rect width="400" height="350" fill="url(#vignette)" />
+
+  <g opacity="0.9">
+    <path
+      d="M92 182L200 94L308 182"
+      stroke="#f5f5f4"
+      stroke-opacity="0.74"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M124 174V274H276V174"
+      stroke="#f5f5f4"
+      stroke-opacity="0.74"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M189 274V233C189 225 195 219 203 219H208C215 219 221 225 221 233V274"
+      stroke="#f5f5f4"
+      stroke-opacity="0.68"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M154 202H188V230H154V202Z"
+      stroke="#f5f5f4"
+      stroke-opacity="0.45"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M212 202H246V230H212V202Z"
+      stroke="#f5f5f4"
+      stroke-opacity="0.45"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+  </g>
 </svg>

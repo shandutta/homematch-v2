@@ -102,11 +102,13 @@ export async function GET(request: NextRequest) {
       ])
 
       if (mutualLikes.length === 0) {
+        const totalTime = Date.now() - startTime
         return NextResponse.json({
           mutualLikes: [],
           performance: {
-            totalTime: Date.now() - startTime,
-            cached: false,
+            totalTime,
+            cached: totalTime < 100, // Likely cached if very fast
+            count: 0,
           },
         })
       }

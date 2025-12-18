@@ -9,7 +9,7 @@ import {
   TEST_USERS,
   TEST_TIMEOUTS,
 } from '../fixtures/test-data'
-import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 
 // Browser-specific clipboard helpers
 async function grantClipboardPermissions(context: any, browserName: string) {
@@ -44,7 +44,9 @@ test.describe('Household Clipboard Functionality', () => {
   let testUser: any
   const ensureHouseholdAvailable = async (page: any) => {
     // Wait for either the copy button OR the create form to appear
-    const copyButton = page.locator(TEST_SELECTORS.copyButton)
+    const copyButton = page.getByRole('button', {
+      name: /copy household code/i,
+    })
     const createInput = page.locator(TEST_SELECTORS.householdNameInput)
 
     // Check if we need to switch tabs first
@@ -113,7 +115,9 @@ test.describe('Household Clipboard Functionality', () => {
       expect(cleanId.length).toBeGreaterThan(0)
 
       // 2. Click copy
-      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      const copyButton = page.getByRole('button', {
+        name: /copy household code/i,
+      })
       await copyButton.click()
 
       // 3. Verify UI feedback (toast may be disabled in test mode)
@@ -142,7 +146,9 @@ test.describe('Household Clipboard Functionality', () => {
       await context.clearPermissions()
 
       await page.reload()
-      const copyButton = page.locator(TEST_SELECTORS.copyButton)
+      const copyButton = page.getByRole('button', {
+        name: /copy household code/i,
+      })
       await ensureHouseholdAvailable(page)
       await copyButton.click()
 
@@ -161,7 +167,7 @@ test.describe('Household Clipboard Functionality', () => {
       const householdIdElement = page.locator(TEST_SELECTORS.householdId)
       const cleanId = (await householdIdElement.textContent())?.trim()
 
-      await page.locator(TEST_SELECTORS.copyButton).click()
+      await page.getByRole('button', { name: /copy household code/i }).click()
 
       // Navigate away
       await page.goto(TEST_ROUTES.app.dashboard)
@@ -177,15 +183,13 @@ test.describe('Household Clipboard Functionality', () => {
   })
 
   test.describe('User without Household', () => {
-    test('copy button is hidden', async ({ page }, testInfo) => {
+    test('copy button is hidden', async ({ page }, _testInfo) => {
       // Use a fresh user specifically for this test
       // We manually log in to ensure we have the "fresh" user state
       const freshUser = TEST_USERS.freshUser
-      const helper = createWorkerAuthHelper(page, testInfo)
-
-      // Login with fresh user (who has no household)
-      // We don't use the shared worker auth here because we need a specific user state
-      await helper.auth.login(freshUser)
+      const auth = createAuthHelper(page)
+      await auth.authenticateWithStorageState(99, freshUser)
+      await auth.verifyAuthenticated()
 
       await page.goto(TEST_ROUTES.app.profile)
       await page.waitForLoadState('domcontentloaded')
@@ -202,7 +206,9 @@ test.describe('Household Clipboard Functionality', () => {
       ).toBeVisible()
 
       // Verify copy button does NOT exist
-      await expect(page.locator(TEST_SELECTORS.copyButton)).not.toBeVisible()
+      await expect(
+        page.getByRole('button', { name: /copy household code/i })
+      ).toHaveCount(0)
     })
   })
 })

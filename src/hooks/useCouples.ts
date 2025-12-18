@@ -8,6 +8,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { QUERY_STALE_TIMES } from '@/lib/query/config'
+import type { HouseholdActivity } from '@/lib/services/couples'
 
 /**
  * Represents a property that has been liked by multiple household members
@@ -26,6 +27,8 @@ export interface MutualLike {
     bedrooms: number
     /** Number of bathrooms */
     bathrooms: number
+    /** Array of property image URLs (current payload) */
+    images?: string[]
     /** Array of property image URLs */
     image_urls?: string[]
   }
@@ -68,12 +71,84 @@ export function useMutualLikes() {
         credentials: 'include',
       })
       if (!response.ok) {
-        throw new Error('Failed to fetch mutual likes')
+        if (response.status === 401) {
+          throw new Error('Please sign in to view mutual likes')
+        }
+
+        if (response.status >= 500) {
+          throw new Error('Server error - please try again later')
+        }
+
+        let apiError: string | null = null
+        try {
+          const data = await response.json()
+          if (typeof data?.error === 'string' && data.error.length > 0) {
+            apiError = data.error
+          }
+        } catch {
+          // ignore parsing errors
+        }
+
+        throw new Error(apiError ?? 'Failed to fetch mutual likes')
       }
       const data = await response.json()
       return data.mutualLikes || []
     },
     staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY, // Same as interactions for consistency
+    enabled: typeof window !== 'undefined', // Only run on client side
+  })
+}
+
+/**
+ * Hook to fetch and manage household activity for the current user's household
+ *
+ * @param {number} limit - Maximum number of activities to fetch
+ * @param {number} offset - Number of records to skip for pagination
+ * @returns {UseQueryResult<HouseholdActivity[], Error>} React Query result with activity data
+ *
+ * @description
+ * Fetches the household activity timeline (likes, passes, views) for the current user.
+ * Results are cached and refreshed based on stale time configuration.
+ */
+export function useHouseholdActivity(limit = 20, offset = 0) {
+  return useQuery<HouseholdActivity[], Error>({
+    queryKey: [...couplesKeys.activity(), { limit, offset }],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        offset: offset.toString(),
+      })
+
+      const response = await fetch(`/api/couples/activity?${params}`, {
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please sign in to view household activity')
+        }
+
+        if (response.status >= 500) {
+          throw new Error('Server error - please try again later')
+        }
+
+        let apiError: string | null = null
+        try {
+          const data = await response.json()
+          if (typeof data?.error === 'string' && data.error.length > 0) {
+            apiError = data.error
+          }
+        } catch {
+          // ignore parsing errors
+        }
+
+        throw new Error(apiError ?? 'Failed to fetch household activity')
+      }
+
+      const data = await response.json()
+      return data.activity || []
+    },
+    staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY,
     enabled: typeof window !== 'undefined', // Only run on client side
   })
 }

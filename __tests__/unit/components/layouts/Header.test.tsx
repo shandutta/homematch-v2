@@ -2,12 +2,15 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Header } from '@/components/layouts/Header'
 
+const mockUsePathname = jest.fn(() => '/dashboard')
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
     refresh: jest.fn(),
   }),
+  usePathname: () => mockUsePathname(),
 }))
 
 // Mock the useCurrentUserAvatar hook to avoid Supabase auth calls
@@ -47,6 +50,10 @@ jest.mock('framer-motion', () => ({
 }))
 
 describe('Header', () => {
+  beforeEach(() => {
+    mockUsePathname.mockReturnValue('/dashboard')
+  })
+
   test('renders brand and primary navigation links', () => {
     render(<Header />)
 
@@ -85,6 +92,20 @@ describe('Header', () => {
     expect(
       buttons.find((button) => button.getAttribute('aria-expanded') !== null)
     ).toBeInTheDocument()
+  })
+
+  test('sets aria-current on the active navigation link', () => {
+    mockUsePathname.mockReturnValue('/dashboard/viewed')
+
+    render(<Header />)
+
+    expect(screen.getByRole('link', { name: /Viewed/i })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+    expect(screen.getByRole('link', { name: /Liked/i })).not.toHaveAttribute(
+      'aria-current'
+    )
   })
 
   test('navigation links are accessible and clickable', async () => {
