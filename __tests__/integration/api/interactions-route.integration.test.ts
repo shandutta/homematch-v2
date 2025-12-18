@@ -277,7 +277,7 @@ describe.sequential('Integration: /api/interactions route', () => {
           id: householdId,
           name: `Interactions Household Test ${householdId.slice(0, 8)}`,
           created_by: testUserId,
-          user_count: 1,
+          user_count: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })

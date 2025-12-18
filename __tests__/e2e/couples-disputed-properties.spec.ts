@@ -182,7 +182,7 @@ test.describe('Couples disputed properties (real UI)', () => {
         id: householdId,
         name: `PW Dispute ${householdId.slice(0, 8)}`,
         created_by: partner1Id,
-        user_count: 2,
+        user_count: 0,
         created_at: now,
         updated_at: now,
       })

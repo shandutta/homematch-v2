@@ -393,7 +393,7 @@ describe('E2E: /api/couples/mutual-likes', () => {
               id: householdId,
               name: `E2E Mutual Likes ${householdId.slice(0, 8)}`,
               created_by: test1.id,
-              user_count: 2,
+              user_count: 0,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
