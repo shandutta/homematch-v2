@@ -382,6 +382,25 @@ const gitCommit = (message) => {
     process.exit(1)
   }
 
+  const stagedDiff = spawnSync('git', ['diff', '--cached', '--quiet'], {
+    cwd: repoRoot,
+  })
+
+  // `git diff --cached --quiet` returns:
+  // - 0 when there are NO staged changes
+  // - 1 when there ARE staged changes
+  if (stagedDiff.status === 0) {
+    log('No pending changes. Nothing to commit.')
+    log('exit_code=0 status=success')
+    return false
+  }
+  if (stagedDiff.status !== 1) {
+    console.error(
+      `[${timestamp()}] Failed to check staged changes; aborting commit.`
+    )
+    process.exit(stagedDiff.status ?? 1)
+  }
+
   const commitEnv = { ...process.env }
   // Skip pre-commit hook since we already ran the checks in runChecksWithCodex()
   commitEnv.SKIP_SIMPLE_GIT_HOOKS = '1'
@@ -394,6 +413,8 @@ const gitCommit = (message) => {
   if (commit.status !== 0) {
     process.exit(commit.status ?? 1)
   }
+
+  return true
 }
 
 const gitPush = () => {
@@ -571,21 +592,33 @@ const main = async () => {
 
   if (!hasChanges()) {
     log('No pending changes. Nothing to commit.')
+    log('exit_code=0 status=success')
     return
   }
 
   log('Running pre-commit checks (with Codex auto-fix if needed)...')
   runChecksWithCodex()
 
+  // If format/lint/type-check fixed the working tree back to clean, skip the LLM call entirely.
+  if (!hasChanges()) {
+    log('No pending changes. Nothing to commit.')
+    log('exit_code=0 status=success')
+    return
+  }
+
   const context = getCommitContext()
   log('Generating commit message via OpenRouter...')
   const commitMessage = await callOpenRouter(context)
 
   log(`AI-generated commit message: ${commitMessage}`)
-  gitCommit(commitMessage)
+  const committed = gitCommit(commitMessage)
+  if (!committed) {
+    return
+  }
   gitPush()
 
   log('Auto-commit completed and pushed successfully')
+  log('exit_code=0 status=success')
 }
 
 main().catch((error) => {
