@@ -86,6 +86,17 @@ test.describe('Couples invites (edge cases)', () => {
     const token = crypto.randomUUID()
     const now = new Date()
 
+    const cleanupFailures: string[] = []
+    const safeCleanup = async (label: string, fn: () => Promise<void>) => {
+      try {
+        await fn()
+      } catch (err) {
+        cleanupFailures.push(
+          `${label}: ${err instanceof Error ? err.message : String(err)}`
+        )
+      }
+    }
+
     await service.from('households').insert({
       id: householdId,
       name: `PW Invite Expired ${householdId.slice(0, 8)}`,
@@ -109,7 +120,7 @@ test.describe('Couples invites (edge cases)', () => {
     try {
       await page.goto(`/invite/${token}`, { waitUntil: 'domcontentloaded' })
 
-      await expect(page.getByRole('heading', { name: /join/i })).toBeVisible()
+      await expect(page.getByText(/^join /i)).toBeVisible()
 
       await expect(page.getByText(/invitation status/i)).toBeVisible()
       await expect(page.getByText(/^expired$/i)).toBeVisible()
@@ -124,20 +135,26 @@ test.describe('Couples invites (edge cases)', () => {
         page.getByRole('link', { name: /sign in to accept/i })
       ).toHaveCount(0)
     } finally {
-      await service
-        .from('household_invitations')
-        .delete()
-        .eq('household_id', householdId)
-        .catch(() => {})
-      await service
-        .from('households')
-        .delete()
-        .eq('id', householdId)
-        .catch(() => {})
+      await safeCleanup('delete invite', async () => {
+        await service
+          .from('household_invitations')
+          .delete()
+          .eq('household_id', householdId)
+      })
+      await safeCleanup('delete household', async () => {
+        await service.from('households').delete().eq('id', householdId)
+      })
+
+      if (cleanupFailures.length) {
+        console.warn(
+          '[Couples Invite Expired] Cleanup warnings:\n' +
+            cleanupFailures.join('\n')
+        )
+      }
     }
   })
 
-  for (const status of ['revoked', 'accepted'] as const) {
+  for (const status of ['cancelled', 'accepted'] as const) {
     test(`${status} invite hides accept CTA and sign-in CTA`, async ({
       page,
     }, testInfo) => {
@@ -148,6 +165,17 @@ test.describe('Couples invites (edge cases)', () => {
       const householdId = crypto.randomUUID()
       const token = crypto.randomUUID()
       const now = new Date()
+
+      const cleanupFailures: string[] = []
+      const safeCleanup = async (label: string, fn: () => Promise<void>) => {
+        try {
+          await fn()
+        } catch (err) {
+          cleanupFailures.push(
+            `${label}: ${err instanceof Error ? err.message : String(err)}`
+          )
+        }
+      }
 
       await service.from('households').insert({
         id: householdId,
@@ -187,16 +215,22 @@ test.describe('Couples invites (edge cases)', () => {
           page.getByRole('link', { name: /sign in to accept/i })
         ).toHaveCount(0)
       } finally {
-        await service
-          .from('household_invitations')
-          .delete()
-          .eq('household_id', householdId)
-          .catch(() => {})
-        await service
-          .from('households')
-          .delete()
-          .eq('id', householdId)
-          .catch(() => {})
+        await safeCleanup('delete invite', async () => {
+          await service
+            .from('household_invitations')
+            .delete()
+            .eq('household_id', householdId)
+        })
+        await safeCleanup('delete household', async () => {
+          await service.from('households').delete().eq('id', householdId)
+        })
+
+        if (cleanupFailures.length) {
+          console.warn(
+            `[Couples Invite ${status}] Cleanup warnings:\n` +
+              cleanupFailures.join('\n')
+          )
+        }
       }
     })
   }
@@ -236,6 +270,17 @@ test.describe('Couples invites (edge cases)', () => {
     const now = new Date()
 
     const auth = createAuthHelper(page)
+
+    const cleanupFailures: string[] = []
+    const safeCleanup = async (label: string, fn: () => Promise<void>) => {
+      try {
+        await fn()
+      } catch (err) {
+        cleanupFailures.push(
+          `${label}: ${err instanceof Error ? err.message : String(err)}`
+        )
+      }
+    }
 
     try {
       await service.from('households').insert([
@@ -315,36 +360,48 @@ test.describe('Couples invites (edge cases)', () => {
       expect(inviteRecord?.status).toBe('pending')
       expect(inviteRecord?.accepted_by).toBeNull()
     } finally {
-      await service
-        .from('household_invitations')
-        .delete()
-        .in('household_id', [householdA, householdB])
-        .catch(() => {})
-      await service
-        .from('households')
-        .delete()
-        .in('id', [householdA, householdB])
-        .catch(() => {})
+      await safeCleanup('restore inviter profile', async () => {
+        const profile = startingProfileById.get(inviterId)
+        await service
+          .from('user_profiles')
+          .update({
+            household_id: profile?.household_id ?? null,
+            preferences: profile?.preferences ?? null,
+          })
+          .eq('id', inviterId)
+      })
 
-      await service
-        .from('user_profiles')
-        .update({
-          household_id:
-            startingProfileById.get(inviterId)?.household_id ?? null,
-          preferences: startingProfileById.get(inviterId)?.preferences ?? null,
-        })
-        .eq('id', inviterId)
-        .catch(() => {})
+      await safeCleanup('restore invitee profile', async () => {
+        const profile = startingProfileById.get(inviteeId)
+        await service
+          .from('user_profiles')
+          .update({
+            household_id: profile?.household_id ?? null,
+            preferences: profile?.preferences ?? null,
+          })
+          .eq('id', inviteeId)
+      })
 
-      await service
-        .from('user_profiles')
-        .update({
-          household_id:
-            startingProfileById.get(inviteeId)?.household_id ?? null,
-          preferences: startingProfileById.get(inviteeId)?.preferences ?? null,
-        })
-        .eq('id', inviteeId)
-        .catch(() => {})
+      await safeCleanup('delete invitations', async () => {
+        await service
+          .from('household_invitations')
+          .delete()
+          .in('household_id', [householdA, householdB])
+      })
+
+      await safeCleanup('delete households', async () => {
+        await service
+          .from('households')
+          .delete()
+          .in('id', [householdA, householdB])
+      })
+
+      if (cleanupFailures.length) {
+        console.warn(
+          '[Couples Invite Linked] Cleanup warnings:\n' +
+            cleanupFailures.join('\n')
+        )
+      }
     }
   })
 
