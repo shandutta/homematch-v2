@@ -1,5 +1,7 @@
 # E2E Test Fixes Implemented
 
+Note: This is a historical fixes summary. Confirm current Playwright status via `pnpm test:e2e` or CI.
+
 ## Summary
 
 Created comprehensive remediation plan and implemented critical fixes for the 143 failing E2E tests.
@@ -58,7 +60,7 @@ Created comprehensive remediation plan and implemented critical fixes for the 14
 **Files Created:**
 
 - `__tests__/e2e/REMEDIATION_PLAN.md` - Detailed 143-test failure analysis and fix strategy
-- `__tests__/e2e/FIXES_IMPLEMENTED.md` - This summary document
+- `docs/testing/e2e-fixes-implemented.md` - This summary document
 
 ## How to Use the Fixes
 

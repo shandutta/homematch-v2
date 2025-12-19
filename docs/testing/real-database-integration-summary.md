@@ -1,5 +1,7 @@
 # Real Database Integration Test Conversion Summary
 
+Note: This summary reflects a past conversion effort. Validate current tests and coverage in CI.
+
 ## Overview
 
 Successfully converted existing mock-based integration tests to use real database connections and TestDataFactory patterns. This improves test reliability, reduces maintenance overhead, and provides better coverage of actual system behavior.

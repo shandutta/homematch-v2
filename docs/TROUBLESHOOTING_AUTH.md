@@ -16,7 +16,7 @@ In Google Cloud Console, the **Authorized redirect URI** must be your **Supabase
 4. **It must match this format**:
    `https://<your-project-ref>.supabase.co/auth/v1/callback`
    _(You can find this exact URL in Supabase Dashboard -> Authentication -> Providers -> Google -> Callback URL)_
-5. **It should NOT be**: `https://homematch.pro/auth/callback` (This goes in Supabase, not Google).
+5. **It should NOT be**: `https://your-app-domain.com/auth/callback` (This goes in Supabase, not Google).
 
 ## 2. Email Verification Issues
 

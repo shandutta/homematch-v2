@@ -114,8 +114,6 @@ Location: `__tests__/utils/mock-helpers.ts`
 
 ## Test Status Summary
 
-- **Unit Tests**: 66/89 passing (74%)
-- **Integration Tests**: Many fail due to missing components or timeouts
-- **E2E Tests**: Need Playwright configuration
+Check current status in CI or by running `pnpm test` locally.
 
-The mocking system itself is NOT the problem - the tests are failing for other reasons.
+The mocking system itself is not the primary bottleneck; focus on the specific failing tests.

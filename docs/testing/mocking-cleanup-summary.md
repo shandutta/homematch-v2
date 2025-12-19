@@ -11,7 +11,7 @@
 ## What Was Kept (Actually Helpful)
 
 - ✅ `__tests__/utils/mock-helpers.ts` - Utility functions for customizing mocks
-- ✅ `__tests__/ACTUAL_MOCKING_STATUS.md` - Reality check documentation
+- ✅ `docs/testing/actual-mocking-status.md` - Reality check documentation
 - ✅ `__tests__/setupSupabaseMock.ts` - The ACTUAL working mock system
 
 ## Current Working System

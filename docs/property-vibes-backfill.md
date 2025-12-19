@@ -2,7 +2,7 @@
 
 ## What this does
 
-- Generates `property_vibes` rows for `properties` using a vision LLM (Qwen3-VL via OpenRouter).
+- Generates `property_vibes` rows for `properties` using a vision LLM (default `qwen/qwen3-vl-8b-instruct` via OpenRouter).
 - Optionally refreshes `properties.images` by fetching the full Zillow gallery via RapidAPI.
 - When `--refreshImages=true` and `--force=false`, it only regenerates vibes for properties that are missing, stale (source hash changed), or had images change during the refresh (so you don’t overwrite existing vibes / burn tokens unnecessarily).
 
@@ -25,6 +25,8 @@ Notes:
 - Don’t use angle brackets like `--propertyIds=<...>` in bash; `<` is shell redirection.
 - The script prints `supabaseHost=...` so you can confirm you’re pointed at prod.
 - If `OPENROUTER_API_KEY` isn’t in `.env.prod`, it can live in `.env.local` (the script loads `.env.local` as a non-overriding fallback for API keys).
+- Override the model with `OPENROUTER_MODEL` if needed.
+- Set `RAPIDAPI_HOST` if you are not using the default RapidAPI host.
 - A report is written to `.logs/backfill-vibes-report.json` and archived with a timestamp.
 
 ## Verify results (Supabase SQL Editor)

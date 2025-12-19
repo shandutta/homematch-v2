@@ -1,5 +1,7 @@
 # HomeMatch v2 Backend Refactoring Architecture
 
+Note: This document is a refactoring plan and may not reflect the current code state. Use the codebase as the source of truth.
+
 ## Executive Summary
 
 This document outlines the architectural foundation for safely refactoring the HomeMatch v2 backend while maintaining 100% backward compatibility. The refactoring targets four critical areas: PropertyService decomposition, error handling consolidation, filter builder simplification, and Supabase client unification.

@@ -9,7 +9,7 @@ We recommend **Resend** because it is developer-friendly, has a generous free ti
 ### Step 1: Create a Resend Account
 
 1. Go to [Resend.com](https://resend.com) and sign up.
-2. **Add a Domain**: You need a domain name (e.g., `homematch.pro`).
+2. **Add a Domain**: You need a domain name (e.g., `your-domain.com`).
    - Go to **Domains** -> **Add Domain**.
    - Follow the instructions to add the DNS records (DKIM, SPF, DMARC) to your DNS provider (GoDaddy, Namecheap, Vercel, etc.).
    - Wait for the domain to be **Verified**.
@@ -29,7 +29,7 @@ We recommend **Resend** because it is developer-friendly, has a generous free ti
 2. Navigate to **Project Settings** -> **Authentication** -> **SMTP Settings**.
 3. Toggle **Enable Custom SMTP** to **ON**.
 4. Fill in the details:
-   - **Sender Email**: `noreply@homematch.pro` (Must match your verified domain in Resend).
+   - **Sender Email**: `noreply@your-domain.com` (Must match your verified domain in Resend).
    - **Sender Name**: `HomeMatch`
    - **Host**: `smtp.resend.com`
    - **Port**: `465`
