@@ -1,7 +1,7 @@
 -- Persist couples "disputed property" resolutions so they don't reappear after refresh.
 
 CREATE TABLE IF NOT EXISTS household_property_resolutions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
   resolution_type TEXT NOT NULL CHECK (
@@ -76,4 +76,3 @@ CREATE POLICY "Household members can delete property resolutions"
       WHERE id = auth.uid()
     )
   );
-
