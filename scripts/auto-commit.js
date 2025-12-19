@@ -42,7 +42,7 @@ try {
  *   OPENROUTER_API_KEY  - API key from https://openrouter.ai
  *
  * Optional env vars:
- *   AUTO_COMMIT_MODEL   - Override OpenRouter model (default: openrouter/gpt-oss-20b)
+ *   AUTO_COMMIT_MODEL   - Override OpenRouter model (default: google/gemini-2.0-flash-exp:free)
  *   AUTO_COMMIT_PUSH    - Set to "false" to skip git push
  *   OPENROUTER_REFERER  - Referer header recommended by OpenRouter
  *   OPENROUTER_TITLE    - Title header recommended by OpenRouter

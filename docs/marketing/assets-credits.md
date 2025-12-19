@@ -1,6 +1,6 @@
 # Marketing image credits
 
-All images in this folder are safe-to-use marketing placeholders (not tied to any real listing). They were downloaded under CC0 / Public Domain terms and resized for web performance.
+All images in `public/images/marketing` are safe-to-use marketing placeholders (not tied to any real listing). They were downloaded under CC0 / Public Domain terms and resized for web performance.
 
 ## Files
 

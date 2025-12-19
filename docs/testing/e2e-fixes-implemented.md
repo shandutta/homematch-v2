@@ -14,7 +14,7 @@ Created comprehensive remediation plan and implemented critical fixes for the 14
 
 - `__tests__/mocks/propertyData.ts` - Comprehensive mock data for properties
 - `__tests__/fixtures/apiMocks.ts` - API interceptor utility with full mocking capabilities
-- `.env.test` - Environment configuration to enable mocking
+- `.env.test.local` - Environment configuration to enable mocking
 
 **Features:**
 
@@ -59,7 +59,6 @@ Created comprehensive remediation plan and implemented critical fixes for the 14
 
 **Files Created:**
 
-- `__tests__/e2e/REMEDIATION_PLAN.md` - Detailed 143-test failure analysis and fix strategy
 - `docs/testing/e2e-fixes-implemented.md` - This summary document
 
 ## How to Use the Fixes
@@ -170,7 +169,6 @@ await retry.auth(async () => {
 - `__tests__/fixtures/auth.ts` (MODIFIED)
 - `__tests__/fixtures/retry.ts` (MODIFIED)
 - `__tests__/e2e/properties-dashboard-fixed.spec.ts` (NEW)
-- `__tests__/e2e/REMEDIATION_PLAN.md` (NEW)
 - `.env.test` (NEW)
 
 ## Validation
