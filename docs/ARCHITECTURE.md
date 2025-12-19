@@ -4,7 +4,7 @@ Reading path: `docs/README.md` -> `docs/SETUP_GUIDE.md` -> `docs/ARCHITECTURE.md
 
 ## Overview
 
-HomeMatch is a Next.js App Router application backed by Supabase. The UI is React 19, the data layer is Supabase (Postgres + Auth + RLS), and the business logic lives in a dedicated service layer under `src/lib/services`.
+HomeMatch is a Next.js App Router application backed by Supabase. UI is React 19; the data layer is Supabase (Postgres + Auth + RLS); business logic lives in `src/lib/services`.
 
 For exact versions, see `package.json`.
 
@@ -24,10 +24,13 @@ src/
   app/                 Next.js App Router routes and layouts
   components/          UI components (features/ and ui/)
   lib/
-    api/               API helpers (errors, auth, clients)
+    api/               API helpers (auth, errors, clients)
     services/          Business logic services
     schemas/           Zod schemas
     supabase/          Supabase clients and factories
+    ingestion/         Zillow ingestion helpers
+    maps/              Maps proxy/config helpers
+    middleware/        Shared middleware (rate limiting)
     utils/             Shared utilities
   types/               TypeScript types
 supabase/              DB migrations, seed, and config
@@ -35,27 +38,34 @@ scripts/               Automation, ingestion, and ops scripts
 __tests__/             Unit, integration, and E2E tests
 ```
 
-## Application Layers
-
-### UI and Routing
+## Runtime and Routing
 
 - App Router pages live in `src/app`.
 - Shared UI components live in `src/components/ui`.
 - Feature components live in `src/components/features`.
+- Route handlers live under `src/app/api`.
 
-### Service Layer
+## Auth and Security
+
+- Auth is provided by Supabase.
+- `middleware.ts` protects authenticated routes.
+- RLS policies live in `supabase/migrations`.
+- API error normalization uses `src/lib/api/errors.ts`.
+- Rate limiting is handled in `src/lib/middleware/rateLimiter.ts`.
+
+## Service Layer
 
 Business logic is organized under `src/lib/services`:
 
-- `properties` (facade, search, CRUD, neighborhoods, geographic)
-- `interactions` (likes/pass/view tracking)
-- `couples` and `couples-middleware` (household flows and caching)
-- `users` / `users-client` (profile management)
-- `vibes` and `neighborhood-vibes` (LLM-based descriptions)
+- Properties: facade + search/CRUD/neighborhood/geographic services
+- Interactions: like/pass/view tracking and statistics
+- Couples: household flows, caching, and mutual likes
+- Users: profile management and client helpers
+- Vibes: OpenRouter-backed property and neighborhood descriptions
 
 The PropertyService uses a facade pattern (`src/lib/services/properties/facade.ts`) to allow gradual refactors without breaking callers.
 
-### Data Access
+## Data Access
 
 Supabase clients live in `src/lib/supabase`:
 
@@ -64,18 +74,11 @@ Supabase clients live in `src/lib/supabase`:
 - `service-role-client.ts` for admin operations
 - `factory.ts` for unified client creation
 
-### API Layer
-
-Route handlers live under `src/app/api`. Request validation uses Zod schemas in `src/lib/schemas`, and API errors are normalized via `src/lib/api/errors.ts`.
-
-### State Management
-
-- TanStack Query manages server state and caching.
-- Zustand holds client-only UI state.
+Zod schemas live in `src/lib/schemas` and are used for validation across API routes and forms.
 
 ## Database
 
-The schema lives in `supabase/migrations`. Seeds are in `supabase/seed.sql`, with migrated reference data in `migrated_data/`.
+The schema lives in `supabase/migrations`. Seeds are in `supabase/seed.sql`, with reference data in `migrated_data/`.
 
 Core tables include:
 
@@ -90,15 +93,13 @@ Core tables include:
 - `saved_searches`
 - `household_property_resolutions`
 
-## Background Jobs and Ingestion
+PostGIS is enabled for spatial queries.
 
-- Inngest libraries are present for background workflows.
+## Ingestion and Background Jobs
+
 - Zillow ingestion and status refresh scripts live in `scripts/`.
 - Vibes backfill flows are documented in `docs/property-vibes-backfill.md`.
-
-## Configuration
-
-Environment variables are documented in `.env.example`. Use `.env.local` for local dev and `.env.prod` for production settings.
+- Inngest libraries are present for background workflows (jobs may still be pending wiring).
 
 ## Related Docs
 

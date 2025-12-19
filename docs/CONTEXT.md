@@ -18,12 +18,14 @@ HomeMatch is an AI-assisted home discovery app that helps households shortlist p
 - Services: `src/lib/services`
 - Supabase clients: `src/lib/supabase`
 - Schemas: `src/lib/schemas`
+- Ingestion helpers: `src/lib/ingestion`
+- Maps helpers: `src/lib/maps`
 
 ## Current Focus
 
 - Property search UI and filtering
 - ML scoring and recommendations
 - Household invitations and shared decision lists
-- Background jobs
+- Background jobs and ingestion automation
 
 For deeper details, see `docs/ARCHITECTURE.md` and `docs/SETUP_GUIDE.md`.

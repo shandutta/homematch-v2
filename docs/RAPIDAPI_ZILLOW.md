@@ -37,6 +37,11 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com
 - `scripts/fetch-zillow-images.ts`
 - `scripts/update-seed-zillow-images.ts`
 
+## Client Locations
+
+- API client: `src/lib/api/zillow-client.ts`
+- Ingestion helpers: `src/lib/ingestion/`
+
 ## Rate Limits and Safety
 
 - Expect rate limits based on your RapidAPI plan.

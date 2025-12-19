@@ -1,6 +1,6 @@
 # Auto-commit (OpenRouter)
 
-The repo includes `scripts/auto-commit.js` which stages local changes, asks OpenRouter for a short Conventional Commit title, commits, and optionally pushes.
+The repo includes `scripts/auto-commit.js` which stages local changes, runs the pre-commit checks (with optional Codex auto-fix), asks OpenRouter for a short Conventional Commit title, commits, and optionally pushes.
 
 ## Requirements
 

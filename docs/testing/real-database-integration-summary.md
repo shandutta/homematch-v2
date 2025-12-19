@@ -188,12 +188,14 @@ const interactions = await queries.getUserInteractions(user.id)
 
 ```bash
 # Set environment variables first
-export NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+export SUPABASE_URL="http://localhost:54200"
+export NEXT_PUBLIC_SUPABASE_URL="http://localhost:54200"
+export SUPABASE_ANON_KEY="your-local-anon-key"
+export NEXT_PUBLIC_SUPABASE_ANON_KEY="your-local-anon-key"
 export SUPABASE_SERVICE_ROLE_KEY="your-service-key"
 
-# Run specific real database tests
-pnpm test __tests__/integration/api/couples/mutual-likes-real.test.ts
-pnpm test __tests__/integration/couples-frontend-real.test.tsx
+# Run integration suite
+pnpm test:integration
 ```
 
 ### Improved Mock Tests (No Setup Required)
@@ -212,22 +214,9 @@ pnpm test __tests__/integration/auth/login-flow-simplified.test.tsx
 4. **Performance**: Add performance benchmarks using real database timings
 5. **Documentation**: Create developer guide for writing real database tests
 
-## Files Modified/Created
+## Related Files
 
-### New Test Files
-
-- `__tests__/integration/api/couples/mutual-likes-real.test.ts` (Real DB)
-- `__tests__/integration/api/couples/mutual-likes-improved.test.ts` (Improved mocks)
-- `__tests__/integration/couples-frontend-real.test.tsx` (Real data frontend)
-- `__tests__/integration/auth/login-flow-simplified.test.tsx` (Simplified auth)
-
-### Existing Infrastructure Used
-
-- `__tests__/utils/test-data-factory.ts` (Test data creation)
-- `__tests__/utils/db-test-helpers.ts` (Database utilities)
-- `__tests__/integration/api/couples/activity-real.test.ts` (Reference example)
-
-## Summary
+Check `__tests__/integration` for the current suite, and `__tests__/utils/test-data-factory.ts` for the factory implementation.
 
 The conversion demonstrates a significant improvement in test quality and maintainability:
 

@@ -1,6 +1,6 @@
 # Testing Guide
 
-HomeMatch uses Jest for unit tests, Vitest for integration tests, and Playwright for E2E. The scripts in `package.json` are the source of truth for how tests run.
+HomeMatch uses Jest for unit tests, Vitest for integration tests, and Playwright for E2E. The scripts in `package.json` are the source of truth.
 
 ## Quick Start
 
@@ -10,6 +10,8 @@ pnpm test:unit            # Jest unit tests
 pnpm test:integration     # Vitest integration tests
 pnpm test:e2e             # Playwright E2E tests
 ```
+
+Note: `pnpm test` runs unit and integration tests in parallel, then runs E2E. Integration tests reset and seed the local database.
 
 ## Unit Tests (Jest)
 
@@ -52,6 +54,18 @@ Notes:
 
 - The Playwright wrapper sets `NEXT_PUBLIC_TEST_MODE=true`.
 - If you need to force a DB reset for E2E, run `pnpm test:integration` once to seed and set up the local DB.
+
+## Test Environment
+
+Use `.env.test.local` to override `.env.local` for tests. At minimum, provide:
+
+```env
+SUPABASE_URL=http://localhost:54200
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54200
+SUPABASE_ANON_KEY=your-local-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-local-service-key
+```
 
 ## Test Infrastructure Helpers
 

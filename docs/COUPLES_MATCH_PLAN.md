@@ -1,5 +1,7 @@
 # Couples Match — Functional Plan + Test Strategy
 
+Note: This document is a product spec and may drift from current implementation. Validate behavior against the codebase and tests.
+
 This document describes how the Couples Match experience should behave end-to-end (data model → APIs → UI), and how we validate it with minimal mocking.
 
 ## Product Goals

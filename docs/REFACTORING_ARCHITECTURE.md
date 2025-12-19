@@ -774,18 +774,16 @@ Average Response Time:       29.94ms     ✅ Sub-50ms target achieved
 # Disable all feature flags
 export FEATURE_NEW_PROPERTY_SERVICE=false
 export FEATURE_UNIFIED_CLIENT_FACTORY=false
-export FEATURE_NEW_ERROR_HANDLING=false
 
 # Restart application
-pnpm run build && pnpm run start
+pnpm build && pnpm start
 ```
 
 **Code-Level Rollback (< 30 minutes)**:
 
 ```bash
-# Revert specific imports
-git checkout HEAD~1 -- src/lib/data/loader.ts
-git checkout HEAD~1 -- src/app/validation/page.tsx
+# Revert specific imports (use git restore/revert as appropriate)
+# Example: restore files from a known-good commit or revert a refactor commit.
 ```
 
 **Full Architecture Rollback (< 2 hours)**:

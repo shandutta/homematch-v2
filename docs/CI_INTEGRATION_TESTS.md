@@ -27,6 +27,19 @@ If you need the CI setup script locally:
 pnpm ci:setup
 ```
 
+`pnpm ci:setup` creates `.env.ci` and `.env.test.local` with defaults for local CI-style runs.
+
+## CI Helper Scripts
+
+These scripts are available for local CI-like runs:
+
+- `pnpm ci:test:integration` (Vitest with `vitest.ci.config.ts`)
+- `pnpm ci:test:database`
+- `pnpm ci:test:api`
+- `pnpm ci:validate:schema`
+- `pnpm ci:validate:rls`
+- `pnpm ci:health`
+
 ## Supabase in CI
 
 The integration job:

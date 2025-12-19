@@ -16,6 +16,7 @@ pnpm dev:warmup         # Warmup wrapper used by tests
 pnpm lint
 pnpm lint:fix
 pnpm type-check
+pnpm check
 pnpm format
 ```
 
@@ -35,7 +36,7 @@ See `docs/TESTING.md` and `docs/testing/README.md` for deeper guidance and test-
 ## Database Workflow
 
 ```bash
-pnpm run db:reset       # Local Supabase start + reset (used by pnpm dev)
+pnpm db:reset           # Local Supabase start + reset (used by pnpm dev)
 pnpm migrate            # Run migration helper
 ```
 
