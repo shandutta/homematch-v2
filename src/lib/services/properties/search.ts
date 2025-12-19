@@ -318,12 +318,7 @@ export class PropertySearchService
         )
         .eq('is_active', true)
         .or(
-          `
-            address.ilike.%${sanitizedQuery}%,
-            description.ilike.%${sanitizedQuery}%,
-            neighborhood.name.ilike.%${sanitizedQuery}%,
-            neighborhood.city.ilike.%${sanitizedQuery}%
-          `
+          `address.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`
         )
         .order('created_at', { ascending: false })
         .limit(limit)

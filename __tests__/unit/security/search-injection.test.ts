@@ -49,7 +49,7 @@ describe('PropertySearchService Security Tests', () => {
 
       const orCall = mockSupabase.from().or.mock.calls[0][0]
       const addressFilter =
-        orCall.match(/address\.ilike\.%(.+)%/)?.[1] ?? orCall
+        orCall.match(/address\.ilike\.%(.+?)%/)?.[1] ?? orCall
       // Should not include raw commas from user input
       expect(addressFilter).not.toContain(',')
       // Should contain sanitized version (comma replaced by space)

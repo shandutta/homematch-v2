@@ -152,14 +152,21 @@ export async function middleware(request: NextRequest) {
   let authError = null
 
   try {
-    // Optimization for integration tests: API routes handle their own auth via headers.
-    // Skipping middleware auth check for /api/ routes in test mode significantly speeds up tests.
     const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
     const isTestMode =
       process.env.NODE_ENV === 'test' ||
       process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 
-    if (isApiRoute && isTestMode) {
+    // Check if the auth cookie exists to avoid unnecessary Supabase calls
+    const hasAuthCookie = request.cookies
+      .getAll()
+      .some((c) => c.name === cookieName)
+
+    if (!hasAuthCookie && !isApiRoute) {
+      // No auth cookie and not an API route (which might use headers)
+      // We can skip getUser() safely
+      user = null
+    } else if (isApiRoute && isTestMode) {
       // Skip auth check for API routes in test mode
       console.log(
         '[Middleware] Skipping auth check for API route in test mode:',
