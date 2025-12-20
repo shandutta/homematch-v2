@@ -73,7 +73,6 @@ describe.sequential('Integration: /api/neighborhoods/vibes', () => {
   it('returns vibes for authenticated users', async () => {
     const neighborhoodId = randomUUID()
     createdNeighborhoodIds.push(neighborhoodId)
-    const createdAt = new Date().toISOString()
 
     await supabaseAdmin.from('neighborhoods').upsert([
       {
@@ -85,8 +84,6 @@ describe.sequential('Integration: /api/neighborhoods/vibes', () => {
         walk_score: 90,
         transit_score: 75,
         median_price: 1200000,
-        created_at: createdAt,
-        updated_at: createdAt,
       },
     ])
 

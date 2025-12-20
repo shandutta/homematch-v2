@@ -88,7 +88,6 @@ export class NeighborhoodService
         .from('neighborhoods')
         .update({
           ...sanitizedUpdates,
-          updated_at: new Date().toISOString(),
         })
         .eq('id', neighborhoodId)
         .select()
