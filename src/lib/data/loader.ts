@@ -1,4 +1,5 @@
 import { PropertyService } from '@/lib/services/properties'
+import { unstable_noStore as noStore } from 'next/cache'
 import { Property, Neighborhood } from '@/types/database'
 import {
   PROPERTY_TYPE_VALUES,
@@ -101,6 +102,7 @@ export async function loadDashboardData(
     userPreferences?: DashboardPreferences | null
   } = {}
 ): Promise<DashboardData> {
+  noStore()
   const {
     limit = 20,
     offset = 0,
