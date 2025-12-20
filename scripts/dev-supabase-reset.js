@@ -31,11 +31,20 @@ const log = (message) => console.log(`🔧 ${message}`)
 
 const parseSupabaseUrls = (text) => {
   const apiMatch = text.match(/API URL:\s*(\S+)/i)
-  const graphqlMatch = text.match(/GraphQL URL:\s*(\S+)/i)
-  const dbMatch = text.match(/Database URL:\s*(\S+)/i)
+  const projectMatch = text.match(/Project URL\s*[|\u2502]\s*(\S+)/i)
+  const restMatch = text.match(/REST\s*[|\u2502]\s*(\S+)/i)
+  const graphqlMatch =
+    text.match(/GraphQL URL:\s*(\S+)/i) ||
+    text.match(/GraphQL\s*[|\u2502]\s*(\S+)/i)
+  const dbMatch =
+    text.match(/Database URL:\s*(\S+)/i) ||
+    text.match(/URL\s*[|\u2502]\s*(postgresql:\/\/\S+)/i)
+
+  const restBase = restMatch?.[1]?.replace(/\/rest\/v1\/?$/, '') || null
+  const apiUrl = apiMatch?.[1] || projectMatch?.[1] || restBase
 
   return {
-    apiUrl: apiMatch?.[1] || null,
+    apiUrl: apiUrl || null,
     graphqlUrl: graphqlMatch?.[1] || null,
     dbUrl: dbMatch?.[1] || null,
   }
@@ -74,15 +83,40 @@ const readApiBaseFromConfig = () => {
   }
 }
 
+const extractJsonFromText = (text) => {
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    // fall through
+  }
+
+  const start = text.indexOf('{')
+  if (start === -1) return null
+  let depth = 0
+  for (let i = start; i < text.length; i++) {
+    const char = text[i]
+    if (char === '{') depth += 1
+    if (char === '}') depth -= 1
+    if (depth === 0) {
+      const candidate = text.slice(start, i + 1)
+      try {
+        return JSON.parse(candidate)
+      } catch {
+        return null
+      }
+    }
+  }
+
+  return null
+}
+
 const getStatusJson = () => {
   for (const cmd of STATUS_CMDS) {
     const result = runCommand(cmd, { silent: true })
     if (!result.ok || !result.output) continue
-    try {
-      return JSON.parse(result.output)
-    } catch {
-      continue
-    }
+    const parsed = extractJsonFromText(result.output)
+    if (parsed) return parsed
   }
   return null
 }
@@ -104,6 +138,8 @@ const updateApiBaseFromStatus = () => {
   return false
 }
 
+let dockerHealthUnavailable = false
+
 const listSupabaseContainers = () => {
   try {
     return execSync('docker ps --filter name=supabase --format "{{.Names}}"', {
@@ -114,8 +150,15 @@ const listSupabaseContainers = () => {
       .split('\n')
       .map((name) => name.trim())
       .filter(Boolean)
-  } catch {
-    return []
+  } catch (error) {
+    if (!dockerHealthUnavailable) {
+      dockerHealthUnavailable = true
+      log('Docker health check unavailable; relying on HTTP endpoints only.')
+      if (error?.message) {
+        log(`Docker health check error: ${error.message}`)
+      }
+    }
+    return null
   }
 }
 
@@ -134,6 +177,7 @@ const readContainerState = (name) => {
 
 const containersHealthy = () => {
   const containers = listSupabaseContainers()
+  if (containers === null) return null
   if (containers.length === 0) return false
 
   return containers.every((name) => {
@@ -187,7 +231,8 @@ const waitForReadiness = async (label) => {
 
   while (Date.now() - start < HEALTH_TIMEOUT_MS) {
     const elapsed = Date.now() - start
-    const dockerReady = containersHealthy()
+    const dockerState = containersHealthy()
+    const dockerReady = dockerState === null ? true : dockerState
     const httpReady =
       endpoints.length === 0
         ? true
