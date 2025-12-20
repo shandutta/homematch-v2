@@ -325,6 +325,20 @@ export function PreferencesSection({
 
     if (newlySelectedKeys.length === 0) return
 
+    const neighborhoodsByCity = new Map<string, string[]>()
+    availableNeighborhoods.forEach((neighborhood) => {
+      const key = cityKey({
+        city: neighborhood.city,
+        state: neighborhood.state,
+      })
+      const bucket = neighborhoodsByCity.get(key)
+      if (bucket) {
+        bucket.push(neighborhood.id)
+      } else {
+        neighborhoodsByCity.set(key, [neighborhood.id])
+      }
+    })
+
     const neighborhoodsToAdd = availableNeighborhoods
       .filter((neighborhood) =>
         newlySelectedKeys.includes(
@@ -340,7 +354,9 @@ export function PreferencesSection({
       })
     }
 
-    newlySelectedKeys.forEach((key) => autoSelectedCitiesRef.current.add(key))
+    newlySelectedKeys
+      .filter((key) => (neighborhoodsByCity.get(key) || []).length > 0)
+      .forEach((key) => autoSelectedCitiesRef.current.add(key))
   }, [availableNeighborhoods, selectedCities])
 
   const toggleCity = (city: CityOption) => {

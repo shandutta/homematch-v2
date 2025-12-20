@@ -128,7 +128,7 @@ async function seedNeighborhoodAndProperty(
     city: 'San Francisco',
     state: 'CA',
     zip_code: '94103',
-    price: 1250000,
+    price: 575000,
     bedrooms: 3,
     bathrooms: 2,
     square_feet: 1540,
