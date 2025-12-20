@@ -773,6 +773,10 @@ export type Database = {
         }
         Returns: number
       }
+      backfill_property_coordinates_city_centroid: {
+        Args: { batch_limit?: number | null }
+        Returns: number
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
