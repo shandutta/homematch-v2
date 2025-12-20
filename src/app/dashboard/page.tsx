@@ -4,6 +4,7 @@ import { loadDashboardData, type DashboardPreferences } from '@/lib/data/loader'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
+import { unstable_noStore as noStore } from 'next/cache'
 
 interface DashboardPageProps {
   searchParams: {
@@ -14,6 +15,7 @@ interface DashboardPageProps {
 export default async function DashboardPage({
   searchParams: _searchParams,
 }: DashboardPageProps) {
+  noStore()
   const supabase = await createClient()
   const {
     data: { user },
