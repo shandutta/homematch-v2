@@ -765,6 +765,14 @@ export type Database = {
             }
             Returns: string
           }
+      backfill_property_neighborhoods: {
+        Args: {
+          target_zpids?: string[] | null
+          target_ids?: string[] | null
+          batch_limit?: number | null
+        }
+        Returns: number
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number

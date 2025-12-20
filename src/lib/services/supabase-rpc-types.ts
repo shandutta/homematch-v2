@@ -132,6 +132,12 @@ export interface GetPropertyCoordinatesParams extends BaseRPCParams {
   property_id: string
 }
 
+export interface BackfillPropertyNeighborhoodsParams extends BaseRPCParams {
+  target_zpids?: string[] | null
+  target_ids?: string[] | null
+  batch_limit?: number | null
+}
+
 // ============================================================================
 // RPC FUNCTION RETURN TYPES
 // ============================================================================
@@ -320,6 +326,9 @@ export interface TypedSupabaseRPC {
   get_property_coordinates(
     params: GetPropertyCoordinatesParams
   ): Promise<RPCResponse<PropertyCoordinatesResult>>
+  backfill_property_neighborhoods(
+    params: BackfillPropertyNeighborhoodsParams
+  ): Promise<RPCResponse<number>>
 }
 
 // ============================================================================
@@ -402,6 +411,10 @@ export function createTypedRPC(
 
     get_property_coordinates: (params: GetPropertyCoordinatesParams) =>
       typedSupabase.rpc('get_property_coordinates', params),
+
+    backfill_property_neighborhoods: (
+      params: BackfillPropertyNeighborhoodsParams
+    ) => typedSupabase.rpc('backfill_property_neighborhoods', params),
   }
 }
 
@@ -465,6 +478,7 @@ export function isRPCImplemented(
     'get_properties_in_polygon',
     'get_properties_along_route',
     'get_geographic_density',
+    'backfill_property_neighborhoods',
     // The following functions are not fully implemented and will throw errors:
     // 'get_nearest_amenities', // requires external POI database integration
     // 'geocode_address', // requires external geocoding service

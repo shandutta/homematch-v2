@@ -36,7 +36,7 @@ export type ZillowSortOption =
 
 type FetchLike = typeof fetch
 
-type SupabaseLike = Pick<SupabaseClient<Database>, 'from'>
+type SupabaseLike = Pick<SupabaseClient<Database>, 'from' | 'rpc'>
 
 function normalizePropertyTypeForDb(
   type: string | null | undefined
@@ -491,6 +491,33 @@ export async function ingestZillowLocations(
         } else {
           locationSummary.insertedOrUpdated += inserts.length
           summary.totals.insertedOrUpdated += inserts.length
+
+          const zpids = Array.from(
+            new Set(
+              inserts
+                .map((insert) => insert.zpid)
+                .filter((zpid): zpid is string => Boolean(zpid))
+            )
+          )
+          if (zpids.length > 0) {
+            try {
+              const { error: backfillError } = await supabase.rpc(
+                'backfill_property_neighborhoods',
+                {
+                  target_zpids: zpids,
+                }
+              )
+              if (backfillError) {
+                locationSummary.errors.push(
+                  `Neighborhood backfill failed: ${backfillError.message || 'unknown error'}`
+                )
+              }
+            } catch (backfillError) {
+              locationSummary.errors.push(
+                `Neighborhood backfill failed: ${backfillError instanceof Error ? backfillError.message : 'unknown error'}`
+              )
+            }
+          }
         }
       }
 
