@@ -123,10 +123,12 @@ describe('ingestZillowLocations', () => {
     })
 
     const upsertMock = jest.fn().mockResolvedValue({ data: [], error: null })
+    const rpcMock = jest.fn().mockResolvedValue({ data: null, error: null })
     const supabaseMock = {
       from: jest.fn().mockReturnValue({
         upsert: upsertMock,
       }),
+      rpc: rpcMock,
     }
 
     const summary = await ingestZillowLocations({
@@ -147,5 +149,8 @@ describe('ingestZillowLocations', () => {
     expect(summary.totals.transformed).toBe(1)
     expect(summary.totals.insertedOrUpdated).toBe(1)
     expect(summary.locations[0].errors).toEqual([])
+    expect(rpcMock).toHaveBeenCalledWith('backfill_property_neighborhoods', {
+      target_zpids: ['999'],
+    })
   })
 })
