@@ -122,6 +122,7 @@ jest.mock('framer-motion', () => {
       span: createMotionComponent('span'),
       section: createMotionComponent('section'),
       article: createMotionComponent('article'),
+      button: createMotionComponent('button'),
       h1: createMotionComponent('h1'),
       h2: createMotionComponent('h2'),
       h3: createMotionComponent('h3'),

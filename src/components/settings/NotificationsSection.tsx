@@ -62,6 +62,11 @@ export function NotificationsSection({
     push?: Record<string, boolean>
     sms?: Record<string, boolean>
   }
+  type NotificationSnapshot = {
+    email: Record<string, boolean>
+    push: Record<string, boolean>
+    sms: Record<string, boolean>
+  }
 
   const preferences = useMemo(
     () =>
@@ -70,7 +75,16 @@ export function NotificationsSection({
       },
     [profile.preferences]
   )
-  const notifications = preferences.notifications || {}
+  const notifications = preferences.notifications ?? undefined
+
+  const buildSnapshot = useCallback(
+    (source?: NotificationPreferences): NotificationSnapshot => ({
+      email: source?.email || DEFAULT_EMAIL_NOTIFICATIONS,
+      push: source?.push || DEFAULT_PUSH_NOTIFICATIONS,
+      sms: source?.sms || DEFAULT_SMS_NOTIFICATIONS,
+    }),
+    []
+  )
 
   const [loading, setLoading] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
@@ -85,13 +99,16 @@ export function NotificationsSection({
   }, [])
   const [emailNotifications, setEmailNotifications] = useState<
     Record<string, boolean>
-  >(notifications.email || DEFAULT_EMAIL_NOTIFICATIONS)
+  >(notifications?.email || DEFAULT_EMAIL_NOTIFICATIONS)
   const [pushNotifications, setPushNotifications] = useState<
     Record<string, boolean>
-  >(notifications.push || DEFAULT_PUSH_NOTIFICATIONS)
+  >(notifications?.push || DEFAULT_PUSH_NOTIFICATIONS)
   const [smsNotifications, setSmsNotifications] = useState<
     Record<string, boolean>
-  >(notifications.sms || DEFAULT_SMS_NOTIFICATIONS)
+  >(notifications?.sms || DEFAULT_SMS_NOTIFICATIONS)
+  const [storedSnapshot, setStoredSnapshot] = useState<NotificationSnapshot>(
+    () => buildSnapshot(notifications)
+  )
 
   const saveNotifications = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -115,6 +132,11 @@ export function NotificationsSection({
         if (updatedProfile && onProfileUpdate) {
           onProfileUpdate(updatedProfile)
         }
+        setStoredSnapshot({
+          email: emailNotifications,
+          push: pushNotifications,
+          sms: smsNotifications,
+        })
         setLastSavedAt(new Date())
         if (!options?.silent) {
           toast.success('Notification preferences saved')
@@ -139,14 +161,9 @@ export function NotificationsSection({
     ]
   )
 
-  const storedSnapshot = useMemo(
-    () => ({
-      email: notifications.email || DEFAULT_EMAIL_NOTIFICATIONS,
-      push: notifications.push || DEFAULT_PUSH_NOTIFICATIONS,
-      sms: notifications.sms || DEFAULT_SMS_NOTIFICATIONS,
-    }),
-    [notifications.email, notifications.push, notifications.sms]
-  )
+  useEffect(() => {
+    setStoredSnapshot(buildSnapshot(notifications))
+  }, [buildSnapshot, notifications])
 
   const currentSnapshot = useMemo(
     () => ({
