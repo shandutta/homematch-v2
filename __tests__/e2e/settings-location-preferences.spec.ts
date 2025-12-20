@@ -358,7 +358,8 @@ test.describe('Settings location preferences', () => {
         return (
           Array.isArray(neighborhoods) &&
           neighborhoods.includes(neighborhoodA1Id) &&
-          neighborhoods.includes(neighborhoodB1Id)
+          neighborhoods.includes(neighborhoodB1Id) &&
+          !neighborhoods.includes(neighborhoodA2Id)
         )
       })
 
