@@ -212,13 +212,13 @@ export function PropertyCardUI({
             {neighborhood?.name || property.city}, {property.state}
           </p>
           {neighborhoodVibes && (
-            <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/5 bg-white/5 p-2">
+            <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
               <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
               <div className="space-y-1">
                 <p className="text-hm-stone-100 text-sm font-semibold">
                   {neighborhoodVibes.tagline}
                 </p>
-                <p className="text-hm-stone-400 text-xs">
+                <p className="text-hm-stone-200 text-sm">
                   {neighborhoodVibes.vibe_statement}
                 </p>
                 {neighborhoodVibes.suggested_tags?.length ? (
@@ -228,7 +228,7 @@ export function PropertyCardUI({
                       .map((tag: string) => (
                         <span
                           key={tag}
-                          className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/90"
+                          className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
                         >
                           {tag}
                         </span>

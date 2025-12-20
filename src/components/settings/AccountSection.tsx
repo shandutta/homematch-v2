@@ -181,7 +181,7 @@ export function AccountSection({ user }: AccountSectionProps) {
       </AnimatePresence>
 
       {/* Account Information */}
-      <div className="space-y-4">
+      <div className="space-y-4" id="account-info">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
             <Shield className="h-5 w-5 text-sky-400" />

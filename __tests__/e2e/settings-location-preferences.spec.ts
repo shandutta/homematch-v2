@@ -290,13 +290,6 @@ test.describe('Settings location preferences', () => {
       await page.getByTestId(cityOptionTestId(cityA, stateA)).click()
       await page.getByTestId(cityOptionTestId(cityB, stateB)).click()
 
-      const saveButton = page.getByTestId('save-preferences')
-      await saveButton.click()
-      await expect(
-        saveButton,
-        'Save button should re-enable after persistence completes'
-      ).toBeEnabled({ timeout: 15000 })
-
       await waitForUserPreferences(supabase, userId, (preferences) => {
         const cities = preferences?.cities
         const neighborhoods = preferences?.neighborhoods
@@ -306,7 +299,9 @@ test.describe('Settings location preferences', () => {
           cities.some((c: any) => c?.city === cityA && c?.state === stateA) &&
           cities.some((c: any) => c?.city === cityB && c?.state === stateB) &&
           Array.isArray(neighborhoods) &&
-          neighborhoods.length === 0
+          neighborhoods.includes(neighborhoodA1Id) &&
+          neighborhoods.includes(neighborhoodA2Id) &&
+          neighborhoods.includes(neighborhoodB1Id)
         )
       })
 
@@ -351,14 +346,11 @@ test.describe('Settings location preferences', () => {
         page.getByTestId(`neighborhood-option-${neighborhoodB1Id}`)
       ).toBeVisible()
 
+      const clearButtons = page.getByRole('button', { name: 'Clear' })
+      await clearButtons.nth(1).click()
+
       await page.getByTestId(`neighborhood-option-${neighborhoodA1Id}`).click()
       await page.getByTestId(`neighborhood-option-${neighborhoodB1Id}`).click()
-
-      await saveButton.click()
-      await expect(
-        saveButton,
-        'Save button should re-enable after persistence completes'
-      ).toBeEnabled({ timeout: 15000 })
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
         const neighborhoods = preferences?.neighborhoods

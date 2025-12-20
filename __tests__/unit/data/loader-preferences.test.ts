@@ -3,10 +3,22 @@ import {
   buildPropertyFiltersFromPreferences,
   type DashboardPreferences,
 } from '@/lib/data/loader'
+import { DEFAULT_PRICE_RANGE } from '@/lib/constants/preferences'
 
 describe('buildPropertyFiltersFromPreferences', () => {
-  test('returns empty filters for null preferences', () => {
-    expect(buildPropertyFiltersFromPreferences(null)).toEqual({})
+  test('applies default price range when preferences are null', () => {
+    expect(buildPropertyFiltersFromPreferences(null)).toEqual({
+      price_min: DEFAULT_PRICE_RANGE[0],
+      price_max: DEFAULT_PRICE_RANGE[1],
+    })
+  })
+
+  test('applies default price range when preferences omit priceRange', () => {
+    const prefs: DashboardPreferences = { bedrooms: 2 }
+    const filters = buildPropertyFiltersFromPreferences(prefs)
+
+    expect(filters.price_min).toBe(DEFAULT_PRICE_RANGE[0])
+    expect(filters.price_max).toBe(DEFAULT_PRICE_RANGE[1])
   })
 
   test('prefers neighborhoods over cities when both are set', () => {

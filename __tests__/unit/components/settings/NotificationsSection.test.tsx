@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { NotificationsSection } from '@/components/settings/NotificationsSection'
 import { UserServiceClient } from '@/lib/services/users-client'
@@ -56,6 +56,10 @@ describe('NotificationsSection', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(UserServiceClient.updateUserProfile as jest.Mock) = mockUpdateUserProfile
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
   })
 
   test('renders all notification sections', () => {
@@ -176,7 +180,7 @@ describe('NotificationsSection', () => {
 
     // Click save
     const saveButton = screen.getByRole('button', {
-      name: /Save Preferences/i,
+      name: /Save now/i,
     })
     await user.click(saveButton)
 
@@ -202,9 +206,10 @@ describe('NotificationsSection', () => {
 
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const saveButton = screen.getByRole('button', {
-      name: /Save Preferences/i,
-    })
+    const weeklyDigestSwitch = screen.getByLabelText('Weekly digest')
+    await user.click(weeklyDigestSwitch)
+
+    const saveButton = screen.getByRole('button', { name: /Save now/i })
     await user.click(saveButton)
 
     await waitFor(() => {
@@ -222,8 +227,11 @@ describe('NotificationsSection', () => {
 
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
+    const weeklyDigestSwitch = screen.getByLabelText('Weekly digest')
+    await user.click(weeklyDigestSwitch)
+
     const saveButton = screen.getByRole('button', {
-      name: /Save Preferences/i,
+      name: /Save now/i,
     })
     await user.click(saveButton)
 
@@ -231,8 +239,34 @@ describe('NotificationsSection', () => {
     expect(saveButton).toBeDisabled()
 
     await waitFor(() => {
-      expect(screen.getByText(/Save Preferences/i)).toBeInTheDocument()
+      expect(screen.getByText(/All changes saved/i)).toBeInTheDocument()
     })
+  })
+
+  test('auto-saves notification changes', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    render(<NotificationsSection user={mockUser} profile={mockProfile} />)
+
+    const weeklyDigestSwitch = screen.getByLabelText('Weekly digest')
+    await user.click(weeklyDigestSwitch)
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    await waitFor(() => {
+      expect(mockUpdateUserProfile).toHaveBeenCalledWith('user-123', {
+        preferences: expect.objectContaining({
+          notifications: expect.objectContaining({
+            email: expect.objectContaining({
+              weeklyDigest: true,
+            }),
+          }),
+        }),
+      })
+    })
+    jest.useRealTimers()
   })
 
   test('renders with empty preferences', () => {

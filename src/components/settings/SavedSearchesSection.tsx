@@ -82,17 +82,48 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
 
   const formatFilters = (filters: Record<string, unknown>) => {
     const parts = []
-    if (filters.location) {
+    const location = filters.location as string | undefined
+    const cities = Array.isArray(filters.cities) ? filters.cities : []
+    const neighborhoods = Array.isArray(filters.neighborhoods)
+      ? filters.neighborhoods
+      : []
+
+    if (location) {
       parts.push({
         icon: MapPin,
-        text: `${filters.location}`,
+        text: `${location}`,
         key: 'location',
         color: 'text-sky-400',
         bg: 'bg-sky-500/10',
       })
+    } else if (neighborhoods.length > 0) {
+      parts.push({
+        icon: MapPin,
+        text: `${neighborhoods.length} neighborhoods`,
+        key: 'neighborhoods',
+        color: 'text-sky-400',
+        bg: 'bg-sky-500/10',
+      })
+    } else if (cities.length > 0) {
+      parts.push({
+        icon: MapPin,
+        text: `${cities.length} cities`,
+        key: 'cities',
+        color: 'text-sky-400',
+        bg: 'bg-sky-500/10',
+      })
     }
-    if (filters.priceMin || filters.priceMax) {
-      const price = `$${filters.priceMin || 0} - $${filters.priceMax || '∞'}`
+    const priceRange = Array.isArray(filters.priceRange)
+      ? (filters.priceRange as number[])
+      : null
+    const priceMin =
+      (filters.priceMin as number | undefined) ??
+      (priceRange ? priceRange[0] : undefined)
+    const priceMax =
+      (filters.priceMax as number | undefined) ??
+      (priceRange ? priceRange[1] : undefined)
+    if (priceMin || priceMax) {
+      const price = `$${priceMin || 0} - $${priceMax || '∞'}`
       parts.push({
         icon: DollarSign,
         text: price,
@@ -110,10 +141,19 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         bg: 'bg-violet-500/10',
       })
     }
-    if (filters.propertyType) {
+    const propertyTypes = Array.isArray(filters.propertyTypes)
+      ? (filters.propertyTypes as string[])
+      : filters.propertyType
+        ? [filters.propertyType as string]
+        : []
+    if (propertyTypes.length > 0) {
+      const label =
+        propertyTypes.length > 2
+          ? `${propertyTypes.slice(0, 2).join(', ')} +${propertyTypes.length - 2}`
+          : propertyTypes.join(', ')
       parts.push({
         icon: Home,
-        text: `${filters.propertyType}`,
+        text: label,
         key: 'propertyType',
         color: 'text-amber-400',
         bg: 'bg-amber-500/10',
@@ -170,8 +210,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
             You haven&apos;t saved any searches yet.
           </p>
           <p className="text-hm-stone-500 mt-2 text-sm">
-            Dial in filters on the dashboard and tap &ldquo;Save search&rdquo;
-            to keep getting alerts here.
+            Dial in filters in settings and tap &ldquo;Save search&rdquo; to
+            keep getting alerts here.
           </p>
         </div>
       </div>

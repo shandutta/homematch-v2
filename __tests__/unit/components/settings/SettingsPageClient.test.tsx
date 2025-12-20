@@ -62,7 +62,7 @@ describe('SettingsPageClient', () => {
 
     // Header elements
     expect(screen.getByText('Settings')).toBeInTheDocument()
-    expect(screen.getByText('Back to Dashboard')).toBeInTheDocument()
+    expect(screen.getAllByText('Back to Dashboard').length).toBeGreaterThan(0)
     expect(screen.getByText('View Profile')).toBeInTheDocument()
 
     // Tab navigation
@@ -195,13 +195,30 @@ describe('SettingsPageClient', () => {
   it('has correct navigation links', () => {
     render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
 
-    const dashboardLink = screen.getByRole('link', {
+    const dashboardLinks = screen.getAllByRole('link', {
       name: /back to dashboard/i,
     })
-    expect(dashboardLink).toHaveAttribute('href', '/dashboard')
+    expect(
+      dashboardLinks.some((link) => link.getAttribute('href') === '/dashboard')
+    ).toBe(true)
 
     const profileLink = screen.getByRole('link', { name: /view profile/i })
     expect(profileLink).toHaveAttribute('href', '/profile')
+  })
+
+  it('opens notifications tab from overview card', async () => {
+    const user = userEvent.setup()
+    render(<SettingsPageClient user={mockUser} profile={mockProfile} />)
+
+    const alertCard = screen.getByRole('button', {
+      name: /open alerts enabled settings/i,
+    })
+    await user.click(alertCard)
+
+    expect(screen.getByRole('tab', { name: /notifications/i })).toHaveAttribute(
+      'data-state',
+      'active'
+    )
   })
 
   it('applies correct styling classes', () => {

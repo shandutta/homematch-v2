@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
 import { Label } from '@/components/ui/label'
@@ -23,12 +23,38 @@ interface NotificationsSectionProps {
   user: User
   profile: UserProfile
   onProfileUpdate?: (profile: UserProfile) => void
+  onSaveStateChange?: (state: SaveState) => void
+}
+
+type SaveState = {
+  isSaving: boolean
+  hasUnsavedChanges: boolean
+  lastSavedAt?: Date | null
+}
+
+const DEFAULT_EMAIL_NOTIFICATIONS = {
+  newMatches: true,
+  priceDrops: true,
+  savedSearches: true,
+  weeklyDigest: false,
+}
+
+const DEFAULT_PUSH_NOTIFICATIONS = {
+  newMatches: false,
+  priceDrops: false,
+  messages: true,
+}
+
+const DEFAULT_SMS_NOTIFICATIONS = {
+  urgentAlerts: false,
+  viewingReminders: false,
 }
 
 export function NotificationsSection({
   user,
   profile,
   onProfileUpdate,
+  onSaveStateChange,
 }: NotificationsSectionProps) {
   const userService = UserServiceClient
   type NotificationPreferences = {
@@ -47,57 +73,128 @@ export function NotificationsSection({
   const notifications = preferences.notifications || {}
 
   const [loading, setLoading] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+    }
+  }, [])
   const [emailNotifications, setEmailNotifications] = useState<
     Record<string, boolean>
-  >(
-    notifications.email || {
-      newMatches: true,
-      priceDrops: true,
-      savedSearches: true,
-      weeklyDigest: false,
-    }
-  )
+  >(notifications.email || DEFAULT_EMAIL_NOTIFICATIONS)
   const [pushNotifications, setPushNotifications] = useState<
     Record<string, boolean>
-  >(
-    notifications.push || {
-      newMatches: false,
-      priceDrops: false,
-      messages: true,
-    }
-  )
+  >(notifications.push || DEFAULT_PUSH_NOTIFICATIONS)
   const [smsNotifications, setSmsNotifications] = useState<
     Record<string, boolean>
-  >(
-    notifications.sms || {
-      urgentAlerts: false,
-      viewingReminders: false,
-    }
+  >(notifications.sms || DEFAULT_SMS_NOTIFICATIONS)
+
+  const saveNotifications = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (loading) return
+      setLoading(true)
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+        autoSaveTimeoutRef.current = null
+      }
+      try {
+        const updatedProfile = await userService.updateUserProfile(user.id, {
+          preferences: {
+            ...preferences,
+            notifications: {
+              email: emailNotifications,
+              push: pushNotifications,
+              sms: smsNotifications,
+            },
+          },
+        })
+        if (updatedProfile && onProfileUpdate) {
+          onProfileUpdate(updatedProfile)
+        }
+        setLastSavedAt(new Date())
+        if (!options?.silent) {
+          toast.success('Notification preferences saved')
+        }
+      } catch (_error) {
+        if (!options?.silent) {
+          toast.error('Failed to save notification preferences')
+        }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [
+      emailNotifications,
+      loading,
+      onProfileUpdate,
+      preferences,
+      pushNotifications,
+      smsNotifications,
+      user.id,
+      userService,
+    ]
   )
 
-  const saveNotifications = async () => {
-    setLoading(true)
-    try {
-      const updatedProfile = await userService.updateUserProfile(user.id, {
-        preferences: {
-          ...preferences,
-          notifications: {
-            email: emailNotifications,
-            push: pushNotifications,
-            sms: smsNotifications,
-          },
-        },
-      })
-      if (updatedProfile && onProfileUpdate) {
-        onProfileUpdate(updatedProfile)
-      }
-      toast.success('Notification preferences saved')
-    } catch (_error) {
-      toast.error('Failed to save notification preferences')
-    } finally {
-      setLoading(false)
+  const storedSnapshot = useMemo(
+    () => ({
+      email: notifications.email || DEFAULT_EMAIL_NOTIFICATIONS,
+      push: notifications.push || DEFAULT_PUSH_NOTIFICATIONS,
+      sms: notifications.sms || DEFAULT_SMS_NOTIFICATIONS,
+    }),
+    [notifications.email, notifications.push, notifications.sms]
+  )
+
+  const currentSnapshot = useMemo(
+    () => ({
+      email: emailNotifications,
+      push: pushNotifications,
+      sms: smsNotifications,
+    }),
+    [emailNotifications, pushNotifications, smsNotifications]
+  )
+
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(storedSnapshot) !== JSON.stringify(currentSnapshot),
+    [currentSnapshot, storedSnapshot]
+  )
+
+  const didMountRef = useRef(false)
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true
+      return
     }
-  }
+
+    if (!hasUnsavedChanges) {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+        autoSaveTimeoutRef.current = null
+      }
+      return
+    }
+
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      void saveNotifications({ silent: true })
+    }, 900)
+  }, [currentSnapshot, hasUnsavedChanges, saveNotifications])
+
+  useEffect(() => {
+    if (!onSaveStateChange) return
+    onSaveStateChange({
+      isSaving: loading,
+      hasUnsavedChanges,
+      lastSavedAt,
+    })
+  }, [hasUnsavedChanges, lastSavedAt, loading, onSaveStateChange])
 
   const notificationGroups: Array<{
     key: 'email' | 'push' | 'sms'
@@ -239,7 +336,7 @@ export function NotificationsSection({
     smsNotifications.urgentAlerts || smsNotifications.viewingReminders
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="notification-preferences">
       <div className="grid gap-6 lg:grid-cols-3">
         {notificationGroups.map(
           ({ key, title, icon, iconBg, iconColor, description, options }) => (
@@ -279,12 +376,12 @@ export function NotificationsSection({
         <div>
           <p className="text-hm-stone-200 font-medium">Alert preferences</p>
           <p className="text-hm-stone-500 text-sm">
-            Mix channels to match your responsiveness
+            Updates auto-save as you make changes
           </p>
         </div>
         <Button
-          onClick={saveNotifications}
-          disabled={loading}
+          onClick={() => void saveNotifications()}
+          disabled={loading || !hasUnsavedChanges}
           className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
         >
           {loading ? (
@@ -295,7 +392,7 @@ export function NotificationsSection({
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              Save Preferences
+              {hasUnsavedChanges ? 'Save now' : 'All changes saved'}
             </>
           )}
         </Button>

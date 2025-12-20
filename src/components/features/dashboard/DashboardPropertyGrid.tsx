@@ -17,7 +17,9 @@ import { PropertyCardSkeleton } from '@/components/shared/PropertyCardSkeleton'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
 import { InFeedAd } from '@/components/ads/InFeedAd'
-import { Heart, X } from 'lucide-react'
+import { Heart, SlidersHorizontal, X } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 /** Insert an ad after every N property cards */
 const AD_FREQUENCY = 4
@@ -114,6 +116,16 @@ export function DashboardPropertyGrid({
         <p className="text-muted-foreground/80 text-sm">
           {CouplesMessages.empty.noProperties.cta}
         </p>
+        <div className="mt-4 flex justify-center">
+          <Link href="/settings?tab=preferences">
+            <Button
+              variant="outline"
+              className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+            >
+              Review filters
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -122,8 +134,17 @@ export function DashboardPropertyGrid({
   if (isStackView) {
     return (
       <div className="relative">
-        {!isMobile && (
-          <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <Link href="/settings?tab=preferences">
+            <Button
+              variant="outline"
+              className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+            </Button>
+          </Link>
+          {!isMobile && (
             <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
               <button
                 type="button"
@@ -148,8 +169,8 @@ export function DashboardPropertyGrid({
                 Card stack
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <Suspense fallback={null}>
           <FloatingHearts
@@ -173,7 +194,16 @@ export function DashboardPropertyGrid({
   // Desktop/tablet: grid of cards with inline like/pass actions
   return (
     <div className="relative">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Link href="/settings?tab=preferences">
+          <Button
+            variant="outline"
+            className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+          </Button>
+        </Link>
         <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
           <button
             type="button"

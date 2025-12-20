@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, UserPreferences } from '@/types/database'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -22,11 +22,21 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
+import {
+  DEFAULT_PRICE_RANGE,
+  DEFAULT_SEARCH_RADIUS,
+} from '@/lib/constants/preferences'
 
 interface SettingsPageClientProps {
   user: User
   profile: UserProfile
   initialTab?: string
+}
+
+type SaveState = {
+  isSaving: boolean
+  hasUnsavedChanges: boolean
+  lastSavedAt?: Date | null
 }
 
 const containerVariants = {
@@ -114,8 +124,8 @@ export function SettingsPageClient({
     () => (profileState.preferences || {}) as PreferencesSnapshot,
     [profileState.preferences]
   )
-  const priceRange = preferences.priceRange || [200000, 800000]
-  const searchRadius = preferences.searchRadius || 10
+  const priceRange = preferences.priceRange || DEFAULT_PRICE_RANGE
+  const searchRadius = preferences.searchRadius || DEFAULT_SEARCH_RADIUS
   const enabledAlerts = useMemo(() => {
     const notificationChannels = preferences.notifications || {}
     return Object.values(notificationChannels).reduce((count, channel) => {
@@ -131,6 +141,8 @@ export function SettingsPageClient({
       icon: DollarSign,
       gradient: 'from-emerald-500/20 to-emerald-600/5',
       iconColor: 'text-emerald-400',
+      tab: 'preferences',
+      sectionId: 'price-range',
     },
     {
       label: 'Search radius',
@@ -138,6 +150,8 @@ export function SettingsPageClient({
       icon: MapPin,
       gradient: 'from-sky-500/20 to-sky-600/5',
       iconColor: 'text-sky-400',
+      tab: 'preferences',
+      sectionId: 'search-radius',
     },
     {
       label: 'Alerts enabled',
@@ -146,6 +160,8 @@ export function SettingsPageClient({
       icon: Bell,
       gradient: 'from-amber-500/20 to-amber-600/5',
       iconColor: 'text-amber-400',
+      tab: 'notifications',
+      sectionId: 'notification-preferences',
     },
     {
       label: 'Account email',
@@ -153,12 +169,65 @@ export function SettingsPageClient({
       icon: Mail,
       gradient: 'from-violet-500/20 to-violet-600/5',
       iconColor: 'text-violet-400',
+      tab: 'account',
+      sectionId: 'account-info',
     },
   ]
 
   const handleProfileUpdate = (updated: UserProfile) => {
     setProfileState(updated)
   }
+
+  const [preferencesSaveState, setPreferencesSaveState] = useState<SaveState>({
+    isSaving: false,
+    hasUnsavedChanges: false,
+    lastSavedAt: null,
+  })
+  const [notificationsSaveState, setNotificationsSaveState] =
+    useState<SaveState>({
+      isSaving: false,
+      hasUnsavedChanges: false,
+      lastSavedAt: null,
+    })
+
+  const aggregatedSaveState = useMemo(() => {
+    const lastSavedAt =
+      (preferencesSaveState.lastSavedAt &&
+        (!notificationsSaveState.lastSavedAt ||
+          preferencesSaveState.lastSavedAt >
+            notificationsSaveState.lastSavedAt) &&
+        preferencesSaveState.lastSavedAt) ||
+      notificationsSaveState.lastSavedAt ||
+      null
+
+    return {
+      isSaving:
+        preferencesSaveState.isSaving || notificationsSaveState.isSaving,
+      hasUnsavedChanges:
+        preferencesSaveState.hasUnsavedChanges ||
+        notificationsSaveState.hasUnsavedChanges,
+      lastSavedAt,
+    }
+  }, [preferencesSaveState, notificationsSaveState])
+
+  const handleOverviewClick = useCallback(
+    (tab: TabValue, sectionId?: string) => {
+      setActiveTab(tab)
+      if (!sectionId) return
+      window.setTimeout(() => {
+        const target = document.getElementById(sectionId)
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 120)
+    },
+    []
+  )
+
+  const showReturnHighlight =
+    Boolean(aggregatedSaveState.lastSavedAt) &&
+    !aggregatedSaveState.hasUnsavedChanges &&
+    !aggregatedSaveState.isSaving
 
   return (
     <div className="gradient-grid-bg min-h-screen pb-6 text-white">
@@ -239,12 +308,17 @@ export function SettingsPageClient({
             {overviewCards.map((card, index) => {
               const Icon = card.icon
               return (
-                <motion.div
+                <motion.button
                   key={card.label}
                   variants={itemVariants}
                   whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-4 backdrop-blur-sm transition-all hover:border-white/10`}
+                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-4 text-left backdrop-blur-sm transition-all hover:border-white/10`}
                   style={{ animationDelay: `${index * 0.1}s` }}
+                  type="button"
+                  onClick={() =>
+                    handleOverviewClick(card.tab as TabValue, card.sectionId)
+                  }
+                  aria-label={`Open ${card.label} settings`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <div className="relative">
@@ -261,7 +335,7 @@ export function SettingsPageClient({
                       {card.value}
                     </p>
                   </div>
-                </motion.div>
+                </motion.button>
               )
             })}
           </motion.div>
@@ -321,6 +395,7 @@ export function SettingsPageClient({
                       user={user}
                       profile={profileState}
                       onProfileUpdate={handleProfileUpdate}
+                      onSaveStateChange={setPreferencesSaveState}
                     />
                   </motion.div>
                 </TabsContent>
@@ -341,6 +416,7 @@ export function SettingsPageClient({
                       user={user}
                       profile={profileState}
                       onProfileUpdate={handleProfileUpdate}
+                      onSaveStateChange={setNotificationsSaveState}
                     />
                   </motion.div>
                 </TabsContent>
@@ -383,6 +459,37 @@ export function SettingsPageClient({
       </div>
 
       <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
+      <div className="mx-auto mt-6 max-w-6xl px-4 pb-8 sm:px-6">
+        <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-hm-stone-200 text-sm font-medium">
+              {aggregatedSaveState.isSaving
+                ? 'Saving updates...'
+                : aggregatedSaveState.hasUnsavedChanges
+                  ? 'Changes will auto-save shortly.'
+                  : aggregatedSaveState.lastSavedAt
+                    ? 'All settings saved.'
+                    : 'No changes yet.'}
+            </p>
+            <p className="text-hm-stone-500 text-xs">
+              Head back to the dashboard to keep browsing.
+            </p>
+          </div>
+          <Link href="/dashboard">
+            <Button
+              disabled={aggregatedSaveState.isSaving}
+              className={
+                showReturnHighlight
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-400'
+                  : 'text-hm-stone-300 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+              }
+              variant={showReturnHighlight ? 'default' : 'outline'}
+            >
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
       <MobileBottomNav />
     </div>
   )

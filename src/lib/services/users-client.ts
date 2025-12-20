@@ -10,6 +10,7 @@ import {
   HouseholdInvitation,
   HouseholdInvitationInsert,
   SavedSearch,
+  SavedSearchInsert,
   SavedSearchUpdate,
 } from '@/types/database'
 
@@ -309,6 +310,24 @@ export class UserServiceClient {
   }
 
   // Saved Search Operations
+  static async createSavedSearch(
+    search: SavedSearchInsert
+  ): Promise<SavedSearch | null> {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('saved_searches')
+      .insert(search)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating saved search:', error)
+      return null
+    }
+
+    return data
+  }
+
   static async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
     const supabase = createClient()
     const { data, error } = await supabase

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { Neighborhood, UserProfile, UserPreferences } from '@/types/database'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,12 @@ import {
   type CityOption,
 } from '@/lib/services/locations-client'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
+import {
+  DEFAULT_BATHROOMS,
+  DEFAULT_BEDROOMS,
+  DEFAULT_PRICE_RANGE,
+  DEFAULT_SEARCH_RADIUS,
+} from '@/lib/constants/preferences'
 import { toast } from 'sonner'
 import {
   Loader2,
@@ -42,6 +48,7 @@ interface PreferencesSectionProps {
   user: User
   profile: UserProfile
   onProfileUpdate?: (profile: UserProfile) => void
+  onSaveStateChange?: (state: SaveState) => void
 }
 
 type PropertyTypeKey = (typeof PROPERTY_TYPE_VALUES)[number]
@@ -50,6 +57,12 @@ type PropertyTypePreferences = Partial<
   Record<PropertyTypeKey | PropertyTypeLegacyKey, boolean>
 >
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
+
+type SaveState = {
+  isSaving: boolean
+  hasUnsavedChanges: boolean
+  lastSavedAt?: Date | null
+}
 
 const PROPERTY_TYPE_LABELS: Record<
   PropertyTypeKey,
@@ -85,6 +98,13 @@ const PROPERTY_TYPE_LABELS: Record<
   },
 }
 
+const MUST_HAVE_LABELS: Record<MustHaveKey, string> = {
+  parking: 'Parking',
+  pool: 'Pool',
+  gym: 'Gym',
+  petFriendly: 'Pet Friendly',
+}
+
 const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
   PROPERTY_TYPE_VALUES.reduce(
     (acc, type) => {
@@ -94,10 +114,14 @@ const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
     {} as Record<PropertyTypeKey, boolean>
   )
 
+const cityKey = (city: CityOption) =>
+  `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
+
 export function PreferencesSection({
   user,
   profile,
   onProfileUpdate,
+  onSaveStateChange,
 }: PreferencesSectionProps) {
   const userService = UserServiceClient
   type LocalPreferences = UserPreferences & {
@@ -125,33 +149,37 @@ export function PreferencesSection({
   >([])
   const [citySearch, setCitySearch] = useState('')
   const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
-
   const [priceRange, setPriceRange] = useState<[number, number]>(
-    preferences.priceRange || [200000, 800000]
+    preferences.priceRange || DEFAULT_PRICE_RANGE
   )
-  const [bedrooms, setBedrooms] = useState(preferences.bedrooms || 2)
-  const [bathrooms, setBathrooms] = useState(preferences.bathrooms || 2)
-  const normalizePropertyTypes = (
-    existing?: PropertyTypePreferences
-  ): Record<PropertyTypeKey, boolean> => {
-    return PROPERTY_TYPE_VALUES.reduce<Record<PropertyTypeKey, boolean>>(
-      (acc, type) => {
-        const legacyValue =
-          type === 'single_family'
-            ? existing?.house
-            : type === 'townhome'
-              ? existing?.townhouse
-              : undefined
+  const [bedrooms, setBedrooms] = useState(
+    preferences.bedrooms || DEFAULT_BEDROOMS
+  )
+  const [bathrooms, setBathrooms] = useState(
+    preferences.bathrooms || DEFAULT_BATHROOMS
+  )
+  const normalizePropertyTypes = useCallback(
+    (existing?: PropertyTypePreferences): Record<PropertyTypeKey, boolean> => {
+      return PROPERTY_TYPE_VALUES.reduce<Record<PropertyTypeKey, boolean>>(
+        (acc, type) => {
+          const legacyValue =
+            type === 'single_family'
+              ? existing?.house
+              : type === 'townhome'
+                ? existing?.townhouse
+                : undefined
 
-        acc[type] =
-          (existing?.[type] as boolean | undefined) ??
-          legacyValue ??
-          defaultPropertyTypes[type]
-        return acc
-      },
-      {} as Record<PropertyTypeKey, boolean>
-    )
-  }
+          acc[type] =
+            (existing?.[type] as boolean | undefined) ??
+            legacyValue ??
+            defaultPropertyTypes[type]
+          return acc
+        },
+        {} as Record<PropertyTypeKey, boolean>
+      )
+    },
+    []
+  )
 
   const [propertyTypes, setPropertyTypes] = useState<
     Record<PropertyTypeKey, boolean>
@@ -165,7 +193,7 @@ export function PreferencesSection({
     }
   )
   const [searchRadius, setSearchRadius] = useState(
-    preferences.searchRadius || 10
+    preferences.searchRadius || DEFAULT_SEARCH_RADIUS
   )
   const [selectedCities, setSelectedCities] = useState<CityOption[]>(
     preferences.cities || []
@@ -173,6 +201,13 @@ export function PreferencesSection({
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
     preferences.neighborhoods || []
   )
+  const [showSelectedCitiesOnly, setShowSelectedCitiesOnly] = useState(false)
+  const [showSelectedNeighborhoodsOnly, setShowSelectedNeighborhoodsOnly] =
+    useState(false)
+  const [savedSearchName, setSavedSearchName] = useState('')
+  const [savingSearch, setSavingSearch] = useState(false)
+
+  const autoSelectedCitiesRef = useRef<Set<string>>(new Set())
 
   const propertyTypeOptions: Array<{
     key: PropertyTypeKey
@@ -245,6 +280,7 @@ export function PreferencesSection({
       if (selectedCities.length === 0) {
         setAvailableNeighborhoods([])
         setSelectedNeighborhoods([])
+        autoSelectedCitiesRef.current.clear()
         return
       }
 
@@ -273,8 +309,39 @@ export function PreferencesSection({
     }
   }, [selectedCities])
 
-  const cityKey = (city: CityOption) =>
-    `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
+  useEffect(() => {
+    if (!availableNeighborhoods.length || selectedCities.length === 0) return
+
+    const selectedCityKeys = new Set(selectedCities.map(cityKey))
+    autoSelectedCitiesRef.current.forEach((key) => {
+      if (!selectedCityKeys.has(key)) {
+        autoSelectedCitiesRef.current.delete(key)
+      }
+    })
+
+    const newlySelectedKeys = selectedCities
+      .map(cityKey)
+      .filter((key) => !autoSelectedCitiesRef.current.has(key))
+
+    if (newlySelectedKeys.length === 0) return
+
+    const neighborhoodsToAdd = availableNeighborhoods
+      .filter((neighborhood) =>
+        newlySelectedKeys.includes(
+          cityKey({ city: neighborhood.city, state: neighborhood.state })
+        )
+      )
+      .map((neighborhood) => neighborhood.id)
+
+    if (neighborhoodsToAdd.length > 0) {
+      setSelectedNeighborhoods((prev) => {
+        const merged = new Set([...prev, ...neighborhoodsToAdd])
+        return Array.from(merged)
+      })
+    }
+
+    newlySelectedKeys.forEach((key) => autoSelectedCitiesRef.current.add(key))
+  }, [availableNeighborhoods, selectedCities])
 
   const toggleCity = (city: CityOption) => {
     setSelectedCities((prev) => {
@@ -295,26 +362,58 @@ export function PreferencesSection({
     })
   }
 
+  const selectAllCities = () => {
+    setSelectedCities(availableCities)
+  }
+
+  const clearAllCities = () => {
+    setSelectedCities([])
+  }
+
+  const selectAllNeighborhoods = () => {
+    setSelectedNeighborhoods(availableNeighborhoods.map((n) => n.id))
+  }
+
+  const selectNeighborhoodGroup = (group: Neighborhood[]) => {
+    setSelectedNeighborhoods((prev) => {
+      const merged = new Set(prev)
+      group.forEach((neighborhood) => merged.add(neighborhood.id))
+      return Array.from(merged)
+    })
+  }
+
   const filteredCities = useMemo(() => {
     const query = citySearch.trim().toLowerCase()
-    if (!query) return availableCities
+    const baseCities = showSelectedCitiesOnly ? selectedCities : availableCities
+    if (!query) return baseCities
 
-    return availableCities.filter((city) => {
+    return baseCities.filter((city) => {
       const label = `${city.city}, ${city.state}`.toLowerCase()
       return label.includes(query)
     })
-  }, [availableCities, citySearch])
+  }, [availableCities, citySearch, selectedCities, showSelectedCitiesOnly])
 
   const filteredNeighborhoods = useMemo(() => {
     const query = neighborhoodSearch.trim().toLowerCase()
-    if (!query) return availableNeighborhoods
+    const baseNeighborhoods = showSelectedNeighborhoodsOnly
+      ? availableNeighborhoods.filter((neighborhood) =>
+          selectedNeighborhoods.includes(neighborhood.id)
+        )
+      : availableNeighborhoods
 
-    return availableNeighborhoods.filter((neighborhood) =>
+    if (!query) return baseNeighborhoods
+
+    return baseNeighborhoods.filter((neighborhood) =>
       `${neighborhood.name} ${neighborhood.city} ${neighborhood.state}`
         .toLowerCase()
         .includes(query)
     )
-  }, [availableNeighborhoods, neighborhoodSearch])
+  }, [
+    availableNeighborhoods,
+    neighborhoodSearch,
+    selectedNeighborhoods,
+    showSelectedNeighborhoodsOnly,
+  ])
 
   const neighborhoodGroups = useMemo(() => {
     const grouped = new Map<string, { label: string; items: Neighborhood[] }>()
@@ -330,6 +429,54 @@ export function PreferencesSection({
       a.label.localeCompare(b.label)
     )
   }, [filteredNeighborhoods])
+
+  const normalizeSnapshot = useCallback(
+    (values: {
+      priceRange?: [number, number]
+      bedrooms?: number
+      bathrooms?: number
+      searchRadius?: number
+      propertyTypes?: Record<PropertyTypeKey, boolean>
+      mustHaves?: Record<MustHaveKey, boolean>
+      cities?: CityOption[]
+      neighborhoods?: string[]
+    }) => {
+      const normalizedCities = [...(values.cities || [])].sort((a, b) =>
+        cityKey(a).localeCompare(cityKey(b))
+      )
+      const normalizedNeighborhoods = Array.from(
+        new Set(values.neighborhoods || [])
+      ).sort()
+      const normalizedPropertyTypes = PROPERTY_TYPE_VALUES.reduce(
+        (acc, type) => {
+          acc[type] = Boolean(values.propertyTypes?.[type])
+          return acc
+        },
+        {} as Record<PropertyTypeKey, boolean>
+      )
+      const normalizedMustHaves = (
+        ['parking', 'pool', 'gym', 'petFriendly'] as MustHaveKey[]
+      ).reduce<Record<MustHaveKey, boolean>>(
+        (acc, key) => {
+          acc[key] = Boolean(values.mustHaves?.[key])
+          return acc
+        },
+        {} as Record<MustHaveKey, boolean>
+      )
+
+      return {
+        priceRange: values.priceRange || DEFAULT_PRICE_RANGE,
+        bedrooms: values.bedrooms || DEFAULT_BEDROOMS,
+        bathrooms: values.bathrooms || DEFAULT_BATHROOMS,
+        searchRadius: values.searchRadius || DEFAULT_SEARCH_RADIUS,
+        propertyTypes: normalizedPropertyTypes,
+        mustHaves: normalizedMustHaves,
+        cities: normalizedCities,
+        neighborhoods: normalizedNeighborhoods,
+      }
+    },
+    []
+  )
 
   const toPersistedPropertyTypes = (
     types: Record<PropertyTypeKey, boolean>
@@ -350,34 +497,251 @@ export function PreferencesSection({
     }
   }
 
-  const savePreferences = async () => {
-    setLoading(true)
-    try {
-      const propertyTypesPayload = toPersistedPropertyTypes(propertyTypes)
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-      const updatedProfile = await userService.updateUserProfile(user.id, {
-        preferences: {
-          ...preferences,
-          priceRange,
-          bedrooms,
-          bathrooms,
-          propertyTypes: propertyTypesPayload,
-          mustHaves,
-          searchRadius,
-          cities: selectedCities,
-          neighborhoods: selectedNeighborhoods,
-        },
-      })
-      if (updatedProfile && onProfileUpdate) {
-        onProfileUpdate(updatedProfile)
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
       }
-      toast.success('Preferences saved successfully')
-    } catch (_error) {
-      toast.error('Failed to save preferences')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [])
+
+  const buildPreferencesPayload = useCallback(() => {
+    const propertyTypesPayload = toPersistedPropertyTypes(propertyTypes)
+    return {
+      ...preferences,
+      priceRange,
+      bedrooms,
+      bathrooms,
+      propertyTypes: propertyTypesPayload,
+      mustHaves,
+      searchRadius,
+      cities: selectedCities,
+      neighborhoods: selectedNeighborhoods,
+    }
+  }, [
+    bathrooms,
+    bedrooms,
+    mustHaves,
+    preferences,
+    priceRange,
+    propertyTypes,
+    searchRadius,
+    selectedCities,
+    selectedNeighborhoods,
+  ])
+
+  const savePreferences = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (loading) return
+      setLoading(true)
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+        autoSaveTimeoutRef.current = null
+      }
+      try {
+        const updatedProfile = await userService.updateUserProfile(user.id, {
+          preferences: buildPreferencesPayload(),
+        })
+        if (updatedProfile && onProfileUpdate) {
+          onProfileUpdate(updatedProfile)
+        }
+        setLastSavedAt(new Date())
+        if (!options?.silent) {
+          toast.success('Preferences saved successfully')
+        }
+      } catch (_error) {
+        if (!options?.silent) {
+          toast.error('Failed to save preferences')
+        }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [buildPreferencesPayload, loading, onProfileUpdate, user.id, userService]
+  )
+
+  const storedSnapshot = useMemo(
+    () =>
+      normalizeSnapshot({
+        priceRange: preferences.priceRange,
+        bedrooms: preferences.bedrooms,
+        bathrooms: preferences.bathrooms,
+        searchRadius: preferences.searchRadius,
+        propertyTypes: normalizePropertyTypes(preferences.propertyTypes),
+        mustHaves: (preferences.mustHaves || {
+          parking: false,
+          pool: false,
+          gym: false,
+          petFriendly: false,
+        }) as Record<MustHaveKey, boolean>,
+        cities: preferences.cities || [],
+        neighborhoods: preferences.neighborhoods || [],
+      }),
+    [normalizePropertyTypes, normalizeSnapshot, preferences]
+  )
+
+  const currentSnapshot = useMemo(
+    () =>
+      normalizeSnapshot({
+        priceRange,
+        bedrooms,
+        bathrooms,
+        searchRadius,
+        propertyTypes,
+        mustHaves,
+        cities: selectedCities,
+        neighborhoods: selectedNeighborhoods,
+      }),
+    [
+      bathrooms,
+      bedrooms,
+      mustHaves,
+      normalizeSnapshot,
+      priceRange,
+      propertyTypes,
+      searchRadius,
+      selectedCities,
+      selectedNeighborhoods,
+    ]
+  )
+
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(storedSnapshot) !== JSON.stringify(currentSnapshot),
+    [currentSnapshot, storedSnapshot]
+  )
+
+  const didMountRef = useRef(false)
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true
+      return
+    }
+
+    if (!hasUnsavedChanges) {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+        autoSaveTimeoutRef.current = null
+      }
+      return
+    }
+
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      void savePreferences({ silent: true })
+    }, 900)
+  }, [currentSnapshot, hasUnsavedChanges, savePreferences])
+
+  useEffect(() => {
+    if (!onSaveStateChange) return
+    onSaveStateChange({
+      isSaving: loading,
+      hasUnsavedChanges,
+      lastSavedAt,
+    })
+  }, [hasUnsavedChanges, lastSavedAt, loading, onSaveStateChange])
+
+  const buildLocationLabel = useCallback(() => {
+    if (selectedNeighborhoods.length > 0) {
+      return `${selectedNeighborhoods.length} neighborhoods`
+    }
+    if (selectedCities.length === 0) {
+      return 'Anywhere'
+    }
+
+    const cityNames = selectedCities
+      .slice(0, 2)
+      .map((city) => `${city.city}, ${city.state}`)
+      .join(', ')
+    const remaining = selectedCities.length - 2
+    return remaining > 0 ? `${cityNames} +${remaining}` : cityNames
+  }, [selectedCities, selectedNeighborhoods.length])
+
+  const generateSearchName = useCallback(() => {
+    const parts = [
+      buildLocationLabel(),
+      `$${Math.round(priceRange[0] / 1000)}k-$${Math.round(
+        priceRange[1] / 1000
+      )}k`,
+      `${bedrooms}+ bed`,
+      `${bathrooms}+ bath`,
+    ]
+    return parts.filter(Boolean).join(' | ')
+  }, [bathrooms, bedrooms, buildLocationLabel, priceRange])
+
+  const saveSearch = useCallback(async () => {
+    if (savingSearch) return
+    setSavingSearch(true)
+    try {
+      const name = savedSearchName.trim() || generateSearchName()
+      if (!name) {
+        toast.error('Add a name for this search')
+        return
+      }
+
+      const selectedPropertyTypes = PROPERTY_TYPE_VALUES.filter(
+        (type) => propertyTypes[type]
+      )
+      const selectedAmenities = Object.entries(mustHaves)
+        .filter(([_, selected]) => selected)
+        .map(([key]) => MUST_HAVE_LABELS[key as MustHaveKey] || key)
+
+      const filters = {
+        location: buildLocationLabel(),
+        cities: selectedCities,
+        neighborhoods: selectedNeighborhoods,
+        priceMin: priceRange[0],
+        priceMax: priceRange[1],
+        bedrooms,
+        bathrooms,
+        propertyTypes: selectedPropertyTypes,
+        mustHaves: selectedAmenities,
+        radius: searchRadius,
+      }
+
+      const saved = await userService.createSavedSearch({
+        user_id: user.id,
+        household_id: profile.household_id || null,
+        name,
+        filters,
+        is_active: true,
+      })
+
+      if (!saved) {
+        toast.error('Failed to save search')
+        return
+      }
+
+      setSavedSearchName('')
+      toast.success('Saved search created')
+    } catch (_error) {
+      toast.error('Failed to save search')
+    } finally {
+      setSavingSearch(false)
+    }
+  }, [
+    bathrooms,
+    bedrooms,
+    buildLocationLabel,
+    generateSearchName,
+    mustHaves,
+    priceRange,
+    profile.household_id,
+    propertyTypes,
+    savedSearchName,
+    savingSearch,
+    searchRadius,
+    selectedCities,
+    selectedNeighborhoods,
+    user.id,
+    userService,
+  ])
 
   return (
     <div className="space-y-8">
@@ -397,7 +761,10 @@ export function PreferencesSection({
           </div>
         </div>
 
-        <div className="space-y-6 rounded-xl border border-white/5 bg-white/[0.02] p-5">
+        <div
+          className="space-y-6 rounded-xl border border-white/5 bg-white/[0.02] p-5"
+          id="search-preferences"
+        >
           {/* Location Preferences */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -417,18 +784,38 @@ export function PreferencesSection({
 
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
-                    Cities
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCities([])}
-                    className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors disabled:opacity-40"
-                    disabled={selectedCities.length === 0}
-                  >
-                    Clear
-                  </button>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                      Cities
+                    </p>
+                    <div className="text-hm-stone-500 flex items-center gap-2 text-xs">
+                      <span>Selected only</span>
+                      <Switch
+                        checked={showSelectedCitiesOnly}
+                        onCheckedChange={setShowSelectedCitiesOnly}
+                        aria-label="Show selected cities only"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={selectAllCities}
+                      className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                      disabled={availableCities.length === 0 || citiesLoading}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllCities}
+                      className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                      disabled={selectedCities.length === 0}
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
 
                 <Input
@@ -447,7 +834,11 @@ export function PreferencesSection({
                       Loading cities…
                     </div>
                   ) : filteredCities.length === 0 ? (
-                    <p className="text-hm-stone-500 text-sm">No cities found</p>
+                    <p className="text-hm-stone-500 text-sm">
+                      {showSelectedCitiesOnly && selectedCities.length === 0
+                        ? 'No cities selected'
+                        : 'No cities found'}
+                    </p>
                   ) : (
                     filteredCities.map((city) => {
                       const key = cityKey(city)
@@ -481,18 +872,41 @@ export function PreferencesSection({
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
-                    Neighborhoods
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedNeighborhoods([])}
-                    className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors disabled:opacity-40"
-                    disabled={selectedNeighborhoods.length === 0}
-                  >
-                    Clear
-                  </button>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                      Neighborhoods
+                    </p>
+                    <div className="text-hm-stone-500 flex items-center gap-2 text-xs">
+                      <span>Selected only</span>
+                      <Switch
+                        checked={showSelectedNeighborhoodsOnly}
+                        onCheckedChange={setShowSelectedNeighborhoodsOnly}
+                        aria-label="Show selected neighborhoods only"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={selectAllNeighborhoods}
+                      className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                      disabled={
+                        availableNeighborhoods.length === 0 ||
+                        neighborhoodsLoading
+                      }
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedNeighborhoods([])}
+                      className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                      disabled={selectedNeighborhoods.length === 0}
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
 
                 <Input
@@ -521,14 +935,26 @@ export function PreferencesSection({
                     </div>
                   ) : neighborhoodGroups.length === 0 ? (
                     <p className="text-hm-stone-500 text-sm">
-                      No neighborhoods found
+                      {showSelectedNeighborhoodsOnly &&
+                      selectedNeighborhoods.length === 0
+                        ? 'No neighborhoods selected'
+                        : 'No neighborhoods found'}
                     </p>
                   ) : (
                     neighborhoodGroups.map((group) => (
                       <div key={group.label} className="space-y-2">
-                        <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
-                          {group.label}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                            {group.label}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => selectNeighborhoodGroup(group.items)}
+                            className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors"
+                          >
+                            Select all
+                          </button>
+                        </div>
                         <div className="space-y-2">
                           {group.items.map((neighborhood) => (
                             <div
@@ -568,7 +994,7 @@ export function PreferencesSection({
           </div>
 
           {/* Price Range */}
-          <div className="space-y-4">
+          <div className="space-y-4" id="price-range">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
                 <DollarSign className="h-4 w-4 text-emerald-400" />
@@ -648,7 +1074,7 @@ export function PreferencesSection({
           </div>
 
           {/* Search Radius */}
-          <div className="space-y-4">
+          <div className="space-y-4" id="search-radius">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-amber-400" />
@@ -667,7 +1093,7 @@ export function PreferencesSection({
               className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-amber-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-amber-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />
             <p className="text-hm-stone-500 text-xs">
-              Higher radius expands nearby cities and suburbs
+              Radius is saved now and will power geo filtering next.
             </p>
           </div>
         </div>
@@ -776,12 +1202,12 @@ export function PreferencesSection({
         <div>
           <p className="text-hm-stone-200 font-medium">Save and sync</p>
           <p className="text-hm-stone-500 text-sm">
-            Updating preferences immediately refreshes dashboard matches
+            Updates auto-save and refresh dashboard matches
           </p>
         </div>
         <Button
-          onClick={savePreferences}
-          disabled={loading}
+          onClick={() => void savePreferences()}
+          disabled={loading || !hasUnsavedChanges}
           className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
           data-testid="save-preferences"
         >
@@ -793,10 +1219,46 @@ export function PreferencesSection({
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              Save Preferences
+              {hasUnsavedChanges ? 'Save now' : 'All changes saved'}
             </>
           )}
         </Button>
+      </div>
+
+      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.02] p-5">
+        <div>
+          <p className="text-hm-stone-200 font-medium">Save this search</p>
+          <p className="text-hm-stone-500 text-sm">
+            Give it a name and reuse it from Saved Searches.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Input
+            value={savedSearchName}
+            onChange={(e) => setSavedSearchName(e.target.value)}
+            placeholder={generateSearchName()}
+            aria-label="Saved search name"
+            className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5"
+          />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSavedSearchName(generateSearchName())}
+              className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+            >
+              Auto-name
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void saveSearch()}
+              disabled={savingSearch}
+              className="bg-emerald-500 text-white hover:bg-emerald-400 disabled:opacity-50"
+            >
+              {savingSearch ? 'Saving...' : 'Save search'}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

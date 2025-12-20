@@ -5,6 +5,7 @@ import {
   type PropertyFilters,
   type PropertyType,
 } from '@/lib/schemas/property'
+import { DEFAULT_PRICE_RANGE } from '@/lib/constants/preferences'
 
 export interface DashboardData {
   properties: Property[]
@@ -34,11 +35,7 @@ export function buildPropertyFiltersFromPreferences(
 ): PropertyFilters {
   const filters: PropertyFilters = {}
 
-  if (!userPreferences) {
-    return filters
-  }
-
-  const prefs = userPreferences
+  const prefs = userPreferences || {}
 
   if (prefs.neighborhoods && prefs.neighborhoods.length > 0) {
     filters.neighborhoods = prefs.neighborhoods
@@ -46,10 +43,9 @@ export function buildPropertyFiltersFromPreferences(
     filters.cities = prefs.cities
   }
 
-  if (prefs.priceRange) {
-    filters.price_min = prefs.priceRange[0]
-    filters.price_max = prefs.priceRange[1]
-  }
+  const priceRange = prefs.priceRange || DEFAULT_PRICE_RANGE
+  filters.price_min = priceRange[0]
+  filters.price_max = priceRange[1]
 
   if (prefs.bedrooms) {
     filters.bedrooms_min = prefs.bedrooms

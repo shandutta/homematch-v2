@@ -87,7 +87,7 @@ describe('SavedSearchesSection', () => {
         screen.getByText("You haven't saved any searches yet.")
       ).toBeInTheDocument()
       expect(
-        screen.getByText(/Dial in filters on the dashboard/i)
+        screen.getByText(/Dial in filters in settings/i)
       ).toBeInTheDocument()
     })
   })
