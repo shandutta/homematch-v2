@@ -97,6 +97,28 @@ for (let workerIndex = 0; workerIndex < 8; workerIndex++) {
   })
 }
 
+const gallerySeedProperty = {
+  zpid: 'dev-100014',
+  address: '908 Gallery Ln',
+  city: 'San Francisco',
+  state: 'CA',
+  zip_code: '94109',
+  price: 1095000,
+  bedrooms: 2,
+  bathrooms: 2.0,
+  square_feet: 1180,
+  property_type: 'single_family',
+  listing_status: 'active',
+  images: [
+    '/images/properties/house-1.svg',
+    '/images/properties/house-2.svg',
+    '/images/properties/house-3.svg',
+  ],
+  description:
+    'Photo-forward listing with multiple images for gallery verification.',
+  is_active: true,
+}
+
 async function ensureProfilesExist() {
   // Avoid relying solely on triggers; upsert profiles for our test users explicitly
   const { data: userList, error: listError } =
@@ -213,6 +235,72 @@ async function deleteExistingUser(email, maxRetries = 3) {
     }
   }
   return false
+}
+
+async function getAuthUserIdByEmail(email) {
+  const perPage = 200
+  for (let page = 1; page <= 25; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage,
+    })
+    if (error) throw new Error(error.message)
+
+    const user = data.users.find((u) => u.email === email)
+    if (user) return user.id
+
+    if (data.users.length < perPage) break
+  }
+
+  throw new Error(`Test user not found in auth: ${email}`)
+}
+
+async function ensureGallerySeedLike() {
+  try {
+    const primaryUser = testUsers[0]
+    if (!primaryUser?.email) return
+
+    await supabase
+      .from('properties')
+      .upsert(gallerySeedProperty, { onConflict: 'zpid' })
+
+    const { data: propertyRows, error: propertyError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('zpid', gallerySeedProperty.zpid)
+      .limit(1)
+
+    if (propertyError) throw new Error(propertyError.message)
+    const propertyId = propertyRows?.[0]?.id
+    if (!propertyId) {
+      console.warn(
+        `⚠️  Gallery seed property not found after upsert (zpid=${gallerySeedProperty.zpid}).`
+      )
+      return
+    }
+
+    const userId = await getAuthUserIdByEmail(primaryUser.email)
+
+    const { error: interactionError } = await supabase
+      .from('user_property_interactions')
+      .upsert(
+        {
+          user_id: userId,
+          property_id: propertyId,
+          interaction_type: 'like',
+          created_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,property_id,interaction_type' }
+      )
+
+    if (interactionError) {
+      throw new Error(interactionError.message)
+    }
+  } catch (error) {
+    console.warn(
+      `⚠️  Could not seed gallery like for test user: ${error?.message || error}`
+    )
+  }
 }
 
 /**
@@ -463,6 +551,7 @@ async function setupTestUsers() {
   }
 
   await ensureProfilesExist()
+  await ensureGallerySeedLike()
 
   // Final verification to avoid silently missing profiles
   const { data: latestUsers, error: latestUsersError } =

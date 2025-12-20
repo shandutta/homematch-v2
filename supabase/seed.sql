@@ -83,6 +83,17 @@ VALUES
    1220000, 3, 2, 1350, 'single_family', 'active',
    ST_SetSRID(ST_MakePoint(-122.2730, 37.8715), 4326),
    '33333333-3333-3333-3333-333333333333', 'test-hash-13', true)
+  ,
+  -- Additional properties to satisfy default dashboard filters (<= $800k, >= 2 baths)
+  ('88888888-9999-aaaa-bbbb-cccccccccccc', 'dev-200001', '2100 Market St #402', 'San Francisco', 'CA', '94114',
+   785000, 2, 2, 1080, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.4316, 37.7681), 4326),
+   '11111111-1111-1111-1111-111111111111', 'test-hash-2001', true),
+
+  ('99999999-aaaa-bbbb-cccc-dddddddddddd', 'dev-200002', '98 Grand Ave', 'Oakland', 'CA', '94612',
+   725000, 3, 2, 1420, 'single_family', 'active',
+   ST_SetSRID(ST_MakePoint(-122.2520, 37.8094), 4326),
+   '22222222-2222-2222-2222-222222222222', 'test-hash-2002', true)
 ON CONFLICT (zpid) DO UPDATE SET
   address = EXCLUDED.address,
   city = EXCLUDED.city,

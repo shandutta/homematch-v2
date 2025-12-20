@@ -3,11 +3,14 @@ import { redirect } from 'next/navigation'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { UserService } from '@/lib/services/users'
 
+interface SettingsPageProps {
+  searchParams?: { tab?: string } | Promise<{ tab?: string }>
+}
+
 export default async function SettingsPage({
   searchParams,
-}: {
-  searchParams?: { tab?: string }
-}) {
+}: SettingsPageProps) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -38,7 +41,7 @@ export default async function SettingsPage({
       <SettingsPageClient
         user={user}
         profile={profile!}
-        initialTab={searchParams?.tab}
+        initialTab={resolvedSearchParams?.tab}
       />
     </div>
   )
