@@ -12,7 +12,7 @@ set search_path = public, extensions
 as $$
 declare
   updated_count integer := 0;
-  fallback_radius_m integer := 5000;
+  city_radius_m integer := 25000;
 begin
   with candidate_properties as (
     select
@@ -43,7 +43,7 @@ begin
       limit 1
     ) n on true
   ),
-  fallback_matches as (
+  city_matches as (
     select
       c.id as property_id,
       n.id as neighborhood_id
@@ -57,7 +57,7 @@ begin
         and st_dwithin(
           n.bounds::geography,
           c.coordinates::geography,
-          fallback_radius_m
+          city_radius_m
         )
       order by
         st_distance(n.bounds::geography, c.coordinates::geography) asc,
@@ -68,10 +68,74 @@ begin
       select 1 from primary_matches pm where pm.property_id = c.id
     )
   ),
+  unmatched as (
+    select c.*
+    from candidate_properties c
+    where not exists (
+      select 1 from primary_matches pm where pm.property_id = c.id
+    )
+      and not exists (
+        select 1 from city_matches cm where cm.property_id = c.id
+      )
+  ),
+  citywide_targets as (
+    select distinct city, state
+    from unmatched
+  ),
+  existing_citywide as (
+    select id, city, state
+    from neighborhoods
+    where bounds is null
+      and name = city || ' (Citywide)'
+  ),
+  inserted_citywide as (
+    insert into neighborhoods (
+      name,
+      city,
+      state,
+      metro_area,
+      bounds,
+      median_price,
+      walk_score,
+      transit_score
+    )
+    select
+      city || ' (Citywide)',
+      city,
+      state,
+      null,
+      null,
+      null,
+      null,
+      null
+    from citywide_targets t
+    where not exists (
+      select 1
+      from existing_citywide e
+      where e.city = t.city and e.state = t.state
+    )
+    returning id, city, state
+  ),
+  citywide_pool as (
+    select * from existing_citywide
+    union all
+    select * from inserted_citywide
+  ),
+  citywide_matches as (
+    select
+      u.id as property_id,
+      p.id as neighborhood_id
+    from unmatched u
+    join citywide_pool p
+      on p.city = u.city
+     and p.state = u.state
+  ),
   final_matches as (
     select * from primary_matches
     union all
-    select * from fallback_matches
+    select * from city_matches
+    union all
+    select * from citywide_matches
   )
   update properties p
   set neighborhood_id = fm.neighborhood_id,
@@ -88,6 +152,6 @@ revoke all on function public.backfill_property_neighborhoods(text[], uuid[], in
 grant execute on function public.backfill_property_neighborhoods(text[], uuid[], integer) to service_role;
 
 comment on function public.backfill_property_neighborhoods is
-  'Assigns neighborhood_id using bounds containment, then falls back to nearest neighborhood in the same city/state within 5km when containment fails.';
+  'Assigns neighborhood_id using bounds containment, then nearest neighborhood within 25km in the same city/state; remaining properties get a citywide fallback neighborhood.';
 
 commit;
