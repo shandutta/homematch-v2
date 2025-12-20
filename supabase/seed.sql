@@ -141,6 +141,87 @@ WHERE p.id = r.id
   AND r.rn > 1;
 
 -- ============================
+-- NEIGHBORHOOD VIBES SEED DATA
+-- LLM-generated neighborhood summaries for storytelling
+-- ============================
+
+INSERT INTO public.neighborhood_vibes (
+  neighborhood_id,
+  tagline,
+  vibe_statement,
+  neighborhood_themes,
+  local_highlights,
+  resident_fits,
+  suggested_tags,
+  input_data,
+  raw_output,
+  model_used,
+  source_data_hash,
+  generation_cost_usd,
+  confidence
+)
+VALUES
+  (
+    '11111111-1111-1111-1111-111111111111',
+    'Mission-adjacent energy with quick city access',
+    'A lively, walkable pocket that keeps you close to cafes, parks, and transit without the constant rush of downtown.',
+    '[{"name":"Walkable Everyday","whyItMatters":"Groceries, coffee, and errands stay within an easy stroll.","intensity":0.82},{"name":"Transit Friendly","whyItMatters":"Quick hops to BART and major bus lines make commuting simple.","intensity":0.78},{"name":"Creative Community","whyItMatters":"Local makers and small businesses add character and momentum.","intensity":0.7}]'::jsonb,
+    '[{"name":"Neighborhood cafes","category":"Food & Drink","whyItMatters":"Morning routines feel effortless and social."},{"name":"Pocket parks","category":"Outdoors","whyItMatters":"Green breaks are always close by."},{"name":"Weekend farmers markets","category":"Community","whyItMatters":"Fresh produce and a lively weekend scene."}]'::jsonb,
+    '[{"profile":"City Explorer","reason":"Easy access to dining, nightlife, and cultural spots."},{"profile":"Car-light Commuter","reason":"Transit options reduce the need for daily driving."},{"profile":"Creative Professional","reason":"Inspiring streetscapes and community energy."}]'::jsonb,
+    ARRAY['Walkable', 'Transit Ready', 'Cafe Culture', 'Vibrant'],
+    '{"neighborhood":{"name":"Test Neighborhood 1","city":"San Francisco","state":"CA"}}'::jsonb,
+    '{}',
+    'seed-data',
+    'seed-neighborhood-1',
+    0,
+    0.86
+  ),
+  (
+    '22222222-2222-2222-2222-222222222222',
+    'Lake-adjacent calm with downtown convenience',
+    'A balanced Oakland neighborhood that pairs tree-lined streets with quick access to shops, lakeside trails, and nightlife.',
+    '[{"name":"Lakeside Living","whyItMatters":"Morning jogs and sunset strolls feel built in.","intensity":0.84},{"name":"Neighborhood Pride","whyItMatters":"Longtime locals and new arrivals keep the vibe welcoming.","intensity":0.74},{"name":"Easy Downtown Access","whyItMatters":"Restaurants, bars, and offices stay minutes away.","intensity":0.68}]'::jsonb,
+    '[{"name":"Lake Merritt trails","category":"Outdoors","whyItMatters":"Daily movement and fresh air are always nearby."},{"name":"Local eateries","category":"Food & Drink","whyItMatters":"A mix of casual and destination dining."},{"name":"Community events","category":"Community","whyItMatters":"Seasonal gatherings keep neighbors connected."}]'::jsonb,
+    '[{"profile":"Outdoor Regular","reason":"Trails and green space anchor the routine."},{"profile":"Social Weekender","reason":"Events and restaurants are close without being overwhelming."},{"profile":"Hybrid Worker","reason":"Commutes are short, and amenities fill the gaps."}]'::jsonb,
+    ARRAY['Lakeside', 'Community', 'Balanced', 'Weekend Ready'],
+    '{"neighborhood":{"name":"Test Neighborhood 2","city":"Oakland","state":"CA"}}'::jsonb,
+    '{}',
+    'seed-data',
+    'seed-neighborhood-2',
+    0,
+    0.84
+  ),
+  (
+    '33333333-3333-3333-3333-333333333333',
+    'Tree-lined calm with a campus pulse',
+    'A Berkeley enclave that blends quiet residential streets with a steady buzz of cafes, bookstores, and weekend culture.',
+    '[{"name":"Academic Energy","whyItMatters":"Talks, libraries, and campus events keep things intellectually active.","intensity":0.78},{"name":"Leafy Streets","whyItMatters":"A slower pace and plenty of shade make daily life feel grounded.","intensity":0.8},{"name":"Local Culture","whyItMatters":"Independent shops and restaurants anchor the neighborhood.","intensity":0.73}]'::jsonb,
+    '[{"name":"Independent bookstores","category":"Culture","whyItMatters":"A thoughtful, local feel for weekend wandering."},{"name":"Neighborhood cafes","category":"Food & Drink","whyItMatters":"Low-key spots for studying or meeting friends."},{"name":"Tree-lined blocks","category":"Outdoors","whyItMatters":"A calm backdrop for evening walks."}]'::jsonb,
+    '[{"profile":"Graduate Student","reason":"Campus access and study-friendly spots are close."},{"profile":"Quiet Professional","reason":"Calm streets balance busy workdays."},{"profile":"Culture Seeker","reason":"Independent shops and events keep weekends lively."}]'::jsonb,
+    ARRAY['Leafy', 'Academic', 'Walkable', 'Local Gems'],
+    '{"neighborhood":{"name":"Test Neighborhood 3","city":"Berkeley","state":"CA"}}'::jsonb,
+    '{}',
+    'seed-data',
+    'seed-neighborhood-3',
+    0,
+    0.83
+  )
+ON CONFLICT (neighborhood_id) DO UPDATE SET
+  tagline = EXCLUDED.tagline,
+  vibe_statement = EXCLUDED.vibe_statement,
+  neighborhood_themes = EXCLUDED.neighborhood_themes,
+  local_highlights = EXCLUDED.local_highlights,
+  resident_fits = EXCLUDED.resident_fits,
+  suggested_tags = EXCLUDED.suggested_tags,
+  input_data = EXCLUDED.input_data,
+  raw_output = EXCLUDED.raw_output,
+  model_used = EXCLUDED.model_used,
+  source_data_hash = EXCLUDED.source_data_hash,
+  generation_cost_usd = EXCLUDED.generation_cost_usd,
+  confidence = EXCLUDED.confidence,
+  updated_at = NOW();
+
+-- ============================
 -- COUPLES & HOUSEHOLDS TEST DATA
 -- Critical for demonstrating all couples functionality
 -- ============================
@@ -333,6 +414,17 @@ WITH additional_properties AS (
       'images',jsonb_build_array('https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&auto=format&fit=crop&w=1600'),
       'description','Charming Berkeley bungalow near UC campus.',
       'listing_status','active','latitude',37.8715,'longitude',-122.2730
+    ),
+    jsonb_build_object(
+      'zpid','dev-100014','address','908 Gallery Ln','city','San Francisco','state','CA','zip_code','94109',
+      'price',1095000,'bedrooms',2,'bathrooms',2.0,'square_feet',1180,'property_type','single_family',
+      'images',jsonb_build_array(
+        '/images/properties/house-1.svg',
+        '/images/properties/house-2.svg',
+        '/images/properties/house-3.svg'
+      ),
+      'description','Photo-forward listing with multiple images for gallery verification.',
+      'listing_status','active','latitude',37.7908,'longitude',-122.4211
     )
   ) AS docs
 ),
