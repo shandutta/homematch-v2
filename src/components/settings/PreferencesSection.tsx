@@ -208,6 +208,9 @@ export function PreferencesSection({
   const [savingSearch, setSavingSearch] = useState(false)
 
   const autoSelectedCitiesRef = useRef<Set<string>>(new Set())
+  const markManualNeighborhoodSelection = useCallback(() => {
+    autoSelectedCitiesRef.current = new Set(selectedCities.map(cityKey))
+  }, [selectedCities])
 
   const propertyTypeOptions: Array<{
     key: PropertyTypeKey
@@ -370,6 +373,7 @@ export function PreferencesSection({
   }
 
   const toggleNeighborhood = (neighborhoodId: string) => {
+    markManualNeighborhoodSelection()
     setSelectedNeighborhoods((prev) => {
       if (prev.includes(neighborhoodId)) {
         return prev.filter((id) => id !== neighborhoodId)
@@ -387,15 +391,22 @@ export function PreferencesSection({
   }
 
   const selectAllNeighborhoods = () => {
+    markManualNeighborhoodSelection()
     setSelectedNeighborhoods(availableNeighborhoods.map((n) => n.id))
   }
 
   const selectNeighborhoodGroup = (group: Neighborhood[]) => {
+    markManualNeighborhoodSelection()
     setSelectedNeighborhoods((prev) => {
       const merged = new Set(prev)
       group.forEach((neighborhood) => merged.add(neighborhood.id))
       return Array.from(merged)
     })
+  }
+
+  const clearAllNeighborhoods = () => {
+    markManualNeighborhoodSelection()
+    setSelectedNeighborhoods([])
   }
 
   const filteredCities = useMemo(() => {
@@ -916,7 +927,7 @@ export function PreferencesSection({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelectedNeighborhoods([])}
+                      onClick={clearAllNeighborhoods}
                       className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
                       disabled={selectedNeighborhoods.length === 0}
                     >
