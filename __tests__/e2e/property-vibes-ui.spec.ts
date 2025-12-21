@@ -404,7 +404,7 @@ test.describe('Property Vibes - UI', () => {
 
       await expect(card).toBeVisible()
       await card.scrollIntoViewIfNeeded()
-      await card.press('Enter')
+      await card.click({ force: true })
 
       const dialog = page.getByRole('dialog', { name: seeded.address })
       await expect(dialog).toBeVisible({ timeout: 15000 })
