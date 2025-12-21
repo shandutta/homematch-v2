@@ -197,7 +197,14 @@ async function seedLikedPropertyWithVibes({
         'Open Concept Flow',
       ],
       feature_highlights: [],
-      lifestyle_fits: [],
+      lifestyle_fits: [
+        {
+          category: 'Remote Work Ready',
+          score: 0.92,
+          tier: 'perfect',
+          reason: 'An easy office-ready layout for focus and video calls.',
+        },
+      ],
       primary_vibes: [],
       aesthetics: {
         lightingQuality: 'natural_abundant',
