@@ -79,6 +79,14 @@ console.error = (...args) => {
   ) {
     return
   }
+  // Suppress expected VibesService parse errors in tests
+  if (
+    args[0] &&
+    typeof args[0] === 'string' &&
+    args[0].includes('[VibesService] Failed to parse/validate LLM response')
+  ) {
+    return
+  }
   originalConsoleError.apply(console, args)
 }
 
