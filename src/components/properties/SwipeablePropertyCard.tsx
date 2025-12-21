@@ -229,6 +229,7 @@ export function SwipeablePropertyCard({
                   property={property}
                   disableDetailModal
                   fullHeight
+                  enableDetailsToggle
                 />
               </div>
             </MotionDiv>
@@ -264,6 +265,7 @@ export function SwipeablePropertyCard({
               imagePriority
               disableDetailModal
               fullHeight
+              enableDetailsToggle
             />
 
             {/* Decision Overlays */}
@@ -379,6 +381,7 @@ export function SwipeablePropertyCard({
                   property={leavingCard.property}
                   disableDetailModal
                   fullHeight
+                  enableDetailsToggle
                 />
               </div>
             </MotionDiv>

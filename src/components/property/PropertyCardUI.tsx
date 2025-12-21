@@ -97,11 +97,17 @@ export function PropertyCardUI({
   const shouldShowMap = showMap && hasMapCoordinates
 
   const availableDetailViews = useMemo(() => {
-    return [
-      shouldShowStory ? 'story' : null,
-      shouldShowMap ? 'map' : null,
-    ].filter(Boolean) as Array<'story' | 'map'>
-  }, [shouldShowMap, shouldShowStory])
+    const orderedViews: Array<'story' | 'map'> = fullHeight
+      ? ['map', 'story']
+      : ['story', 'map']
+
+    return orderedViews
+      .map((view) => {
+        if (view === 'story') return shouldShowStory ? view : null
+        return shouldShowMap ? view : null
+      })
+      .filter(Boolean) as Array<'story' | 'map'>
+  }, [fullHeight, shouldShowMap, shouldShowStory])
 
   const [detailView, setDetailView] = useState<'story' | 'map' | null>(null)
 
@@ -142,7 +148,14 @@ export function PropertyCardUI({
       }
     >
       {/* Property Image - Responsive aspect ratio */}
-      <div className="group relative aspect-[3/4] w-full overflow-hidden md:aspect-[4/5] lg:aspect-[4/3]">
+      <div
+        className={cn(
+          'group relative w-full flex-none overflow-hidden',
+          fullHeight
+            ? 'aspect-[16/9] sm:aspect-[4/3] lg:aspect-[4/5]'
+            : 'aspect-[3/4] md:aspect-[4/5] lg:aspect-[4/3]'
+        )}
+      >
         <PropertyImage
           src={property.images || undefined}
           alt={property.address || 'Property'}
@@ -204,7 +217,11 @@ export function PropertyCardUI({
 
       {/* Property Details */}
       <div
-        className={cn('relative flex flex-1 flex-col p-5', detailPaddingBottom)}
+        className={cn(
+          'relative flex flex-1 flex-col p-5',
+          detailPaddingBottom,
+          fullHeight && 'min-h-0 overflow-y-auto'
+        )}
       >
         {/* Address */}
         <div className="mb-3">
