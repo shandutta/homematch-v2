@@ -93,7 +93,7 @@ export function InteractionsListPage({
       </h1>
 
       {isLoading && properties.length === 0 ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderSkeletons()}
         </div>
       ) : properties.length === 0 ? (
@@ -124,7 +124,7 @@ export function InteractionsListPage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
             {properties.map((property, index) => {
               const isRemoving =
                 pendingPropertyId === property.id && deleteInteraction.isPending
