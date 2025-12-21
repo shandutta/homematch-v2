@@ -801,7 +801,7 @@ export function StorytellingDescription({
       >
         {/* Main Description */}
         <p
-          className={`text-token-sm leading-relaxed font-medium ${
+          className={`text-token-sm line-clamp-2 leading-relaxed font-medium ${
             isMutualLike
               ? 'rounded-md border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-2 py-1 text-pink-700 dark:border-pink-500/30 dark:from-pink-500/10 dark:via-purple-500/5 dark:to-slate-900/0 dark:text-pink-200'
               : 'dark:text-hm-stone-400 text-slate-600'
