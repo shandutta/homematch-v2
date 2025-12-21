@@ -30,6 +30,7 @@ export interface PropertyCardUIProps {
   showMap?: boolean
   enableDetailsToggle?: boolean
   isClickable?: boolean
+  fullHeight?: boolean
 }
 
 function buildZillowUrl(property: Property): string {
@@ -58,6 +59,7 @@ export function PropertyCardUI({
   showMap = true,
   enableDetailsToggle = false,
   isClickable = false,
+  fullHeight = false,
 }: PropertyCardUIProps) {
   const hasMapCoordinates = Boolean(property.coordinates)
 
@@ -119,7 +121,8 @@ export function PropertyCardUI({
   return (
     <div
       className={cn(
-        'card-luxury relative flex h-full w-full flex-col overflow-hidden',
+        'card-luxury relative flex w-full flex-col overflow-hidden',
+        fullHeight && 'h-full',
         isClickable && 'cursor-pointer'
       )}
       data-testid="property-card"

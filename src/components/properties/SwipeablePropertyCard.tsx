@@ -225,7 +225,11 @@ export function SwipeablePropertyCard({
               }}
             >
               <div className="h-full w-full transform-gpu">
-                <PropertyCard property={property} disableDetailModal />
+                <PropertyCard
+                  property={property}
+                  disableDetailModal
+                  fullHeight
+                />
               </div>
             </MotionDiv>
           )
@@ -259,6 +263,7 @@ export function SwipeablePropertyCard({
               property={currentProperty}
               imagePriority
               disableDetailModal
+              fullHeight
             />
 
             {/* Decision Overlays */}
@@ -373,6 +378,7 @@ export function SwipeablePropertyCard({
                 <PropertyCard
                   property={leavingCard.property}
                   disableDetailModal
+                  fullHeight
                 />
               </div>
             </MotionDiv>

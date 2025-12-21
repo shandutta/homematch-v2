@@ -21,6 +21,7 @@ interface PropertyCardProps {
   showMap?: boolean
   enableDetailsToggle?: boolean
   disableDetailModal?: boolean
+  fullHeight?: boolean
 }
 
 function usePropertyDetailSafe() {
@@ -43,6 +44,7 @@ export function PropertyCard({
   showMap = true,
   enableDetailsToggle = false,
   disableDetailModal = false,
+  fullHeight = false,
 }: PropertyCardProps) {
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(showStory ? property.id : undefined)
@@ -86,6 +88,7 @@ export function PropertyCard({
       showMap={showMap}
       enableDetailsToggle={enableDetailsToggle}
       isClickable={isClickable}
+      fullHeight={fullHeight}
     />
   )
 }
