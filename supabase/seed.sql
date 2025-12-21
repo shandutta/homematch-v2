@@ -94,6 +94,11 @@ VALUES
    725000, 3, 2, 1420, 'single_family', 'active',
    ST_SetSRID(ST_MakePoint(-122.2520, 37.8094), 4326),
    '22222222-2222-2222-2222-222222222222', 'test-hash-2002', true)
+  ,
+  ('abababab-abab-abab-abab-abababababab', 'dev-200003', '1725 Shattuck Ave #5', 'Berkeley', 'CA', '94709',
+   795000, 2, 2, 980, 'condo', 'active',
+   ST_SetSRID(ST_MakePoint(-122.2717, 37.8716), 4326),
+   '33333333-3333-3333-3333-333333333333', 'test-hash-2003', true)
 ON CONFLICT (zpid) DO UPDATE SET
   address = EXCLUDED.address,
   city = EXCLUDED.city,
