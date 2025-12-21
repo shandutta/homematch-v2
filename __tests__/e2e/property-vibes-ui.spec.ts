@@ -140,7 +140,7 @@ async function seedPropertyWithVibes({
     city: 'San Francisco',
     state: 'CA',
     zip_code: '94103',
-    price: 1250000,
+    price: 450000,
     bedrooms: 3,
     bathrooms: 2.5,
     square_feet: 1800,
