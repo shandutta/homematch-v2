@@ -62,6 +62,7 @@ export function PropertyCardUI({
   fullHeight = false,
 }: PropertyCardUIProps) {
   const hasMapCoordinates = Boolean(property.coordinates)
+  const detailPaddingBottom = onDecision ? 'pb-16' : 'pb-14'
 
   // Check if this property is a mutual like
   const isMutualLike = mutualLikes.some(
@@ -202,7 +203,9 @@ export function PropertyCardUI({
       </div>
 
       {/* Property Details */}
-      <div className="relative flex flex-1 flex-col p-5 pb-16">
+      <div
+        className={cn('relative flex flex-1 flex-col p-5', detailPaddingBottom)}
+      >
         {/* Address */}
         <div className="mb-3">
           <h3
