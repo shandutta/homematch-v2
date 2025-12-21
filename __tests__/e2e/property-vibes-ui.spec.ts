@@ -361,6 +361,39 @@ test.describe('Property Vibes - UI', () => {
     })
 
     try {
+      await page.route('**/api/maps/proxy-script*', (route) => {
+        const stubScript = `
+          (function() {
+            window.google = window.google || {}
+            window.google.maps = window.google.maps || {}
+            window.google.maps.marker = window.google.maps.marker || {}
+            window.google.maps.marker.AdvancedMarkerElement = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.Map = function(el) {
+              if (el && !el.querySelector('.gm-style')) {
+                var node = document.createElement('div')
+                node.className = 'gm-style'
+                el.appendChild(node)
+              }
+            }
+            window.google.maps.Marker = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.InfoWindow = function() {
+              this.open = function() {}
+            }
+            if (window.initGoogleMaps) window.initGoogleMaps()
+          })()
+        `
+
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/javascript',
+          body: stubScript,
+        })
+      })
+
       await page.setViewportSize({ width: 1280, height: 720 })
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
@@ -370,7 +403,9 @@ test.describe('Property Vibes - UI', () => {
         .first()
 
       await expect(card).toBeVisible()
-      await card.getByTestId('property-address').click()
+      await card.focus()
+      await expect(card).toBeFocused()
+      await page.keyboard.press('Enter')
 
       const dialog = page.getByRole('dialog', { name: seeded.address })
       await expect(dialog).toBeVisible({ timeout: 15000 })

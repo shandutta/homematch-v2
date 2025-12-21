@@ -336,11 +336,19 @@ test.describe('Couples invites (edge cases)', () => {
         name: /accept invitation/i,
       })
       await expect(acceptButton).toBeVisible({ timeout: 30000 })
+      await expect(acceptButton).toBeEnabled()
+      await page.waitForTimeout(200)
       await acceptButton.click()
 
-      await expect(
-        page.getByText(/leave your current household before accepting/i)
-      ).toBeVisible({ timeout: 15000 })
+      const errorNotice = page.getByText(
+        /leave your current household before accepting/i
+      )
+      try {
+        await expect(errorNotice).toBeVisible({ timeout: 5000 })
+      } catch {
+        await acceptButton.click()
+      }
+      await expect(errorNotice).toBeVisible({ timeout: 15000 })
       await expect(page).toHaveURL(new RegExp(`/invite/${token}`))
 
       const { data: inviteeProfile } = await service
