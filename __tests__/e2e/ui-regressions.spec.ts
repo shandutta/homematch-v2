@@ -94,15 +94,24 @@ function generateNeighborhoodSourceHash(neighborhood: {
     .digest('hex')
 }
 
+function createDeterministicUuid(seed: string): string {
+  const hash = crypto.createHash('md5').update(seed).digest('hex')
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}-${hash.slice(16, 20)}-${hash.slice(20, 32)}`
+}
+
 async function seedLikedPropertyWithVibes({
   supabase,
   userId,
+  seedKey,
 }: {
   supabase: ReturnType<typeof createServiceRoleClient>
   userId: string
+  seedKey: string
 }) {
-  const propertyId = crypto.randomUUID()
-  const neighborhoodId = crypto.randomUUID()
+  const propertyId = createDeterministicUuid(`liked-ui:${seedKey}:property`)
+  const neighborhoodId = createDeterministicUuid(
+    `liked-ui:${seedKey}:neighborhood`
+  )
   const createdAt = new Date().toISOString()
   const address = `Playwright UI Regression ${propertyId.slice(0, 8)}`
 
@@ -146,64 +155,78 @@ async function seedLikedPropertyWithVibes({
   const propertyTagline = `PLAYWRIGHT_UI_TAGLINE_${propertyId.slice(0, 8)}`
   const neighborhoodTagline = `PLAYWRIGHT_UI_NEIGHBORHOOD_${neighborhoodId.slice(0, 8)}`
 
-  await supabase.from('neighborhoods').insert(neighborhoodRecord)
+  await supabase
+    .from('neighborhoods')
+    .upsert(neighborhoodRecord, { onConflict: 'id' })
 
-  await supabase.from('neighborhood_vibes').insert({
-    neighborhood_id: neighborhoodId,
-    tagline: neighborhoodTagline,
-    vibe_statement: 'A walkable pocket with quick errands and an easy commute.',
-    suggested_tags: ['Walkable', 'Coffee', 'Transit'],
-    neighborhood_themes: [],
-    local_highlights: [],
-    resident_fits: [],
-    input_data: { neighborhood: { id: neighborhoodId } },
-    raw_output: '{}',
-    model_used: 'qwen/qwen3-vl-8b-instruct',
-    source_data_hash: neighborhoodSourceHash,
-    generation_cost_usd: 0,
-    confidence: 0.9,
-    created_at: createdAt,
-    updated_at: createdAt,
-  })
-
-  await supabase.from('properties').insert(propertyRecord)
-
-  await supabase.from('property_vibes').insert({
-    property_id: propertyId,
-    tagline: propertyTagline,
-    vibe_statement:
-      'A bright, calm home that feels ready for both workdays and weekend hosting.',
-    suggested_tags: [
-      "Chef's Kitchen",
-      'Remote Work Ready',
-      'Open Concept Flow',
-    ],
-    feature_highlights: [],
-    lifestyle_fits: [],
-    primary_vibes: [],
-    aesthetics: {
-      lightingQuality: 'natural_abundant',
-      colorPalette: ['warm white', 'light oak'],
-      architecturalStyle: 'Modern',
-      overallCondition: 'pristine',
+  await supabase.from('neighborhood_vibes').upsert(
+    {
+      neighborhood_id: neighborhoodId,
+      tagline: neighborhoodTagline,
+      vibe_statement:
+        'A walkable pocket with quick errands and an easy commute.',
+      suggested_tags: ['Walkable', 'Coffee', 'Transit'],
+      neighborhood_themes: [],
+      local_highlights: [],
+      resident_fits: [],
+      input_data: { neighborhood: { id: neighborhoodId } },
+      raw_output: '{}',
+      model_used: 'qwen/qwen3-vl-8b-instruct',
+      source_data_hash: neighborhoodSourceHash,
+      generation_cost_usd: 0,
+      confidence: 0.9,
+      created_at: createdAt,
+      updated_at: createdAt,
     },
-    images_analyzed: ['/images/properties/house-1.svg'],
-    input_data: { property: { address }, images: [] },
-    raw_output: '{}',
-    model_used: 'qwen/qwen3-vl-8b-instruct',
-    source_data_hash: sourceHash,
-    generation_cost_usd: 0,
-    confidence: 0.9,
-    created_at: createdAt,
-    updated_at: createdAt,
+    { onConflict: 'neighborhood_id' }
+  )
+
+  await supabase.from('properties').upsert(propertyRecord, {
+    onConflict: 'id',
   })
 
-  await supabase.from('user_property_interactions').insert({
-    user_id: userId,
-    property_id: propertyId,
-    interaction_type: 'like',
-    created_at: createdAt,
-  })
+  await supabase.from('property_vibes').upsert(
+    {
+      property_id: propertyId,
+      tagline: propertyTagline,
+      vibe_statement:
+        'A bright, calm home that feels ready for both workdays and weekend hosting.',
+      suggested_tags: [
+        "Chef's Kitchen",
+        'Remote Work Ready',
+        'Open Concept Flow',
+      ],
+      feature_highlights: [],
+      lifestyle_fits: [],
+      primary_vibes: [],
+      aesthetics: {
+        lightingQuality: 'natural_abundant',
+        colorPalette: ['warm white', 'light oak'],
+        architecturalStyle: 'Modern',
+        overallCondition: 'pristine',
+      },
+      images_analyzed: ['/images/properties/house-1.svg'],
+      input_data: { property: { address }, images: [] },
+      raw_output: '{}',
+      model_used: 'qwen/qwen3-vl-8b-instruct',
+      source_data_hash: sourceHash,
+      generation_cost_usd: 0,
+      confidence: 0.9,
+      created_at: createdAt,
+      updated_at: createdAt,
+    },
+    { onConflict: 'property_id' }
+  )
+
+  await supabase.from('user_property_interactions').upsert(
+    {
+      user_id: userId,
+      property_id: propertyId,
+      interaction_type: 'like',
+      created_at: createdAt,
+    },
+    { onConflict: 'user_id,property_id,interaction_type' }
+  )
 
   return {
     address,
@@ -289,7 +312,11 @@ test.describe('UI regressions', () => {
     const { testUser } = createWorkerAuthHelper(page, testInfo)
     const userId = await getAuthUserIdByEmail(supabase, testUser.email)
 
-    const seeded = await seedLikedPropertyWithVibes({ supabase, userId })
+    const seeded = await seedLikedPropertyWithVibes({
+      supabase,
+      userId,
+      seedKey: `${testInfo.project.name}-modal`,
+    })
 
     try {
       await page.goto('/dashboard/liked', { waitUntil: 'domcontentloaded' })
@@ -329,7 +356,11 @@ test.describe('UI regressions', () => {
     const { testUser } = createWorkerAuthHelper(page, testInfo)
     const userId = await getAuthUserIdByEmail(supabase, testUser.email)
 
-    const seeded = await seedLikedPropertyWithVibes({ supabase, userId })
+    const seeded = await seedLikedPropertyWithVibes({
+      supabase,
+      userId,
+      seedKey: `${testInfo.project.name}-snapshot`,
+    })
 
     try {
       await page.goto('/dashboard/liked', { waitUntil: 'domcontentloaded' })
@@ -352,6 +383,12 @@ test.describe('UI regressions', () => {
       })
       await expect(card).toContainText(expectedNeighborhoodTagline, {
         timeout: 15000,
+      })
+
+      await page.evaluate(async () => {
+        if (document.fonts?.ready) {
+          await document.fonts.ready
+        }
       })
 
       await expect(card).toHaveScreenshot('liked-card-desktop.png', {
