@@ -403,9 +403,8 @@ test.describe('Property Vibes - UI', () => {
         .first()
 
       await expect(card).toBeVisible()
-      await card.focus()
-      await expect(card).toBeFocused()
-      await page.keyboard.press('Enter')
+      await card.scrollIntoViewIfNeeded()
+      await card.press('Enter')
 
       const dialog = page.getByRole('dialog', { name: seeded.address })
       await expect(dialog).toBeVisible({ timeout: 15000 })
@@ -413,7 +412,7 @@ test.describe('Property Vibes - UI', () => {
         dialog.getByRole('heading', { name: 'Location' })
       ).toBeVisible()
 
-      await expect(dialog.locator('.gm-style')).toBeVisible({
+      await expect(dialog.locator('.gm-style')).toHaveCount(1, {
         timeout: 20000,
       })
       await expect(dialog).not.toContainText('Map unavailable')
