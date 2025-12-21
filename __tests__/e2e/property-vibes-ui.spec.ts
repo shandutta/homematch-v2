@@ -372,7 +372,7 @@ test.describe('Property Vibes - UI', () => {
       await expect(card).toBeVisible()
       await card.getByTestId('property-address').click()
 
-      const dialog = page.locator('[role="dialog"]').first()
+      const dialog = page.getByRole('dialog', { name: seeded.address })
       await expect(dialog).toBeVisible({ timeout: 15000 })
       await expect(
         dialog.getByRole('heading', { name: 'Location' })
