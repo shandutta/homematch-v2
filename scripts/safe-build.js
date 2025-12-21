@@ -58,20 +58,28 @@ async function main() {
     process.env.NEXT_SAFE_BUILD_DEV_PORT || '3000',
     10
   )
+  const requestedDistDir = (process.env.NEXT_DIST_DIR || '').trim()
+  const hasRequestedDistDir = Boolean(requestedDistDir)
 
   const forceIsolated = parseBool(process.env.NEXT_SAFE_BUILD_ISOLATED)
   const forceDefault = parseBool(process.env.NEXT_SAFE_BUILD_FORCE_DEFAULT)
 
   let useIsolated = forceIsolated
 
-  if (!forceDefault && !forceIsolated) {
+  if (!hasRequestedDistDir && !forceDefault && !forceIsolated) {
     useIsolated = await isPortOpen(devPort)
   }
 
-  const distDir = useIsolated ? isolatedDistDir : '.next'
+  const distDir = hasRequestedDistDir
+    ? requestedDistDir
+    : useIsolated
+      ? isolatedDistDir
+      : '.next'
   const distPath = path.join(PROJECT_ROOT, distDir)
 
-  if (useIsolated) {
+  if (hasRequestedDistDir) {
+    console.log(`🧱 Using explicit NEXT_DIST_DIR=${distDir}`)
+  } else if (useIsolated) {
     console.log(
       `🧱 Dev server detected on port ${devPort}; building into ${distDir} to avoid .next contention`
     )
