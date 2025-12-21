@@ -404,13 +404,19 @@ test.describe('Property Vibes - UI', () => {
 
       await expect(card).toBeVisible()
       await card.scrollIntoViewIfNeeded()
-      await card.click({ force: true })
+      await page.waitForSelector('html[data-hydrated="true"]', {
+        state: 'attached',
+      })
+      const cardImage = card.getByRole('img', { name: seeded.address })
+      await expect(cardImage).toBeVisible()
+      await cardImage.click({ position: { x: 20, y: 20 } })
 
-      const dialog = page.getByRole('dialog', { name: seeded.address })
+      const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible({ timeout: 15000 })
       await expect(
         dialog.getByRole('heading', { name: 'Location' })
       ).toBeVisible()
+      await expect(dialog).toContainText(seeded.address)
 
       await expect(dialog.locator('.gm-style')).toHaveCount(1, {
         timeout: 20000,
