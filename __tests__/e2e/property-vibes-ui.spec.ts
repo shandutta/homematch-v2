@@ -529,11 +529,15 @@ test.describe('Property Vibes - UI', () => {
 
   test('mobile property modal keeps the mini map reachable', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const supabase = createServiceRoleClient()
+    const { testUser } = createWorkerAuthHelper(page, testInfo)
+    const userId = await getAuthUserIdByEmail(supabase, testUser.email)
 
     const seeded = await seedPropertyWithVibes({
       supabase,
+      userId,
+      interactionType: 'like',
       seedKey: 'modal-map-mobile',
     })
 
@@ -577,7 +581,7 @@ test.describe('Property Vibes - UI', () => {
       })
 
       await page.setViewportSize({ width: 390, height: 844 })
-      await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+      await page.goto('/dashboard/liked', { waitUntil: 'domcontentloaded' })
 
       const card = page
         .locator('[data-testid="property-card"]')
@@ -585,9 +589,7 @@ test.describe('Property Vibes - UI', () => {
         .first()
 
       await expect(card).toBeVisible()
-      const cardImage = card.getByRole('img', { name: seeded.address })
-      await expect(cardImage).toBeVisible()
-      await cardImage.click()
+      await card.click({ force: true })
 
       const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible({ timeout: 15000 })

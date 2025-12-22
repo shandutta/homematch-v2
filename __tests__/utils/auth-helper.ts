@@ -374,6 +374,8 @@ export class AuthHelper {
     }
 
     // First, wait for navigation away from login (session establishment)
+    let didNavigate = false
+    let retriedLogin = false
 
     try {
       await this.page.waitForFunction(
@@ -384,6 +386,7 @@ export class AuthHelper {
             : TEST_TIMEOUTS.navigation,
         }
       )
+      didNavigate = true
     } catch (_navError) {
       // If still on login page, check for error messages
       const errorElement = await this.page
@@ -433,9 +436,39 @@ export class AuthHelper {
         bodyText?.includes('credentials') || false
       )
 
-      throw new Error(
-        `Navigation away from login page failed. Still at: ${currentUrl}`
-      )
+      const hasValidationErrors =
+        bodyText?.includes('Invalid') ||
+        bodyText?.includes('Password must') ||
+        bodyText?.includes('email address')
+
+      if (hasValidationErrors && !retriedLogin) {
+        retriedLogin = true
+        console.warn('Retrying login after validation errors')
+        const { submitButton: retryButton } = await this.fillCredentials(
+          user.email,
+          user.password
+        )
+        await retryButton.click()
+        try {
+          await this.page.waitForFunction(
+            () => !window.location.pathname.includes('/login'),
+            {
+              timeout: this.isWebKit
+                ? TEST_TIMEOUTS.navigation * 1.5
+                : TEST_TIMEOUTS.navigation,
+            }
+          )
+          didNavigate = true
+        } catch (_retryError) {
+          // Fall through to error below.
+        }
+      }
+
+      if (!didNavigate) {
+        throw new Error(
+          `Navigation away from login page failed. Still at: ${currentUrl}`
+        )
+      }
     }
 
     // Now wait for dashboard elements to appear

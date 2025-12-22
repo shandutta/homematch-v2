@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { DbInteractionType } from '@/types/app'
-import { Property } from '@/types/database'
+import type { Database, Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import {
   createInteractionRequestSchema,
@@ -82,10 +83,13 @@ export async function POST(request: NextRequest) {
     }
 
     let householdId = userProfile?.household_id ?? null
+    let serviceClient: SupabaseClient<Database> | null = null
 
-    if (!householdId) {
+    const fetchHouseholdIdWithServiceRole = async () => {
       try {
-        const serviceClient = await getServiceRoleClient()
+        if (!serviceClient) {
+          serviceClient = await getServiceRoleClient()
+        }
         const { data: serviceProfile, error: serviceProfileError } =
           await serviceClient
             .from('user_profiles')
@@ -98,15 +102,21 @@ export async function POST(request: NextRequest) {
             '[Interactions API] Service role lookup failed:',
             serviceProfileError.message
           )
-        } else {
-          householdId = serviceProfile?.household_id ?? null
+          return null
         }
+
+        return serviceProfile?.household_id ?? null
       } catch (serviceError) {
         console.warn(
           '[Interactions API] Service role client error:',
           serviceError
         )
+        return null
       }
+    }
+
+    if (!householdId) {
+      householdId = await fetchHouseholdIdWithServiceRole()
     }
 
     // Clear any previous interaction for this user/property to enforce a single definitive state
@@ -146,6 +156,29 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to record interaction' },
         { status: 500 }
       )
+    }
+
+    if (!householdId) {
+      await new Promise((resolve) => setTimeout(resolve, 250))
+      const refreshedHouseholdId = await fetchHouseholdIdWithServiceRole()
+      if (refreshedHouseholdId) {
+        householdId = refreshedHouseholdId
+        const backfillClient = serviceClient ?? (await getServiceRoleClient())
+        serviceClient = backfillClient
+        const { error: backfillError } = await backfillClient
+          .from('user_property_interactions')
+          .update({ household_id: householdId })
+          .eq('id', newInteraction.id)
+
+        if (backfillError) {
+          console.warn(
+            '[Interactions API] Failed to backfill household_id:',
+            backfillError.message
+          )
+        } else {
+          newInteraction.household_id = householdId
+        }
+      }
     }
 
     if (householdId) {
