@@ -202,7 +202,11 @@ async function likePropertyFromDashboard(
       const likeRequest = await likeRequestPromise
       const likeResponse = await likeRequest.response().catch(() => null)
 
-      if (likeResponse && !likeResponse.ok()) {
+      if (!likeResponse) {
+        throw new Error('No response for /api/interactions like request')
+      }
+
+      if (!likeResponse.ok()) {
         const body = await likeResponse.text().catch(() => '')
         throw new Error(
           `Failed to record like via /api/interactions (status ${likeResponse.status()}): ${body}`

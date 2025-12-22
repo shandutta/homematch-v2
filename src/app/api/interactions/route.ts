@@ -16,6 +16,7 @@ import {
   normalizeInteractionType,
 } from '@/lib/utils/interaction-type'
 import { CouplesService } from '@/lib/services/couples'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,7 +81,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const householdId = userProfile?.household_id ?? null
+    let householdId = userProfile?.household_id ?? null
+
+    if (!householdId) {
+      try {
+        const serviceClient = await getServiceRoleClient()
+        const { data: serviceProfile, error: serviceProfileError } =
+          await serviceClient
+            .from('user_profiles')
+            .select('household_id')
+            .eq('id', user.id)
+            .maybeSingle()
+
+        if (serviceProfileError) {
+          console.warn(
+            '[Interactions API] Service role lookup failed:',
+            serviceProfileError.message
+          )
+        } else {
+          householdId = serviceProfile?.household_id ?? null
+        }
+      } catch (serviceError) {
+        console.warn(
+          '[Interactions API] Service role client error:',
+          serviceError
+        )
+      }
+    }
 
     // Clear any previous interaction for this user/property to enforce a single definitive state
     const { error: deleteError } = await supabase
