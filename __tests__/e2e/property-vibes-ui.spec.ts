@@ -495,6 +495,11 @@ test.describe('Property Vibes - UI', () => {
       await page.setViewportSize({ width: 1280, height: 720 })
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
+      const gridToggle = page.getByRole('button', { name: 'Grid' })
+      if (await gridToggle.isVisible().catch(() => false)) {
+        await gridToggle.click()
+      }
+
       const card = page
         .locator('[data-testid="property-card"]')
         .filter({ hasText: seeded.address })
@@ -504,7 +509,7 @@ test.describe('Property Vibes - UI', () => {
       await card.scrollIntoViewIfNeeded()
       const cardImage = card.getByRole('img', { name: seeded.address })
       await expect(cardImage).toBeVisible()
-      await card.getByTestId('property-address').click()
+      await card.click()
 
       const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible({ timeout: 15000 })
