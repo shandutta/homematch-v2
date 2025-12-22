@@ -110,7 +110,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-loading"
       >
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-5 w-5 fill-current text-pink-400/50" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/50" />
@@ -161,7 +161,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-error"
       >
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="text-couples-accent/50 h-5 w-5 fill-current" />
               <Users className="text-couples-accent/50 absolute -top-1 -right-1 h-4 w-4" />
@@ -179,7 +179,7 @@ export function MutualLikesSection({
               <Heart className="text-couples-accent/30 mx-auto mb-4 h-12 w-12 fill-current" />
             </MotionDiv>
 
-            <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
+            <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
               Couldn&apos;t load mutual likes
             </h3>
 
@@ -210,7 +210,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
               <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
@@ -264,7 +264,7 @@ export function MutualLikesSection({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
+              <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
                 No mutual likes yet!
               </h3>
 
@@ -294,7 +294,7 @@ export function MutualLikesSection({
     >
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
             Both Liked ({mutualLikes.length})
             <Users className="text-couples-secondary h-5 w-5" />
@@ -344,7 +344,7 @@ export function MutualLikesSection({
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-start justify-between gap-2">
-                        <p className="text-primary-foreground truncate text-sm font-medium">
+                        <p className="text-hm-stone-100 truncate text-sm font-medium">
                           {like.property?.address ||
                             `Property ${like.property_id.slice(0, 8)}`}
                         </p>

@@ -146,8 +146,11 @@ export function PropertyDetailModal({
         className="bg-hm-obsidian-900 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none border-white/10 p-0 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
         onCloseAutoFocus={onCloseAutoFocus}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex h-full min-h-0 flex-col">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto"
+            data-testid="property-detail-scroll"
+          >
             <div className="relative aspect-video w-full">
               <PropertyImage
                 src={currentImage || images}

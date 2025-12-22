@@ -309,6 +309,22 @@ describe('MutualLikesSection Component', () => {
       })
     })
 
+    test('should use high-contrast headings in empty state', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ mutualLikes: [] }),
+      } as Response)
+
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Both Liked')).toHaveClass('text-hm-stone-100')
+        expect(
+          screen.getByRole('heading', { name: 'No mutual likes yet!' })
+        ).toHaveClass('text-hm-stone-100')
+      })
+    })
+
     test('should show overlapping hearts in empty state', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

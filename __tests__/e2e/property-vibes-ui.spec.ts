@@ -526,4 +526,90 @@ test.describe('Property Vibes - UI', () => {
       await seeded.cleanup()
     }
   })
+
+  test('mobile property modal keeps the mini map reachable', async ({
+    page,
+  }) => {
+    const supabase = createServiceRoleClient()
+
+    const seeded = await seedPropertyWithVibes({
+      supabase,
+      seedKey: 'modal-map-mobile',
+    })
+
+    try {
+      await page.route('**/api/maps/proxy-script*', (route) => {
+        const stubScript = `
+          (function() {
+            window.google = window.google || {}
+            window.google.maps = window.google.maps || {}
+            window.google.maps.marker = window.google.maps.marker || {}
+            window.google.maps.marker.AdvancedMarkerElement = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.Map = function(el) {
+              if (el && !el.querySelector('.gm-style')) {
+                var node = document.createElement('div')
+                node.className = 'gm-style'
+                node.style.width = '100%'
+                node.style.height = '100%'
+                node.style.display = 'block'
+                el.appendChild(node)
+              }
+            }
+            window.google.maps.Marker = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.Size = function() {}
+            window.google.maps.Point = function() {}
+            window.google.maps.InfoWindow = function() {
+              this.open = function() {}
+            }
+            if (window.initGoogleMaps) window.initGoogleMaps()
+          })()
+        `
+
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/javascript',
+          body: stubScript,
+        })
+      })
+
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+
+      const card = page
+        .locator('[data-testid="property-card"]')
+        .filter({ hasText: seeded.address })
+        .first()
+
+      await expect(card).toBeVisible()
+      const cardImage = card.getByRole('img', { name: seeded.address })
+      await expect(cardImage).toBeVisible()
+      await cardImage.click()
+
+      const dialog = page.getByRole('dialog')
+      await expect(dialog).toBeVisible({ timeout: 15000 })
+
+      const scrollArea = dialog.getByTestId('property-detail-scroll')
+      await expect(scrollArea).toBeVisible()
+      const canScroll = await scrollArea.evaluate((node) => {
+        const start = node.scrollTop
+        node.scrollTop = node.scrollHeight
+        return node.scrollTop > start
+      })
+      expect(canScroll).toBe(true)
+
+      const toggle = dialog.getByTestId('toggle-map')
+      await toggle.scrollIntoViewIfNeeded()
+      await toggle.click()
+
+      const map = dialog.locator('.gm-style')
+      await map.scrollIntoViewIfNeeded()
+      await expect(map).toBeVisible()
+    } finally {
+      await seeded.cleanup()
+    }
+  })
 })
