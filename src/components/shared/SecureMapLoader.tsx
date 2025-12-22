@@ -92,6 +92,13 @@ export function SecureMapLoader({
   }, [onLoad, onError])
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.google?.maps) {
+      isGoogleMapsLoaded = true
+      setIsLoaded(true)
+      onLoad?.()
+      return
+    }
+
     if (isGoogleMapsLoaded) {
       setIsLoaded(true)
       onLoad?.()
@@ -164,6 +171,12 @@ export function useGoogleMapsLoader() {
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.google?.maps) {
+      isGoogleMapsLoaded = true
+      setIsLoaded(true)
+      return
+    }
+
     if (isGoogleMapsLoaded) {
       setIsLoaded(true)
       return

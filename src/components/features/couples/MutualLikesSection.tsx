@@ -268,11 +268,11 @@ export function MutualLikesSection({
                 No mutual likes yet!
               </h3>
 
-              <p className="text-hm-stone-300 mb-1 text-sm">
+              <p className="text-hm-stone-200 mb-1 text-sm">
                 Properties you both like will appear here
               </p>
 
-              <div className="text-hm-stone-400 flex items-center justify-center gap-2 text-xs">
+              <div className="text-hm-stone-300 flex items-center justify-center gap-2 text-xs">
                 <Star className="h-3 w-3" />
                 <span>Keep swiping to find your first match</span>
               </div>
@@ -356,7 +356,7 @@ export function MutualLikesSection({
                       </div>
 
                       {like.property && (
-                        <div className="text-hm-stone-300 flex items-center gap-3 text-xs">
+                        <div className="text-hm-stone-200 flex items-center gap-3 text-xs">
                           <span className="text-hm-success font-semibold">
                             ${(like.property.price / 1000).toFixed(0)}k
                           </span>
@@ -365,14 +365,14 @@ export function MutualLikesSection({
                         </div>
                       )}
 
-                      <p className="text-hm-stone-400 mt-1 text-xs">
+                      <p className="text-hm-stone-300 mt-1 text-xs">
                         Liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <ChevronRight className="text-hm-stone-400 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <ChevronRight className="text-hm-stone-300 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
               </Link>
             </MotionDiv>

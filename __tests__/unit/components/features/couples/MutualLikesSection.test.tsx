@@ -305,7 +305,7 @@ describe('MutualLikesSection Component', () => {
           'Properties you both like will appear here'
         )
         expect(helperText).toBeInTheDocument()
-        expect(helperText).toHaveClass('text-hm-stone-300')
+        expect(helperText).toHaveClass('text-hm-stone-200')
       })
     })
 
@@ -385,9 +385,12 @@ describe('MutualLikesSection Component', () => {
 
       await waitFor(() => {
         const priceMeta = screen.getByText('$500k').closest('div')
-        expect(priceMeta).toHaveClass('text-hm-stone-300')
-        const likedDate = screen.getAllByText(/Liked/i)[0]
-        expect(likedDate).toHaveClass('text-hm-stone-400')
+        expect(priceMeta).toHaveClass('text-hm-stone-200')
+        const likedDate = screen
+          .getAllByText(/Liked/i)
+          .find((node) => node.classList.contains('text-hm-stone-300'))
+        expect(likedDate).toBeDefined()
+        expect(likedDate).toHaveClass('text-hm-stone-300')
       })
     })
 

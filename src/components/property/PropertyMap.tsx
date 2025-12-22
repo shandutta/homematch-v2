@@ -50,7 +50,9 @@ export function PropertyMap({
   useEffect(() => {
     if (!hasValidCoordinates) return
     if (!mapRef.current) return
-    if (!mapsReady && !isGoogleLoaded) return
+    const mapsApiReady =
+      mapsReady || isGoogleLoaded || Boolean(window.google?.maps)
+    if (!mapsApiReady) return
     if (!window.google?.maps) return
 
     setIsLoading(true)

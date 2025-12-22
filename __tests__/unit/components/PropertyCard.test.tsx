@@ -140,6 +140,20 @@ describe('PropertyCard Component', () => {
     expect(screen.queryByTestId('property-map')).toBeNull()
   })
 
+  test('should render PropertyMap in full-height mode even without coordinates', () => {
+    const propWithoutCoords: Property = { ...mockProperty, coordinates: null }
+
+    renderWithQuery(
+      <PropertyCard
+        property={propWithoutCoords}
+        fullHeight
+        enableDetailsToggle
+      />
+    )
+
+    expect(screen.getByTestId('property-map')).toBeDefined()
+  })
+
   test('should render StorytellingDescription component', () => {
     renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByTestId('storytelling-description')).toBeDefined()

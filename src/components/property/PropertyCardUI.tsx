@@ -94,7 +94,7 @@ export function PropertyCardUI({
   const formattedSqft = formatSquareFeet(property.square_feet)
 
   const shouldShowStory = showStory
-  const shouldShowMap = showMap && hasMapCoordinates
+  const shouldShowMap = showMap && (hasMapCoordinates || fullHeight)
 
   const availableDetailViews = useMemo(() => {
     const orderedViews: Array<'story' | 'map'> = fullHeight
@@ -152,7 +152,7 @@ export function PropertyCardUI({
         className={cn(
           'group relative w-full flex-none overflow-hidden',
           fullHeight
-            ? 'aspect-[16/9] sm:aspect-[4/3] lg:aspect-[4/5]'
+            ? 'aspect-[16/9] min-h-[180px] sm:aspect-[4/3] lg:aspect-[4/5]'
             : 'aspect-[3/4] md:aspect-[4/5] lg:aspect-[4/3]'
         )}
       >

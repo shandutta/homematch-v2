@@ -7,7 +7,7 @@ import {
   jest,
 } from '@jest/globals'
 import React from 'react'
-import { render, waitFor, act } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { __resetSecureMapLoaderStateForTests } from '@/components/shared/SecureMapLoader'
 
@@ -117,15 +117,6 @@ describe('PropertyMap', () => {
 
     expect(container.firstChild).toBeTruthy()
 
-    const script = document.querySelector(
-      'script[src="/api/maps/proxy-script"]'
-    ) as HTMLScriptElement
-    expect(script).toBeTruthy()
-
-    await act(async () => {
-      ;(window as any).initGoogleMaps?.()
-    })
-
     await waitFor(() => expect(mapCtor).toHaveBeenCalled())
     expect(markerCtor).toHaveBeenCalled()
   })
@@ -182,15 +173,6 @@ describe('PropertyMap', () => {
         }}
       />
     )
-
-    const script = document.querySelector(
-      'script[src="/api/maps/proxy-script"]'
-    ) as HTMLScriptElement
-    expect(script).toBeTruthy()
-
-    await act(async () => {
-      ;(window as any).initGoogleMaps?.()
-    })
 
     await waitFor(() => expect(mapCtor).toHaveBeenCalled())
     const mapOptions = mapCtor.mock.calls[0]?.[1] as Record<string, unknown>
