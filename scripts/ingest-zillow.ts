@@ -9,7 +9,12 @@
  */
 
 import { config } from 'dotenv'
-config({ path: '.env.local' })
+
+const envFile = process.env.ENV_FILE || '.env.local'
+config({ path: envFile })
+if (envFile !== '.env.local') {
+  config({ path: '.env.local' })
+}
 config()
 
 import { ingestZillowLocations } from '@/lib/ingestion/zillow'
@@ -23,31 +28,86 @@ type Args = {
 
 const DEFAULT_BAY_AREA_LOCATIONS = [
   'San Francisco, CA',
-  'Oakland, CA',
+  'Alameda, CA',
+  'Albany, CA',
+  'American Canyon, CA',
+  'Belmont, CA',
+  'Benicia, CA',
   'Berkeley, CA',
-  'San Jose, CA',
-  'Palo Alto, CA',
-  'Mountain View, CA',
-  'Sunnyvale, CA',
-  'Santa Clara, CA',
-  'Fremont, CA',
-  'Hayward, CA',
-  'Walnut Creek, CA',
+  'Burlingame, CA',
+  'Campbell, CA',
   'Concord, CA',
-  'San Mateo, CA',
-  'Redwood City, CA',
+  'Cotati, CA',
+  'Cupertino, CA',
+  'Daly City, CA',
+  'Danville, CA',
+  'Dublin, CA',
+  'El Cerrito, CA',
+  'Emeryville, CA',
+  'Fairfield, CA',
+  'Foster City, CA',
+  'Fremont, CA',
+  'Gilroy, CA',
+  'Half Moon Bay, CA',
+  'Hayward, CA',
+  'Healdsburg, CA',
+  'Hercules, CA',
+  'Lafayette, CA',
+  'Livermore, CA',
+  'Los Altos, CA',
+  'Los Altos Hills, CA',
+  'Los Gatos, CA',
+  'Martinez, CA',
   'Menlo Park, CA',
-  'San Rafael, CA',
-  'Santa Rosa, CA',
+  'Mill Valley, CA',
+  'Millbrae, CA',
+  'Milpitas, CA',
+  'Morgan Hill, CA',
+  'Mountain View, CA',
   'Napa, CA',
+  'Newark, CA',
+  'Novato, CA',
+  'Oakland, CA',
+  'Orinda, CA',
+  'Pacifica, CA',
+  'Palo Alto, CA',
+  'Petaluma, CA',
+  'Piedmont, CA',
+  'Pinole, CA',
+  'Pleasant Hill, CA',
+  'Pleasanton, CA',
+  'Redwood City, CA',
+  'Richmond, CA',
+  'Rohnert Park, CA',
+  'San Bruno, CA',
+  'San Carlos, CA',
+  'San Jose, CA',
+  'San Leandro, CA',
+  'San Mateo, CA',
+  'San Pablo, CA',
+  'San Rafael, CA',
+  'San Ramon, CA',
+  'Saratoga, CA',
+  'Santa Clara, CA',
+  'Santa Rosa, CA',
+  'Sausalito, CA',
+  'Sebastopol, CA',
+  'Sonoma, CA',
+  'South San Francisco, CA',
+  'Sunnyvale, CA',
+  'Suisun City, CA',
+  'Tiburon, CA',
+  'Union City, CA',
+  'Vacaville, CA',
   'Vallejo, CA',
+  'Walnut Creek, CA',
 ]
 
 function parseArgs(argv: string[]): Args {
   const defaults: Args = {
     locations: DEFAULT_BAY_AREA_LOCATIONS,
     pageSize: 20,
-    maxPages: 2,
+    maxPages: 10,
   }
 
   const args: Record<string, string> = {}
