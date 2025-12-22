@@ -379,6 +379,9 @@ test.describe('Property Vibes - UI', () => {
               if (el && !el.querySelector('.gm-style')) {
                 var node = document.createElement('div')
                 node.className = 'gm-style'
+                node.style.width = '100%'
+                node.style.height = '100%'
+                node.style.display = 'block'
                 el.appendChild(node)
               }
             }
@@ -462,6 +465,9 @@ test.describe('Property Vibes - UI', () => {
               if (el && !el.querySelector('.gm-style')) {
                 var node = document.createElement('div')
                 node.className = 'gm-style'
+                node.style.width = '100%'
+                node.style.height = '100%'
+                node.style.display = 'block'
                 el.appendChild(node)
               }
             }
