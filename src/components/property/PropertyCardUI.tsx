@@ -234,33 +234,38 @@ export function PropertyCardUI({
           <p className="text-hm-stone-400 text-sm">
             {neighborhood?.name || property.city}, {property.state}
           </p>
-          {neighborhoodVibes && (
-            <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
-              <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
-              <div className="space-y-1">
-                <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
-                  {neighborhoodVibes.tagline}
-                </p>
-                <p className="text-hm-stone-200 line-clamp-2 text-sm">
-                  {neighborhoodVibes.vibe_statement}
-                </p>
-                {neighborhoodVibes.suggested_tags?.length ? (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {neighborhoodVibes.suggested_tags
-                      .slice(0, 4)
-                      .map((tag: string) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                  </div>
-                ) : null}
+          {neighborhoodVibes &&
+            (fullHeight ? (
+              <p className="text-hm-stone-400 mt-2 line-clamp-1 text-xs">
+                {neighborhoodVibes.tagline}
+              </p>
+            ) : (
+              <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
+                <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
+                <div className="space-y-1">
+                  <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
+                    {neighborhoodVibes.tagline}
+                  </p>
+                  <p className="text-hm-stone-200 line-clamp-2 text-sm">
+                    {neighborhoodVibes.vibe_statement}
+                  </p>
+                  {neighborhoodVibes.suggested_tags?.length ? (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {neighborhoodVibes.suggested_tags
+                        .slice(0, 4)
+                        .map((tag: string) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          )}
+            ))}
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}
