@@ -430,7 +430,9 @@ test.describe('Property Vibes - UI', () => {
         const mapBox = await map.boundingBox()
         expect(hintBox && mapBox).toBeTruthy()
         if (hintBox && mapBox) {
-          expect(hintBox.bottom).toBeLessThanOrEqual(mapBox.top)
+          const hintBottom = hintBox.y + hintBox.height
+          const mapTop = mapBox.y
+          expect(hintBottom).toBeLessThanOrEqual(mapTop)
         }
       }
 
@@ -502,7 +504,7 @@ test.describe('Property Vibes - UI', () => {
       await card.scrollIntoViewIfNeeded()
       const cardImage = card.getByRole('img', { name: seeded.address })
       await expect(cardImage).toBeVisible()
-      await cardImage.click({ position: { x: 20, y: 20 } })
+      await card.getByTestId('property-address').click()
 
       const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible({ timeout: 15000 })
