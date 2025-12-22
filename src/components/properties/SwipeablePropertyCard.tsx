@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Heart, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Property } from '@/lib/schemas/property'
+import { Neighborhood, Property } from '@/lib/schemas/property'
 import { MotionButton } from '@/components/ui/motion-button'
 import { InteractionType } from '@/types/app'
 import { PropertyCard } from '@/components/property/PropertyCard'
@@ -12,6 +12,7 @@ import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 import { cn } from '@/lib/utils'
 import { useSwipePhysics } from '@/hooks/useSwipePhysics'
 import { useHapticFeedback } from '@/lib/utils/haptic-feedback'
+import { usePropertyDetail } from '@/components/property/PropertyDetailProvider'
 
 // Card stack depth constants
 const STACK_DEPTH = 3
@@ -29,6 +30,30 @@ interface SwipeablePropertyCardProps {
   showHints?: boolean
 }
 
+function usePropertyDetailSafe() {
+  try {
+    return usePropertyDetail()
+  } catch {
+    return null
+  }
+}
+
+function getPropertyNeighborhood(property?: Property | null) {
+  if (!property) return undefined
+  return (
+    (property as (Property & { neighborhood?: Neighborhood | null }) | null)
+      ?.neighborhood ||
+    (property as (Property & { neighborhoods?: Neighborhood | null }) | null)
+      ?.neighborhoods ||
+    undefined
+  )
+}
+
+function isTapOnInteractiveElement(target: EventTarget | null) {
+  if (!target || !(target instanceof Element)) return false
+  return Boolean(target.closest('a,button,[role="button"],[data-card-action]'))
+}
+
 export function SwipeablePropertyCard({
   properties,
   currentIndex,
@@ -37,6 +62,7 @@ export function SwipeablePropertyCard({
   className,
   showHints = false,
 }: SwipeablePropertyCardProps) {
+  const propertyDetail = usePropertyDetailSafe()
   // Haptic feedback hook
   const haptic = useHapticFeedback()
   const isTopCard = currentIndex === 0
@@ -65,6 +91,7 @@ export function SwipeablePropertyCard({
     currentIndex + 1,
     currentIndex + STACK_DEPTH + 1
   )
+  const neighborhoodData = getPropertyNeighborhood(currentProperty)
   if (!initialTopPropertyId.current && properties[0]) {
     initialTopPropertyId.current = properties[0].id
   }
@@ -173,6 +200,26 @@ export function SwipeablePropertyCard({
     [currentProperty, physicsSwipeCard]
   )
 
+  const handleCardTap = useCallback(
+    (event: MouseEvent | TouchEvent | PointerEvent) => {
+      if (!propertyDetail || !currentProperty) return
+      if (isDragging || isProcessingSwipeRef.current) return
+      if (isTapOnInteractiveElement(event.target)) return
+
+      propertyDetail.openPropertyDetail(
+        currentProperty,
+        neighborhoodData || undefined
+      )
+    },
+    [
+      propertyDetail,
+      currentProperty,
+      neighborhoodData,
+      isDragging,
+      isProcessingSwipeRef,
+    ]
+  )
+
   if (!currentProperty) {
     return (
       <div
@@ -258,6 +305,8 @@ export function SwipeablePropertyCard({
           onDrag={physicsHandleDrag}
           onDragEnd={physicsHandleDragEnd}
           whileTap={{ scale: 0.98 }}
+          onTap={propertyDetail ? handleCardTap : undefined}
+          data-testid="swipe-card-tap-target"
         >
           <div className="relative h-full w-full transform-gpu">
             <PropertyCard

@@ -33,6 +33,7 @@ export function PropertyMap({
   showMarker = true,
 }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mapsReady, setMapsReady] = useState(false)
@@ -116,6 +117,38 @@ export function PropertyMap({
       }
 
       setIsLoading(false)
+
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserverRef.current?.disconnect()
+        resizeObserverRef.current = new ResizeObserver(() => {
+          const events = window.google?.maps?.event as
+            | {
+                trigger?: (
+                  instance: GoogleMapInstance,
+                  eventName: string
+                ) => void
+              }
+            | undefined
+          events?.trigger?.(map, 'resize')
+          map.setCenter(coords)
+        })
+        resizeObserverRef.current.observe(mapRef.current)
+      }
+
+      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+        window.requestAnimationFrame(() => {
+          const events = window.google?.maps?.event as
+            | {
+                trigger?: (
+                  instance: GoogleMapInstance,
+                  eventName: string
+                ) => void
+              }
+            | undefined
+          events?.trigger?.(map, 'resize')
+          map.setCenter(coords)
+        })
+      }
     } catch (err) {
       console.error('Error loading map:', err)
       const fallbackMessage =
@@ -135,6 +168,12 @@ export function PropertyMap({
     showMarker,
     zoom,
   ])
+
+  useEffect(() => {
+    return () => {
+      resizeObserverRef.current?.disconnect()
+    }
+  }, [])
 
   if (!hasValidCoordinates) {
     return (

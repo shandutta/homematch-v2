@@ -49,9 +49,14 @@ jest.mock('@/components/ui/motion-components', () => {
     HTMLDivElement,
     React.HTMLProps<HTMLDivElement>
   >(({ children, ...rest }, ref) => {
-    const { 'data-testid': dataTestId, ...restProps } = rest
+    const { 'data-testid': dataTestId, onTap, onClick, ...restProps } = rest
     return (
-      <div ref={ref} data-testid={dataTestId ?? 'motion-div'} {...restProps}>
+      <div
+        ref={ref}
+        data-testid={dataTestId ?? 'motion-div'}
+        onClick={onTap ?? onClick}
+        {...restProps}
+      >
         {children}
       </div>
     )
@@ -75,6 +80,10 @@ jest.mock('@/components/property/PropertyCard', () => ({
   PropertyCard: ({ property }: { property: { address: string } }) => (
     <div data-testid="property-card">{property.address}</div>
   ),
+}))
+
+jest.mock('@/components/property/PropertyDetailProvider', () => ({
+  usePropertyDetail: jest.fn(),
 }))
 
 // Mock the useSwipePhysics hook with inline jest.fn()
@@ -128,16 +137,19 @@ jest.mock('@/lib/styles/dashboard-tokens', () => ({
 
 // Import after mocks
 import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
+import { usePropertyDetail } from '@/components/property/PropertyDetailProvider'
 import { useSwipePhysics } from '@/hooks/useSwipePhysics'
 import type { Property } from '@/lib/schemas/property'
 
 // Get mock references
 const mockUseSwipePhysics = useSwipePhysics as jest.Mock
+const mockUsePropertyDetail = usePropertyDetail as jest.Mock
 const mockSwipeCard = jest.fn()
 const mockHandleDragStart = jest.fn()
 const mockHandleDrag = jest.fn()
 const mockHandleDragEnd = jest.fn()
 let lastSwipeOptions: Record<string, any> | null = null
+const mockOpenPropertyDetail = jest.fn()
 
 const createMockProperty = (overrides: Partial<Property> = {}): Property => ({
   id: 'test-property-1',
@@ -174,6 +186,10 @@ describe('SwipeablePropertyCard', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     lastSwipeOptions = null
+    mockUsePropertyDetail.mockReturnValue({
+      openPropertyDetail: mockOpenPropertyDetail,
+      closePropertyDetail: jest.fn(),
+    })
 
     // Reset the mock to return fresh mock functions
     mockUseSwipePhysics.mockImplementation((options = {}) => {
@@ -365,6 +381,22 @@ describe('SwipeablePropertyCard', () => {
       fireEvent.click(likeButton)
 
       expect(mockOnDecision).toHaveBeenCalledWith(property.id, 'liked')
+    })
+
+    it('opens property detail on tap', () => {
+      const property = createMockProperty()
+
+      render(
+        <SwipeablePropertyCard
+          properties={[property]}
+          currentIndex={0}
+          onDecision={mockOnDecision}
+        />
+      )
+
+      fireEvent.click(screen.getByTestId('swipe-card-tap-target'))
+
+      expect(mockOpenPropertyDetail).toHaveBeenCalledWith(property, undefined)
     })
 
     it('fires onDecision immediately when swipe starts via swipeCard', async () => {
