@@ -34,8 +34,15 @@ const BLOCKED_DOMAINS = new Set([
   'loremflickr.com', // LoremFlickr causes Next.js optimization 500 errors in test mode
 ])
 
+const shouldBlockHostname = (hostname: string | null) =>
+  process.env.NEXT_PUBLIC_TEST_MODE === 'true' &&
+  hostname !== null &&
+  hostname !== '' &&
+  BLOCKED_DOMAINS.has(hostname)
+
 // Safely extract hostname from URL
-const getUrlHostname = (url: string): string | null => {
+const getUrlHostname = (url: string | null): string | null => {
+  if (!url) return null
   try {
     return new URL(url).hostname.toLowerCase()
   } catch {
@@ -47,7 +54,7 @@ const getUrlHostname = (url: string): string | null => {
 const isKnownBrokenImage = (url: string): boolean => {
   // Check blocked domains via proper hostname parsing
   const hostname = getUrlHostname(url)
-  if (hostname && BLOCKED_DOMAINS.has(hostname)) {
+  if (shouldBlockHostname(hostname)) {
     return true
   }
   // Check path patterns (these are not domain-based)
@@ -97,9 +104,9 @@ export function PropertyImage({
 
       // Double-check: if the URL is still a loremflickr URL, force fallback
       const imageHostname = imageUrl ? getUrlHostname(imageUrl) : null
-      if (imageHostname === 'loremflickr.com') {
+      if (shouldBlockHostname(imageHostname)) {
         console.warn(
-          `Blocking loremflickr URL from Next.js Image optimization: ${imageUrl}`
+          `Blocking ${imageHostname} URL from Next.js Image optimization: ${imageUrl}`
         )
         imageUrl = undefined
       }

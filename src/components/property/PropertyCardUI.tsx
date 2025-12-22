@@ -94,7 +94,7 @@ export function PropertyCardUI({
   const formattedSqft = formatSquareFeet(property.square_feet)
 
   const shouldShowStory = showStory
-  const shouldShowMap = showMap && (hasMapCoordinates || fullHeight)
+  const shouldShowMap = showMap && hasMapCoordinates
 
   const availableDetailViews = useMemo(() => {
     const orderedViews: Array<'story' | 'map'> = fullHeight

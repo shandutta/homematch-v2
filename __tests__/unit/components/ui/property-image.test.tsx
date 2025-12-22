@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it, beforeEach, afterEach } from '@jest/globals'
 import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
@@ -29,6 +29,20 @@ jest.mock('next/image', () => ({
 }))
 
 describe('PropertyImage', () => {
+  const originalTestMode = process.env.NEXT_PUBLIC_TEST_MODE
+
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_TEST_MODE = 'true'
+  })
+
+  afterEach(() => {
+    if (originalTestMode === undefined) {
+      delete process.env.NEXT_PUBLIC_TEST_MODE
+    } else {
+      process.env.NEXT_PUBLIC_TEST_MODE = originalTestMode
+    }
+  })
+
   it('uses the first local fallback when src is missing', () => {
     render(<PropertyImage alt="Property" width={100} height={100} />)
     expect(screen.getByTestId('next-image')).toHaveAttribute(
@@ -50,6 +64,24 @@ describe('PropertyImage', () => {
     expect(screen.getByTestId('next-image')).toHaveAttribute(
       'src',
       '/images/properties/house-1.svg'
+    )
+  })
+
+  it('allows loremflickr when test mode is disabled', () => {
+    process.env.NEXT_PUBLIC_TEST_MODE = 'false'
+
+    render(
+      <PropertyImage
+        alt="Property"
+        width={100}
+        height={100}
+        src="https://loremflickr.com/600/400/house"
+      />
+    )
+
+    expect(screen.getByTestId('next-image')).toHaveAttribute(
+      'src',
+      'https://loremflickr.com/600/400/house'
     )
   })
 

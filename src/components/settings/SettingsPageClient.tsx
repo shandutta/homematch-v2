@@ -312,7 +312,7 @@ export function SettingsPageClient({
                   key={card.label}
                   variants={itemVariants}
                   whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                  className={`group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-4 text-left backdrop-blur-sm transition-all hover:border-white/10`}
+                  className={`group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-3 text-left backdrop-blur-sm transition-all hover:border-white/10 sm:rounded-2xl sm:p-4`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                   type="button"
                   onClick={() =>
@@ -329,7 +329,7 @@ export function SettingsPageClient({
                       </p>
                     </div>
                     <p
-                      className="text-hm-stone-200 mt-2 truncate text-lg font-medium"
+                      className="text-hm-stone-200 mt-1.5 truncate text-base font-medium sm:mt-2 sm:text-lg"
                       title={card.value}
                     >
                       {card.value}
@@ -356,21 +356,21 @@ export function SettingsPageClient({
             className="space-y-8"
           >
             {/* Tab navigation */}
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 backdrop-blur-sm md:grid-cols-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 backdrop-blur-sm sm:gap-2 sm:p-2 md:grid-cols-4">
               {tabOptions.map(({ value, label, description, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="group flex h-auto min-h-[80px] w-full flex-col items-start gap-2 rounded-lg border border-transparent px-4 py-3 text-left transition-all data-[state=active]:border-white/10 data-[state=active]:bg-white/10 data-[state=active]:shadow-lg"
+                  className="group flex h-auto min-h-[64px] w-full flex-col items-start gap-2 rounded-lg border border-transparent px-3 py-2 text-left transition-all data-[state=active]:border-white/10 data-[state=active]:bg-white/10 data-[state=active]:shadow-lg sm:min-h-[80px] sm:px-4 sm:py-3"
                 >
-                  <div className="text-hm-stone-400 flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition-colors group-data-[state=active]:bg-amber-500/10 group-data-[state=active]:text-amber-400">
-                    <Icon className="h-4 w-4" />
+                  <div className="text-hm-stone-400 flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 transition-colors group-data-[state=active]:bg-amber-500/10 group-data-[state=active]:text-amber-400 sm:h-8 sm:w-8">
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </div>
                   <div>
-                    <p className="text-hm-stone-300 text-sm font-medium group-data-[state=active]:text-white">
+                    <p className="text-hm-stone-300 text-xs font-medium group-data-[state=active]:text-white sm:text-sm">
                       {label}
                     </p>
-                    <p className="text-hm-stone-500 group-data-[state=active]:text-hm-stone-400 text-xs">
+                    <p className="text-hm-stone-500 group-data-[state=active]:text-hm-stone-400 text-[11px] sm:text-xs">
                       {description}
                     </p>
                   </div>

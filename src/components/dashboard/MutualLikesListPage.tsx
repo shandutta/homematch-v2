@@ -104,10 +104,10 @@ export function MutualLikesListPage() {
                 <Users className="text-couples-secondary absolute -top-2 -right-2 h-5 w-5" />
               </div>
             </div>
-            <h2 className="text-primary-foreground text-xl font-semibold">
+            <h2 className="text-hm-stone-100 text-xl font-semibold">
               No mutual likes yet
             </h2>
-            <p className="text-primary/60 mx-auto mt-2 max-w-xl text-sm">
+            <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
               Keep swiping — when you both like the same home it will appear
               here.
             </p>
@@ -153,7 +153,7 @@ export function MutualLikesListPage() {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-primary-foreground truncate text-sm font-semibold">
+                        <p className="text-hm-stone-100 truncate text-sm font-semibold">
                           {like.property?.address ||
                             `Property ${like.property_id.slice(0, 8)}`}
                         </p>
@@ -165,14 +165,14 @@ export function MutualLikesListPage() {
                       </div>
 
                       {like.property && (
-                        <p className="text-primary/60 mt-1 text-xs">
+                        <p className="text-hm-stone-400 mt-1 text-xs">
                           ${Math.round(like.property.price / 1000)}k •{' '}
                           {like.property.bedrooms} bd •{' '}
                           {like.property.bathrooms} ba
                         </p>
                       )}
 
-                      <p className="text-primary/40 mt-3 text-xs">
+                      <p className="text-hm-stone-500 mt-3 text-xs">
                         Last liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>

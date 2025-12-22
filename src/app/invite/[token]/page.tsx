@@ -27,7 +27,7 @@ const formatDate = (value: string) =>
 export default async function InvitePage({
   params,
 }: {
-  params: { token: string } | Promise<{ token: string }>
+  params: Promise<{ token: string }>
 }) {
   const resolvedParams = await params
   const token = resolvedParams.token

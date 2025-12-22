@@ -4,7 +4,7 @@ import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { UserService } from '@/lib/services/users'
 
 interface SettingsPageProps {
-  searchParams?: { tab?: string } | Promise<{ tab?: string }>
+  searchParams?: Promise<{ tab?: string }>
 }
 
 export default async function SettingsPage({

@@ -25,25 +25,24 @@
     }
   },
   "include": [
-    "next-env.d.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    ".next/types/**/*.ts",
     "__tests__/**/*.ts",
     "__tests__/**/*.tsx",
     "jest.setup.ts",
-    ".next/types/**/*.ts",
-    "types/**/*.d.ts",
-
-    // ensure ESLint project parsing can find these top-level TS files
     "middleware.ts",
+    "next-env.d.ts",
     "next.config.ts",
     "playwright.config.ts",
+    // ensure ESLint project parsing can find these top-level TS files
     "playwright.remote.config.ts",
+    "scripts/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "types/**/*.d.ts",
     "vitest.config.ts",
-    "vitest.setup.ts",
-
     // scripts
-    "scripts/**/*.ts"
+    "vitest.setup.ts",
+    ".next-run-local-api/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

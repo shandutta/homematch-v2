@@ -5,10 +5,8 @@ import { notFound, redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 interface PropertyPageProps {
-  params: { id: string } | Promise<{ id: string }>
-  searchParams?:
-    | Record<string, string | string[] | undefined>
-    | Promise<Record<string, string | string[] | undefined>>
+  params: Promise<{ id: string }>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }
 
 const getSafeRedirectPath = (value: string | null) => {

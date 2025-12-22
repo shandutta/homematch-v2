@@ -43,6 +43,7 @@ import {
   PawPrint,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 interface PreferencesSectionProps {
   user: User
@@ -124,6 +125,7 @@ export function PreferencesSection({
   onSaveStateChange,
 }: PreferencesSectionProps) {
   const userService = UserServiceClient
+  const router = useRouter()
   type LocalPreferences = UserPreferences & {
     priceRange?: [number, number]
     bedrooms?: number
@@ -747,6 +749,7 @@ export function PreferencesSection({
 
       setSavedSearchName('')
       toast.success('Saved search created')
+      router.push('/dashboard')
     } catch (_error) {
       toast.error('Failed to save search')
     } finally {
@@ -768,6 +771,7 @@ export function PreferencesSection({
     selectedNeighborhoods,
     user.id,
     userService,
+    router,
   ])
 
   return (
@@ -1038,7 +1042,7 @@ export function PreferencesSection({
                 setPriceRange(value as [number, number])
               }
               min={50000}
-              max={2000000}
+              max={10000000}
               step={25000}
               className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-emerald-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-emerald-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />

@@ -5,9 +5,7 @@ import { redirect } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 interface CouplesPageProps {
-  searchParams?:
-    | Record<string, string | string[] | undefined>
-    | Promise<Record<string, string | string[] | undefined>>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function CouplesPage({ searchParams }: CouplesPageProps) {

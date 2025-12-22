@@ -51,7 +51,7 @@ export function CouplesMutualLikesSection({
     return (
       <Card className="card-glassmorphism-style border-pink-500/20">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-6 w-6 fill-current text-pink-400/30" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/30" />
@@ -103,7 +103,7 @@ export function CouplesMutualLikesSection({
     return (
       <Card className="card-glassmorphism-style border-red-500/20">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-6 w-6 fill-current text-red-400/50" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-red-400/50" />
@@ -116,7 +116,7 @@ export function CouplesMutualLikesSection({
             <div className="mb-4 flex justify-center">
               <Heart className="h-12 w-12 fill-current text-red-400/30" />
             </div>
-            <h3 className="text-primary-foreground mb-2 text-lg font-semibold">
+            <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
               Couldn&apos;t load mutual likes
             </h3>
             <p className="text-sm text-red-400/80">{error}</p>
@@ -132,7 +132,7 @@ export function CouplesMutualLikesSection({
     return (
       <Card className="card-glassmorphism-style border-pink-500/20">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
@@ -195,20 +195,20 @@ export function CouplesMutualLikesSection({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h3 className="text-primary-foreground mb-3 text-2xl font-bold">
+              <h3 className="text-hm-stone-100 mb-3 text-2xl font-bold">
                 {hasIndividualLikes
                   ? 'Find Your First Match!'
                   : 'No mutual likes yet!'}
               </h3>
 
-              <p className="text-primary/70 mx-auto mb-2 max-w-md">
+              <p className="text-hm-stone-300 mx-auto mb-2 max-w-md">
                 {hasIndividualLikes
                   ? 'You&apos;re both swiping! Keep going to discover properties you both love.'
                   : 'Start swiping together to discover homes you both love'}
               </p>
 
               {hasIndividualLikes && (
-                <div className="text-primary/50 mb-4 flex items-center justify-center gap-2 text-sm">
+                <div className="text-hm-stone-400 mb-4 flex items-center justify-center gap-2 text-sm">
                   <Star className="h-4 w-4 text-yellow-400" />
                   <span>
                     You&apos;ve liked {householdStats?.total_household_likes}{' '}
@@ -255,7 +255,7 @@ export function CouplesMutualLikesSection({
     <Card className="card-glassmorphism-style border-pink-500/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
@@ -318,7 +318,7 @@ export function CouplesMutualLikesSection({
 
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-start justify-between gap-2">
-                          <h3 className="text-primary-foreground truncate font-semibold">
+                          <h3 className="text-hm-stone-100 truncate font-semibold">
                             {like.property?.address ||
                               `Property ${like.property_id.slice(0, 8)}`}
                           </h3>
@@ -332,7 +332,7 @@ export function CouplesMutualLikesSection({
                               </span>
                             </div>
 
-                            <div className="text-primary/60 mb-2 flex items-center gap-4 text-xs">
+                            <div className="text-hm-stone-300 mb-2 flex items-center gap-4 text-xs">
                               <div className="flex items-center gap-1">
                                 <Bed className="h-3 w-3" />
                                 <span>{like.property.bedrooms}</span>
@@ -354,7 +354,7 @@ export function CouplesMutualLikesSection({
                           </>
                         )}
 
-                        <div className="text-primary/40 flex items-center gap-1 text-xs">
+                        <div className="text-hm-stone-400 flex items-center gap-1 text-xs">
                           <Calendar className="h-3 w-3" />
                           <span>
                             Liked{' '}
@@ -364,7 +364,7 @@ export function CouplesMutualLikesSection({
                       </div>
                     </div>
 
-                    <ChevronRight className="text-primary/40 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ChevronRight className="text-hm-stone-400 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
 
                     {/* Romantic hover effect */}
                     <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-rose-500/0 transition-all group-hover:from-pink-500/5 group-hover:via-purple-500/5 group-hover:to-rose-500/5" />

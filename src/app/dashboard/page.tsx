@@ -7,9 +7,7 @@ import { UserService } from '@/lib/services/users'
 import { unstable_noStore as noStore } from 'next/cache'
 
 interface DashboardPageProps {
-  searchParams: {
-    [key: string]: string | string[] | undefined
-  }
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function DashboardPage({

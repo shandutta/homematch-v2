@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { PreferencesSection } from '@/components/settings/PreferencesSection'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
+import { mockNextRouter } from '../../../utils/mock-helpers'
 
 // Mock dependencies
 jest.mock('@/lib/services/users-client', () => ({
@@ -309,6 +310,21 @@ describe('PreferencesSection', () => {
           }),
         })
       )
+    })
+  })
+
+  it('redirects to the dashboard after saving a search', async () => {
+    const user = userEvent.setup()
+    const router = mockNextRouter()
+    render(<PreferencesSection user={mockUser} profile={mockProfile} />)
+
+    const saveSearchButton = screen.getByRole('button', {
+      name: /save search/i,
+    })
+    await user.click(saveSearchButton)
+
+    await waitFor(() => {
+      expect(router.push).toHaveBeenCalledWith('/dashboard')
     })
   })
 })
