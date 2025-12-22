@@ -86,13 +86,24 @@ const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue
 )
 
-function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
-  const id = React.useId()
+function FormItem({
+  className,
+  id: idProp,
+  ...props
+}: React.ComponentProps<'div'>) {
+  const generatedId = React.useId()
+  const fieldContext = React.useContext(FormFieldContext)
+  const normalizedName = fieldContext?.name
+    ? String(fieldContext.name).replace(/[^a-zA-Z0-9_-]/g, '-')
+    : null
+  const derivedId = normalizedName ? `form-${normalizedName}` : null
+  const id = idProp ?? derivedId ?? generatedId
 
   return (
     <FormItemContext.Provider value={{ id }}>
       <div
         data-slot="form-item"
+        id={id}
         className={cn('grid gap-2', className)}
         {...props}
       />
