@@ -149,4 +149,43 @@ describe('PropertyCard Component', () => {
     renderWithQuery(<PropertyCard property={mockProperty} />)
     expect(screen.getByTestId('mutual-likes-indicator')).toBeDefined()
   })
+
+  test('defaults to map view in full-height toggle mode', () => {
+    const propertyWithCoords: Property = {
+      ...mockProperty,
+      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+    }
+
+    renderWithQuery(
+      <PropertyCard
+        property={propertyWithCoords}
+        fullHeight
+        enableDetailsToggle
+      />
+    )
+
+    expect(screen.getByTestId('property-map')).toBeDefined()
+    expect(screen.queryByTestId('storytelling-description')).toBeNull()
+  })
+
+  test('allows switching from map to story in full-height toggle mode', () => {
+    const propertyWithCoords: Property = {
+      ...mockProperty,
+      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+    }
+
+    renderWithQuery(
+      <PropertyCard
+        property={propertyWithCoords}
+        fullHeight
+        enableDetailsToggle
+      />
+    )
+
+    const storyButton = screen.getByRole('button', { name: 'Story' })
+    fireEvent.click(storyButton)
+
+    expect(screen.getByTestId('storytelling-description')).toBeDefined()
+    expect(screen.queryByTestId('property-map')).toBeNull()
+  })
 })

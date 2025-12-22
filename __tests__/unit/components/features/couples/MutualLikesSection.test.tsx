@@ -301,9 +301,11 @@ describe('MutualLikesSection Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('No mutual likes yet!')).toBeInTheDocument()
-        expect(
-          screen.getByText('Properties you both like will appear here')
-        ).toBeInTheDocument()
+        const helperText = screen.getByText(
+          'Properties you both like will appear here'
+        )
+        expect(helperText).toBeInTheDocument()
+        expect(helperText).toHaveClass('text-hm-stone-300')
       })
     })
 
@@ -370,6 +372,22 @@ describe('MutualLikesSection Component', () => {
         expect(screen.getByText('4 bed')).toBeInTheDocument()
         expect(screen.getByText('2 bath')).toBeInTheDocument()
         expect(screen.getByText('3 bath')).toBeInTheDocument()
+      })
+    })
+
+    test('should use higher-contrast text for metadata on dark cards', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ mutualLikes: mockMutualLikes }),
+      } as Response)
+
+      renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
+
+      await waitFor(() => {
+        const priceMeta = screen.getByText('$500k').closest('div')
+        expect(priceMeta).toHaveClass('text-hm-stone-300')
+        const likedDate = screen.getAllByText(/Liked/i)[0]
+        expect(likedDate).toHaveClass('text-hm-stone-400')
       })
     })
 

@@ -99,15 +99,17 @@ async function seedPropertyWithVibes({
   userId,
   interactionType,
   seedKey,
+  createdAtOverride,
 }: {
   supabase: ReturnType<typeof createServiceRoleClient>
   userId?: string
   interactionType?: 'like'
   seedKey: string
+  createdAtOverride?: string
 }) {
   const propertyId = crypto.randomUUID()
   const neighborhoodId = crypto.randomUUID()
-  const createdAt = new Date().toISOString()
+  const createdAt = createdAtOverride ?? new Date().toISOString()
   const address = `Playwright Vibes ${seedKey} ${propertyId.slice(0, 6)}`
   const tagline = `PLAYWRIGHT_TAGLINE_${propertyId.slice(0, 8)}`
   const vibeStatement =
@@ -347,6 +349,88 @@ test.describe('Property Vibes - UI', () => {
       await expect(card).toContainText(seeded.neighborhoodTagline)
       await expect(card).toContainText(seeded.neighborhoodVibeStatement)
       await expect(card).toContainText(seeded.neighborhoodTag)
+    } finally {
+      await seeded.cleanup()
+    }
+  })
+
+  test('mobile dashboard stack shows image and map without hint overlap', async ({
+    page,
+  }) => {
+    const supabase = createServiceRoleClient()
+
+    const seeded = await seedPropertyWithVibes({
+      supabase,
+      seedKey: 'dashboard-mobile',
+      createdAtOverride: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    })
+
+    try {
+      await page.route('**/api/maps/proxy-script*', (route) => {
+        const stubScript = `
+          (function() {
+            window.google = window.google || {}
+            window.google.maps = window.google.maps || {}
+            window.google.maps.marker = window.google.maps.marker || {}
+            window.google.maps.marker.AdvancedMarkerElement = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.Map = function(el) {
+              if (el && !el.querySelector('.gm-style')) {
+                var node = document.createElement('div')
+                node.className = 'gm-style'
+                el.appendChild(node)
+              }
+            }
+            window.google.maps.Marker = function() {
+              this.addListener = function() {}
+            }
+            window.google.maps.InfoWindow = function() {
+              this.open = function() {}
+            }
+            if (window.initGoogleMaps) window.initGoogleMaps()
+          })()
+        `
+
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/javascript',
+          body: stubScript,
+        })
+      })
+
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+
+      const card = page
+        .locator('[data-testid="property-card"]')
+        .filter({ hasText: seeded.address })
+        .first()
+
+      await expect(card).toBeVisible()
+
+      const cardImage = card.getByRole('img', { name: seeded.address })
+      await expect(cardImage).toBeVisible()
+      const imageBox = await cardImage.boundingBox()
+      expect(imageBox?.height ?? 0).toBeGreaterThan(0)
+
+      const map = card.locator('.gm-style')
+      await expect(map).toHaveCount(1, { timeout: 20000 })
+      await expect(map).toBeVisible()
+
+      const hint = page.getByText('Swipe to explore')
+      await expect(hint).toBeVisible()
+      const hintBox = await hint.boundingBox()
+      const mapBox = await map.boundingBox()
+      expect(hintBox && mapBox).toBeTruthy()
+      if (hintBox && mapBox) {
+        expect(hintBox.bottom).toBeLessThanOrEqual(mapBox.top)
+      }
+
+      const storyButton = card.getByRole('button', { name: 'Story' })
+      await storyButton.click()
+      await expect(card).toContainText(seeded.tagline)
+      await expect(card.locator('.gm-style')).toHaveCount(0)
     } finally {
       await seeded.cleanup()
     }

@@ -319,7 +319,7 @@ export function SwipeablePropertyCard({
             <AnimatePresence>
               {shouldShowHints && (
                 <MotionDiv
-                  className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2"
+                  className="pointer-events-none absolute top-20 left-1/2 z-20 w-full max-w-[80%] -translate-x-1/2 md:top-24"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
