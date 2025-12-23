@@ -2,6 +2,12 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PreferencesSection } from '@/components/settings/PreferencesSection'
 import { UserServiceClient } from '@/lib/services/users-client'
+import {
+  DEFAULT_BATHROOMS,
+  DEFAULT_BEDROOMS,
+  DEFAULT_PRICE_RANGE,
+  DEFAULT_SEARCH_RADIUS,
+} from '@/lib/constants/preferences'
 import { toast } from 'sonner'
 import { mockNextRouter } from '../../../utils/mock-helpers'
 
@@ -114,6 +120,10 @@ describe('PreferencesSection', () => {
     expect(screen.getByLabelText('Pool')).not.toBeChecked()
     expect(screen.getByLabelText('Gym/Fitness Center')).toBeChecked()
     expect(screen.getByLabelText('Pet Friendly')).not.toBeChecked()
+
+    expect(
+      screen.getByRole('button', { name: /reset filters/i })
+    ).toBeInTheDocument()
   })
 
   it('handles default preferences when none exist', () => {
@@ -310,6 +320,43 @@ describe('PreferencesSection', () => {
           }),
         })
       )
+    })
+  })
+
+  it('resets filters to defaults', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    render(<PreferencesSection user={mockUser} profile={mockProfile} />)
+
+    await user.click(screen.getByRole('button', { name: /reset filters/i }))
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    await waitFor(() => {
+      expect(mockUpdateUserProfile).toHaveBeenCalledWith('user-123', {
+        preferences: expect.objectContaining({
+          priceRange: DEFAULT_PRICE_RANGE,
+          bedrooms: DEFAULT_BEDROOMS,
+          bathrooms: DEFAULT_BATHROOMS,
+          searchRadius: DEFAULT_SEARCH_RADIUS,
+          cities: [],
+          neighborhoods: [],
+          mustHaves: {
+            parking: false,
+            pool: false,
+            gym: false,
+            petFriendly: false,
+          },
+          propertyTypes: expect.objectContaining({
+            single_family: true,
+            townhome: true,
+            house: true,
+            townhouse: true,
+          }),
+        }),
+      })
     })
   })
 

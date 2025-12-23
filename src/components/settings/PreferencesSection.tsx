@@ -704,6 +704,27 @@ export function PreferencesSection({
     return parts.filter(Boolean).join(' | ')
   }, [bathrooms, bedrooms, buildLocationLabel, priceRange])
 
+  const resetFiltersToDefaults = useCallback(() => {
+    autoSelectedCitiesRef.current.clear()
+    setCitySearch('')
+    setNeighborhoodSearch('')
+    setShowSelectedCitiesOnly(false)
+    setShowSelectedNeighborhoodsOnly(false)
+    setSelectedCities([])
+    setSelectedNeighborhoods([])
+    setPriceRange(DEFAULT_PRICE_RANGE)
+    setBedrooms(DEFAULT_BEDROOMS)
+    setBathrooms(DEFAULT_BATHROOMS)
+    setPropertyTypes({ ...defaultPropertyTypes })
+    setMustHaves({
+      parking: false,
+      pool: false,
+      gym: false,
+      petFriendly: false,
+    })
+    setSearchRadius(DEFAULT_SEARCH_RADIUS)
+  }, [])
+
   const saveSearch = useCallback(async () => {
     if (savingSearch) return
     setSavingSearch(true)
@@ -1236,24 +1257,35 @@ export function PreferencesSection({
             Updates auto-save and refresh dashboard matches
           </p>
         </div>
-        <Button
-          onClick={() => void savePreferences()}
-          disabled={loading || !hasUnsavedChanges}
-          className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
-          data-testid="save-preferences"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              {hasUnsavedChanges ? 'Save now' : 'All changes saved'}
-            </>
-          )}
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={resetFiltersToDefaults}
+            className="text-hm-stone-300 hover:text-hm-stone-100"
+            data-testid="reset-preferences"
+          >
+            Reset filters
+          </Button>
+          <Button
+            onClick={() => void savePreferences()}
+            disabled={loading || !hasUnsavedChanges}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 text-white shadow-lg shadow-amber-500/20 transition-all hover:shadow-amber-500/30 disabled:opacity-50"
+            data-testid="save-preferences"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {hasUnsavedChanges ? 'Save now' : 'All changes saved'}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.02] p-5">
