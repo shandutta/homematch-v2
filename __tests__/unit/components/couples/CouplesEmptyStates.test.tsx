@@ -204,7 +204,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoMutualLikesState stats={{ total_household_likes: 10 }} />)
 
       expect(
-        screen.getByRole('link', { name: /view your journey/i })
+        screen.getByRole('link', { name: /view household activity/i })
       ).toBeInTheDocument()
     })
 
@@ -212,7 +212,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoMutualLikesState stats={{ total_household_likes: 0 }} />)
 
       expect(
-        screen.queryByRole('link', { name: /view your journey/i })
+        screen.queryByRole('link', { name: /view household activity/i })
       ).not.toBeInTheDocument()
     })
   })

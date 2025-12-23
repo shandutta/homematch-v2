@@ -128,7 +128,7 @@ describe('StorytellingService', () => {
       const story = StorytellingService.generatePropertyStory(context)
       // Should generate a balcony-related story
       expect(story).toBe(
-        'Perfect for morning coffee on your private balcony, watching the world wake up together'
+        'Perfect for morning coffee on your private balcony as the day starts'
       )
     })
 
@@ -142,9 +142,7 @@ describe('StorytellingService', () => {
       const story = StorytellingService.generatePropertyStory(context)
       // With Math.random(0), expecting the first story from buildStoryFromFeatures
       // Based on the property features, this should be cozy since 1400 <= 1500 and not spacious
-      expect(story).toBe(
-        "Cozy mornings wrapped in each other's arms in your intimate sanctuary"
-      )
+      expect(story).toBe('Cozy mornings in a calm, comfortable space')
     })
 
     test('should handle null/undefined property fields gracefully', () => {

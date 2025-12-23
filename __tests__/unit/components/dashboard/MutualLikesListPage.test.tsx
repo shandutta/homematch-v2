@@ -30,7 +30,7 @@ describe('MutualLikesListPage', () => {
     expect(heading).toHaveClass('text-hm-stone-100')
 
     const description = screen.getByText(
-      /Keep swiping — when you both like the same home/i
+      /Keep swiping — when your household likes the same home it will appear here\./i
     )
     expect(description).toHaveClass('text-hm-stone-300')
   })

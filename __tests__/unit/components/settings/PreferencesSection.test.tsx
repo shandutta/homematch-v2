@@ -448,6 +448,12 @@ describe('PreferencesSection', () => {
   })
 
   it('loads neighborhoods when selection is below the sentinel threshold', async () => {
+    mockGetCities.mockResolvedValueOnce([
+      { city: 'Austin', state: 'TX' },
+      { city: 'Dallas', state: 'TX' },
+      { city: 'Houston', state: 'TX' },
+    ])
+
     const profileWithCities = {
       ...mockProfile,
       preferences: {

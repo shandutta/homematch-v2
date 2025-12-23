@@ -29,8 +29,8 @@ describe('toast helper', () => {
 
   test('mutualLike formats description with partner name', () => {
     toast.mutualLike('123 Main St', 'Alex')
-    expect(successMock).toHaveBeenCalledWith("💕 It's a Match!", {
-      description: 'You and Alex both liked 123 Main St!',
+    expect(successMock).toHaveBeenCalledWith('Mutual like!', {
+      description: 'Alex also liked 123 Main St.',
       duration: 8000,
     })
   })

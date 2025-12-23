@@ -47,7 +47,7 @@ describe('HowItWorks', () => {
 
     expect(
       screen.getByText(
-        /Cozy craftsman or sleek modern\? Walkable cafés or quiet cul‑de‑sac\?/
+        /Cozy craftsman or sleek modern\? Walkable cafes or quiet cul-de-sac\? We learn what your household likes\./
       )
     ).toBeInTheDocument()
     expect(
