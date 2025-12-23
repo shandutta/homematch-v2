@@ -138,4 +138,92 @@ test.describe('Property modal map', () => {
       await supabase.from('properties').delete().eq('id', propertyId)
     }
   })
+
+  test('renders the map on mobile after expanding', async ({
+    page,
+  }, testInfo) => {
+    getRequiredEnv('GOOGLE_MAPS_SERVER_API_KEY')
+
+    const supabase = createServiceRoleClient()
+    const { testUser } = createWorkerAuthHelper(page, testInfo)
+    const userId = await getAuthUserIdByEmail(supabase, testUser.email)
+
+    const propertyId = crypto.randomUUID()
+    const createdAt = new Date().toISOString()
+    const address = `Playwright Map Mobile ${propertyId.slice(0, 8)}`
+
+    const propertyRecord = {
+      id: propertyId,
+      address,
+      city: 'San Francisco',
+      state: 'CA',
+      zip_code: '94103',
+      price: 425000,
+      bedrooms: 2,
+      bathrooms: 1,
+      square_feet: 950,
+      property_type: 'single_family',
+      listing_status: 'active',
+      images: ['/images/properties/house-1.svg'],
+      description: 'Playwright seeded property for modal map verification.',
+      coordinates: { type: 'Point', coordinates: [-122.4194, 37.7749] },
+      is_active: true,
+      created_at: createdAt,
+      updated_at: createdAt,
+    }
+
+    try {
+      const { error: insertPropertyError } = await supabase
+        .from('properties')
+        .insert(propertyRecord)
+      if (insertPropertyError) throw new Error(insertPropertyError.message)
+
+      const { error: insertInteractionError } = await supabase
+        .from('user_property_interactions')
+        .insert({
+          user_id: userId,
+          property_id: propertyId,
+          interaction_type: 'like',
+          created_at: createdAt,
+        })
+      if (insertInteractionError)
+        throw new Error(insertInteractionError.message)
+
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto(`${TEST_ROUTES.app.dashboard}/liked`, {
+        waitUntil: 'domcontentloaded',
+      })
+
+      const propertyCard = page
+        .locator('[data-testid="property-card"]')
+        .filter({ hasText: address })
+        .first()
+
+      await expect(propertyCard).toBeVisible({ timeout: 15000 })
+      await propertyCard.click({ force: true })
+
+      const dialog = page.locator('[role="dialog"]').first()
+      await expect(dialog).toBeVisible({ timeout: 15000 })
+
+      const toggle = dialog.getByTestId('toggle-map')
+      await toggle.scrollIntoViewIfNeeded()
+      await toggle.click()
+
+      const map = dialog.locator('[data-testid="property-map"]')
+      await expect(map).toBeVisible({ timeout: 15000 })
+
+      await page.waitForFunction(() => Boolean(window.google?.maps), null, {
+        timeout: 15000,
+      })
+
+      await expect(map.locator('.gm-style')).toBeVisible({ timeout: 15000 })
+      await expect(map).not.toContainText(/map unavailable/i)
+    } finally {
+      await supabase
+        .from('user_property_interactions')
+        .delete()
+        .match({ user_id: userId, property_id: propertyId })
+      await supabase.from('properties').delete().eq('id', propertyId)
+    }
+  })
 })

@@ -565,7 +565,7 @@ test.describe('Couples full journey (real UI)', () => {
         }
       )
       await partnerPage
-        .getByRole('button', { name: /^close$/i })
+        .getByRole('button', { name: /close property/i })
         .first()
         .click()
       await partnerPage.waitForURL(/\/dashboard/, { timeout: 15000 })
@@ -594,7 +594,7 @@ test.describe('Couples full journey (real UI)', () => {
         }
       )
       await partnerPage
-        .getByRole('button', { name: /^close$/i })
+        .getByRole('button', { name: /close property/i })
         .first()
         .click()
       await partnerPage.waitForURL(/\/couples/, { timeout: 15000 })
@@ -624,7 +624,7 @@ test.describe('Couples full journey (real UI)', () => {
         new RegExp(`/properties/${propertyId!}`)
       )
       await partnerPage
-        .getByRole('button', { name: /^close$/i })
+        .getByRole('button', { name: /close property/i })
         .first()
         .click()
       await partnerPage.waitForURL(/\/dashboard\/activity/, { timeout: 15000 })
@@ -650,7 +650,7 @@ test.describe('Couples full journey (real UI)', () => {
         new RegExp(`/properties/${propertyId!}`)
       )
       await partnerPage
-        .getByRole('button', { name: /^close$/i })
+        .getByRole('button', { name: /close property/i })
         .first()
         .click()
       await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {

@@ -354,7 +354,7 @@ test.describe('Property Vibes - UI', () => {
     }
   })
 
-  test('mobile dashboard stack shows image and map without hint overlap', async ({
+  test('mobile dashboard stack shows image and hint without overlap', async ({
     page,
   }) => {
     const supabase = createServiceRoleClient()
@@ -366,44 +366,6 @@ test.describe('Property Vibes - UI', () => {
     })
 
     try {
-      await page.route('**/api/maps/proxy-script*', (route) => {
-        const stubScript = `
-          (function() {
-            window.google = window.google || {}
-            window.google.maps = window.google.maps || {}
-            window.google.maps.marker = window.google.maps.marker || {}
-            window.google.maps.marker.AdvancedMarkerElement = function() {
-              this.addListener = function() {}
-            }
-            window.google.maps.Map = function(el) {
-              if (el && !el.querySelector('.gm-style')) {
-                var node = document.createElement('div')
-                node.className = 'gm-style'
-                node.style.width = '100%'
-                node.style.height = '100%'
-                node.style.display = 'block'
-                el.appendChild(node)
-              }
-            }
-            window.google.maps.Marker = function() {
-              this.addListener = function() {}
-            }
-            window.google.maps.Size = function() {}
-            window.google.maps.Point = function() {}
-            window.google.maps.InfoWindow = function() {
-              this.open = function() {}
-            }
-            if (window.initGoogleMaps) window.initGoogleMaps()
-          })()
-        `
-
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/javascript',
-          body: stubScript,
-        })
-      })
-
       await page.setViewportSize({ width: 390, height: 844 })
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
 
@@ -419,27 +381,27 @@ test.describe('Property Vibes - UI', () => {
       const imageBox = await cardImage.boundingBox()
       expect(imageBox?.height ?? 0).toBeGreaterThan(0)
 
-      const map = card.locator('.gm-style')
-      await expect(map).toHaveCount(1, { timeout: 20000 })
-      await expect(map).toBeVisible()
+      await expect(card.locator('[data-testid="property-map"]')).toHaveCount(0)
+      await expect(card.locator('.gm-style')).toHaveCount(0)
 
       const hint = page.getByText('Swipe to explore')
       const hintVisible = await hint.isVisible().catch(() => false)
       if (hintVisible) {
         const hintBox = await hint.boundingBox()
-        const mapBox = await map.boundingBox()
-        expect(hintBox && mapBox).toBeTruthy()
-        if (hintBox && mapBox) {
+        const passButton = page
+          .getByRole('button', { name: 'Pass on this property' })
+          .first()
+        await expect(passButton).toBeVisible()
+        const passBox = await passButton.boundingBox()
+        expect(hintBox && passBox).toBeTruthy()
+        if (hintBox && passBox) {
           const hintBottom = hintBox.y + hintBox.height
-          const mapTop = mapBox.y
-          expect(hintBottom).toBeLessThanOrEqual(mapTop)
+          const passTop = passBox.y
+          expect(hintBottom).toBeLessThanOrEqual(passTop)
         }
       }
 
-      const storyButton = card.getByRole('button', { name: 'Story' })
-      await storyButton.click()
       await expect(card).toContainText(seeded.tagline)
-      await expect(card.locator('.gm-style')).toHaveCount(0)
     } finally {
       await seeded.cleanup()
     }
