@@ -25,17 +25,17 @@ export const toast = {
   },
 
   mutualLike: (propertyAddress: string, partnerName?: string) => {
-    return sonnerToast.success("💕 It's a Match!", {
+    return sonnerToast.success('Mutual like!', {
       description: partnerName
-        ? `You and ${partnerName} both liked ${propertyAddress}!`
-        : `You both liked ${propertyAddress}!`,
+        ? `${partnerName} also liked ${propertyAddress}.`
+        : `Shared like for ${propertyAddress}.`,
       duration: 8000,
     })
   },
 
   streak: (days: number) => {
     return sonnerToast.success(`🔥 ${days} Day Streak!`, {
-      description: `You're on fire! Keep the momentum going.`,
+      description: 'Great momentum. Keep it going.',
       duration: 6000,
     })
   },
@@ -56,7 +56,7 @@ export const toast = {
 
   authRequired: () => {
     return sonnerToast.error('Sign In Required', {
-      description: 'Please sign in to access couples features.',
+      description: 'Please sign in to access shared household features.',
       duration: 5000,
     })
   },
@@ -64,7 +64,7 @@ export const toast = {
   householdRequired: () => {
     return sonnerToast.error('Join a Household', {
       description:
-        'Create or join a household to start sharing favorites with your partner.',
+        'Create or join a household to start sharing favorites together.',
       duration: 6000,
     })
   },

@@ -86,17 +86,17 @@ describe('MarketingPreviewCard', () => {
     expect(screen.getByText('Near parks')).toBeInTheDocument()
   })
 
-  test('renders Pass and Love action buttons', () => {
+  test('renders Pass and Like action buttons', () => {
     render(<MarketingPreviewCard />)
     expect(screen.getByText('Pass')).toBeInTheDocument()
-    expect(screen.getByText('Love')).toBeInTheDocument()
+    expect(screen.getByText('Like')).toBeInTheDocument()
   })
 
   test('renders feature badges with titles and descriptions', () => {
     render(<MarketingPreviewCard />)
 
     // Badge titles
-    expect(screen.getByText('Built for couples')).toBeInTheDocument()
+    expect(screen.getByText('Built for households')).toBeInTheDocument()
     expect(screen.getByText('See nearby spots')).toBeInTheDocument()
     expect(screen.getByText('Real listings, quick swipes')).toBeInTheDocument()
 

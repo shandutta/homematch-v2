@@ -11,7 +11,7 @@ const HOW_IT_WORKS_STEPS = [
     icon: Sparkles,
     title: 'Tell Us Your Vibe',
     description:
-      'Cozy craftsman or sleek modern? Walkable cafés or quiet cul‑de‑sac? We learn what you both love.',
+      'Cozy craftsman or sleek modern? Walkable cafes or quiet cul-de-sac? We learn what your household likes.',
     iconAnimation: 'sparkle',
   },
   {

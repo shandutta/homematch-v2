@@ -1,23 +1,23 @@
 /**
- * Couples-centric messaging utilities for HomeMatch
- * Centralizes all couples-focused copy and messaging throughout the app
+ * Household-centric messaging utilities for HomeMatch
+ * Centralizes shared-search copy and messaging throughout the app
  */
 
 export const CouplesMessages = {
   // Welcome Messages
   welcome: {
-    new: 'Welcome to HomeMatch! Find your dream home together 🏠💕',
+    new: 'Welcome to HomeMatch! Find a place that works for everyone.',
     returning: 'Welcome back',
-    dashboard: 'Find your dream home together',
-    subtitle: 'Swipe, match, and move in together',
+    dashboard: 'Find a place that works for everyone',
+    subtitle: 'Swipe, match, and move forward together',
   },
 
   // Dashboard Headers
   dashboard: {
-    title: 'Your Home Search Journey',
-    subtitle: 'Two hearts, one home - tracking your progress together',
-    discover: 'Discover Your Next Home Together',
-    activity: "Your Couple's Activity",
+    title: 'Your Home Search',
+    subtitle: 'Shared progress for your household',
+    discover: 'Discover Your Next Home',
+    activity: 'Household Activity',
   },
 
   // Empty States
@@ -25,65 +25,61 @@ export const CouplesMessages = {
     noProperties: {
       title: 'All caught up!',
       message:
-        "You've seen all available properties together. Check back later for new listings that might be perfect for both of you!",
+        "You've seen all available properties in this search. Check back later for new listings that fit your filters.",
       cta: 'New homes are added daily',
     },
     noLikes: {
-      title: 'Start swiping to find homes you both love',
-      message:
-        'Your perfect match is waiting - discover properties that speak to both of you',
-      subtitle: 'The best homes find couples who know what they want',
+      title: 'Start swiping to find shared favorites',
+      message: 'Build a short list everyone can get behind.',
+      subtitle: 'Clear must-haves make decisions faster',
     },
     noMutualLikes: {
-      title: 'Find Your First Match Together!',
-      message:
-        "Keep swiping to discover your first mutual like - it's the most exciting part!",
-      subtitle:
-        'Properties you both like will appear here as beautiful matches',
+      title: 'Find your first shared favorite',
+      message: 'Keep swiping to discover your first mutual like.',
+      subtitle: 'Properties everyone likes will appear here',
     },
     noActivity: {
-      title: 'Your shared journey starts here',
-      message:
-        'Begin exploring properties together and watch your story unfold',
-      cta: 'Start Your Adventure',
+      title: 'Your shared search starts here',
+      message: 'Begin exploring properties and watch your activity roll in.',
+      cta: 'Start exploring',
     },
   },
 
   // Success & Achievement Messages
   success: {
-    mutualLike: "It's a match! You both loved this property 💕",
-    firstMatch: "First mutual like! 🎉 You're already on the same page",
+    mutualLike: 'Shared favorite! Everyone liked this property.',
+    firstMatch: "First mutual like! You're already aligned.",
     milestone: {
-      5: '5 mutual likes! Your home-hunting synchronicity is amazing! ✨',
-      10: '10 properties you both love! You two have great taste 🏆',
-      25: "25 mutual favorites! You're house hunting champions! 🎯",
+      5: '5 mutual likes! The list is getting sharper.',
+      10: '10 shared favorites! You are finding your groove.',
+      25: '25 mutual likes! Your short list is on fire.',
     },
     streak: {
-      3: "3-day search streak! You're committed partners 💪",
-      7: 'Week-long search streak! Dedication goals 🔥',
-      14: 'Two weeks strong! Your dream home is getting closer 🌟',
+      3: '3-day search streak! Solid momentum.',
+      7: 'Week-long search streak! Great consistency.',
+      14: 'Two weeks strong! The right home is getting closer.',
     },
   },
 
   // Encouragement Messages
   encouragement: {
     swiping: [
-      'Keep swiping - your dream home is out there!',
-      "You're getting closer to finding the one together",
-      'Great taste! Your partner will love this area too',
-      'Every swipe brings you closer to home',
-      'Perfect neighborhoods are just a swipe away',
+      'Keep swiping - your next great fit is out there!',
+      "You're getting closer to the right place for your household",
+      'Great pick! Others will appreciate this area too',
+      'Every swipe sharpens your short list',
+      'Strong neighborhoods are just a swipe away',
     ],
     progress: [
-      "Amazing progress! You're making this look easy",
-      'Your search is really picking up momentum',
-      'You two are naturals at this',
-      'Looking great! Keep up the fantastic work',
+      'Nice progress! This search is moving.',
+      'Your list is getting sharper.',
+      'You are making fast decisions as a group.',
+      'Good pace - keep it up.',
     ],
     patience: [
-      "The perfect home takes time - you're doing great",
-      'Every property teaches you something new about your preferences',
-      "Quality over quantity - you're being wonderfully selective",
+      'The right home takes time - you are doing fine.',
+      'Every property teaches you something about your must-haves.',
+      'Quality over quantity - you are being selective.',
     ],
   },
 
@@ -91,84 +87,82 @@ export const CouplesMessages = {
   stats: {
     viewed: {
       title: 'Properties Explored Together',
-      subtitle: "Total homes you've discovered as a couple",
-      empty: 'Start exploring properties together',
+      subtitle: "Total homes you've explored as a household",
+      empty: 'Start exploring properties',
     },
     liked: {
       title: 'Properties You Both Saved',
-      subtitle: "Favorites you're both interested in",
-      empty: 'Heart properties you both love',
+      subtitle: 'Favorites the household saved',
+      empty: 'Like properties to save them here',
     },
     matches: {
       title: 'Mutual Favorites',
-      subtitle: 'Properties that made both your hearts skip',
-      empty: 'Your first match is coming soon',
+      subtitle: 'Properties everyone liked',
+      empty: 'Your first mutual like is coming soon',
     },
     activity: {
-      recentTitle: 'Your Recent Journey Together',
-      weeklyTitle: "This Week's Adventures",
-      monthlyTitle: 'Your Monthly Progress',
+      recentTitle: 'Recent Household Activity',
+      weeklyTitle: "This Week's Momentum",
+      monthlyTitle: 'Monthly Progress',
     },
   },
 
   // Loading States
   loading: {
-    properties: 'Finding perfect properties for both of you...',
+    properties: 'Finding strong fits for your household...',
     matching: 'Checking for mutual interests...',
-    activity: 'Loading your shared journey...',
-    general: 'Just a moment while we prepare something special...',
+    activity: 'Loading household activity...',
+    general: 'Hang tight while we update your search...',
   },
 
   // Error States
   error: {
-    network:
-      "Having trouble connecting? Let's get you back to house hunting together",
+    network: "Having trouble connecting? Let's get you back to house hunting.",
     noData:
-      'Looks like we need to refresh. Your home search journey continues in a moment!',
-    general:
-      "Something's not quite right, but don't worry - great homes are still out there!",
+      'Looks like we need to refresh. Your search will be back in a moment!',
+    general: 'Something is not quite right, but the listings are still there.',
   },
 
   // Call to Actions
   cta: {
-    startSwiping: 'Start Swiping Together',
-    viewMatches: 'See Your Matches',
-    invitePartner: 'Invite Your Partner',
+    startSwiping: 'Start swiping',
+    viewMatches: 'See mutual likes',
+    invitePartner: 'Invite someone',
     continueSearch: 'Continue Your Search',
     exploreMore: 'Explore More Homes',
-    viewActivity: 'View Your Journey',
-    createHousehold: 'Start Your Journey',
+    viewActivity: 'View household activity',
+    createHousehold: 'Start a household',
   },
 
   // Toast Messages
   toast: {
-    like: 'Added to your favorites! ❤️',
-    mutualLike: '🎉 Mutual match! You both love this one',
+    like: 'Added to your favorites!',
+    mutualLike: 'Mutual like! Everyone saved this one.',
     pass: 'Not the one, but your perfect home is out there!',
     undo: 'Changed your mind? No problem!',
-    partnerActivity: 'Your partner just liked a property!',
-    milestone: 'Congratulations on your house hunting milestone! 🎯',
+    partnerActivity: 'A household member just liked a property.',
+    milestone: 'Nice milestone in your search!',
   },
 
   // Onboarding & Setup
   onboarding: {
     household: {
-      create: 'Create your household to start searching together',
-      invite: 'Invite your partner to join your home search',
-      waiting: 'Waiting for your partner to join the adventure',
+      create: 'Create a household to start searching together',
+      invite: 'Invite a household member to join the search',
+      waiting: 'Waiting for a household member to join',
     },
     profile: {
-      setup: "Let's personalize your home search journey",
-      preferences: 'Tell us what makes a house feel like home for both of you',
+      setup: "Let's personalize your home search",
+      preferences: 'Tell us what matters most to your household',
     },
   },
 
   // Navigation & UI
   navigation: {
-    couples: 'Matches',
-    matches: 'Our Matches',
-    activity: 'Our Activity',
-    household: 'Our Home Search',
+    couples: 'Household',
+    matches: 'Mutual Likes',
+    activity: 'Household Activity',
+    household: 'Household Search',
   },
 } as const
 
@@ -192,7 +186,7 @@ export const getStreakMessage = (days: number) => {
   if (days >= 14) return CouplesMessages.success.streak[14]
   if (days >= 7) return CouplesMessages.success.streak[7]
   if (days >= 3) return CouplesMessages.success.streak[3]
-  return `${days} days of searching together! 💕`
+  return `${days} days of searching together!`
 }
 
 // Property-specific messaging
@@ -200,9 +194,9 @@ export const getPropertyActionText = (
   hasPartner: boolean,
   isMutualLike?: boolean
 ) => {
-  if (isMutualLike) return 'You both loved this!'
-  if (hasPartner) return 'Your partner might love this too'
-  return 'Save this for when your partner joins'
+  if (isMutualLike) return 'Everyone liked this!'
+  if (hasPartner) return 'A household member might like this too'
+  return 'Save this for when someone else joins'
 }
 
 export const getEmptyStateText = (

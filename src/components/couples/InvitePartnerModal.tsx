@@ -216,11 +216,11 @@ export function InvitePartnerModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <UserPlus className="h-5 w-5 text-purple-500" />
-            Invite Your Partner
+            Invite Someone
           </DialogTitle>
           <DialogDescription>
-            Send an invitation to your partner so you can discover your dream
-            home together.
+            Send an invitation to someone in your household so you can search
+            together.
           </DialogDescription>
         </DialogHeader>
 
@@ -234,7 +234,7 @@ export function InvitePartnerModal({
           {/* Search for existing users */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-slate-700">
-              Find your partner on HomeMatch
+              Find a household member on HomeMatch
             </label>
             {selectedUser ? (
               <div className="flex items-center justify-between rounded-lg border border-purple-200 bg-purple-50 p-3">
@@ -326,7 +326,7 @@ export function InvitePartnerModal({
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Partner&apos;s name
+                  Name
                 </label>
                 <Input
                   placeholder="Their name (optional)"
@@ -340,7 +340,7 @@ export function InvitePartnerModal({
                   Email address
                 </label>
                 <Input
-                  placeholder="partner@example.com"
+                  placeholder="member@example.com"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
@@ -458,7 +458,7 @@ export function InvitePartnerModal({
               </Button>
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              Your partner can use this code to join directly from their profile
+              They can use this code to join directly from their profile
               settings.
             </p>
           </div>

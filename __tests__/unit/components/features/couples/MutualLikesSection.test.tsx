@@ -202,7 +202,7 @@ describe('MutualLikesSection Component', () => {
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
-      expect(screen.getByText('Both Liked')).toBeInTheDocument()
+      expect(screen.getByText('Shared Likes')).toBeInTheDocument()
       expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0)
     })
 
@@ -282,7 +282,7 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Both Liked')).toBeInTheDocument()
+        expect(screen.getByText('Shared Likes')).toBeInTheDocument()
         const heartIcon = document.querySelector('.lucide-heart')
         expect(heartIcon).toBeInTheDocument()
         expect(heartIcon).toHaveClass('text-couples-accent/50', 'fill-current')
@@ -302,7 +302,7 @@ describe('MutualLikesSection Component', () => {
       await waitFor(() => {
         expect(screen.getByText('No mutual likes yet!')).toBeInTheDocument()
         const helperText = screen.getByText(
-          'Properties you both like will appear here'
+          'Properties everyone likes will appear here'
         )
         expect(helperText).toBeInTheDocument()
         expect(helperText).toHaveClass('text-hm-stone-200')
@@ -318,7 +318,7 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Both Liked')).toHaveClass('text-hm-stone-100')
+        expect(screen.getByText('Shared Likes')).toHaveClass('text-hm-stone-100')
         expect(
           screen.getByRole('heading', { name: 'No mutual likes yet!' })
         ).toHaveClass('text-hm-stone-100')
@@ -367,7 +367,7 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Both Liked (2)')).toBeInTheDocument()
+        expect(screen.getByText('Shared Likes (2)')).toBeInTheDocument()
       })
     })
 
@@ -518,7 +518,7 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Both Liked (2)')).toBeInTheDocument()
+        expect(screen.getByText('Shared Likes (2)')).toBeInTheDocument()
       })
 
       expect(toast.success).not.toHaveBeenCalled()
@@ -710,7 +710,7 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/Both Liked/)).toBeInTheDocument()
+        expect(screen.getByText(/Shared Likes/)).toBeInTheDocument()
       })
     })
 

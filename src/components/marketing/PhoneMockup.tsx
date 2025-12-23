@@ -359,14 +359,14 @@ function PropertyCard({
                 try {
                   if (window?.toast) {
                     window.toast({
-                      title: "It's a Match!",
+                      title: 'Mutual like!',
                       description: 'Saved to your likes.',
                       variant: 'success',
                     })
                   } else {
                     const evt = new CustomEvent('landing-toast', {
                       detail: {
-                        title: "It's a Match!",
+                        title: 'Mutual like!',
                         description: 'Saved to your likes.',
                         variant: 'success',
                       },
@@ -378,9 +378,9 @@ function PropertyCard({
                 }
                 onSwipe('right')
               }}
-              aria-label="Love this property"
+              aria-label="Like this property"
             >
-              Love
+              Like
             </MotionButton>
           </div>
         </div>

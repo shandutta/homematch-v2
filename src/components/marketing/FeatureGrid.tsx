@@ -15,9 +15,9 @@ import {
 const features = [
   {
     icon: Brain,
-    title: 'AI That Gets You Both',
+    title: 'AI That Gets Everyone',
     description:
-      'Our ML learns what makes you and your partner tick, finding homes that check both your boxes.',
+      'Our ML learns what matters to your household, finding homes that check the shared boxes.',
     iconAnimation: 'pulse',
   },
   {
@@ -201,7 +201,7 @@ export function FeatureGrid() {
             className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            We turned the most stressful part of adulting into date night
+            We turned the most stressful part of adulting into a shared game
           </p>
         </MotionDiv>
 

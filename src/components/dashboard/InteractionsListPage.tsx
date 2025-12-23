@@ -118,7 +118,7 @@ export function InteractionsListPage({
               variant="ghost"
               className="text-hm-stone-400 hover:text-hm-stone-200"
             >
-              <Link href="/couples">Couples journey</Link>
+              <Link href="/couples">Household hub</Link>
             </Button>
           </div>
         </div>

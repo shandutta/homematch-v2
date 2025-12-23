@@ -11,20 +11,20 @@ const siteUrl =
 export const metadata: Metadata = {
   title: 'HomeMatch - Swipe. Match. Move In.',
   description:
-    'House hunting just became your favorite couples activity. Find your perfect home together with AI that learns what you both love.',
+    'House hunting just became your favorite shared activity. Find a home that works for your household with AI that learns what you care about.',
   keywords:
-    'house hunting, real estate, couples, AI matching, property search, home finding',
+    'house hunting, real estate, roommates, household, AI matching, property search, home finding',
   openGraph: {
-    title: 'HomeMatch - Tinder for Houses',
-    description: 'The modern way for couples to find their dream home',
+    title: 'HomeMatch - Swipeable Home Search',
+    description: 'The modern way for households to find a home together',
     images: [`${siteUrl}/og-image.jpg`],
     type: 'website',
     url: siteUrl,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HomeMatch - Swipe Right on Your Dream Home',
-    description: 'House hunting for the modern couple',
+    title: 'HomeMatch - Swipe to Find Your Next Home',
+    description: 'House hunting for modern households',
     images: [`${siteUrl}/twitter-image.jpg`],
   },
   alternates: {
@@ -41,7 +41,7 @@ export default async function LandingPage() {
     url: siteUrl,
     name: 'HomeMatch',
     description:
-      'HomeMatch helps couples swipe, match, and find a home together with collaborative search.',
+      'HomeMatch helps households swipe, match, and find a home together with collaborative search.',
     potentialAction: {
       '@type': 'SearchAction',
       target: `${siteUrl}/search?q={search_term_string}`,

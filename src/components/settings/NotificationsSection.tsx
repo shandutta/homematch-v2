@@ -273,7 +273,7 @@ export function NotificationsSection({
         {
           key: 'messages',
           label: 'Household messages',
-          helper: 'Updates from roommates or partners',
+          helper: 'Updates from household members',
         },
       ],
     },

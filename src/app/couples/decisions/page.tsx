@@ -3,7 +3,7 @@ import { DisputedPropertiesView } from '@/components/couples/DisputedPropertiesV
 
 export const metadata: Metadata = {
   title: 'Property Decisions - HomeMatch',
-  description: 'Resolve property disagreements with your partner',
+  description: 'Resolve property disagreements with your household',
 }
 
 export default function DecisionsPage() {

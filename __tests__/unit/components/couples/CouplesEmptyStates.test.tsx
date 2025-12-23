@@ -63,7 +63,7 @@ describe('CouplesEmptyStates', () => {
         screen.getByRole('link', { name: /join existing/i })
       ).toBeInTheDocument()
       expect(
-        screen.queryByRole('button', { name: /invite partner/i })
+        screen.queryByRole('button', { name: /invite someone/i })
       ).not.toBeInTheDocument()
     })
 
@@ -72,7 +72,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoHouseholdState onInvitePartner={mockOnInvite} />)
 
       expect(
-        screen.getByRole('button', { name: /invite partner/i })
+        screen.getByRole('button', { name: /invite someone/i })
       ).toBeInTheDocument()
     })
 
@@ -82,7 +82,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoHouseholdState onInvitePartner={mockOnInvite} />)
 
       const inviteButton = screen.getByRole('button', {
-        name: /invite partner/i,
+        name: /invite someone/i,
       })
       await user.click(inviteButton)
 
@@ -94,7 +94,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoHouseholdState onInvitePartner={mockOnInvite} />)
 
       const inviteButton = screen.getByRole('button', {
-        name: /invite partner/i,
+        name: /invite someone/i,
       })
 
       // Invite button should be visible and clickable
@@ -108,7 +108,7 @@ describe('CouplesEmptyStates', () => {
 
       // All three options should be present
       expect(
-        screen.getByRole('button', { name: /invite partner/i })
+        screen.getByRole('button', { name: /invite someone/i })
       ).toBeInTheDocument()
       expect(
         screen.getByRole('link', { name: /create household/i })
@@ -132,7 +132,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoHouseholdState />)
 
       expect(
-        screen.getByText(/discover mutual likes and track your progress/i)
+        screen.getByText(/discover mutual likes and track progress/i)
       ).toBeInTheDocument()
     })
   })
@@ -179,7 +179,7 @@ describe('CouplesEmptyStates', () => {
       render(<WaitingForPartnerState />)
 
       const dashboardLink = screen.getByRole('link', {
-        name: /start swiping together/i,
+        name: /start swiping/i,
       })
       expect(dashboardLink).toHaveAttribute('href', '/dashboard')
     })
@@ -190,7 +190,7 @@ describe('CouplesEmptyStates', () => {
       render(<NoMutualLikesState />)
 
       expect(
-        screen.getByRole('link', { name: /start swiping together/i })
+        screen.getByRole('link', { name: /start swiping/i })
       ).toBeInTheDocument()
     })
 

@@ -484,7 +484,7 @@ test.describe('Couples full journey (real UI)', () => {
 
       // Inviter should now see an active couples page after refresh
       await page.reload({ waitUntil: 'domcontentloaded' })
-      await expect(page.getByText(/your love story/i)).toBeVisible()
+      await expect(page.getByText(/your shared search/i)).toBeVisible()
       await expect(page.getByText(/stay in sync/i)).toBeVisible({
         timeout: 20000,
       })
@@ -572,7 +572,7 @@ test.describe('Couples full journey (real UI)', () => {
 
       // Couples page should surface the same mutual like
       await partnerPage.goto('/couples', { waitUntil: 'domcontentloaded' })
-      await expect(partnerPage.getByText(/your love story/i)).toBeVisible()
+      await expect(partnerPage.getByText(/your shared search/i)).toBeVisible()
       await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
         {
           timeout: 20000,

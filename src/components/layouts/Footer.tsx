@@ -14,13 +14,13 @@ const highlightLinks = [
   {
     href: '/dashboard/liked',
     label: 'Review favorites',
-    description: 'See the homes you both loved',
+    description: 'See the homes your household liked',
     icon: Heart,
   },
   {
     href: '/couples',
-    label: 'Couples journey',
-    description: 'Sync decisions with your partner',
+    label: 'Household hub',
+    description: 'Sync decisions with your household',
     icon: Users,
   },
 ]

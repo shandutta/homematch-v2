@@ -3,7 +3,7 @@ import { MutualLikesListPage } from '@/components/dashboard/MutualLikesListPage'
 
 export const metadata: Metadata = {
   title: 'Mutual Likes - HomeMatch',
-  description: 'Explore homes you and your partner both liked.',
+  description: 'Explore homes your household liked.',
 }
 
 export default function MutualLikesPage() {

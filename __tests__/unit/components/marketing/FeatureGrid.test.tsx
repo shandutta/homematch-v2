@@ -31,7 +31,7 @@ describe('FeatureGrid', () => {
     render(<FeatureGrid />)
     expect(
       screen.getByText(
-        'We turned the most stressful part of adulting into date night'
+        'We turned the most stressful part of adulting into a shared game'
       )
     ).toBeInTheDocument()
   })
@@ -39,7 +39,7 @@ describe('FeatureGrid', () => {
   test('renders all feature titles', () => {
     render(<FeatureGrid />)
 
-    expect(screen.getByText('AI That Gets You Both')).toBeInTheDocument()
+    expect(screen.getByText('AI That Gets Everyone')).toBeInTheDocument()
     expect(
       screen.getByText('Swipe Together, Decide Together')
     ).toBeInTheDocument()
@@ -53,7 +53,7 @@ describe('FeatureGrid', () => {
     render(<FeatureGrid />)
 
     expect(
-      screen.getByText(/Our ML learns what makes you and your partner tick/)
+      screen.getByText(/Our ML learns what matters to your household/)
     ).toBeInTheDocument()
     expect(
       screen.getByText(

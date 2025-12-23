@@ -395,7 +395,7 @@ export function GroupedViewedPropertiesPage() {
           </h2>
           <p className="text-hm-stone-500 mx-auto mt-2 max-w-xl text-sm sm:text-base">
             Swipe through recommendations, then come back here to refine your
-            shortlist with your partner.
+            shortlist with your household.
           </p>
 
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">

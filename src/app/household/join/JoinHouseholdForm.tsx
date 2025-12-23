@@ -69,8 +69,8 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
           Join a Household
         </CardTitle>
         <p className="text-slate-500">
-          Enter the household code shared by your partner to start searching for
-          homes together.
+          Enter the household code shared with you to start searching for homes
+          together.
         </p>
       </CardHeader>
 
@@ -98,8 +98,8 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
               disabled={loading}
             />
             <p className="mt-1.5 text-xs text-slate-500">
-              Ask your partner for their household code or check your invitation
-              email.
+              Ask the person who invited you for the household code or check
+              your invitation email.
             </p>
           </div>
 

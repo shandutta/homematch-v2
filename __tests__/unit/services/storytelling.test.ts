@@ -76,7 +76,7 @@ describe('StorytellingService', () => {
     test('should return a mutual like message when isMutualLike is true', () => {
       const property = createMockProperty()
       const context = { property, isMutualLike: true }
-      const expectedMessage = 'Both hearts say yes to this special place ❤️' // First message from getMutualLikeMessage due to Math.random(0)
+      const expectedMessage = 'Everyone said yes to this place' // First message from getMutualLikeMessage due to Math.random(0)
 
       const story = StorytellingService.generatePropertyStory(context)
       expect(story).toBe(expectedMessage)
@@ -112,8 +112,7 @@ describe('StorytellingService', () => {
       const neighborhood = createMockNeighborhood()
       const context = { property, neighborhood, isMutualLike: false }
 
-      const expectedStory =
-        "Cozy mornings wrapped in each other's arms in your intimate sanctuary"
+      const expectedStory = 'Cozy mornings in a calm, comfortable space'
 
       const story = StorytellingService.generatePropertyStory(context)
       expect(story).toBe(expectedStory)
@@ -197,7 +196,7 @@ describe('StorytellingService', () => {
         walk_score: 0,
       })
       const expectedPerk =
-        'Easy commute for both partners via nearby transit connections'
+        'Easy commutes for busy schedules via nearby transit connections'
       expect(StorytellingService.getNeighborhoodLifestyle(neighborhood)).toBe(
         expectedPerk
       )
@@ -208,8 +207,7 @@ describe('StorytellingService', () => {
         walk_score: 50,
         transit_score: 60,
       })
-      const expectedPerk =
-        'Charming neighborhood perfect for couples starting their journey'
+      const expectedPerk = 'Charming neighborhood for a shared search'
       expect(StorytellingService.getNeighborhoodLifestyle(neighborhood)).toBe(
         expectedPerk
       )
@@ -248,11 +246,11 @@ describe('StorytellingService', () => {
       // At 59, should get default
       expect(
         StorytellingService.getNeighborhoodLifestyle(neighborhoodAt59)
-      ).toBe('Charming neighborhood perfect for couples starting their journey')
+      ).toBe('Charming neighborhood for a shared search')
       // At 60, should get default (condition is > 60)
       expect(
         StorytellingService.getNeighborhoodLifestyle(neighborhoodAt60)
-      ).toBe('Charming neighborhood perfect for couples starting their journey')
+      ).toBe('Charming neighborhood for a shared search')
       // At 61, should get medium walk score
       expect(
         StorytellingService.getNeighborhoodLifestyle(neighborhoodAt61)
@@ -272,11 +270,11 @@ describe('StorytellingService', () => {
       // At 70, should get default (condition is > 70)
       expect(
         StorytellingService.getNeighborhoodLifestyle(neighborhoodAt70)
-      ).toBe('Charming neighborhood perfect for couples starting their journey')
+      ).toBe('Charming neighborhood for a shared search')
       // At 71, should get transit perk
       expect(
         StorytellingService.getNeighborhoodLifestyle(neighborhoodAt71)
-      ).toBe('Easy commute for both partners via nearby transit connections')
+      ).toBe('Easy commutes for busy schedules via nearby transit connections')
     })
 
     test('should handle null walk_score and transit_score', () => {
@@ -284,8 +282,7 @@ describe('StorytellingService', () => {
         walk_score: null,
         transit_score: null,
       })
-      const expectedPerk =
-        'Charming neighborhood perfect for couples starting their journey'
+      const expectedPerk = 'Charming neighborhood for a shared search'
       expect(StorytellingService.getNeighborhoodLifestyle(neighborhood)).toBe(
         expectedPerk
       )
@@ -302,7 +299,7 @@ describe('StorytellingService', () => {
         lot_size_sqft: 1500, // Triggers 'Private Oasis' (P7)
         amenities: [],
       })
-      const neighborhood = createMockNeighborhood({ walk_score: 75 }) // Triggers 'Date Night Central' (P8)
+      const neighborhood = createMockNeighborhood({ walk_score: 75 }) // Triggers 'Dining District' (P8)
 
       const tags = StorytellingService.generateLifestyleTags(
         property,
@@ -317,7 +314,7 @@ describe('StorytellingService', () => {
       const tagNames = tags.map((tag) => tag.tag)
       expect(tagNames).toContain('Future Family Home')
       expect(tagNames).toContain('Work from Home Ready')
-      expect(tagNames).toContain('Date Night Central')
+      expect(tagNames).toContain('Dining District')
     })
 
     test('should generate "Culinary Paradise" tag when kitchen amenity is present', () => {
@@ -329,8 +326,7 @@ describe('StorytellingService', () => {
       expect(tags).toContainEqual(
         expect.objectContaining({
           tag: 'Culinary Paradise',
-          description:
-            'Perfect kitchen for weekend cooking adventures together',
+          description: 'Perfect kitchen for weekend cooking projects',
           priority: 7,
         })
       )
@@ -345,8 +341,7 @@ describe('StorytellingService', () => {
       expect(tags).toContainEqual(
         expect.objectContaining({
           tag: 'Culinary Paradise',
-          description:
-            'Perfect kitchen for weekend cooking adventures together',
+          description: 'Perfect kitchen for weekend cooking projects',
           priority: 7,
         })
       )
@@ -380,7 +375,7 @@ describe('StorytellingService', () => {
       expect(tagNames).not.toContain('Resort-Style Living')
     })
 
-    test('should include "Couples Retreat" tag when minimal conditions are met', () => {
+    test('should include "Shared Retreat" tag when minimal conditions are met', () => {
       const property = createMockProperty({
         bedrooms: 1,
         bathrooms: 1,
@@ -398,11 +393,11 @@ describe('StorytellingService', () => {
         neighborhood
       )
 
-      // Should include Couples Retreat tag (always added)
+      // Should include Shared Retreat tag (always added)
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Couples Retreat',
-          description: 'Cozy home base for two',
+          tag: 'Shared Retreat',
+          description: 'Cozy home base for a smaller household',
           priority: 5,
         })
       )
@@ -438,7 +433,7 @@ describe('StorytellingService', () => {
         expect.objectContaining({
           tag: 'Work from Home Ready',
           description:
-            'Dedicated spaces for both of you to thrive professionally',
+            'Dedicated spaces for multiple people to thrive professionally',
           priority: 8,
         })
       )
@@ -494,7 +489,7 @@ describe('StorytellingService', () => {
       )
     })
 
-    test('should generate "Date Night Central" for high walk score neighborhoods', () => {
+    test('should generate "Dining District" for high walk score neighborhoods', () => {
       const property = createMockProperty({
         bedrooms: 2,
         bathrooms: 1,
@@ -507,8 +502,8 @@ describe('StorytellingService', () => {
       )
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Date Night Central',
-          description: 'Restaurants and entertainment within walking distance',
+          tag: 'Dining District',
+          description: 'Restaurants and nightlife within walking distance',
           priority: 8,
         })
       )
@@ -524,10 +519,10 @@ describe('StorytellingService', () => {
       })
       const tags = StorytellingService.generateLifestyleTags(property)
 
-      // Should always include Couples Retreat
+      // Should always include Shared Retreat
       expect(tags).toContainEqual(
         expect.objectContaining({
-          tag: 'Couples Retreat',
+          tag: 'Shared Retreat',
           priority: 5,
         })
       )
@@ -613,7 +608,7 @@ describe('generatePropertyStory (convenience function)', () => {
 
     const result = generatePropertyStory(property, neighborhood, isMutualLike)
 
-    expect(result.story).toBe('Both hearts say yes to this special place ❤️')
+    expect(result.story).toBe('Everyone said yes to this place')
     expect(result.neighborhoodPerk).toBe(
       'Walking distance to charming farmers markets and artisanal coffee shops'
     )
@@ -638,8 +633,6 @@ describe('generatePropertyStory (convenience function)', () => {
     const result = generatePropertyStory(property, neighborhood)
 
     // Should not return mutual like message since isMutualLike defaults to false
-    expect(result.story).not.toBe(
-      'Both hearts say yes to this special place ❤️'
-    )
+    expect(result.story).not.toBe('Everyone said yes to this place')
   })
 })

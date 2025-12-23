@@ -83,7 +83,7 @@ export class CouplesErrorBoundary extends Component<Props, State> {
               </h2>
 
               <p className="text-primary/60 mb-4 text-sm">
-                We couldn&apos;t load your couples data. This usually happens
+                We couldn&apos;t load your household data. This usually happens
                 due to a temporary connection issue.
               </p>
 

@@ -84,7 +84,7 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
               <Heart className="h-7 w-7 fill-pink-400/80 text-pink-400/80" />
             </MotionDiv>
             <h1 className="font-display text-hm-stone-200 text-3xl font-medium tracking-tight">
-              Your Love Story
+              Your Shared Search
             </h1>
             <MotionDiv
               animate={{ scale: [1, 1.1, 1] }}
@@ -95,9 +95,8 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
           </div>
 
           <p className="text-hm-stone-400 mx-auto mb-8 max-w-2xl text-base">
-            Discover your perfect home together. See what you both love, track
-            your journey, and make memories as you find the place where your
-            story continues.
+            Find a home that works for everyone. See shared likes, track
+            progress, and keep the search moving as you narrow it down.
           </p>
 
           {/* Stats */}
@@ -215,8 +214,7 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
                     <Sparkles className="text-hm-amber-400 h-5 w-5" />
                   </MotionDiv>
                   <span className="text-base">
-                    Start your journey together - swipe to find homes you both
-                    love!
+                    Start your search - swipe to find homes everyone likes!
                   </span>
                   <MotionDiv
                     animate={{ rotate: -360 }}
@@ -254,8 +252,8 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
                 </MotionDiv>
                 <span className="text-base">
                   {stats.total_household_likes > 0
-                    ? "You're both active! Keep swiping to find your first match."
-                    : 'Start your journey together - swipe to find homes you both love!'}
+                    ? 'Great activity! Keep swiping to find your first mutual like.'
+                    : 'Start your search - swipe to find homes everyone likes!'}
                 </span>
                 <MotionDiv
                   animate={{ rotate: -360 }}

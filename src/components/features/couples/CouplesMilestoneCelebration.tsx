@@ -56,9 +56,9 @@ export function CouplesMilestoneCelebration({
       case 'mutual_like':
         return {
           icon: Heart,
-          title: "It's a Match!",
+          title: 'Mutual like!',
           message: milestone.propertyAddress
-            ? `You both loved ${milestone.propertyAddress}!`
+            ? `Everyone liked ${milestone.propertyAddress}!`
             : CouplesMessages.success.mutualLike,
           color: 'from-pink-500 to-red-500',
           bgColor: 'from-pink-50 to-red-50',
@@ -204,7 +204,7 @@ export function CouplesMilestoneCelebration({
               transition={{ delay: 0.7 }}
             >
               <Users className="h-5 w-5" />
-              <span className="text-sm">Together we&apos;re unstoppable!</span>
+              <span className="text-sm">Great momentum together!</span>
               <Home className="h-5 w-5" />
             </MotionDiv>
 

@@ -39,7 +39,7 @@ describe('Footer', () => {
       screen.getByRole('link', { name: /Review favorites/i })
     ).toHaveAttribute('href', '/dashboard/liked')
     expect(
-      screen.getByRole('link', { name: /Couples journey/i })
+      screen.getByRole('link', { name: /Household hub/i })
     ).toHaveAttribute('href', '/couples')
 
     expect(

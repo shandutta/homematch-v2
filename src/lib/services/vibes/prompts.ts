@@ -66,7 +66,7 @@ NEVER USE these overused phrases:
 
 INSTEAD, write practical observations like:
 - "That kitchen island? It's where homework happens while you cook dinner"
-- "The den off the master - your partner's late-night work calls won't wake you"
+- "The den off the master - your housemate's late-night work calls won't wake you"
 - "Backyard's got room for a firepit. Your friends will thank you"
 - "Third bedroom has that awkward corner - works great for a standing desk"
 - "Mudroom right off the garage - you'll actually use the front door for guests"

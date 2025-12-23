@@ -23,7 +23,7 @@ afterAll(() => {
 // Test components
 const ThrowError = ({
   shouldThrow,
-  errorMessage = 'Couples data error',
+  errorMessage = 'Household data error',
 }: {
   shouldThrow: boolean
   errorMessage?: string
@@ -31,7 +31,7 @@ const ThrowError = ({
   if (shouldThrow) {
     throw new Error(errorMessage)
   }
-  return <div>Couples data loaded successfully</div>
+  return <div>Household data loaded successfully</div>
 }
 
 const CouplesComponent = ({ shouldThrow }: { shouldThrow: boolean }) => {
@@ -105,7 +105,7 @@ describe('CouplesErrorBoundary', () => {
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument()
       expect(
-        screen.getByText(/We couldn't load your couples data/)
+        screen.getByText(/We couldn't load your household data/)
       ).toBeInTheDocument()
       expect(screen.getByText(/temporary connection issue/)).toBeInTheDocument()
     })
@@ -120,7 +120,7 @@ describe('CouplesErrorBoundary', () => {
       expect(screen.getByText('Something went wrong')).toBeInTheDocument()
       // Error boundary shows generic couples message, not the specific error
       expect(
-        screen.getByText(/We couldn't load your couples data/)
+        screen.getByText(/We couldn't load your household data/)
       ).toBeInTheDocument()
     })
 

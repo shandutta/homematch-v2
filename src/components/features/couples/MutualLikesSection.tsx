@@ -115,7 +115,7 @@ export function MutualLikesSection({
               <Heart className="h-5 w-5 fill-current text-pink-400/50" />
               <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/50" />
             </div>
-            <span>Both Liked</span>
+            <span>Shared Likes</span>
             <MotionDiv
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -166,7 +166,7 @@ export function MutualLikesSection({
               <Heart className="text-couples-accent/50 h-5 w-5 fill-current" />
               <Users className="text-couples-accent/50 absolute -top-1 -right-1 h-4 w-4" />
             </div>
-            Both Liked
+            Shared Likes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -215,7 +215,7 @@ export function MutualLikesSection({
               <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
               <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
             </div>
-            Both Liked
+            Shared Likes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -269,7 +269,7 @@ export function MutualLikesSection({
               </h3>
 
               <p className="text-hm-stone-200 mb-1 text-sm">
-                Properties you both like will appear here
+                Properties everyone likes will appear here
               </p>
 
               <div className="text-hm-stone-300 flex items-center justify-center gap-2 text-xs">
@@ -296,7 +296,7 @@ export function MutualLikesSection({
         <div className="flex items-center justify-between">
           <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
-            Both Liked ({mutualLikes.length})
+            Shared Likes ({mutualLikes.length})
             <Users className="text-couples-secondary h-5 w-5" />
           </CardTitle>
           {mutualLikes.length > 3 && (

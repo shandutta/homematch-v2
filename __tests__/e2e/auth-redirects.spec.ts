@@ -50,7 +50,7 @@ test.describe('Auth redirects', () => {
     await expect(page).toHaveURL(/\/couples/)
     const couplesLoaded = page
       .getByRole('link', { name: /create household/i })
-      .or(page.getByText(/your love story/i))
+      .or(page.getByText(/your shared search/i))
       .first()
     await expect(couplesLoaded).toBeVisible()
   })

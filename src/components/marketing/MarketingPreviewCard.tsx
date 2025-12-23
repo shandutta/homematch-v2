@@ -125,7 +125,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         <div className="pointer-events-none absolute inset-0">
           {[
             {
-              title: 'Built for couples',
+              title: 'Built for households',
               copy: 'Stay in sync on likes, tours, and moves.',
               icon: ShieldCheck,
               className: 'left-2 top-2 sm:left-4 sm:top-4',
@@ -211,7 +211,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
           >
             <span className="inline-flex items-center justify-center gap-2">
               <Heart className="h-4 w-4" />
-              Love
+              Like
             </span>
           </motion.button>
         </div>

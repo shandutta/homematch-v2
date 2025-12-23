@@ -157,7 +157,7 @@ export function AdMonetizationMockup() {
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Light, clearly labeled sponsor spots from relevant home partners so
-            HomeMatch stays free for couples.
+            HomeMatch stays free for households.
           </p>
         </MotionDiv>
 

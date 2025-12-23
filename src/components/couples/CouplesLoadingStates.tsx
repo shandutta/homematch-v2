@@ -10,7 +10,7 @@ import {
   normalTransition,
 } from '@/components/ui/motion-components'
 
-// Enhanced skeleton with romantic theme
+// Enhanced skeleton with warm theme
 export function CouplesHeroSkeleton() {
   return (
     <Card className="relative overflow-hidden border-pink-500/20">

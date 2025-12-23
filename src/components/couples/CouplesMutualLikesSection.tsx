@@ -203,8 +203,8 @@ export function CouplesMutualLikesSection({
 
               <p className="text-hm-stone-300 mx-auto mb-2 max-w-md">
                 {hasIndividualLikes
-                  ? 'You&apos;re both swiping! Keep going to discover properties you both love.'
-                  : 'Start swiping together to discover homes you both love'}
+                  ? 'Good activity so far! Keep going to discover properties everyone likes.'
+                  : 'Start swiping to discover homes everyone likes'}
               </p>
 
               {hasIndividualLikes && (

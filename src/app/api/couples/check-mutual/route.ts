@@ -61,7 +61,9 @@ export async function GET(request: NextRequest) {
     const response = {
       isMutual: true,
       partnerName:
-        partnerProfile?.display_name || partnerProfile?.email || 'Your partner',
+        partnerProfile?.display_name ||
+        partnerProfile?.email ||
+        'Household member',
       propertyAddress: property?.address || 'this property',
       streak: stats?.activity_streak_days,
       milestone:

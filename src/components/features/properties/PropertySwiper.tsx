@@ -185,7 +185,7 @@ export function PropertySwiper({
         <div className="absolute -bottom-32 left-1/2 z-10 -translate-x-1/2">
           <div className="flex animate-pulse items-center gap-2 rounded-full border border-pink-400/30 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-4 py-2 text-sm text-pink-300 backdrop-blur-sm">
             <Heart className="h-4 w-4 animate-bounce fill-pink-400 text-pink-400" />
-            <span>Your partner liked this too!</span>
+            <span>A household member liked this too!</span>
             <Users className="h-4 w-4 animate-pulse text-purple-400" />
           </div>
         </div>

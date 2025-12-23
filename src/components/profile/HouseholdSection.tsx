@@ -358,8 +358,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 </button>
               </div>
               <p className="text-hm-stone-500 mt-2 text-xs">
-                Share this code or send an invitation link so your partner can
-                join instantly.
+                Share this code or send an invitation link so someone can join
+                instantly.
               </p>
             </div>
 
@@ -388,7 +388,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                   Invite Collaborators
                 </h2>
                 <p className="text-hm-stone-500 text-sm">
-                  Add partners or family members
+                  Add roommates, friends, or family
                 </p>
               </div>
             </div>
@@ -409,7 +409,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                     Send a new invite
                   </p>
                   <p className="text-hm-stone-500 text-sm">
-                    Generate a private link your partner can use to join.
+                    Generate a private link someone can use to join.
                   </p>
                 </div>
                 <MailPlus className="text-hm-stone-500 hidden h-5 w-5 sm:block" />
@@ -417,14 +417,14 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
 
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <input
-                  placeholder="Partner name (optional)"
+                  placeholder="Name (optional)"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   className={inputStyles}
                   data-testid="invite-name-input"
                 />
                 <input
-                  placeholder="Partner email"
+                  placeholder="Email address"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
@@ -495,8 +495,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center">
                   <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
                   <p className="text-hm-stone-400 mt-2 text-sm">
-                    No invitations yet. Add your partner&apos;s email above to
-                    get started.
+                    No invitations yet. Add an email above to get started.
                   </p>
                 </div>
               ) : (
@@ -625,7 +624,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         <div className="mt-6 space-y-4" data-testid="create-household-form">
           <p className="text-hm-stone-400 text-sm">
             Create a household to share property searches and preferences with
-            your partner or family members.
+            roommates, friends, or family members.
           </p>
           <input
             placeholder="Enter household name"

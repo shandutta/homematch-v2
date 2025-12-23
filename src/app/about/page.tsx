@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'About | HomeMatch',
   description:
-    'Learn what HomeMatch is building for couples who want a calmer way to find a home together.',
+    'Learn what HomeMatch is building for households who want a calmer way to find a home together.',
 }
 
 export default function AboutPage() {
@@ -19,8 +19,8 @@ export default function AboutPage() {
             Home search, together
           </h1>
           <p className="max-w-3xl text-lg text-slate-600">
-            HomeMatch helps couples shortlist, compare, and agree faster—with a
-            shared flow that feels more like collaboration than chaos.
+            HomeMatch helps households shortlist, compare, and agree faster—
+            with a shared flow that feels more like collaboration than chaos.
           </p>
         </header>
 
@@ -28,7 +28,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-semibold">What HomeMatch does</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
-              Keeps both partners aligned with shared likes, passes, and viewed
+              Keeps everyone aligned with shared likes, passes, and viewed
               homes.
             </li>
             <li>

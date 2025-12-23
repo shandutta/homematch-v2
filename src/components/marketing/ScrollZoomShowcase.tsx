@@ -11,7 +11,7 @@ import { MarketingPreviewCard } from './MarketingPreviewCard'
 const storyBeats = [
   {
     title: 'Swipe together',
-    description: 'Say yes/no in one tap and see it sync across both accounts.',
+    description: 'Say yes/no in one tap and see it sync across all accounts.',
     accent: 'Shared actions',
   },
   {
@@ -22,7 +22,7 @@ const storyBeats = [
   {
     title: 'No guesswork',
     description:
-      'Price, beds/baths, and pass/love buttons match the dashboard.',
+      'Price, beds/baths, and pass/like buttons match the dashboard.',
     accent: 'Familiar layout',
   },
 ]
@@ -56,7 +56,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
         <div className="mb-12 flex flex-wrap items-center gap-3 sm:mb-14">
           <Badge className="bg-white text-slate-800 shadow-sm ring-1 ring-slate-200">
             <Heart className="mr-2 h-3.5 w-3.5" />
-            Made for couples
+            Made for households
           </Badge>
           <Badge variant="outline" className="border-blue-200 text-blue-700">
             Matches your dashboard

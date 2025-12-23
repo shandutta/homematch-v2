@@ -108,9 +108,9 @@ export function DisputedPropertiesAlert({
                   </div>
 
                   <p className="text-sm text-orange-700">
-                    You and your partner have different reactions to{' '}
-                    {disputedCount} propert{disputedCount === 1 ? 'y' : 'ies'}.
-                    Let&apos;s discuss them together!
+                    Your household has different reactions to {disputedCount}{' '}
+                    propert{disputedCount === 1 ? 'y' : 'ies'}. Let&apos;s
+                    review them together!
                   </p>
                 </div>
               </div>

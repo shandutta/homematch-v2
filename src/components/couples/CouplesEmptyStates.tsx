@@ -75,13 +75,13 @@ export function NoHouseholdState({
 
         <p className="mx-auto mb-2 max-w-md text-slate-300">
           {CouplesMessages.welcome.subtitle} - create a household to share your
-          journey!
+          search!
         </p>
 
         <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
           <Sparkles className="h-4 w-4" />
           <span>
-            Once you both join, you&apos;ll discover mutual likes and track your
+            Once everyone joins, you&apos;ll discover mutual likes and track
             progress as a team
           </span>
         </div>
@@ -93,7 +93,7 @@ export function NoHouseholdState({
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
               <UserPlus className="mr-2 h-4 w-4" />
-              Invite Partner
+              Invite Someone
             </Button>
           )}
 
@@ -172,8 +172,8 @@ export function WaitingForPartnerState({
         </h2>
 
         <p className="mx-auto mb-2 max-w-md text-slate-300">
-          You&apos;re all set up! Now invite your partner to join your household
-          and {CouplesMessages.welcome.dashboard.toLowerCase()}.
+          You&apos;re all set up! Now invite someone to join your household and{' '}
+          {CouplesMessages.welcome.dashboard.toLowerCase()}.
         </p>
 
         <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">

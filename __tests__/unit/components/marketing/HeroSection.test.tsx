@@ -61,8 +61,8 @@ jest.mock('@/components/marketing/MarketingPreviewCard', () => ({
       <span>Listing · Lake Merritt</span>
       <span>1200 Lakeview Dr, Oakland, CA 94610</span>
       <span>3 beds</span>
-      <button>Love</button>
-      <span>Built for couples</span>
+      <button>Like</button>
+      <span>Built for households</span>
       <span>See nearby spots</span>
       <span>Real listings, quick swipes</span>
     </div>
@@ -98,21 +98,23 @@ describe('HeroSection', () => {
     expect(heading).toBeInTheDocument()
     // TextReveal adds non-breaking spaces between words
     expect(heading.textContent?.replace(/\u00A0/g, ' ')).toContain(
-      'Find the home you both love.'
+      'Find a home that works for everyone.'
     )
   })
 
   test('renders description', () => {
     render(<HeroSection />)
     expect(
-      screen.getByText(/Swipe through real listings together/i)
+      screen.getByText(
+        /Swipe through real listings, save the ones your household likes/i
+      )
     ).toBeInTheDocument()
   })
 
   test('renders primary CTA linking to signup', () => {
     render(<HeroSection />)
 
-    const primaryCTA = screen.getByText('Start matching').closest('a')
+    const primaryCTA = screen.getByText('Start swiping').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
   })
 
@@ -141,7 +143,7 @@ describe('HeroSection', () => {
   test('renders preview card content', () => {
     render(<HeroSection />)
 
-    expect(screen.getByText('Built for couples')).toBeInTheDocument()
+    expect(screen.getByText('Built for households')).toBeInTheDocument()
     expect(screen.getByText('See nearby spots')).toBeInTheDocument()
     expect(screen.getByText(/Real listings, quick swipes/i)).toBeInTheDocument()
   })
@@ -149,10 +151,10 @@ describe('HeroSection', () => {
   test('primary CTA has accessibility attributes', () => {
     render(<HeroSection />)
 
-    const primaryCTA = screen.getByText('Start matching').closest('a')
+    const primaryCTA = screen.getByText('Start swiping').closest('a')
     expect(primaryCTA).toHaveAttribute(
       'aria-label',
-      'Start matching with HomeMatch'
+      'Start swiping with HomeMatch'
     )
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })

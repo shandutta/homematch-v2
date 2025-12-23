@@ -295,7 +295,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             <p className="text-hm-stone-500 text-xs">
               <span className="text-hm-stone-400 font-medium">Pro tip:</span>{' '}
               Properties you like appear in your Favorites. Share your household
-              code with your partner to discover mutual likes together.
+              code with a household member to discover mutual likes together.
             </p>
           </div>
         </div>

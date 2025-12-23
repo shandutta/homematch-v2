@@ -101,7 +101,7 @@ const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
     icon: GraduationCap,
     color: 'bg-indigo-500 text-white',
   },
-  'Couples Retreat': { icon: Heart, color: 'bg-fuchsia-500 text-white' },
+  'Shared Retreat': { icon: Heart, color: 'bg-fuchsia-500 text-white' },
   'Future Family Home': {
     icon: Baby,
     color: 'bg-emerald-500 text-white',
@@ -114,7 +114,7 @@ const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
   'Weekend Retreat': { icon: Mountain, color: 'bg-slate-500 text-white' },
   'Culinary Paradise': { icon: Utensils, color: 'bg-amber-500 text-white' },
   'Commuter Friendly': { icon: Car, color: 'bg-cyan-500 text-white' },
-  'Date Night Central': {
+  'Dining District': {
     icon: Sunset,
     color: 'bg-orange-500 text-white',
   },
@@ -161,24 +161,24 @@ function getTagDisplay(tag: string): TagDisplayConfig {
 const LIFESTYLE_STORIES = {
   morningRoutines: [
     'Perfect for morning coffee on the private balcony overlooking the {feature}',
-    'Start your days together with sunrise views from the master bedroom',
+    'Start your days with sunrise views from the primary bedroom',
     'Imagine lazy Sunday brunches in the sun-drenched breakfast nook',
     'Wake up to natural light flooding your serene bedroom sanctuary',
   ],
   eveningMoments: [
-    'Cozy fireplace perfect for romantic winter evenings together',
+    'Cozy fireplace for winter evenings with a good book or a movie',
     'Unwind on your private patio with evening cocktails and conversation',
     'End busy days with peaceful moments in your garden retreat',
-    'Create intimate dinner experiences in your gourmet kitchen',
+    'Host easy dinners in your gourmet kitchen',
   ],
   culinaryAdventures: [
-    "Chef's kitchen designed for your weekend cooking adventures together",
-    'Spacious kitchen island perfect for meal prep and wine tastings',
+    "Chef's kitchen designed for weekend cooking projects",
+    'Spacious kitchen island perfect for meal prep and shared snacks',
     'Entertain friends with ease in this culinary paradise',
     'Modern kitchen where culinary dreams become delicious reality',
   ],
   workLife: [
-    'Dedicated home office spaces for both of you to thrive professionally',
+    'Dedicated home office spaces for multiple people to thrive professionally',
     'Quiet study nooks perfect for focused work and creative projects',
     'Flexible spaces that adapt to your evolving work-from-home needs',
     'Professional home environment with residential comfort',
@@ -191,7 +191,7 @@ const LIFESTYLE_STORIES = {
   ],
   relaxation: [
     'Private outdoor space for quiet moments and meditation',
-    'Spa-like master suite for ultimate relaxation and romance',
+    'Spa-like primary suite for winding down after long days',
     'Reading nooks bathed in natural light for peaceful afternoons',
     'Serene spaces designed for rest and rejuvenation',
   ],
@@ -201,12 +201,12 @@ const LIFESTYLE_STORIES = {
 const NEIGHBORHOOD_PERKS = {
   walkable: [
     'Walking distance to charming farmers markets and local cafes',
-    'Stroll to romantic date night restaurants and wine bars',
-    'Explore tree-lined streets perfect for evening walks together',
+    'Walk to restaurants and wine bars',
+    'Explore tree-lined streets perfect for evening walks',
     'Discover neighborhood gems just steps from your front door',
   ],
   transit: [
-    'Easy commute for both partners via nearby transit connections',
+    'Easy commutes for busy schedules via nearby transit connections',
     'Convenient access to downtown cultural attractions',
     'Seamless city exploration without the parking hassles',
     'Urban connectivity with suburban tranquility',
@@ -219,12 +219,12 @@ const NEIGHBORHOOD_PERKS = {
   ],
   cultural: [
     'Surrounded by galleries, theaters, and cultural venues',
-    'Rich arts scene perfect for date nights and exploration',
+    'Rich arts scene for nights out and exploration',
     'Vibrant community with year-round festivals and events',
   ],
   quiet: [
     'Peaceful residential street perfect for evening strolls',
-    'Quiet neighborhood ideal for starting a family',
+    'Quiet neighborhood with a strong sense of community',
     'Tree-lined streets providing natural tranquility',
     'Serene environment away from city noise',
   ],
@@ -236,7 +236,7 @@ const FUTURE_VISION_TAGS = {
     tag: 'Future Family Home',
     descriptions: [
       'Space to grow your family and create lasting memories',
-      'Perfect foundation for the next chapter of your love story',
+      'Perfect foundation for the next chapter of your home search',
       'Room for little feet to run and laughter to fill the halls',
     ],
   },
@@ -253,7 +253,7 @@ const FUTURE_VISION_TAGS = {
     descriptions: [
       'A cozy home base that keeps you close to the action',
       'Low-maintenance space that feels like a reset at the end of the day',
-      'Just-right size for two, without the fuss',
+      'Just-right size for a smaller household, without the fuss',
     ],
   },
   retreat: {
@@ -273,9 +273,9 @@ const DESCRIPTION_TEMPLATES: Record<
 > = {
   house: {
     starter: [
-      'Perfect starter home where your love story begins',
-      'Charming space to build your first memories together',
-      'Your launching pad into homeownership and happiness',
+      'Perfect starter home for your next chapter',
+      'Charming space to build new memories',
+      'Your launching pad into homeownership',
       'Cozy foundation for the adventures ahead',
     ],
     family: [
@@ -286,16 +286,16 @@ const DESCRIPTION_TEMPLATES: Record<
     ],
     luxury: [
       'Elegant retreat showcasing sophisticated style',
-      'Executive home perfect for intimate gatherings',
+      'Executive home great for smaller gatherings',
       'Luxury living where every detail speaks to your success',
-      'Refined sanctuary for the discerning couple',
+      'Refined sanctuary for a discerning household',
     ],
   },
   condo: {
     starter: [
-      'Modern urban living simplified for busy couples',
+      'Modern urban living simplified for busy schedules',
       'Lock-and-leave lifestyle with metropolitan convenience',
-      'Stylish space perfect for cozy date nights at home',
+      'Stylish space for cozy nights at home',
       'Contemporary comfort in the heart of the action',
     ],
     family: [
@@ -306,7 +306,7 @@ const DESCRIPTION_TEMPLATES: Record<
     ],
     luxury: [
       'Sky-high luxury with breathtaking panoramic views',
-      'Penthouse living for couples with elevated tastes',
+      'Penthouse living for elevated tastes',
       'Resort-style amenities right at your doorstep',
       'Sophisticated urban living at its absolute finest',
     ],
@@ -314,8 +314,8 @@ const DESCRIPTION_TEMPLATES: Record<
   townhome: {
     starter: [
       'Best of both worlds - private space with community connection',
-      'Townhome charm perfect for young professionals in love',
-      'Multi-level living with single-level intimacy',
+      'Townhome charm for young professionals',
+      'Multi-level living with good separation and flow',
       'Your own front door and backyard dreams realized',
     ],
     family: [
@@ -334,7 +334,7 @@ const DESCRIPTION_TEMPLATES: Record<
   apartment: {
     starter: [
       'Urban apartment living at its most vibrant finest',
-      'Convenient location perfect for adventurous city lovers',
+      'Convenient location for adventurous city explorers',
       'Modern amenities without any maintenance worries',
       'Your launching pad for exciting urban adventures',
     ],
@@ -353,10 +353,10 @@ const DESCRIPTION_TEMPLATES: Record<
   },
   other: {
     starter: [
-      'Unique property perfect for creative couples',
+      'Unique property for creative households',
       'Something special for those who dare to be different',
-      'Unconventional charm for unconventional love',
-      'One-of-a-kind opportunity for adventurous hearts',
+      'Unconventional charm for unconventional tastes',
+      'One-of-a-kind opportunity for adventurous buyers',
     ],
     family: [
       'Distinctive property offering unique family living',
@@ -368,19 +368,19 @@ const DESCRIPTION_TEMPLATES: Record<
       'Extraordinary property for those with discerning taste',
       'Luxury living with distinctive architectural character',
       'Unique luxury offering unlike anything else available',
-      'Exceptional property for couples with exceptional standards',
+      'Exceptional property for high standards',
     ],
   },
 }
 
 // Mutual like specific messages
 const MUTUAL_LIKE_MESSAGES = [
-  'Both hearts say yes to this special place',
-  'Your perfect match found the perfect match',
-  'Two hearts, one home, endless possibilities',
-  'When you both know, you both know',
-  'This is where your shared dreams take shape',
-  'Love at first sight, for both of you',
+  'Everyone said yes to this place',
+  'Your shared list just got a strong match',
+  'Shared goals, one home, endless possibilities',
+  'When everyone agrees, you know',
+  'This is where your shared plans take shape',
+  'Instant favorite for everyone',
 ]
 
 type NormalizedPropertyType =
@@ -508,7 +508,7 @@ function generateLifestyleTags(
   // Transit and walkability
   if (neighborhood?.walk_score && neighborhood.walk_score > 80) {
     tags.push("Scholar's Den")
-    tags.push('Date Night Central')
+    tags.push('Dining District')
   }
 
   if (neighborhood?.transit_score && neighborhood.transit_score > 70) {
@@ -531,8 +531,8 @@ function generateLifestyleTags(
     tags.push('Shopping Paradise')
   }
 
-  // Always include romantic options for couples
-  tags.push('Couples Retreat')
+  // Always include a shared-home option
+  tags.push('Shared Retreat')
 
   // Return max 3 tags, with preference for unique/interesting ones
   const uniqueTags = [...new Set(tags)]
@@ -618,7 +618,7 @@ function getNeighborhoodPerks(
   perks.push(...NEIGHBORHOOD_PERKS.quiet)
 
   if (perks.length === 0) {
-    perks.push('Charming neighborhood perfect for couples exploring together')
+    perks.push('Charming neighborhood perfect for group exploring')
   }
 
   const index = getSeededIndex(property.id, 'neighborhood-perk', perks.length)
@@ -656,7 +656,7 @@ function getFutureVisionTag(
     }
   }
 
-  // Cozy romantic space
+  // Cozy compact space
   if (property.bedrooms && property.bedrooms <= 2) {
     const vision = FUTURE_VISION_TAGS.romantic
     const index = getSeededIndex(

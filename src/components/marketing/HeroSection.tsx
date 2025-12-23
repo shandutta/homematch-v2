@@ -169,7 +169,7 @@ export function HeroSection() {
               <div className="space-y-4">
                 {/* Animated headline with word reveal */}
                 <TextReveal
-                  text="Find the home you both love."
+                  text="Find a home that works for everyone."
                   className="text-4xl leading-[1.05] font-black sm:text-5xl md:text-6xl lg:text-7xl"
                   delay={0.3}
                 />
@@ -185,8 +185,8 @@ export function HeroSection() {
                     ease: [0.25, 0.46, 0.45, 0.94],
                   }}
                 >
-                  Swipe through real listings together, save the ones you both
-                  like, and keep the search fun instead of stressful.
+                  Swipe through real listings, save the ones your household
+                  likes, and keep the search clear instead of stressful.
                 </MotionP>
               </div>
 
@@ -210,12 +210,12 @@ export function HeroSection() {
                 >
                   <Link
                     href="/signup"
-                    aria-label="Start matching with HomeMatch"
+                    aria-label="Start swiping with HomeMatch"
                     data-testid="primary-cta"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <Heart className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                      Start matching
+                      Start swiping
                     </span>
                     {/* Shimmer effect on hover */}
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />

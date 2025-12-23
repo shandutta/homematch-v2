@@ -67,7 +67,7 @@ export function CtaBand() {
         >
           {/* Animated headline with word reveal */}
           <WordReveal
-            text="Make House‑Hunting Your Next Couples Game"
+            text="Make House-Hunting Your Next Shared Game"
             className="text-3xl font-bold text-white sm:text-4xl"
           />
 
@@ -82,7 +82,7 @@ export function CtaBand() {
               style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
             >
               Tasteful swiping. Smart matches. Real progress. Join early access
-              and start finding places you both love.
+              and start finding places everyone likes.
             </p>
           </MotionDiv>
 

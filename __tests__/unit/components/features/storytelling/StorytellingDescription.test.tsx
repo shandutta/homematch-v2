@@ -193,7 +193,7 @@ describe('StorytellingDescription', () => {
       />
     )
 
-    expect(screen.getAllByText('Couples Retreat').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Shared Retreat').length).toBeGreaterThan(0)
     expect(screen.getAllByText('City Hideaway').length).toBeGreaterThan(0)
     expect(screen.queryByText('Love Nest')).toBeNull()
     expect(screen.queryByText('Urban Love Nest')).toBeNull()
@@ -210,12 +210,12 @@ describe('StorytellingDescription', () => {
 
     // Should render a mutual like message - check for one of the possible messages
     const possibleTexts = [
-      'Both hearts say yes to this special place',
-      'Your perfect match found the perfect match',
-      'Two hearts, one home, endless possibilities',
-      'When you both know, you both know',
-      'This is where your shared dreams take shape',
-      'Love at first sight, for both of you',
+      'Everyone said yes to this place',
+      'Your shared list just got a strong match',
+      'Shared goals, one home, endless possibilities',
+      'When everyone agrees, you know',
+      'This is where your shared plans take shape',
+      'Instant favorite for everyone',
     ]
 
     const foundText = possibleTexts.some((text) => {
@@ -251,7 +251,7 @@ describe('StorytellingDescription', () => {
         'Family Haven',
         'Work from Home Ready',
         "Entertainer's Dream",
-        'Couples Retreat',
+        'Shared Retreat',
         'Future Family Home',
         'Entertainment Haven',
       ]
@@ -307,8 +307,8 @@ describe('StorytellingDescription', () => {
         />
       )
 
-      // Small properties should get "Cozy Retreat", "City Hideaway", or "Couples Retreat"
-      const expectedTags = ['Cozy Retreat', 'Couples Retreat', 'City Hideaway']
+      // Small properties should get "Cozy Retreat", "City Hideaway", or "Shared Retreat"
+      const expectedTags = ['Cozy Retreat', 'Shared Retreat', 'City Hideaway']
       const foundTag = expectedTags.some((tag) => {
         try {
           screen.getByText(tag)
@@ -348,7 +348,7 @@ describe('StorytellingDescription', () => {
 
       if (
         screen.queryByText("Scholar's Den") ||
-        screen.queryByText('Date Night Central')
+        screen.queryByText('Dining District')
       ) {
         foundScholarsDen = true
         unmount()

@@ -31,7 +31,7 @@ set suggested_tags =
   array_replace(
     array_replace(suggested_tags, 'Urban Love Nest', 'City Hideaway'),
     'Love Nest',
-    'Couples Retreat'
+    'Shared Retreat'
   )
 where suggested_tags && array['Urban Love Nest', 'Love Nest']::text[];
 
@@ -44,7 +44,7 @@ set lifestyle_fits = (
         when elem->>'category' = 'Urban Love Nest'
           then jsonb_set(elem, '{category}', to_jsonb('City Hideaway'::text))
         when elem->>'category' = 'Love Nest'
-          then jsonb_set(elem, '{category}', to_jsonb('Couples Retreat'::text))
+          then jsonb_set(elem, '{category}', to_jsonb('Shared Retreat'::text))
         else elem
       end
     ),
@@ -76,10 +76,10 @@ from property_vibes;
 -- set suggested_tags =
 --   array_replace(
 --     array_replace(suggested_tags, 'City Hideaway', 'Urban Love Nest'),
---     'Couples Retreat',
+--     'Shared Retreat',
 --     'Love Nest'
 --   )
--- where suggested_tags && array['City Hideaway', 'Couples Retreat']::text[];
+-- where suggested_tags && array['City Hideaway', 'Shared Retreat']::text[];
 --
 -- update property_vibes pv
 -- set lifestyle_fits = (
@@ -88,7 +88,7 @@ from property_vibes;
 --       case
 --         when elem->>'category' = 'City Hideaway'
 --           then jsonb_set(elem, '{category}', to_jsonb('Urban Love Nest'::text))
---         when elem->>'category' = 'Couples Retreat'
+--         when elem->>'category' = 'Shared Retreat'
 --           then jsonb_set(elem, '{category}', to_jsonb('Love Nest'::text))
 --         else elem
 --       end
@@ -98,4 +98,4 @@ from property_vibes;
 --   from jsonb_array_elements(pv.lifestyle_fits) as elem
 -- )
 -- where pv.lifestyle_fits @> '[{"category":"City Hideaway"}]'::jsonb
---    or pv.lifestyle_fits @> '[{"category":"Couples Retreat"}]'::jsonb;
+--    or pv.lifestyle_fits @> '[{"category":"Shared Retreat"}]'::jsonb;

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         from_user_id: user.id,
         to_user_id: partnerUserId,
         property_id: propertyId,
-        message: `${userDisplayName || 'Your partner'} also liked ${property?.address || 'this property'}!`,
+        message: `${userDisplayName || 'A household member'} also liked ${property?.address || 'this property'}!`,
         data: {
           property,
           user_profile: {

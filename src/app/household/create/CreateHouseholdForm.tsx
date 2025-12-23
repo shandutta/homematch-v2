@@ -39,7 +39,7 @@ export function CreateHouseholdForm() {
       }
 
       // No need to call joinHousehold - the RPC handles linking the user profile
-      toast.success('Household created! Now invite your partner.')
+      toast.success('Household created! Now invite someone.')
       router.push('/couples')
       router.refresh()
     } catch (err) {
@@ -69,8 +69,8 @@ export function CreateHouseholdForm() {
           Create Your Household
         </CardTitle>
         <p className="text-slate-500">
-          Start your home search journey together. Create a household and invite
-          your partner to join.
+          Start your home search together. Create a household and invite others
+          to join.
         </p>
       </CardHeader>
 
@@ -98,7 +98,7 @@ export function CreateHouseholdForm() {
               disabled={loading}
             />
             <p className="mt-1.5 text-xs text-slate-500">
-              Pick a name that you and your partner will recognize.
+              Pick a name everyone in your household will recognize.
             </p>
           </div>
 

@@ -34,7 +34,7 @@ export function MutualLikesListPage() {
             Mutual Likes
           </h1>
           <p className="text-hm-stone-500 mt-2 max-w-2xl text-sm sm:text-base">
-            Homes you and your partner both loved — tap a card to see details.
+            Homes your household liked — tap a card to see details.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function MutualLikesListPage() {
           className="self-start sm:self-auto"
         >
           <Link href="/couples" className="text-hm-stone-300 hover:text-white">
-            Couples journey
+            Household hub
             <ChevronRight className="ml-1 h-4 w-4" />
           </Link>
         </Button>
@@ -108,8 +108,8 @@ export function MutualLikesListPage() {
               No mutual likes yet
             </h2>
             <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
-              Keep swiping — when you both like the same home it will appear
-              here.
+              Keep swiping — when your household likes the same home it will
+              appear here.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button
@@ -119,7 +119,7 @@ export function MutualLikesListPage() {
                 <Link href="/dashboard">Start swiping</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/couples">Couples journey</Link>
+                <Link href="/couples">Household hub</Link>
               </Button>
             </div>
           </CardContent>

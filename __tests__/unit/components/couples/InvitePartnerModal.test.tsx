@@ -219,7 +219,7 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       expect(screen.getByTestId('dialog')).toBeInTheDocument()
-      expect(screen.getByText('Invite Your Partner')).toBeInTheDocument()
+      expect(screen.getByText('Invite Someone')).toBeInTheDocument()
     })
 
     test('should not render modal when open is false', () => {
@@ -243,7 +243,7 @@ describe('InvitePartnerModal Component', () => {
         screen.getByPlaceholderText('Their name (optional)')
       ).toBeInTheDocument()
       expect(
-        screen.getByPlaceholderText('partner@example.com')
+        screen.getByPlaceholderText('member@example.com')
       ).toBeInTheDocument()
     })
 
@@ -366,7 +366,7 @@ describe('InvitePartnerModal Component', () => {
       await waitFor(() => {
         // Email field should be populated
         const emailInput = screen.getByPlaceholderText(
-          'partner@example.com'
+          'member@example.com'
         ) as HTMLInputElement
         expect(emailInput.value).toBe('selected@example.com')
       })
@@ -379,7 +379,7 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       const nameInput = screen.getByPlaceholderText('Their name (optional)')
-      const emailInput = screen.getByPlaceholderText('partner@example.com')
+      const emailInput = screen.getByPlaceholderText('member@example.com')
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
       })
@@ -404,7 +404,7 @@ describe('InvitePartnerModal Component', () => {
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
 
-      const emailInput = screen.getByPlaceholderText('partner@example.com')
+      const emailInput = screen.getByPlaceholderText('member@example.com')
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
       })
@@ -425,7 +425,7 @@ describe('InvitePartnerModal Component', () => {
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
 
-      const emailInput = screen.getByPlaceholderText('partner@example.com')
+      const emailInput = screen.getByPlaceholderText('member@example.com')
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
       })
@@ -458,7 +458,7 @@ describe('InvitePartnerModal Component', () => {
         'Their name (optional)'
       ) as HTMLInputElement
       const emailInput = screen.getByPlaceholderText(
-        'partner@example.com'
+        'member@example.com'
       ) as HTMLInputElement
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
@@ -581,7 +581,7 @@ describe('InvitePartnerModal Component', () => {
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
 
-      const emailInput = screen.getByPlaceholderText('partner@example.com')
+      const emailInput = screen.getByPlaceholderText('member@example.com')
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
       })
@@ -605,14 +605,14 @@ describe('InvitePartnerModal Component', () => {
     test('should have proper dialog title', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
-      expect(screen.getByText('Invite Your Partner')).toBeInTheDocument()
+      expect(screen.getByText('Invite Someone')).toBeInTheDocument()
     })
 
     test('should have proper dialog description', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       expect(
-        screen.getByText(/Send an invitation to your partner/)
+        screen.getByText(/Send an invitation to someone in your household/)
       ).toBeInTheDocument()
     })
 

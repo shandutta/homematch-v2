@@ -282,8 +282,8 @@ export function DisputedPropertiesView({
             No Disputed Properties
           </h3>
           <p className="text-muted-foreground">
-            Great news! You and your partner are in agreement on all the
-            properties you&apos;ve viewed.
+            Great news! Your household is aligned on all the properties
+            you&apos;ve viewed.
           </p>
         </CardContent>
       </Card>

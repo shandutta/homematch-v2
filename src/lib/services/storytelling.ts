@@ -57,20 +57,20 @@ export class StorytellingService {
     if (neighborhood.walk_score && neighborhood.walk_score > 80) {
       perks.push(
         'Walking distance to charming farmers markets and artisanal coffee shops',
-        'Stroll to romantic date night restaurants and intimate wine bars',
-        'Explore tree-lined streets perfect for evening walks hand-in-hand'
+        'Walk to restaurants and wine bars',
+        'Explore tree-lined streets perfect for evening walks'
       )
     } else if (neighborhood.walk_score && neighborhood.walk_score > 60) {
       perks.push(
         'Easy access to local shops and neighborhood favorites',
-        'Quiet residential streets perfect for morning jogs together'
+        'Quiet residential streets perfect for morning jogs'
       )
     }
 
     // Transit accessibility
     if (neighborhood.transit_score && neighborhood.transit_score > 70) {
       perks.push(
-        'Easy commute for both partners via nearby transit connections',
+        'Easy commutes for busy schedules via nearby transit connections',
         'Seamless city exploration without parking hassles',
         'Quick access to downtown cultural attractions and entertainment'
       )
@@ -79,7 +79,7 @@ export class StorytellingService {
     // Default neighborhood charm
     if (perks.length === 0) {
       perks.push(
-        'Charming neighborhood perfect for couples starting their journey',
+        'Charming neighborhood for a shared search',
         'Peaceful residential area with a strong sense of community',
         'Up-and-coming area with exciting new developments on the horizon'
       )
@@ -89,7 +89,7 @@ export class StorytellingService {
   }
 
   /**
-   * Generate lifestyle tags with couple-focused messaging
+   * Generate lifestyle tags with household-focused messaging
    */
   static generateLifestyleTags(
     property: Property,
@@ -108,7 +108,7 @@ export class StorytellingService {
       tags.push({
         tag: 'Work from Home Ready',
         description:
-          'Dedicated spaces for both of you to thrive professionally',
+          'Dedicated spaces for multiple people to thrive professionally',
         priority: 8,
       })
     }
@@ -120,7 +120,7 @@ export class StorytellingService {
     ) {
       tags.push({
         tag: 'Culinary Paradise',
-        description: 'Perfect kitchen for weekend cooking adventures together',
+        description: 'Perfect kitchen for weekend cooking projects',
         priority: 7,
       })
     }
@@ -147,7 +147,7 @@ export class StorytellingService {
       })
     }
 
-    // Cozy romantic
+    // Cozy compact
     if (
       property.bedrooms &&
       property.bedrooms <= 2 &&
@@ -194,16 +194,16 @@ export class StorytellingService {
     // Walkable lifestyle
     if (neighborhood?.walk_score && neighborhood.walk_score > 70) {
       tags.push({
-        tag: 'Date Night Central',
-        description: 'Restaurants and entertainment within walking distance',
+        tag: 'Dining District',
+        description: 'Restaurants and nightlife within walking distance',
         priority: 8,
       })
     }
 
-    // Always include a romantic element
+    // Always include a shared-home option
     tags.push({
-      tag: 'Couples Retreat',
-      description: 'Cozy home base for two',
+      tag: 'Shared Retreat',
+      description: 'Cozy home base for a smaller household',
       priority: 5,
     })
 
@@ -216,12 +216,12 @@ export class StorytellingService {
    */
   private static getMutualLikeMessage(): string {
     const messages = [
-      'Both hearts say yes to this special place ❤️',
-      'Your perfect match found the perfect match',
-      'Two hearts, one home, endless possibilities',
-      'When you both know, you both know',
-      'This is where your shared dreams take shape',
-      'Love at first sight, for both of you',
+      'Everyone said yes to this place',
+      'Your shared list just got a strong match',
+      'Shared goals, one home, endless possibilities',
+      'When everyone agrees, you know',
+      'This is where your shared plans take shape',
+      'Instant favorite for everyone',
     ]
 
     return messages[Math.floor(Math.random() * messages.length)]
@@ -272,52 +272,42 @@ export class StorytellingService {
     // Morning scenarios
     if (features.hasBalcony) {
       stories.push(
-        'Perfect for morning coffee on your private balcony, watching the world wake up together'
+        'Perfect for morning coffee on your private balcony as the day starts'
       )
     } else if (features.isSpacious) {
       stories.push(
         'Start each day in your light-filled bedroom with space to breathe and dream'
       )
     } else {
-      stories.push(
-        "Cozy mornings wrapped in each other's arms in your intimate sanctuary"
-      )
+      stories.push('Cozy mornings in a calm, comfortable space')
     }
 
     // Evening scenarios
     if (features.hasFireplace) {
       stories.push(
-        'Cozy fireplace perfect for romantic winter evenings with wine and conversation'
+        'Cozy fireplace for winter evenings with a good book or a movie'
       )
     } else if (features.hasOutdoorSpace) {
-      stories.push(
-        'End busy days unwinding together in your private outdoor sanctuary'
-      )
+      stories.push('End busy days unwinding in your private outdoor space')
     } else {
-      stories.push(
-        'Create intimate dinner experiences in your thoughtfully designed space'
-      )
+      stories.push('Host easy dinners in your thoughtfully designed space')
     }
 
     // Kitchen/culinary
     if (features.hasLargeKitchen) {
-      stories.push(
-        'Spacious kitchen becomes your weekend adventure playground - cooking, laughing, creating'
-      )
+      stories.push('Spacious kitchen built for weekend cooking projects')
     } else {
-      stories.push(
-        'Efficient kitchen perfect for romantic dinners for two and morning coffee rituals'
-      )
+      stories.push('Efficient kitchen that keeps daily routines simple')
     }
 
     // Work/lifestyle
     if (features.hasMultipleRooms) {
       stories.push(
-        'Flexible spaces that adapt as your relationship and careers evolve together'
+        'Flexible spaces that adapt as your household and careers evolve'
       )
     } else if (features.isCozy) {
       stories.push(
-        'Intimate space that brings you closer while giving room for individual pursuits'
+        'Compact space that still leaves room for individual routines'
       )
     }
 
