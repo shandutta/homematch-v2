@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { TouchEvent } from 'react'
+import type { PointerEvent, TouchEvent } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import {
   Dialog,
@@ -101,6 +101,7 @@ export function PropertyDetailModal({
     setIsMapExpanded(mq?.matches ?? true)
   }, [open, propertyId])
 
+  const hasImages = images.length > 0
   const hasMultipleImages = images.length > 1
 
   const { normalizedIndex, currentImage } = useMemo(() => {
@@ -121,6 +122,7 @@ export function PropertyDetailModal({
   }
 
   const handleImageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return
     if (!hasMultipleImages) return
     const touch = event.touches[0]
     if (!touch) return
@@ -128,6 +130,7 @@ export function PropertyDetailModal({
   }
 
   const handleImageTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return
     if (!hasMultipleImages || !swipeStartRef.current) return
     const touch = event.changedTouches[0]
     if (!touch) return
@@ -150,6 +153,39 @@ export function PropertyDetailModal({
   }
 
   const handleImageTouchCancel = () => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return
+    swipeStartRef.current = null
+  }
+
+  const handleImagePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType && event.pointerType !== 'touch') return
+    if (!hasMultipleImages) return
+    swipeStartRef.current = { x: event.clientX, y: event.clientY }
+  }
+
+  const handleImagePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType && event.pointerType !== 'touch') return
+    if (!hasMultipleImages || !swipeStartRef.current) return
+
+    const deltaX = event.clientX - swipeStartRef.current.x
+    const deltaY = event.clientY - swipeStartRef.current.y
+    swipeStartRef.current = null
+
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
+    const threshold = 40
+
+    if (absX < threshold || absX < absY) return
+
+    if (deltaX < 0) {
+      showNextImage()
+    } else {
+      showPreviousImage()
+    }
+  }
+
+  const handleImagePointerCancel = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType && event.pointerType !== 'touch') return
     swipeStartRef.current = null
   }
 
@@ -187,7 +223,7 @@ export function PropertyDetailModal({
             className="min-h-0 flex-1 overflow-y-auto"
             data-testid="property-detail-scroll"
           >
-            <div className="safe-area-top sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-hm-obsidian-900/85 px-4 py-3 backdrop-blur sm:px-6">
+            <div className="safe-area-top bg-hm-obsidian-900/85 sticky top-0 z-20 flex items-center justify-between border-b border-white/10 px-4 py-3 backdrop-blur sm:px-6">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
@@ -196,7 +232,7 @@ export function PropertyDetailModal({
               >
                 <X className="h-4 w-4" />
               </button>
-              {hasMultipleImages && (
+              {hasImages && (
                 <div
                   className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90"
                   data-testid="image-counter"
@@ -212,6 +248,9 @@ export function PropertyDetailModal({
               onTouchStart={handleImageTouchStart}
               onTouchEnd={handleImageTouchEnd}
               onTouchCancel={handleImageTouchCancel}
+              onPointerDown={handleImagePointerDown}
+              onPointerUp={handleImagePointerUp}
+              onPointerCancel={handleImagePointerCancel}
             >
               <PropertyImage
                 src={currentImage || images}

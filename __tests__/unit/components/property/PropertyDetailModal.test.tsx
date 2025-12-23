@@ -259,11 +259,15 @@ describe('PropertyDetailModal', () => {
     const carousel = screen.getByTestId('property-image-carousel')
     expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 2')
 
-    fireEvent.touchStart(carousel, {
-      touches: [{ clientX: 200, clientY: 120 }],
+    fireEvent.pointerDown(carousel, {
+      pointerType: 'touch',
+      clientX: 200,
+      clientY: 120,
     })
-    fireEvent.touchEnd(carousel, {
-      changedTouches: [{ clientX: 80, clientY: 120 }],
+    fireEvent.pointerUp(carousel, {
+      pointerType: 'touch',
+      clientX: 80,
+      clientY: 120,
     })
 
     expect(screen.getByTestId('image-counter')).toHaveTextContent('2 / 2')

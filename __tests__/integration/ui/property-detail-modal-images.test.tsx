@@ -136,7 +136,7 @@ describe('PropertyDetailModal integration - carousel resilience', () => {
       'https://img/solo.jpg'
     )
     expect(screen.queryByTestId('next-image')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('image-counter')).not.toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 1')
   })
 
   it('keeps the slide counter in sync when a property swap increases image count', async () => {
