@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import {
   Geist,
   Geist_Mono,
@@ -96,6 +97,7 @@ export default function RootLayout({
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
         <Toaster position="top-right" />
+        <SpeedInsights />
       </body>
     </html>
   )
