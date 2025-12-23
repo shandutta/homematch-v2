@@ -66,7 +66,7 @@ function generateSourceHash(property: {
     year_built: property.year_built,
     images: property.images?.slice(0, 5),
   })
-  return crypto.createHash('md5').update(hashInput).digest('hex')
+  return crypto.createHash('sha256').update(hashInput).digest('hex')
 }
 
 function generateNeighborhoodSourceHash(neighborhood: {
@@ -79,7 +79,7 @@ function generateNeighborhoodSourceHash(neighborhood: {
   transit_score: number | null
 }): string {
   return crypto
-    .createHash('md5')
+    .createHash('sha256')
     .update(
       JSON.stringify({
         name: neighborhood.name,
@@ -95,7 +95,7 @@ function generateNeighborhoodSourceHash(neighborhood: {
 }
 
 function createDeterministicUuid(seed: string): string {
-  const hash = crypto.createHash('md5').update(seed).digest('hex')
+  const hash = crypto.createHash('sha256').update(seed).digest('hex')
   return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}-${hash.slice(16, 20)}-${hash.slice(20, 32)}`
 }
 
