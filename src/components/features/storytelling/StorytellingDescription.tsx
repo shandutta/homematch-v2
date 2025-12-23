@@ -801,7 +801,7 @@ export function StorytellingDescription({
       >
         {/* Main Description */}
         <p
-          className={`text-token-sm line-clamp-2 leading-relaxed font-medium ${
+          className={`text-token-sm line-clamp-1 leading-relaxed font-medium sm:line-clamp-2 ${
             isMutualLike
               ? 'rounded-md border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-2 py-1 text-pink-700 dark:border-pink-500/30 dark:from-pink-500/10 dark:via-purple-500/5 dark:to-slate-900/0 dark:text-pink-200'
               : 'dark:text-hm-stone-400 text-slate-600'
@@ -815,7 +815,7 @@ export function StorytellingDescription({
 
         {/* Future vision tag - show as subtle pill when enabled */}
         {futureVision && (
-          <div className="rounded-token-2xl shadow-token-sm dark:text-hm-stone-200 border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:ring-white/10">
+          <div className="rounded-token-2xl shadow-token-sm dark:text-hm-stone-200 hidden border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60 sm:block dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:ring-white/10">
             <div className="flex items-start gap-2">
               <Sparkles className="dark:text-hm-amber-400 mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
               <div>
@@ -832,7 +832,7 @@ export function StorytellingDescription({
 
         {/* Top 2 Lifestyle Tags */}
         {showLifestyleTags && lifestyleTags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="hidden flex-wrap gap-1 sm:flex">
             {lifestyleTags.slice(0, 2).map((tag, _index) => {
               const displayTag = normalizeStorytellingTag(tag)
               const tagConfig = getTagDisplay(displayTag)

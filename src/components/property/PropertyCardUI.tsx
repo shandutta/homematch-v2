@@ -4,7 +4,16 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import type { NeighborhoodVibesRecord } from '@/lib/schemas/neighborhood-vibes'
 import type { PropertyVibes } from '@/lib/schemas/property-vibes'
-import { Bed, Bath, Square, ExternalLink, Heart, MapPin, X } from 'lucide-react'
+import {
+  Bed,
+  Bath,
+  Square,
+  ExternalLink,
+  Heart,
+  MapPin,
+  X,
+  ChevronRight,
+} from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
@@ -246,11 +255,11 @@ export function PropertyCardUI({
                   <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
                     {neighborhoodVibes.tagline}
                   </p>
-                  <p className="text-hm-stone-200 line-clamp-2 text-sm">
+                  <p className="text-hm-stone-200 line-clamp-2 hidden text-sm sm:block">
                     {neighborhoodVibes.vibe_statement}
                   </p>
                   {neighborhoodVibes.suggested_tags?.length ? (
-                    <div className="flex flex-wrap gap-2 pt-1">
+                    <div className="hidden flex-wrap gap-2 pt-1 sm:flex">
                       {neighborhoodVibes.suggested_tags
                         .slice(0, 4)
                         .map((tag: string) => (
@@ -289,28 +298,20 @@ export function PropertyCardUI({
           </span>
         </div>
 
-        {/* Detail view toggle */}
-        {enableDetailsToggle && availableDetailViews.length > 1 && (
-          <div className="mb-4 flex gap-2">
-            {availableDetailViews.map((view) => (
-              <button
-                key={view}
-                type="button"
-                className={cn(
-                  'flex-1 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200',
-                  detailView === view
-                    ? 'border-hm-amber-400/50 bg-hm-amber-400/10 text-hm-amber-400'
-                    : 'text-hm-stone-400 hover:text-hm-stone-300 border-white/10 hover:border-white/20'
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setDetailView(view)
-                }}
-              >
-                {view === 'story' ? 'Story' : 'Map'}
-              </button>
-            ))}
-          </div>
+        {/* Details CTA */}
+        {enableDetailsToggle && isClickable && onCardClick && (
+          <button
+            type="button"
+            className="text-hm-stone-200 mb-4 inline-flex w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+            onClick={(e) => {
+              e.stopPropagation()
+              onCardClick()
+            }}
+            data-testid="details-cta"
+          >
+            <span>Details</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
         )}
 
         {/* Storytelling Description */}

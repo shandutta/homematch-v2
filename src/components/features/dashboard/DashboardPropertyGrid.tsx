@@ -242,7 +242,7 @@ export function DashboardPropertyGrid({
                 property={property}
                 showStory
                 storyVariant="futureVision"
-                showMap
+                showMap={false}
                 enableDetailsToggle
                 floatingAction={
                   <div className="flex items-center gap-2">

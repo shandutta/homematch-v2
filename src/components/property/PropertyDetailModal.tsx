@@ -180,12 +180,32 @@ export function PropertyDetailModal({
       <DialogContent
         className="bg-hm-obsidian-900 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none border-white/10 p-0 text-white shadow-[0_30px_90px_rgba(0,0,0,0.55)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
         onCloseAutoFocus={onCloseAutoFocus}
+        showCloseButton={false}
       >
         <div className="flex h-full min-h-0 flex-col">
           <div
             className="min-h-0 flex-1 overflow-y-auto"
             data-testid="property-detail-scroll"
           >
+            <div className="safe-area-top sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-hm-obsidian-900/85 px-4 py-3 backdrop-blur sm:px-6">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                aria-label="Close property details"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              {hasMultipleImages && (
+                <div
+                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90"
+                  data-testid="image-counter"
+                >
+                  {normalizedIndex + 1} / {images.length}
+                </div>
+              )}
+              <div className="h-9 w-9" aria-hidden="true" />
+            </div>
             <div
               className="relative aspect-video w-full touch-pan-y"
               data-testid="property-image-carousel"
@@ -252,29 +272,21 @@ export function PropertyDetailModal({
               )}
 
               {hasMultipleImages && (
-                <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2">
-                  <div
-                    className="rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white/90"
-                    data-testid="image-counter"
-                  >
-                    {normalizedIndex + 1} / {images.length}
-                  </div>
-                  <div className="flex gap-2">
-                    {images.map((_, index) => {
-                      const isActive = index === normalizedIndex
-                      return (
-                        <button
-                          key={index}
-                          type="button"
-                          aria-label={`View image ${index + 1}`}
-                          data-testid={`image-dot-${index}`}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
-                          style={{ opacity: isActive ? 1 : 0.4 }}
-                        />
-                      )
-                    })}
-                  </div>
+                <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+                  {images.map((_, index) => {
+                    const isActive = index === normalizedIndex
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        aria-label={`View image ${index + 1}`}
+                        data-testid={`image-dot-${index}`}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
+                        style={{ opacity: isActive ? 1 : 0.4 }}
+                      />
+                    )
+                  })}
                 </div>
               )}
 

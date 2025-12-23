@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { InteractionSummary } from '@/types/app'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Eye, Heart, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface DashboardStatsProps {
   summary: InteractionSummary | undefined
@@ -46,7 +47,11 @@ const StatTile = ({
   return (
     <Link
       href={href}
-      className={`group bg-hm-obsidian-900 block rounded-xl border border-white/5 p-3 transition-all duration-300 hover:-translate-y-0.5 sm:p-5 ${colors.glow} ${colors.border}`}
+      className={cn(
+        'group bg-hm-obsidian-900 block min-w-[160px] snap-center rounded-xl border border-white/5 p-3 transition-all duration-300 hover:-translate-y-0.5 sm:min-w-0 sm:p-5',
+        colors.glow,
+        colors.border
+      )}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -74,40 +79,41 @@ const StatTile = ({
 export function DashboardStats({ summary, isLoading }: DashboardStatsProps) {
   if (isLoading && !summary) {
     return (
-      <div className="mb-6 grid grid-cols-3 gap-3 sm:mb-8 sm:gap-4">
-        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
-        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
-        <Skeleton className="h-20 w-full rounded-xl bg-white/5 sm:h-24" />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0">
+          <Skeleton className="h-20 w-full min-w-[160px] snap-center rounded-xl bg-white/5 sm:h-24 sm:min-w-0" />
+          <Skeleton className="h-20 w-full min-w-[160px] snap-center rounded-xl bg-white/5 sm:h-24 sm:min-w-0" />
+          <Skeleton className="h-20 w-full min-w-[160px] snap-center rounded-xl bg-white/5 sm:h-24 sm:min-w-0" />
+        </div>
       </div>
     )
   }
 
   return (
-    <div
-      className="mb-6 grid grid-cols-3 gap-3 sm:mb-8 sm:gap-4"
-      data-testid="dashboard-stats"
-    >
-      <StatTile
-        href="/dashboard/viewed"
-        label="Viewed"
-        value={summary?.viewed}
-        icon={Eye}
-        accentColor="amber"
-      />
-      <StatTile
-        href="/dashboard/liked"
-        label="Liked"
-        value={summary?.liked}
-        icon={Heart}
-        accentColor="success"
-      />
-      <StatTile
-        href="/dashboard/passed"
-        label="Passed"
-        value={summary?.passed}
-        icon={X}
-        accentColor="error"
-      />
+    <div className="mb-6 sm:mb-8" data-testid="dashboard-stats">
+      <div className="flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0">
+        <StatTile
+          href="/dashboard/viewed"
+          label="Viewed"
+          value={summary?.viewed}
+          icon={Eye}
+          accentColor="amber"
+        />
+        <StatTile
+          href="/dashboard/liked"
+          label="Liked"
+          value={summary?.liked}
+          icon={Heart}
+          accentColor="success"
+        />
+        <StatTile
+          href="/dashboard/passed"
+          label="Passed"
+          value={summary?.passed}
+          icon={X}
+          accentColor="error"
+        />
+      </div>
     </div>
   )
 }
