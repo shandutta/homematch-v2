@@ -47,6 +47,18 @@ describe('buildPropertyFiltersFromPreferences', () => {
     expect(filters.neighborhoods).toBeUndefined()
   })
 
+  test('skips city filters when allCities is true', () => {
+    const prefs: DashboardPreferences = {
+      allCities: true,
+      cities: [{ city: 'Austin', state: 'TX' }],
+    }
+
+    const filters = buildPropertyFiltersFromPreferences(prefs)
+
+    expect(filters.cities).toBeUndefined()
+    expect(filters.neighborhoods).toBeUndefined()
+  })
+
   test('maps price range to min/max filters', () => {
     const prefs: DashboardPreferences = { priceRange: [250000, 900000] }
 

@@ -2,12 +2,13 @@
 
 import { createClient } from '@/lib/supabase/client'
 import type { Neighborhood } from '@/types/database'
-import {
-  buildCityStateOrClause,
-  type CityStatePair,
-} from '@/lib/utils/postgrest'
+import { buildCityStateKeys, type CityStatePair } from '@/lib/utils/postgrest'
 
 export type CityOption = CityStatePair
+export type NeighborhoodOption = Pick<
+  Neighborhood,
+  'id' | 'name' | 'city' | 'state'
+>
 
 export class LocationsClient {
   static async getCities(): Promise<CityOption[]> {
@@ -40,21 +41,23 @@ export class LocationsClient {
 
   static async getNeighborhoodsForCities(
     cities: CityOption[]
-  ): Promise<Neighborhood[]> {
+  ): Promise<NeighborhoodOption[]> {
     if (!cities.length) return []
 
     const supabase = createClient()
 
-    let query = supabase.from('neighborhoods').select('*').order('name')
+    const cityStateKeys = buildCityStateKeys(cities)
+    if (cityStateKeys.length === 0) return []
 
-    if (cities.length === 1) {
-      const [single] = cities
-      query = query.eq('city', single!.city).eq('state', single!.state)
+    let query = supabase
+      .from('neighborhoods')
+      .select('id,name,city,state')
+      .order('name')
+
+    if (cityStateKeys.length === 1) {
+      query = query.eq('city_state_key', cityStateKeys[0]!)
     } else {
-      const orClause = buildCityStateOrClause(cities)
-      if (orClause) {
-        query = query.or(orClause)
-      }
+      query = query.in('city_state_key', cityStateKeys)
     }
 
     const { data, error } = await query

@@ -341,6 +341,7 @@ describe('PreferencesSection', () => {
           bedrooms: DEFAULT_BEDROOMS,
           bathrooms: DEFAULT_BATHROOMS,
           searchRadius: DEFAULT_SEARCH_RADIUS,
+          allCities: false,
           cities: [],
           neighborhoods: [],
           mustHaves: {

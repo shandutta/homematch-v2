@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { Neighborhood, UserProfile, UserPreferences } from '@/types/database'
+import { UserProfile, UserPreferences } from '@/types/database'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
@@ -20,6 +20,7 @@ import { UserServiceClient } from '@/lib/services/users-client'
 import {
   LocationsClient,
   type CityOption,
+  type NeighborhoodOption,
 } from '@/lib/services/locations-client'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import {
@@ -133,6 +134,7 @@ export function PreferencesSection({
     propertyTypes?: PropertyTypePreferences
     mustHaves?: Record<string, boolean>
     searchRadius?: number
+    allCities?: boolean
     cities?: CityOption[]
     neighborhoods?: string[]
   }
@@ -147,7 +149,7 @@ export function PreferencesSection({
   const [neighborhoodsLoading, setNeighborhoodsLoading] = useState(false)
   const [availableCities, setAvailableCities] = useState<CityOption[]>([])
   const [availableNeighborhoods, setAvailableNeighborhoods] = useState<
-    Neighborhood[]
+    NeighborhoodOption[]
   >([])
   const [citySearch, setCitySearch] = useState('')
   const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
@@ -197,11 +199,13 @@ export function PreferencesSection({
   const [searchRadius, setSearchRadius] = useState(
     preferences.searchRadius || DEFAULT_SEARCH_RADIUS
   )
+  const initialAllCities = Boolean(preferences.allCities)
+  const [allCities, setAllCities] = useState(initialAllCities)
   const [selectedCities, setSelectedCities] = useState<CityOption[]>(
-    preferences.cities || []
+    initialAllCities ? [] : preferences.cities || []
   )
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>(
-    preferences.neighborhoods || []
+    initialAllCities ? [] : preferences.neighborhoods || []
   )
   const [showSelectedCitiesOnly, setShowSelectedCitiesOnly] = useState(false)
   const [showSelectedNeighborhoodsOnly, setShowSelectedNeighborhoodsOnly] =
@@ -211,6 +215,7 @@ export function PreferencesSection({
 
   const autoSelectedCitiesRef = useRef<Set<string>>(new Set())
   const markManualNeighborhoodSelection = useCallback(() => {
+    setAllCities(false)
     autoSelectedCitiesRef.current = new Set(selectedCities.map(cityKey))
   }, [selectedCities])
 
@@ -282,10 +287,19 @@ export function PreferencesSection({
     let cancelled = false
 
     const loadNeighborhoods = async () => {
+      if (allCities) {
+        setAvailableNeighborhoods([])
+        setSelectedNeighborhoods([])
+        autoSelectedCitiesRef.current.clear()
+        setNeighborhoodsLoading(false)
+        return
+      }
+
       if (selectedCities.length === 0) {
         setAvailableNeighborhoods([])
         setSelectedNeighborhoods([])
         autoSelectedCitiesRef.current.clear()
+        setNeighborhoodsLoading(false)
         return
       }
 
@@ -312,9 +326,10 @@ export function PreferencesSection({
     return () => {
       cancelled = true
     }
-  }, [selectedCities])
+  }, [allCities, selectedCities])
 
   useEffect(() => {
+    if (allCities) return
     if (!availableNeighborhoods.length || selectedCities.length === 0) return
 
     const selectedCityKeys = new Set(selectedCities.map(cityKey))
@@ -362,9 +377,10 @@ export function PreferencesSection({
     newlySelectedKeys
       .filter((key) => (neighborhoodsByCity.get(key) || []).length > 0)
       .forEach((key) => autoSelectedCitiesRef.current.add(key))
-  }, [availableNeighborhoods, selectedCities])
+  }, [allCities, availableNeighborhoods, selectedCities])
 
   const toggleCity = (city: CityOption) => {
+    setAllCities(false)
     setSelectedCities((prev) => {
       const key = cityKey(city)
       if (prev.some((item) => cityKey(item) === key)) {
@@ -385,11 +401,25 @@ export function PreferencesSection({
   }
 
   const selectAllCities = () => {
-    setSelectedCities(availableCities)
+    setAllCities(true)
+    setSelectedCities([])
+    setSelectedNeighborhoods([])
+    setAvailableNeighborhoods([])
+    autoSelectedCitiesRef.current.clear()
+    setShowSelectedCitiesOnly(false)
+    setCitySearch('')
+    setNeighborhoodSearch('')
   }
 
   const clearAllCities = () => {
+    setAllCities(false)
     setSelectedCities([])
+    setSelectedNeighborhoods([])
+    setAvailableNeighborhoods([])
+    autoSelectedCitiesRef.current.clear()
+    setShowSelectedCitiesOnly(false)
+    setCitySearch('')
+    setNeighborhoodSearch('')
   }
 
   const selectAllNeighborhoods = () => {
@@ -397,7 +427,7 @@ export function PreferencesSection({
     setSelectedNeighborhoods(availableNeighborhoods.map((n) => n.id))
   }
 
-  const selectNeighborhoodGroup = (group: Neighborhood[]) => {
+  const selectNeighborhoodGroup = (group: NeighborhoodOption[]) => {
     markManualNeighborhoodSelection()
     setSelectedNeighborhoods((prev) => {
       const merged = new Set(prev)
@@ -412,6 +442,7 @@ export function PreferencesSection({
   }
 
   const filteredCities = useMemo(() => {
+    if (allCities) return []
     const query = citySearch.trim().toLowerCase()
     const baseCities = showSelectedCitiesOnly ? selectedCities : availableCities
     if (!query) return baseCities
@@ -420,7 +451,13 @@ export function PreferencesSection({
       const label = `${city.city}, ${city.state}`.toLowerCase()
       return label.includes(query)
     })
-  }, [availableCities, citySearch, selectedCities, showSelectedCitiesOnly])
+  }, [
+    allCities,
+    availableCities,
+    citySearch,
+    selectedCities,
+    showSelectedCitiesOnly,
+  ])
 
   const filteredNeighborhoods = useMemo(() => {
     const query = neighborhoodSearch.trim().toLowerCase()
@@ -445,7 +482,10 @@ export function PreferencesSection({
   ])
 
   const neighborhoodGroups = useMemo(() => {
-    const grouped = new Map<string, { label: string; items: Neighborhood[] }>()
+    const grouped = new Map<
+      string,
+      { label: string; items: NeighborhoodOption[] }
+    >()
     for (const neighborhood of filteredNeighborhoods) {
       const key = `${neighborhood.city.toLowerCase()}|${neighborhood.state.toLowerCase()}`
       const label = `${neighborhood.city}, ${neighborhood.state}`
@@ -467,6 +507,7 @@ export function PreferencesSection({
       searchRadius?: number
       propertyTypes?: Record<PropertyTypeKey, boolean>
       mustHaves?: Record<MustHaveKey, boolean>
+      allCities?: boolean
       cities?: CityOption[]
       neighborhoods?: string[]
     }) => {
@@ -500,6 +541,7 @@ export function PreferencesSection({
         searchRadius: values.searchRadius || DEFAULT_SEARCH_RADIUS,
         propertyTypes: normalizedPropertyTypes,
         mustHaves: normalizedMustHaves,
+        allCities: Boolean(values.allCities),
         cities: normalizedCities,
         neighborhoods: normalizedNeighborhoods,
       }
@@ -547,12 +589,14 @@ export function PreferencesSection({
       propertyTypes: propertyTypesPayload,
       mustHaves,
       searchRadius,
+      allCities,
       cities: selectedCities,
       neighborhoods: selectedNeighborhoods,
     }
   }, [
     bathrooms,
     bedrooms,
+    allCities,
     mustHaves,
     preferences,
     priceRange,
@@ -606,6 +650,7 @@ export function PreferencesSection({
           gym: false,
           petFriendly: false,
         }) as Record<MustHaveKey, boolean>,
+        allCities: preferences.allCities,
         cities: preferences.cities || [],
         neighborhoods: preferences.neighborhoods || [],
       }),
@@ -621,12 +666,14 @@ export function PreferencesSection({
         searchRadius,
         propertyTypes,
         mustHaves,
+        allCities,
         cities: selectedCities,
         neighborhoods: selectedNeighborhoods,
       }),
     [
       bathrooms,
       bedrooms,
+      allCities,
       mustHaves,
       normalizeSnapshot,
       priceRange,
@@ -677,6 +724,9 @@ export function PreferencesSection({
   }, [hasUnsavedChanges, lastSavedAt, loading, onSaveStateChange])
 
   const buildLocationLabel = useCallback(() => {
+    if (allCities) {
+      return 'All cities'
+    }
     if (selectedNeighborhoods.length > 0) {
       return `${selectedNeighborhoods.length} neighborhoods`
     }
@@ -690,7 +740,7 @@ export function PreferencesSection({
       .join(', ')
     const remaining = selectedCities.length - 2
     return remaining > 0 ? `${cityNames} +${remaining}` : cityNames
-  }, [selectedCities, selectedNeighborhoods.length])
+  }, [allCities, selectedCities, selectedNeighborhoods.length])
 
   const generateSearchName = useCallback(() => {
     const parts = [
@@ -710,6 +760,7 @@ export function PreferencesSection({
     setNeighborhoodSearch('')
     setShowSelectedCitiesOnly(false)
     setShowSelectedNeighborhoodsOnly(false)
+    setAllCities(false)
     setSelectedCities([])
     setSelectedNeighborhoods([])
     setPriceRange(DEFAULT_PRICE_RANGE)
@@ -744,6 +795,7 @@ export function PreferencesSection({
 
       const filters = {
         location: buildLocationLabel(),
+        allCities,
         cities: selectedCities,
         neighborhoods: selectedNeighborhoods,
         priceMin: priceRange[0],
@@ -790,6 +842,7 @@ export function PreferencesSection({
     searchRadius,
     selectedCities,
     selectedNeighborhoods,
+    allCities,
     user.id,
     userService,
     router,
@@ -825,9 +878,12 @@ export function PreferencesSection({
                 Locations
               </Label>
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-white/80">
-                {selectedCities.length}{' '}
-                {selectedCities.length === 1 ? 'city' : 'cities'} ·{' '}
-                {selectedNeighborhoods.length}{' '}
+                {allCities
+                  ? 'All cities'
+                  : `${selectedCities.length} ${
+                      selectedCities.length === 1 ? 'city' : 'cities'
+                    }`}{' '}
+                · {selectedNeighborhoods.length}{' '}
                 {selectedNeighborhoods.length === 1
                   ? 'neighborhood'
                   : 'neighborhoods'}
@@ -855,7 +911,11 @@ export function PreferencesSection({
                       type="button"
                       onClick={selectAllCities}
                       className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
-                      disabled={availableCities.length === 0 || citiesLoading}
+                      disabled={
+                        availableCities.length === 0 ||
+                        citiesLoading ||
+                        allCities
+                      }
                     >
                       Select all
                     </button>
@@ -863,7 +923,7 @@ export function PreferencesSection({
                       type="button"
                       onClick={clearAllCities}
                       className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
-                      disabled={selectedCities.length === 0}
+                      disabled={!allCities && selectedCities.length === 0}
                     >
                       Clear
                     </button>
@@ -873,14 +933,22 @@ export function PreferencesSection({
                 <Input
                   value={citySearch}
                   onChange={(e) => setCitySearch(e.target.value)}
-                  placeholder="Search cities…"
+                  placeholder={
+                    allCities ? 'All cities selected' : 'Search cities…'
+                  }
                   aria-label="Search cities"
                   data-testid="city-search"
-                  className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5"
+                  disabled={allCities}
+                  className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
                 />
 
                 <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
-                  {citiesLoading ? (
+                  {allCities ? (
+                    <p className="text-hm-stone-500 text-sm">
+                      All cities are selected. Clear to choose specific
+                      locations.
+                    </p>
+                  ) : citiesLoading ? (
                     <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Loading cities…
@@ -965,18 +1033,25 @@ export function PreferencesSection({
                   value={neighborhoodSearch}
                   onChange={(e) => setNeighborhoodSearch(e.target.value)}
                   placeholder={
-                    selectedCities.length === 0
-                      ? 'Select a city first…'
-                      : 'Search neighborhoods…'
+                    allCities
+                      ? 'All cities selected'
+                      : selectedCities.length === 0
+                        ? 'Select a city first…'
+                        : 'Search neighborhoods…'
                   }
                   aria-label="Search neighborhoods"
                   data-testid="neighborhood-search"
-                  disabled={selectedCities.length === 0}
+                  disabled={allCities || selectedCities.length === 0}
                   className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
                 />
 
                 <div className="max-h-64 space-y-3 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
-                  {selectedCities.length === 0 ? (
+                  {allCities ? (
+                    <p className="text-hm-stone-500 text-sm">
+                      Neighborhood filtering is disabled when all cities are
+                      selected.
+                    </p>
+                  ) : selectedCities.length === 0 ? (
                     <p className="text-hm-stone-500 text-sm">
                       Choose one or more cities to see neighborhoods.
                     </p>

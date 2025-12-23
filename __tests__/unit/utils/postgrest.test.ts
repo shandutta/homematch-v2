@@ -1,5 +1,8 @@
 import { describe, expect, test } from '@jest/globals'
-import { buildCityStateOrClause } from '@/lib/utils/postgrest'
+import {
+  buildCityStateKeys,
+  buildCityStateOrClause,
+} from '@/lib/utils/postgrest'
 
 describe('buildCityStateOrClause', () => {
   test('returns null for empty input', () => {
@@ -35,5 +38,23 @@ describe('buildCityStateOrClause', () => {
     ])
 
     expect(clause).toBe('and(city.eq.Austin,state.eq.TX)')
+  })
+})
+
+describe('buildCityStateKeys', () => {
+  test('returns an empty array for empty input', () => {
+    expect(buildCityStateKeys([])).toEqual([])
+    expect(buildCityStateKeys(undefined)).toEqual([])
+    expect(buildCityStateKeys(null)).toEqual([])
+  })
+
+  test('builds normalized, deduped keys', () => {
+    const keys = buildCityStateKeys([
+      { city: 'Austin', state: 'TX' },
+      { city: 'austin', state: 'tx' },
+      { city: 'San Francisco', state: 'CA' },
+    ])
+
+    expect(keys).toEqual(['austin|tx', 'san francisco|ca'])
   })
 })

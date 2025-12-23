@@ -113,6 +113,7 @@ export function SettingsPageClient({
     propertyTypes?: Record<string, boolean>
     mustHaves?: Record<string, boolean>
     searchRadius?: number
+    allCities?: boolean
     notifications?: {
       email?: Record<string, boolean>
       push?: Record<string, boolean>

@@ -16,7 +16,7 @@ import type {
 import { BaseService } from '@/lib/services/base'
 import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
-import { buildCityStateOrClause } from '@/lib/utils/postgrest'
+import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
 export class PropertySearchService
   extends BaseService
@@ -68,9 +68,11 @@ export class PropertySearchService
 
       // Apply multi-city filter (OR across city+state pairs)
       if (filters.cities && filters.cities.length > 0) {
-        const orClause = buildCityStateOrClause(filters.cities)
-        if (orClause) {
-          query = query.or(orClause)
+        const cityStateKeys = buildCityStateKeys(filters.cities)
+        if (cityStateKeys.length === 1) {
+          query = query.eq('city_state_key', cityStateKeys[0]!)
+        } else if (cityStateKeys.length > 1) {
+          query = query.in('city_state_key', cityStateKeys)
         }
       }
 

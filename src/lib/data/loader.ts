@@ -27,6 +27,7 @@ export interface DashboardPreferences {
   propertyTypes?: Record<string, boolean>
   mustHaves?: Record<string, boolean>
   searchRadius?: number
+  allCities?: boolean
   cities?: NonNullable<PropertyFilters['cities']>
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
@@ -40,7 +41,7 @@ export function buildPropertyFiltersFromPreferences(
 
   if (prefs.neighborhoods && prefs.neighborhoods.length > 0) {
     filters.neighborhoods = prefs.neighborhoods
-  } else if (prefs.cities && prefs.cities.length > 0) {
+  } else if (!prefs.allCities && prefs.cities && prefs.cities.length > 0) {
     filters.cities = prefs.cities
   }
 
@@ -115,6 +116,10 @@ export async function loadDashboardData(
 
   try {
     const neighborhoodsPromise = async () => {
+      if (userPreferences?.allCities) {
+        return []
+      }
+
       if (userPreferences?.cities && userPreferences.cities.length > 0) {
         const results = await Promise.all(
           userPreferences.cities.map(({ city, state }) =>
