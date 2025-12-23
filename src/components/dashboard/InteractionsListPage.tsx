@@ -54,7 +54,7 @@ export function InteractionsListPage({
       return {
         title: 'No favorites yet',
         description:
-          'Tap Like on homes you love — your shortlist will stay in sync with your household.',
+          'Tap Like on homes you want to keep — your shortlist will stay in sync with your household.',
         icon: (
           <Heart
             className="text-hm-success mx-auto h-10 w-10"

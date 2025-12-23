@@ -366,7 +366,7 @@ export function CouplesMutualLikesSection({
 
                     <ChevronRight className="text-hm-stone-400 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
 
-                    {/* Romantic hover effect */}
+                    {/* Glow hover effect */}
                     <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-rose-500/0 transition-all group-hover:from-pink-500/5 group-hover:via-purple-500/5 group-hover:to-rose-500/5" />
                   </div>
                 </Link>

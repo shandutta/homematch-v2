@@ -310,10 +310,10 @@ export function PreferencesSection({
       }
 
       const shouldPromoteAllCities =
-        selectedNeighborhoods.length === 0 &&
-        (selectedCities.length >= ALL_CITIES_SENTINEL_THRESHOLD ||
-          (availableCities.length > 0 &&
-            selectedCities.length >= availableCities.length))
+        selectedCities.length >= ALL_CITIES_SENTINEL_THRESHOLD ||
+        (availableCities.length > 0 &&
+          selectedCities.length >= availableCities.length) ||
+        selectedNeighborhoods.length >= ALL_CITIES_SENTINEL_THRESHOLD
 
       if (shouldPromoteAllCities) {
         setAllCities(true)

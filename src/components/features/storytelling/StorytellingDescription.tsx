@@ -244,11 +244,11 @@ const FUTURE_VISION_TAGS = {
     tag: 'Entertainment Haven',
     descriptions: [
       'Host unforgettable gatherings with friends and family',
-      'Create the social hub your circle will love to visit',
+      'Create the social hub your circle will want to visit',
       'Perfect backdrop for celebrations big and small',
     ],
   },
-  romantic: {
+  cityHideaway: {
     tag: 'City Hideaway',
     descriptions: [
       'A cozy home base that keeps you close to the action',
@@ -658,10 +658,10 @@ function getFutureVisionTag(
 
   // Cozy compact space
   if (property.bedrooms && property.bedrooms <= 2) {
-    const vision = FUTURE_VISION_TAGS.romantic
+    const vision = FUTURE_VISION_TAGS.cityHideaway
     const index = getSeededIndex(
       property.id,
-      'future-vision-romantic',
+      'future-vision-city-hideaway',
       vision.descriptions.length
     )
     return {

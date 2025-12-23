@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Heart } from 'lucide-react'
 import { MotionDiv } from '@/components/ui/motion-components'
 
 // Animated link with hover underline
@@ -61,25 +60,6 @@ function SocialIcon({
       />
       <span className="relative z-10">{children}</span>
     </motion.a>
-  )
-}
-
-// Animated heart that beats on hover
-function HeartbeatHeart() {
-  const [isHovered, setIsHovered] = useState(false)
-
-  return (
-    <motion.span
-      className="inline-block"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      animate={isHovered ? { scale: [1, 1.3, 1, 1.2, 1] } : { scale: 1 }}
-      transition={
-        isHovered ? { duration: 0.8, repeat: Infinity } : { duration: 0.3 }
-      }
-    >
-      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-    </motion.span>
   )
 }
 
@@ -229,9 +209,7 @@ export function Footer() {
             className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/70"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            Built with
-            <HeartbeatHeart />
-            in the Bay Area
+            Built in the Bay Area
           </p>
           <p
             className="text-token-xs mt-1 text-white/50 sm:mt-2"

@@ -124,7 +124,7 @@ describe('InteractionsListPage', () => {
     renderWithQuery(<InteractionsListPage type="liked" title="Liked" />)
 
     expect(screen.getByText(/No favorites yet/i)).toBeTruthy()
-    expect(screen.getByText(/Tap Like on homes you love/i)).toBeTruthy()
+    expect(screen.getByText(/Tap Like on homes you want to keep/i)).toBeTruthy()
   })
 
   it('renders PropertyCard for each item when data present', () => {

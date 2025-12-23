@@ -159,7 +159,7 @@ export function CouplesPageClient() {
         ) {
           throw new Error('Server error - please try again later')
         }
-        throw new Error('Failed to fetch couples data')
+        throw new Error('Failed to fetch household data')
       }
 
       const [mutualLikesData, activityData, statsData] = await Promise.all([
@@ -176,10 +176,10 @@ export function CouplesPageClient() {
         toast.success('Data loaded successfully!')
       }
     } catch (err) {
-      console.error('Error fetching couples data:', err)
+      console.error('Error fetching household data:', err)
 
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load couples data'
+        err instanceof Error ? err.message : 'Failed to load household data'
       setError(errorMessage)
       setUserHouseholdStatus('error')
 

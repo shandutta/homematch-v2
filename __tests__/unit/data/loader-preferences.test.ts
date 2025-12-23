@@ -3,7 +3,10 @@ import {
   buildPropertyFiltersFromPreferences,
   type DashboardPreferences,
 } from '@/lib/data/loader'
-import { DEFAULT_PRICE_RANGE } from '@/lib/constants/preferences'
+import {
+  ALL_CITIES_SENTINEL_THRESHOLD,
+  DEFAULT_PRICE_RANGE,
+} from '@/lib/constants/preferences'
 
 describe('buildPropertyFiltersFromPreferences', () => {
   test('applies default price range when preferences are null', () => {
@@ -52,6 +55,35 @@ describe('buildPropertyFiltersFromPreferences', () => {
       allCities: true,
       cities: [{ city: 'Austin', state: 'TX' }],
     }
+
+    const filters = buildPropertyFiltersFromPreferences(prefs)
+
+    expect(filters.cities).toBeUndefined()
+    expect(filters.neighborhoods).toBeUndefined()
+  })
+
+  test('skips city filters when the city selection is oversized', () => {
+    const cities = Array.from(
+      { length: ALL_CITIES_SENTINEL_THRESHOLD },
+      () => ({
+        city: 'Austin',
+        state: 'TX',
+      })
+    )
+    const prefs: DashboardPreferences = { cities }
+
+    const filters = buildPropertyFiltersFromPreferences(prefs)
+
+    expect(filters.cities).toBeUndefined()
+    expect(filters.neighborhoods).toBeUndefined()
+  })
+
+  test('skips neighborhood filters when the neighborhood selection is oversized', () => {
+    const neighborhoods = Array.from(
+      { length: ALL_CITIES_SENTINEL_THRESHOLD },
+      (_, index) => `neighborhood-${index}`
+    )
+    const prefs: DashboardPreferences = { neighborhoods }
 
     const filters = buildPropertyFiltersFromPreferences(prefs)
 

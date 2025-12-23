@@ -619,7 +619,7 @@ describe('InvitePartnerModal Component', () => {
     test('should have labeled form inputs', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
-      expect(screen.getByText("Partner's name")).toBeInTheDocument()
+      expect(screen.getByText('Name')).toBeInTheDocument()
       expect(screen.getByText('Email address')).toBeInTheDocument()
       expect(
         screen.getByText('Personal message (optional)')

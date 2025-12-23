@@ -156,7 +156,7 @@ describe('SwipeContainer', () => {
     expect(screen.getByText('All caught up!')).toBeInTheDocument()
     expect(
       screen.getByText(
-        "You've seen all available properties together. Check back later for new listings that might be perfect for both of you!"
+        "You've seen all available properties in this search. Check back later for new listings that fit your filters."
       )
     ).toBeInTheDocument()
   })
@@ -175,7 +175,7 @@ describe('SwipeContainer', () => {
       screen.getByRole('button', { name: 'Not quite right' })
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'We love this one!' })
+      screen.getByRole('button', { name: 'We like this one!' })
     ).toBeInTheDocument()
   })
 
@@ -210,7 +210,7 @@ describe('SwipeContainer', () => {
       />
     )
 
-    const likeButton = screen.getByRole('button', { name: 'We love this one!' })
+    const likeButton = screen.getByRole('button', { name: 'We like this one!' })
     await user.click(likeButton)
 
     expect(mockOnSwipe).toHaveBeenCalledWith('right')
@@ -258,7 +258,7 @@ describe('SwipeContainer', () => {
       />
     )
 
-    const likeButton = screen.getByRole('button', { name: 'We love this one!' })
+    const likeButton = screen.getByRole('button', { name: 'We like this one!' })
 
     // First swipe
     await user.click(likeButton)
@@ -354,7 +354,7 @@ describe('SwipeContainer', () => {
 
     // Test accessibility attributes
     expect(passButton).toHaveAttribute('aria-label', 'Not quite right')
-    expect(likeButton).toHaveAttribute('aria-label', 'We love this one!')
+    expect(likeButton).toHaveAttribute('aria-label', 'We like this one!')
     expect(passButton).toHaveAttribute('type', 'button')
     expect(likeButton).toHaveAttribute('type', 'button')
   })

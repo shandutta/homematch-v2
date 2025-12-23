@@ -37,7 +37,7 @@ export function CouplesHero({ stats, loading }: CouplesHeroProps) {
 
   return (
     <Card className="bg-hm-obsidian-900 relative overflow-hidden rounded-xl border border-pink-500/10">
-      {/* Romantic background gradient - subtle */}
+      {/* Warm background gradient - subtle */}
       <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-rose-500/10" />
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent" />
 

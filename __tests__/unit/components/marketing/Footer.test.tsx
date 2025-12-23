@@ -23,11 +23,6 @@ jest.mock('next/link', () => ({
   ),
 }))
 
-// Mock lucide-react Heart icon
-jest.mock('lucide-react', () => ({
-  Heart: () => <svg data-testid="heart-icon" />,
-}))
-
 describe('Footer', () => {
   test('renders HomeMatch brand name', () => {
     render(<Footer />)
@@ -101,11 +96,9 @@ describe('Footer', () => {
     expect(instagramLink).toHaveAttribute('target', '_blank')
   })
 
-  test('renders "Built with love" message', () => {
+  test('renders "Built in the Bay Area" message', () => {
     render(<Footer />)
-    expect(screen.getByText(/Built with/)).toBeInTheDocument()
-    expect(screen.getByText(/in the Bay Area/)).toBeInTheDocument()
-    expect(screen.getByTestId('heart-icon')).toBeInTheDocument()
+    expect(screen.getByText(/Built in the Bay Area/)).toBeInTheDocument()
   })
 
   test('renders copyright notice', () => {

@@ -318,7 +318,9 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Shared Likes')).toHaveClass('text-hm-stone-100')
+        expect(screen.getByText('Shared Likes')).toHaveClass(
+          'text-hm-stone-100'
+        )
         expect(
           screen.getByRole('heading', { name: 'No mutual likes yet!' })
         ).toHaveClass('text-hm-stone-100')

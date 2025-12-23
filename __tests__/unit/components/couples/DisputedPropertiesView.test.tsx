@@ -36,7 +36,7 @@ jest.mock('@/components/couples/CouplesEmptyStates', () => ({
   }) => (
     <div data-testid="waiting-partner-state">
       <button type="button" onClick={onInvite}>
-        Invite Partner
+        Invite Someone
       </button>
     </div>
   ),
@@ -141,7 +141,7 @@ describe('DisputedPropertiesView', () => {
       expect(screen.getByTestId('waiting-partner-state')).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: 'Invite Partner' }))
+    await user.click(screen.getByRole('button', { name: 'Invite Someone' }))
 
     await waitFor(() => {
       expect(screen.getByTestId('invite-partner-modal')).toBeInTheDocument()

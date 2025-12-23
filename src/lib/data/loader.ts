@@ -35,22 +35,35 @@ export interface DashboardPreferences {
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
 
+const shouldTreatAsAllCities = (
+  prefs?: DashboardPreferences | null
+): boolean => {
+  if (!prefs) return false
+  const cityCount = prefs.cities?.length ?? 0
+  const neighborhoodCount = prefs.neighborhoods?.length ?? 0
+
+  return (
+    Boolean(prefs.allCities) ||
+    cityCount >= ALL_CITIES_SENTINEL_THRESHOLD ||
+    neighborhoodCount >= ALL_CITIES_SENTINEL_THRESHOLD
+  )
+}
+
 export function buildPropertyFiltersFromPreferences(
   userPreferences?: DashboardPreferences | null
 ): PropertyFilters {
   const filters: PropertyFilters = {}
 
   const prefs = userPreferences || {}
+  const treatAsAllCities = shouldTreatAsAllCities(prefs)
 
-  const cityCount = prefs.cities?.length ?? 0
-  const treatAsAllCities =
-    Boolean(prefs.allCities) ||
-    (cityCount >= ALL_CITIES_SENTINEL_THRESHOLD &&
-      (!prefs.neighborhoods || prefs.neighborhoods.length === 0))
-
-  if (prefs.neighborhoods && prefs.neighborhoods.length > 0) {
+  if (
+    prefs.neighborhoods &&
+    prefs.neighborhoods.length > 0 &&
+    !treatAsAllCities
+  ) {
     filters.neighborhoods = prefs.neighborhoods
-  } else if (!treatAsAllCities && prefs.cities && prefs.cities.length > 0) {
+  } else if (prefs.cities && prefs.cities.length > 0 && !treatAsAllCities) {
     filters.cities = prefs.cities
   }
 
@@ -125,7 +138,7 @@ export async function loadDashboardData(
 
   try {
     const neighborhoodsPromise = async () => {
-      if (userPreferences?.allCities) {
+      if (shouldTreatAsAllCities(userPreferences)) {
         return []
       }
 

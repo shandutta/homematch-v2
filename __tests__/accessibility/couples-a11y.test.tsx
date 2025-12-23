@@ -292,7 +292,7 @@ describe('Couples Components Accessibility Tests', () => {
       await screen.findByText('123 Accessible St')
 
       // Should have proper title text (CardTitle is a div, not a heading)
-      expect(screen.getByText(/Both Liked \(1\)/i)).toBeInTheDocument()
+      expect(screen.getByText(/Shared Likes \(1\)/i)).toBeInTheDocument()
     })
 
     test('should have accessible image alt text', async () => {
@@ -412,7 +412,7 @@ describe('Couples Components Accessibility Tests', () => {
 
       // Icons should not interfere with accessibility
       // Since we're using Lucide icons, they should have proper aria attributes
-      const container = screen.getByText('Both Liked').closest('div')
+      const container = screen.getByText('Shared Likes').closest('div')
       expect(container).toBeInTheDocument()
     })
   })

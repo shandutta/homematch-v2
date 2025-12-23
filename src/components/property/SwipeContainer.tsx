@@ -315,7 +315,7 @@ export function SwipeContainer({
               : undefined,
             whileTap: !isAnimating ? { scale: 0.9 } : undefined,
           }}
-          aria-label="We love this one!"
+          aria-label="We like this one!"
           type="button"
           data-testid="like-button"
         >

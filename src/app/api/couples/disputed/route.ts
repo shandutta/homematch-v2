@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
                   user_name:
                     partner1Profile.display_name ||
                     partner1Profile.email ||
-                    'Partner',
+                    'Household member',
                   user_email: partner1Profile.email || '',
                   interaction_type: partner1Interaction.interaction_type as
                     | 'like'
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest) {
                   user_name:
                     partner2Profile.display_name ||
                     partner2Profile.email ||
-                    'Partner',
+                    'Household member',
                   user_email: partner2Profile.email || '',
                   interaction_type: partner2Interaction.interaction_type as
                     | 'like'

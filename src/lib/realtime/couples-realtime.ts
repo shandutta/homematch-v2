@@ -132,7 +132,7 @@ export class CouplesRealtime {
           .eq('id', interaction.user_id)
           .single()
         const userDisplayName =
-          profile?.display_name || profile?.email || 'Partner'
+          profile?.display_name || profile?.email || 'Household member'
 
         this.callbacks.onPartnerActivity({
           userId: interaction.user_id,
@@ -164,7 +164,7 @@ export class CouplesRealtime {
             .eq('id', interaction.user_id)
             .single()
           const userDisplayName =
-            profile?.display_name || profile?.email || 'Partner'
+            profile?.display_name || profile?.email || 'Household member'
 
           const { data: property } = await this.supabase
             .from('properties')
