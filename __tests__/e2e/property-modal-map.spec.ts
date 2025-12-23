@@ -1,8 +1,41 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page, type TestInfo } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+
+const MAPS_PROXY_ERROR_PATTERN =
+  /Google Maps JavaScript API error|RefererNotAllowedMapError|InvalidKeyMapError|ApiNotActivatedMapError/i
+
+const MAPS_STUB_SCRIPT = `
+  (function() {
+    window.google = window.google || {}
+    window.google.maps = window.google.maps || {}
+    window.google.maps.marker = window.google.maps.marker || {}
+    window.google.maps.marker.AdvancedMarkerElement = function() {
+      this.addListener = function() {}
+    }
+    window.google.maps.Map = function(el) {
+      if (el && !el.querySelector('.gm-style')) {
+        var node = document.createElement('div')
+        node.className = 'gm-style'
+        node.style.width = '100%'
+        node.style.height = '100%'
+        node.style.display = 'block'
+        el.appendChild(node)
+      }
+    }
+    window.google.maps.Marker = function() {
+      this.addListener = function() {}
+    }
+    window.google.maps.Size = function() {}
+    window.google.maps.Point = function() {}
+    window.google.maps.InfoWindow = function() {
+      this.open = function() {}
+    }
+    if (window.initGoogleMaps) window.initGoogleMaps()
+  })()
+`
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -45,6 +78,38 @@ async function getAuthUserIdByEmail(
   throw new Error(`Test user not found in auth: ${email}`)
 }
 
+function resolveBaseUrl(testInfo: TestInfo) {
+  return (
+    testInfo.project.use.baseURL ||
+    process.env.BASE_URL ||
+    process.env.PLAYWRIGHT_BASE_URL ||
+    'http://127.0.0.1:3000'
+  ).replace(/\/$/, '')
+}
+
+async function assertMapsProxyHealthy(page: Page, baseURL: string) {
+  const response = await page.request.get(`${baseURL}/api/maps/proxy-script`, {
+    headers: {
+      referer: `${baseURL}/dashboard`,
+    },
+  })
+
+  expect(response.ok()).toBe(true)
+
+  const body = await response.text()
+  expect(body).not.toMatch(MAPS_PROXY_ERROR_PATTERN)
+}
+
+async function stubGoogleMaps(page: Page) {
+  await page.route('**/api/maps/proxy-script*', (route: any) => {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: MAPS_STUB_SCRIPT,
+    })
+  })
+}
+
 test.describe('Property modal map', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     const { auth, testUser } = createWorkerAuthHelper(page, testInfo)
@@ -56,6 +121,9 @@ test.describe('Property modal map', () => {
     page,
   }, testInfo) => {
     getRequiredEnv('GOOGLE_MAPS_SERVER_API_KEY')
+    const baseURL = resolveBaseUrl(testInfo)
+    await assertMapsProxyHealthy(page, baseURL)
+    await stubGoogleMaps(page)
 
     const supabase = createServiceRoleClient()
     const { testUser } = createWorkerAuthHelper(page, testInfo)
@@ -143,6 +211,9 @@ test.describe('Property modal map', () => {
     page,
   }, testInfo) => {
     getRequiredEnv('GOOGLE_MAPS_SERVER_API_KEY')
+    const baseURL = resolveBaseUrl(testInfo)
+    await assertMapsProxyHealthy(page, baseURL)
+    await stubGoogleMaps(page)
 
     const supabase = createServiceRoleClient()
     const { testUser } = createWorkerAuthHelper(page, testInfo)
