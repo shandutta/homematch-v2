@@ -224,7 +224,7 @@ describe('PropertyDetailModal gallery', () => {
 
     expect(screen.queryByTestId('next-image')).not.toBeInTheDocument()
     expect(screen.queryByTestId('previous-image')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('image-counter')).not.toBeInTheDocument()
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 1')
     expect(screen.queryByTestId('image-dot-0')).not.toBeInTheDocument()
   })
 })

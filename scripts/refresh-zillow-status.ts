@@ -51,8 +51,7 @@ function parseArgs(argv: string[]): Args {
     raw.activeOnly != null ? raw.activeOnly === 'true' : defaults.activeOnly
 
   return {
-    limit:
-      limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
+    limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
     batchSize:
       Number.isFinite(batchSize) && batchSize > 0
         ? batchSize

@@ -15,15 +15,35 @@ type Row = {
 }
 
 function makeSupabaseStub(rows: Row[]) {
+  const chain: {
+    select: jest.Mock
+    eq: jest.Mock
+    order: jest.Mock
+    range: jest.Mock
+    upsert: jest.Mock
+  } = {
+    select: jest.fn(),
+    eq: jest.fn(),
+    order: jest.fn(),
+    range: jest.fn(),
+    upsert: jest.fn(async () => ({ error: null })),
+  }
+
   const range = jest.fn((from: number, to: number) => ({
     data: rows.slice(from, to + 1),
     error: null,
   }))
-  const order = jest.fn(() => ({ order, range }))
-  const select = jest.fn(() => ({ order }))
-  const upsert = jest.fn(async () => ({ error: null }))
-  const from = jest.fn(() => ({ select, order, range, upsert }))
-  return { client: { from }, upsert }
+  const order = jest.fn(() => chain)
+  const eq = jest.fn(() => chain)
+  const select = jest.fn(() => chain)
+
+  chain.select = select
+  chain.eq = eq
+  chain.order = order
+  chain.range = range
+
+  const from = jest.fn(() => ({ ...chain }))
+  return { client: { from }, upsert: chain.upsert }
 }
 
 describe('POST /api/admin/status-refresh', () => {

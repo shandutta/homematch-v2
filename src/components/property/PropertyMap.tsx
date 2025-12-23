@@ -209,6 +209,7 @@ export function PropertyMap({
       <div
         className={`relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
         style={{ minHeight: '128px' }}
+        data-testid="property-map"
       >
         <div ref={mapRef} className="absolute inset-0 rounded-lg" />
 

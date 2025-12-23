@@ -62,6 +62,7 @@ Before opening a PR:
 pnpm validate:deployment
 pnpm ingest:zillow
 pnpm refresh:zillow-status
+pnpm report:zillow-coverage
 pnpm auto:commit
 ```
 

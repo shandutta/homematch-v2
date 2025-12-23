@@ -64,7 +64,9 @@ describe('PropertyMap', () => {
   })
 
   it('initializes map when window.google is available', async () => {
-    const mapCtor = jest.fn().mockImplementation(() => ({}))
+    const mapCtor = jest.fn().mockImplementation(() => ({
+      setCenter: jest.fn(),
+    }))
     const markerCtor = jest.fn().mockImplementation(() => ({
       addListener: jest.fn(),
     }))
@@ -124,7 +126,9 @@ describe('PropertyMap', () => {
   it('includes mapId when configured (enables advanced markers)', async () => {
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = 'test-map-id'
 
-    const mapCtor = jest.fn().mockImplementation(() => ({}))
+    const mapCtor = jest.fn().mockImplementation(() => ({
+      setCenter: jest.fn(),
+    }))
     const markerCtor = jest.fn().mockImplementation(() => ({
       addListener: jest.fn(),
     }))

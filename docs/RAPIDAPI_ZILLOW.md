@@ -36,6 +36,7 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com
 - `scripts/refresh-zillow-status-detail.ts`
 - `scripts/fetch-zillow-images.ts`
 - `scripts/update-seed-zillow-images.ts`
+- `scripts/report-zillow-coverage.ts`
 
 ## Client Locations
 
@@ -49,6 +50,7 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com
 - Defaults target ~3 rps with headroom: ingestion delay is 350ms and status refresh delay is 350ms.
 - Prefer small batches when running ingestion or refresh scripts (override with `STATUS_DETAIL_DELAY_MS` if needed).
 - Status refresh defaults to `STATUS_REFRESH_MAX_ITEMS=600` (tune with query param `?limit=` or env).
+- Status refresh prioritizes active listings (`is_active=true`) and updates `updated_at` so each run rotates through the queue.
 
 ## Plan Math (Ultra)
 
@@ -89,6 +91,19 @@ Defaults:
 
 ## Cron Examples
 
+Suggested VPS cron schedule (Ultra, within budget):
+
+```cron
+# Daily ingestion (Newest) at 02:30
+30 2 * * * curl -sS -X POST "https://<host>/api/admin/ingest/zillow?sort=Newest&maxPages=10" -H "x-cron-secret: $ZILLOW_CRON_SECRET"
+
+# Daily status refresh (active listings only, 600 requests) at 03:10
+10 3 * * * curl -sS -X POST "https://<host>/api/admin/status-refresh?limit=600&delayMs=350" -H "x-cron-secret: $STATUS_REFRESH_CRON_SECRET"
+
+# Weekly coverage boost (Price_Low_High) Sunday at 04:00
+0 4 * * 0 curl -sS -X POST "https://<host>/api/admin/ingest/zillow?sort=Price_Low_High&maxPages=10" -H "x-cron-secret: $ZILLOW_CRON_SECRET"
+```
+
 Daily ingestion:
 
 ```bash
@@ -103,11 +118,24 @@ curl -X POST "https://<host>/api/admin/ingest/zillow?sort=Price_Low_High&maxPage
   -H "x-cron-secret: $ZILLOW_CRON_SECRET"
 ```
 
+Daily status refresh (active listings only, 600 requests):
+
+```bash
+curl -X POST "https://<host>/api/admin/status-refresh?limit=600&delayMs=350" \
+  -H "x-cron-secret: $STATUS_REFRESH_CRON_SECRET"
+```
+
 Local script (same idea):
 
 ```bash
 pnpm exec tsx scripts/ingest-zillow.ts --sort=Price_Low_High --maxPages=10
 ```
+
+## One-Time Backfill (Expanded Coverage)
+
+With 74 cities, the regular cron leaves ~1,800 requests/month. That is enough for a one-time extra sort (740 requests) or two (1,480 requests) without changing cron.
+
+If you want a deeper backfill (e.g., 3-4 extra sorts or price bands), temporarily pause the weekly sort or drop daily status refresh to `limit=500` for that month to stay under 45k.
 
 ## Related Docs
 

@@ -70,6 +70,7 @@
     "refresh:zillow-status:detail": "pnpm exec tsx scripts/refresh-zillow-status-detail.ts",
     "normalize:cities": "pnpm exec tsx scripts/normalize-cities.ts",
     "report:properties": "pnpm exec tsx scripts/report-properties.ts",
+    "report:zillow-coverage": "pnpm exec tsx scripts/report-zillow-coverage.ts",
     "cron:zombie-watch": "node scripts/zombie-watch.js",
     "cron:nightly-shutdown": "node scripts/nightly-shutdown.js"
   },
