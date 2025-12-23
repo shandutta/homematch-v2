@@ -15,9 +15,9 @@ if (!RAPIDAPI_KEY) {
   process.exit(1)
 }
 
-const BATCH_LIMIT = Number(process.env.STATUS_DETAIL_BATCH_LIMIT) || 120
-// Default pacing proven safe in prod (~600ms per request)
-const REQUEST_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 600
+const BATCH_LIMIT = Number(process.env.STATUS_DETAIL_BATCH_LIMIT) || 200
+// Default pacing aligned to the 3 rps RapidAPI limit (with headroom).
+const REQUEST_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 350
 
 type DetailsResponse = {
   homeStatus?: string
@@ -79,6 +79,7 @@ async function main() {
     .select(
       'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price'
     )
+    .eq('is_active', true)
     .order('updated_at', { ascending: true, nullsFirst: true })
     .limit(BATCH_LIMIT)
 
@@ -129,6 +130,7 @@ async function main() {
             : row.price,
         listing_status: norm.listing_status,
         is_active: norm.is_active,
+        updated_at: new Date().toISOString(),
       })
       await sleep(REQUEST_DELAY_MS)
     } catch (err) {

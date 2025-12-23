@@ -8,9 +8,9 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
 const CRON_SECRET =
   process.env.STATUS_REFRESH_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
 
-const DEFAULT_BATCH_SIZE = Number(process.env.STATUS_DETAIL_BATCH_LIMIT) || 60
-const DEFAULT_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 600
-const DEFAULT_MAX_ITEMS = Number(process.env.STATUS_REFRESH_MAX_ITEMS) || 430
+const DEFAULT_BATCH_SIZE = Number(process.env.STATUS_DETAIL_BATCH_LIMIT) || 80
+const DEFAULT_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 350
+const DEFAULT_MAX_ITEMS = Number(process.env.STATUS_REFRESH_MAX_ITEMS) || 600
 const DEFAULT_MAX_RUNTIME_MS =
   Number(process.env.STATUS_REFRESH_MAX_RUNTIME_MS) || 280_000
 const DEADLINE_BUFFER_MS = Number(
@@ -137,6 +137,7 @@ export async function POST(req: Request) {
       .select(
         'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
       )
+      .eq('is_active', true)
       .order('updated_at', { ascending: true, nullsFirst: true })
       .order('id', { ascending: true })
       .range(0, Math.min(batchSize, maxItems) - 1)
@@ -216,6 +217,7 @@ export async function POST(req: Request) {
                 : row.price,
             listing_status: norm.listing_status,
             is_active: norm.is_active,
+            updated_at: new Date().toISOString(),
           }
 
           const statusChanged =
@@ -261,6 +263,7 @@ export async function POST(req: Request) {
         .select(
           'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
         )
+        .eq('is_active', true)
         .order('updated_at', { ascending: true, nullsFirst: true })
         .order('id', { ascending: true })
         .range(offset, Math.min(offset + batchSize - 1, maxItems - 1))

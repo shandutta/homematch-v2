@@ -159,7 +159,7 @@ export interface MarketTrends {
 export class ZillowAPIClient {
   private baseURL = 'https://us-housing-market-data1.p.rapidapi.com'
   private apiKey: string
-  private rateLimitDelay = 2000 // 2 seconds between requests
+  private rateLimitDelay = 350 // ~3 rps with headroom
   private maxRetries = 3
 
   constructor(apiKey: string) {

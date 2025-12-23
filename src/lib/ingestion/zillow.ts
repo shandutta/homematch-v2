@@ -19,9 +19,9 @@ const ALLOWED_PROPERTY_TYPES = [
 type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
 
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
-const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 50
 const DEFAULT_MAX_PAGES = 10 // Expanded to capture more listings per location
-const DEFAULT_DELAY_MS = 400
+const DEFAULT_DELAY_MS = 350
 const MAX_INT_SAFE = 2_000_000_000
 const MAX_BATHROOMS = 9.9
 
@@ -83,10 +83,13 @@ type ZillowSearchResponse = {
   props?: ZillowSearchItem[]
   results?: ZillowSearchItem[]
   data?: { results?: ZillowSearchItem[] }
+  totalResultCount?: number
   totalCount?: number
   hasNextPage?: boolean
   page?: number
   totalPages?: number
+  resultsPerPage?: number
+  currentPage?: number
   pagination?: { totalPages?: number; currentPage?: number }
   [k: string]: unknown
 }
@@ -155,10 +158,16 @@ function hasAnotherPage(
   returnedCount: number
 ): boolean {
   if (typeof data.hasNextPage === 'boolean') return data.hasNextPage
+  const totalCount =
+    typeof data.totalCount === 'number'
+      ? data.totalCount
+      : typeof data.totalResultCount === 'number'
+        ? data.totalResultCount
+        : undefined
   const totalPages =
     data.totalPages ||
     data.pagination?.totalPages ||
-    Math.ceil((data.totalCount || 0) / pageSize)
+    (totalCount ? Math.ceil(totalCount / pageSize) : undefined)
   if (totalPages && !Number.isNaN(totalPages)) {
     return page < totalPages
   }

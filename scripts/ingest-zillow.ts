@@ -118,7 +118,7 @@ const DEFAULT_BAY_AREA_LOCATIONS = [
 function parseArgs(argv: string[]): Args {
   const defaults: Args = {
     locations: DEFAULT_BAY_AREA_LOCATIONS,
-    pageSize: 20,
+    pageSize: 50,
     maxPages: 10,
     debug: false,
     sort: 'Newest',

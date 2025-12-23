@@ -46,7 +46,9 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com
 
 - Expect rate limits based on your RapidAPI plan.
 - Use backoff for bulk jobs.
-- Prefer small batches when running ingestion or refresh scripts.
+- Defaults target ~3 rps with headroom: ingestion delay is 350ms and status refresh delay is 350ms.
+- Prefer small batches when running ingestion or refresh scripts (override with `STATUS_DETAIL_DELAY_MS` if needed).
+- Status refresh defaults to `STATUS_REFRESH_MAX_ITEMS=600` (tune with query param `?limit=` or env).
 
 ## Plan Math (Ultra)
 
@@ -54,18 +56,36 @@ Ultra plan limits (current): **45,000 requests/month** and **3 requests/second**
 
 Default Bay Area ingestion settings:
 
-- Locations: 74 cities (see defaults in `src/app/api/admin/ingest/zillow/route.ts`).
-- Max pages: 10 per location.
+Requests per run = `locations * maxPages` (pageSize doesn't change request count).
+Default `pageSize` is 50 (RapidAPI allows up to 50 results per page).
+
+With the full Bay Area list (74 cities in `src/app/api/admin/ingest/zillow/route.ts` and `.env.prod`):
+
 - Worst-case requests per run: `74 locations * 10 pages = 740` (per sort).
 
 Recommended schedule within budget:
 
-- Daily ingestion with `sort=Newest`: `740 * 30 ≈ 22,200` requests/month.
-- Weekly follow-up with `sort=Price_Low_High`: `740 * 4 ≈ 2,960` requests/month.
-- Daily status refresh via API route default limit (430): `430 * 30 ≈ 12,900` requests/month.
-- Total: ~38k requests/month, leaving ~7k for images, manual runs, or spikes.
+- Daily ingestion with `sort=Newest`: `740 * 30 ≈ 22,200`.
+- Daily status refresh via API route default limit (600): `600 * 30 ≈ 18,000`.
+- Weekly follow-up with `sort=Price_Low_High`: `740 * 4 ≈ 2,960`.
+- Total: ~43,160 requests/month, leaving ~1,800 for images, manual runs, or spikes.
 
-If you need more coverage, add another weekly sort rather than another daily run.
+If you need more coverage, add another weekly sort or expand `ZILLOW_LOCATIONS` before raising `maxPages`.
+
+## Coverage Check Script
+
+Goal: compare Supabase active listings by city vs RapidAPI `totalResultCount` for ForSale listings to spot ingestion gaps (low ratio) or stale actives (high ratio).
+
+```bash
+ENV_FILE=.env.prod pnpm exec tsx scripts/report-zillow-coverage.ts
+```
+
+Defaults:
+
+- Uses `ZILLOW_LOCATIONS`.
+- Treats `active` + `pending` as active.
+- Flags ratios `< 0.8` (missing coverage) or `> 1.3` (stale actives).
+- Costs ~1 request per city (~74 total).
 
 ## Cron Examples
 

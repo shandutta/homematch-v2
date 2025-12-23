@@ -34,7 +34,7 @@ const CITY_LIST = Array.from(
 const STATUSES = ['ForSale', 'RecentlySold'] as const
 const MAX_PAGES = 5
 const PAGE_SIZE = 50
-const DELAY_MS = 900 // stay under 2 rps with headroom
+const DELAY_MS = 350 // stay under 3 rps with headroom
 type PropertyUpdate = Database['public']['Tables']['properties']['Update']
 
 type SearchItem = {

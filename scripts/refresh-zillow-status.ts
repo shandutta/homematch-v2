@@ -18,6 +18,50 @@ if (!RAPIDAPI_KEY) {
 
 type DetailsResponse = { listingStatus?: string; price?: number }
 type PropertyUpdate = Database['public']['Tables']['properties']['Update']
+type Args = {
+  limit: number | null
+  batchSize: number
+  delayMs: number
+  activeOnly: boolean
+}
+
+function parseArgs(argv: string[]): Args {
+  const defaults: Args = {
+    limit: Number(process.env.STATUS_REFRESH_MAX_ITEMS) || 600,
+    batchSize: 25,
+    delayMs: Number(process.env.STATUS_DETAIL_DELAY_MS) || 350,
+    activeOnly: true,
+  }
+
+  const raw: Record<string, string> = {}
+  argv.slice(2).forEach((arg) => {
+    const [k, v] = arg.replace(/^--/, '').split('=')
+    if (k && v != null) raw[k] = v
+  })
+
+  const limit =
+    raw.limit != null
+      ? Number(raw.limit)
+      : raw.all === 'true'
+        ? null
+        : defaults.limit
+  const batchSize = raw.batchSize ? Number(raw.batchSize) : defaults.batchSize
+  const delayMs = raw.delayMs ? Number(raw.delayMs) : defaults.delayMs
+  const activeOnly =
+    raw.activeOnly != null ? raw.activeOnly === 'true' : defaults.activeOnly
+
+  return {
+    limit:
+      limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
+    batchSize:
+      Number.isFinite(batchSize) && batchSize > 0
+        ? batchSize
+        : defaults.batchSize,
+    delayMs:
+      Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : defaults.delayMs,
+    activeOnly,
+  }
+}
 
 function normalizeStatus(status?: string): {
   listing_status: string
@@ -51,18 +95,35 @@ async function fetchDetails(zpid: string) {
 }
 
 async function main() {
+  const args = parseArgs(process.argv)
   const supabase = createStandaloneClient()
-  const { data, error } = await supabase.from('properties').select('id, zpid')
+  let query = supabase
+    .from('properties')
+    .select('id, zpid')
+    .order('updated_at', { ascending: true, nullsFirst: true })
+    .order('id', { ascending: true })
+
+  if (args.activeOnly) {
+    query = query.eq('is_active', true)
+  }
+
+  if (args.limit != null) {
+    query = query.range(0, args.limit - 1)
+  }
+
+  const { data, error } = await query
 
   if (error || !data) {
     console.error('Failed to read properties', error?.message)
     process.exit(1)
   }
 
-  console.log(`Refreshing status for ${data.length} properties`)
+  console.log(
+    `Refreshing status for ${data.length} properties (limit=${args.limit ?? 'all'}, activeOnly=${args.activeOnly})`
+  )
 
-  const batchSize = 25
-  const requestDelayMs = Number(process.env.STATUS_DETAIL_DELAY_MS) || 400
+  const batchSize = args.batchSize
+  const requestDelayMs = args.delayMs
   const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
   for (let i = 0; i < data.length; i += batchSize) {
@@ -84,6 +145,7 @@ async function main() {
           listing_status: norm.listing_status,
           is_active: norm.is_active,
           price: normalizedPrice,
+          updated_at: new Date().toISOString(),
         })
       } catch (err) {
         console.warn(`details failed for ${zpid}: ${(err as Error).message}`)

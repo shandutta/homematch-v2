@@ -57,6 +57,54 @@ describe('/api/maps/proxy-script', () => {
     await expect(response.text()).resolves.toBe('/* maps bootstrap */')
   })
 
+  it('uses the origin header when referer is missing', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => '/* maps bootstrap */',
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    const request = new Request('https://homematch.pro/api/maps/proxy-script', {
+      headers: {
+        origin: 'https://homematch.pro',
+      },
+    })
+
+    const response = await GET(request)
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const [, options] = fetchMock.mock.calls[0] as [
+      string,
+      { headers?: Record<string, string> },
+    ]
+    expect(options.headers?.referer).toBe('https://homematch.pro/')
+    expect(response.status).toBe(200)
+  })
+
+  it('falls back to the request url when referrer headers are invalid', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => '/* maps bootstrap */',
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    const request = new Request('https://homematch.pro/api/maps/proxy-script', {
+      headers: {
+        referer: 'not-a-url',
+        origin: 'also-not-a-url',
+      },
+    })
+
+    await GET(request)
+
+    const [, options] = fetchMock.mock.calls[0] as [
+      string,
+      { headers?: Record<string, string> },
+    ]
+    expect(options.headers?.referer).toBe('https://homematch.pro/')
+  })
+
   it('includes the marker library when a map ID is configured', async () => {
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = 'test-map-id'
 
