@@ -160,4 +160,70 @@ test.describe('Settings all-cities sentinel', () => {
         .eq('id', userId)
     }
   })
+
+  test('collapses oversized neighborhood lists into the allCities sentinel', async ({
+    page,
+  }, testInfo) => {
+    const supabase = createServiceRoleClient()
+    const { testUser } = createWorkerAuthHelper(page, testInfo)
+    const userId = await getAuthUserIdByEmail(supabase, testUser.email)
+
+    const { data: existingProfile, error: existingProfileError } =
+      await supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', userId)
+        .single()
+    if (existingProfileError) throw new Error(existingProfileError.message)
+
+    const runId = crypto.randomUUID().slice(0, 8)
+    const neighborhoods = Array.from(
+      { length: ALL_CITIES_SENTINEL_THRESHOLD + 5 },
+      (_, index) => `pw-neighborhood-${runId}-${index}`
+    )
+
+    try {
+      const { error: updatePrefsError } = await supabase
+        .from('user_profiles')
+        .update({
+          preferences: {
+            allCities: false,
+            cities: [{ city: `PW City ${runId}`, state: 'CA' }],
+            neighborhoods,
+          },
+        })
+        .eq('id', userId)
+      if (updatePrefsError) throw new Error(updatePrefsError.message)
+
+      await page.goto(TEST_ROUTES.app.settings, {
+        waitUntil: 'domcontentloaded',
+      })
+
+      await expect(page.getByTestId('city-search')).toBeVisible()
+      await expect(page.getByTestId('city-search')).toBeDisabled({
+        timeout: 15000,
+      })
+      await expect(page.getByTestId('neighborhood-search')).toBeDisabled()
+      await expect(
+        page.getByText(
+          'Neighborhood filtering is disabled when all cities are selected.'
+        )
+      ).toBeVisible()
+
+      await waitForUserPreferences(supabase, userId, (preferences) => {
+        return (
+          preferences?.allCities === true &&
+          Array.isArray(preferences?.cities) &&
+          preferences.cities.length === 0 &&
+          Array.isArray(preferences?.neighborhoods) &&
+          preferences.neighborhoods.length === 0
+        )
+      })
+    } finally {
+      await supabase
+        .from('user_profiles')
+        .update({ preferences: existingProfile?.preferences ?? null })
+        .eq('id', userId)
+    }
+  })
 })

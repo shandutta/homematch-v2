@@ -3,11 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { PreferencesSection } from '@/components/settings/PreferencesSection'
 import { UserServiceClient } from '@/lib/services/users-client'
 import {
+  ALL_CITIES_SENTINEL_THRESHOLD,
   DEFAULT_BATHROOMS,
   DEFAULT_BEDROOMS,
   DEFAULT_PRICE_RANGE,
   DEFAULT_SEARCH_RADIUS,
 } from '@/lib/constants/preferences'
+import { LocationsClient } from '@/lib/services/locations-client'
 import { toast } from 'sonner'
 import { mockNextRouter } from '../../../utils/mock-helpers'
 
@@ -16,6 +18,12 @@ jest.mock('@/lib/services/users-client', () => ({
   UserServiceClient: {
     updateUserProfile: jest.fn(),
     createSavedSearch: jest.fn(),
+  },
+}))
+jest.mock('@/lib/services/locations-client', () => ({
+  LocationsClient: {
+    getCities: jest.fn(),
+    getNeighborhoodsForCities: jest.fn(),
   },
 }))
 jest.mock('sonner', () => ({
@@ -72,6 +80,8 @@ beforeAll(() => {
 describe('PreferencesSection', () => {
   let mockUpdateUserProfile: jest.Mock
   let mockCreateSavedSearch: jest.Mock
+  let mockGetCities: jest.Mock
+  let mockGetNeighborhoodsForCities: jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -83,6 +93,14 @@ describe('PreferencesSection', () => {
       .mockResolvedValue({
         id: 'search-1',
       } as any)
+    mockGetCities = LocationsClient.getCities as jest.Mock
+    mockGetNeighborhoodsForCities =
+      LocationsClient.getNeighborhoodsForCities as jest.Mock
+    mockGetCities.mockResolvedValue([
+      { city: 'Austin', state: 'TX' },
+      { city: 'Dallas', state: 'TX' },
+    ])
+    mockGetNeighborhoodsForCities.mockResolvedValue([])
   })
 
   afterEach(() => {
@@ -359,6 +377,101 @@ describe('PreferencesSection', () => {
         }),
       })
     })
+  })
+
+  it('promotes oversized city selections to all cities', async () => {
+    const cities = Array.from(
+      { length: ALL_CITIES_SENTINEL_THRESHOLD },
+      (_, index) => ({
+        city: `City ${index}`,
+        state: 'CA',
+      })
+    )
+    const profileWithManyCities = {
+      ...mockProfile,
+      preferences: {
+        ...mockProfile.preferences,
+        allCities: false,
+        cities,
+        neighborhoods: [],
+      },
+    }
+
+    render(
+      <PreferencesSection user={mockUser} profile={profileWithManyCities} />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('city-search')).toBeDisabled()
+    })
+
+    expect(mockGetNeighborhoodsForCities).not.toHaveBeenCalled()
+    expect(
+      screen.getByText(
+        'Neighborhood filtering is disabled when all cities are selected.'
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('promotes oversized neighborhood selections to all cities', async () => {
+    const neighborhoods = Array.from(
+      { length: ALL_CITIES_SENTINEL_THRESHOLD },
+      (_, index) => `neighborhood-${index}`
+    )
+    const profileWithManyNeighborhoods = {
+      ...mockProfile,
+      preferences: {
+        ...mockProfile.preferences,
+        allCities: false,
+        cities: [{ city: 'Austin', state: 'TX' }],
+        neighborhoods,
+      },
+    }
+
+    render(
+      <PreferencesSection
+        user={mockUser}
+        profile={profileWithManyNeighborhoods}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('city-search')).toBeDisabled()
+    })
+
+    expect(mockGetNeighborhoodsForCities).not.toHaveBeenCalled()
+    expect(
+      screen.getByText(
+        'Neighborhood filtering is disabled when all cities are selected.'
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('loads neighborhoods when selection is below the sentinel threshold', async () => {
+    const profileWithCities = {
+      ...mockProfile,
+      preferences: {
+        ...mockProfile.preferences,
+        allCities: false,
+        cities: [
+          { city: 'Austin', state: 'TX' },
+          { city: 'Dallas', state: 'TX' },
+        ],
+        neighborhoods: [],
+      },
+    }
+
+    render(<PreferencesSection user={mockUser} profile={profileWithCities} />)
+
+    await waitFor(() => {
+      expect(mockGetNeighborhoodsForCities).toHaveBeenCalled()
+    })
+
+    expect(mockGetNeighborhoodsForCities).toHaveBeenCalledWith([
+      { city: 'Austin', state: 'TX' },
+      { city: 'Dallas', state: 'TX' },
+    ])
+    expect(screen.getByTestId('neighborhood-search')).not.toBeDisabled()
   })
 
   it('redirects to the dashboard after saving a search', async () => {

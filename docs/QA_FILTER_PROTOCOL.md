@@ -67,6 +67,7 @@ For each step below, verify a sampled address appears (or disappears) in `/dashb
    - City search disables and shows “All cities selected”.
    - Neighborhood list is disabled (no loading spinner for a full city list).
    - Dashboard still returns results without hanging.
+6. If a profile has 200+ cities or neighborhoods (legacy prefs), confirm the UI auto-switches to “All cities” and clears selections without a long neighborhood fetch.
 
 ### Price Range
 
