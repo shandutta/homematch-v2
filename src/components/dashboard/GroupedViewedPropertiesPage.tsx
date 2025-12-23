@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -15,16 +15,19 @@ import { Button } from '@/components/ui/button'
 import { Heart, HeartOff, History, X } from 'lucide-react'
 import { InFeedAd } from '@/components/ads/InFeedAd'
 import { Property } from '@/lib/schemas/property'
+import { cn } from '@/lib/utils'
 
 /** Insert an ad after every N property cards within each section */
 const AD_FREQUENCY = 6
 const MIN_CONTENT_FOR_ADS = AD_FREQUENCY + 2
 
+type ViewedSectionType = 'liked' | 'skip' | 'viewed-only'
+
 interface PropertySectionProps {
   title: string
   description: string
   properties: Property[]
-  type: 'liked' | 'skip' | 'viewed-only'
+  type: ViewedSectionType
   pendingPropertyId: string | null
   setPendingPropertyId: React.Dispatch<React.SetStateAction<string | null>>
   pendingDecisionId: string | null
@@ -227,7 +230,11 @@ function PropertySection({
   }
 
   return (
-    <section data-testid={`section-${type}`} className="space-y-4">
+    <section
+      id={`section-${type}`}
+      data-testid={`section-${type}`}
+      className="space-y-4"
+    >
       <div>
         <h2 className="font-display text-hm-stone-200 text-xl font-medium tracking-tight sm:text-2xl">
           {title}
@@ -298,6 +305,40 @@ export function GroupedViewedPropertiesPage() {
   const viewedOnlyProperties = allViewedProperties.filter(
     (p) => !likedIds.has(p.id) && !passedIds.has(p.id)
   )
+
+  const likedCount = likedProperties.length
+  const passedCount = passedProperties.length
+  const viewedOnlyCount = viewedOnlyProperties.length
+
+  const defaultSection: ViewedSectionType = likedCount
+    ? 'liked'
+    : passedCount
+      ? 'skip'
+      : viewedOnlyCount
+        ? 'viewed-only'
+        : 'liked'
+
+  const [activeSection, setActiveSection] = useState<ViewedSectionType>(
+    () => defaultSection
+  )
+
+  useEffect(() => {
+    if (
+      (activeSection === 'liked' && likedCount > 0) ||
+      (activeSection === 'skip' && passedCount > 0) ||
+      (activeSection === 'viewed-only' && viewedOnlyCount > 0)
+    ) {
+      return
+    }
+
+    if (likedCount > 0) {
+      setActiveSection('liked')
+    } else if (passedCount > 0) {
+      setActiveSection('skip')
+    } else if (viewedOnlyCount > 0) {
+      setActiveSection('viewed-only')
+    }
+  }, [activeSection, likedCount, passedCount, viewedOnlyCount])
 
   const isLoading =
     likedQuery.isLoading || passedQuery.isLoading || viewedQuery.isLoading
@@ -375,32 +416,85 @@ export function GroupedViewedPropertiesPage() {
         </div>
       ) : (
         <>
+          <div className="sm:hidden">
+            <div className="flex w-full items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
+              {[
+                { id: 'liked', label: 'Liked', count: likedCount },
+                { id: 'skip', label: 'Passed', count: passedCount },
+                {
+                  id: 'viewed-only',
+                  label: 'Undecided',
+                  count: viewedOnlyCount,
+                },
+              ].map((section) => {
+                const isActive = activeSection === section.id
+                const isDisabled = section.count === 0
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() =>
+                      setActiveSection(section.id as ViewedSectionType)
+                    }
+                    disabled={isDisabled}
+                    aria-pressed={isActive}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition',
+                      isActive
+                        ? 'bg-white/10 text-white shadow-inner'
+                        : 'text-hm-stone-400 hover:text-hm-stone-200',
+                      isDisabled && 'cursor-not-allowed opacity-50'
+                    )}
+                  >
+                    <span>{section.label}</span>
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[11px]',
+                        isActive ? 'bg-white/20' : 'bg-white/10'
+                      )}
+                    >
+                      {section.count}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Section 1: Liked Properties */}
-          <PropertySection
-            title="Liked Properties"
-            description="Properties you've liked. Click to remove from likes."
-            properties={likedProperties}
-            type="liked"
-            {...sharedSectionProps}
-          />
+          <div className={cn(activeSection !== 'liked' && 'hidden sm:block')}>
+            <PropertySection
+              title="Liked Properties"
+              description="Properties you've liked. Click to remove from likes."
+              properties={likedProperties}
+              type="liked"
+              {...sharedSectionProps}
+            />
+          </div>
 
           {/* Section 2: Passed Properties */}
-          <PropertySection
-            title="Passed Properties"
-            description="Properties you've passed on. Click to like instead."
-            properties={passedProperties}
-            type="skip"
-            {...sharedSectionProps}
-          />
+          <div className={cn(activeSection !== 'skip' && 'hidden sm:block')}>
+            <PropertySection
+              title="Passed Properties"
+              description="Properties you've passed on. Click to like instead."
+              properties={passedProperties}
+              type="skip"
+              {...sharedSectionProps}
+            />
+          </div>
 
           {/* Section 3: Viewed Only (not liked or passed) */}
-          <PropertySection
-            title="Undecided"
-            description="Homes you've seen but haven't decided on yet."
-            properties={viewedOnlyProperties}
-            type="viewed-only"
-            {...sharedSectionProps}
-          />
+          <div
+            className={cn(activeSection !== 'viewed-only' && 'hidden sm:block')}
+          >
+            <PropertySection
+              title="Undecided"
+              description="Homes you've seen but haven't decided on yet."
+              properties={viewedOnlyProperties}
+              type="viewed-only"
+              {...sharedSectionProps}
+            />
+          </div>
 
           {hasNextPage && (
             <div className="mt-12 text-center">

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PropertyDetailModal } from '@/components/property/PropertyDetailModal'
 import type { Property, Neighborhood } from '@/lib/schemas/property'
@@ -236,5 +236,36 @@ describe('PropertyDetailModal', () => {
 
     expect(screen.getByTestId('pass-button')).toBeInTheDocument()
     expect(screen.getByTestId('like-button')).toBeInTheDocument()
+  })
+
+  it('advances the gallery on horizontal swipe', () => {
+    const propertyWithImages: Property = {
+      ...mockProperty,
+      images: [
+        '/images/properties/house-1.svg',
+        '/images/properties/house-2.svg',
+      ],
+    }
+
+    render(
+      <PropertyDetailModal
+        property={propertyWithImages}
+        neighborhood={mockNeighborhood}
+        open={true}
+        onOpenChange={jest.fn()}
+      />
+    )
+
+    const carousel = screen.getByTestId('property-image-carousel')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 2')
+
+    fireEvent.touchStart(carousel, {
+      touches: [{ clientX: 200, clientY: 120 }],
+    })
+    fireEvent.touchEnd(carousel, {
+      changedTouches: [{ clientX: 80, clientY: 120 }],
+    })
+
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('2 / 2')
   })
 })

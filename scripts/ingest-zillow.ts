@@ -6,6 +6,7 @@
  * Usage examples:
  *   pnpm exec tsx scripts/ingest-zillow.ts --locations="San Francisco, CA;Oakland, CA" --pageSize=25 --maxPages=2
  *   pnpm exec tsx scripts/ingest-zillow.ts --location="San Francisco, CA" --maxPages=1
+ *   pnpm exec tsx scripts/ingest-zillow.ts --sort=Price_Low_High --maxPages=5
  */
 
 import { config } from 'dotenv'
@@ -17,7 +18,7 @@ if (envFile !== '.env.local') {
 }
 config()
 
-import { ingestZillowLocations } from '@/lib/ingestion/zillow'
+import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createClient } from '@/lib/supabase/standalone'
 
 type Args = {
@@ -25,7 +26,17 @@ type Args = {
   pageSize: number
   maxPages: number
   debug: boolean
+  sort: ZillowSortOption
 }
+
+const VALID_SORT_OPTIONS: ZillowSortOption[] = [
+  'Newest',
+  'Price_High_Low',
+  'Price_Low_High',
+  'Beds',
+  'Baths',
+  'Square_Feet',
+]
 
 const DEFAULT_BAY_AREA_LOCATIONS = [
   'San Francisco, CA',
@@ -110,6 +121,7 @@ function parseArgs(argv: string[]): Args {
     pageSize: 20,
     maxPages: 10,
     debug: false,
+    sort: 'Newest',
   }
 
   const args: Record<string, string> = {}
@@ -135,18 +147,32 @@ function parseArgs(argv: string[]): Args {
   const debug = Boolean(
     args.debug && ['1', 'true', 'yes'].includes(args.debug.toLowerCase())
   )
+  const sortRaw = args.sort || process.env.ZILLOW_SORT
+  const sort = sortRaw
+    ? VALID_SORT_OPTIONS.includes(sortRaw as ZillowSortOption)
+      ? (sortRaw as ZillowSortOption)
+      : defaults.sort
+    : defaults.sort
+
+  if (sortRaw && sortRaw !== sort) {
+    console.warn(
+      `[ingest-zillow] Unknown sort "${sortRaw}". Falling back to "${sort}".`
+    )
+  }
 
   return {
     locations,
     pageSize:
       Number.isFinite(pageSize) && pageSize > 0 ? pageSize : defaults.pageSize,
-    maxPages: Number.isFinite(maxPages) && maxPages > 0 ? maxPages : 50, // 50 ~ "until hasNextPage ends" safety cap
+    maxPages:
+      Number.isFinite(maxPages) && maxPages > 0 ? maxPages : defaults.maxPages,
     debug,
+    sort,
   }
 }
 
 async function main() {
-  const { locations, pageSize, maxPages, debug } = parseArgs(process.argv)
+  const { locations, pageSize, maxPages, debug, sort } = parseArgs(process.argv)
 
   const rapidApiKey = process.env.RAPIDAPI_KEY
   const rapidApiHost =
@@ -159,7 +185,7 @@ async function main() {
   const supabase = createClient()
 
   console.log(
-    `[ingest-zillow] Starting ingestion for ${locations.join(', ')} (pageSize=${pageSize}, maxPages=${maxPages})`
+    `[ingest-zillow] Starting ingestion for ${locations.join(', ')} (pageSize=${pageSize}, maxPages=${maxPages}, sort=${sort})`
   )
 
   const summary = await ingestZillowLocations({
@@ -170,6 +196,7 @@ async function main() {
     pageSize,
     maxPages,
     debug,
+    sort,
   })
 
   console.log('[ingest-zillow] Finished.')

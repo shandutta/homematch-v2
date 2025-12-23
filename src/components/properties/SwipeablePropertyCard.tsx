@@ -276,7 +276,7 @@ export function SwipeablePropertyCard({
                   property={property}
                   disableDetailModal
                   fullHeight
-                  enableDetailsToggle
+                  showMap={false}
                 />
               </div>
             </MotionDiv>
@@ -314,7 +314,7 @@ export function SwipeablePropertyCard({
               imagePriority
               disableDetailModal
               fullHeight
-              enableDetailsToggle
+              showMap={false}
             />
 
             {/* Decision Overlays */}
@@ -430,7 +430,7 @@ export function SwipeablePropertyCard({
                   property={leavingCard.property}
                   disableDetailModal
                   fullHeight
-                  enableDetailsToggle
+                  showMap={false}
                 />
               </div>
             </MotionDiv>
@@ -439,47 +439,49 @@ export function SwipeablePropertyCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-6 md:-bottom-2">
-        <MotionButton
-          onClick={() => swipeCard('left')}
-          className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
-          motionProps={{
-            whileHover: { scale: 1.1 },
-            whileTap: { scale: 0.95 },
-          }}
-          aria-label="Pass on this property"
-          type="button"
-        >
-          <X size={24} strokeWidth={2.5} />
-        </MotionButton>
-
-        {onUndo && (
+      <div className="safe-area-bottom pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-4 pb-4 md:pb-3">
+        <div className="bg-hm-obsidian-900/90 pointer-events-auto flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
           <MotionButton
-            onClick={onUndo}
-            className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+            onClick={() => swipeCard('left')}
+            className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
             motionProps={{
               whileHover: { scale: 1.1 },
               whileTap: { scale: 0.95 },
             }}
-            aria-label="Undo last action"
+            aria-label="Pass on this property"
             type="button"
           >
-            <RotateCcw size={18} strokeWidth={2.5} />
+            <X size={24} strokeWidth={2.5} />
           </MotionButton>
-        )}
 
-        <MotionButton
-          onClick={() => swipeCard('right')}
-          className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
-          motionProps={{
-            whileHover: { scale: 1.1 },
-            whileTap: { scale: 0.95 },
-          }}
-          aria-label="Like this property"
-          type="button"
-        >
-          <Heart size={24} strokeWidth={2.5} />
-        </MotionButton>
+          {onUndo && (
+            <MotionButton
+              onClick={onUndo}
+              className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+              motionProps={{
+                whileHover: { scale: 1.1 },
+                whileTap: { scale: 0.95 },
+              }}
+              aria-label="Undo last action"
+              type="button"
+            >
+              <RotateCcw size={18} strokeWidth={2.5} />
+            </MotionButton>
+          )}
+
+          <MotionButton
+            onClick={() => swipeCard('right')}
+            className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+            motionProps={{
+              whileHover: { scale: 1.1 },
+              whileTap: { scale: 0.95 },
+            }}
+            aria-label="Like this property"
+            type="button"
+          >
+            <Heart size={24} strokeWidth={2.5} />
+          </MotionButton>
+        </div>
       </div>
     </div>
   )

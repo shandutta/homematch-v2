@@ -1,6 +1,6 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 import React from 'react'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { GroupedViewedPropertiesPage } from '@/components/dashboard/GroupedViewedPropertiesPage'
 import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
@@ -183,10 +183,14 @@ describe('GroupedViewedPropertiesPage', () => {
       expect(screen.getByTestId('section-viewed-only')).toBeTruthy()
 
       // Check section titles (using getAllByText for "Viewed Properties" since page title also uses it)
-      expect(screen.getByText('Liked Properties')).toBeTruthy()
-      expect(screen.getByText('Passed Properties')).toBeTruthy()
+      const likedSection = screen.getByTestId('section-liked')
+      const passedSection = screen.getByTestId('section-skip')
+      const viewedOnlySection = screen.getByTestId('section-viewed-only')
+
+      expect(within(likedSection).getByText('Liked Properties')).toBeTruthy()
+      expect(within(passedSection).getByText('Passed Properties')).toBeTruthy()
       expect(screen.getByText('Viewed Properties')).toBeTruthy()
-      expect(screen.getByText('Undecided')).toBeTruthy()
+      expect(within(viewedOnlySection).getByText('Undecided')).toBeTruthy()
     })
 
     it('does not render empty sections', () => {

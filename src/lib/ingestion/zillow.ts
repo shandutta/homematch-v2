@@ -21,7 +21,7 @@ type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 20
 const DEFAULT_MAX_PAGES = 10 // Expanded to capture more listings per location
-const DEFAULT_DELAY_MS = 1250
+const DEFAULT_DELAY_MS = 400
 const MAX_INT_SAFE = 2_000_000_000
 const MAX_BATHROOMS = 9.9
 

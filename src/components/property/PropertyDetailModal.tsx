@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { TouchEvent } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import {
   Dialog,
@@ -84,6 +85,7 @@ export function PropertyDetailModal({
     neighborhoodData?.id || property?.neighborhood_id || undefined
   )
   const [isMapExpanded, setIsMapExpanded] = useState(false)
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     setCurrentImageIndex(0)
@@ -116,6 +118,39 @@ export function PropertyDetailModal({
   const showPreviousImage = () => {
     if (!hasMultipleImages) return
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
+  const handleImageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!hasMultipleImages) return
+    const touch = event.touches[0]
+    if (!touch) return
+    swipeStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const handleImageTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (!hasMultipleImages || !swipeStartRef.current) return
+    const touch = event.changedTouches[0]
+    if (!touch) return
+
+    const deltaX = touch.clientX - swipeStartRef.current.x
+    const deltaY = touch.clientY - swipeStartRef.current.y
+    swipeStartRef.current = null
+
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
+    const threshold = 40
+
+    if (absX < threshold || absX < absY) return
+
+    if (deltaX < 0) {
+      showNextImage()
+    } else {
+      showPreviousImage()
+    }
+  }
+
+  const handleImageTouchCancel = () => {
+    swipeStartRef.current = null
   }
 
   const formatPrice = (price: number) => {
@@ -151,7 +186,13 @@ export function PropertyDetailModal({
             className="min-h-0 flex-1 overflow-y-auto"
             data-testid="property-detail-scroll"
           >
-            <div className="relative aspect-video w-full">
+            <div
+              className="relative aspect-video w-full touch-pan-y"
+              data-testid="property-image-carousel"
+              onTouchStart={handleImageTouchStart}
+              onTouchEnd={handleImageTouchEnd}
+              onTouchCancel={handleImageTouchCancel}
+            >
               <PropertyImage
                 src={currentImage || images}
                 alt={property.address || 'Property'}

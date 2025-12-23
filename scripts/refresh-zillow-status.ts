@@ -62,34 +62,34 @@ async function main() {
   console.log(`Refreshing status for ${data.length} properties`)
 
   const batchSize = 25
+  const requestDelayMs = Number(process.env.STATUS_DETAIL_DELAY_MS) || 400
   const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize)
     const updates: PropertyUpdate[] = []
 
-    await Promise.all(
-      batch.map(async (row) => {
-        const zpid = (row.zpid as string | null) || ''
-        if (!zpid) return
-        try {
-          const details = await fetchDetails(zpid)
-          const norm = normalizeStatus(details?.listingStatus)
-          const normalizedPrice: number | undefined =
-            typeof details?.price === 'number'
-              ? Math.round(details.price)
-              : undefined
-          updates.push({
-            id: row.id as string,
-            listing_status: norm.listing_status,
-            is_active: norm.is_active,
-            price: normalizedPrice,
-          })
-        } catch (err) {
-          console.warn(`details failed for ${zpid}: ${(err as Error).message}`)
-        }
-      })
-    )
+    for (const row of batch) {
+      const zpid = (row.zpid as string | null) || ''
+      if (!zpid) continue
+      try {
+        const details = await fetchDetails(zpid)
+        const norm = normalizeStatus(details?.listingStatus)
+        const normalizedPrice: number | undefined =
+          typeof details?.price === 'number'
+            ? Math.round(details.price)
+            : undefined
+        updates.push({
+          id: row.id as string,
+          listing_status: norm.listing_status,
+          is_active: norm.is_active,
+          price: normalizedPrice,
+        })
+      } catch (err) {
+        console.warn(`details failed for ${zpid}: ${(err as Error).message}`)
+      }
+      await delay(requestDelayMs)
+    }
 
     if (updates.length > 0) {
       const { error: upErr } = await supabase
@@ -107,7 +107,7 @@ async function main() {
     }
 
     // Gentle pacing
-    await delay(1200)
+    await delay(requestDelayMs)
   }
 
   console.log('Status refresh completed.')
