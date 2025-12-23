@@ -24,6 +24,7 @@ import {
 } from '@/lib/services/locations-client'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import {
+  ALL_CITIES_SENTINEL_THRESHOLD,
   DEFAULT_BATHROOMS,
   DEFAULT_BEDROOMS,
   DEFAULT_PRICE_RANGE,
@@ -295,10 +296,35 @@ export function PreferencesSection({
         return
       }
 
+      if (citiesLoading && availableCities.length === 0) {
+        setNeighborhoodsLoading(false)
+        return
+      }
+
       if (selectedCities.length === 0) {
         setAvailableNeighborhoods([])
         setSelectedNeighborhoods([])
         autoSelectedCitiesRef.current.clear()
+        setNeighborhoodsLoading(false)
+        return
+      }
+
+      const shouldPromoteAllCities =
+        selectedNeighborhoods.length === 0 &&
+        (selectedCities.length >= ALL_CITIES_SENTINEL_THRESHOLD ||
+          (availableCities.length > 0 &&
+            selectedCities.length >= availableCities.length))
+
+      if (shouldPromoteAllCities) {
+        setAllCities(true)
+        setSelectedCities([])
+        setSelectedNeighborhoods([])
+        setAvailableNeighborhoods([])
+        autoSelectedCitiesRef.current.clear()
+        setShowSelectedCitiesOnly(false)
+        setShowSelectedNeighborhoodsOnly(false)
+        setCitySearch('')
+        setNeighborhoodSearch('')
         setNeighborhoodsLoading(false)
         return
       }
@@ -326,7 +352,13 @@ export function PreferencesSection({
     return () => {
       cancelled = true
     }
-  }, [allCities, selectedCities])
+  }, [
+    allCities,
+    availableCities.length,
+    citiesLoading,
+    selectedCities,
+    selectedNeighborhoods.length,
+  ])
 
   useEffect(() => {
     if (allCities) return
@@ -407,6 +439,7 @@ export function PreferencesSection({
     setAvailableNeighborhoods([])
     autoSelectedCitiesRef.current.clear()
     setShowSelectedCitiesOnly(false)
+    setShowSelectedNeighborhoodsOnly(false)
     setCitySearch('')
     setNeighborhoodSearch('')
   }
@@ -418,6 +451,7 @@ export function PreferencesSection({
     setAvailableNeighborhoods([])
     autoSelectedCitiesRef.current.clear()
     setShowSelectedCitiesOnly(false)
+    setShowSelectedNeighborhoodsOnly(false)
     setCitySearch('')
     setNeighborhoodSearch('')
   }

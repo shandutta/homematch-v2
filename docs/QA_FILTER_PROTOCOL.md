@@ -15,8 +15,9 @@
 
 1. Log in to prod.
 2. Go to `Settings → Preferences`.
-3. Click `Reset filters` and wait for auto-save to complete.
-4. Open `/dashboard` in a new tab and confirm cards load.
+3. Confirm the `Account` tab loads without the error boundary.
+4. Click `Reset filters` and wait for auto-save to complete.
+5. Open `/dashboard` in a new tab and confirm cards load.
 
 ## Data Sampling (SQL)
 
@@ -62,6 +63,10 @@ For each step below, verify a sampled address appears (or disappears) in `/dashb
 2. In `Settings`, select each city one at a time; verify at least one sampled address appears in `/dashboard`.
 3. Select 2–3 neighborhoods within a city and verify results narrow accordingly.
 4. Clear neighborhoods and ensure city-level results return.
+5. Click `Select all` for cities and confirm:
+   - City search disables and shows “All cities selected”.
+   - Neighborhood list is disabled (no loading spinner for a full city list).
+   - Dashboard still returns results without hanging.
 
 ### Price Range
 
@@ -92,6 +97,12 @@ For each step below, verify a sampled address appears (or disappears) in `/dashb
 2. Confirm locations cleared, price/beds/baths restored to defaults.
 3. Reload `/dashboard` and verify results are broad again.
 
+### Interaction Reset (to expand catalog)
+
+1. Go to `Settings → Account`.
+2. Click `Reset stats` (clears likes/passes/views).
+3. Return to `/dashboard` and verify new cards appear.
+
 ## Catalog Coverage Sampling
 
 Goal: validate a few hundred properties across the catalog.
@@ -104,6 +115,7 @@ Goal: validate a few hundred properties across the catalog.
 
 - The dashboard currently loads a single page of results (no pagination). Full-catalog validation requires iterating filters and refreshing.
 - If you need to see new properties, use `Settings → Account → Clear all likes, passes, and views`, then reload `/dashboard`.
+- The `Select all` cities flow should not issue a giant OR filter for neighborhoods (use DevTools if available).
 
 ## Report Template
 

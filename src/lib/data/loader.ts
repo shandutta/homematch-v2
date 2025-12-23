@@ -6,7 +6,10 @@ import {
   type PropertyFilters,
   type PropertyType,
 } from '@/lib/schemas/property'
-import { DEFAULT_PRICE_RANGE } from '@/lib/constants/preferences'
+import {
+  ALL_CITIES_SENTINEL_THRESHOLD,
+  DEFAULT_PRICE_RANGE,
+} from '@/lib/constants/preferences'
 
 export interface DashboardData {
   properties: Property[]
@@ -39,9 +42,15 @@ export function buildPropertyFiltersFromPreferences(
 
   const prefs = userPreferences || {}
 
+  const cityCount = prefs.cities?.length ?? 0
+  const treatAsAllCities =
+    Boolean(prefs.allCities) ||
+    (cityCount >= ALL_CITIES_SENTINEL_THRESHOLD &&
+      (!prefs.neighborhoods || prefs.neighborhoods.length === 0))
+
   if (prefs.neighborhoods && prefs.neighborhoods.length > 0) {
     filters.neighborhoods = prefs.neighborhoods
-  } else if (!prefs.allCities && prefs.cities && prefs.cities.length > 0) {
+  } else if (!treatAsAllCities && prefs.cities && prefs.cities.length > 0) {
     filters.cities = prefs.cities
   }
 
