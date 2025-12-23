@@ -9,7 +9,7 @@ export const CouplesMessages = {
     new: 'Welcome to HomeMatch! Find a place that works for everyone.',
     returning: 'Welcome back',
     dashboard: 'Find a place that works for everyone',
-    subtitle: 'Swipe, match, and move forward together',
+    subtitle: 'Swipe, compare, and move forward together',
   },
 
   // Dashboard Headers

@@ -47,7 +47,7 @@ describe('MobileBottomNav', () => {
       'href',
       '/dashboard/passed'
     )
-    expect(screen.getByRole('link', { name: 'Matches' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Shared Likes' })).toHaveAttribute(
       'href',
       '/couples'
     )
@@ -70,11 +70,11 @@ describe('MobileBottomNav', () => {
     )
   })
 
-  it('treats /couples subroutes as active for Matches', () => {
+  it('treats /couples subroutes as active for Shared Likes', () => {
     mockUsePathname.mockReturnValue('/couples/decisions')
     render(<MobileBottomNav />)
 
-    expect(screen.getByRole('link', { name: 'Matches' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Shared Likes' })).toHaveAttribute(
       'aria-current',
       'page'
     )

@@ -262,7 +262,7 @@ export function NotificationsSection({
       options: [
         {
           key: 'newMatches',
-          label: 'New matches',
+          label: 'New listing matches',
           helper: 'Be first to know when inventory hits your filters',
         },
         {

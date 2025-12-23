@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
   },
   {
     href: '/couples',
-    label: 'Matches',
+    label: 'Shared Likes',
     icon: HeartHandshake,
     isActive: (pathname) =>
       pathname === '/couples' ||

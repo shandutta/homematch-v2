@@ -285,7 +285,7 @@ test.describe('UI regressions', () => {
     const viewedLink = page.getByRole('link', { name: 'Viewed' })
     const likedLink = page.getByRole('link', { name: 'Liked' })
     const passedLink = page.getByRole('link', { name: 'Passed' })
-    const matchesLink = page.getByRole('link', { name: 'Matches' })
+    const matchesLink = page.getByRole('link', { name: 'Shared Likes' })
 
     await page.goto('/dashboard/viewed', { waitUntil: 'domcontentloaded' })
     await expect(viewedLink).toHaveAttribute('aria-current', 'page')

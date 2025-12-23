@@ -76,7 +76,7 @@ describe('Header', () => {
       'href',
       '/dashboard/passed'
     )
-    expect(screen.getByRole('link', { name: /Matches/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Shared Likes/i })).toHaveAttribute(
       'href',
       '/couples'
     )
@@ -115,7 +115,7 @@ describe('Header', () => {
     const viewed = screen.getByRole('link', { name: /Viewed/i })
     const liked = screen.getByRole('link', { name: /Liked/i })
     const passed = screen.getByRole('link', { name: /Passed/i })
-    const matches = screen.getByRole('link', { name: /Matches/i })
+    const matches = screen.getByRole('link', { name: /Shared Likes/i })
 
     // We can verify that clicking doesn't throw and elements are interactable.
     await user.click(viewed)
@@ -194,7 +194,7 @@ describe('Header', () => {
     const viewedLinks = screen.getAllByRole('link', { name: /Viewed/i })
     const likedLinks = screen.getAllByRole('link', { name: /Liked/i })
     const passedLinks = screen.getAllByRole('link', { name: /Passed/i })
-    const matchesLinks = screen.getAllByRole('link', { name: /Matches/i })
+    const matchesLinks = screen.getAllByRole('link', { name: /Shared Likes/i })
 
     expect(viewedLinks.length).toBeGreaterThan(0)
     expect(likedLinks.length).toBeGreaterThan(0)

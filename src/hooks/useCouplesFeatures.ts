@@ -113,7 +113,7 @@ export function useCouplesStats() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch couples stats')
+        throw new Error('Failed to fetch household stats')
       }
 
       return response.json()

@@ -104,7 +104,7 @@ export function Header() {
     {
       href: '/couples',
       icon: HeartHandshake,
-      label: 'Matches',
+      label: 'Shared Likes',
       matchPrefixes: ['/couples', '/household'],
     },
   ]

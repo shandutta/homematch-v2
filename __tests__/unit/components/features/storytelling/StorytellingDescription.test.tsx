@@ -211,7 +211,7 @@ describe('StorytellingDescription', () => {
     // Should render a mutual like message - check for one of the possible messages
     const possibleTexts = [
       'Everyone said yes to this place',
-      'Your shared list just got a strong match',
+      'Your shared list just got a strong favorite',
       'Shared goals, one home, endless possibilities',
       'When everyone agrees, you know',
       'This is where your shared plans take shape',

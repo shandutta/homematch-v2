@@ -102,7 +102,7 @@ describe('NotificationsSection', () => {
       .getByText('Push Notifications')
       .closest('.space-y-4')
     expect(pushSection).not.toBeNull()
-    expect(pushSection as HTMLElement).toHaveTextContent('New matches')
+    expect(pushSection as HTMLElement).toHaveTextContent('New listing matches')
     expect(pushSection as HTMLElement).toHaveTextContent('Price drops')
     expect(pushSection as HTMLElement).toHaveTextContent('Household messages')
   })
@@ -129,7 +129,7 @@ describe('NotificationsSection', () => {
     const user = userEvent.setup()
     render(<NotificationsSection user={mockUser} profile={mockProfile} />)
 
-    const newMatchesSwitch = screen.getByLabelText('New matches')
+    const newMatchesSwitch = screen.getByLabelText('New listing matches')
     expect(newMatchesSwitch).not.toBeChecked()
 
     await user.click(newMatchesSwitch)
@@ -316,7 +316,7 @@ describe('NotificationsSection', () => {
 
     // Toggle switches in different categories
     const emailSwitch = screen.getByLabelText('Weekly digest')
-    const pushSwitch = screen.getByLabelText('New matches')
+    const pushSwitch = screen.getByLabelText('New listing matches')
     const smsSwitch = screen.getByLabelText('Urgent alerts')
 
     await user.click(emailSwitch)

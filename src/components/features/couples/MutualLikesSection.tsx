@@ -274,7 +274,7 @@ export function MutualLikesSection({
 
               <div className="text-hm-stone-300 flex items-center justify-center gap-2 text-xs">
                 <Star className="h-3 w-3" />
-                <span>Keep swiping to find your first match</span>
+                <span>Keep swiping to find your first shared favorite</span>
               </div>
             </MotionDiv>
           </div>
