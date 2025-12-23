@@ -24,6 +24,7 @@ type Args = {
   locations: string[]
   pageSize: number
   maxPages: number
+  debug: boolean
 }
 
 const DEFAULT_BAY_AREA_LOCATIONS = [
@@ -108,6 +109,7 @@ function parseArgs(argv: string[]): Args {
     locations: DEFAULT_BAY_AREA_LOCATIONS,
     pageSize: 20,
     maxPages: 10,
+    debug: false,
   }
 
   const args: Record<string, string> = {}
@@ -123,24 +125,28 @@ function parseArgs(argv: string[]): Args {
 
   const locations = locationsRaw
     ? locationsRaw
-        .split(/[;,]/)
+        .split(';')
         .map((s) => s.trim())
         .filter(Boolean)
     : defaults.locations
 
   const pageSize = args.pageSize ? Number(args.pageSize) : defaults.pageSize
   const maxPages = args.maxPages ? Number(args.maxPages) : defaults.maxPages
+  const debug = Boolean(
+    args.debug && ['1', 'true', 'yes'].includes(args.debug.toLowerCase())
+  )
 
   return {
     locations,
     pageSize:
       Number.isFinite(pageSize) && pageSize > 0 ? pageSize : defaults.pageSize,
     maxPages: Number.isFinite(maxPages) && maxPages > 0 ? maxPages : 50, // 50 ~ "until hasNextPage ends" safety cap
+    debug,
   }
 }
 
 async function main() {
-  const { locations, pageSize, maxPages } = parseArgs(process.argv)
+  const { locations, pageSize, maxPages, debug } = parseArgs(process.argv)
 
   const rapidApiKey = process.env.RAPIDAPI_KEY
   const rapidApiHost =
@@ -163,6 +169,7 @@ async function main() {
     host: rapidApiHost,
     pageSize,
     maxPages,
+    debug,
   })
 
   console.log('[ingest-zillow] Finished.')

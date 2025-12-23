@@ -100,6 +100,7 @@ export interface ZillowIngestOptions {
   maxPages?: number
   delayMs?: number
   fetchImpl?: FetchLike
+  debug?: boolean
   /** Sort order for results - 'Newest' recommended to catch new listings */
   sort?: ZillowSortOption
   /** Minimum price filter for price band searches */
@@ -375,12 +376,14 @@ export async function ingestZillowLocations(
     maxPages = DEFAULT_MAX_PAGES,
     delayMs = DEFAULT_DELAY_MS,
     fetchImpl = fetch,
+    debug = false,
     sort,
     minPrice,
     maxPrice,
   } = options
 
   const transformer = new DataTransformer()
+  const log = debug ? console.log : null
 
   const summary: IngestSummary = {
     totals: { attempted: 0, transformed: 0, insertedOrUpdated: 0, skipped: 0 },
@@ -389,6 +392,9 @@ export async function ingestZillowLocations(
   }
 
   for (const location of locations) {
+    if (log) {
+      log(`[ingest-zillow] Location start: ${location}`)
+    }
     const locationSummary: IngestLocationSummary = {
       location,
       attempted: 0,
@@ -406,6 +412,11 @@ export async function ingestZillowLocations(
       let pageResult: { items: ZillowSearchItem[]; hasNextPage: boolean }
 
       try {
+        if (log) {
+          log(
+            `[ingest-zillow] Fetching ${location} page ${page} (pageSize=${pageSize}, sort=${sort ?? 'Newest'})`
+          )
+        }
         pageResult = await fetchZillowSearchPage({
           location,
           page,
@@ -436,6 +447,11 @@ export async function ingestZillowLocations(
       summary.totals.attempted += pageResult.items.length
 
       if (rawItems.length === 0) {
+        if (log) {
+          log(
+            `[ingest-zillow] ${location} page ${page} returned 0 items (hasNextPage=${pageResult.hasNextPage})`
+          )
+        }
         hasMore = pageResult.hasNextPage
         page++
         await delay(delayMs)
@@ -488,9 +504,19 @@ export async function ingestZillowLocations(
           locationSummary.errors.push(
             typesList ? `${errMsg} | types=${typesList}` : errMsg
           )
+          if (log) {
+            log(
+              `[ingest-zillow] ${location} page ${page} upsert error: ${errMsg}`
+            )
+          }
         } else {
           locationSummary.insertedOrUpdated += inserts.length
           summary.totals.insertedOrUpdated += inserts.length
+          if (log) {
+            log(
+              `[ingest-zillow] ${location} page ${page} upserted ${inserts.length} properties (hasNextPage=${pageResult.hasNextPage})`
+            )
+          }
 
           const zpids = Array.from(
             new Set(
