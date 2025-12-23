@@ -193,6 +193,42 @@ describe('GroupedViewedPropertiesPage', () => {
       expect(within(viewedOnlySection).getByText('Undecided')).toBeTruthy()
     })
 
+    it('renders mobile section toggles and switches active section', () => {
+      const likedProperty = createMockProperty('liked-1', '100 Liked St')
+      const passedProperty = createMockProperty('passed-1', '200 Passed Ave')
+      const viewedProperty = createMockProperty('viewed-1', '300 Viewed Blvd')
+
+      setupMocks({
+        liked: [likedProperty],
+        passed: [passedProperty],
+        viewed: [viewedProperty],
+      })
+
+      renderWithQuery(<GroupedViewedPropertiesPage />)
+
+      const likedToggle = screen.getByRole('button', { name: /liked/i })
+      const passedToggle = screen.getByRole('button', { name: /passed/i })
+      const viewedToggle = screen.getByRole('button', { name: /undecided/i })
+
+      expect(likedToggle).toBeTruthy()
+      expect(passedToggle).toBeTruthy()
+      expect(viewedToggle).toBeTruthy()
+
+      const likedSection = screen.getByTestId('section-liked')
+      const passedSection = screen.getByTestId('section-skip')
+
+      const likedWrapper = likedSection.parentElement as HTMLElement
+      const passedWrapper = passedSection.parentElement as HTMLElement
+
+      expect(likedWrapper.className).not.toContain('hidden')
+      expect(passedWrapper.className).toContain('hidden')
+
+      fireEvent.click(passedToggle)
+
+      expect(likedWrapper.className).toContain('hidden')
+      expect(passedWrapper.className).not.toContain('hidden')
+    })
+
     it('does not render empty sections', () => {
       const likedProperty = createMockProperty('liked-1', '100 Liked St')
 

@@ -184,7 +184,7 @@ describe('PropertyCard Component', () => {
     expect(screen.queryByTestId('storytelling-description')).toBeNull()
   })
 
-  test('allows switching from map to story in full-height toggle mode', () => {
+  test('does not render map/story toggle buttons in detail mode', () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
       coordinates: { lat: 37.7749, lng: -122.4194 } as any,
@@ -198,10 +198,7 @@ describe('PropertyCard Component', () => {
       />
     )
 
-    const storyButton = screen.getByRole('button', { name: 'Story' })
-    fireEvent.click(storyButton)
-
-    expect(screen.getByTestId('storytelling-description')).toBeDefined()
-    expect(screen.queryByTestId('property-map')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Map' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Story' })).toBeNull()
   })
 })

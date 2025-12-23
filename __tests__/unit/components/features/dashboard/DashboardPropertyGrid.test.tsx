@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { DashboardPropertyGrid } from '@/components/features/dashboard/DashboardPropertyGrid'
 
 jest.mock('next/link', () => ({
@@ -6,10 +6,12 @@ jest.mock('next/link', () => ({
   default: ({ href, children }: any) => <a href={href}>{children}</a>,
 }))
 
+const mockPropertyCard = jest.fn(({ property }: any) => (
+  <div data-testid="property-card">{property.address}</div>
+))
+
 jest.mock('@/components/property/PropertyCard', () => ({
-  PropertyCard: ({ property }: any) => (
-    <div data-testid="property-card">{property.address}</div>
-  ),
+  PropertyCard: (props: any) => mockPropertyCard(props),
 }))
 
 jest.mock('@/components/properties/SwipeablePropertyCard', () => ({
@@ -47,6 +49,7 @@ const mockProperty = {
 
 describe('DashboardPropertyGrid', () => {
   beforeEach(() => {
+    mockPropertyCard.mockClear()
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation((query) => ({
@@ -82,5 +85,52 @@ describe('DashboardPropertyGrid', () => {
     expect(
       screen.getByRole('link', { name: /review filters/i })
     ).toHaveAttribute('href', '/settings?tab=preferences')
+  })
+
+  it('passes map-disabled detail props to PropertyCard in grid view', () => {
+    render(
+      <DashboardPropertyGrid
+        properties={[mockProperty]}
+        onDecision={jest.fn()}
+      />
+    )
+
+    expect(mockPropertyCard).toHaveBeenCalled()
+    const props = mockPropertyCard.mock.calls[0]?.[0]
+    expect(props).toEqual(
+      expect.objectContaining({
+        showMap: false,
+        enableDetailsToggle: true,
+        showStory: true,
+        storyVariant: 'futureVision',
+      })
+    )
+  })
+
+  it('renders the swipeable stack on mobile', async () => {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation((query) => ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      })),
+    })
+
+    render(
+      <DashboardPropertyGrid
+        properties={[mockProperty]}
+        onDecision={jest.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('swipeable-card')).toBeInTheDocument()
+    })
   })
 })

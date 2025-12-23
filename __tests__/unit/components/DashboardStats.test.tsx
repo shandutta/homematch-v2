@@ -63,4 +63,13 @@ describe('DashboardStats Component', () => {
     expect(passedLink).toBeTruthy()
     expect(passedLink?.getAttribute('href')).toBe('/dashboard/passed')
   })
+
+  test('uses a horizontal scroll container on mobile', () => {
+    const mockSummary: InteractionSummary = { viewed: 10, liked: 5, passed: 3 }
+    render(<DashboardStats summary={mockSummary} isLoading={false} />)
+
+    const stats = screen.getByTestId('dashboard-stats')
+    const scrollContainer = stats.querySelector('.overflow-x-auto')
+    expect(scrollContainer).toBeTruthy()
+  })
 })
