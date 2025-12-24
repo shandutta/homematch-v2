@@ -115,7 +115,10 @@ export class PropertyServiceFacade
     }
   ): Promise<PropertySearchResult> {
     try {
-      return await this.searchService.searchProperties(searchParams, options)
+      if (options) {
+        return await this.searchService.searchProperties(searchParams, options)
+      }
+      return await this.searchService.searchProperties(searchParams)
     } catch (_error) {
       // Return structured error response for search operations
       const { pagination = {} } = searchParams
