@@ -47,14 +47,12 @@ jest.mock('next/image', () => ({
 }))
 
 // Mock child components
-jest.mock('@/components/marketing/GradientMeshBackground', () => ({
-  GradientMeshBackground: () => (
-    <div data-testid="gradient-mesh-bg">Gradient Mesh</div>
-  ),
+jest.mock('@/components/marketing/HeroMotionEnhancer', () => ({
+  HeroMotionEnhancer: () => null,
 }))
 
-jest.mock('@/components/marketing/MarketingPreviewCard', () => ({
-  MarketingPreviewCard: () => (
+jest.mock('@/components/marketing/MarketingPreviewCardStatic', () => ({
+  MarketingPreviewCardStatic: () => (
     <div data-testid="marketing-preview-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img alt="Sample property interior" src="/test.jpg" />
@@ -128,11 +126,6 @@ describe('HeroSection', () => {
   test('renders hero test id', () => {
     render(<HeroSection />)
     expect(screen.getByTestId('hero')).toBeInTheDocument()
-  })
-
-  test('renders gradient mesh background', () => {
-    render(<HeroSection />)
-    expect(screen.getByTestId('gradient-mesh-bg')).toBeInTheDocument()
   })
 
   test('renders marketing preview card', () => {
