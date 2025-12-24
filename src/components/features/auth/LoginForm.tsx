@@ -56,10 +56,25 @@ export function LoginForm() {
   })
 
   const dashboardPath = '/dashboard'
-  const redirectPath =
-    getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
-    getSafeRedirectPath(searchParams?.get('redirect') ?? null) ||
-    dashboardPath
+
+  const resolveRedirectPath = () => {
+    const hookRedirect =
+      getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
+      getSafeRedirectPath(searchParams?.get('redirect') ?? null)
+
+    if (hookRedirect) return hookRedirect
+
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      return (
+        getSafeRedirectPath(urlParams.get('redirectTo')) ||
+        getSafeRedirectPath(urlParams.get('redirect')) ||
+        dashboardPath
+      )
+    }
+
+    return dashboardPath
+  }
 
   const handleEmailLogin = async (data: LoginData) => {
     setLoading(true)
@@ -80,6 +95,8 @@ export function LoginForm() {
         setError('Unable to sign in right now. Please try again.')
         return
       }
+
+      const redirectPath = resolveRedirectPath()
 
       if (isTestMode || typeof window === 'undefined') {
         // In tests, rely on client routing for easier assertions
