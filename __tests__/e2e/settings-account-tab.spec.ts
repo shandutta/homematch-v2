@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { waitForHydration } from '../utils/hydration'
 
 test.describe('Settings account tab', () => {
   test.beforeEach(async ({ page }, testInfo) => {
@@ -15,8 +16,12 @@ test.describe('Settings account tab', () => {
     await page.goto(TEST_ROUTES.app.settings, {
       waitUntil: 'domcontentloaded',
     })
+    await waitForHydration(page)
 
-    await page.getByRole('tab', { name: /account/i }).click()
+    const accountTab = page.getByRole('tab', { name: /account/i })
+    await accountTab.waitFor({ state: 'visible' })
+    await accountTab.click()
+    await expect(accountTab).toHaveAttribute('data-state', 'active')
 
     await expect(
       page.getByRole('heading', { name: 'Account Information' })

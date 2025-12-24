@@ -1,8 +1,9 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { waitForHydration } from '../utils/hydration'
 
 const DEFAULT_PRICE_RANGE: [number, number] = [200000, 800000]
 const DEFAULT_BEDROOMS = 2
@@ -27,13 +28,6 @@ function createServiceRoleClient() {
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
-}
-
-async function waitForHydration(page: Page) {
-  await page.waitForFunction(
-    () => document.documentElement.dataset.hydrated === 'true',
-    { timeout: 15000 }
-  )
 }
 
 async function getAuthUserIdByEmail(
