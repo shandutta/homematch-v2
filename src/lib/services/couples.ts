@@ -244,16 +244,19 @@ export class CouplesService {
     userId: string
   ): Promise<MutualLike[]> {
     const startTime = Date.now()
+    const shouldUseCache = process.env.NEXT_PUBLIC_TEST_MODE !== 'true'
 
     try {
       const householdId = await this.getUserHousehold(supabase, userId)
       if (!householdId) return []
 
       // Check cache first
-      const mutualLikesCache = getMutualLikesCache()
-      const cached = mutualLikesCache.get(householdId)
-      if (cached) {
-        return cached
+      if (shouldUseCache) {
+        const mutualLikesCache = getMutualLikesCache()
+        const cached = mutualLikesCache.get(householdId)
+        if (cached) {
+          return cached
+        }
       }
 
       // Fetch from database using RPC
@@ -268,7 +271,9 @@ export class CouplesService {
 
       // Transform and cache the result
       const result = this.transformMutualLikesData(mutualLikesData)
-      this.handleMutualLikesCache(householdId, result, startTime)
+      if (shouldUseCache) {
+        this.handleMutualLikesCache(householdId, result, startTime)
+      }
 
       return result
     } catch (error) {
