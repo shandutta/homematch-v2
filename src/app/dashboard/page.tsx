@@ -34,6 +34,8 @@ export default async function DashboardPage({
       includeNeighborhoods: false,
       includeCount: false,
       propertySelect: DASHBOARD_PROPERTY_SELECT,
+      useCache: true,
+      cacheKey: user.id,
     })
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented

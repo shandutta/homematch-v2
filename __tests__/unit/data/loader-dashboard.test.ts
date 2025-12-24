@@ -4,6 +4,7 @@ type LoaderModule = typeof import('@/lib/data/loader')
 
 jest.mock('next/cache', () => ({
   unstable_noStore: jest.fn(),
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }))
 
 jest.mock('@/lib/services/properties', () => {

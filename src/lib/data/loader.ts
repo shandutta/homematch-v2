@@ -1,14 +1,75 @@
 import { PropertyService } from '@/lib/services/properties'
-import { Property, Neighborhood } from '@/types/database'
+import { unstable_cache } from 'next/cache'
+import { createClient as createStandaloneClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { ISupabaseClientFactory } from '@/lib/services/interfaces'
+import type { Property, Neighborhood, Database } from '@/types/database'
 import {
   PROPERTY_TYPE_VALUES,
   type PropertyFilters,
   type PropertyType,
+  type PropertySearch,
 } from '@/lib/schemas/property'
 import {
   ALL_CITIES_SENTINEL_THRESHOLD,
   DEFAULT_PRICE_RANGE,
 } from '@/lib/constants/preferences'
+
+const DASHBOARD_PROPERTY_CACHE_TTL_SECONDS = 60
+
+class StaticSupabaseClientFactory implements ISupabaseClientFactory {
+  private readonly client: SupabaseClient<Database>
+
+  constructor(client: SupabaseClient<Database>) {
+    this.client = client
+  }
+
+  async createClient(): Promise<SupabaseClient<Database>> {
+    return this.client
+  }
+
+  getInstance(): ISupabaseClientFactory {
+    return this
+  }
+}
+
+const createAnonPropertyService = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!url || !anonKey) {
+    return null
+  }
+
+  const client = createStandaloneClient<Database>(url, anonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+
+  return new PropertyService(new StaticSupabaseClientFactory(client))
+}
+
+const anonPropertyService = createAnonPropertyService()
+
+const cachedSearchProperties = anonPropertyService
+  ? unstable_cache(
+      async (
+        _cacheKey: string,
+        searchParams: PropertySearch,
+        options: {
+          select?: string
+          includeCount?: boolean
+          includeNeighborhoods?: boolean
+        }
+      ) => {
+        return anonPropertyService.searchProperties(searchParams, options)
+      },
+      ['dashboard-properties'],
+      { revalidate: DASHBOARD_PROPERTY_CACHE_TTL_SECONDS }
+    )
+  : null
 
 export interface DashboardData {
   properties: Property[]
@@ -146,6 +207,8 @@ export async function loadDashboardData(
     includeNeighborhoods?: boolean
     includeCount?: boolean
     propertySelect?: string
+    useCache?: boolean
+    cacheKey?: string
   } = {}
 ): Promise<DashboardData> {
   const {
@@ -156,6 +219,8 @@ export async function loadDashboardData(
     includeNeighborhoods = true,
     includeCount = true,
     propertySelect,
+    useCache = false,
+    cacheKey,
   } = options
   const propertyService = new PropertyService()
 
@@ -187,18 +252,34 @@ export async function loadDashboardData(
       return await propertyService.getNeighborhoodsByCity('San Francisco', 'CA')
     }
 
+    const searchParams: PropertySearch = {
+      filters,
+      pagination: { limit, page: offset / limit + 1 },
+    }
+    const searchOptions = {
+      select: propertySelect,
+      includeCount,
+      includeNeighborhoods,
+    }
+    const searchPromise =
+      useCache && cachedSearchProperties
+        ? cachedSearchProperties(
+            [
+              cacheKey || 'dashboard',
+              JSON.stringify(filters),
+              limit,
+              offset,
+              includeNeighborhoods ? '1' : '0',
+              includeCount ? '1' : '0',
+              propertySelect || '',
+            ].join('|'),
+            searchParams,
+            searchOptions
+          )
+        : propertyService.searchProperties(searchParams, searchOptions)
+
     const [{ properties, total }, neighborhoods] = await Promise.all([
-      propertyService.searchProperties(
-        {
-          filters,
-          pagination: { limit, page: offset / limit + 1 },
-        },
-        {
-          select: propertySelect,
-          includeCount,
-          includeNeighborhoods,
-        }
-      ),
+      searchPromise,
       neighborhoodsPromise(),
     ])
 

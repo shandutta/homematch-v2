@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { lazy, Suspense, useState, useMemo, useCallback } from 'react'
 import {
   useInteractionSummary,
   useRecordInteraction,
 } from '@/hooks/useInteractions'
 import { useCouplesInteraction } from '@/hooks/useCouplesInteractions'
 import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
-import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import { DashboardPropertyGrid } from '@/components/features/dashboard/DashboardPropertyGrid'
 import { Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
 import { useRenderPerformance } from '@/lib/utils/client-performance'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface EnhancedDashboardPageImplProps {
   initialData: DashboardData
@@ -23,6 +23,41 @@ interface EnhancedDashboardPageImplProps {
   // _userProfile?: any // Will be typed properly with Zod later
   // _initialSwipeStats?: any // Will be typed properly with Zod later
   // _session?: any // Will be typed properly with Zod later
+}
+
+const MutualLikesSection = lazy(() =>
+  import('@/components/features/couples/MutualLikesSection').then((module) => ({
+    default: module.MutualLikesSection,
+  }))
+)
+
+function MutualLikesFallback() {
+  return (
+    <div className="min-h-[320px] rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+      <div className="mb-4 flex items-center gap-3">
+        <Skeleton className="h-5 w-5 rounded-full bg-white/10" />
+        <Skeleton className="h-5 w-40 bg-white/10" />
+      </div>
+      <div className="space-y-3">
+        {[1, 2, 3].map((row) => (
+          <div
+            key={row}
+            className="flex items-center gap-4 rounded-lg bg-white/5 p-3"
+          >
+            <Skeleton className="h-14 w-14 rounded-md bg-white/10" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-full bg-white/10" />
+              <Skeleton className="h-4 w-24 bg-white/10" />
+              <div className="flex gap-3">
+                <Skeleton className="h-3 w-12 bg-white/10" />
+                <Skeleton className="h-3 w-12 bg-white/10" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function EnhancedDashboardPageImpl({
@@ -128,7 +163,9 @@ export function EnhancedDashboardPageImpl({
       {/* Add MutualLikesSection if userId is available */}
       {userId && (
         <>
-          <MutualLikesSection userId={userId} className="w-full" />
+          <Suspense fallback={<MutualLikesFallback />}>
+            <MutualLikesSection userId={userId} className="w-full" />
+          </Suspense>
           <div
             className="pointer-events-none mt-8 mb-1 h-px w-full bg-gradient-to-r from-transparent via-white/25 to-transparent"
             aria-hidden="true"

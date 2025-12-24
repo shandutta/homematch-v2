@@ -236,7 +236,7 @@ export function DashboardPropertyGrid({
             <PropertyViewTracker
               propertyId={property.id}
               onView={onView}
-              className="min-h-[480px]"
+              className="min-h-[520px]"
             >
               <PropertyCard
                 property={property}
