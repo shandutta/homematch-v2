@@ -48,16 +48,12 @@ export class AuthHelper {
       timeout: TEST_TIMEOUTS.navigation * 2,
     })
 
-    try {
-      await this.page.waitForFunction(
-        () => document.documentElement.dataset.hydrated === 'true',
-        {
-          timeout: TEST_TIMEOUTS.navigation,
-        }
-      )
-    } catch (_error) {
-      // Allow tests to continue even if hydration marker is missing.
-    }
+    await this.page.waitForFunction(
+      () => document.documentElement.dataset.hydrated === 'true',
+      {
+        timeout: TEST_TIMEOUTS.navigation,
+      }
+    )
 
     // Give hydration a brief moment to finish (Safari/WebKit is slower here)
     await this.page.waitForTimeout(200)

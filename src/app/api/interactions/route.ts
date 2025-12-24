@@ -115,9 +115,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!householdId) {
-      householdId = await fetchHouseholdIdWithServiceRole()
+    const resolveHouseholdId = async () => {
+      if (householdId) return householdId
+
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        const candidate = await fetchHouseholdIdWithServiceRole()
+        if (candidate) return candidate
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 200))
+        }
+      }
+
+      return null
     }
+
+    householdId = await resolveHouseholdId()
 
     // Clear any previous interaction for this user/property to enforce a single definitive state
     const { error: deleteError } = await supabase

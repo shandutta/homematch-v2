@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
@@ -27,6 +27,13 @@ function createServiceRoleClient() {
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
+}
+
+async function waitForHydration(page: Page) {
+  await page.waitForFunction(
+    () => document.documentElement.dataset.hydrated === 'true',
+    { timeout: 15000 }
+  )
 }
 
 async function getAuthUserIdByEmail(
@@ -210,6 +217,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
+      await waitForHydration(page)
 
       await page.getByTestId('city-search').fill(runId)
       await expect(
@@ -234,6 +242,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await page.goto(TEST_ROUTES.app.dashboard, {
         waitUntil: 'domcontentloaded',
       })
+      await waitForHydration(page)
 
       await expect(
         page
@@ -277,6 +286,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await page.goto(TEST_ROUTES.app.dashboard, {
         waitUntil: 'domcontentloaded',
       })
+      await waitForHydration(page)
 
       await expect(
         page
@@ -293,6 +303,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
+      await waitForHydration(page)
       await page.getByTestId('reset-preferences').click()
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
