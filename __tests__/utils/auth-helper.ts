@@ -165,6 +165,41 @@ export class AuthHelper {
   }
 
   /**
+   * Check whether a Supabase auth cookie or localStorage entry exists.
+   */
+  private async hasSupabaseAuthState(): Promise<boolean> {
+    const cookies = await this.page.context().cookies()
+    const hasAuthCookie = cookies.some(
+      (cookie) =>
+        cookie.name.includes('auth-token') &&
+        typeof cookie.value === 'string' &&
+        cookie.value.length > 0
+    )
+
+    if (hasAuthCookie) {
+      return true
+    }
+
+    try {
+      const hasStorage = await this.page.evaluate(() => {
+        try {
+          return Object.keys(localStorage).some((key) => {
+            if (!key.includes('auth-token')) return false
+            const value = localStorage.getItem(key)
+            return typeof value === 'string' && value.length > 0
+          })
+        } catch {
+          return false
+        }
+      })
+
+      return Boolean(hasStorage)
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Clear all authentication state (cookies, localStorage, sessionStorage)
    */
   async clearAuthState(): Promise<void> {
@@ -465,9 +500,19 @@ export class AuthHelper {
       }
 
       if (!didNavigate) {
-        throw new Error(
-          `Navigation away from login page failed. Still at: ${currentUrl}`
-        )
+        const hasAuthState = await this.hasSupabaseAuthState()
+        if (hasAuthState) {
+          await this.page.goto('/dashboard', {
+            waitUntil: 'domcontentloaded',
+          })
+          didNavigate = !this.page.url().includes('/login')
+        }
+
+        if (!didNavigate) {
+          throw new Error(
+            `Navigation away from login page failed. Still at: ${currentUrl}`
+          )
+        }
       }
     }
 

@@ -584,12 +584,13 @@ test.describe('Couples Features E2E Tests', () => {
 
       let foundLoading = false
       for (const selector of loadingSelectors) {
-        if ((await page.locator(selector).count()) > 0) {
+        const locator = page.locator(selector)
+        if ((await locator.count()) > 0) {
           console.log(`Loading state found: ${selector}`)
           foundLoading = true
 
           // Wait for loading to disappear
-          await expect(page.locator(selector)).not.toBeVisible({
+          await expect(locator.first()).not.toBeVisible({
             timeout: 10000,
           })
           break

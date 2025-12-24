@@ -211,6 +211,9 @@ export async function loadDashboardData(
     cacheKey?: string
   } = {}
 ): Promise<DashboardData> {
+  const isTestMode =
+    process.env.NODE_ENV === 'test' ||
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
   const {
     limit = 20,
     offset = 0,
@@ -261,22 +264,22 @@ export async function loadDashboardData(
       includeCount,
       includeNeighborhoods,
     }
-    const searchPromise =
-      useCache && cachedSearchProperties
-        ? cachedSearchProperties(
-            [
-              cacheKey || 'dashboard',
-              JSON.stringify(filters),
-              limit,
-              offset,
-              includeNeighborhoods ? '1' : '0',
-              includeCount ? '1' : '0',
-              propertySelect || '',
-            ].join('|'),
-            searchParams,
-            searchOptions
-          )
-        : propertyService.searchProperties(searchParams, searchOptions)
+    const shouldUseCache = useCache && !isTestMode && cachedSearchProperties
+    const searchPromise = shouldUseCache
+      ? cachedSearchProperties(
+          [
+            cacheKey || 'dashboard',
+            JSON.stringify(filters),
+            limit,
+            offset,
+            includeNeighborhoods ? '1' : '0',
+            includeCount ? '1' : '0',
+            propertySelect || '',
+          ].join('|'),
+          searchParams,
+          searchOptions
+        )
+      : propertyService.searchProperties(searchParams, searchOptions)
 
     const [{ properties, total }, neighborhoods] = await Promise.all([
       searchPromise,
