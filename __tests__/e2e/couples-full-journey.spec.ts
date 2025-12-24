@@ -633,14 +633,31 @@ test.describe('Couples full journey (real UI)', () => {
       await partnerPage.goto('/dashboard/mutual-likes', {
         waitUntil: 'domcontentloaded',
       })
-      await expect(
-        partnerPage.getByRole('heading', { name: /^mutual likes$/i })
-      ).toBeVisible({ timeout: 30000 })
-      await expect(partnerPage.getByText(propertyAddress!).first()).toBeVisible(
-        {
-          timeout: 30000,
-        }
-      )
+      await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
+        timeout: 15000,
+      })
+      const mutualLikesHeading = partnerPage.getByRole('heading', {
+        name: /^mutual likes$/i,
+      })
+      const mutualLikesRoot = partnerPage.getByTestId('dashboard-mutual-likes')
+
+      const assertMutualLikesPage = async () => {
+        await expect(mutualLikesHeading).toBeVisible({ timeout: 30000 })
+        await expect(mutualLikesRoot).toBeVisible({ timeout: 30000 })
+        await expect(
+          mutualLikesRoot.getByText(propertyAddress!).first()
+        ).toBeVisible({ timeout: 30000 })
+      }
+
+      try {
+        await assertMutualLikesPage()
+      } catch {
+        await partnerPage.reload({ waitUntil: 'domcontentloaded' })
+        await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
+          timeout: 15000,
+        })
+        await assertMutualLikesPage()
+      }
       await partnerPage
         .locator(`a[href^="/properties/${propertyId!}"]`)
         .filter({ hasText: propertyAddress! })

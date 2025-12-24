@@ -225,7 +225,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
         )
       })
 
-      await page.getByLabel('Pool').click()
+      await page.getByRole('switch', { name: /^pool$/i }).click()
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
         return preferences?.mustHaves?.pool === true
