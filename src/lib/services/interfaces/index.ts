@@ -43,7 +43,14 @@ export interface IPropertyCrudService {
  * Handles: complex queries, filtering, pagination
  */
 export interface IPropertySearchService {
-  searchProperties(params: PropertySearch): Promise<PropertySearchResult>
+  searchProperties(
+    params: PropertySearch,
+    options?: {
+      select?: string
+      includeCount?: boolean
+      includeNeighborhoods?: boolean
+    }
+  ): Promise<PropertySearchResult>
   getPropertiesByNeighborhood(
     neighborhoodId: string,
     limit?: number

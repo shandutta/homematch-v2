@@ -103,7 +103,14 @@ export interface PropertyStats {
  * Property search and analytics interface
  */
 export interface IPropertySearchService extends IBaseService {
-  searchProperties(searchParams: PropertySearch): Promise<PropertySearchResult>
+  searchProperties(
+    searchParams: PropertySearch,
+    options?: {
+      select?: string
+      includeCount?: boolean
+      includeNeighborhoods?: boolean
+    }
+  ): Promise<PropertySearchResult>
   getPropertiesByNeighborhood(
     neighborhoodId: string,
     limit?: number

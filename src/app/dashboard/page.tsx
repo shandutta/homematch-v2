@@ -1,10 +1,13 @@
 import { EnhancedDashboardPageImpl } from '@/components/dashboard/EnhancedDashboardPageImpl'
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary'
-import { loadDashboardData, type DashboardPreferences } from '@/lib/data/loader'
+import {
+  DASHBOARD_PROPERTY_SELECT,
+  loadDashboardData,
+  type DashboardPreferences,
+} from '@/lib/data/loader'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
-import { unstable_noStore as noStore } from 'next/cache'
 
 interface DashboardPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
@@ -13,7 +16,6 @@ interface DashboardPageProps {
 export default async function DashboardPage({
   searchParams: _searchParams,
 }: DashboardPageProps) {
-  noStore()
   const supabase = await createClient()
   const {
     data: { user },
@@ -29,6 +31,9 @@ export default async function DashboardPage({
     const userProfile = await userService.getUserProfile(user.id)
     const dashboardData = await loadDashboardData({
       userPreferences: userProfile?.preferences as DashboardPreferences | null,
+      includeNeighborhoods: false,
+      includeCount: false,
+      propertySelect: DASHBOARD_PROPERTY_SELECT,
     })
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented

@@ -244,6 +244,7 @@ export function DashboardPropertyGrid({
                 storyVariant="futureVision"
                 showMap={false}
                 enableDetailsToggle
+                imagePriority={index === 0}
                 floatingAction={
                   <div className="flex items-center gap-2">
                     <button

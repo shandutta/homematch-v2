@@ -5,7 +5,7 @@
  * Handles complex search queries, geographic filtering, and performance metrics.
  */
 
-import type { Property } from '@/types/database'
+import type { Property, PropertyWithNeighborhood } from '@/types/database'
 import type { PropertySearch } from '@/lib/schemas/property'
 import type {
   IPropertySearchService,
@@ -33,7 +33,12 @@ export class PropertySearchService
    * Advanced property search with filtering and pagination
    */
   async searchProperties(
-    searchParams: PropertySearch
+    searchParams: PropertySearch,
+    options: {
+      select?: string
+      includeCount?: boolean
+      includeNeighborhoods?: boolean
+    } = {}
   ): Promise<PropertySearchResult> {
     this.validateRequired({ searchParams })
 
@@ -51,16 +56,22 @@ export class PropertySearchService
     try {
       const supabase = await this.getSupabase()
 
-      // Build base query with neighborhood join
-      let query = supabase
-        .from('properties')
-        .select(
-          `
+      const includeNeighborhoods = options.includeNeighborhoods ?? true
+      const selectClause =
+        options.select ||
+        (includeNeighborhoods
+          ? `
           *,
           neighborhood:neighborhoods(*)
-        `,
-          { count: 'exact' }
-        )
+        `
+          : '*')
+
+      const shouldCount = options.includeCount ?? true
+
+      // Build base query with optional neighborhood join/count
+      let query = supabase
+        .from('properties')
+        .select(selectClause, shouldCount ? { count: 'exact' } : undefined)
         .eq('is_active', true)
 
       // Apply filters using the filter builder
@@ -88,7 +99,8 @@ export class PropertySearchService
       const to = from + limit - 1
       query = query.range(from, to)
 
-      const { data, error, count } = await query
+      const { data, error, count } =
+        await query.returns<PropertyWithNeighborhood[]>()
 
       if (error) {
         this.handleSupabaseError(error, 'searchProperties', { searchParams })

@@ -1,5 +1,4 @@
 import { PropertyService } from '@/lib/services/properties'
-import { unstable_noStore as noStore } from 'next/cache'
 import { Property, Neighborhood } from '@/types/database'
 import {
   PROPERTY_TYPE_VALUES,
@@ -34,6 +33,27 @@ export interface DashboardPreferences {
   cities?: NonNullable<PropertyFilters['cities']>
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
+
+export const DASHBOARD_PROPERTY_SELECT = `
+  id,
+  address,
+  city,
+  state,
+  zip_code,
+  price,
+  bedrooms,
+  bathrooms,
+  square_feet,
+  property_type,
+  images,
+  description,
+  amenities,
+  lot_size_sqft,
+  neighborhood_id,
+  zpid,
+  year_built,
+  coordinates
+`
 
 const shouldTreatAsAllCities = (
   prefs?: DashboardPreferences | null
@@ -123,14 +143,19 @@ export async function loadDashboardData(
     offset?: number
     withScoring?: boolean
     userPreferences?: DashboardPreferences | null
+    includeNeighborhoods?: boolean
+    includeCount?: boolean
+    propertySelect?: string
   } = {}
 ): Promise<DashboardData> {
-  noStore()
   const {
     limit = 20,
     offset = 0,
     withScoring = true,
     userPreferences,
+    includeNeighborhoods = true,
+    includeCount = true,
+    propertySelect,
   } = options
   const propertyService = new PropertyService()
 
@@ -138,6 +163,10 @@ export async function loadDashboardData(
 
   try {
     const neighborhoodsPromise = async () => {
+      if (!includeNeighborhoods) {
+        return []
+      }
+
       if (shouldTreatAsAllCities(userPreferences)) {
         return []
       }
@@ -159,10 +188,17 @@ export async function loadDashboardData(
     }
 
     const [{ properties, total }, neighborhoods] = await Promise.all([
-      propertyService.searchProperties({
-        filters,
-        pagination: { limit, page: offset / limit + 1 },
-      }),
+      propertyService.searchProperties(
+        {
+          filters,
+          pagination: { limit, page: offset / limit + 1 },
+        },
+        {
+          select: propertySelect,
+          includeCount,
+          includeNeighborhoods,
+        }
+      ),
       neighborhoodsPromise(),
     ])
 
