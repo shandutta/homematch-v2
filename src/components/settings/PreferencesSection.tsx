@@ -728,7 +728,6 @@ export function PreferencesSection({
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true
-      return
     }
 
     if (!hasUnsavedChanges) {
