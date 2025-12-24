@@ -604,6 +604,8 @@ export function PreferencesSection({
 
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSaveRef = useRef<{ silent?: boolean } | null>(null)
+  const loadingRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -642,7 +644,11 @@ export function PreferencesSection({
 
   const savePreferences = useCallback(
     async (options?: { silent?: boolean }) => {
-      if (loading) return
+      if (loadingRef.current) {
+        pendingSaveRef.current = options ?? {}
+        return
+      }
+      loadingRef.current = true
       setLoading(true)
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current)
@@ -665,9 +671,15 @@ export function PreferencesSection({
         }
       } finally {
         setLoading(false)
+        loadingRef.current = false
+        if (pendingSaveRef.current) {
+          const pending = pendingSaveRef.current
+          pendingSaveRef.current = null
+          void savePreferences(pending)
+        }
       }
     },
-    [buildPreferencesPayload, loading, onProfileUpdate, user.id, userService]
+    [buildPreferencesPayload, onProfileUpdate, user.id, userService]
   )
 
   const storedSnapshot = useMemo(

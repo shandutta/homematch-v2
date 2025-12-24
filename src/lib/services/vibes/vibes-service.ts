@@ -290,6 +290,45 @@ export class VibesService {
       .slice(0, maxItems)
   }
 
+  private static extractJsonPayload(raw: string): string {
+    let text = raw.trim()
+    if (text.startsWith('```')) {
+      text = text
+        .replace(/^```(?:json)?/i, '')
+        .replace(/```$/i, '')
+        .trim()
+    }
+
+    const firstBrace = text.indexOf('{')
+    const lastBrace = text.lastIndexOf('}')
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      text = text.slice(firstBrace, lastBrace + 1)
+    }
+
+    return text
+  }
+
+  private static repairJsonString(text: string): string {
+    return text
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/}\s*{/g, '},{')
+      .replace(/}\s*"/g, '},"')
+      .replace(/"\s*{/g, '",{')
+  }
+
+  private static parseJsonWithRepair(raw: string): {
+    value: unknown
+    repairApplied: boolean
+  } {
+    const extracted = VibesService.extractJsonPayload(raw)
+    try {
+      return { value: JSON.parse(extracted), repairApplied: false }
+    } catch {
+      const repaired = VibesService.repairJsonString(extracted)
+      return { value: JSON.parse(repaired), repairApplied: true }
+    }
+  }
+
   private static repairVibesCandidate(value: unknown): unknown {
     if (!VibesService.isRecord(value)) return value
 
@@ -481,7 +520,7 @@ export class VibesService {
     )
 
     // Parse and validate response
-    const rawContent = response.choices[0]?.message?.content
+    const rawContent = response.choices?.[0]?.message?.content
     if (!rawContent) {
       throw new Error('Empty response from LLM')
     }
@@ -489,7 +528,9 @@ export class VibesService {
     let parsedVibes: LLMVibesOutput
     let repairApplied = false
     try {
-      const parsed = JSON.parse(rawContent) as unknown
+      const parsedResult = VibesService.parseJsonWithRepair(rawContent)
+      const parsed = parsedResult.value
+      repairApplied = parsedResult.repairApplied
 
       const firstPass = llmVibesOutputSchema.safeParse(parsed)
       if (firstPass.success) {

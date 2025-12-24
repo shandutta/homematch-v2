@@ -12,9 +12,9 @@
  * Get worker-specific test user to prevent auth race conditions
  * Each Playwright worker gets its own isolated test user
  */
-const WORKER_TEST_USER_COUNT = 8
+export const WORKER_TEST_USER_COUNT = 8
 
-const normalizeWorkerIndex = (workerIndex: number) => {
+export const normalizeWorkerIndex = (workerIndex: number) => {
   const safeIndex =
     Number.isFinite(workerIndex) && workerIndex >= 0
       ? Math.floor(workerIndex)

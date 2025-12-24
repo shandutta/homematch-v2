@@ -5,7 +5,7 @@
 
 import { test as setup } from '@playwright/test'
 import type { BrowserContext, Page, TestInfo } from '@playwright/test'
-import { TEST_USERS } from '../fixtures/test-data'
+import { TEST_USERS, WORKER_TEST_USER_COUNT } from '../fixtures/test-data'
 import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 import { getSupabaseAuthStorageKey } from '../../src/lib/supabase/storage-keys'
 import path from 'path'
@@ -87,10 +87,8 @@ setup(
     const hostname = resolveHostname(baseUrl)
     const storageKey = getSupabaseAuthStorageKey(hostname)
 
-    const totalWorkers = Math.max(1, testInfo.config.workers ?? 1)
-    // Playwright worker indices can be offset by the setup/teardown projects.
-    // Seed one extra auth state so the first Chromium worker after setup has a cache hit.
-    const workersToSeed = Math.min(totalWorkers + 1, 8)
+    // Seed all worker test users so modulo worker indices can always reuse storage.
+    const workersToSeed = WORKER_TEST_USER_COUNT
 
     for (let workerIndex = 0; workerIndex < workersToSeed; workerIndex++) {
       const authFile = path.join(authDir, `user-worker-${workerIndex}.json`)

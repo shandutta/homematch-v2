@@ -211,11 +211,11 @@ export const llmVibesOutputSchema = z.object({
   // Lifestyle fits: who would love this home and why
   lifestyleFits: z.array(lifestyleFitSchema).min(2).max(6),
   // Notable features: specific standout details
-  notableFeatures: z.array(notableFeatureSchema).min(2).max(8),
+  notableFeatures: z.array(notableFeatureSchema).min(0).max(8),
   // Aesthetics: visual analysis
   aesthetics: aestheticsSchema,
   // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
-  emotionalHooks: z.array(z.string().max(200)).min(1).max(4),
+  emotionalHooks: z.array(z.string().max(200)).min(0).max(4),
   // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
   suggestedTags: z.array(z.enum(ALL_PROPERTY_TAGS)).min(2).max(8),
 })

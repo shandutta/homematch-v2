@@ -13,6 +13,7 @@ import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
+import { ensureOnDashboard } from '../utils/navigation'
 import { getWorkerTestUser } from '../fixtures/test-data'
 
 function getRequiredEnv(name: string): string {
@@ -475,12 +476,7 @@ test.describe('Couples full journey (real UI)', () => {
 
       // The invite page pushes to /dashboard client-side; if that navigation flakes,
       // keep the journey moving once the DB confirms membership.
-      await partnerPage
-        .waitForURL(/\/dashboard/, { timeout: 5000 })
-        .catch(() => {})
-      if (!partnerPage.url().includes('/dashboard')) {
-        await partnerPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
-      }
+      await ensureOnDashboard(partnerPage, { initialWaitMs: 5000 })
 
       // Inviter should now see an active couples page after refresh
       await page.reload({ waitUntil: 'domcontentloaded' })
@@ -490,7 +486,7 @@ test.describe('Couples full journey (real UI)', () => {
       })
 
       // Like the seeded property as inviter
-      await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+      await ensureOnDashboard(page)
       await likePropertyFromDashboard(page, propertyAddress!, propertyId!)
       await waitFor(
         async () => {
@@ -508,7 +504,7 @@ test.describe('Couples full journey (real UI)', () => {
       )
 
       // Like the same seeded property as partner (triggers mutual-like flow)
-      await partnerPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+      await ensureOnDashboard(partnerPage)
       await likePropertyFromDashboard(
         partnerPage,
         propertyAddress!,

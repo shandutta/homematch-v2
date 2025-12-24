@@ -13,6 +13,7 @@ import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { ensureOnDashboard } from '../utils/navigation'
 import { getWorkerTestUser } from '../fixtures/test-data'
 
 function getRequiredEnv(name: string): string {
@@ -348,10 +349,7 @@ test.describe('Couples invite acceptance (leave household first)', () => {
       await waitForInviteStatus(service, token, 'accepted')
       await waitForInviteAcceptedBy(service, token, inviteeId)
 
-      if (!page.url().includes('/dashboard')) {
-        await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
-      }
-
+      await ensureOnDashboard(page)
       await expect(page).toHaveURL(/\/dashboard/)
     } finally {
       await safeCleanup('restore invitee profile', async () => {

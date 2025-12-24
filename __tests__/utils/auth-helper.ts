@@ -9,6 +9,7 @@ import {
   TEST_ROUTES,
   TEST_TIMEOUTS,
   getWorkerTestUser,
+  normalizeWorkerIndex,
 } from '../fixtures/test-data'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -850,7 +851,11 @@ export class AuthHelper {
    * Get the auth storage file path for a worker
    */
   static getAuthFilePath(workerIndex: number): string {
-    return path.join(AUTH_DIR, `user-worker-${workerIndex}.json`)
+    const directPath = path.join(AUTH_DIR, `user-worker-${workerIndex}.json`)
+    if (fs.existsSync(directPath)) return directPath
+
+    const normalizedWorkerIndex = normalizeWorkerIndex(workerIndex)
+    return path.join(AUTH_DIR, `user-worker-${normalizedWorkerIndex}.json`)
   }
 
   /**
