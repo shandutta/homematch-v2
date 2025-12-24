@@ -509,51 +509,86 @@ export class VibesService {
       'low' // Use low detail to reduce token costs
     )
 
-    // Call LLM
-    const { response, usage } = await this.client.chatCompletion(
-      [{ role: 'system', content: systemPrompt }, userMessage],
-      {
-        temperature: 0.7,
-        maxTokens: 2000,
-        responseFormat: { type: 'json_object' },
-      }
-    )
+    const attemptConfigs = [
+      { temperature: 0.7, maxTokens: 2000 },
+      { temperature: 0.2, maxTokens: 2000 },
+    ]
 
-    // Parse and validate response
-    const rawContent = response.choices?.[0]?.message?.content
-    if (!rawContent) {
-      throw new Error('Empty response from LLM')
+    let parsedVibes: LLMVibesOutput | null = null
+    let rawOutput = ''
+    let repairApplied = false
+    let lastError: unknown = null
+    let lastPreview: string | null = null
+    const usageTotals: UsageInfo = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+      estimatedCostUsd: 0,
     }
 
-    let parsedVibes: LLMVibesOutput
-    let repairApplied = false
-    try {
-      const parsedResult = VibesService.parseJsonWithRepair(rawContent)
-      const parsed = parsedResult.value
-      repairApplied = parsedResult.repairApplied
-
-      const firstPass = llmVibesOutputSchema.safeParse(parsed)
-      if (firstPass.success) {
-        parsedVibes = firstPass.data
-      } else {
-        const repaired = VibesService.repairVibesCandidate(parsed)
-        const repairedPass = llmVibesOutputSchema.safeParse(repaired)
-        if (!repairedPass.success) {
-          throw repairedPass.error
+    for (let attempt = 0; attempt < attemptConfigs.length; attempt++) {
+      const { response, usage } = await this.client.chatCompletion(
+        [{ role: 'system', content: systemPrompt }, userMessage],
+        {
+          ...attemptConfigs[attempt],
+          responseFormat: { type: 'json_object' },
         }
-        parsedVibes = repairedPass.data
+      )
+
+      usageTotals.promptTokens += usage.promptTokens
+      usageTotals.completionTokens += usage.completionTokens
+      usageTotals.totalTokens += usage.totalTokens
+      usageTotals.estimatedCostUsd += usage.estimatedCostUsd
+
+      const rawContent = response.choices?.[0]?.message?.content
+      if (!rawContent) {
+        lastError = new Error('Empty response from LLM')
+        repairApplied = true
+        continue
+      }
+
+      rawOutput = rawContent
+
+      try {
+        const parsedResult = VibesService.parseJsonWithRepair(rawContent)
+        const parsed = parsedResult.value
+        const jsonRepairApplied = parsedResult.repairApplied
+
+        const firstPass = llmVibesOutputSchema.safeParse(parsed)
+        if (firstPass.success) {
+          parsedVibes = firstPass.data
+        } else {
+          const repaired = VibesService.repairVibesCandidate(parsed)
+          const repairedPass = llmVibesOutputSchema.safeParse(repaired)
+          if (!repairedPass.success) {
+            throw repairedPass.error
+          }
+          parsedVibes = repairedPass.data
+          repairApplied = true
+        }
+
+        repairApplied = repairApplied || jsonRepairApplied || attempt > 0
+        break
+      } catch (parseError) {
+        lastError = parseError
+        lastPreview =
+          rawContent.length > 2000
+            ? `${rawContent.slice(0, 2000)}…`
+            : rawContent
         repairApplied = true
       }
-    } catch (parseError) {
-      const preview =
-        rawContent.length > 2000 ? `${rawContent.slice(0, 2000)}…` : rawContent
-      console.error(
-        '[VibesService] Failed to parse/validate LLM response:',
-        `property=${property.id}`,
-        preview
-      )
+    }
+
+    if (!parsedVibes) {
+      if (lastPreview) {
+        console.error(
+          '[VibesService] Failed to parse/validate LLM response:',
+          `property=${property.id}`,
+          lastPreview
+        )
+      }
       throw new Error(
-        `Failed to parse LLM response: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        `Failed to parse LLM response: ${lastError instanceof Error ? lastError.message : String(lastError)}`
       )
     }
 
@@ -564,9 +599,9 @@ export class VibesService {
       propertyId: property.id,
       vibes,
       images,
-      usage,
+      usage: usageTotals,
       processingTimeMs,
-      rawOutput: rawContent,
+      rawOutput,
       repairApplied,
     }
   }
