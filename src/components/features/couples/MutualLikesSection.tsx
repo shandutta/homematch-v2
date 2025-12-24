@@ -102,7 +102,7 @@ export function MutualLikesSection({
   if (loading) {
     return (
       <Card
-        className={`border-white/10 ${className}`}
+        className={`min-h-[320px] border-white/10 ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
           borderColor: dashboardTokens.colors.secondary[700],
@@ -153,7 +153,7 @@ export function MutualLikesSection({
   if (error) {
     return (
       <Card
-        className={`border-couples-accent/20 ${className}`}
+        className={`border-couples-accent/20 min-h-[320px] ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
           borderColor: dashboardTokens.colors.secondary[700],
@@ -202,7 +202,7 @@ export function MutualLikesSection({
   if (mutualLikes.length === 0) {
     return (
       <Card
-        className={`border-couples-primary/20 ${className}`}
+        className={`border-couples-primary/20 min-h-[320px] ${className}`}
         style={{
           backgroundColor: dashboardTokens.colors.background.cardDark,
           borderColor: dashboardTokens.colors.secondary[700],
@@ -285,7 +285,7 @@ export function MutualLikesSection({
 
   return (
     <Card
-      className={`${className}`}
+      className={`min-h-[320px] ${className}`}
       style={{
         backgroundColor: dashboardTokens.colors.background.cardDark,
         borderColor: dashboardTokens.colors.secondary[700],
