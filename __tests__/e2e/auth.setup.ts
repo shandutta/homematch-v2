@@ -15,6 +15,8 @@ import fs from 'fs'
 const authDir = path.join(__dirname, '../../playwright/.auth')
 const FRESH_USER_STORAGE_INDEX = 99
 
+setup.setTimeout(240000)
+
 const resolveBaseUrl = (testInfo: TestInfo) => {
   const fromConfig = testInfo?.project?.use?.baseURL
   if (typeof fromConfig === 'string' && fromConfig) return fromConfig
