@@ -129,6 +129,63 @@ const run = (command, options = {}) => {
   }).trim()
 }
 
+const gitDir = path.join(repoRoot, '.git')
+
+const getCurrentBranch = () => {
+  try {
+    return run('git rev-parse --abbrev-ref HEAD')
+  } catch (error) {
+    console.error(
+      `[${timestamp()}] Failed to read current git branch:`,
+      error.message
+    )
+    process.exit(1)
+  }
+}
+
+const hasMergeInProgress = () => {
+  return (
+    fs.existsSync(path.join(gitDir, 'MERGE_HEAD')) ||
+    fs.existsSync(path.join(gitDir, 'rebase-apply')) ||
+    fs.existsSync(path.join(gitDir, 'rebase-merge'))
+  )
+}
+
+const hasUnmergedFiles = () => {
+  try {
+    return run('git ls-files -u').length > 0
+  } catch (error) {
+    console.error(
+      `[${timestamp()}] Failed to check for unmerged files:`,
+      error.message
+    )
+    process.exit(1)
+  }
+}
+
+const ensureSafeGitState = () => {
+  const branch = getCurrentBranch()
+  const allowNonMain = process.env.AUTO_COMMIT_ALLOW_NON_MAIN === 'true'
+
+  if (branch !== 'main' && !allowNonMain) {
+    log(`Skipping auto-commit: on branch ${branch}`)
+    log('exit_code=0 status=success')
+    process.exit(0)
+  }
+
+  if (hasMergeInProgress()) {
+    log('Skipping auto-commit: merge/rebase in progress')
+    log('exit_code=0 status=success')
+    process.exit(0)
+  }
+
+  if (hasUnmergedFiles()) {
+    log('Skipping auto-commit: unmerged files')
+    log('exit_code=0 status=success')
+    process.exit(0)
+  }
+}
+
 const hasChanges = () => {
   try {
     const result = run('git status --porcelain')
@@ -586,6 +643,7 @@ const gitPullRebase = () => {
 
 const main = async () => {
   log('Starting auto-commit run')
+  ensureSafeGitState()
 
   // Always pull first to stay in sync with other machines
   gitPullRebase()

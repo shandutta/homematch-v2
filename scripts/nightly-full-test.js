@@ -37,7 +37,7 @@ function logLine(message) {
   appendToConsole(line)
 }
 
-function runCommand(name, command, args) {
+function runCommand(name, command, args, envOverrides = {}) {
   return new Promise((resolve) => {
     const header = `\n--- Running ${name} ---\n`
     appendToReport(header)
@@ -50,6 +50,7 @@ function runCommand(name, command, args) {
         ...process.env,
         CI: 'true', // Force CI mode for headless E2E etc.
         FORCE_COLOR: '0', // Disable color for log file readability
+        ...envOverrides,
       },
     })
 
@@ -106,9 +107,19 @@ function runCommand(name, command, args) {
     success = false
   }
 
+  const e2eEnv = {
+    PLAYWRIGHT_WORKERS: process.env.PLAYWRIGHT_WORKERS || '1',
+    PLAYWRIGHT_ALL_BROWSERS: process.env.PLAYWRIGHT_ALL_BROWSERS || 'false',
+    E2E_RESET_DB: process.env.E2E_RESET_DB || 'true',
+    PLAYWRIGHT_RESET_DB: process.env.PLAYWRIGHT_RESET_DB || 'true',
+    WARMUP_DEV_COMMAND:
+      process.env.WARMUP_DEV_COMMAND ||
+      'npx next dev --hostname 0.0.0.0 --port 3000',
+  }
+
   // 3. E2E Tests (using headless mode explicitly if needed, but CI=true usually suffices)
   // We use the direct playwright wrapper via pnpm script
-  if (!(await runCommand('E2E Tests', pnpmCmd, ['test:e2e']))) {
+  if (!(await runCommand('E2E Tests', pnpmCmd, ['test:e2e'], e2eEnv))) {
     success = false
   }
 

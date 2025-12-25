@@ -67,6 +67,13 @@ const workerSource = hasValidWorkerOverride
   : isCI
     ? 'CI default (2)'
     : `forced local limit (2) to prevent Supabase overload`
+const allBrowsersEnv = process.env.PLAYWRIGHT_ALL_BROWSERS
+const shouldRunAllBrowsers =
+  allBrowsersEnv === 'true' || allBrowsersEnv === '1'
+    ? true
+    : allBrowsersEnv === 'false' || allBrowsersEnv === '0'
+      ? false
+      : isCI
 
 // Only log from main process to avoid spamming logs (config is loaded by each worker)
 if (!process.env.TEST_WORKER_INDEX) {
@@ -155,7 +162,7 @@ export default defineConfig({
     },
 
     // Firefox and WebKit only run in CI (or when PLAYWRIGHT_ALL_BROWSERS=true)
-    ...(isCI || process.env.PLAYWRIGHT_ALL_BROWSERS
+    ...(shouldRunAllBrowsers
       ? [
           {
             name: 'firefox',
