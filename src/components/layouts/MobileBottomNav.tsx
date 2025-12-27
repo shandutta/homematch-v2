@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
   },
   {
     href: '/couples',
-    label: 'Shared Likes',
+    label: 'Shared',
     icon: HeartHandshake,
     isActive: (pathname) =>
       pathname === '/couples' ||
@@ -92,7 +92,9 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
                   ? 'bg-white/[0.08] text-white shadow-[0_12px_30px_rgba(0,0,0,0.25)]'
                   : 'text-white/60 hover:bg-white/[0.06] hover:text-white'
               )}
-              aria-label={item.label}
+              aria-label={
+                item.href === '/couples' ? 'Shared Likes' : item.label
+              }
               aria-current={isActive ? 'page' : undefined}
               data-testid={item.testId}
             >

@@ -224,7 +224,7 @@ export function SwipeablePropertyCard({
     return (
       <div
         className={cn(
-          'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-20 md:pb-16',
+          'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-24 md:pb-16',
           className
         )}
       >
@@ -245,7 +245,7 @@ export function SwipeablePropertyCard({
   return (
     <div
       className={cn(
-        'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-20 md:pb-16',
+        'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-24 md:pb-16',
         className
       )}
     >
@@ -368,7 +368,7 @@ export function SwipeablePropertyCard({
             <AnimatePresence>
               {shouldShowHints && (
                 <MotionDiv
-                  className="pointer-events-none absolute top-20 left-1/2 z-20 w-full max-w-[80%] -translate-x-1/2 md:top-24"
+                  className="pointer-events-none absolute bottom-40 left-1/2 z-20 w-full max-w-[80%] -translate-x-1/2 md:bottom-36"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
@@ -439,7 +439,7 @@ export function SwipeablePropertyCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="safe-area-bottom pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-4 pb-4 md:pb-3">
+      <div className="safe-area-bottom pointer-events-none absolute inset-x-0 bottom-12 flex justify-center px-4 pb-4 md:bottom-0 md:pb-3">
         <div className="bg-hm-obsidian-900/90 pointer-events-auto flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
           <MotionButton
             onClick={() => swipeCard('left')}
