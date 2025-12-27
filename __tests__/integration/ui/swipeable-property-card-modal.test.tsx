@@ -7,21 +7,61 @@ import { PropertyDetailProvider } from '@/components/property/PropertyDetailProv
 import { SwipeablePropertyCard } from '@/components/properties/SwipeablePropertyCard'
 import type { Property } from '@/lib/schemas/property'
 
+type MotionDivProps = React.HTMLProps<HTMLDivElement> & Record<string, unknown>
+type MotionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  Record<string, unknown>
+
+const stripMotionProps = (props: Record<string, unknown>) => {
+  const {
+    animate: _animate,
+    initial: _initial,
+    exit: _exit,
+    variants: _variants,
+    whileHover: _whileHover,
+    whileTap: _whileTap,
+    whileInView: _whileInView,
+    transition: _transition,
+    drag: _drag,
+    dragConstraints: _dragConstraints,
+    dragElastic: _dragElastic,
+    dragTransition: _dragTransition,
+    layout: _layout,
+    layoutId: _layoutId,
+    transformTemplate: _transformTemplate,
+    onUpdate: _onUpdate,
+    onAnimationComplete: _onAnimationComplete,
+    viewport: _viewport,
+    motionProps: _motionProps,
+    onTap: _onTap,
+    ...rest
+  } = props
+  return rest
+}
+
 vi.mock('framer-motion', () => {
-  const MockMotionDiv = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
-  >(({ children, ...rest }, ref) => (
-    <div ref={ref} {...rest}>
-      {children}
-    </div>
-  ))
+  const MockMotionDiv = React.forwardRef<HTMLDivElement, MotionDivProps>(
+    ({ children, ...rest }, ref) => {
+      const domProps = stripMotionProps(rest)
+      return (
+        <div ref={ref} {...domProps}>
+          {children}
+        </div>
+      )
+    }
+  )
   MockMotionDiv.displayName = 'MockMotionDiv'
 
   const MockMotionButton = React.forwardRef<
     HTMLButtonElement,
-    React.HTMLProps<HTMLButtonElement>
-  >((props, ref) => <button ref={ref} {...props} />)
+    MotionButtonProps
+  >(({ children, ...props }, ref) => {
+    const domProps = stripMotionProps(props)
+    return (
+      <button ref={ref} {...domProps}>
+        {children}
+      </button>
+    )
+  })
   MockMotionButton.displayName = 'MockMotionButton'
 
   return {
@@ -48,17 +88,17 @@ vi.mock('framer-motion', () => {
 })
 
 vi.mock('@/components/ui/motion-components', () => {
-  const MockMotionDiv = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
-  >(({ children, ...rest }, ref) => {
-    const { onTap, onClick, ...restProps } = rest
-    return (
-      <div ref={ref} onClick={onTap ?? onClick} {...restProps}>
-        {children}
-      </div>
-    )
-  })
+  const MockMotionDiv = React.forwardRef<HTMLDivElement, MotionDivProps>(
+    ({ children, ...rest }, ref) => {
+      const { onTap, onClick, ...restProps } = rest
+      const domProps = stripMotionProps(restProps)
+      return (
+        <div ref={ref} onClick={onTap ?? onClick} {...domProps}>
+          {children}
+        </div>
+      )
+    }
+  )
   MockMotionDiv.displayName = 'MockMotionDiv'
   return { MotionDiv: MockMotionDiv }
 })
@@ -66,10 +106,11 @@ vi.mock('@/components/ui/motion-components', () => {
 vi.mock('@/components/ui/motion-button', () => ({
   MotionButton: ({
     children,
+    motionProps: _motionProps,
     ...props
-  }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button {...props}>{children}</button>
-  ),
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    motionProps?: Record<string, unknown>
+  }) => <button {...props}>{children}</button>,
 }))
 
 vi.mock('@/components/property/PropertyMap', () => ({

@@ -144,6 +144,84 @@ function normalizeStatus(status?: string): string {
   return 'active'
 }
 
+function normalizeZip(value?: string | number | null): string {
+  if (value === null || value === undefined) return ''
+  const match = String(value).match(/\d{5}/)
+  return match ? match[0] : ''
+}
+
+function cityStateKey(city: string, state: string): string {
+  return `${city.trim().toUpperCase()}|${state.trim().toUpperCase()}`
+}
+
+type ZipFallbackMap = Map<string, Map<string, number>>
+
+function addZipFallback(
+  zipFallbacks: ZipFallbackMap,
+  city: string,
+  state: string,
+  zip: string
+) {
+  if (!city || !state || !zip) return
+  const key = cityStateKey(city, state)
+  if (!zipFallbacks.has(key)) {
+    zipFallbacks.set(key, new Map())
+  }
+  const entry = zipFallbacks.get(key)!
+  entry.set(zip, (entry.get(zip) || 0) + 1)
+}
+
+function resolveZipFallback(
+  zipFallbacks: ZipFallbackMap | undefined,
+  city: string,
+  state: string
+): string {
+  if (!zipFallbacks || !city || !state) return ''
+  const entry = zipFallbacks.get(cityStateKey(city, state))
+  if (!entry) return ''
+  let bestZip = ''
+  let bestCount = 0
+  for (const [zip, count] of entry.entries()) {
+    if (count > bestCount) {
+      bestZip = zip
+      bestCount = count
+    }
+  }
+  return bestZip
+}
+
+function applyFallbackLocation(
+  city: string,
+  state: string,
+  fallbackLocation?: string
+): { city: string; state: string } {
+  if (!fallbackLocation || (city && state)) return { city, state }
+  const locParts = fallbackLocation.split(',').map((s) => s.trim())
+  if (locParts.length < 2) return { city, state }
+  return {
+    city: city || locParts.slice(0, locParts.length - 1).join(', '),
+    state: state || locParts[locParts.length - 1],
+  }
+}
+
+function collectZipFallbacks(
+  items: ZillowSearchItem[],
+  zipFallbacks: ZipFallbackMap,
+  fallbackLocation?: string
+) {
+  items.forEach((item) => {
+    const zip = normalizeZip(item.zipcode ?? null)
+    if (!zip) return
+    const { city, state } = applyFallbackLocation(
+      item.city || '',
+      item.state || '',
+      fallbackLocation
+    )
+    if (!city || !state) return
+    addZipFallback(zipFallbacks, city, state, zip)
+  })
+}
+
 function extractResults(data: ZillowSearchResponse): ZillowSearchItem[] {
   if (Array.isArray(data.props)) return data.props
   if (Array.isArray(data.results)) return data.results
@@ -263,7 +341,8 @@ export async function fetchZillowSearchPage(options: {
 
 function parseAddressParts(
   item: ZillowSearchItem,
-  fallbackLocation?: string
+  fallbackLocation?: string,
+  zipFallbacks?: ZipFallbackMap
 ): { address: string; city: string; state: string; zip: string } | null {
   const address = item.address || item.streetAddress || ''
   if (!address) return null
@@ -271,7 +350,7 @@ function parseAddressParts(
   let street = address
   let city = item.city || ''
   let state = item.state || ''
-  let zip = item.zipcode ? String(item.zipcode) : ''
+  let zip = normalizeZip(item.zipcode ?? null)
 
   // Attempt to parse "123 Main St, San Francisco, CA 94105"
   const parts = address.split(',').map((s) => s.trim())
@@ -287,8 +366,12 @@ function parseAddressParts(
       if (m) {
         state = state || m[1]
         zip = zip || m[2]
-      } else if (/^[A-Z]{2}$/.test(stateZipPart)) {
-        state = state || stateZipPart
+      }
+      if (!zip) {
+        zip = normalizeZip(stateZipPart) || zip
+      }
+      if (!state && /^[A-Z]{2}$/.test(stateZipPart)) {
+        state = stateZipPart
       }
     }
     if (addrPart) street = addrPart
@@ -296,14 +379,20 @@ function parseAddressParts(
 
   // Fallback: use provided location ("City, ST") if parsing failed
   if (fallbackLocation && (!city || !state)) {
-    const locParts = fallbackLocation.split(',').map((s) => s.trim())
-    if (locParts.length >= 2) {
-      city = city || locParts.slice(0, locParts.length - 1).join(', ')
-      state = state || locParts[locParts.length - 1]
-    }
+    const applied = applyFallbackLocation(city, state, fallbackLocation)
+    city = applied.city
+    state = applied.state
   }
 
   if (!city || !state) return null
+
+  if (!zip) {
+    zip = normalizeZip(address)
+  }
+
+  if (!zip) {
+    zip = resolveZipFallback(zipFallbacks, city, state)
+  }
 
   // Use default zip if missing but we have city/state
   if (!zip) {
@@ -323,11 +412,12 @@ function parseAddressParts(
 
 export function mapSearchItemToRaw(
   item: ZillowSearchItem,
-  locationForFallback?: string
+  locationForFallback?: string,
+  zipFallbacks?: ZipFallbackMap
 ): RawPropertyData | null {
   if (!item?.zpid) return null
 
-  const parsed = parseAddressParts(item, locationForFallback)
+  const parsed = parseAddressParts(item, locationForFallback, zipFallbacks)
   if (!parsed) return null
   const { address, city, state, zip } = parsed
 
@@ -413,6 +503,7 @@ export async function ingestZillowLocations(
       errors: [],
     }
     const locationTypeCounts: Record<string, number> = {}
+    const zipFallbacks: ZipFallbackMap = new Map()
 
     let page = 1
     let hasMore = true
@@ -448,8 +539,10 @@ export async function ingestZillowLocations(
         break
       }
 
+      collectZipFallbacks(pageResult.items, zipFallbacks, location)
+
       const rawItems = pageResult.items
-        .map((it) => mapSearchItemToRaw(it, location))
+        .map((it) => mapSearchItemToRaw(it, location, zipFallbacks))
         .filter(Boolean) as RawPropertyData[]
 
       locationSummary.attempted += pageResult.items.length

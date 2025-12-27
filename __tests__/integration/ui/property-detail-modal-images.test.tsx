@@ -11,7 +11,12 @@ vi.mock('@/components/ui/dialog', () => ({
       {children}
     </div>
   ),
-  DialogContent: ({ children, ...props }: any) => (
+  DialogContent: ({
+    children,
+    onCloseAutoFocus: _onCloseAutoFocus,
+    showCloseButton: _showCloseButton,
+    ...props
+  }: any) => (
     <div data-testid="dialog-content" {...props}>
       {children}
     </div>
