@@ -11,32 +11,33 @@ type MotionDivProps = React.HTMLProps<HTMLDivElement> & Record<string, unknown>
 type MotionButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   Record<string, unknown>
 
-const stripMotionProps = (props: Record<string, unknown>) => {
-  const {
-    animate: _animate,
-    initial: _initial,
-    exit: _exit,
-    variants: _variants,
-    whileHover: _whileHover,
-    whileTap: _whileTap,
-    whileInView: _whileInView,
-    transition: _transition,
-    drag: _drag,
-    dragConstraints: _dragConstraints,
-    dragElastic: _dragElastic,
-    dragTransition: _dragTransition,
-    layout: _layout,
-    layoutId: _layoutId,
-    transformTemplate: _transformTemplate,
-    onUpdate: _onUpdate,
-    onAnimationComplete: _onAnimationComplete,
-    viewport: _viewport,
-    motionProps: _motionProps,
-    onTap: _onTap,
-    ...rest
-  } = props
-  return rest
-}
+const motionPropKeys = new Set([
+  'animate',
+  'initial',
+  'exit',
+  'variants',
+  'whileHover',
+  'whileTap',
+  'whileInView',
+  'transition',
+  'drag',
+  'dragConstraints',
+  'dragElastic',
+  'dragTransition',
+  'layout',
+  'layoutId',
+  'transformTemplate',
+  'onUpdate',
+  'onAnimationComplete',
+  'viewport',
+  'motionProps',
+  'onTap',
+])
+
+const stripMotionProps = (props: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(props).filter(([key]) => !motionPropKeys.has(key))
+  )
 
 vi.mock('framer-motion', () => {
   const MockMotionDiv = React.forwardRef<HTMLDivElement, MotionDivProps>(

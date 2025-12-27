@@ -1,5 +1,13 @@
-import { describe, test, expect, beforeAll, beforeEach, jest } from '@jest/globals'
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  jest,
+} from '@jest/globals'
 import type { NextRequest } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -23,12 +31,7 @@ const supabaseMock = {
   from: jest.fn(),
 }
 
-const createApiClientMock = jest.fn(() => supabaseMock)
-
-jest.mock('@/lib/supabase/server', () => ({
-  __esModule: true,
-  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
-}))
+const createApiClientMock = jest.mocked(createApiClient)
 
 const notifyInteractionMock = jest.fn()
 const checkPotentialMutualLikeMock = jest.fn()
@@ -66,7 +69,8 @@ describe('couples notify API route', () => {
 
   beforeEach(() => {
     jsonMock.mockClear()
-    createApiClientMock.mockClear()
+    createApiClientMock.mockReset()
+    createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockReset()
     notifyInteractionMock.mockReset()
