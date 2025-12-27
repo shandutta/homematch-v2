@@ -14,6 +14,8 @@ if (!fs.existsSync(LOG_DIR)) {
 }
 
 const REPORT_FILE = path.join(LOG_DIR, 'nightly-test-report.txt')
+const PUBLIC_REPORT_PATH =
+  process.env.NIGHTLY_FULL_TEST_PUBLIC_REPORT_PATH || ''
 const TIMESTAMP = new Date().toISOString()
 
 const echoRawOutput = Boolean(
@@ -35,6 +37,21 @@ function logLine(message) {
   const line = message.endsWith('\n') ? message : `${message}\n`
   appendToReport(line)
   appendToConsole(line)
+}
+
+function publishReport() {
+  if (!PUBLIC_REPORT_PATH) return
+  try {
+    fs.mkdirSync(path.dirname(PUBLIC_REPORT_PATH), { recursive: true })
+    fs.copyFileSync(REPORT_FILE, PUBLIC_REPORT_PATH)
+    appendToConsole(
+      `[nightly-full-test] Published report to ${PUBLIC_REPORT_PATH}\n`
+    )
+  } catch (error) {
+    appendToConsole(
+      `[nightly-full-test] Failed to publish report to ${PUBLIC_REPORT_PATH}: ${error.message}\n`
+    )
+  }
 }
 
 function runCommand(name, command, args, envOverrides = {}) {
@@ -133,5 +150,6 @@ function runCommand(name, command, args, envOverrides = {}) {
   logLine(
     `[nightly-full-test] EXIT_CODE=${exitCode} STATUS=${success ? 'success' : 'error'}`
   )
+  publishReport()
   process.exit(exitCode)
 })()

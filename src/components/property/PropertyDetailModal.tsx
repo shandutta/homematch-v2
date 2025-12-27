@@ -496,38 +496,40 @@ export function PropertyDetailModal({
           </div>
 
           {onDecision && (
-            <div className="safe-area-bottom bg-hm-obsidian-900/95 border-t border-white/10 px-4 py-4 backdrop-blur sm:px-6">
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDecision(property.id, 'skip')
-                    onOpenChange(false)
-                  }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/80 bg-red-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
-                  aria-label="Pass property"
-                  data-testid="pass-button"
-                >
-                  <X className="h-6 w-6" strokeWidth={2.5} />
-                  Pass
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDecision(property.id, 'liked')
-                    onOpenChange(false)
-                  }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
-                  aria-label="Like property"
-                  data-testid="like-button"
-                >
-                  <Heart
-                    className="h-6 w-6"
-                    strokeWidth={2.5}
-                    fill="currentColor"
-                  />
-                  Like
-                </button>
+            <div className="safe-area-bottom bg-hm-obsidian-900/95 border-t border-white/10 backdrop-blur">
+              <div className="px-4 py-4 sm:px-6">
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDecision(property.id, 'skip')
+                      onOpenChange(false)
+                    }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/80 bg-red-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-red-600 focus-visible:ring-4 focus-visible:ring-red-200/80"
+                    aria-label="Pass property"
+                    data-testid="pass-button"
+                  >
+                    <X className="h-6 w-6" strokeWidth={2.5} />
+                    Pass
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDecision(property.id, 'liked')
+                      onOpenChange(false)
+                    }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-500/80 bg-emerald-500 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-emerald-600 focus-visible:ring-4 focus-visible:ring-emerald-200/80"
+                    aria-label="Like property"
+                    data-testid="like-button"
+                  >
+                    <Heart
+                      className="h-6 w-6"
+                      strokeWidth={2.5}
+                      fill="currentColor"
+                    />
+                    Like
+                  </button>
+                </div>
               </div>
             </div>
           )}
