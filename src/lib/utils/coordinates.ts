@@ -34,6 +34,11 @@ export type GeoJSONPolygon = {
   coordinates: CoordinateTuple[][]
 }
 
+export type GeoJSONMultiPolygon = {
+  type: 'MultiPolygon'
+  coordinates: CoordinateTuple[][][]
+}
+
 export type BoundingBox = {
   north: number
   south: number
@@ -125,6 +130,106 @@ export function parsePostGISGeometry(geometry: PostGISGeometry): LatLng | null {
     console.error('Error parsing PostGIS geometry:', error)
     return null
   }
+}
+
+/**
+ * Parse PostGIS polygon geometry into lat/lng rings.
+ * Supports GeoJSON Polygon/MultiPolygon, polygon strings, and coordinate arrays.
+ */
+export function parsePostGISPolygon(
+  geometry: PostGISGeometry
+): LatLng[][] | null {
+  if (!geometry) return null
+
+  if (typeof geometry === 'string') {
+    return parsePolygonString(geometry)
+  }
+
+  if (Array.isArray(geometry)) {
+    return normalizePolygonCoordinates(geometry)
+  }
+
+  if (typeof geometry === 'object') {
+    const candidate = geometry as {
+      type?: string
+      coordinates?: unknown
+    }
+    if (candidate.type === 'Polygon' && candidate.coordinates) {
+      return normalizePolygonCoordinates(candidate.coordinates)
+    }
+    if (candidate.type === 'MultiPolygon' && candidate.coordinates) {
+      const multi = candidate.coordinates as CoordinateTuple[][][]
+      const firstPolygon = multi[0]
+      if (!firstPolygon) return null
+      return normalizePolygonCoordinates(firstPolygon)
+    }
+  }
+
+  return null
+}
+
+function parsePolygonString(value: string): LatLng[][] | null {
+  const matches = value.match(/-?\d+(?:\.\d+)?/g)
+  if (!matches || matches.length < 6) return null
+
+  const numbers = matches.map((match) => Number(match))
+  if (numbers.some((num) => Number.isNaN(num))) return null
+
+  const ring: LatLng[] = []
+  for (let i = 0; i < numbers.length; i += 2) {
+    const lng = numbers[i]
+    const lat = numbers[i + 1]
+    if (typeof lng !== 'number' || typeof lat !== 'number') continue
+    if (!isValidLongitude(lng) || !isValidLatitude(lat)) continue
+    ring.push({ lat, lng })
+  }
+
+  const normalized = closeRing(ring)
+  return normalized ? [normalized] : null
+}
+
+function normalizePolygonCoordinates(input: unknown): LatLng[][] | null {
+  if (!Array.isArray(input)) return null
+
+  if (input.length === 0) return null
+
+  if (Array.isArray(input[0]) && typeof input[0][0] === 'number') {
+    const ring = parseCoordinateRing(input as CoordinateTuple[])
+    return ring ? [ring] : null
+  }
+
+  const rings: LatLng[][] = []
+  for (const ringInput of input) {
+    const ring = parseCoordinateRing(ringInput as CoordinateTuple[])
+    if (ring) rings.push(ring)
+  }
+
+  return rings.length > 0 ? rings : null
+}
+
+function parseCoordinateRing(coords: CoordinateTuple[] | unknown): LatLng[] | null {
+  if (!Array.isArray(coords) || coords.length < 3) return null
+
+  const ring: LatLng[] = []
+  for (const tuple of coords) {
+    if (!Array.isArray(tuple) || tuple.length < 2) return null
+    const [lng, lat] = tuple as CoordinateTuple
+    if (!isValidLongitude(lng) || !isValidLatitude(lat)) return null
+    ring.push({ lat, lng })
+  }
+
+  return closeRing(ring)
+}
+
+function closeRing(ring: LatLng[]): LatLng[] | null {
+  if (ring.length < 3) return null
+  const first = ring[0]
+  const last = ring[ring.length - 1]
+  if (!first || !last) return null
+  if (first.lat !== last.lat || first.lng !== last.lng) {
+    ring.push({ ...first })
+  }
+  return ring
 }
 
 /**

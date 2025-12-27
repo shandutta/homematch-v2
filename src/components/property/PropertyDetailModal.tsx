@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
 import {
   Bed,
@@ -24,13 +23,13 @@ import {
 } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
-import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
 import { InteractionType } from '@/types/app'
 import { formatPropertyType } from '@/lib/utils/formatPropertyType'
+import { Badge } from '@/components/ui/badge'
 
 interface PropertyDetailModalProps {
   property: Property | null
@@ -209,7 +208,25 @@ export function PropertyDetailModal({
     return value.toFixed(1).replace(/\.0$/, '')
   }
 
+  const getOneLiner = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return null
+    const match = trimmed.match(/^[^.!?]+[.!?]/)
+    const sentence = match ? match[0] : trimmed
+    if (sentence.length <= 140) return sentence
+    return `${sentence.slice(0, 137).trimEnd()}...`
+  }
+
   if (!property) return null
+
+  const propertyTypeLabel = property.property_type
+    ? formatPropertyType(property.property_type).toLowerCase()
+    : 'home'
+  const houseOneLiner =
+    vibes?.tagline ||
+    (property.description ? getOneLiner(property.description) : null) ||
+    `A ${propertyTypeLabel} to make your own.`
+  const propertyTags = vibes?.suggested_tags?.slice(0, 8) ?? []
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -341,9 +358,6 @@ export function PropertyDetailModal({
                 <DialogTitle className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight">
                   {property.address}
                 </DialogTitle>
-                <DialogDescription className="text-hm-stone-400">
-                  Explore photos, key stats, and the story behind this listing.
-                </DialogDescription>
                 <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
@@ -351,35 +365,6 @@ export function PropertyDetailModal({
                     {property.zip_code}
                   </span>
                 </div>
-                {neighborhoodVibes && (
-                  <div className="mt-3 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
-                    <div className="text-hm-amber-400 mt-0.5 rounded-full bg-amber-400/10 p-2">
-                      <MapPin className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-hm-stone-200 text-sm font-semibold">
-                        {neighborhoodVibes.tagline}
-                      </p>
-                      <p className="text-hm-stone-400 text-sm">
-                        {neighborhoodVibes.vibe_statement}
-                      </p>
-                      {neighborhoodVibes.suggested_tags?.length ? (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {neighborhoodVibes.suggested_tags
-                            .slice(0, 6)
-                            .map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/90"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
               </DialogHeader>
 
               <div className="grid grid-cols-3 gap-3">
@@ -415,22 +400,43 @@ export function PropertyDetailModal({
 
               <div className="space-y-3">
                 <h3 className="font-display text-hm-stone-200 text-lg font-medium">
-                  About this home
+                  Vibe snapshot
                 </h3>
-                <StorytellingDescription
-                  property={property}
-                  neighborhood={neighborhoodData || undefined}
-                  vibes={vibes}
-                  isMutualLike={mutualLikes.some(
-                    (ml) =>
-                      ml.property_id === property.id && ml.liked_by_count >= 2
-                  )}
-                  variant="full"
-                  showLifestyleTags={true}
-                  showFutureVision={true}
-                  showVibeStatement={false}
-                  showEmotionalHooks={false}
-                />
+                {neighborhoodVibes && (
+                  <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+                    <div className="text-hm-amber-400 mt-0.5 rounded-full bg-amber-400/10 p-2">
+                      <MapPin className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-hm-stone-200 text-sm font-semibold">
+                        Neighborhood vibe
+                      </p>
+                      <p className="text-hm-stone-400 text-sm">
+                        {neighborhoodVibes.vibe_statement}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-hm-stone-200 text-sm font-semibold">
+                    Home vibe
+                  </p>
+                  <p className="text-hm-stone-400 text-sm">{houseOneLiner}</p>
+                </div>
+                {propertyTags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {propertyTags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        data-tag={tag}
+                        className="bg-white/10 text-[11px] font-medium text-white/90"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className="space-y-3">

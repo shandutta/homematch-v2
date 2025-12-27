@@ -402,6 +402,14 @@ function parseAddressParts(
     }
   }
 
+  if (!zip && fallbackLocation) {
+    const fallback = applyFallbackLocation('', '', fallbackLocation)
+    const fallbackZip = defaultZipForCityState(fallback.city, fallback.state)
+    if (fallbackZip) {
+      zip = fallbackZip
+    }
+  }
+
   return {
     address: street,
     city,

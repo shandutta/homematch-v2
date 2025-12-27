@@ -7,7 +7,7 @@ import { buildCityStateKeys, type CityStatePair } from '@/lib/utils/postgrest'
 export type CityOption = CityStatePair
 export type NeighborhoodOption = Pick<
   Neighborhood,
-  'id' | 'name' | 'city' | 'state'
+  'id' | 'name' | 'city' | 'state' | 'bounds'
 >
 
 export class LocationsClient {
@@ -51,7 +51,7 @@ export class LocationsClient {
 
     let query = supabase
       .from('neighborhoods')
-      .select('id,name,city,state')
+      .select('id,name,city,state,bounds')
       .order('name')
 
     if (cityStateKeys.length === 1) {
@@ -61,6 +61,27 @@ export class LocationsClient {
     }
 
     const { data, error } = await query
+
+    if (error) {
+      throw new Error(`Failed to load neighborhoods: ${error.message}`)
+    }
+
+    return data || []
+  }
+
+  static async getNeighborhoodsForMetroArea(
+    query: string
+  ): Promise<NeighborhoodOption[]> {
+    const trimmed = query.trim()
+    if (!trimmed) return []
+
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from('neighborhoods')
+      .select('id,name,city,state,bounds')
+      .ilike('metro_area', `%${trimmed}%`)
+      .order('name')
 
     if (error) {
       throw new Error(`Failed to load neighborhoods: ${error.message}`)
