@@ -56,21 +56,28 @@ export function LoginForm() {
   })
 
   const dashboardPath = '/dashboard'
+  const ALLOWED_REDIRECT_PATHS = [dashboardPath]
 
   const resolveRedirectPath = () => {
     const hookRedirect =
       getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
       getSafeRedirectPath(searchParams?.get('redirect') ?? null)
 
-    if (hookRedirect) return hookRedirect
+    if (hookRedirect && ALLOWED_REDIRECT_PATHS.includes(hookRedirect)) {
+      return hookRedirect
+    }
 
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
-      return (
+      const paramRedirect =
         getSafeRedirectPath(urlParams.get('redirectTo')) ||
-        getSafeRedirectPath(urlParams.get('redirect')) ||
-        dashboardPath
-      )
+        getSafeRedirectPath(urlParams.get('redirect'))
+
+      if (paramRedirect && ALLOWED_REDIRECT_PATHS.includes(paramRedirect)) {
+        return paramRedirect
+      }
+
+      return dashboardPath
     }
 
     return dashboardPath
