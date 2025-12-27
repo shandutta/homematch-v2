@@ -56,14 +56,34 @@ export function LoginForm() {
   })
 
   const dashboardPath = '/dashboard'
-  const ALLOWED_REDIRECT_PATHS = [dashboardPath]
+  const ALLOWED_REDIRECT_PATHS = [
+    dashboardPath,
+    '/couples',
+    '/household/create',
+    '/household/join',
+  ]
+  const ALLOWED_REDIRECT_PREFIXES = ['/invite/', '/properties/']
+
+  const isAllowedRedirectPath = (path: string) => {
+    let pathname = ''
+    try {
+      pathname = new URL(path, 'http://localhost').pathname
+    } catch {
+      return false
+    }
+
+    if (ALLOWED_REDIRECT_PATHS.includes(pathname)) return true
+    return ALLOWED_REDIRECT_PREFIXES.some(
+      (prefix) => pathname.startsWith(prefix) && pathname.length > prefix.length
+    )
+  }
 
   const resolveRedirectPath = () => {
     const hookRedirect =
       getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
       getSafeRedirectPath(searchParams?.get('redirect') ?? null)
 
-    if (hookRedirect && ALLOWED_REDIRECT_PATHS.includes(hookRedirect)) {
+    if (hookRedirect && isAllowedRedirectPath(hookRedirect)) {
       return hookRedirect
     }
 
@@ -73,7 +93,7 @@ export function LoginForm() {
         getSafeRedirectPath(urlParams.get('redirectTo')) ||
         getSafeRedirectPath(urlParams.get('redirect'))
 
-      if (paramRedirect && ALLOWED_REDIRECT_PATHS.includes(paramRedirect)) {
+      if (paramRedirect && isAllowedRedirectPath(paramRedirect)) {
         return paramRedirect
       }
 

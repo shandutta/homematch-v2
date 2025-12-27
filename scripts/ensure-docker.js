@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+if (process.env.SKIP_DOCKER === '1') {
+  console.log('Skipping Docker check (SKIP_DOCKER=1)')
+  process.exit(0)
+}
+
 const { execSync } = require('child_process')
 
 const sleepSync = (ms) => {
