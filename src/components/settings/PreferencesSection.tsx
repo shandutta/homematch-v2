@@ -121,7 +121,7 @@ const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
 
 const cityKey = (city: CityOption) =>
   `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
-const MAP_METRO_QUERY = 'San Francisco'
+const MAP_METRO_QUERY = 'San Francisco–Oakland–San Jose'
 
 export function PreferencesSection({
   user,
@@ -215,6 +215,12 @@ export function PreferencesSection({
   const [showSelectedNeighborhoodsOnly, setShowSelectedNeighborhoodsOnly] =
     useState(false)
   const [locationView, setLocationView] = useState<'map' | 'list'>('map')
+  const [mapOverlayMode, setMapOverlayMode] = useState<
+    'neighborhoods' | 'cities'
+  >('neighborhoods')
+  const [mapMetroInput, setMapMetroInput] = useState(MAP_METRO_QUERY)
+  const [mapMetroQuery, setMapMetroQuery] = useState(MAP_METRO_QUERY)
+  const [mapMetroReloadToken, setMapMetroReloadToken] = useState(0)
   const [mapNeighborhoods, setMapNeighborhoods] = useState<
     NeighborhoodOption[]
   >([])
@@ -230,6 +236,13 @@ export function PreferencesSection({
     setAllCities(false)
     autoSelectedCitiesRef.current = new Set(selectedCities.map(cityKey))
   }, [selectedCities])
+
+  const applyMapMetroQuery = useCallback(() => {
+    const trimmed = mapMetroInput.trim()
+    setMapMetroQuery(trimmed || MAP_METRO_QUERY)
+    setMapMetroReloadToken((prev) => prev + 1)
+    setMapNeighborhoodsError(null)
+  }, [mapMetroInput])
 
   const propertyTypeOptions: Array<{
     key: PropertyTypeKey
@@ -297,20 +310,16 @@ export function PreferencesSection({
 
   useEffect(() => {
     if (locationView !== 'map') return
-    if (
-      mapNeighborhoodsLoading ||
-      mapNeighborhoods.length > 0 ||
-      mapNeighborhoodsError
-    )
-      return
+    if (!mapMetroQuery.trim()) return
     let cancelled = false
 
     const loadMapNeighborhoods = async () => {
+      setMapNeighborhoods([])
       setMapNeighborhoodsLoading(true)
       setMapNeighborhoodsError(null)
       try {
         const neighborhoods =
-          await LocationsClient.getNeighborhoodsForMetroArea(MAP_METRO_QUERY)
+          await LocationsClient.getNeighborhoodsForMetroArea(mapMetroQuery)
         if (!cancelled) setMapNeighborhoods(neighborhoods)
       } catch (_error) {
         if (!cancelled) {
@@ -326,12 +335,7 @@ export function PreferencesSection({
     return () => {
       cancelled = true
     }
-  }, [
-    locationView,
-    mapNeighborhoods.length,
-    mapNeighborhoodsLoading,
-    mapNeighborhoodsError,
-  ])
+  }, [locationView, mapMetroQuery, mapMetroReloadToken])
 
   useEffect(() => {
     let cancelled = false
@@ -460,6 +464,23 @@ export function PreferencesSection({
       .forEach((key) => autoSelectedCitiesRef.current.add(key))
   }, [allCities, availableNeighborhoods, selectedCities])
 
+  const mapNeighborhoodsByCity = useMemo(() => {
+    const grouped = new Map<string, NeighborhoodOption[]>()
+    for (const neighborhood of mapNeighborhoods) {
+      const key = cityKey({
+        city: neighborhood.city,
+        state: neighborhood.state,
+      })
+      const existing = grouped.get(key)
+      if (existing) {
+        existing.push(neighborhood)
+      } else {
+        grouped.set(key, [neighborhood])
+      }
+    }
+    return grouped
+  }, [mapNeighborhoods])
+
   const toggleCity = (city: CityOption) => {
     setAllCities(false)
     setSelectedCities((prev) => {
@@ -501,6 +522,121 @@ export function PreferencesSection({
       })
     },
     [markManualNeighborhoodSelection]
+  )
+
+  const toggleCityFromMap = useCallback(
+    (city: CityOption) => {
+      markManualNeighborhoodSelection()
+      const key = cityKey(city)
+      const cityNeighborhoods = mapNeighborhoodsByCity.get(key) || []
+      const neighborhoodIds = cityNeighborhoods.map((item) => item.id)
+      const isSelected = selectedCities.some((item) => cityKey(item) === key)
+
+      if (isSelected) {
+        autoSelectedCitiesRef.current.delete(key)
+      } else {
+        autoSelectedCitiesRef.current.add(key)
+      }
+
+      setSelectedCities((prev) => {
+        if (prev.some((item) => cityKey(item) === key)) {
+          return prev.filter((item) => cityKey(item) !== key)
+        }
+        return [...prev, city]
+      })
+
+      if (neighborhoodIds.length > 0) {
+        setSelectedNeighborhoods((prev) => {
+          if (isSelected) {
+            return prev.filter((id) => !neighborhoodIds.includes(id))
+          }
+          const merged = new Set(prev)
+          neighborhoodIds.forEach((id) => merged.add(id))
+          return Array.from(merged)
+        })
+      }
+    },
+    [mapNeighborhoodsByCity, markManualNeighborhoodSelection, selectedCities]
+  )
+
+  const applyMapNeighborhoodSelection = useCallback(
+    (items: NeighborhoodOption[]) => {
+      if (items.length === 0) return
+      markManualNeighborhoodSelection()
+
+      const cityMap = new Map<string, CityOption>()
+      const neighborhoodIds = new Set<string>()
+
+      items.forEach((neighborhood) => {
+        neighborhoodIds.add(neighborhood.id)
+        const key = cityKey({
+          city: neighborhood.city,
+          state: neighborhood.state,
+        })
+        if (!cityMap.has(key)) {
+          cityMap.set(key, {
+            city: neighborhood.city,
+            state: neighborhood.state,
+          })
+        }
+      })
+
+      cityMap.forEach((_city, key) => autoSelectedCitiesRef.current.add(key))
+
+      setSelectedCities((prev) => {
+        const existingKeys = new Set(prev.map(cityKey))
+        const next = [...prev]
+        cityMap.forEach((city, key) => {
+          if (!existingKeys.has(key)) next.push(city)
+        })
+        return next
+      })
+
+      setSelectedNeighborhoods((prev) => {
+        const merged = new Set(prev)
+        neighborhoodIds.forEach((id) => merged.add(id))
+        return Array.from(merged)
+      })
+    },
+    [markManualNeighborhoodSelection]
+  )
+
+  const applyMapCitySelection = useCallback(
+    (cities: CityOption[]) => {
+      if (cities.length === 0) return
+      markManualNeighborhoodSelection()
+
+      const neighborhoodIds = new Set<string>()
+      const cityMap = new Map<string, CityOption>()
+
+      cities.forEach((city) => {
+        const key = cityKey(city)
+        cityMap.set(key, city)
+        autoSelectedCitiesRef.current.add(key)
+        const cityNeighborhoods = mapNeighborhoodsByCity.get(key) || []
+        cityNeighborhoods.forEach((neighborhood) =>
+          neighborhoodIds.add(neighborhood.id)
+        )
+      })
+
+      setSelectedCities((prev) => {
+        const existingKeys = new Set(prev.map(cityKey))
+        const next = [...prev]
+        cityMap.forEach((city, key) => {
+          if (!existingKeys.has(key)) next.push(city)
+        })
+        return next
+      })
+
+      if (neighborhoodIds.size > 0) {
+        setSelectedNeighborhoods((prev) => {
+          const merged = new Set(prev)
+          neighborhoodIds.forEach((id) => merged.add(id))
+          return Array.from(merged)
+        })
+      }
+    },
+    [mapNeighborhoodsByCity, markManualNeighborhoodSelection]
   )
 
   const selectAllCities = () => {
@@ -993,7 +1129,10 @@ export function PreferencesSection({
                 <MapPin className="h-4 w-4 text-amber-400" />
                 Locations
               </Label>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-white/80">
+              <span
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-white/80"
+                data-testid="location-summary"
+              >
                 {allCities
                   ? 'All cities'
                   : `${selectedCities.length} ${
@@ -1018,11 +1157,71 @@ export function PreferencesSection({
                 <TabsTrigger value="list">List view</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="map" className="space-y-3">
+              <TabsContent value="map" className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={
+                        mapOverlayMode === 'neighborhoods'
+                          ? 'secondary'
+                          : 'outline'
+                      }
+                      size="sm"
+                      onClick={() => setMapOverlayMode('neighborhoods')}
+                      className="text-hm-stone-100 border-white/10 bg-white/5"
+                      data-testid="map-overlay-neighborhoods"
+                    >
+                      Neighborhoods
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={
+                        mapOverlayMode === 'cities' ? 'secondary' : 'outline'
+                      }
+                      size="sm"
+                      onClick={() => setMapOverlayMode('cities')}
+                      className="text-hm-stone-100 border-white/10 bg-white/5"
+                      data-testid="map-overlay-cities"
+                    >
+                      Cities
+                    </Button>
+                  </div>
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                    <Input
+                      value={mapMetroInput}
+                      onChange={(e) => setMapMetroInput(e.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          applyMapMetroQuery()
+                        }
+                      }}
+                      placeholder="Metro area filter"
+                      aria-label="Metro area filter"
+                      data-testid="map-metro-input"
+                      className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={applyMapMetroQuery}
+                      className="bg-emerald-500 text-white hover:bg-emerald-400"
+                      data-testid="map-metro-apply"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+
                 <LocationMapSelector
                   neighborhoods={mapNeighborhoods}
                   selectedNeighborhoods={selectedNeighborhoods}
+                  selectedCities={selectedCities}
+                  overlayMode={mapOverlayMode}
                   onToggleNeighborhood={toggleNeighborhoodFromMap}
+                  onToggleCity={toggleCityFromMap}
+                  onBulkSelectNeighborhoods={applyMapNeighborhoodSelection}
+                  onBulkSelectCities={applyMapCitySelection}
                   disabled={allCities}
                   loading={mapNeighborhoodsLoading}
                 />
@@ -1033,7 +1232,7 @@ export function PreferencesSection({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setMapNeighborhoodsError(null)}
+                      onClick={applyMapMetroQuery}
                       className="text-hm-stone-300 hover:text-hm-stone-100"
                     >
                       Retry
@@ -1041,12 +1240,12 @@ export function PreferencesSection({
                   </div>
                 ) : (
                   <p className="text-hm-stone-500 text-xs">
-                    {`Bay Area map view based on "${MAP_METRO_QUERY}" metro data.`}
+                    {`Metro filter: "${mapMetroQuery}" (${mapNeighborhoods.length} neighborhoods)`}
                   </p>
                 )}
                 <p className="text-hm-stone-500 text-xs">
-                  Click shaded areas to toggle neighborhoods. Switch to list
-                  view to search or bulk select.
+                  Draw to ringfence areas, or click overlays to toggle
+                  selections. Switch to list view for search + bulk actions.
                 </p>
               </TabsContent>
 

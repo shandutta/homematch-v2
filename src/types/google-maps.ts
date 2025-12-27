@@ -43,6 +43,13 @@ export interface GoogleLatLngBoundsInstance {
   extend: (point: unknown) => void
 }
 
+export interface GoogleDrawingManagerInstance {
+  setMap: (map: GoogleMapInstance | null) => void
+  setDrawingMode: (mode: string | null) => void
+  setOptions?: (options: unknown) => void
+  addListener: (event: string, handler: (event: unknown) => void) => void
+}
+
 declare global {
   interface Window {
     google?: {
@@ -61,6 +68,18 @@ declare global {
         Size: new (width: number, height: number) => unknown
         Point: new (x: number, y: number) => unknown
         Polygon: new (options?: unknown) => GooglePolygonInstance
+        drawing?: {
+          DrawingManager: new (
+            options?: unknown
+          ) => GoogleDrawingManagerInstance
+          OverlayType: {
+            CIRCLE: string
+            MARKER: string
+            POLYGON: string
+            POLYLINE: string
+            RECTANGLE: string
+          }
+        }
         marker?: {
           AdvancedMarkerElement: new (
             options?: unknown
