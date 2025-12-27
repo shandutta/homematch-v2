@@ -440,6 +440,27 @@ export class UserService extends BaseService {
     return data || []
   }
 
+  async getUserInteractionsByTypes(
+    userId: string,
+    types: Array<'like' | 'dislike' | 'skip' | 'view'>
+  ): Promise<UserPropertyInteraction[]> {
+    if (types.length === 0) return []
+    const supabase = await this.getSupabase()
+    const { data, error } = await supabase
+      .from('user_property_interactions')
+      .select('*')
+      .eq('user_id', userId)
+      .in('interaction_type', types)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching user interactions by types:', error)
+      return []
+    }
+
+    return data || []
+  }
+
   // Saved Searches
   async createSavedSearch(
     search: SavedSearchInsert
@@ -513,19 +534,19 @@ export class UserService extends BaseService {
 
   // Analytics and Insights
   async getUserActivitySummary(userId: string) {
-    const [likes, dislikes, views, savedSearches] = await Promise.all([
+    const [likes, passes, views, savedSearches] = await Promise.all([
       this.getUserInteractionsByType(userId, 'like'),
-      this.getUserInteractionsByType(userId, 'dislike'),
+      this.getUserInteractionsByTypes(userId, ['dislike', 'skip']),
       this.getUserInteractionsByType(userId, 'view'),
       this.getUserSavedSearches(userId),
     ])
 
     return {
       likes: likes.length,
-      dislikes: dislikes.length,
+      dislikes: passes.length,
       views: views.length,
       saved_searches: savedSearches.length,
-      total_interactions: likes.length + dislikes.length + views.length,
+      total_interactions: likes.length + passes.length + views.length,
     }
   }
 

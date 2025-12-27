@@ -207,7 +207,9 @@ function normalizePolygonCoordinates(input: unknown): LatLng[][] | null {
   return rings.length > 0 ? rings : null
 }
 
-function parseCoordinateRing(coords: CoordinateTuple[] | unknown): LatLng[] | null {
+function parseCoordinateRing(
+  coords: CoordinateTuple[] | unknown
+): LatLng[] | null {
   if (!Array.isArray(coords) || coords.length < 3) return null
 
   const ring: LatLng[] = []

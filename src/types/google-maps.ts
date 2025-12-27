@@ -3,6 +3,8 @@ export interface GoogleMapInstance {
   setCenter: (latLng: unknown) => void
   setZoom: (zoom: number) => void
   addListener: (event: string, handler: () => void) => void
+  fitBounds?: (bounds: unknown, padding?: number | object) => void
+  setOptions?: (options: unknown) => void
 }
 
 export interface GoogleMarkerInstance {
@@ -31,6 +33,16 @@ export interface GoogleInfoWindowInstance {
   close: () => void
 }
 
+export interface GooglePolygonInstance {
+  setMap: (map: GoogleMapInstance | null) => void
+  setOptions: (options: unknown) => void
+  addListener: (event: string, handler: (...args: unknown[]) => void) => void
+}
+
+export interface GoogleLatLngBoundsInstance {
+  extend: (point: unknown) => void
+}
+
 declare global {
   interface Window {
     google?: {
@@ -42,9 +54,13 @@ declare global {
         Marker: new (options?: unknown) => GoogleMarkerInstance
         InfoWindow: new (options?: unknown) => GoogleInfoWindowInstance
         LatLng: new (lat: number, lng: number) => unknown
-        LatLngBounds: new (sw?: unknown, ne?: unknown) => unknown
+        LatLngBounds: new (
+          sw?: unknown,
+          ne?: unknown
+        ) => GoogleLatLngBoundsInstance
         Size: new (width: number, height: number) => unknown
         Point: new (x: number, y: number) => unknown
+        Polygon: new (options?: unknown) => GooglePolygonInstance
         marker?: {
           AdvancedMarkerElement: new (
             options?: unknown
