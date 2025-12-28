@@ -2,13 +2,13 @@
 -- This file is executed after migrations when running `supabase db reset`
 
 -- Insert 3 test neighborhoods
-INSERT INTO public.neighborhoods (id, name, city, state, bounds)
+INSERT INTO public.neighborhoods (id, name, city, state, metro_area, bounds)
 VALUES 
-  ('11111111-1111-1111-1111-111111111111', 'Test Neighborhood 1', 'San Francisco', 'CA', 
+  ('11111111-1111-1111-1111-111111111111', 'Test Neighborhood 1', 'San Francisco', 'CA', 'San Francisco–Oakland–San Jose',
    ST_GeomFromText('POLYGON((-122.5 37.7, -122.5 37.8, -122.4 37.8, -122.4 37.7, -122.5 37.7))', 4326)),
-  ('22222222-2222-2222-2222-222222222222', 'Test Neighborhood 2', 'Oakland', 'CA',
+  ('22222222-2222-2222-2222-222222222222', 'Test Neighborhood 2', 'Oakland', 'CA', 'San Francisco–Oakland–San Jose',
    ST_GeomFromText('POLYGON((-122.3 37.8, -122.3 37.9, -122.2 37.9, -122.2 37.8, -122.3 37.8))', 4326)),
-  ('33333333-3333-3333-3333-333333333333', 'Test Neighborhood 3', 'Berkeley', 'CA',
+  ('33333333-3333-3333-3333-333333333333', 'Test Neighborhood 3', 'Berkeley', 'CA', 'San Francisco–Oakland–San Jose',
    ST_GeomFromText('POLYGON((-122.3 37.85, -122.3 37.95, -122.2 37.95, -122.2 37.85, -122.3 37.85))', 4326));
 
 -- Insert 5 test properties (ensure uniqueness by zpid via ON CONFLICT to avoid duplicates)
