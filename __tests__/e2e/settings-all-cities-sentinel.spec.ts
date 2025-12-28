@@ -133,6 +133,7 @@ test.describe('Settings all-cities sentinel', () => {
         waitUntil: 'domcontentloaded',
       })
 
+      await page.getByRole('tab', { name: /list view/i }).click()
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
         timeout: 15000,
@@ -199,6 +200,7 @@ test.describe('Settings all-cities sentinel', () => {
         waitUntil: 'domcontentloaded',
       })
 
+      await page.getByRole('tab', { name: /list view/i }).click()
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
         timeout: 15000,

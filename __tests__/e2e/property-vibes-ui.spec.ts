@@ -314,7 +314,9 @@ test.describe('Property Vibes - UI', () => {
 
       const dialog = page.locator('[role="dialog"]').first()
       await expect(dialog).toBeVisible()
-      await expect(dialog).toContainText('About this home')
+      await expect(dialog).toContainText('Vibe snapshot')
+      await expect(dialog).toContainText('Home vibe')
+      await expect(dialog).toContainText('Neighborhood vibe')
       await expect(dialog).toContainText(seeded.tagline)
       await expect(dialog).toContainText(seeded.tag)
       await expect(dialog).toContainText(seeded.neighborhoodTagline)

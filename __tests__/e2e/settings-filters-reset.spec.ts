@@ -213,6 +213,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       })
       await waitForHydration(page)
 
+      await page.getByRole('tab', { name: /list view/i }).click()
       await page.getByTestId('city-search').fill(runId)
       await expect(
         page.getByTestId(cityOptionTestId(city, state))

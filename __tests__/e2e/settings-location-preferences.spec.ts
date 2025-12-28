@@ -277,6 +277,7 @@ test.describe('Settings location preferences', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
+      await page.getByRole('tab', { name: /list view/i }).click()
       await expect(page.getByTestId('city-search')).toBeVisible()
 
       await page.getByTestId('city-search').fill(runId)
@@ -337,6 +338,7 @@ test.describe('Settings location preferences', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
+      await page.getByRole('tab', { name: /list view/i }).click()
       await expect(page.getByTestId('neighborhood-search')).toBeVisible()
 
       await expect(
