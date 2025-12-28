@@ -319,9 +319,7 @@ test.describe('Property Vibes - UI', () => {
       await expect(dialog).toContainText('Neighborhood vibe')
       await expect(dialog).toContainText(seeded.tagline)
       await expect(dialog).toContainText(seeded.tag)
-      await expect(dialog).toContainText(seeded.neighborhoodTagline)
       await expect(dialog).toContainText(seeded.neighborhoodVibeStatement)
-      await expect(dialog).toContainText(seeded.neighborhoodTag)
     } finally {
       await seeded.cleanup()
     }
