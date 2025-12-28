@@ -401,6 +401,9 @@ describe('PreferencesSection', () => {
       <PreferencesSection user={mockUser} profile={profileWithManyCities} />
     )
 
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: /list view/i }))
+
     await waitFor(() => {
       expect(screen.getByTestId('city-search')).toBeDisabled()
     })
@@ -435,6 +438,9 @@ describe('PreferencesSection', () => {
       />
     )
 
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: /list view/i }))
+
     await waitFor(() => {
       expect(screen.getByTestId('city-search')).toBeDisabled()
     })
@@ -468,6 +474,9 @@ describe('PreferencesSection', () => {
     }
 
     render(<PreferencesSection user={mockUser} profile={profileWithCities} />)
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('tab', { name: /list view/i }))
 
     await waitFor(() => {
       expect(mockGetNeighborhoodsForCities).toHaveBeenCalled()

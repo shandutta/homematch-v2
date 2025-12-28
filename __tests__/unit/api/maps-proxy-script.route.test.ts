@@ -123,6 +123,6 @@ describe('/api/maps/proxy-script', () => {
     await GET(request)
 
     const [scriptUrl] = fetchMock.mock.calls[0] as [string]
-    expect(scriptUrl).toContain('libraries=places,marker')
+    expect(scriptUrl).toContain('libraries=places,drawing,marker')
   })
 })

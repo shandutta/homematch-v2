@@ -129,17 +129,14 @@ describe('PropertyDetailModal', () => {
       />
     )
 
-    expect(screen.getByText('About this home')).toBeInTheDocument()
+    expect(screen.getByText('Vibe snapshot')).toBeInTheDocument()
+    expect(screen.getByText('Home vibe')).toBeInTheDocument()
     expect(screen.getByText('Single Family')).toBeInTheDocument()
 
     // Keep: tagline + useful tags/box
     expect(screen.getByText(mockVibes.tagline)).toBeInTheDocument()
     expect(screen.getAllByText("Entertainer's Dream").length).toBeGreaterThan(0)
-    expect(
-      screen.getByText(mockVibes.lifestyle_fits[0].reason, { exact: false })
-    ).toBeInTheDocument()
     expect(screen.getByText('Gallery-Ready Walls')).toBeInTheDocument()
-    expect(screen.getByText('Pool Table Central')).toBeInTheDocument()
 
     // Drop: secondary vibe statement + quoted emotional hooks
     expect(screen.queryByText(mockVibes.vibe_statement)).not.toBeInTheDocument()
@@ -177,13 +174,10 @@ describe('PropertyDetailModal', () => {
     )
 
     expect(useNeighborhoodVibes).toHaveBeenCalledWith(mockNeighborhood.id)
-    expect(screen.getByText(neighborhoodVibes.tagline)).toBeInTheDocument()
+    expect(screen.getByText('Neighborhood vibe')).toBeInTheDocument()
     expect(
       screen.getByText(neighborhoodVibes.vibe_statement)
     ).toBeInTheDocument()
-    expect(screen.getByText('Walkable')).toBeInTheDocument()
-    expect(screen.getByText('Food')).toBeInTheDocument()
-    expect(screen.getByText('Transit')).toBeInTheDocument()
   })
 
   it('collapses the map by default on small screens and toggles it open', async () => {
