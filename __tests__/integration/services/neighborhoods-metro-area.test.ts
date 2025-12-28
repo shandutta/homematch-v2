@@ -44,7 +44,7 @@ describe('NeighborhoodService metro area queries', () => {
         state: 'CA',
         metro_area: metroArea,
         bounds:
-          '((-122.42,37.78),(-122.41,37.78),(-122.41,37.77),(-122.42,37.77),(-122.42,37.78))',
+          'SRID=4326;POLYGON((-122.42 37.78, -122.41 37.78, -122.41 37.77, -122.42 37.77, -122.42 37.78))',
         created_at: createdAt,
       },
       {
@@ -54,7 +54,7 @@ describe('NeighborhoodService metro area queries', () => {
         state: 'CA',
         metro_area: metroArea,
         bounds:
-          '((-122.45,37.76),(-122.44,37.76),(-122.44,37.75),(-122.45,37.75),(-122.45,37.76))',
+          'SRID=4326;POLYGON((-122.45 37.76, -122.44 37.76, -122.44 37.75, -122.45 37.75, -122.45 37.76))',
         created_at: createdAt,
       },
     ])

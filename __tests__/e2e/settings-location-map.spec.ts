@@ -147,7 +147,7 @@ test.describe('Settings location map selection', () => {
       state,
       metro_area: metroArea,
       bounds:
-        '((-122.42,37.78),(-122.41,37.78),(-122.41,37.77),(-122.42,37.77),(-122.42,37.78))',
+        'SRID=4326;POLYGON((-122.42 37.78, -122.41 37.78, -122.41 37.77, -122.42 37.77, -122.42 37.78))',
       created_at: createdAt,
     }
 
@@ -158,7 +158,7 @@ test.describe('Settings location map selection', () => {
       state,
       metro_area: metroArea,
       bounds:
-        '((-122.43,37.78),(-122.42,37.78),(-122.42,37.77),(-122.43,37.77),(-122.43,37.78))',
+        'SRID=4326;POLYGON((-122.43 37.78, -122.42 37.78, -122.42 37.77, -122.43 37.77, -122.43 37.78))',
       created_at: createdAt,
     }
 
@@ -169,7 +169,7 @@ test.describe('Settings location map selection', () => {
       state,
       metro_area: metroArea,
       bounds:
-        '((-122.46,37.74),(-122.45,37.74),(-122.45,37.73),(-122.46,37.73),(-122.46,37.74))',
+        'SRID=4326;POLYGON((-122.46 37.74, -122.45 37.74, -122.45 37.73, -122.46 37.73, -122.46 37.74))',
       created_at: createdAt,
     }
 
