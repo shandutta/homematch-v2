@@ -6,6 +6,7 @@ import { Property, Neighborhood } from '@/lib/schemas/property'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -274,6 +275,7 @@ export function PropertyDetailModal({
                 alt={property.address || 'Property'}
                 fill
                 className="object-cover"
+                priority={open}
                 sizes="(max-width: 768px) 100vw, 672px"
               />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
@@ -358,13 +360,13 @@ export function PropertyDetailModal({
                 <DialogTitle className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight">
                   {property.address}
                 </DialogTitle>
-                <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                <DialogDescription className="text-hm-stone-500 flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
                     {neighborhoodData?.name || property.city}, {property.state}{' '}
                     {property.zip_code}
                   </span>
-                </div>
+                </DialogDescription>
               </DialogHeader>
 
               <div className="grid grid-cols-3 gap-3">
