@@ -434,6 +434,24 @@ configure_cron_auto_commit() {
   log "Installed auto-commit cron (15m) using OpenRouter key from ${key_source}."
 }
 
+configure_cron_auto_commit_pull() {
+  if ! $SETUP_CRON_AUTOCOMMIT; then
+    return
+  fi
+
+  local node_bin cron_line script_path
+  node_bin="$(command -v node || true)"
+  if [[ -z "$node_bin" ]]; then
+    warn "Node not found; skipping auto-commit pull cron."
+    return
+  fi
+  ensure_log_dir
+  script_path="$ROOT_DIR/scripts/cron-auto-commit-pull.sh"
+  cron_line="15 10 * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin bash $script_path >> $HOME/auto-commit-pull.log 2>&1"
+  ensure_cron_line "$cron_line"
+  log "Installed auto-commit pull cron (daily) via ${script_path}."
+}
+
 copy_env_file() {
   local source_file="$1"
   local target_file="$2"
@@ -508,6 +526,7 @@ install_dependencies
 setup_git_hooks
 install_playwright_browsers
 configure_cron_auto_commit
+configure_cron_auto_commit_pull
 
 log "Setup complete. Next steps:"
 echo "1) Fill in secrets in .env.local (and .env.test.local if you run tests)."

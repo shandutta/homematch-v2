@@ -309,6 +309,12 @@ export function PreferencesSection({
   }, [])
 
   useEffect(() => {
+    if (!allCities) return
+    if (locationView === 'list') return
+    setLocationView('list')
+  }, [allCities, locationView])
+
+  useEffect(() => {
     if (locationView !== 'map') return
     if (!mapMetroQuery.trim()) return
     let cancelled = false

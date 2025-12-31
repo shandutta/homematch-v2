@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { waitForHydration } from '../utils/hydration'
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -277,7 +278,10 @@ test.describe('Settings location preferences', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
-      await page.getByRole('tab', { name: /list view/i }).click()
+      await waitForHydration(page)
+      const listViewTab = page.getByRole('tab', { name: /list view/i })
+      await listViewTab.click()
+      await expect(listViewTab).toHaveAttribute('data-state', 'active')
       await expect(page.getByTestId('city-search')).toBeVisible()
 
       await page.getByTestId('city-search').fill(runId)
@@ -338,6 +342,10 @@ test.describe('Settings location preferences', () => {
       await page.goto(TEST_ROUTES.app.settings, {
         waitUntil: 'domcontentloaded',
       })
+      await waitForHydration(page)
+      const listViewTabPhase2 = page.getByRole('tab', { name: /list view/i })
+      await listViewTabPhase2.click()
+      await expect(listViewTabPhase2).toHaveAttribute('data-state', 'active')
       await page.getByRole('tab', { name: /list view/i }).click()
       await expect(page.getByTestId('neighborhood-search')).toBeVisible()
 
