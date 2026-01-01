@@ -1,15 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import polygonClipping from 'polygon-clipping'
 import { Button } from '@/components/ui/button'
 import { SecureMapLoader } from '@/components/shared/SecureMapLoader'
-import { parsePostGISPolygon, type LatLng } from '@/lib/utils/coordinates'
 import {
-  convexHull,
-  isPointInPolygon,
-  polygonCentroid,
-  type GeoPoint,
-} from '@/lib/utils/geo-selection'
+  parsePostGISPolygon,
+  type LatLng,
+  type PolygonRings,
+} from '@/lib/utils/coordinates'
 import { getGoogleMapsMapId } from '@/lib/maps/config'
 import type {
   CityOption,
@@ -39,17 +38,31 @@ type LocationMapSelectorProps = {
   className?: string
 }
 
+type PolygonBounds = {
+  north: number
+  south: number
+  east: number
+  west: number
+}
+
+type ClippingPoint = [number, number]
+type ClippingRing = ClippingPoint[]
+type ClippingPolygon = ClippingRing[]
+type ClippingMultiPolygon = ClippingPolygon[]
+
 type NeighborhoodShape = {
   neighborhood: NeighborhoodOption
-  rings: LatLng[][]
-  centroid: GeoPoint | null
+  polygons: PolygonRings[]
+  bounds: PolygonBounds
+  clipping: ClippingMultiPolygon
 }
 
 type CityShape = {
   city: CityOption
   key: string
-  hull: GeoPoint[]
-  centroid: GeoPoint | null
+  polygons: PolygonRings[]
+  bounds: PolygonBounds
+  clipping: ClippingMultiPolygon
 }
 
 const DEFAULT_CENTER = { lat: 37.7749, lng: -122.4194 }
@@ -119,10 +132,12 @@ export function LocationMapSelector({
 }: LocationMapSelectorProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<GoogleMapInstance | null>(null)
-  const neighborhoodPolygonsRef = useRef<Map<string, GooglePolygonInstance>>(
+  const neighborhoodPolygonsRef = useRef<Map<string, GooglePolygonInstance[]>>(
     new Map()
   )
-  const cityPolygonsRef = useRef<Map<string, GooglePolygonInstance>>(new Map())
+  const cityPolygonsRef = useRef<Map<string, GooglePolygonInstance[]>>(
+    new Map()
+  )
   const drawingManagerRef = useRef<GoogleDrawingManagerInstance | null>(null)
   const fitBoundsRef = useRef(false)
   const overlayModeRef = useRef<OverlayMode>(overlayMode)
@@ -143,68 +158,113 @@ export function LocationMapSelector({
   const neighborhoodShapes = useMemo<NeighborhoodShape[]>(() => {
     return neighborhoods
       .map((neighborhood) => {
-        const rings = parsePostGISPolygon(neighborhood.bounds)
-        if (!rings || rings.length === 0) return null
-        const centroid = polygonCentroid(rings[0] || [])
-        return { neighborhood, rings, centroid }
+        const polygons = normalizePolygons(
+          parsePostGISPolygon(neighborhood.bounds)
+        )
+        if (polygons.length === 0) return null
+        const bounds = buildBoundsForPolygons(polygons)
+        if (!bounds) return null
+        return {
+          neighborhood,
+          polygons,
+          bounds,
+          clipping: toClippingMultiPolygon(polygons),
+        }
       })
       .filter((value): value is NeighborhoodShape => Boolean(value))
   }, [neighborhoods])
 
   const cityShapes = useMemo<CityShape[]>(() => {
-    const grouped = new Map<string, { city: CityOption; points: GeoPoint[] }>()
+    const grouped = new Map<
+      string,
+      { city: CityOption; polygons: PolygonRings[] }
+    >()
 
-    neighborhoodShapes.forEach(({ neighborhood, rings }) => {
+    neighborhoodShapes.forEach(({ neighborhood, polygons }) => {
       const key = cityKey({
         city: neighborhood.city,
         state: neighborhood.state,
       })
       const existing = grouped.get(key) || {
         city: { city: neighborhood.city, state: neighborhood.state },
-        points: [],
+        polygons: [],
       }
-      rings.forEach((ring) => {
-        ring.forEach((point) => {
-          existing.points.push(point)
-        })
-      })
+      existing.polygons.push(...polygons)
       grouped.set(key, existing)
     })
 
-    return Array.from(grouped.entries())
+    const sorted = Array.from(grouped.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    )
+
+    let occupied: ClippingMultiPolygon = []
+
+    return sorted
       .map(([key, entry]) => {
-        const hull = convexHull(entry.points)
-        if (hull.length < 3) return null
+        if (entry.polygons.length === 0) return null
+
+        let unioned = entry.polygons
+        try {
+          unioned = unionPolygonGroups(entry.polygons)
+        } catch (error) {
+          console.warn('[LocationMapSelector] Failed to union city polygons', {
+            key,
+            error,
+          })
+        }
+
+        let polygons = unioned
+        if (occupied.length > 0) {
+          const exclusive = subtractPolygonGroups(unioned, occupied)
+          if (exclusive.length > 0) {
+            polygons = exclusive
+          }
+        }
+
+        const bounds = buildBoundsForPolygons(polygons)
+        if (!bounds) return null
+
+        const clipping = toClippingMultiPolygon(polygons)
+        occupied = unionMultiPolygons(occupied, toClippingMultiPolygon(unioned))
+
         return {
           city: entry.city,
           key,
-          hull,
-          centroid: polygonCentroid(hull),
+          polygons,
+          bounds,
+          clipping,
         }
       })
       .filter((value): value is CityShape => Boolean(value))
   }, [neighborhoodShapes])
 
   const handleDrawSelection = useCallback(
-    (ring: GeoPoint[]) => {
-      if (!ring.length) return
+    (ring: LatLng[]) => {
+      const selectionRing = closeSelectionRing(ring)
+      if (!selectionRing) return
+      const selectionBounds = buildBoundsForRing(selectionRing)
+      const selectionPolygon: PolygonRings = [selectionRing]
+      const selectionPolygonClipping = toClippingMultiPolygon([
+        selectionPolygon,
+      ])
+
+      const matchesShape = (shape: {
+        bounds: PolygonBounds
+        clipping: ClippingMultiPolygon
+      }) => {
+        if (!boundsOverlap(selectionBounds, shape.bounds)) return false
+        return polygonsIntersect(selectionPolygonClipping, shape.clipping)
+      }
 
       if (overlayModeRef.current === 'cities') {
-        const matches = cityShapes.filter((city) => {
-          if (!city.centroid) return false
-          return isPointInPolygon(city.centroid, ring)
-        })
+        const matches = cityShapes.filter(matchesShape)
         if (matches.length > 0) {
           onBulkSelectCities(matches.map((match) => match.city))
         }
         return
       }
 
-      const matches = neighborhoodShapes.filter((shape) => {
-        const centroid = shape.centroid
-        if (!centroid) return false
-        return isPointInPolygon(centroid, ring)
-      })
+      const matches = neighborhoodShapes.filter(matchesShape)
       if (matches.length > 0) {
         onBulkSelectNeighborhoods(matches.map((match) => match.neighborhood))
       }
@@ -338,9 +398,9 @@ export function LocationMapSelector({
       neighborhoodShapes.map((shape) => shape.neighborhood.id)
     )
 
-    for (const [id, polygon] of neighborhoodPolygonsRef.current) {
+    for (const [id, polygons] of neighborhoodPolygonsRef.current) {
       if (!nextIds.has(id)) {
-        polygon.setMap(null)
+        polygons.forEach((polygon) => polygon.setMap(null))
         neighborhoodPolygonsRef.current.delete(id)
       }
     }
@@ -351,33 +411,49 @@ export function LocationMapSelector({
       )
       const selected = selectedNeighborhoodSet.has(shape.neighborhood.id)
       const options = {
-        paths: shape.rings,
         clickable: !disabled,
         ...NEIGHBORHOOD_STYLE,
         ...(selected ? NEIGHBORHOOD_SELECTED_STYLE : {}),
       }
 
-      if (existing) {
-        existing.setOptions(options)
-        existing.setMap(overlayMode === 'neighborhoods' ? map : null)
-        return
+      const nextPolygons: GooglePolygonInstance[] = []
+      shape.polygons.forEach((polygonRings, index) => {
+        const polygonOptions = {
+          ...options,
+          paths: polygonRings,
+        }
+        const existingPolygon = existing?.[index]
+        if (existingPolygon) {
+          existingPolygon.setOptions(polygonOptions)
+          existingPolygon.setMap(overlayMode === 'neighborhoods' ? map : null)
+          nextPolygons.push(existingPolygon)
+          return
+        }
+
+        const polygon = new googleMaps.Polygon(polygonOptions)
+        polygon.addListener('click', () => {
+          if (disabled || overlayMode !== 'neighborhoods') return
+          onToggleNeighborhood(shape.neighborhood)
+        })
+        polygon.setMap(overlayMode === 'neighborhoods' ? map : null)
+        nextPolygons.push(polygon)
+      })
+
+      if (existing && existing.length > nextPolygons.length) {
+        existing
+          .slice(nextPolygons.length)
+          .forEach((polygon) => polygon.setMap(null))
       }
 
-      const polygon = new googleMaps.Polygon(options)
-      polygon.addListener('click', () => {
-        if (disabled || overlayMode !== 'neighborhoods') return
-        onToggleNeighborhood(shape.neighborhood)
-      })
-      polygon.setMap(overlayMode === 'neighborhoods' ? map : null)
-      neighborhoodPolygonsRef.current.set(shape.neighborhood.id, polygon)
+      neighborhoodPolygonsRef.current.set(shape.neighborhood.id, nextPolygons)
     })
 
     if (!fitBoundsRef.current && neighborhoodShapes.length > 0) {
       const bounds = new googleMaps.LatLngBounds()
       neighborhoodShapes.forEach((shape) => {
-        shape.rings.forEach((ring) => {
-          ring.forEach((point) => bounds.extend(point))
-        })
+        const { north, south, east, west } = shape.bounds
+        bounds.extend({ lat: north, lng: east })
+        bounds.extend({ lat: south, lng: west })
       })
       map.fitBounds?.(bounds)
       fitBoundsRef.current = true
@@ -397,9 +473,9 @@ export function LocationMapSelector({
 
     const nextKeys = new Set(cityShapes.map((shape) => shape.key))
 
-    for (const [key, polygon] of cityPolygonsRef.current) {
+    for (const [key, polygons] of cityPolygonsRef.current) {
       if (!nextKeys.has(key)) {
-        polygon.setMap(null)
+        polygons.forEach((polygon) => polygon.setMap(null))
         cityPolygonsRef.current.delete(key)
       }
     }
@@ -408,25 +484,41 @@ export function LocationMapSelector({
       const existing = cityPolygonsRef.current.get(shape.key)
       const selected = selectedCityKeys.has(shape.key)
       const options = {
-        paths: shape.hull,
         clickable: !disabled,
         ...CITY_STYLE,
         ...(selected ? CITY_SELECTED_STYLE : {}),
       }
 
-      if (existing) {
-        existing.setOptions(options)
-        existing.setMap(overlayMode === 'cities' ? map : null)
-        return
+      const nextPolygons: GooglePolygonInstance[] = []
+      shape.polygons.forEach((polygonRings, index) => {
+        const polygonOptions = {
+          ...options,
+          paths: polygonRings,
+        }
+        const existingPolygon = existing?.[index]
+        if (existingPolygon) {
+          existingPolygon.setOptions(polygonOptions)
+          existingPolygon.setMap(overlayMode === 'cities' ? map : null)
+          nextPolygons.push(existingPolygon)
+          return
+        }
+
+        const polygon = new googleMaps.Polygon(polygonOptions)
+        polygon.addListener('click', () => {
+          if (disabled || overlayMode !== 'cities') return
+          onToggleCity(shape.city)
+        })
+        polygon.setMap(overlayMode === 'cities' ? map : null)
+        nextPolygons.push(polygon)
+      })
+
+      if (existing && existing.length > nextPolygons.length) {
+        existing
+          .slice(nextPolygons.length)
+          .forEach((polygon) => polygon.setMap(null))
       }
 
-      const polygon = new googleMaps.Polygon(options)
-      polygon.addListener('click', () => {
-        if (disabled || overlayMode !== 'cities') return
-        onToggleCity(shape.city)
-      })
-      polygon.setMap(overlayMode === 'cities' ? map : null)
-      cityPolygonsRef.current.set(shape.key, polygon)
+      cityPolygonsRef.current.set(shape.key, nextPolygons)
     })
   }, [cityShapes, disabled, onToggleCity, overlayMode, selectedCityKeys])
 
@@ -436,8 +528,12 @@ export function LocationMapSelector({
     const drawingManager = drawingManagerRef.current
 
     return () => {
-      neighborhoodPolygons.forEach((polygon) => polygon.setMap(null))
-      cityPolygons.forEach((polygon) => polygon.setMap(null))
+      neighborhoodPolygons.forEach((polygons) =>
+        polygons.forEach((polygon) => polygon.setMap(null))
+      )
+      cityPolygons.forEach((polygons) =>
+        polygons.forEach((polygon) => polygon.setMap(null))
+      )
       neighborhoodPolygons.clear()
       cityPolygons.clear()
       drawingManager?.setMap(null)
@@ -455,7 +551,7 @@ export function LocationMapSelector({
         const match = cityShapes.find((item) => item.key === key)
         if (match) onToggleCity(match.city)
       },
-      drawSelection: (ring: GeoPoint[]) => {
+      drawSelection: (ring: LatLng[]) => {
         handleDrawSelection(ring)
       },
     }
@@ -619,7 +715,7 @@ const isLatLngLike = (value: unknown): value is LatLngLike => {
   return latOk && lngOk
 }
 
-function extractDrawnRing(event: unknown): GeoPoint[] {
+function extractDrawnRing(event: unknown): LatLng[] {
   if (!event || typeof event !== 'object') return []
   const overlayEvent = event as DrawingOverlayEvent
 
@@ -662,5 +758,143 @@ function extractDrawnRing(event: unknown): GeoPoint[] {
       if (typeof lat !== 'number' || typeof lng !== 'number') return null
       return { lat, lng }
     })
-    .filter((point: GeoPoint | null): point is GeoPoint => Boolean(point))
+    .filter((point: LatLng | null): point is LatLng => Boolean(point))
+}
+
+function normalizePolygons(polygons: PolygonRings[] | null): PolygonRings[] {
+  if (!polygons) return []
+  return polygons
+    .map((rings) => rings.filter((ring) => ring.length >= 4))
+    .filter((rings) => rings.length > 0)
+}
+
+function closeSelectionRing(ring: LatLng[]): LatLng[] | null {
+  if (ring.length < 3) return null
+  const first = ring[0]
+  const last = ring[ring.length - 1]
+  if (!first || !last) return null
+  if (first.lat === last.lat && first.lng === last.lng) {
+    return ring
+  }
+  return [...ring, { ...first }]
+}
+
+function buildBoundsForRing(ring: LatLng[]): PolygonBounds {
+  let north = -Infinity
+  let south = Infinity
+  let east = -Infinity
+  let west = Infinity
+
+  ring.forEach((point) => {
+    north = Math.max(north, point.lat)
+    south = Math.min(south, point.lat)
+    east = Math.max(east, point.lng)
+    west = Math.min(west, point.lng)
+  })
+
+  return { north, south, east, west }
+}
+
+function buildBoundsForPolygons(
+  polygons: PolygonRings[]
+): PolygonBounds | null {
+  if (polygons.length === 0) return null
+  let north = -Infinity
+  let south = Infinity
+  let east = -Infinity
+  let west = Infinity
+
+  polygons.forEach((rings) => {
+    rings.forEach((ring) => {
+      ring.forEach((point) => {
+        north = Math.max(north, point.lat)
+        south = Math.min(south, point.lat)
+        east = Math.max(east, point.lng)
+        west = Math.min(west, point.lng)
+      })
+    })
+  })
+
+  if (!Number.isFinite(north)) return null
+  return { north, south, east, west }
+}
+
+function boundsOverlap(a: PolygonBounds, b: PolygonBounds) {
+  return !(
+    a.west > b.east ||
+    a.east < b.west ||
+    a.south > b.north ||
+    a.north < b.south
+  )
+}
+
+function toClippingRing(ring: LatLng[]): ClippingRing {
+  return ring.map((point) => [point.lng, point.lat])
+}
+
+function toClippingPolygon(rings: PolygonRings): ClippingPolygon {
+  return rings.map((ring) => toClippingRing(ring))
+}
+
+function toClippingMultiPolygon(
+  polygons: PolygonRings[]
+): ClippingMultiPolygon {
+  return polygons.map((rings) => toClippingPolygon(rings))
+}
+
+function fromClippingMultiPolygon(
+  polygons: ClippingMultiPolygon
+): PolygonRings[] {
+  return polygons
+    .map((polygon) =>
+      polygon
+        .map((ring) =>
+          closeSelectionRing(ring.map(([lng, lat]) => ({ lat, lng })))
+        )
+        .filter((ring): ring is LatLng[] => Boolean(ring))
+    )
+    .filter((rings) => rings.length > 0)
+}
+
+function unionPolygonGroups(polygons: PolygonRings[]): PolygonRings[] {
+  if (polygons.length <= 1) return polygons
+  const unioned = polygonClipping.union(
+    ...polygons.map((polygon) => [toClippingPolygon(polygon)])
+  )
+  return normalizePolygons(fromClippingMultiPolygon(unioned))
+}
+
+function subtractPolygonGroups(
+  polygons: PolygonRings[],
+  clip: ClippingMultiPolygon
+): PolygonRings[] {
+  if (clip.length === 0) return polygons
+  const diff = polygonClipping.difference(
+    toClippingMultiPolygon(polygons),
+    clip
+  )
+  return normalizePolygons(fromClippingMultiPolygon(diff))
+}
+
+function unionMultiPolygons(
+  first: ClippingMultiPolygon,
+  second: ClippingMultiPolygon
+): ClippingMultiPolygon {
+  if (first.length === 0) return second
+  if (second.length === 0) return first
+  return polygonClipping.union(first, second)
+}
+
+function polygonsIntersect(
+  first: ClippingMultiPolygon,
+  second: ClippingMultiPolygon
+) {
+  if (first.length === 0 || second.length === 0) return false
+  try {
+    const overlap = polygonClipping.intersection(first, second)
+    return overlap.some((polygon) => polygon.some((ring) => ring.length >= 3))
+  } catch (error) {
+    console.warn('[LocationMapSelector] Failed to intersect polygons', error)
+    return false
+  }
 }

@@ -199,12 +199,13 @@ test.describe('Settings location map selection', () => {
       await page.goto(TEST_ROUTES.app.settings)
 
       await expect(page.getByTestId('location-map')).toBeVisible()
+      await expect(page.getByTestId('map-metro-select')).toBeEnabled()
 
-      await page.getByTestId('map-metro-input').fill(metroArea)
-      await page.getByTestId('map-metro-apply').click()
+      await page.getByTestId('map-metro-select').click()
+      await page.getByRole('option', { name: metroArea }).click()
 
       await expect(
-        page.getByText(`Metro filter: "${metroArea}" (3 neighborhoods)`)
+        page.getByText(`Metro: "${metroArea}" (3 neighborhoods)`)
       ).toBeVisible()
 
       await page.getByTestId('map-overlay-cities').click()

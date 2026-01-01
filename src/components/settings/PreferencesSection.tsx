@@ -121,7 +121,7 @@ const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
 
 const cityKey = (city: CityOption) =>
   `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
-const MAP_METRO_QUERY = 'San Francisco–Oakland–San Jose'
+const DEFAULT_METRO_AREA = 'San Francisco–Oakland–San Jose'
 
 export function PreferencesSection({
   user,
@@ -218,8 +218,10 @@ export function PreferencesSection({
   const [mapOverlayMode, setMapOverlayMode] = useState<
     'neighborhoods' | 'cities'
   >('neighborhoods')
-  const [mapMetroInput, setMapMetroInput] = useState(MAP_METRO_QUERY)
-  const [mapMetroQuery, setMapMetroQuery] = useState(MAP_METRO_QUERY)
+  const [mapMetroAreas, setMapMetroAreas] = useState<string[]>([])
+  const [mapMetroArea, setMapMetroArea] = useState(DEFAULT_METRO_AREA)
+  const [mapMetroLoading, setMapMetroLoading] = useState(false)
+  const [mapMetroError, setMapMetroError] = useState<string | null>(null)
   const [mapMetroReloadToken, setMapMetroReloadToken] = useState(0)
   const [mapNeighborhoods, setMapNeighborhoods] = useState<
     NeighborhoodOption[]
@@ -237,12 +239,15 @@ export function PreferencesSection({
     autoSelectedCitiesRef.current = new Set(selectedCities.map(cityKey))
   }, [selectedCities])
 
-  const applyMapMetroQuery = useCallback(() => {
-    const trimmed = mapMetroInput.trim()
-    setMapMetroQuery(trimmed || MAP_METRO_QUERY)
-    setMapMetroReloadToken((prev) => prev + 1)
+  const handleMapMetroChange = useCallback((value: string) => {
+    setMapMetroArea(value)
     setMapNeighborhoodsError(null)
-  }, [mapMetroInput])
+  }, [])
+
+  const retryMapNeighborhoods = useCallback(() => {
+    setMapNeighborhoodsError(null)
+    setMapMetroReloadToken((prev) => prev + 1)
+  }, [])
 
   const propertyTypeOptions: Array<{
     key: PropertyTypeKey
@@ -309,6 +314,38 @@ export function PreferencesSection({
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+
+    const loadMetroAreas = async () => {
+      setMapMetroLoading(true)
+      setMapMetroError(null)
+      try {
+        const metros = await LocationsClient.getMetroAreas()
+        if (cancelled) return
+        const fallback = metros.length > 0 ? metros : [DEFAULT_METRO_AREA]
+        setMapMetroAreas(fallback)
+        setMapMetroArea((prev) =>
+          fallback.includes(prev) ? prev : fallback[0]!
+        )
+      } catch (_error) {
+        if (!cancelled) {
+          setMapMetroError('Failed to load metro areas')
+          setMapMetroAreas([DEFAULT_METRO_AREA])
+          setMapMetroArea((prev) => prev || DEFAULT_METRO_AREA)
+        }
+      } finally {
+        if (!cancelled) setMapMetroLoading(false)
+      }
+    }
+
+    void loadMetroAreas()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
     if (!allCities) return
     if (locationView === 'list') return
     setLocationView('list')
@@ -316,7 +353,7 @@ export function PreferencesSection({
 
   useEffect(() => {
     if (locationView !== 'map') return
-    if (!mapMetroQuery.trim()) return
+    if (!mapMetroArea.trim()) return
     let cancelled = false
 
     const loadMapNeighborhoods = async () => {
@@ -325,7 +362,7 @@ export function PreferencesSection({
       setMapNeighborhoodsError(null)
       try {
         const neighborhoods =
-          await LocationsClient.getNeighborhoodsForMetroArea(mapMetroQuery)
+          await LocationsClient.getNeighborhoodsForMetroArea(mapMetroArea)
         if (!cancelled) setMapNeighborhoods(neighborhoods)
       } catch (_error) {
         if (!cancelled) {
@@ -341,7 +378,7 @@ export function PreferencesSection({
     return () => {
       cancelled = true
     }
-  }, [locationView, mapMetroQuery, mapMetroReloadToken])
+  }, [locationView, mapMetroArea, mapMetroReloadToken])
 
   useEffect(() => {
     let cancelled = false
@@ -1194,28 +1231,32 @@ export function PreferencesSection({
                     </Button>
                   </div>
                   <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                    <Input
-                      value={mapMetroInput}
-                      onChange={(e) => setMapMetroInput(e.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          applyMapMetroQuery()
-                        }
-                      }}
-                      placeholder="Metro area filter"
-                      aria-label="Metro area filter"
-                      data-testid="map-metro-input"
-                      className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={applyMapMetroQuery}
-                      className="bg-emerald-500 text-white hover:bg-emerald-400"
-                      data-testid="map-metro-apply"
+                    <Select
+                      value={mapMetroArea}
+                      onValueChange={handleMapMetroChange}
                     >
-                      Apply
-                    </Button>
+                      <SelectTrigger
+                        className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
+                        aria-label="Metro area filter"
+                        data-testid="map-metro-select"
+                        disabled={mapMetroLoading}
+                      >
+                        <SelectValue
+                          placeholder={
+                            mapMetroLoading
+                              ? 'Loading metro areas...'
+                              : 'Select metro area'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {mapMetroAreas.map((metro) => (
+                          <SelectItem key={metro} value={metro}>
+                            {metro}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -1238,20 +1279,26 @@ export function PreferencesSection({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={applyMapMetroQuery}
+                      onClick={retryMapNeighborhoods}
                       className="text-hm-stone-300 hover:text-hm-stone-100"
                     >
                       Retry
                     </Button>
                   </div>
+                ) : mapMetroError ? (
+                  <div className="text-hm-stone-500 text-xs">
+                    {mapMetroError}
+                  </div>
                 ) : (
                   <p className="text-hm-stone-500 text-xs">
-                    {`Metro filter: "${mapMetroQuery}" (${mapNeighborhoods.length} neighborhoods)`}
+                    {`Metro: "${mapMetroArea}" (${mapNeighborhoods.length} neighborhoods)`}
                   </p>
                 )}
                 <p className="text-hm-stone-500 text-xs">
                   Draw to ringfence areas, or click overlays to toggle
-                  selections. Switch to list view for search + bulk actions.
+                  selections. City overlays are unioned and de-overlapped from
+                  neighborhood boundaries; gaps indicate missing data. Switch to
+                  list view for search + bulk actions.
                 </p>
               </TabsContent>
 

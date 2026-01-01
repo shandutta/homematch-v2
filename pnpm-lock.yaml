@@ -106,6 +106,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      polygon-clipping:
+        specifier: ^0.15.7
+        version: 0.15.7
       posthog-js:
         specifier: ^1.258.2
         version: 1.258.3
@@ -9961,6 +9964,12 @@ packages:
     engines: { node: '>=18' }
     hasBin: true
 
+  polygon-clipping@0.15.7:
+    resolution:
+      {
+        integrity: sha512-nhfdr83ECBg6xtqOAJab1tbksbBAOMUltN60bU+llHVOL0e5Onm1WpAXXWXVB39L8AJFssoIhEVuy/S90MmotA==,
+      }
+
   possible-typed-array-names@1.1.0:
     resolution:
       {
@@ -10542,6 +10551,12 @@ packages:
       }
     engines: { node: '>=10.0.0' }
 
+  robust-predicates@3.0.2:
+    resolution:
+      {
+        integrity: sha512-IXgzBWvWQwE6PrDI05OvmXUIruQTcoMDzRsOd5CDvHCVLcLHMTSYvOK5Cm46kWqlV3yAbuSpBZdJ5oP5OUoStg==,
+      }
+
   rollup@4.46.2:
     resolution:
       {
@@ -10943,6 +10958,13 @@ packages:
         integrity: sha512-DI7/OuAUD+GMpR6dmu8lliO2Wg5zfeh+/xsdyJZCzd8o5JgFUjCeLsBDuZjIQJdwXS3J0L/uZYrELKYqx+PXog==,
       }
     engines: { node: '>=8.0' }
+
+  splaytree@3.2.3:
+    resolution:
+      {
+        integrity: sha512-7OXrNWzy6CK+r7Ch9OLPBDTKfB6XlWHjX4P0RU5B3IgFuWPeYN0XtRtlexGRjgbQxpfaUve6jTAwBGWuGntz/w==,
+      }
+    engines: { node: '>=18.20 || >=20' }
 
   split2@4.2.0:
     resolution:
@@ -19037,6 +19059,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
+  polygon-clipping@0.15.7:
+    dependencies:
+      robust-predicates: 3.0.2
+      splaytree: 3.2.3
+
   possible-typed-array-names@1.1.0: {}
 
   postcss-selector-parser@7.1.1:
@@ -19366,6 +19393,8 @@ snapshots:
       glob: 7.2.3
 
   robots-parser@3.0.1: {}
+
+  robust-predicates@3.0.2: {}
 
   rollup@4.46.2:
     dependencies:
@@ -19725,6 +19754,8 @@ snapshots:
       '@types/node': 24.10.4
       image-ssim: 0.2.0
       jpeg-js: 0.4.4
+
+  splaytree@3.2.3: {}
 
   split2@4.2.0: {}
 

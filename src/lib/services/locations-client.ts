@@ -80,7 +80,7 @@ export class LocationsClient {
     const { data, error } = await supabase
       .from('neighborhoods')
       .select('id,name,city,state,bounds')
-      .ilike('metro_area', `%${trimmed}%`)
+      .eq('metro_area', trimmed)
       .order('name')
 
     if (error) {
@@ -88,5 +88,29 @@ export class LocationsClient {
     }
 
     return data || []
+  }
+
+  static async getMetroAreas(): Promise<string[]> {
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from('neighborhoods')
+      .select('metro_area')
+      .not('metro_area', 'is', null)
+      .order('metro_area')
+
+    if (error) {
+      throw new Error(`Failed to load metro areas: ${error.message}`)
+    }
+
+    const deduped = new Map<string, string>()
+    for (const row of data || []) {
+      const metro = row.metro_area?.trim()
+      if (!metro) continue
+      const key = metro.toLowerCase()
+      if (!deduped.has(key)) deduped.set(key, metro)
+    }
+
+    return Array.from(deduped.values())
   }
 }

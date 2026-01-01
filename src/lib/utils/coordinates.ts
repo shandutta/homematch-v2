@@ -17,6 +17,9 @@ export type LatLng = {
   lng: number
 }
 
+export type PolygonRings = LatLng[][]
+export type MultiPolygonRings = PolygonRings[]
+
 export type LngLat = {
   lng: number
   lat: number
@@ -138,15 +141,19 @@ export function parsePostGISGeometry(geometry: PostGISGeometry): LatLng | null {
  */
 export function parsePostGISPolygon(
   geometry: PostGISGeometry
-): LatLng[][] | null {
+): MultiPolygonRings | null {
   if (!geometry) return null
 
   if (typeof geometry === 'string') {
-    return parsePolygonString(geometry)
+    const rings = parsePolygonString(geometry)
+    return rings ? [rings] : null
   }
 
   if (Array.isArray(geometry)) {
-    return normalizePolygonCoordinates(geometry)
+    const rings = normalizePolygonCoordinates(geometry)
+    if (rings) return [rings]
+
+    return normalizeMultiPolygonCoordinates(geometry)
   }
 
   if (typeof geometry === 'object') {
@@ -155,20 +162,18 @@ export function parsePostGISPolygon(
       coordinates?: unknown
     }
     if (candidate.type === 'Polygon' && candidate.coordinates) {
-      return normalizePolygonCoordinates(candidate.coordinates)
+      const rings = normalizePolygonCoordinates(candidate.coordinates)
+      return rings ? [rings] : null
     }
     if (candidate.type === 'MultiPolygon' && candidate.coordinates) {
-      const multi = candidate.coordinates as CoordinateTuple[][][]
-      const firstPolygon = multi[0]
-      if (!firstPolygon) return null
-      return normalizePolygonCoordinates(firstPolygon)
+      return normalizeMultiPolygonCoordinates(candidate.coordinates)
     }
   }
 
   return null
 }
 
-function parsePolygonString(value: string): LatLng[][] | null {
+function parsePolygonString(value: string): PolygonRings | null {
   const matches = value.match(/-?\d+(?:\.\d+)?/g)
   if (!matches || matches.length < 6) return null
 
@@ -188,7 +193,7 @@ function parsePolygonString(value: string): LatLng[][] | null {
   return normalized ? [normalized] : null
 }
 
-function normalizePolygonCoordinates(input: unknown): LatLng[][] | null {
+function normalizePolygonCoordinates(input: unknown): PolygonRings | null {
   if (!Array.isArray(input)) return null
 
   if (input.length === 0) return null
@@ -205,6 +210,22 @@ function normalizePolygonCoordinates(input: unknown): LatLng[][] | null {
   }
 
   return rings.length > 0 ? rings : null
+}
+
+function normalizeMultiPolygonCoordinates(
+  input: unknown
+): MultiPolygonRings | null {
+  if (!Array.isArray(input)) return null
+  if (input.length === 0) return null
+
+  const polygons: PolygonRings[] = []
+
+  for (const polygonInput of input) {
+    const rings = normalizePolygonCoordinates(polygonInput)
+    if (rings) polygons.push(rings)
+  }
+
+  return polygons.length > 0 ? polygons : null
 }
 
 function parseCoordinateRing(
