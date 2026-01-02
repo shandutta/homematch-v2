@@ -21,6 +21,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Home,
 } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
@@ -330,21 +331,31 @@ export function PropertyDetailModal({
               )}
 
               {hasMultipleImages && (
-                <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
-                  {images.map((_, index) => {
-                    const isActive = index === normalizedIndex
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        aria-label={`View image ${index + 1}`}
-                        data-testid={`image-dot-${index}`}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className="h-2.5 w-2.5 rounded-full bg-white/70 transition hover:bg-white"
-                        style={{ opacity: isActive ? 1 : 0.4 }}
-                      />
-                    )
-                  })}
+                <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/10 bg-black/35 px-2 py-1.5 backdrop-blur-sm">
+                  <div className="flex items-center gap-1">
+                    {images.map((_, index) => {
+                      const isActive = index === normalizedIndex
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          aria-label={`View image ${index + 1}`}
+                          aria-current={isActive ? 'true' : undefined}
+                          data-testid={`image-dot-${index}`}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className="group relative flex h-6 w-6 items-center justify-center rounded-full transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none"
+                        >
+                          <span
+                            className={`block h-1.5 w-1.5 rounded-full bg-white/50 transition-all duration-200 ${
+                              isActive
+                                ? 'w-5 bg-white shadow-[0_0_12px_rgba(255,255,255,0.35)]'
+                                : 'group-hover:bg-white/90'
+                            }`}
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -404,26 +415,41 @@ export function PropertyDetailModal({
                 <h3 className="font-display text-hm-stone-200 text-lg font-medium">
                   Vibe snapshot
                 </h3>
-                {neighborhoodVibes && (
-                  <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
-                    <div className="text-hm-amber-400 mt-0.5 rounded-full bg-amber-400/10 p-2">
-                      <MapPin className="h-4 w-4" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {neighborhoodVibes && (
+                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.25)]">
+                      <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-amber-400/10 blur-2xl" />
+                      <div className="relative flex items-start gap-3">
+                        <div className="text-hm-amber-400 mt-0.5 rounded-full border border-white/10 bg-white/10 p-2">
+                          <MapPin className="h-4 w-4" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-hm-stone-500 text-[11px] font-semibold tracking-[0.22em] uppercase">
+                            Neighborhood vibe
+                          </p>
+                          <p className="text-hm-stone-200 text-sm leading-relaxed">
+                            {neighborhoodVibes.vibe_statement}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-hm-stone-200 text-sm font-semibold">
-                        Neighborhood vibe
-                      </p>
-                      <p className="text-hm-stone-400 text-sm">
-                        {neighborhoodVibes.vibe_statement}
-                      </p>
+                  )}
+                  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <div className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+                    <div className="relative flex items-start gap-3">
+                      <div className="text-hm-stone-300 mt-0.5 rounded-full border border-white/10 bg-white/5 p-2">
+                        <Home className="h-4 w-4" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-hm-stone-500 text-[11px] font-semibold tracking-[0.22em] uppercase">
+                          Home vibe
+                        </p>
+                        <p className="text-hm-stone-200 text-sm leading-relaxed">
+                          {houseOneLiner}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                )}
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-hm-stone-200 text-sm font-semibold">
-                    Home vibe
-                  </p>
-                  <p className="text-hm-stone-400 text-sm">{houseOneLiner}</p>
                 </div>
                 {propertyTags.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -432,7 +458,7 @@ export function PropertyDetailModal({
                         key={tag}
                         variant="secondary"
                         data-tag={tag}
-                        className="bg-white/10 text-[11px] font-medium text-white/90"
+                        className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/80 uppercase"
                       >
                         {tag}
                       </Badge>
