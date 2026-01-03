@@ -242,7 +242,7 @@ export function PropertyDetailModal({
             className="min-h-0 flex-1 overflow-y-auto"
             data-testid="property-detail-scroll"
           >
-            <div className="safe-area-top bg-hm-obsidian-900/85 sticky top-0 z-20 flex items-center justify-between border-b border-white/10 px-4 py-3 backdrop-blur sm:px-6">
+            <div className="safe-area-top bg-hm-obsidian-900/85 sticky top-0 z-20 flex items-center justify-between border-b border-white/10 px-4 pt-4 pb-3 backdrop-blur sm:px-6 sm:pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
@@ -331,7 +331,7 @@ export function PropertyDetailModal({
               )}
 
               {hasMultipleImages && (
-                <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/10 bg-black/35 px-2 py-1.5 backdrop-blur-sm">
+                <div className="absolute bottom-4 left-1/2 z-10 max-w-[80%] -translate-x-1/2 overflow-x-auto rounded-full border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div className="flex items-center gap-1">
                     {images.map((_, index) => {
                       const isActive = index === normalizedIndex

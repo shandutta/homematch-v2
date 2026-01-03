@@ -156,7 +156,7 @@ export function LocationMapSelector({
   )
 
   const neighborhoodShapes = useMemo<NeighborhoodShape[]>(() => {
-    return neighborhoods
+    const candidates = neighborhoods
       .map((neighborhood) => {
         const polygons = normalizePolygons(
           parsePostGISPolygon(neighborhood.bounds)
@@ -168,7 +168,43 @@ export function LocationMapSelector({
           neighborhood,
           polygons,
           bounds,
-          clipping: toClippingMultiPolygon(polygons),
+          area: polygonGroupArea(polygons),
+        }
+      })
+      .filter((value): value is NeighborhoodShape & { area: number } =>
+        Boolean(value)
+      )
+
+    const sorted = candidates.sort((a, b) => {
+      if (a.area !== b.area) return a.area - b.area
+      return a.neighborhood.name.localeCompare(b.neighborhood.name)
+    })
+
+    let occupied: ClippingMultiPolygon = []
+
+    return sorted
+      .map((shape) => {
+        let polygons = shape.polygons
+        if (occupied.length > 0) {
+          const exclusive = subtractPolygonGroups(polygons, occupied)
+          if (exclusive.length > 0) {
+            polygons = exclusive
+          } else {
+            return null
+          }
+        }
+
+        const bounds = buildBoundsForPolygons(polygons)
+        if (!bounds) return null
+
+        const clipping = toClippingMultiPolygon(polygons)
+        occupied = unionMultiPolygons(occupied, clipping)
+
+        return {
+          neighborhood: shape.neighborhood,
+          polygons,
+          bounds,
+          clipping,
         }
       })
       .filter((value): value is NeighborhoodShape => Boolean(value))
@@ -218,6 +254,8 @@ export function LocationMapSelector({
           const exclusive = subtractPolygonGroups(unioned, occupied)
           if (exclusive.length > 0) {
             polygons = exclusive
+          } else {
+            return null
           }
         }
 
@@ -225,7 +263,10 @@ export function LocationMapSelector({
         if (!bounds) return null
 
         const clipping = toClippingMultiPolygon(polygons)
-        occupied = unionMultiPolygons(occupied, toClippingMultiPolygon(unioned))
+        occupied = unionMultiPolygons(
+          occupied,
+          toClippingMultiPolygon(polygons)
+        )
 
         return {
           city: entry.city,
@@ -897,4 +938,22 @@ function polygonsIntersect(
     console.warn('[LocationMapSelector] Failed to intersect polygons', error)
     return false
   }
+}
+
+function ringArea(ring: LatLng[]): number {
+  if (ring.length < 3) return 0
+  let area = 0
+  for (let i = 0; i < ring.length - 1; i += 1) {
+    const current = ring[i]
+    const next = ring[i + 1]
+    area += current.lng * next.lat - next.lng * current.lat
+  }
+  return area / 2
+}
+
+function polygonGroupArea(polygons: PolygonRings[]): number {
+  return polygons.reduce((total, rings) => {
+    const ringsArea = rings.reduce((sum, ring) => sum + ringArea(ring), 0)
+    return total + Math.abs(ringsArea)
+  }, 0)
 }

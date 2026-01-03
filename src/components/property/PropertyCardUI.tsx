@@ -4,16 +4,7 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import type { NeighborhoodVibesRecord } from '@/lib/schemas/neighborhood-vibes'
 import type { PropertyVibes } from '@/lib/schemas/property-vibes'
-import {
-  Bed,
-  Bath,
-  Square,
-  ExternalLink,
-  Heart,
-  MapPin,
-  X,
-  ChevronRight,
-} from 'lucide-react'
+import { Bed, Bath, Square, ExternalLink, Heart, MapPin, X } from 'lucide-react'
 import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
@@ -297,22 +288,6 @@ export function PropertyCardUI({
             <span className="text-hm-stone-500">sqft</span>
           </span>
         </div>
-
-        {/* Details CTA */}
-        {enableDetailsToggle && isClickable && onCardClick && (
-          <button
-            type="button"
-            className="text-hm-stone-200 mb-4 inline-flex w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium transition hover:border-white/20 hover:bg-white/10 hover:text-white"
-            onClick={(e) => {
-              e.stopPropagation()
-              onCardClick()
-            }}
-            data-testid="details-cta"
-          >
-            <span>Details</span>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        )}
 
         {/* Storytelling Description */}
         {(!enableDetailsToggle && shouldShowStory) ||
