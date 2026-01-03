@@ -18,7 +18,7 @@ describe('parsePostGISPolygon', () => {
 
     const rings = parsePostGISPolygon(polygon)
     expect(rings).not.toBeNull()
-    expect(rings?.[0]?.[0]).toEqual({ lat: 37.78, lng: -122.42 })
+    expect(rings?.[0]?.[0]?.[0]).toEqual({ lat: 37.78, lng: -122.42 })
   })
 
   test('parses Postgres polygon string', () => {
@@ -26,7 +26,7 @@ describe('parsePostGISPolygon', () => {
       '((-122.42,37.78),(-122.41,37.78),(-122.41,37.77),(-122.42,37.77),(-122.42,37.78))'
     const rings = parsePostGISPolygon(polygon)
     expect(rings).not.toBeNull()
-    expect(rings?.[0]).toHaveLength(5)
+    expect(rings?.[0]?.[0]).toHaveLength(5)
   })
 
   test('parses GeoJSON MultiPolygon using first polygon', () => {
@@ -56,7 +56,7 @@ describe('parsePostGISPolygon', () => {
 
     const rings = parsePostGISPolygon(multi)
     expect(rings).not.toBeNull()
-    expect(rings?.[0]?.[0]).toEqual({ lat: 37.78, lng: -122.42 })
+    expect(rings?.[0]?.[0]?.[0]).toEqual({ lat: 37.78, lng: -122.42 })
   })
 
   test('returns null for invalid input', () => {
