@@ -134,6 +134,13 @@ async function main() {
   if (!warmupEnv.WARMUP_DEV_COMMAND) {
     warmupEnv.WARMUP_DEV_COMMAND = warmupDevCommand
   }
+  if (!warmupEnv.WARMUP_BASE_URL) {
+    warmupEnv.WARMUP_BASE_URL =
+      process.env.BASE_URL || process.env.APP_URL || 'http://127.0.0.1:3000'
+  }
+  if (!warmupEnv.WARMUP_READINESS_PATH) {
+    warmupEnv.WARMUP_READINESS_PATH = '/api/health?expectTest=true'
+  }
 
   console.log(
     `🔥 Launching dev:warmup (dev command: ${warmupEnv.WARMUP_DEV_COMMAND})...`

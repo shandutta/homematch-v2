@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Heart,
@@ -51,7 +51,7 @@ export function MutualLikesSection({
   isLoading: propIsLoading,
   error: propError,
 }: MutualLikesSectionProps) {
-  const isServerRender = typeof window === 'undefined'
+  const [hasHydrated, setHasHydrated] = useState(false)
   const usingExternalState =
     propMutualLikes !== undefined ||
     propIsLoading !== undefined ||
@@ -59,9 +59,13 @@ export function MutualLikesSection({
 
   const query = useMutualLikes()
 
+  useEffect(() => {
+    setHasHydrated(true)
+  }, [])
+
   // `useMutualLikes` is disabled during SSR to avoid unauthenticated server fetches.
-  // Render the same loading state on the server to prevent hydration mismatches.
-  const shouldForceLoading = !usingExternalState && isServerRender
+  // Render the same loading state on the server and first client paint to prevent hydration mismatches.
+  const shouldForceLoading = !usingExternalState && !hasHydrated
 
   const mutualLikes: MutualLike[] =
     propMutualLikes ??
@@ -72,6 +76,7 @@ export function MutualLikesSection({
     (shouldForceLoading ? null : query.error ? query.error.message : null)
 
   useEffect(() => {
+    if (!hasHydrated) return
     if (usingExternalState) return
     if (!query.error) return
 
@@ -92,7 +97,7 @@ export function MutualLikesSection({
     }
 
     toast.error('Failed to load mutual likes', message)
-  }, [query.error, usingExternalState])
+  }, [hasHydrated, query.error, usingExternalState])
 
   const handleRetry = () => {
     if (usingExternalState) return
