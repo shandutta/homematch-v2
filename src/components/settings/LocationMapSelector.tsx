@@ -229,13 +229,7 @@ export function LocationMapSelector({
       grouped.set(key, existing)
     })
 
-    const sorted = Array.from(grouped.entries()).sort((a, b) =>
-      a[0].localeCompare(b[0])
-    )
-
-    let occupied: ClippingMultiPolygon = []
-
-    return sorted
+    const sorted = Array.from(grouped.entries())
       .map(([key, entry]) => {
         if (entry.polygons.length === 0) return null
 
@@ -249,9 +243,35 @@ export function LocationMapSelector({
           })
         }
 
-        let polygons = unioned
+        return {
+          key,
+          city: entry.city,
+          unioned,
+          area: polygonGroupArea(unioned),
+        }
+      })
+      .filter(
+        (
+          value
+        ): value is {
+          key: string
+          city: CityOption
+          unioned: PolygonRings[]
+          area: number
+        } => Boolean(value)
+      )
+      .sort((a, b) => {
+        if (a.area !== b.area) return a.area - b.area
+        return a.key.localeCompare(b.key)
+      })
+
+    let occupied: ClippingMultiPolygon = []
+
+    return sorted
+      .map((entry) => {
+        let polygons = entry.unioned
         if (occupied.length > 0) {
-          const exclusive = subtractPolygonGroups(unioned, occupied)
+          const exclusive = subtractPolygonGroups(entry.unioned, occupied)
           if (exclusive.length > 0) {
             polygons = exclusive
           } else {
@@ -263,14 +283,11 @@ export function LocationMapSelector({
         if (!bounds) return null
 
         const clipping = toClippingMultiPolygon(polygons)
-        occupied = unionMultiPolygons(
-          occupied,
-          toClippingMultiPolygon(polygons)
-        )
+        occupied = unionMultiPolygons(occupied, clipping)
 
         return {
           city: entry.city,
-          key,
+          key: entry.key,
           polygons,
           bounds,
           clipping,
