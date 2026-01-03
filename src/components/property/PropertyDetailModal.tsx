@@ -417,14 +417,14 @@ export function PropertyDetailModal({
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {neighborhoodVibes && (
-                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.02] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.25)]">
+                    <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.1] via-white/[0.05] to-white/[0.02] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
                       <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-amber-400/10 blur-2xl" />
                       <div className="relative flex items-start gap-3">
                         <div className="text-hm-amber-400 mt-0.5 rounded-full border border-white/10 bg-white/10 p-2">
                           <MapPin className="h-4 w-4" />
                         </div>
                         <div className="space-y-2">
-                          <p className="text-hm-stone-500 text-[11px] font-semibold tracking-[0.22em] uppercase">
+                          <p className="text-hm-stone-400 text-[10px] font-semibold tracking-[0.2em] uppercase">
                             Neighborhood vibe
                           </p>
                           <p className="text-hm-stone-200 text-sm leading-relaxed">
@@ -434,14 +434,14 @@ export function PropertyDetailModal({
                       </div>
                     </div>
                   )}
-                  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                     <div className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
                     <div className="relative flex items-start gap-3">
                       <div className="text-hm-stone-300 mt-0.5 rounded-full border border-white/10 bg-white/5 p-2">
                         <Home className="h-4 w-4" />
                       </div>
                       <div className="space-y-2">
-                        <p className="text-hm-stone-500 text-[11px] font-semibold tracking-[0.22em] uppercase">
+                        <p className="text-hm-stone-400 text-[10px] font-semibold tracking-[0.2em] uppercase">
                           Home vibe
                         </p>
                         <p className="text-hm-stone-200 text-sm leading-relaxed">
@@ -458,7 +458,7 @@ export function PropertyDetailModal({
                         key={tag}
                         variant="secondary"
                         data-tag={tag}
-                        className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] text-white/80 uppercase"
+                        className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[11px] font-medium tracking-wide text-white/80"
                       >
                         {tag}
                       </Badge>

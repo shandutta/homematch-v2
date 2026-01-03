@@ -128,7 +128,7 @@ async function main() {
 
   const warmupDevCommand =
     process.env.WARMUP_DEV_COMMAND ||
-    'npx next dev --turbopack --hostname 0.0.0.0 --port 3000'
+    'pnpm exec next dev --turbopack --hostname 127.0.0.1 --port 3000'
 
   const warmupEnv = { ...testEnv }
   if (!warmupEnv.WARMUP_DEV_COMMAND) {
