@@ -203,7 +203,7 @@ export function SwipeablePropertyCard({
   const handleCardTap = useCallback(
     (event: MouseEvent | TouchEvent | PointerEvent) => {
       if (!propertyDetail || !currentProperty) return
-      if (isDragging || isProcessingSwipeRef.current) return
+      if (isProcessingSwipeRef.current) return
       if (isTapOnInteractiveElement(event.target)) return
 
       propertyDetail.openPropertyDetail(
@@ -211,13 +211,7 @@ export function SwipeablePropertyCard({
         neighborhoodData || undefined
       )
     },
-    [
-      propertyDetail,
-      currentProperty,
-      neighborhoodData,
-      isDragging,
-      isProcessingSwipeRef,
-    ]
+    [propertyDetail, currentProperty, neighborhoodData, isProcessingSwipeRef]
   )
 
   if (!currentProperty) {

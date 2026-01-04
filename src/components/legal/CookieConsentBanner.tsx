@@ -27,6 +27,7 @@ const categoryCopy = {
 }
 
 export function CookieConsentBanner() {
+  const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
   const [isOpen, setIsOpen] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [draft, setDraft] = useState<CookieConsentDraft>(getDefaultConsent())
@@ -74,7 +75,7 @@ export function CookieConsentBanner() {
     return categoryCopy.advertising.description
   }, [adSenseEnabled])
 
-  if (!isOpen) return null
+  if (isTestMode || !isOpen) return null
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">

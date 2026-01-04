@@ -16,6 +16,20 @@ const MAPS_STUB_SCRIPT = `
         node.style.display = 'block'
         el.appendChild(node)
       }
+      this.setCenter = function() {}
+      this.setZoom = function() {}
+      this.fitBounds = function() {}
+    }
+    window.google.maps.Polygon = function(options) {
+      this.options = options || {}
+      this.setOptions = function(next) {
+        this.options = Object.assign({}, this.options, next || {})
+      }
+      this.setMap = function() {}
+      this.addListener = function() {}
+    }
+    window.google.maps.LatLngBounds = function() {
+      this.extend = function() {}
     }
     if (window.initGoogleMaps) window.initGoogleMaps()
   })()
@@ -123,6 +137,7 @@ test.describe('Location map precomputed boundaries', () => {
     })
 
     const metroSelect = page.getByTestId('map-metro-select')
+    await expect(metroSelect).toBeEnabled({ timeout: 15000 })
     await metroSelect.click()
     const option = page.getByRole('option', { name: metro })
     await option.waitFor({ timeout: 10000 })
