@@ -237,38 +237,6 @@ export function PropertyCardUI({
             <p className="text-hm-stone-400 text-sm">
               {neighborhood?.name || property.city}, {property.state}
             </p>
-            {neighborhoodVibes &&
-              (fullHeight ? (
-                <p className="text-hm-stone-400 mt-2 line-clamp-1 text-xs">
-                  {neighborhoodVibes.tagline}
-                </p>
-              ) : (
-                <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
-                  <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
-                  <div className="space-y-1">
-                    <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
-                      {neighborhoodVibes.tagline}
-                    </p>
-                    <p className="text-hm-stone-200 line-clamp-2 hidden text-sm sm:block">
-                      {neighborhoodVibes.vibe_statement}
-                    </p>
-                    {neighborhoodVibes.suggested_tags?.length ? (
-                      <div className="hidden flex-wrap gap-2 pt-1 sm:flex">
-                        {neighborhoodVibes.suggested_tags
-                          .slice(0, 4)
-                          .map((tag: string) => (
-                            <span
-                              key={tag}
-                              className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
           </div>
           {shouldShowDetailsCta && (
             <button
@@ -313,17 +281,39 @@ export function PropertyCardUI({
             ? availableDetailViews[0] === 'story'
             : detailView === 'story')) ? (
           <div className="border-t border-white/5 pt-4">
-            <StorytellingDescription
-              property={property}
-              neighborhood={neighborhood || undefined}
-              vibes={propertyVibes}
-              isMutualLike={isMutualLike}
-              variant="compact"
-              showLifestyleTags={true}
-              showFutureVision={storyVariant === 'futureVision'}
-            />
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="text-hm-stone-400 mb-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
+                Home vibe
+              </p>
+              <StorytellingDescription
+                property={property}
+                neighborhood={neighborhood || undefined}
+                vibes={propertyVibes}
+                isMutualLike={isMutualLike}
+                variant="compact"
+                showLifestyleTags={true}
+                showFutureVision={storyVariant === 'futureVision'}
+                showNeighborhoodPerks={false}
+              />
+            </div>
           </div>
         ) : null}
+
+        {neighborhoodVibes && (
+          <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+            <div className="flex items-start gap-2">
+              <MapPin className="text-hm-stone-500 mt-0.5 h-3 w-3" />
+              <div>
+                <p className="text-hm-stone-500 text-[10px] font-semibold tracking-[0.22em] uppercase">
+                  Neighborhood vibe
+                </p>
+                <p className="text-hm-stone-300 line-clamp-1 text-xs">
+                  {neighborhoodVibes.tagline}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Map */}
         {(!enableDetailsToggle && shouldShowMap) ||

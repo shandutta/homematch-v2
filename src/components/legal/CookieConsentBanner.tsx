@@ -79,17 +79,16 @@ export function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
-      <div className="mx-auto mb-4 w-full max-w-4xl px-4 sm:px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
-                Cookie notice
-              </p>
-              <p className="text-sm text-slate-700">
-                We use essential cookies to run HomeMatch. Optional cookies help
-                us improve performance and show ads if enabled. Learn more in
-                the{' '}
+      <div className="mx-auto mb-3 w-full max-w-4xl px-4 sm:px-6">
+        <div className="rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                Cookies
+              </span>
+              <p className="text-xs text-slate-700">
+                We use essential cookies. Optional cookies improve performance
+                and ads. See the{' '}
                 <Link href="/cookies" className="text-sky-600 underline">
                   Cookie Policy
                 </Link>{' '}
@@ -100,17 +99,21 @@ export function CookieConsentBanner() {
                 .
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 sm:justify-end">
+            <div className="flex flex-wrap gap-2 sm:items-center sm:justify-end">
               <Button
                 type="button"
+                size="sm"
                 variant="outline"
+                className="h-9 min-h-0 px-3 text-xs"
                 onClick={() => handleSave(getDefaultConsent())}
               >
                 Reject non-essential
               </Button>
               <Button
                 type="button"
+                size="sm"
                 variant="primary"
+                className="h-9 min-h-0 px-3 text-xs"
                 onClick={() =>
                   handleSave({
                     preferences: true,
@@ -123,7 +126,9 @@ export function CookieConsentBanner() {
               </Button>
               <Button
                 type="button"
+                size="sm"
                 variant="ghost"
+                className="h-9 min-h-0 px-2 text-xs"
                 onClick={() => setShowDetails((current) => !current)}
               >
                 {showDetails ? 'Hide settings' : 'Manage settings'}
@@ -132,7 +137,7 @@ export function CookieConsentBanner() {
           </div>
 
           {showDetails ? (
-            <div className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
+            <div className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-slate-900">

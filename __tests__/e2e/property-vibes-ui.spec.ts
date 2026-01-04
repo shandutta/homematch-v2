@@ -305,10 +305,11 @@ test.describe('Property Vibes - UI', () => {
         .first()
 
       await expect(card).toBeVisible()
+      await expect(card).toContainText('Home vibe')
       await expect(card).toContainText(seeded.tagline)
+      await expect(card).toContainText(seeded.tag)
+      await expect(card).toContainText('Neighborhood vibe')
       await expect(card).toContainText(seeded.neighborhoodTagline)
-      await expect(card).toContainText(seeded.neighborhoodVibeStatement)
-      await expect(card).toContainText(seeded.neighborhoodTag)
 
       await card.click({ force: true })
 
@@ -344,11 +345,11 @@ test.describe('Property Vibes - UI', () => {
         .first()
 
       await expect(card).toBeVisible()
+      await expect(card).toContainText('Home vibe')
       await expect(card).toContainText(seeded.tagline)
       await expect(card).toContainText(seeded.tag)
+      await expect(card).toContainText('Neighborhood vibe')
       await expect(card).toContainText(seeded.neighborhoodTagline)
-      await expect(card).toContainText(seeded.neighborhoodVibeStatement)
-      await expect(card).toContainText(seeded.neighborhoodTag)
     } finally {
       await seeded.cleanup()
     }
@@ -400,6 +401,42 @@ test.describe('Property Vibes - UI', () => {
           expect(hintBottom).toBeLessThanOrEqual(passTop)
         }
       }
+
+      const passButton = page
+        .getByRole('button', { name: 'Pass on this property' })
+        .first()
+      const likeButton = page
+        .getByRole('button', { name: 'Like this property' })
+        .first()
+
+      await expect(passButton).toBeVisible()
+      await expect(likeButton).toBeVisible()
+
+      const assertButtonOnTop = async (button: typeof passButton) => {
+        const box = await button.boundingBox()
+        expect(box).toBeTruthy()
+        if (!box) return
+        const centerX = box.x + box.width / 2
+        const centerY = box.y + box.height / 2
+        const handle = await button.elementHandle()
+        expect(handle).toBeTruthy()
+        if (!handle) return
+
+        const isTopMost = await page.evaluate(
+          (element, x, y) => {
+            const hit = document.elementFromPoint(x, y)
+            return Boolean(hit && element.contains(hit))
+          },
+          handle,
+          centerX,
+          centerY
+        )
+
+        expect(isTopMost).toBe(true)
+      }
+
+      await assertButtonOnTop(passButton)
+      await assertButtonOnTop(likeButton)
 
       await expect(card).toContainText(seeded.tagline)
     } finally {
