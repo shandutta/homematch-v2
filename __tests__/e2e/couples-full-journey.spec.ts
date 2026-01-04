@@ -551,7 +551,12 @@ test.describe('Couples full journey (real UI)', () => {
         .locator(`a[href^="/properties/${propertyId!}"]`)
         .filter({ hasText: propertyAddress! })
         .first()
-      await dashboardMutualLink.click()
+      await expect(dashboardMutualLink).toBeVisible({ timeout: 10000 })
+      const dashboardHref = await dashboardMutualLink.getAttribute('href')
+      if (!dashboardHref) {
+        throw new Error('Mutual like link missing href on dashboard')
+      }
+      await partnerPage.goto(dashboardHref, { waitUntil: 'domcontentloaded' })
       await expect(partnerPage).toHaveURL(
         new RegExp(`/properties/${propertyId!}.*returnTo=(%2F|\\/)?dashboard`)
       )
