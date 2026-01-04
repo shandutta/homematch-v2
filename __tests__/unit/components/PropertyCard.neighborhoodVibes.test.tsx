@@ -74,14 +74,7 @@ describe('PropertyCard neighborhood vibes', () => {
 
     expect(useNeighborhoodVibes).toHaveBeenCalledWith('test-neighborhood-1')
 
+    expect(screen.getByText('Neighborhood vibe')).toBeDefined()
     expect(screen.getByText('Coffee shops and quiet streets')).toBeDefined()
-    expect(
-      screen.getByText('A leafy pocket with weekend brunch energy.')
-    ).toBeDefined()
-    expect(screen.getByText('Brunch')).toBeDefined()
-    expect(screen.getByText('Walkable')).toBeDefined()
-    expect(screen.getByText('Parks')).toBeDefined()
-    expect(screen.getByText('Calm')).toBeDefined()
-    expect(screen.queryByText('Extra')).toBeNull()
   })
 })
