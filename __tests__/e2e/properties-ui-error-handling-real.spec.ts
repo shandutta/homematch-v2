@@ -526,8 +526,12 @@ test.describe('Properties UI Error Handling - Real Browser Tests', () => {
       page,
       config,
       logger,
+      auth,
     }) => {
       logger.step('Testing malformed data handling')
+
+      // Ensure we're authenticated so we stay on the dashboard
+      await auth.loginIfNeeded(config.users.user1)
 
       // Intercept API and return malformed data
       await page.route('**/api/properties*', (route) => {
