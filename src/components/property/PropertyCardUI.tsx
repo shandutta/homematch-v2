@@ -95,6 +95,8 @@ export function PropertyCardUI({
 
   const shouldShowStory = showStory
   const shouldShowMap = showMap && hasMapCoordinates
+  const shouldShowDetailsCta =
+    enableDetailsToggle && isClickable && !!onCardClick
 
   const availableDetailViews = useMemo(() => {
     const orderedViews: Array<'story' | 'map'> = fullHeight
@@ -224,48 +226,63 @@ export function PropertyCardUI({
         )}
       >
         {/* Address */}
-        <div className="mb-3">
-          <h3
-            className="font-display text-hm-stone-200 text-lg font-medium tracking-tight"
-            data-testid="property-address"
-          >
-            {property.address}
-          </h3>
-          <p className="text-hm-stone-400 text-sm">
-            {neighborhood?.name || property.city}, {property.state}
-          </p>
-          {neighborhoodVibes &&
-            (fullHeight ? (
-              <p className="text-hm-stone-400 mt-2 line-clamp-1 text-xs">
-                {neighborhoodVibes.tagline}
-              </p>
-            ) : (
-              <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
-                <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
-                <div className="space-y-1">
-                  <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
-                    {neighborhoodVibes.tagline}
-                  </p>
-                  <p className="text-hm-stone-200 line-clamp-2 hidden text-sm sm:block">
-                    {neighborhoodVibes.vibe_statement}
-                  </p>
-                  {neighborhoodVibes.suggested_tags?.length ? (
-                    <div className="hidden flex-wrap gap-2 pt-1 sm:flex">
-                      {neighborhoodVibes.suggested_tags
-                        .slice(0, 4)
-                        .map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                    </div>
-                  ) : null}
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h3
+              className="font-display text-hm-stone-200 text-lg font-medium tracking-tight"
+              data-testid="property-address"
+            >
+              {property.address}
+            </h3>
+            <p className="text-hm-stone-400 text-sm">
+              {neighborhood?.name || property.city}, {property.state}
+            </p>
+            {neighborhoodVibes &&
+              (fullHeight ? (
+                <p className="text-hm-stone-400 mt-2 line-clamp-1 text-xs">
+                  {neighborhoodVibes.tagline}
+                </p>
+              ) : (
+                <div className="mt-2 flex items-start gap-2 rounded-lg border border-white/10 bg-white/10 p-2">
+                  <MapPin className="text-hm-amber-400 mt-0.5 h-4 w-4" />
+                  <div className="space-y-1">
+                    <p className="text-hm-stone-100 line-clamp-1 text-sm font-semibold">
+                      {neighborhoodVibes.tagline}
+                    </p>
+                    <p className="text-hm-stone-200 line-clamp-2 hidden text-sm sm:block">
+                      {neighborhoodVibes.vibe_statement}
+                    </p>
+                    {neighborhoodVibes.suggested_tags?.length ? (
+                      <div className="hidden flex-wrap gap-2 pt-1 sm:flex">
+                        {neighborhoodVibes.suggested_tags
+                          .slice(0, 4)
+                          .map((tag: string) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-white/15 px-2.5 py-1 text-[12px] text-white"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
+          {shouldShowDetailsCta && (
+            <button
+              type="button"
+              className="text-hm-stone-200 hover:text-hm-stone-100 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              data-testid="details-cta"
+              onClick={(event) => {
+                event.stopPropagation()
+                onCardClick()
+              }}
+            >
+              Details
+            </button>
+          )}
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}
