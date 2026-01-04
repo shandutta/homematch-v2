@@ -65,6 +65,23 @@ type CityShape = {
   clipping: ClippingMultiPolygon
 }
 
+type NeighborhoodDebugInfo = {
+  totalNeighborhoods: number
+  parsedNeighborhoods: number
+  skippedNeighborhoods: number
+  overlapRemovedNeighborhoods: number
+  rawNeighborhoodArea: number
+  neighborhoodUnionArea: number
+  neighborhoodOverlapArea: number
+}
+
+type CityDebugInfo = {
+  totalCities: number
+  rawCityArea: number
+  cityUnionArea: number
+  cityOverlapArea: number
+}
+
 const DEFAULT_CENTER = { lat: 37.7749, lng: -122.4194 }
 
 const NEIGHBORHOOD_STYLE = {
@@ -175,7 +192,11 @@ export function LocationMapSelector({
     [selectedCities]
   )
 
-  const neighborhoodShapes = useMemo<NeighborhoodShape[]>(() => {
+  const neighborhoodAnalysis = useMemo<{
+    shapes: NeighborhoodShape[]
+    debug: NeighborhoodDebugInfo
+    unionClipping: ClippingMultiPolygon
+  }>(() => {
     const candidates = neighborhoods
       .map((neighborhood) => {
         const polygons = normalizePolygons(
@@ -189,11 +210,28 @@ export function LocationMapSelector({
           polygons,
           bounds,
           area: polygonGroupArea(polygons),
+          clipping: toClippingMultiPolygon(polygons),
         }
       })
       .filter((value): value is NeighborhoodShape & { area: number } =>
         Boolean(value)
       )
+
+    const rawNeighborhoodArea = candidates.reduce(
+      (total, shape) => total + shape.area,
+      0
+    )
+    const neighborhoodUnionClipping =
+      candidates.length > 0
+        ? polygonClipping.union(...candidates.map((shape) => shape.clipping))
+        : []
+    const neighborhoodUnionArea = clippingMultiPolygonArea(
+      neighborhoodUnionClipping
+    )
+    const neighborhoodOverlapArea = Math.max(
+      0,
+      rawNeighborhoodArea - neighborhoodUnionArea
+    )
 
     const sorted = candidates.sort((a, b) => {
       if (a.area !== b.area) return a.area - b.area
@@ -201,8 +239,9 @@ export function LocationMapSelector({
     })
 
     let occupied: ClippingMultiPolygon = []
+    let overlapRemoved = 0
 
-    return sorted
+    const shapes = sorted
       .map((shape) => {
         let polygons = shape.polygons
         if (occupied.length > 0) {
@@ -210,6 +249,7 @@ export function LocationMapSelector({
           if (exclusive.length > 0) {
             polygons = exclusive
           } else {
+            overlapRemoved += 1
             return null
           }
         }
@@ -228,9 +268,29 @@ export function LocationMapSelector({
         }
       })
       .filter((value): value is NeighborhoodShape => Boolean(value))
+
+    return {
+      shapes,
+      debug: {
+        totalNeighborhoods: neighborhoods.length,
+        parsedNeighborhoods: candidates.length,
+        skippedNeighborhoods: neighborhoods.length - candidates.length,
+        overlapRemovedNeighborhoods: overlapRemoved,
+        rawNeighborhoodArea,
+        neighborhoodUnionArea,
+        neighborhoodOverlapArea,
+      },
+      unionClipping: neighborhoodUnionClipping,
+    }
   }, [neighborhoods])
 
-  const cityShapes = useMemo<CityShape[]>(() => {
+  const neighborhoodShapes = neighborhoodAnalysis.shapes
+
+  const cityAnalysis = useMemo<{
+    shapes: CityShape[]
+    debug: CityDebugInfo
+    unionClipping: ClippingMultiPolygon
+  }>(() => {
     const grouped = new Map<
       string,
       { city: CityOption; polygons: PolygonRings[] }
@@ -285,9 +345,19 @@ export function LocationMapSelector({
         return a.key.localeCompare(b.key)
       })
 
+    const rawCityArea = sorted.reduce((total, entry) => total + entry.area, 0)
+    const cityUnionClipping =
+      sorted.length > 0
+        ? polygonClipping.union(
+            ...sorted.map((entry) => toClippingMultiPolygon(entry.unioned))
+          )
+        : []
+    const cityUnionArea = clippingMultiPolygonArea(cityUnionClipping)
+    const cityOverlapArea = Math.max(0, rawCityArea - cityUnionArea)
+
     let occupied: ClippingMultiPolygon = []
 
-    return sorted
+    const shapes = sorted
       .map((entry) => {
         let polygons = entry.unioned
         if (occupied.length > 0) {
@@ -314,7 +384,19 @@ export function LocationMapSelector({
         }
       })
       .filter((value): value is CityShape => Boolean(value))
+    return {
+      shapes,
+      debug: {
+        totalCities: sorted.length,
+        rawCityArea,
+        cityUnionArea,
+        cityOverlapArea,
+      },
+      unionClipping: cityUnionClipping,
+    }
   }, [neighborhoodShapes])
+
+  const cityShapes = cityAnalysis.shapes
 
   useEffect(() => {
     updateDebugState({
@@ -323,12 +405,23 @@ export function LocationMapSelector({
       mapsReady,
       mapError,
       overlayMode,
+      neighborhoodDebug: neighborhoodAnalysis.debug,
+      cityDebug: cityAnalysis.debug,
+      areaConsistency: {
+        neighborhoodUnionArea: neighborhoodAnalysis.debug.neighborhoodUnionArea,
+        cityUnionArea: cityAnalysis.debug.cityUnionArea,
+        delta:
+          neighborhoodAnalysis.debug.neighborhoodUnionArea -
+          cityAnalysis.debug.cityUnionArea,
+      },
     })
   }, [
     cityShapes.length,
+    cityAnalysis.debug,
     mapError,
     mapsReady,
     neighborhoodShapes.length,
+    neighborhoodAnalysis.debug,
     overlayMode,
     updateDebugState,
   ])
@@ -1043,4 +1136,31 @@ function polygonGroupArea(polygons: PolygonRings[]): number {
     const ringsArea = rings.reduce((sum, ring) => sum + ringArea(ring), 0)
     return total + Math.abs(ringsArea)
   }, 0)
+}
+
+function clippingRingArea(ring: ClippingRing): number {
+  if (ring.length < 3) return 0
+  let area = 0
+  for (let i = 0; i < ring.length - 1; i += 1) {
+    const current = ring[i]
+    const next = ring[i + 1]
+    area += current[0] * next[1] - next[0] * current[1]
+  }
+  return area / 2
+}
+
+function clippingPolygonArea(polygon: ClippingPolygon): number {
+  if (polygon.length === 0) return 0
+  const outer = Math.abs(clippingRingArea(polygon[0]))
+  const holes = polygon
+    .slice(1)
+    .reduce((sum, ring) => sum + Math.abs(clippingRingArea(ring)), 0)
+  return Math.max(0, outer - holes)
+}
+
+function clippingMultiPolygonArea(polygons: ClippingMultiPolygon): number {
+  return polygons.reduce(
+    (total, polygon) => total + clippingPolygonArea(polygon),
+    0
+  )
 }
