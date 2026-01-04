@@ -234,10 +234,10 @@ body {
 /* Bottom action button improvements */
 .bottom-action-buttons {
   position: fixed;
-  bottom: env(safe-area-inset-bottom, 20px);
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 30;
+  z-index: 60;
   display: flex;
   gap: 16px;
   padding: 0 20px;

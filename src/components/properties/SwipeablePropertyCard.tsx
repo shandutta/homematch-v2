@@ -433,7 +433,7 @@ export function SwipeablePropertyCard({
       </div>
 
       {/* Action Buttons */}
-      <div className="bottom-action-buttons z-40">
+      <div className="bottom-action-buttons">
         <div className="bg-hm-obsidian-900/90 flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
           <MotionButton
             onClick={() => swipeCard('left')}
