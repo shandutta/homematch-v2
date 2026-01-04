@@ -12,6 +12,19 @@ interface SecureMapLoaderProps {
 let isGoogleMapsLoaded = false
 let isGoogleMapsLoading = false
 let loadPromise: Promise<void> | null = null
+const isMapDebug = process.env.NEXT_PUBLIC_MAP_DEBUG === 'true'
+
+const logMapLoader = (
+  message: string,
+  payload?: Record<string, unknown> | null
+) => {
+  if (!isMapDebug) return
+  if (payload) {
+    console.log('[SecureMapLoader]', message, payload)
+  } else {
+    console.log('[SecureMapLoader]', message)
+  }
+}
 
 // Test helper to reset loader state safely between unit tests
 export function __resetSecureMapLoaderStateForTests() {
@@ -20,6 +33,10 @@ export function __resetSecureMapLoaderStateForTests() {
   isGoogleMapsLoading = false
   loadPromise = null
 }
+
+const isMapsApiReady = () =>
+  typeof window !== 'undefined' &&
+  typeof window.google?.maps?.Map === 'function'
 
 /**
  * Secure Google Maps loader component that:
@@ -43,9 +60,16 @@ export function SecureMapLoader({
     try {
       // Create promise for this loading attempt
       loadPromise = new Promise<void>((resolve, reject) => {
+        logMapLoader('starting script load', {
+          hasGoogleMaps: Boolean(window.google?.maps),
+        })
         // Set up global callback for Google Maps
         ;(window as { initGoogleMaps?: () => void }).initGoogleMaps = () => {
-          if (!window.google?.maps) {
+          logMapLoader('initGoogleMaps called', {
+            hasGoogleMaps: Boolean(window.google?.maps),
+            mapCtor: typeof window.google?.maps?.Map,
+          })
+          if (!isMapsApiReady()) {
             const error = new Error('Google Maps API not available after load')
             setError(error)
             onError?.(error)
@@ -57,6 +81,7 @@ export function SecureMapLoader({
           isGoogleMapsLoading = false
           setIsLoaded(true)
           onLoad?.()
+          logMapLoader('maps ready')
           resolve()
         }
 
@@ -67,6 +92,7 @@ export function SecureMapLoader({
         script.defer = true
 
         script.onload = () => {
+          logMapLoader('proxy script loaded')
           // Script loaded successfully
         }
 
@@ -75,6 +101,7 @@ export function SecureMapLoader({
           const error = new Error('Failed to load Google Maps script')
           setError(error)
           onError?.(error)
+          logMapLoader('proxy script error', { message: error.message })
           reject(error)
         }
 
@@ -92,14 +119,16 @@ export function SecureMapLoader({
   }, [onLoad, onError])
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.google?.maps) {
+    if (isMapsApiReady()) {
+      logMapLoader('maps already available')
       isGoogleMapsLoaded = true
       setIsLoaded(true)
       onLoad?.()
       return
     }
 
-    if (isGoogleMapsLoaded) {
+    if (isGoogleMapsLoaded && isMapsApiReady()) {
+      logMapLoader('maps already loaded flag set')
       setIsLoaded(true)
       onLoad?.()
       return
@@ -107,6 +136,7 @@ export function SecureMapLoader({
 
     // Wait for loading promise if already loading
     if (isGoogleMapsLoading && loadPromise) {
+      logMapLoader('awaiting existing load promise')
       loadPromise
         .then(() => {
           setIsLoaded(true)

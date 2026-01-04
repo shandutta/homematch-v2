@@ -19,21 +19,42 @@ export default function TermsPage() {
             Welcome to HomeMatch
           </h1>
           <p className="max-w-3xl text-lg text-slate-600">
-            These terms explain how you can use HomeMatch to collaborate on your
-            home search. By using the product, you agree to them.
+            These terms govern your use of HomeMatch. By accessing or using the
+            service, you agree to them.
+          </p>
+          <p className="text-sm text-slate-500">
+            Last updated: January 4, 2026
           </p>
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Using HomeMatch</h2>
+          <h2 className="text-xl font-semibold">Eligibility and account</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
+            <li>You must be at least 13 years old to use HomeMatch.</li>
             <li>
-              You must provide accurate account information and keep credentials
+              Provide accurate information and keep your login credentials
               secure.
             </li>
             <li>
-              You may not misuse the service (e.g., scraping, abuse,
-              unauthorized access, or violating others’ rights).
+              If you use HomeMatch on behalf of an organization, you represent
+              that you have authority to bind that organization to these terms.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Acceptable use</h2>
+          <ul className="list-disc space-y-3 pl-5 text-slate-700">
+            <li>
+              Do not misuse the service (scraping, data harvesting, reverse
+              engineering, or attempting to access private systems).
+            </li>
+            <li>
+              Do not use HomeMatch to violate laws or the rights of others.
+            </li>
+            <li>
+              Do not copy, download, or redistribute listing data or photos
+              outside of the HomeMatch experience.
             </li>
             <li>
               We may update or suspend features to keep the service reliable and
@@ -43,33 +64,80 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Content and data</h2>
+          <h2 className="text-xl font-semibold">
+            Listings and third-party data
+          </h2>
+          <p className="text-slate-700">
+            HomeMatch provides listing information sourced from third-party data
+            providers via RapidAPI (US Housing Market Data and similar sources).
+            Listings, photos, and pricing are provided for informational
+            purposes only and may be incomplete, out of date, or inaccurate.
+          </p>
+          <p className="text-slate-700">
+            HomeMatch is not a real estate broker, agent, or MLS and is not
+            affiliated with Zillow or listing brokers. You should verify listing
+            details directly with the listing source before making decisions.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Your content and feedback</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
-              You retain rights to your content; you grant us a license to use
-              it to operate and improve the service.
+              You own your content, but you grant us a worldwide, non-exclusive
+              license to host, store, and display it to operate the service.
             </li>
             <li>
-              We respect intellectual property. If you believe your rights are
-              infringed, contact{' '}
-              <Link
-                href="mailto:legal@homematch.pro"
-                className="text-sky-600 underline"
-              >
-                legal@homematch.pro
-              </Link>
-              .
+              If you submit feedback or suggestions, you grant us the right to
+              use them without restriction or compensation.
+            </li>
+            <li>
+              You are responsible for the content you provide and for ensuring
+              you have the rights to share it.
             </li>
           </ul>
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Disclaimers & liability</h2>
+          <h2 className="text-xl font-semibold">Third-party services</h2>
           <p className="text-slate-700">
-            HomeMatch is provided “as is.” To the extent permitted by law, we
-            disclaim warranties of merchantability, fitness for a particular
-            purpose, and non-infringement. Our liability is limited to the
-            maximum extent permitted by law.
+            The service may include integrations with third-party services such
+            as Google Maps and RapidAPI. Those services are governed by their
+            own terms and privacy policies, and HomeMatch is not responsible for
+            them.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Disclaimers</h2>
+          <p className="text-slate-700">
+            HomeMatch is provided &quot;as is&quot; and &quot;as
+            available&quot;. To the maximum extent permitted by law, we disclaim
+            warranties of merchantability, fitness for a particular purpose, and
+            non-infringement. We do not guarantee that listings are accurate,
+            current, or available, and we do not provide legal, financial, or
+            real estate advice.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Limitation of liability</h2>
+          <p className="text-slate-700">
+            To the maximum extent permitted by law, HomeMatch and its affiliates
+            will not be liable for indirect, incidental, special, consequential,
+            or punitive damages, or any loss of profits, data, or goodwill. Our
+            total liability for any claim is limited to the greater of $100 or
+            the amount you paid to us in the 12 months before the claim.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Indemnification</h2>
+          <p className="text-slate-700">
+            You agree to indemnify and hold HomeMatch harmless from any claims,
+            liabilities, damages, losses, and expenses (including reasonable
+            attorneys&apos; fees) arising from your use of the service or your
+            violation of these terms.
           </p>
         </section>
 

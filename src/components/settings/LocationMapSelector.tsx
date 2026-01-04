@@ -116,6 +116,19 @@ const DRAW_RECTANGLE_STYLE = {
 }
 
 const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+const isMapDebug = process.env.NEXT_PUBLIC_MAP_DEBUG === 'true'
+
+const logMapDebug = (
+  message: string,
+  payload?: Record<string, unknown> | null
+) => {
+  if (!isMapDebug) return
+  if (payload) {
+    console.log('[LocationMapSelector]', message, payload)
+  } else {
+    console.log('[LocationMapSelector]', message)
+  }
+}
 
 export function LocationMapSelector({
   neighborhoods,
@@ -144,6 +157,13 @@ export function LocationMapSelector({
   const [mapsReady, setMapsReady] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
   const [drawMode, setDrawMode] = useState<DrawMode>(null)
+  const updateDebugState = useCallback((next: Record<string, unknown>) => {
+    if (!isMapDebug) return
+    const typedWindow = window as typeof window & {
+      __hmMapDebug?: Record<string, unknown>
+    }
+    typedWindow.__hmMapDebug = { ...(typedWindow.__hmMapDebug || {}), ...next }
+  }, [])
 
   const selectedNeighborhoodSet = useMemo(
     () => new Set(selectedNeighborhoods),
@@ -296,6 +316,23 @@ export function LocationMapSelector({
       .filter((value): value is CityShape => Boolean(value))
   }, [neighborhoodShapes])
 
+  useEffect(() => {
+    updateDebugState({
+      neighborhoodShapeCount: neighborhoodShapes.length,
+      cityShapeCount: cityShapes.length,
+      mapsReady,
+      mapError,
+      overlayMode,
+    })
+  }, [
+    cityShapes.length,
+    mapError,
+    mapsReady,
+    neighborhoodShapes.length,
+    overlayMode,
+    updateDebugState,
+  ])
+
   const handleDrawSelection = useCallback(
     (ring: LatLng[]) => {
       const selectionRing = closeSelectionRing(ring)
@@ -385,12 +422,45 @@ export function LocationMapSelector({
       })
 
       mapInstanceRef.current = map
+
+      if (isMapDebug) {
+        const rect = mapRef.current.getBoundingClientRect()
+        const mapDiv = map.getDiv?.()
+        const debugPayload = {
+          mapId,
+          rect,
+          mapTypeId: map.getMapTypeId?.(),
+          googleMapsVersion: window.google?.maps?.version,
+          mapDivChildCount: mapDiv?.childElementCount ?? 0,
+          mapDivCanvasCount: mapDiv
+            ? mapDiv.querySelectorAll('canvas').length
+            : 0,
+        }
+        logMapDebug('map created', debugPayload)
+        updateDebugState({
+          mapCreatedAt: new Date().toISOString(),
+          ...debugPayload,
+        })
+
+        map.addListener('tilesloaded', () => {
+          updateDebugState({ tilesLoadedAt: new Date().toISOString() })
+          logMapDebug('tilesloaded')
+        })
+        map.addListener('idle', () => {
+          updateDebugState({ idleAt: new Date().toISOString() })
+          logMapDebug('idle')
+        })
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to initialize map'
       setMapError(message)
+      logMapDebug('map init error', {
+        message,
+        error: error instanceof Error ? error.stack : String(error),
+      })
     }
-  }, [mapsReady])
+  }, [mapsReady, updateDebugState])
 
   useEffect(() => {
     const map = mapInstanceRef.current

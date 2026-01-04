@@ -4,6 +4,8 @@ export interface GoogleMapInstance {
   setZoom: (zoom: number) => void
   addListener: (event: string, handler: () => void) => void
   fitBounds?: (bounds: unknown, padding?: number | object) => void
+  getDiv?: () => HTMLElement
+  getMapTypeId?: () => string | undefined
   setOptions?: (options: unknown) => void
 }
 
@@ -58,6 +60,7 @@ declare global {
           element?: Element | null,
           options?: unknown
         ) => GoogleMapInstance
+        version?: string
         Marker: new (options?: unknown) => GoogleMarkerInstance
         InfoWindow: new (options?: unknown) => GoogleInfoWindowInstance
         LatLng: new (lat: number, lng: number) => unknown

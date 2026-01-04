@@ -16,122 +16,172 @@ export default function PrivacyPage() {
             Privacy policy
           </p>
           <h1 className="text-3xl font-bold sm:text-4xl">
-            Your data, your control
+            Your data, your choices
           </h1>
           <p className="max-w-3xl text-lg text-slate-600">
-            We use your data to power collaborative home search, never to sell
-            your personal information. This page explains what we collect, why,
-            and how you can manage it.
+            HomeMatch helps you organize and collaborate on a home search. This
+            policy explains what we collect, how we use it, and the choices you
+            have.
+          </p>
+          <p className="text-sm text-slate-500">
+            Last updated: January 4, 2026
           </p>
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">What we collect</h2>
+          <h2 className="text-xl font-semibold">Information we collect</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
+            <li>Account details (name, email, authentication credentials).</li>
             <li>
-              Account details you provide (name, email) for authentication.
+              Household and collaboration data (invites, shared lists, notes,
+              likes, and saved homes).
             </li>
             <li>
-              Preference inputs and interactions (likes, saved homes) to tailor
+              Search preferences and interactions (filters, clicks, and
+              recommendations you engage with).
+            </li>
+            <li>
+              Device and usage data (IP address, browser type, device
+              identifiers, log data, and timestamps).
+            </li>
+            <li>
+              Approximate location inferred from IP. We only use precise
+              location if you choose to share it or use map features.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">
+            Information from third parties
+          </h2>
+          <p className="text-slate-700">
+            We source property listings, details, and photos from third-party
+            data providers via RapidAPI (US Housing Market Data and similar
+            sources). We also use Google Maps and Places to power address search
+            and map results. These providers receive your search queries and may
+            process data under their own privacy policies.
+          </p>
+          <p className="text-slate-700">
+            Listing data can be incomplete or out of date. HomeMatch is not
+            affiliated with Zillow, MLSs, or listing brokers, and we do not
+            guarantee the accuracy or availability of any listing.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">How we use information</h2>
+          <ul className="list-disc space-y-3 pl-5 text-slate-700">
+            <li>
+              Provide the service, sync households, and personalize
               recommendations.
             </li>
             <li>
-              Usage and device info (IP, browser, coarse location) for security,
-              analytics, and fraud prevention.
+              Operate features such as search, notifications, and customer
+              support.
             </li>
+            <li>Protect users, prevent fraud, and enforce our terms.</li>
+            <li>
+              Measure performance and improve reliability (for example, via
+              first-party metrics and Vercel Speed Insights; PostHog if
+              enabled).
+            </li>
+            <li>Comply with legal obligations and protect our rights.</li>
           </ul>
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">How we use it</h2>
+          <h2 className="text-xl font-semibold">Sharing and disclosures</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
-              Operate the app, sync households, and improve matching quality.
+              Service providers who help us run the app (for example, hosting on
+              Vercel, database and authentication via Supabase, analytics and
+              performance tooling).
             </li>
             <li>
-              Protect accounts, detect abuse, and comply with legal obligations.
+              RapidAPI and its data partners to fulfill listing-data requests
+              and return property photos and details.
             </li>
             <li>
-              Run analytics to understand product performance; we do not sell
-              your personal data.
+              Google Maps Platform to provide address autocomplete and mapping
+              features.
             </li>
+            <li>
+              Advertising partners (if enabled, such as Google AdSense) may use
+              cookies or device identifiers to serve and measure ads. We do not
+              share your account profile for advertising.
+            </li>
+            <li>
+              Legal or regulatory requests, and in connection with a business
+              transfer or acquisition.
+            </li>
+            <li>We do not sell personal information.</li>
           </ul>
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Sharing</h2>
+          <h2 className="text-xl font-semibold">Cookies and tracking</h2>
           <p className="text-slate-700">
-            We share data with trusted processors (e.g., hosting, analytics,
-            customer support) under data protection agreements. We may share
-            aggregated, de-identified insights that cannot be tied back to you.
-            We do not sell your personal information.
+            We use cookies and similar technologies for authentication,
+            security, preferences, and analytics. See the{' '}
+            <Link href="/cookies" className="text-sky-600 underline">
+              Cookie Policy
+            </Link>{' '}
+            for details.
           </p>
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Advertising</h2>
-          <p className="text-slate-700">
-            If we show ads, they may be served by Google AdSense and other
-            advertising partners. These partners may use cookies or similar
-            technologies to provide, measure, and personalize ads. You can
-            manage ad personalization in your Google account at{' '}
-            <Link
-              href="https://adssettings.google.com/"
-              className="text-sky-600 underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              adssettings.google.com
-            </Link>
-            .
-          </p>
-          <p className="text-slate-700">
-            For more on how Google uses information from sites that use its
-            services, see{' '}
-            <Link
-              href="https://policies.google.com/technologies/partner-sites"
-              className="text-sky-600 underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              policies.google.com/technologies/partner-sites
-            </Link>
-            .
-          </p>
-        </section>
-
-        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Your choices</h2>
+          <h2 className="text-xl font-semibold">Your choices and rights</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
-              You can request access, correction, or deletion of your data by
-              emailing
+              Request access, correction, or deletion by emailing{' '}
               <Link
                 href="mailto:privacy@homematch.pro"
                 className="text-sky-600 underline"
               >
-                {' '}
                 privacy@homematch.pro
               </Link>
               .
             </li>
             <li>
-              You can opt out of non-essential cookies/analytics where offered
-              and adjust browser settings to limit tracking.
+              Manage cookies through your browser settings and any opt-out tools
+              described in the Cookie Policy.
             </li>
             <li>
-              If you disable certain data uses, some features (like
-              recommendations) may be limited.
+              You can opt out of marketing emails if we send them; we will still
+              send account or service-related messages.
+            </li>
+            <li>
+              Disabling certain data uses may limit features like
+              recommendations.
             </li>
           </ul>
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Data retention & security</h2>
+          <h2 className="text-xl font-semibold">Data retention and security</h2>
           <p className="text-slate-700">
-            We retain data only as long as necessary for the purposes above or
-            as required by law. We use encryption in transit and at rest, access
-            controls, and monitoring to protect your information.
+            We retain data only as long as needed for the purposes described in
+            this policy and to meet legal obligations. We use administrative,
+            technical, and physical safeguards to protect information, but no
+            system is 100% secure.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">International transfers</h2>
+          <p className="text-slate-700">
+            We operate in the United States and may process data in the US or
+            other countries where our service providers operate.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Children&apos;s privacy</h2>
+          <p className="text-slate-700">
+            HomeMatch is not intended for children under 13, and we do not
+            knowingly collect personal information from children.
           </p>
         </section>
 

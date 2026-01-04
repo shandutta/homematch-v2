@@ -20,21 +20,36 @@ export default function CookiesPage() {
             We use cookies and similar technologies to keep you signed in,
             secure your account, and measure product performance.
           </p>
+          <p className="text-sm text-slate-500">
+            Last updated: January 4, 2026
+          </p>
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Types of cookies</h2>
+          <h2 className="text-xl font-semibold">What are cookies?</h2>
+          <p className="text-slate-700">
+            Cookies are small text files stored on your device. We may also use
+            similar technologies like local storage, SDKs, and pixels to
+            remember settings, authenticate sessions, and understand how the
+            service performs.
+          </p>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">How we use cookies today</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
-              Essential: authentication, security, load balancing, fraud
-              prevention.
+              Essential: authentication (Supabase session cookies), security,
+              load balancing, and fraud prevention.
             </li>
             <li>
-              Preferences: remembering settings like language or saved filters.
+              Preferences: remembering settings such as saved filters or
+              interface choices.
             </li>
             <li>
-              Analytics: understanding feature usage and improving performance
-              (no selling of personal data).
+              Analytics and performance: first-party metrics and Vercel Speed
+              Insights (and PostHog if enabled) to understand feature usage and
+              improve reliability.
             </li>
             <li>
               Advertising (if enabled): partners like Google AdSense may use
@@ -58,11 +73,20 @@ export default function CookiesPage() {
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>You can block or delete cookies via your browser settings.</li>
             <li>
+              We do not currently offer a dedicated cookie preference center.
               Opting out of non-essential cookies may limit personalization or
-              analytics insights but essential cookies are required for core
+              analytics insights, but essential cookies are required for core
               functionality.
             </li>
           </ul>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">Updates</h2>
+          <p className="text-slate-700">
+            We may update this policy as our use of cookies changes. Material
+            changes will be announced in-app or via email where required.
+          </p>
         </section>
 
         <section className="space-y-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
