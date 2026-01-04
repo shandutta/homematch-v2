@@ -2,6 +2,7 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { waitForHydration } from '../utils/hydration'
 
 const MAPS_STUB_SCRIPT = `
   (function() {
@@ -135,6 +136,7 @@ test.describe('Location map precomputed boundaries', () => {
     await page.goto(`${baseURL}/settings?tab=preferences`, {
       waitUntil: 'domcontentloaded',
     })
+    await waitForHydration(page)
 
     const metroSelect = page.getByTestId('map-metro-select')
     await expect(metroSelect).toBeEnabled({ timeout: 15000 })
