@@ -49,9 +49,10 @@ export function CookieConsentBanner() {
     process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false' &&
     process.env.NODE_ENV === 'production'
 
-  const handleToggle = (key: keyof CookieConsentDraft) => (checked: boolean) => {
-    setDraft((current) => ({ ...current, [key]: checked }))
-  }
+  const handleToggle =
+    (key: keyof CookieConsentDraft) => (checked: boolean) => {
+      setDraft((current) => ({ ...current, [key]: checked }))
+    }
 
   const handleSave = async (nextDraft: CookieConsentDraft) => {
     saveCookieConsent(nextDraft)

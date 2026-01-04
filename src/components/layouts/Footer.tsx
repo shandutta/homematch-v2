@@ -28,6 +28,7 @@ const highlightLinks = [
 const legalLinks = [
   { href: '/terms', label: 'Terms of Service' },
   { href: '/privacy', label: 'Privacy Policy' },
+  { href: '/cookies', label: 'Cookie Policy' },
 ]
 
 interface FooterProps {

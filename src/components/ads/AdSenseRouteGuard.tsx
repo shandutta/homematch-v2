@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { AdSenseScript } from '@/components/ads/AdSenseScript'
+import { useCookieConsent } from '@/lib/cookies/use-cookie-consent'
 
 const AD_ELIGIBLE_PATHS = new Set([
   '/dashboard',
@@ -27,11 +28,12 @@ function isAdEligiblePath(pathname?: string | null) {
 }
 
 export function AdSenseRouteGuard() {
+  const { consent } = useCookieConsent()
   const pathname = usePathname()
 
   const shouldLoadAds = useMemo(() => isAdEligiblePath(pathname), [pathname])
 
-  if (!shouldLoadAds) return null
+  if (!shouldLoadAds || !consent?.advertising) return null
 
   return <AdSenseScript />
 }

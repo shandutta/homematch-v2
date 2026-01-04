@@ -35,6 +35,7 @@ type LocationMapSelectorProps = {
   onBulkSelectCities: (cities: CityOption[]) => void
   disabled?: boolean
   loading?: boolean
+  precomputed?: boolean
   className?: string
 }
 
@@ -158,6 +159,7 @@ export function LocationMapSelector({
   onBulkSelectCities,
   disabled = false,
   loading = false,
+  precomputed = false,
   className = '',
 }: LocationMapSelectorProps) {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -222,16 +224,38 @@ export function LocationMapSelector({
       0
     )
     const neighborhoodUnionClipping =
-      candidates.length > 0
+      !precomputed && candidates.length > 0
         ? polygonClipping.union(...candidates.map((shape) => shape.clipping))
         : []
-    const neighborhoodUnionArea = clippingMultiPolygonArea(
-      neighborhoodUnionClipping
-    )
-    const neighborhoodOverlapArea = Math.max(
-      0,
-      rawNeighborhoodArea - neighborhoodUnionArea
-    )
+    const neighborhoodUnionArea = precomputed
+      ? rawNeighborhoodArea
+      : clippingMultiPolygonArea(neighborhoodUnionClipping)
+    const neighborhoodOverlapArea = precomputed
+      ? 0
+      : Math.max(0, rawNeighborhoodArea - neighborhoodUnionArea)
+
+    if (precomputed) {
+      const shapes = candidates.map((shape) => ({
+        neighborhood: shape.neighborhood,
+        polygons: shape.polygons,
+        bounds: shape.bounds,
+        clipping: shape.clipping,
+      }))
+
+      return {
+        shapes,
+        debug: {
+          totalNeighborhoods: neighborhoods.length,
+          parsedNeighborhoods: candidates.length,
+          skippedNeighborhoods: neighborhoods.length - candidates.length,
+          overlapRemovedNeighborhoods: 0,
+          rawNeighborhoodArea,
+          neighborhoodUnionArea,
+          neighborhoodOverlapArea,
+        },
+        unionClipping: neighborhoodUnionClipping,
+      }
+    }
 
     const sorted = candidates.sort((a, b) => {
       if (a.area !== b.area) return a.area - b.area
@@ -282,7 +306,7 @@ export function LocationMapSelector({
       },
       unionClipping: neighborhoodUnionClipping,
     }
-  }, [neighborhoods])
+  }, [neighborhoods, precomputed])
 
   const neighborhoodShapes = neighborhoodAnalysis.shapes
 
@@ -314,13 +338,18 @@ export function LocationMapSelector({
         if (entry.polygons.length === 0) return null
 
         let unioned = entry.polygons
-        try {
-          unioned = unionPolygonGroups(entry.polygons)
-        } catch (error) {
-          console.warn('[LocationMapSelector] Failed to union city polygons', {
-            key,
-            error,
-          })
+        if (!precomputed) {
+          try {
+            unioned = unionPolygonGroups(entry.polygons)
+          } catch (error) {
+            console.warn(
+              '[LocationMapSelector] Failed to union city polygons',
+              {
+                key,
+                error,
+              }
+            )
+          }
         }
 
         return {
@@ -347,20 +376,24 @@ export function LocationMapSelector({
 
     const rawCityArea = sorted.reduce((total, entry) => total + entry.area, 0)
     const cityUnionClipping =
-      sorted.length > 0
+      !precomputed && sorted.length > 0
         ? polygonClipping.union(
             ...sorted.map((entry) => toClippingMultiPolygon(entry.unioned))
           )
         : []
-    const cityUnionArea = clippingMultiPolygonArea(cityUnionClipping)
-    const cityOverlapArea = Math.max(0, rawCityArea - cityUnionArea)
+    const cityUnionArea = precomputed
+      ? rawCityArea
+      : clippingMultiPolygonArea(cityUnionClipping)
+    const cityOverlapArea = precomputed
+      ? 0
+      : Math.max(0, rawCityArea - cityUnionArea)
 
     let occupied: ClippingMultiPolygon = []
 
     const shapes = sorted
       .map((entry) => {
         let polygons = entry.unioned
-        if (occupied.length > 0) {
+        if (!precomputed && occupied.length > 0) {
           const exclusive = subtractPolygonGroups(entry.unioned, occupied)
           if (exclusive.length > 0) {
             polygons = exclusive
@@ -373,7 +406,9 @@ export function LocationMapSelector({
         if (!bounds) return null
 
         const clipping = toClippingMultiPolygon(polygons)
-        occupied = unionMultiPolygons(occupied, clipping)
+        if (!precomputed) {
+          occupied = unionMultiPolygons(occupied, clipping)
+        }
 
         return {
           city: entry.city,
@@ -394,7 +429,7 @@ export function LocationMapSelector({
       },
       unionClipping: cityUnionClipping,
     }
-  }, [neighborhoodShapes])
+  }, [neighborhoodShapes, precomputed])
 
   const cityShapes = cityAnalysis.shapes
 

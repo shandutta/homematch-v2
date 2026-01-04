@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import {
   Geist,
   Geist_Mono,
@@ -11,14 +10,14 @@ import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 import { Toaster } from '@/components/ui/sonner'
+import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
+import { AdSenseGate } from '@/components/legal/AdSenseGate'
+import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
+import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED } from '@/lib/adsense'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
-
-const ADSENSE_CLIENT_ID = 'ca-pub-9556502662108721'
-const ADSENSE_ENABLED = process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false'
-const ADSENSE_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -68,10 +67,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         {ADSENSE_ENABLED && process.env.NODE_ENV === 'production' ? (
-          <>
-            <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
-            <script async src={ADSENSE_SRC} crossOrigin="anonymous" />
-          </>
+          <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
         ) : null}
         <script
           type="application/ld+json"
@@ -97,7 +93,9 @@ export default function RootLayout({
           <PerformanceProvider>{children}</PerformanceProvider>
         </ErrorBoundary>
         <Toaster position="top-right" />
-        <SpeedInsights />
+        <AnalyticsGate />
+        <AdSenseGate />
+        <CookieConsentBanner />
       </body>
     </html>
   )

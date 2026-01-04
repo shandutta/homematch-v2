@@ -5,6 +5,7 @@
 
 import { onCLS, onFCP, onFID, onLCP, onTTFB, type Metric } from 'web-vitals'
 import { WindowWithAnalytics } from '@/types/analytics'
+import { getCookieConsent } from '@/lib/cookies/consent'
 
 export interface PerformanceMetric {
   name: string
@@ -48,9 +49,12 @@ class PerformanceTracker {
     this.isEnabled =
       process.env.NEXT_PUBLIC_ENABLE_PERFORMANCE_TRACKING === 'true'
 
-    if (this.isEnabled) {
-      this.initialize()
+    if (!this.isEnabled || !hasAnalyticsConsent()) {
+      this.isEnabled = false
+      return
     }
+
+    this.initialize()
   }
 
   private initialize() {
@@ -524,8 +528,15 @@ class PerformanceTracker {
 // Singleton instance
 let tracker: PerformanceTracker | null = null
 
+function hasAnalyticsConsent() {
+  if (typeof window === 'undefined') return false
+  const consent = getCookieConsent()
+  return Boolean(consent?.analytics)
+}
+
 export function initPerformanceTracker(): PerformanceTracker | null {
   if (typeof window === 'undefined') return null
+  if (!hasAnalyticsConsent()) return null
 
   if (!tracker) {
     tracker = new PerformanceTracker()

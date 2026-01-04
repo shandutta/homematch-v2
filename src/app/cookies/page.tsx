@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { CookiePreferencesPanel } from '@/components/legal/CookiePreferencesPanel'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy | HomeMatch',
@@ -25,6 +26,10 @@ export default function CookiesPage() {
           </p>
         </header>
 
+        <section id="cookie-settings" className="space-y-6">
+          <CookiePreferencesPanel />
+        </section>
+
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <h2 className="text-xl font-semibold">What are cookies?</h2>
           <p className="text-slate-700">
@@ -48,8 +53,8 @@ export default function CookiesPage() {
             </li>
             <li>
               Analytics and performance: first-party metrics and Vercel Speed
-              Insights (and PostHog if enabled) to understand feature usage and
-              improve reliability.
+              Insights (when enabled) to understand feature usage and improve
+              reliability.
             </li>
             <li>
               Advertising (if enabled): partners like Google AdSense may use
@@ -73,10 +78,21 @@ export default function CookiesPage() {
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>You can block or delete cookies via your browser settings.</li>
             <li>
-              We do not currently offer a dedicated cookie preference center.
-              Opting out of non-essential cookies may limit personalization or
-              analytics insights, but essential cookies are required for core
-              functionality.
+              Use the cookie settings above to opt in or out of optional cookie
+              categories. Opting out of non-essential cookies may limit
+              personalization or analytics insights, but essential cookies are
+              required for core functionality.
+            </li>
+            <li>
+              California residents can opt out of cross-context behavioral
+              advertising by disabling Advertising cookies or emailing{' '}
+              <Link
+                href="mailto:privacy@homematch.pro"
+                className="text-sky-600 underline"
+              >
+                privacy@homematch.pro
+              </Link>
+              .
             </li>
           </ul>
         </section>

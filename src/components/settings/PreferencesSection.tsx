@@ -226,6 +226,8 @@ export function PreferencesSection({
   const [mapNeighborhoods, setMapNeighborhoods] = useState<
     NeighborhoodOption[]
   >([])
+  const [mapNeighborhoodsPrecomputed, setMapNeighborhoodsPrecomputed] =
+    useState(false)
   const [mapNeighborhoodsLoading, setMapNeighborhoodsLoading] = useState(false)
   const [mapNeighborhoodsError, setMapNeighborhoodsError] = useState<
     string | null
@@ -360,13 +362,17 @@ export function PreferencesSection({
       setMapNeighborhoods([])
       setMapNeighborhoodsLoading(true)
       setMapNeighborhoodsError(null)
+      setMapNeighborhoodsPrecomputed(false)
       try {
-        const neighborhoods =
-          await LocationsClient.getNeighborhoodsForMetroArea(mapMetroArea)
-        if (!cancelled) setMapNeighborhoods(neighborhoods)
+        const result =
+          await LocationsClient.getMapNeighborhoodsForMetroArea(mapMetroArea)
+        if (cancelled) return
+        setMapNeighborhoods(result.neighborhoods)
+        setMapNeighborhoodsPrecomputed(result.precomputed)
       } catch (_error) {
         if (!cancelled) {
           setMapNeighborhoodsError('Failed to load map neighborhoods')
+          setMapNeighborhoodsPrecomputed(false)
         }
       } finally {
         if (!cancelled) setMapNeighborhoodsLoading(false)
@@ -1271,6 +1277,7 @@ export function PreferencesSection({
                   onBulkSelectCities={applyMapCitySelection}
                   disabled={allCities}
                   loading={mapNeighborhoodsLoading}
+                  precomputed={mapNeighborhoodsPrecomputed}
                 />
                 {mapNeighborhoodsError ? (
                   <div className="text-hm-stone-500 flex items-center justify-between text-xs">

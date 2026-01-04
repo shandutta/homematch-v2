@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useId } from 'react'
+import { useCookieConsent } from '@/lib/cookies/use-cookie-consent'
 
 declare global {
   interface Window {
@@ -26,6 +27,7 @@ interface InFeedAdProps {
  * Appears between property listings in the grid.
  */
 export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
+  const { consent } = useCookieConsent()
   const adRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -65,6 +67,10 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
       setHasError(true)
     }
   }, [adInstanceId])
+
+  if (!consent?.advertising) {
+    return null
+  }
 
   // Don't render anything if there's an error (graceful degradation)
   if (hasError) {

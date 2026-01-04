@@ -145,8 +145,15 @@ export default function PrivacyPage() {
               .
             </li>
             <li>
-              Manage cookies through your browser settings and any opt-out tools
-              described in the Cookie Policy.
+              Manage cookies through your browser settings and the Cookie
+              Settings in our{' '}
+              <Link
+                href="/cookies#cookie-settings"
+                className="text-sky-600 underline"
+              >
+                Cookie Policy
+              </Link>
+              .
             </li>
             <li>
               You can opt out of marketing emails if we send them; we will still
@@ -155,6 +162,38 @@ export default function PrivacyPage() {
             <li>
               Disabling certain data uses may limit features like
               recommendations.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <h2 className="text-xl font-semibold">California privacy rights</h2>
+          <p className="text-slate-700">
+            If you are a California resident, you have rights to know, access,
+            correct, and delete personal information, and to opt out of the sale
+            or sharing of personal information for cross-context behavioral
+            advertising. We do not sell personal information.
+          </p>
+          <ul className="list-disc space-y-3 pl-5 text-slate-700">
+            <li>
+              You can opt out of advertising-related sharing by disabling
+              Advertising cookies in the Cookie Settings or emailing{' '}
+              <Link
+                href="mailto:privacy@homematch.pro"
+                className="text-sky-600 underline"
+              >
+                privacy@homematch.pro
+              </Link>
+              .
+            </li>
+            <li>
+              You may request access, deletion, or correction of your data using
+              the contact methods above. We will verify your request before
+              responding.
+            </li>
+            <li>
+              We will not discriminate against you for exercising your privacy
+              rights.
             </li>
           </ul>
         </section>

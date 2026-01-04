@@ -55,9 +55,10 @@ export function CookiePreferencesPanel({
     }
   }, [consent])
 
-  const handleToggle = (key: keyof CookieConsentDraft) => (checked: boolean) => {
-    setDraft((current) => ({ ...current, [key]: checked }))
-  }
+  const handleToggle =
+    (key: keyof CookieConsentDraft) => (checked: boolean) => {
+      setDraft((current) => ({ ...current, [key]: checked }))
+    }
 
   const handleSave = (nextDraft: CookieConsentDraft) => {
     saveCookieConsent(nextDraft)
@@ -179,9 +180,7 @@ export function CookiePreferencesPanel({
           Reject non-essential
         </Button>
         {hasConsent && hasSaved ? (
-          <span className="text-xs text-slate-500">
-            Preferences saved.
-          </span>
+          <span className="text-xs text-slate-500">Preferences saved.</span>
         ) : null}
       </div>
     </div>

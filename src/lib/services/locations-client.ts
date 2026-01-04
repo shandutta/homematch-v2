@@ -10,6 +10,11 @@ export type NeighborhoodOption = Pick<
   'id' | 'name' | 'city' | 'state' | 'bounds'
 >
 
+export type MapNeighborhoodResponse = {
+  neighborhoods: NeighborhoodOption[]
+  precomputed: boolean
+}
+
 export class LocationsClient {
   static async getCities(): Promise<CityOption[]> {
     const supabase = createClient()
@@ -88,6 +93,30 @@ export class LocationsClient {
     }
 
     return data || []
+  }
+
+  static async getMapNeighborhoodsForMetroArea(
+    query: string
+  ): Promise<MapNeighborhoodResponse> {
+    const trimmed = query.trim()
+    if (!trimmed) return { neighborhoods: [], precomputed: false }
+
+    const response = await fetch(
+      `/api/maps/metro-boundaries?metro=${encodeURIComponent(trimmed)}`,
+      {
+        method: 'GET',
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Failed to load map neighborhoods: ${response.status}`)
+    }
+
+    const data = (await response.json()) as MapNeighborhoodResponse
+    return {
+      neighborhoods: data.neighborhoods || [],
+      precomputed: Boolean(data.precomputed),
+    }
   }
 
   static async getMetroAreas(): Promise<string[]> {
