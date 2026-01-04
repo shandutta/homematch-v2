@@ -1,6 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { InFeedAd } from '@/components/ads/InFeedAd'
 
+jest.mock('@/lib/cookies/use-cookie-consent', () => ({
+  useCookieConsent: () => ({
+    consent: { advertising: true },
+    hasConsent: true,
+  }),
+}))
+
 // Store original window.adsbygoogle
 const originalAdsbygoogle = (global.window as any).adsbygoogle
 

@@ -40,7 +40,7 @@ describe('SecureMapLoader', () => {
       'script[src="/api/maps/proxy-script"]'
     ) as HTMLScriptElement
     expect(script).toBeTruthy()
-    ;(window as any).google = { maps: {} }
+    ;(window as any).google = { maps: { Map: function Map() {} } }
 
     await act(async () => {
       ;(window as any).initGoogleMaps?.()
