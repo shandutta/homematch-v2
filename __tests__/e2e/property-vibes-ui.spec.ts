@@ -413,24 +413,17 @@ test.describe('Property Vibes - UI', () => {
       await expect(likeButton).toBeVisible()
 
       const assertButtonOnTop = async (button: typeof passButton) => {
-        const box = await button.boundingBox()
-        expect(box).toBeTruthy()
-        if (!box) return
-        const centerX = box.x + box.width / 2
-        const centerY = box.y + box.height / 2
         const handle = await button.elementHandle()
         expect(handle).toBeTruthy()
         if (!handle) return
 
-        const isTopMost = await page.evaluate(
-          (element, x, y) => {
-            const hit = document.elementFromPoint(x, y)
-            return Boolean(hit && element.contains(hit))
-          },
-          handle,
-          centerX,
-          centerY
-        )
+        const isTopMost = await handle.evaluate((element) => {
+          const rect = element.getBoundingClientRect()
+          const x = rect.left + rect.width / 2
+          const y = rect.top + rect.height / 2
+          const hit = document.elementFromPoint(x, y)
+          return Boolean(hit && element.contains(hit))
+        })
 
         expect(isTopMost).toBe(true)
       }
