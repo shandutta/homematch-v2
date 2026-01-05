@@ -79,7 +79,8 @@ export function LoginForm() {
   const supabase = createClient()
   const isTestMode =
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-    process.env.NODE_ENV === 'test'
+    process.env.NODE_ENV === 'test' ||
+    Boolean(process.env.JEST_WORKER_ID)
 
   // Use validated form with Zod schema
   const form = useValidatedForm(LoginSchema, {
@@ -157,7 +158,11 @@ export function LoginForm() {
 
       const redirectPath = resolveRedirectPath()
 
-      if (typeof window !== 'undefined' && !isJsdomEnvironment()) {
+      if (
+        typeof window !== 'undefined' &&
+        !isJsdomEnvironment() &&
+        !isTestMode
+      ) {
         const storageKey = getSupabaseAuthStorageKey(window.location.hostname)
         await waitForAuthPersistence(storageKey)
       }
@@ -268,7 +273,7 @@ export function LoginForm() {
                 loading ||
                 (!form.formState.isValid &&
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
+                  !isTestMode)
               }
               data-testid="signin-button"
             >

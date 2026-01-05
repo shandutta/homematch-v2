@@ -63,9 +63,7 @@ function getGoogleReferer(request: Request): string | null {
 
 export async function GET(request: Request) {
   try {
-    const isTestMode =
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-      process.env.NODE_ENV === 'test'
+    const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 
     if (isTestMode) {
       return new NextResponse(MAPS_TEST_STUB, {
