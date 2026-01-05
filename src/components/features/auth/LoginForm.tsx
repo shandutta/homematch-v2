@@ -40,6 +40,12 @@ const getSafeRedirectPath = (value: string | null) => {
   return decoded
 }
 
+const isJsdomEnvironment = () => {
+  if (typeof window === 'undefined') return false
+  const userAgent = window.navigator?.userAgent?.toLowerCase() || ''
+  return userAgent.includes('jsdom')
+}
+
 const waitForAuthPersistence = async (storageKey: string, timeoutMs = 5000) => {
   if (typeof window === 'undefined') return
 
@@ -151,7 +157,7 @@ export function LoginForm() {
 
       const redirectPath = resolveRedirectPath()
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !isJsdomEnvironment()) {
         const storageKey = getSupabaseAuthStorageKey(window.location.hostname)
         await waitForAuthPersistence(storageKey)
       }
