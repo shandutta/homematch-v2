@@ -20,6 +20,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import { CouplesMessages } from '@/lib/utils/couples-messaging'
 import { buildBrowserRedirectUrl } from '@/lib/utils/site-url'
+import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
 import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 const getSafeRedirectPath = (value: string | null) => {
@@ -37,6 +38,31 @@ const getSafeRedirectPath = (value: string | null) => {
   if (decoded.includes('://')) return null
 
   return decoded
+}
+
+const waitForAuthPersistence = async (storageKey: string, timeoutMs = 5000) => {
+  if (typeof window === 'undefined') return
+
+  const deadline = Date.now() + timeoutMs
+
+  while (Date.now() < deadline) {
+    const hasCookie = document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim().startsWith(`${storageKey}=`))
+
+    let hasStorage = false
+    try {
+      hasStorage = Boolean(localStorage.getItem(storageKey))
+    } catch {
+      hasStorage = false
+    }
+
+    if (hasCookie || hasStorage) {
+      return
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
 }
 
 export function LoginForm() {
@@ -124,6 +150,11 @@ export function LoginForm() {
       }
 
       const redirectPath = resolveRedirectPath()
+
+      if (typeof window !== 'undefined') {
+        const storageKey = getSupabaseAuthStorageKey(window.location.hostname)
+        await waitForAuthPersistence(storageKey)
+      }
 
       if (isTestMode || typeof window === 'undefined') {
         // In tests, rely on client routing for easier assertions
