@@ -11,6 +11,7 @@ import { InteractionService } from '@/lib/services/interactions'
 import { InteractionType, InteractionSummary, PageResponse } from '@/types/app'
 import { Property } from '@/lib/schemas/property'
 import { QUERY_STALE_TIMES } from '@/lib/query/config'
+import { couplesKeys } from '@/hooks/useCouples'
 
 // Centralized query keys for interactions, ensures consistency.
 export const interactionKeys = {
@@ -101,6 +102,10 @@ export function useRecordInteraction() {
       queryClient.invalidateQueries({
         queryKey: interactionKeys.list('viewed'),
       })
+
+      if (type === 'liked') {
+        queryClient.invalidateQueries({ queryKey: couplesKeys.all })
+      }
     },
   })
 }

@@ -1129,6 +1129,17 @@
     }
   }
 
+  html[data-test-mode='true'] * {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+  }
+
+  html[data-test-mode='true'] .card-luxury:hover {
+    transform: none;
+  }
+
   /* Print Styles */
   @media print {
     .text-token-primary,

@@ -43,6 +43,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: 'swap',
 })
 
+const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
 export const metadata: Metadata = {
   title: 'HomeMatch - AI-Powered Home Search',
   description:
@@ -56,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-test-mode={isTestMode ? 'true' : undefined}>
       <head>
         <meta
           name="viewport"

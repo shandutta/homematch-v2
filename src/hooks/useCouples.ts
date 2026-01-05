@@ -10,6 +10,8 @@ import { useQuery } from '@tanstack/react-query'
 import { QUERY_STALE_TIMES } from '@/lib/query/config'
 import type { HouseholdActivity } from '@/lib/services/couples'
 
+const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
 /**
  * Represents a property that has been liked by multiple household members
  * @interface MutualLike
@@ -94,7 +96,15 @@ export function useMutualLikes() {
       const data = await response.json()
       return data.mutualLikes || []
     },
-    staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY, // Same as interactions for consistency
+    staleTime: isTestMode ? 0 : QUERY_STALE_TIMES.INTERACTION_SUMMARY, // Same as interactions for consistency
+    refetchOnMount: isTestMode ? 'always' : undefined,
+    refetchInterval: isTestMode
+      ? (query) => {
+          const data = query.state.data
+          return data && data.length > 0 ? false : 1000
+        }
+      : undefined,
+    refetchIntervalInBackground: isTestMode ? true : undefined,
     enabled: typeof window !== 'undefined', // Only run on client side
   })
 }
