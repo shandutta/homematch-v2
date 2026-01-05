@@ -33,7 +33,7 @@ If `OPENROUTER_API_KEY` is not set, the script falls back to `OPENROUTER_KEY_FIL
 ## Cron Example
 
 ```cron
-*/15 * * * * cd /home/shan/homematch-v2 && OPENROUTER_API_KEY=sk-or-v1-... pnpm auto:commit >> /home/shan/auto-commit.log 2>&1
+*/15 * * * * cd /home/shan/homematch-v2 && OPENROUTER_API_KEY=sk-or-v1-... pnpm auto:commit >> /home/shan/homematch-v2/.logs/auto-commit.log 2>&1
 ```
 
 Tip: start with `AUTO_COMMIT_PUSH=false` until you are confident in the flow.

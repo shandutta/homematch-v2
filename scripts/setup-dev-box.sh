@@ -383,7 +383,7 @@ EOF
 }
 
 ensure_log_dir() {
-  mkdir -p "$HOME/.logs"
+  mkdir -p "$ROOT_DIR/.logs"
 }
 
 ensure_cron_line() {
@@ -429,7 +429,7 @@ configure_cron_auto_commit() {
   fi
   ensure_log_dir
 
-  cron_line="*/15 * * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin COREPACK_HOME=$ROOT_DIR/.corepack-cache ${key_env:+$key_env }$pnpm_bin auto:commit >> $HOME/auto-commit.log 2>&1"
+  cron_line="*/15 * * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin COREPACK_HOME=$ROOT_DIR/.corepack-cache ${key_env:+$key_env }$pnpm_bin auto:commit >> $ROOT_DIR/.logs/auto-commit.log 2>&1"
   ensure_cron_line "$cron_line"
   log "Installed auto-commit cron (15m) using OpenRouter key from ${key_source}."
 }
@@ -447,7 +447,7 @@ configure_cron_auto_commit_pull() {
   fi
   ensure_log_dir
   script_path="$ROOT_DIR/scripts/cron-auto-commit-pull.sh"
-  cron_line="15 10 * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin bash $script_path >> $HOME/auto-commit-pull.log 2>&1"
+  cron_line="15 10 * * * cd $ROOT_DIR && PATH=$(dirname "$node_bin"):/usr/bin:/bin bash $script_path >> $ROOT_DIR/.logs/auto-commit-pull.log 2>&1"
   ensure_cron_line "$cron_line"
   log "Installed auto-commit pull cron (daily) via ${script_path}."
 }
