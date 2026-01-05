@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
+import { clickWhenReady } from '../utils/uiActions'
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -280,7 +281,7 @@ test.describe('Settings location preferences', () => {
       })
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await listViewTab.click()
+      await clickWhenReady(page, listViewTab)
       await expect(listViewTab).toHaveAttribute('data-state', 'active')
       await expect(page.getByTestId('city-search')).toBeVisible()
 
@@ -344,9 +345,9 @@ test.describe('Settings location preferences', () => {
       })
       await waitForHydration(page)
       const listViewTabPhase2 = page.getByRole('tab', { name: /list view/i })
-      await listViewTabPhase2.click()
+      await clickWhenReady(page, listViewTabPhase2)
       await expect(listViewTabPhase2).toHaveAttribute('data-state', 'active')
-      await page.getByRole('tab', { name: /list view/i }).click()
+      await clickWhenReady(page, page.getByRole('tab', { name: /list view/i }))
       await expect(page.getByTestId('neighborhood-search')).toBeVisible()
 
       await expect(

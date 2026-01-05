@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
+import { clickWhenReady } from '../utils/uiActions'
 
 const ALL_CITIES_SENTINEL_THRESHOLD = 200
 
@@ -136,7 +137,7 @@ test.describe('Settings all-cities sentinel', () => {
 
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await listViewTab.click()
+      await clickWhenReady(page, listViewTab)
       await expect(listViewTab).toHaveAttribute('data-state', 'active')
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
@@ -206,7 +207,7 @@ test.describe('Settings all-cities sentinel', () => {
 
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await listViewTab.click()
+      await clickWhenReady(page, listViewTab)
       await expect(listViewTab).toHaveAttribute('data-state', 'active')
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
