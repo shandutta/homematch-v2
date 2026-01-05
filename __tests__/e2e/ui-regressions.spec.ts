@@ -422,6 +422,21 @@ test.describe('UI regressions', () => {
 
       await page.setViewportSize({ width: 390, height: 844 })
       await page.waitForTimeout(250)
+      await card.evaluate(async (el) => {
+        let lastHeight = el.getBoundingClientRect().height
+        let stableCount = 0
+        for (let i = 0; i < 20; i += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          const nextHeight = el.getBoundingClientRect().height
+          if (Math.abs(nextHeight - lastHeight) < 0.5) {
+            stableCount += 1
+            if (stableCount >= 3) return
+          } else {
+            stableCount = 0
+            lastHeight = nextHeight
+          }
+        }
+      })
 
       await expect(card).toHaveScreenshot('liked-card-mobile.png', {
         animations: 'disabled',
