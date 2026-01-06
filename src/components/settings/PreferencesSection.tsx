@@ -298,7 +298,6 @@ export function PreferencesSection({
   ]
 
   useEffect(() => {
-    if (!MAP_VIEW_ENABLED) return
     let cancelled = false
 
     const loadCities = async () => {

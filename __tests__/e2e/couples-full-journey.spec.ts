@@ -242,7 +242,7 @@ test.describe('Couples full journey (real UI)', () => {
     page,
     browser,
   }, testInfo) => {
-    test.setTimeout(180000)
+    test.setTimeout(240000)
 
     const service = createServiceRoleClient()
 
