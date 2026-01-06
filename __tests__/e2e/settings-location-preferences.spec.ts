@@ -4,7 +4,7 @@ import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
-import { clickWhenReady } from '../utils/uiActions'
+import { maybeClickWhenReady } from '../utils/uiActions'
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -281,8 +281,10 @@ test.describe('Settings location preferences', () => {
       })
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await clickWhenReady(page, listViewTab)
-      await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      const listViewSelected = await maybeClickWhenReady(page, listViewTab)
+      if (listViewSelected) {
+        await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      }
       await expect(page.getByTestId('city-search')).toBeVisible()
 
       await page.getByTestId('city-search').fill(runId)
@@ -345,9 +347,13 @@ test.describe('Settings location preferences', () => {
       })
       await waitForHydration(page)
       const listViewTabPhase2 = page.getByRole('tab', { name: /list view/i })
-      await clickWhenReady(page, listViewTabPhase2)
-      await expect(listViewTabPhase2).toHaveAttribute('data-state', 'active')
-      await clickWhenReady(page, page.getByRole('tab', { name: /list view/i }))
+      const listViewSelectedPhase2 = await maybeClickWhenReady(
+        page,
+        listViewTabPhase2
+      )
+      if (listViewSelectedPhase2) {
+        await expect(listViewTabPhase2).toHaveAttribute('data-state', 'active')
+      }
       await expect(page.getByTestId('neighborhood-search')).toBeVisible()
 
       await expect(

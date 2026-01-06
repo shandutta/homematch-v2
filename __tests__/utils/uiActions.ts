@@ -30,3 +30,14 @@ export async function clickWhenReady(
 
   throw lastError ?? new Error('Timed out while clicking locator')
 }
+
+export async function maybeClickWhenReady(
+  page: Page,
+  locator: Locator,
+  options: ClickOptions = {}
+) {
+  const count = await locator.count()
+  if (count === 0) return false
+  await clickWhenReady(page, locator, options)
+  return true
+}

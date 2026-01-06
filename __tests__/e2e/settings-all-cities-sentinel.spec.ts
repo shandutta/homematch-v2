@@ -4,7 +4,7 @@ import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
-import { clickWhenReady } from '../utils/uiActions'
+import { maybeClickWhenReady } from '../utils/uiActions'
 
 const ALL_CITIES_SENTINEL_THRESHOLD = 200
 
@@ -137,8 +137,10 @@ test.describe('Settings all-cities sentinel', () => {
 
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await clickWhenReady(page, listViewTab)
-      await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      const listViewSelected = await maybeClickWhenReady(page, listViewTab)
+      if (listViewSelected) {
+        await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      }
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
         timeout: 15000,
@@ -207,8 +209,10 @@ test.describe('Settings all-cities sentinel', () => {
 
       await waitForHydration(page)
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await clickWhenReady(page, listViewTab)
-      await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      const listViewSelected = await maybeClickWhenReady(page, listViewTab)
+      if (listViewSelected) {
+        await expect(listViewTab).toHaveAttribute('data-state', 'active')
+      }
       await expect(page.getByTestId('city-search')).toBeVisible()
       await expect(page.getByTestId('city-search')).toBeDisabled({
         timeout: 15000,

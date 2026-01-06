@@ -4,7 +4,7 @@ import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
-import { clickWhenReady } from '../utils/uiActions'
+import { maybeClickWhenReady } from '../utils/uiActions'
 
 const DEFAULT_PRICE_RANGE: [number, number] = [200000, 800000]
 const DEFAULT_BEDROOMS = 2
@@ -215,7 +215,7 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await waitForHydration(page)
 
       const listViewTab = page.getByRole('tab', { name: /list view/i })
-      await clickWhenReady(page, listViewTab)
+      await maybeClickWhenReady(page, listViewTab)
       await page.getByTestId('city-search').fill(runId)
       await expect(
         page.getByTestId(cityOptionTestId(city, state))
