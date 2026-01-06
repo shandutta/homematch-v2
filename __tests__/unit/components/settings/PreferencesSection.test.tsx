@@ -59,6 +59,13 @@ const mockProfile = {
   },
 } as any
 
+async function ensureListView(user: ReturnType<typeof userEvent.setup>) {
+  const listTab = screen.queryByRole('tab', { name: /list view/i })
+  if (listTab) {
+    await user.click(listTab)
+  }
+}
+
 beforeAll(() => {
   class ResizeObserverMock {
     observe() {}
@@ -402,7 +409,7 @@ describe('PreferencesSection', () => {
     )
 
     const user = userEvent.setup()
-    await user.click(screen.getByRole('tab', { name: /list view/i }))
+    await ensureListView(user)
 
     await waitFor(() => {
       expect(screen.getByTestId('city-search')).toBeDisabled()
@@ -439,7 +446,7 @@ describe('PreferencesSection', () => {
     )
 
     const user = userEvent.setup()
-    await user.click(screen.getByRole('tab', { name: /list view/i }))
+    await ensureListView(user)
 
     await waitFor(() => {
       expect(screen.getByTestId('city-search')).toBeDisabled()
@@ -476,7 +483,7 @@ describe('PreferencesSection', () => {
     render(<PreferencesSection user={mockUser} profile={profileWithCities} />)
 
     const user = userEvent.setup()
-    await user.click(screen.getByRole('tab', { name: /list view/i }))
+    await ensureListView(user)
 
     await waitFor(() => {
       expect(mockGetNeighborhoodsForCities).toHaveBeenCalled()

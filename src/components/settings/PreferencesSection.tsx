@@ -1236,7 +1236,9 @@ export function PreferencesSection({
                         <Button
                           type="button"
                           variant={
-                            mapOverlayMode === 'cities' ? 'secondary' : 'outline'
+                            mapOverlayMode === 'cities'
+                              ? 'secondary'
+                              : 'outline'
                           }
                           size="sm"
                           onClick={() => setMapOverlayMode('cities')}
