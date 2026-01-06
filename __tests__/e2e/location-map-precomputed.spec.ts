@@ -4,6 +4,10 @@ import crypto from 'node:crypto'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
 
+const MAP_VIEW_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_LOCATION_MAP_VIEW === 'true'
+test.skip(!MAP_VIEW_ENABLED, 'Location map view is disabled')
+
 const MAPS_STUB_SCRIPT = `
   (function() {
     window.google = window.google || {}

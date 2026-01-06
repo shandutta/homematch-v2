@@ -122,6 +122,8 @@ const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
 const cityKey = (city: CityOption) =>
   `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
 const DEFAULT_METRO_AREA = 'San Francisco–Oakland–San Jose'
+const MAP_VIEW_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_LOCATION_MAP_VIEW === 'true'
 
 export function PreferencesSection({
   user,
@@ -214,7 +216,9 @@ export function PreferencesSection({
   const [showSelectedCitiesOnly, setShowSelectedCitiesOnly] = useState(false)
   const [showSelectedNeighborhoodsOnly, setShowSelectedNeighborhoodsOnly] =
     useState(false)
-  const [locationView, setLocationView] = useState<'map' | 'list'>('map')
+  const [locationView, setLocationView] = useState<'map' | 'list'>(
+    MAP_VIEW_ENABLED ? 'map' : 'list'
+  )
   const [mapOverlayMode, setMapOverlayMode] = useState<
     'neighborhoods' | 'cities'
   >('neighborhoods')
@@ -294,6 +298,7 @@ export function PreferencesSection({
   ]
 
   useEffect(() => {
+    if (!MAP_VIEW_ENABLED) return
     let cancelled = false
 
     const loadCities = async () => {
@@ -354,6 +359,7 @@ export function PreferencesSection({
   }, [allCities, locationView])
 
   useEffect(() => {
+    if (!MAP_VIEW_ENABLED) return
     if (locationView !== 'map') return
     if (!mapMetroArea.trim()) return
     let cancelled = false
@@ -1196,118 +1202,124 @@ export function PreferencesSection({
 
             <Tabs
               value={locationView}
-              onValueChange={(value) =>
-                setLocationView(value as 'map' | 'list')
+              onValueChange={
+                MAP_VIEW_ENABLED
+                  ? (value) => setLocationView(value as 'map' | 'list')
+                  : undefined
               }
               className="space-y-4"
             >
-              <TabsList className="w-full border border-white/10 bg-white/[0.02]">
-                <TabsTrigger value="map">Map view</TabsTrigger>
-                <TabsTrigger value="list">List view</TabsTrigger>
-              </TabsList>
+              {MAP_VIEW_ENABLED ? (
+                <>
+                  <TabsList className="w-full border border-white/10 bg-white/[0.02]">
+                    <TabsTrigger value="map">Map view</TabsTrigger>
+                    <TabsTrigger value="list">List view</TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="map" className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant={
-                        mapOverlayMode === 'neighborhoods'
-                          ? 'secondary'
-                          : 'outline'
-                      }
-                      size="sm"
-                      onClick={() => setMapOverlayMode('neighborhoods')}
-                      className="text-hm-stone-100 border-white/10 bg-white/5"
-                      data-testid="map-overlay-neighborhoods"
-                    >
-                      Neighborhoods
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={
-                        mapOverlayMode === 'cities' ? 'secondary' : 'outline'
-                      }
-                      size="sm"
-                      onClick={() => setMapOverlayMode('cities')}
-                      className="text-hm-stone-100 border-white/10 bg-white/5"
-                      data-testid="map-overlay-cities"
-                    >
-                      Cities
-                    </Button>
-                  </div>
-                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                    <Select
-                      value={mapMetroArea}
-                      onValueChange={handleMapMetroChange}
-                    >
-                      <SelectTrigger
-                        className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
-                        aria-label="Metro area filter"
-                        data-testid="map-metro-select"
-                        disabled={mapMetroLoading}
-                      >
-                        <SelectValue
-                          placeholder={
-                            mapMetroLoading
-                              ? 'Loading metro areas...'
-                              : 'Select metro area'
+                  <TabsContent value="map" className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant={
+                            mapOverlayMode === 'neighborhoods'
+                              ? 'secondary'
+                              : 'outline'
                           }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mapMetroAreas.map((metro) => (
-                          <SelectItem key={metro} value={metro}>
-                            {metro}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                          size="sm"
+                          onClick={() => setMapOverlayMode('neighborhoods')}
+                          className="text-hm-stone-100 border-white/10 bg-white/5"
+                          data-testid="map-overlay-neighborhoods"
+                        >
+                          Neighborhoods
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={
+                            mapOverlayMode === 'cities' ? 'secondary' : 'outline'
+                          }
+                          size="sm"
+                          onClick={() => setMapOverlayMode('cities')}
+                          className="text-hm-stone-100 border-white/10 bg-white/5"
+                          data-testid="map-overlay-cities"
+                        >
+                          Cities
+                        </Button>
+                      </div>
+                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                        <Select
+                          value={mapMetroArea}
+                          onValueChange={handleMapMetroChange}
+                        >
+                          <SelectTrigger
+                            className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
+                            aria-label="Metro area filter"
+                            data-testid="map-metro-select"
+                            disabled={mapMetroLoading}
+                          >
+                            <SelectValue
+                              placeholder={
+                                mapMetroLoading
+                                  ? 'Loading metro areas...'
+                                  : 'Select metro area'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mapMetroAreas.map((metro) => (
+                              <SelectItem key={metro} value={metro}>
+                                {metro}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
 
-                <LocationMapSelector
-                  neighborhoods={mapNeighborhoods}
-                  selectedNeighborhoods={selectedNeighborhoods}
-                  selectedCities={selectedCities}
-                  overlayMode={mapOverlayMode}
-                  onToggleNeighborhood={toggleNeighborhoodFromMap}
-                  onToggleCity={toggleCityFromMap}
-                  onBulkSelectNeighborhoods={applyMapNeighborhoodSelection}
-                  onBulkSelectCities={applyMapCitySelection}
-                  disabled={allCities}
-                  loading={mapNeighborhoodsLoading}
-                  precomputed={mapNeighborhoodsPrecomputed}
-                />
-                {mapNeighborhoodsError ? (
-                  <div className="text-hm-stone-500 flex items-center justify-between text-xs">
-                    <span>{mapNeighborhoodsError}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={retryMapNeighborhoods}
-                      className="text-hm-stone-300 hover:text-hm-stone-100"
-                    >
-                      Retry
-                    </Button>
-                  </div>
-                ) : mapMetroError ? (
-                  <div className="text-hm-stone-500 text-xs">
-                    {mapMetroError}
-                  </div>
-                ) : (
-                  <p className="text-hm-stone-500 text-xs">
-                    {`Metro: "${mapMetroArea}" (${mapNeighborhoods.length} neighborhoods)`}
-                  </p>
-                )}
-                <p className="text-hm-stone-500 text-xs">
-                  Draw to ringfence areas, or click overlays to toggle
-                  selections. City overlays are unioned and de-overlapped from
-                  neighborhood boundaries; gaps indicate missing data. Switch to
-                  list view for search + bulk actions.
-                </p>
-              </TabsContent>
+                    <LocationMapSelector
+                      neighborhoods={mapNeighborhoods}
+                      selectedNeighborhoods={selectedNeighborhoods}
+                      selectedCities={selectedCities}
+                      overlayMode={mapOverlayMode}
+                      onToggleNeighborhood={toggleNeighborhoodFromMap}
+                      onToggleCity={toggleCityFromMap}
+                      onBulkSelectNeighborhoods={applyMapNeighborhoodSelection}
+                      onBulkSelectCities={applyMapCitySelection}
+                      disabled={allCities}
+                      loading={mapNeighborhoodsLoading}
+                      precomputed={mapNeighborhoodsPrecomputed}
+                    />
+                    {mapNeighborhoodsError ? (
+                      <div className="text-hm-stone-500 flex items-center justify-between text-xs">
+                        <span>{mapNeighborhoodsError}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={retryMapNeighborhoods}
+                          className="text-hm-stone-300 hover:text-hm-stone-100"
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    ) : mapMetroError ? (
+                      <div className="text-hm-stone-500 text-xs">
+                        {mapMetroError}
+                      </div>
+                    ) : (
+                      <p className="text-hm-stone-500 text-xs">
+                        {`Metro: "${mapMetroArea}" (${mapNeighborhoods.length} neighborhoods)`}
+                      </p>
+                    )}
+                    <p className="text-hm-stone-500 text-xs">
+                      Draw to ringfence areas, or click overlays to toggle
+                      selections. City overlays are unioned and de-overlapped
+                      from neighborhood boundaries; gaps indicate missing data.
+                      Switch to list view for search + bulk actions.
+                    </p>
+                  </TabsContent>
+                </>
+              ) : null}
 
               <TabsContent value="list">
                 <div className="grid gap-4 lg:grid-cols-2">
