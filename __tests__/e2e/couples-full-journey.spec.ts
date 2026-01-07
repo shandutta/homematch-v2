@@ -94,6 +94,63 @@ async function waitFor<T>(
   throw new Error(`Timed out waiting for ${options.label}`)
 }
 
+async function waitForMutualLikeInApi(
+  page: Page,
+  propertyId: string,
+  timeoutMs = 30000
+): Promise<void> {
+  const startedAt = Date.now()
+  let lastStatus: number | null = null
+  let lastBody: string | null = null
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const result = await page.evaluate(async () => {
+      try {
+        const response = await fetch(
+          '/api/couples/mutual-likes?includeProperties=false',
+          {
+            credentials: 'include',
+            cache: 'no-store',
+          }
+        )
+        const text = await response.text()
+        return { ok: response.ok, status: response.status, text }
+      } catch (error) {
+        return {
+          ok: false,
+          status: 0,
+          text: error instanceof Error ? error.message : String(error),
+        }
+      }
+    })
+
+    lastStatus = result.status
+    lastBody = result.text
+
+    if (result.ok) {
+      try {
+        const data = JSON.parse(result.text)
+        const likes = (data?.mutualLikes ?? []) as Array<{
+          property_id?: string
+        }>
+        if (likes.some((like) => like.property_id === propertyId)) {
+          return
+        }
+      } catch {
+        // keep retrying until timeout
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+  }
+
+  const statusLabel = lastStatus ? `status ${lastStatus}` : 'no response'
+  const bodyPreview = lastBody ? `: ${lastBody.slice(0, 200)}` : ''
+  throw new Error(
+    `Timed out waiting for mutual likes API (${statusLabel}${bodyPreview})`
+  )
+}
+
 async function seedNeighborhoodAndProperty(
   supabase: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ neighborhoodId: string; propertyId: string; address: string }> {
@@ -637,6 +694,7 @@ test.describe('Couples full journey (real UI)', () => {
       await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
         timeout: 15000,
       })
+      await waitForMutualLikeInApi(partnerPage, propertyId!, 30000)
       const mutualLikesHeading = partnerPage.getByRole('heading', {
         name: /^mutual likes$/i,
       })
@@ -664,6 +722,7 @@ test.describe('Couples full journey (real UI)', () => {
         await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
           timeout: 15000,
         })
+        await waitForMutualLikeInApi(partnerPage, propertyId!, 30000)
         await assertMutualLikesPage()
       }
       await partnerPage
