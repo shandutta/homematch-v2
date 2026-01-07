@@ -3,9 +3,10 @@
 # All hidden folders and files (starting with .)
 # Exceptions are explicitly allowed below with !pattern
 .*/*
-!.github/
-!.vscode/
 .*/
+!.github/
+!.github/**
+!.vscode/
 
 # dependencies
 /node_modules

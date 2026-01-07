@@ -55,6 +55,7 @@ Start with `docs/README.md` for the full documentation index. Key entry points:
 - Testing: `docs/TESTING.md`
 - Workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
 - Style guide: `docs/STYLE_GUIDE.md`
+- Secrets scanning: `docs/secrets.md` (enable with `./scripts/setup-git-secrets.sh --scan`)
 
 ## Project Structure
 

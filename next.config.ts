@@ -114,7 +114,11 @@ const nextConfig: NextConfig = {
 
   // Experimental features for performance
   experimental: {
-    // Future experimental features can be added here
+    // TODO: Enable Turbopack filesystem caching once supported by this Next.js
+    // version. These flags are not present in 15.5.9.
+    // Set to false here to disable if caching causes issues.
+    // turbopackFileSystemCacheForDev: true,
+    // turbopackFileSystemCacheForBuild: true,
   },
 
   // Optimize output

@@ -24,7 +24,7 @@ import { Loader2, MapPin, Pencil, Square, X } from 'lucide-react'
 type OverlayMode = 'neighborhoods' | 'cities'
 type DrawMode = 'polygon' | 'rectangle' | null
 
-type LocationMapSelectorProps = {
+export type LocationMapSelectorProps = {
   neighborhoods: NeighborhoodOption[]
   selectedNeighborhoods: string[]
   selectedCities: CityOption[]

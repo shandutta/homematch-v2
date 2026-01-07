@@ -2,7 +2,7 @@ name: 🤖 AI Repair Agent
 
 on:
   workflow_run:
-    workflows: ["Tests & Build Pipeline"]
+    workflows: ['Tests & Build Pipeline']
     types:
       - completed
 
@@ -23,7 +23,7 @@ jobs:
           path: ./downloaded-artifacts
           pattern: ci-logs-*
           if-no-artifact-found: ignore
-          
+
       - name: Analyze with LLM
         uses: actions/github-script@v7
         env:

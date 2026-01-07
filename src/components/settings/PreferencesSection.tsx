@@ -23,7 +23,8 @@ import {
   type CityOption,
   type NeighborhoodOption,
 } from '@/lib/services/locations-client'
-import { LocationMapSelector } from '@/components/settings/LocationMapSelector'
+import dynamic from 'next/dynamic'
+import type { LocationMapSelectorProps } from '@/components/settings/LocationMapSelector'
 import { PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
 import {
   ALL_CITIES_SENTINEL_THRESHOLD,
@@ -124,6 +125,14 @@ const cityKey = (city: CityOption) =>
 const DEFAULT_METRO_AREA = 'San Francisco–Oakland–San Jose'
 const MAP_VIEW_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_LOCATION_MAP_VIEW === 'true'
+
+const LocationMapSelector = dynamic<LocationMapSelectorProps>(
+  () =>
+    import('@/components/settings/LocationMapSelector').then(
+      (mod) => mod.LocationMapSelector
+    ),
+  { ssr: false }
+)
 
 export function PreferencesSection({
   user,

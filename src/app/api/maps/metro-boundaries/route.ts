@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import {
-  buildMeceNeighborhoods,
-  type MapNeighborhoodInput,
-} from '@/lib/maps/geometry'
+import type { MapNeighborhoodInput } from '@/lib/maps/geometry'
 
 const CACHE_TTL_MS = 1000 * 60 * 60
 const metroCache = new Map<string, { expiresAt: number; data: unknown }>()
@@ -42,6 +39,7 @@ export async function GET(request: Request) {
     )
   }
 
+  const { buildMeceNeighborhoods } = await import('@/lib/maps/geometry')
   const neighborhoods = (data || []) as MapNeighborhoodInput[]
   const processed = buildMeceNeighborhoods(neighborhoods)
   const response = {
