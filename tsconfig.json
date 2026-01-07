@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,11 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "types": [
-      "jest",
-      "@testing-library/jest-dom",
-      "./src/types/jest"
-    ],
+    "types": ["jest", "@testing-library/jest-dom", "./src/types/jest"],
     "incremental": true,
     "plugins": [
       {
@@ -28,12 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/__tests__/*": [
-        "./__tests__/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/__tests__/*": ["./__tests__/*"]
     }
   },
   "include": [

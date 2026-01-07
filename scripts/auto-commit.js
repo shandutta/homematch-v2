@@ -50,6 +50,9 @@ try {
 
 const { execSync, spawnSync } = require('child_process')
 const repoRoot = path.resolve(__dirname, '..')
+const LOCK_FILE =
+  process.env.AUTO_COMMIT_LOCK_FILE ||
+  path.join(repoRoot, '.logs', 'auto-commit.lock')
 
 const timestamp = () =>
   new Date().toLocaleString('en-US', {
@@ -63,6 +66,74 @@ const timestamp = () =>
     hour12: false,
   })
 const log = (message) => console.log(`[${timestamp()}] ${message}`)
+
+const ensureLogDir = () => {
+  const dir = path.dirname(LOCK_FILE)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+}
+
+const parsePid = (value) => {
+  const pid = Number(String(value || '').trim())
+  return Number.isFinite(pid) && pid > 0 ? pid : null
+}
+
+const isPidRunning = (pid) => {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (error) {
+    return error.code !== 'ESRCH'
+  }
+}
+
+const acquireLock = () => {
+  ensureLogDir()
+
+  if (fs.existsSync(LOCK_FILE)) {
+    const existingPid = parsePid(fs.readFileSync(LOCK_FILE, 'utf8'))
+    if (existingPid && isPidRunning(existingPid)) {
+      log(`Skipping auto-commit: lock held by pid ${existingPid}`)
+      log('exit_code=0 status=success')
+      process.exit(0)
+    }
+    try {
+      fs.unlinkSync(LOCK_FILE)
+    } catch (error) {
+      void error
+    }
+  }
+
+  try {
+    fs.writeFileSync(LOCK_FILE, String(process.pid), { flag: 'wx' })
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      log('Skipping auto-commit: lock already exists')
+      log('exit_code=0 status=success')
+      process.exit(0)
+    }
+    throw error
+  }
+
+  const release = () => {
+    try {
+      fs.unlinkSync(LOCK_FILE)
+    } catch (error) {
+      void error
+    }
+  }
+
+  process.on('exit', release)
+  process.on('SIGINT', () => {
+    release()
+    process.exit(1)
+  })
+  process.on('SIGTERM', () => {
+    release()
+    process.exit(1)
+  })
+}
 
 const AUTO_COMMIT_MODEL =
   process.env.AUTO_COMMIT_MODEL || 'google/gemini-2.0-flash-exp:free'
@@ -642,6 +713,7 @@ const gitPullRebase = () => {
 }
 
 const main = async () => {
+  acquireLock()
   log('Starting auto-commit run')
   ensureSafeGitState()
 
