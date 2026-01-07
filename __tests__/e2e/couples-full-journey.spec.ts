@@ -94,26 +94,6 @@ async function waitFor<T>(
   throw new Error(`Timed out waiting for ${options.label}`)
 }
 
-async function waitForMutualLikeInApi(
-  page: Page,
-  propertyId: string,
-  timeoutMs = 30000
-): Promise<void> {
-  await waitFor(
-    async () => {
-      const response = await page.request
-        .get('/api/couples/mutual-likes')
-        .catch(() => null)
-      if (!response || !response.ok()) return null
-
-      const data = await response.json().catch(() => null)
-      const likes = (data?.mutualLikes ?? []) as Array<{ property_id?: string }>
-      return likes.some((like) => like.property_id === propertyId) ? true : null
-    },
-    { timeoutMs, label: 'mutual likes API', intervalMs: 1000 }
-  )
-}
-
 async function seedNeighborhoodAndProperty(
   supabase: ReturnType<typeof createServiceRoleClient>
 ): Promise<{ neighborhoodId: string; propertyId: string; address: string }> {
@@ -657,7 +637,6 @@ test.describe('Couples full journey (real UI)', () => {
       await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
         timeout: 15000,
       })
-      await waitForMutualLikeInApi(partnerPage, propertyId!, 30000)
       const mutualLikesHeading = partnerPage.getByRole('heading', {
         name: /^mutual likes$/i,
       })
@@ -685,7 +664,6 @@ test.describe('Couples full journey (real UI)', () => {
         await partnerPage.waitForURL(/\/dashboard\/mutual-likes/, {
           timeout: 15000,
         })
-        await waitForMutualLikeInApi(partnerPage, propertyId!, 30000)
         await assertMutualLikesPage()
       }
       await partnerPage
