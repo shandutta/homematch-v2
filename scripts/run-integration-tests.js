@@ -112,6 +112,41 @@ async function verifySupabaseReady(maxAttempts = 15, delayMs = 2000) {
   return false
 }
 
+async function warmupEndpoints() {
+  const endpoints = [
+    'http://localhost:3000/api/couples/stats',
+    'http://localhost:3000/api/properties/vibes',
+    'http://localhost:3000/api/neighborhoods/vibes',
+    `http://localhost:3000/api/maps/metro-boundaries?metro=${encodeURIComponent(
+      'Warmup Metro'
+    )}`,
+  ]
+
+  console.log('🔥 Warming up API routes for integration tests...')
+
+  for (const endpoint of endpoints) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+
+      const res = await fetch(endpoint, { signal: controller.signal })
+      clearTimeout(timeout)
+
+      // Drain response body to avoid open handles.
+      if (res.body) {
+        await res.text()
+      }
+    } catch (error) {
+      if (process.env.DEBUG_TEST_SETUP) {
+        console.debug(
+          `⚠️ Warmup failed for ${endpoint}:`,
+          error?.message || error
+        )
+      }
+    }
+  }
+}
+
 /**
  * Start the Next.js dev server in the background
  */
@@ -274,6 +309,8 @@ async function run() {
       'Supabase API not accessible - cannot run integration tests'
     )
   }
+
+  await warmupEndpoints()
 
   // Handle cleanup on process termination
   const cleanup = async () => {
