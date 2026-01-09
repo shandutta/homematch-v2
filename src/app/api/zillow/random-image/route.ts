@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server'
 
-type ZillowImagesResponse = {
-  images?: string[]
-  [k: string]: unknown
-}
-
 type ZillowCard = {
   zpid: string
   imageUrl: string
@@ -56,11 +51,10 @@ function materializeCardFromSearch(
   }
 }
 
-type ZillowSearchResponse = {
-  props?: ZillowSearchResult[]
-  results?: ZillowSearchResult[]
-  [k: string]: unknown
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isString = (value: unknown): value is string => typeof value === 'string'
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 function pickRandom<T>(arr: T[]): T {
@@ -107,16 +101,19 @@ export async function GET() {
     )
   }
 
-  const searchData = (await searchRes.json()) as ZillowSearchResponse
+  const searchData = await searchRes.json()
   // propertyExtendedSearch returns results under props
-  const pool = Array.isArray(searchData.props)
-    ? searchData.props
-    : Array.isArray(searchData.results)
-      ? searchData.results
-      : []
-  const candidates = pool.filter(
-    (p) => typeof p?.zpid === 'number' || typeof p?.zpid === 'string'
-  )
+  const pool = isRecord(searchData)
+    ? Array.isArray(searchData.props)
+      ? searchData.props
+      : Array.isArray(searchData.results)
+        ? searchData.results
+        : []
+    : []
+  const candidates = pool.filter((p): p is ZillowSearchResult => {
+    if (!isRecord(p)) return false
+    return typeof p.zpid === 'number' || typeof p.zpid === 'string'
+  })
   if (candidates.length === 0) {
     return NextResponse.json(
       { error: 'No properties found from search query' },
@@ -143,8 +140,11 @@ export async function GET() {
       if (!res.ok) {
         continue
       }
-      const data = (await res.json()) as ZillowImagesResponse
-      const images = Array.isArray(data.images) ? data.images : []
+      const data = await res.json()
+      const images =
+        isRecord(data) && Array.isArray(data.images)
+          ? data.images.filter(isString)
+          : []
       if (images.length === 0) continue
 
       // Prefer first image for consistency

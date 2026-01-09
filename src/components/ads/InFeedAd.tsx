@@ -3,12 +3,6 @@
 import { useEffect, useRef, useState, useId } from 'react'
 import { useCookieConsent } from '@/lib/cookies/use-cookie-consent'
 
-declare global {
-  interface Window {
-    adsbygoogle: Array<Record<string, unknown>>
-  }
-}
-
 // Global Set to track which ad instances have been pushed
 // This persists across React re-renders and Strict Mode double-mounting
 const pushedAdIds = new Set<string>()

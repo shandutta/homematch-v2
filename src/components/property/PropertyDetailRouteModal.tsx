@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PropertyDetailModal } from '@/components/property/PropertyDetailModal'
 import { useRecordInteraction } from '@/hooks/useInteractions'
-import type { Neighborhood, Property } from '@/lib/schemas/property'
+import { neighborhoodSchema, propertySchema } from '@/lib/schemas/property'
 import type { InteractionType } from '@/types/app'
 import type { PropertyWithNeighborhood } from '@/types/database'
 
@@ -21,10 +21,16 @@ export function PropertyDetailRouteModal({
   const recordInteraction = useRecordInteraction()
   const [open, setOpen] = useState(true)
 
-  const neighborhood = useMemo(
-    () => property.neighborhood || property.neighborhoods || undefined,
-    [property.neighborhood, property.neighborhoods]
-  )
+  const parsedProperty = useMemo(() => {
+    const result = propertySchema.safeParse(property)
+    return result.success ? result.data : null
+  }, [property])
+
+  const neighborhood = useMemo(() => {
+    const candidate = property.neighborhood || property.neighborhoods
+    const result = neighborhoodSchema.safeParse(candidate)
+    return result.success ? result.data : undefined
+  }, [property.neighborhood, property.neighborhoods])
 
   const handleDecision = useCallback(
     (propertyId: string, type: InteractionType) => {
@@ -43,10 +49,14 @@ export function PropertyDetailRouteModal({
     [returnTo, router]
   )
 
+  if (!parsedProperty) {
+    return null
+  }
+
   return (
     <PropertyDetailModal
-      property={property as unknown as Property}
-      neighborhood={neighborhood as unknown as Neighborhood | undefined}
+      property={parsedProperty}
+      neighborhood={neighborhood}
       open={open}
       onOpenChange={handleOpenChange}
       onDecision={handleDecision}

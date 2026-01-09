@@ -3,7 +3,23 @@
  * Users can select from these friendly animal avatars or upload a custom image.
  */
 
-export const PRESET_AVATARS = [
+export type PresetAvatarId =
+  | 'bear'
+  | 'cat'
+  | 'dog'
+  | 'fox'
+  | 'koala'
+  | 'owl'
+  | 'panda'
+  | 'penguin'
+  | 'rabbit'
+  | 'sloth'
+
+export const PRESET_AVATARS: ReadonlyArray<{
+  id: PresetAvatarId
+  name: string
+  src: string
+}> = [
   { id: 'bear', name: 'Bear', src: '/avatars/bear.svg' },
   { id: 'cat', name: 'Cat', src: '/avatars/cat.svg' },
   { id: 'dog', name: 'Dog', src: '/avatars/dog.svg' },
@@ -14,9 +30,7 @@ export const PRESET_AVATARS = [
   { id: 'penguin', name: 'Penguin', src: '/avatars/penguin.svg' },
   { id: 'rabbit', name: 'Rabbit', src: '/avatars/rabbit.svg' },
   { id: 'sloth', name: 'Sloth', src: '/avatars/sloth.svg' },
-] as const
-
-export type PresetAvatarId = (typeof PRESET_AVATARS)[number]['id']
+]
 
 export interface AvatarData {
   type: 'preset' | 'custom'

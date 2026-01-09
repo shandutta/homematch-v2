@@ -1,9 +1,5 @@
 const DEFAULT_RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
 
-type ZillowImagesResponse = {
-  images?: unknown
-}
-
 export type FetchZillowImagesOptions = {
   zpid: string
   rapidApiKey: string
@@ -75,8 +71,11 @@ export async function fetchZillowImageUrls(
         )
       }
 
-      const data = (await res.json()) as ZillowImagesResponse
-      const rawImages = Array.isArray(data.images) ? data.images : []
+      const data: unknown = await res.json()
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null
+      const rawImages =
+        isRecord(data) && Array.isArray(data.images) ? data.images : []
       const urls = rawImages
         .filter((u): u is string => typeof u === 'string')
         .map((u) => u.trim())

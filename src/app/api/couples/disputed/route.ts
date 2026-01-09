@@ -40,6 +40,49 @@ export interface DisputedProperty {
   last_updated: string
 }
 
+type InteractionType = 'like' | 'dislike' | 'skip'
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isString = (value: unknown): value is string => typeof value === 'string'
+const isNumber = (value: unknown): value is number => typeof value === 'number'
+
+const isInteractionType = (value: unknown): value is InteractionType =>
+  value === 'like' || value === 'dislike' || value === 'skip'
+
+const toOptionalNumber = (value: unknown): number | undefined =>
+  isNumber(value) ? value : undefined
+
+const toStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter(isString) : []
+
+const toPropertySummary = (value: unknown): DisputedProperty['property'] => ({
+  address:
+    isRecord(value) && isString(value.address)
+      ? value.address
+      : 'Unknown Address',
+  price: isRecord(value) && isNumber(value.price) ? value.price : 0,
+  bedrooms: isRecord(value) && isNumber(value.bedrooms) ? value.bedrooms : 0,
+  bathrooms: isRecord(value) && isNumber(value.bathrooms) ? value.bathrooms : 0,
+  square_feet: isRecord(value)
+    ? toOptionalNumber(value.square_feet)
+    : undefined,
+  images: isRecord(value) ? toStringArray(value.images) : [],
+  listing_status:
+    isRecord(value) && isString(value.listing_status)
+      ? value.listing_status
+      : 'unknown',
+})
+
+const toScoreData = (value: unknown): Record<string, unknown> | undefined =>
+  isRecord(value) ? value : undefined
+
+const getScoreNotes = (scoreData?: Record<string, unknown>) => {
+  const notes = scoreData?.notes
+  return typeof notes === 'string' ? notes : undefined
+}
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
 
@@ -109,8 +152,8 @@ export async function GET(request: NextRequest) {
       )
     } else {
       for (const resolution of resolutions ?? []) {
-        if (resolution?.property_id) {
-          resolvedPropertyIds.add(resolution.property_id as string)
+        if (resolution?.property_id && isString(resolution.property_id)) {
+          resolvedPropertyIds.add(resolution.property_id)
         }
       }
     }
@@ -181,19 +224,27 @@ export async function GET(request: NextRequest) {
       if (resolvedPropertyIds.has(propertyId)) return
 
       if (!propertiesMap.has(propertyId)) {
+        const propertySource = Array.isArray(interaction.properties)
+          ? interaction.properties[0]
+          : interaction.properties
+        const propertySummary = isRecord(propertySource)
+          ? toPropertySummary(propertySource)
+          : null
         propertiesMap.set(propertyId, {
-          property: Array.isArray(interaction.properties)
-            ? interaction.properties[0]
-            : interaction.properties,
+          property: propertySummary,
           interactions: [],
         })
       }
 
+      if (!isInteractionType(interaction.interaction_type)) return
+      const createdAt = isString(interaction.created_at)
+        ? interaction.created_at
+        : new Date(0).toISOString()
       propertiesMap.get(propertyId)!.interactions.push({
         user_id: interaction.user_id,
         interaction_type: interaction.interaction_type,
-        created_at: interaction.created_at as string,
-        score_data: interaction.score_data as Record<string, unknown>,
+        created_at: createdAt,
+        score_data: toScoreData(interaction.score_data),
       })
     })
 
@@ -244,18 +295,12 @@ export async function GET(request: NextRequest) {
             if (partner1Profile && partner2Profile) {
               disputedProperties.push({
                 property_id: propertyId,
-                property: {
-                  address:
-                    (propData.property?.address as string) || 'Unknown Address',
-                  price: (propData.property?.price as number) || 0,
-                  bedrooms: (propData.property?.bedrooms as number) || 0,
-                  bathrooms: (propData.property?.bathrooms as number) || 0,
-                  square_feet: propData.property?.square_feet as
-                    | number
-                    | undefined,
-                  images: (propData.property?.images as string[]) || [],
-                  listing_status:
-                    (propData.property?.listing_status as string) || 'unknown',
+                property: propData.property ?? {
+                  address: 'Unknown Address',
+                  price: 0,
+                  bedrooms: 0,
+                  bathrooms: 0,
+                  listing_status: 'unknown',
                 },
                 partner1: {
                   user_id: partner1Profile.id,
@@ -264,15 +309,10 @@ export async function GET(request: NextRequest) {
                     partner1Profile.email ||
                     'Household member',
                   user_email: partner1Profile.email || '',
-                  interaction_type: partner1Interaction.interaction_type as
-                    | 'like'
-                    | 'dislike'
-                    | 'skip',
+                  interaction_type: partner1Interaction.interaction_type,
                   created_at: partner1Interaction.created_at,
                   score_data: partner1Interaction.score_data,
-                  notes:
-                    (partner1Interaction.score_data?.notes as string) ||
-                    undefined,
+                  notes: getScoreNotes(partner1Interaction.score_data),
                 },
                 partner2: {
                   user_id: partner2Profile.id,
@@ -281,15 +321,10 @@ export async function GET(request: NextRequest) {
                     partner2Profile.email ||
                     'Household member',
                   user_email: partner2Profile.email || '',
-                  interaction_type: partner2Interaction.interaction_type as
-                    | 'like'
-                    | 'dislike'
-                    | 'skip',
+                  interaction_type: partner2Interaction.interaction_type,
                   created_at: partner2Interaction.created_at,
                   score_data: partner2Interaction.score_data,
-                  notes:
-                    (partner2Interaction.score_data?.notes as string) ||
-                    undefined,
+                  notes: getScoreNotes(partner2Interaction.score_data),
                 },
                 status: 'pending',
                 last_updated: Math.max(

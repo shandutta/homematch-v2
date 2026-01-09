@@ -3,7 +3,12 @@
  * Provides debugging and logging functionality
  */
 
-import { TestLogger } from '../types/fixtures'
+import type { TestLogger } from '../types/fixtures'
+import type {
+  ConsoleMessage,
+  PlaywrightPage,
+  PlaywrightTestInfo,
+} from '../types/playwright-interfaces'
 import fs from 'fs'
 import path from 'path'
 
@@ -12,7 +17,7 @@ interface LogEntry {
   level: 'info' | 'warn' | 'error' | 'debug'
   category: string
   message: string
-  data?: any
+  data?: unknown
 }
 
 class E2ETestLogger implements TestLogger {
@@ -52,7 +57,7 @@ class E2ETestLogger implements TestLogger {
     level: LogEntry['level'],
     category: string,
     message: string,
-    data?: any
+    data?: unknown
   ) {
     if (!this.options.enabled) return
 
@@ -87,33 +92,50 @@ class E2ETestLogger implements TestLogger {
     }
   }
 
-  step(description: string, data?: any) {
+  step(description: string, data?: unknown) {
     this.log('info', 'STEP', description, data)
   }
 
-  info(category: string, message: string, data?: any) {
+  info(category: string, message: string, data?: unknown) {
     this.log('info', category, message, data)
   }
 
-  warn(category: string, message: string, data?: any) {
+  warn(category: string, message: string, data?: unknown) {
     this.log('warn', category, message, data)
   }
 
-  error(category: string, message: string, data?: any) {
+  error(category: string, message: string, data?: unknown) {
     this.log('error', category, message, data)
   }
 
-  navigation(url: string, status: 'start' | 'complete' | 'error', data?: any) {
+  navigation(
+    url: string,
+    status: 'start' | 'complete' | 'error',
+    data?: unknown
+  ) {
     this.log('info', 'NAVIGATION', `${status}: ${url}`, data)
   }
 
-  auth(action: string, status: 'start' | 'success' | 'failure', data?: any) {
+  auth(
+    action: string,
+    status: 'start' | 'success' | 'failure',
+    data?: unknown
+  ) {
     const level = status === 'failure' ? 'error' : 'info'
     this.log(level, 'AUTH', `${action} - ${status}`, data)
   }
 
   getSummary(): string {
-    const summary = {
+    const summary: {
+      total: number
+      byLevel: {
+        info: number
+        warn: number
+        error: number
+        debug: number
+      }
+      byCategory: Record<string, number>
+    } = {
       total: this.logs.length,
       byLevel: {
         info: this.logs.filter((l) => l.level === 'info').length,
@@ -121,7 +143,7 @@ class E2ETestLogger implements TestLogger {
         error: this.logs.filter((l) => l.level === 'error').length,
         debug: this.logs.filter((l) => l.level === 'debug').length,
       },
-      byCategory: {} as Record<string, number>,
+      byCategory: {},
     }
 
     this.logs.forEach((log) => {
@@ -143,14 +165,18 @@ class E2ETestLogger implements TestLogger {
 
 // Export just the fixtures object, not a test object
 export const loggerFixtures = {
-  logger: async ({ page }: { page: any }, use: any, testInfo: any) => {
+  logger: async (
+    { page }: { page: PlaywrightPage },
+    use: (logger: TestLogger) => Promise<void>,
+    testInfo: PlaywrightTestInfo
+  ) => {
     const logger = new E2ETestLogger(testInfo.title, {
       enabled: true,
       logToFile: false,
     })
 
     // Attach page event listeners for automatic logging
-    page.on('console', (msg: any) => {
+    page.on('console', (msg: ConsoleMessage) => {
       const type = msg.type()
       if (type === 'error') {
         logger.error('CONSOLE', msg.text(), { location: msg.location() })
@@ -159,7 +185,7 @@ export const loggerFixtures = {
       }
     })
 
-    page.on('pageerror', (error: any) => {
+    page.on('pageerror', (error: Error) => {
       logger.error('PAGE_ERROR', error.message, { stack: error.stack })
     })
 

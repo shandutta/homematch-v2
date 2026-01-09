@@ -116,7 +116,8 @@ export class RelaxedPropertyTransformer {
       }
 
       // Relaxed property type validation (map legacy values to canonical set)
-      const validPropertyTypes = [
+      type PropertyTypeValue = NonNullable<PropertyInsert['property_type']>
+      const validPropertyTypes: PropertyTypeValue[] = [
         'single_family',
         'condo',
         'townhome',
@@ -125,6 +126,7 @@ export class RelaxedPropertyTransformer {
         'land',
         'other',
       ]
+      const validPropertyTypeSet = new Set<string>(validPropertyTypes)
       const legacyTypeMap: Record<string, string> = {
         house: 'single_family',
         singlefamily: 'single_family',
@@ -137,11 +139,15 @@ export class RelaxedPropertyTransformer {
         lot: 'land',
       }
 
-      let propertyType =
-        legacyTypeMap[raw.property_type?.toLowerCase() || ''] ||
-        raw.property_type?.toLowerCase()
+      const normalizedType = raw.property_type?.toLowerCase() || ''
+      const mappedType = legacyTypeMap[normalizedType] || normalizedType
+      const isPropertyTypeValue = (value: string): value is PropertyTypeValue =>
+        validPropertyTypeSet.has(value)
 
-      if (!propertyType || !validPropertyTypes.includes(propertyType)) {
+      let propertyType: PropertyTypeValue
+      if (isPropertyTypeValue(mappedType)) {
+        propertyType = mappedType
+      } else {
         propertyType = 'other' // Default to other for unexpected values
         if (raw.property_type) {
           warnings.push(
@@ -161,10 +167,10 @@ export class RelaxedPropertyTransformer {
         bedrooms: bedrooms.value || this.DEFAULT_BEDROOMS,
         bathrooms: bathrooms.value || this.DEFAULT_BATHROOMS,
         square_feet: squareFeet.value,
-        property_type: propertyType as PropertyInsert['property_type'],
+        property_type: propertyType,
         images: images.length > 0 ? images : null,
         description: null,
-        coordinates: coordinates as string | null,
+        coordinates,
         neighborhood_id: null, // Set to null to avoid foreign key issues
         amenities: null,
         year_built: yearBuilt.value,

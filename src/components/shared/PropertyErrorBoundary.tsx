@@ -4,7 +4,7 @@ import React, { Component, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, RefreshCw, RotateCcw } from 'lucide-react'
-import type { WindowWithAnalytics, SentryScope } from '@/types/analytics'
+import type { SentryScope } from '@/types/analytics'
 
 interface Props {
   children: ReactNode
@@ -32,9 +32,8 @@ export class PropertyErrorBoundary extends Component<Props, State> {
     console.error('Property error boundary caught:', error, errorInfo)
 
     // Report to analytics if available
-    const analyticsWindow = window as unknown as WindowWithAnalytics
-    if (typeof window !== 'undefined' && analyticsWindow.gtag) {
-      analyticsWindow.gtag('event', 'exception', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'exception', {
         event_category: 'property_error',
         event_label: this.props.propertyId || 'unknown',
         custom_parameters: {
@@ -47,14 +46,14 @@ export class PropertyErrorBoundary extends Component<Props, State> {
     }
 
     // Report to Sentry if available
-    if (typeof window !== 'undefined' && analyticsWindow.Sentry) {
-      analyticsWindow.Sentry.withScope((scope: SentryScope) => {
+    if (typeof window !== 'undefined' && window.Sentry) {
+      window.Sentry.withScope((scope: SentryScope) => {
         scope.setTag('error_boundary', 'property')
         scope.setContext('property', {
           propertyId: this.props.propertyId,
           retryCount: this.state.retryCount,
         })
-        analyticsWindow.Sentry!.captureException(error)
+        window.Sentry!.captureException(error)
       })
     }
   }

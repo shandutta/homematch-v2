@@ -4,7 +4,6 @@ import { Component, ErrorInfo, ReactNode } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { WindowWithAnalytics } from '@/types/analytics'
 
 interface Props {
   children: ReactNode
@@ -30,9 +29,8 @@ export class DashboardErrorBoundary extends Component<Props, State> {
     console.error('Dashboard error:', error, errorInfo)
 
     // Log to analytics service
-    const windowWithAnalytics = window as WindowWithAnalytics
-    if (typeof window !== 'undefined' && windowWithAnalytics.gtag) {
-      windowWithAnalytics.gtag('event', 'exception', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'exception', {
         event_category: 'dashboard_error',
         custom_parameters: {
           description: error.message,

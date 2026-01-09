@@ -199,9 +199,14 @@ export function mapSupabaseError(
   operation: string,
   context?: Record<string, unknown>
 ): ServiceError {
-  const errorCode = (error as { code?: string })?.code
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+  const errorCode =
+    isRecord(error) && typeof error.code === 'string' ? error.code : undefined
   const errorMessage =
-    (error as { message?: string })?.message || 'Unknown database error'
+    isRecord(error) && typeof error.message === 'string'
+      ? error.message
+      : 'Unknown database error'
 
   switch (errorCode) {
     case 'PGRST116':
@@ -269,11 +274,16 @@ export function logErrorLegacy(operation: string, error: unknown): void {
  * Handles errors in backward-compatible way
  * Returns null for single items, empty array for collections
  */
-export function handleErrorLegacy<T>(
+type HandleErrorLegacy = {
+  <T>(operation: string, error: unknown, returnType: 'array'): T[]
+  <T>(operation: string, error: unknown, returnType?: 'single'): T | null
+}
+
+export const handleErrorLegacy: HandleErrorLegacy = <T>(
   operation: string,
   error: unknown,
   returnType: 'single' | 'array' = 'single'
-): T | null | T[] {
+): T | null | T[] => {
   const config = getErrorHandlingConfig()
 
   // Log error for backward compatibility
@@ -281,7 +291,8 @@ export function handleErrorLegacy<T>(
 
   // If new error handling is disabled, use legacy behavior
   if (!config.enabled) {
-    return returnType === 'array' ? ([] as T[]) : null
+    const emptyArray: T[] = []
+    return returnType === 'array' ? emptyArray : null
   }
 
   // Map to standardized error
@@ -294,5 +305,6 @@ export function handleErrorLegacy<T>(
   }
 
   // Otherwise return appropriate default value
-  return returnType === 'array' ? ([] as T[]) : null
+  const emptyArray: T[] = []
+  return returnType === 'array' ? emptyArray : null
 }

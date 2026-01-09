@@ -12,14 +12,14 @@ import { optimizedDbHelper } from './optimized-db-helper'
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS'
   headers?: Record<string, string>
-  body?: any
+  body?: unknown
   authenticated?: boolean
 }
 
 interface E2EResponse {
   status: number
   headers: Headers
-  json: () => Promise<any>
+  json: () => Promise<unknown>
   text: () => Promise<string>
   ok: boolean
 }
@@ -150,7 +150,7 @@ export class E2EHttpClient {
 
   async post(
     url: string,
-    body?: any,
+    body?: unknown,
     authenticated = true
   ): Promise<E2EResponse> {
     return this.request(url, { method: 'POST', body, authenticated })
@@ -158,7 +158,7 @@ export class E2EHttpClient {
 
   async put(
     url: string,
-    body?: any,
+    body?: unknown,
     authenticated = true
   ): Promise<E2EResponse> {
     return this.request(url, { method: 'PUT', body, authenticated })
@@ -170,7 +170,7 @@ export class E2EHttpClient {
 
   async patch(
     url: string,
-    body?: any,
+    body?: unknown,
     authenticated = true
   ): Promise<E2EResponse> {
     return this.request(url, { method: 'PATCH', body, authenticated })

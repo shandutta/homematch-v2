@@ -196,9 +196,14 @@ export class VibesService {
 
     const notable = repaired.notableFeatures
     if (Array.isArray(notable)) {
+      const notableKeys: Array<'feature' | 'location' | 'appealFactor'> = [
+        'feature',
+        'location',
+        'appealFactor',
+      ]
       for (const n of notable) {
         if (!VibesService.isRecord(n)) continue
-        for (const key of ['feature', 'location', 'appealFactor'] as const) {
+        for (const key of notableKeys) {
           const value = n[key]
           if (typeof value === 'string') textParts.push(value)
         }

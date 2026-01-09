@@ -83,6 +83,14 @@ type CityDebugInfo = {
   cityOverlapArea: number
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const hasSetMap = (
+  value: unknown
+): value is { setMap: (map: GoogleMapInstance | null) => void } =>
+  isRecord(value) && typeof value.setMap === 'function'
+
 const DEFAULT_CENTER = { lat: 37.7749, lng: -122.4194 }
 
 const NEIGHBORHOOD_STYLE = {
@@ -178,10 +186,10 @@ export function LocationMapSelector({
   const [drawMode, setDrawMode] = useState<DrawMode>(null)
   const updateDebugState = useCallback((next: Record<string, unknown>) => {
     if (!isMapDebug) return
-    const typedWindow = window as typeof window & {
+    const debugWindow = window as Window & {
       __hmMapDebug?: Record<string, unknown>
     }
-    typedWindow.__hmMapDebug = { ...(typedWindow.__hmMapDebug || {}), ...next }
+    debugWindow.__hmMapDebug = { ...(debugWindow.__hmMapDebug || {}), ...next }
   }, [])
 
   const selectedNeighborhoodSet = useMemo(
@@ -648,8 +656,10 @@ export function LocationMapSelector({
           handleDrawSelection(ring)
         }
 
-        const overlayEvent = event as DrawingOverlayEvent
-        overlayEvent.overlay?.setMap?.(null)
+        const overlay = isRecord(event) ? event.overlay : undefined
+        if (hasSetMap(overlay)) {
+          overlay.setMap(null)
+        }
 
         manager.setDrawingMode(null)
         setDrawMode(null)
@@ -848,14 +858,10 @@ export function LocationMapSelector({
         handleDrawSelection(ring)
       },
     }
-    ;(
-      window as typeof window & { __homematchMapTestHooks?: typeof hooks }
-    ).__homematchMapTestHooks = hooks
+    window.__homematchMapTestHooks = hooks
 
     return () => {
-      delete (
-        window as typeof window & { __homematchMapTestHooks?: typeof hooks }
-      ).__homematchMapTestHooks
+      delete window.__homematchMapTestHooks
     }
   }, [
     cityShapes,
@@ -980,40 +986,25 @@ type LatLngLike = {
   lng: number | (() => number)
 }
 
-type BoundsLike = {
-  getNorthEast?: () => LatLngLike
-  getSouthWest?: () => LatLngLike
-}
-
-type PathLike = {
-  getArray?: () => LatLngLike[]
-}
-
-type DrawingOverlayEvent = {
-  type?: string
-  overlay?: {
-    getBounds?: () => BoundsLike
-    getPath?: () => PathLike | LatLngLike[]
-    setMap?: (map: GoogleMapInstance | null) => void
-  }
-}
-
 const isLatLngLike = (value: unknown): value is LatLngLike => {
-  if (!value || typeof value !== 'object') return false
-  const candidate = value as { lat?: unknown; lng?: unknown }
-  const latOk =
-    typeof candidate.lat === 'number' || typeof candidate.lat === 'function'
-  const lngOk =
-    typeof candidate.lng === 'number' || typeof candidate.lng === 'function'
+  if (!isRecord(value)) return false
+  const lat = value.lat
+  const lng = value.lng
+  const latOk = typeof lat === 'number' || typeof lat === 'function'
+  const lngOk = typeof lng === 'number' || typeof lng === 'function'
   return latOk && lngOk
 }
 
 function extractDrawnRing(event: unknown): LatLng[] {
-  if (!event || typeof event !== 'object') return []
-  const overlayEvent = event as DrawingOverlayEvent
+  if (!isRecord(event)) return []
+  const type = event.type
+  const overlay = isRecord(event.overlay) ? event.overlay : undefined
 
-  if (overlayEvent.type === 'rectangle' || overlayEvent.type === 'RECTANGLE') {
-    const bounds = overlayEvent.overlay?.getBounds?.()
+  if (type === 'rectangle' || type === 'RECTANGLE') {
+    const bounds =
+      overlay && typeof overlay.getBounds === 'function'
+        ? overlay.getBounds()
+        : undefined
     const northEast = bounds?.getNorthEast?.()
     const southWest = bounds?.getSouthWest?.()
     if (!northEast || !southWest) return []
@@ -1038,8 +1029,15 @@ function extractDrawnRing(event: unknown): LatLng[] {
     ]
   }
 
-  const path = overlayEvent.overlay?.getPath?.()
-  const points = Array.isArray(path) ? path : path?.getArray?.() || []
+  const path =
+    overlay && typeof overlay.getPath === 'function'
+      ? overlay.getPath()
+      : undefined
+  const points = Array.isArray(path)
+    ? path
+    : isRecord(path) && typeof path.getArray === 'function'
+      ? path.getArray()
+      : []
 
   if (!Array.isArray(points)) return []
 

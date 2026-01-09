@@ -1,7 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import type { CSSProperties } from 'react'
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
 import {
@@ -62,17 +68,17 @@ function SpotlightCard({
     mouseY.set(e.clientY - rect.top)
   }
 
+  const styleVars: CSSProperties & Record<string, MotionValue<number>> = {
+    '--mouse-x': mouseX,
+    '--mouse-y': mouseY,
+  }
+
   return (
     <div
       ref={cardRef}
       className={className}
       onMouseMove={handleMouseMove}
-      style={
-        {
-          '--mouse-x': mouseX,
-          '--mouse-y': mouseY,
-        } as React.CSSProperties
-      }
+      style={styleVars}
     >
       {/* Spotlight overlay */}
       <motion.div

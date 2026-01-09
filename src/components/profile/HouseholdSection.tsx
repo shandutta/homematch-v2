@@ -501,9 +501,16 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               ) : (
                 <div className="space-y-3">
                   {invites.map((invite) => {
-                    const status =
-                      (invite.status as InviteStatus) ??
-                      ('pending' as InviteStatus)
+                    const isInviteStatus = (
+                      value: unknown
+                    ): value is InviteStatus =>
+                      value === 'pending' ||
+                      value === 'accepted' ||
+                      value === 'revoked' ||
+                      value === 'expired'
+                    const status = isInviteStatus(invite.status)
+                      ? invite.status
+                      : 'pending'
                     const styles =
                       inviteStatusStyles[status] || inviteStatusStyles.pending
                     return (

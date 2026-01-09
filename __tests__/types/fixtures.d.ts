@@ -18,19 +18,19 @@ export interface TestUser {
 
 // Logger interface
 export interface TestLogger {
-  step: (description: string, data?: any) => void
-  info: (category: string, message: string, data?: any) => void
-  warn: (category: string, message: string, data?: any) => void
-  error: (category: string, message: string, data?: any) => void
+  step: (description: string, data?: unknown) => void
+  info: (category: string, message: string, data?: unknown) => void
+  warn: (category: string, message: string, data?: unknown) => void
+  error: (category: string, message: string, data?: unknown) => void
   navigation: (
     url: string,
     status: 'start' | 'complete' | 'error',
-    data?: any
+    data?: unknown
   ) => void
   auth: (
     action: string,
     status: 'start' | 'success' | 'failure',
-    data?: any
+    data?: unknown
   ) => void
   getSummary: () => string
   saveToFile: (filePath?: string) => void
@@ -50,6 +50,16 @@ export interface UtilsFixture {
     expectedUrl: string | RegExp,
     options?: { timeout?: number; errorMessage?: string }
   ) => Promise<void>
+  waitForDashboard: (options?: { timeout?: number }) => Promise<void>
+  simulateSlowNetwork: (delayMs?: number) => Promise<void>
+  simulateApiError: (
+    endpoint: string,
+    errorCode?: number,
+    errorMessage?: string
+  ) => Promise<void>
+  simulateDatabaseError: () => Promise<void>
+  clearNetworkInterception: () => Promise<void>
+  waitForLoadingState: (options?: { timeout?: number }) => Promise<void>
 }
 
 // Auth fixture interface

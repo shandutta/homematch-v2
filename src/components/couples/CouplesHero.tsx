@@ -13,7 +13,7 @@ interface CouplesHeroProps {
 }
 
 export function CouplesHero({ stats, loading }: CouplesHeroProps) {
-  const floatingHeartXPositions = ['12%', '34%', '58%', '82%'] as const
+  const floatingHeartXPositions: string[] = ['12%', '34%', '58%', '82%']
 
   if (loading) {
     return (

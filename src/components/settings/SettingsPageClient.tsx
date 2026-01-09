@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { UserProfile, UserPreferences } from '@/types/database'
+import { UserProfile } from '@/types/database'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PreferencesSection } from './PreferencesSection'
 import { NotificationsSection } from './NotificationsSection'
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import {
   DEFAULT_PRICE_RANGE,
@@ -39,7 +39,41 @@ type SaveState = {
   lastSavedAt?: Date | null
 }
 
-const containerVariants = {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+const isNumber = (value: unknown): value is number => typeof value === 'number'
+const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean'
+const parseNumber = (value: unknown): number | undefined =>
+  isNumber(value) ? value : undefined
+const parsePriceRange = (value: unknown): [number, number] | undefined => {
+  if (Array.isArray(value) && value.length === 2) {
+    const [min, max] = value
+    if (isNumber(min) && isNumber(max)) return [min, max]
+  }
+  if (isRecord(value)) {
+    const min = value.min
+    const max = value.max
+    if (isNumber(min) && isNumber(max)) return [min, max]
+  }
+  return undefined
+}
+const parseBooleanRecord = (
+  value: unknown
+): Record<string, boolean> | undefined => {
+  if (!isRecord(value)) return undefined
+  const record: Record<string, boolean> = {}
+  let hasValue = false
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (isBoolean(entryValue)) {
+      record[key] = entryValue
+      hasValue = true
+    }
+  }
+  return hasValue ? record : undefined
+}
+
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -48,15 +82,15 @@ const containerVariants = {
       delayChildren: 0.1,
     },
   },
-} as const
+}
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring' as const,
+      type: 'spring',
       stiffness: 300,
       damping: 30,
     },
@@ -93,49 +127,68 @@ export function SettingsPageClient({
       description: 'Security & sessions',
       icon: UserIcon,
     },
-  ] as const
+  ] satisfies ReadonlyArray<{
+    value: 'preferences' | 'notifications' | 'saved-searches' | 'account'
+    label: string
+    description: string
+    icon: typeof Settings
+  }>
   type TabValue = (typeof tabOptions)[number]['value']
 
-  const isValidInitialTab = tabOptions.some((tab) => tab.value === initialTab)
-  const defaultTab: TabValue = isValidInitialTab
-    ? (initialTab as TabValue)
-    : 'preferences'
+  const isTabValue = (value: string): value is TabValue =>
+    tabOptions.some((tab) => tab.value === value)
+  const defaultTab: TabValue =
+    initialTab && isTabValue(initialTab) ? initialTab : 'preferences'
 
   const [activeTab, setActiveTab] = useState<TabValue>(defaultTab)
   const [profileState, setProfileState] = useState(profile)
   const handleTabChange = (value: string) => {
-    setActiveTab(value as TabValue)
-  }
-  type PreferencesSnapshot = UserPreferences & {
-    priceRange?: [number, number]
-    bedrooms?: number
-    bathrooms?: number
-    propertyTypes?: Record<string, boolean>
-    mustHaves?: Record<string, boolean>
-    searchRadius?: number
-    allCities?: boolean
-    notifications?: {
-      email?: Record<string, boolean>
-      push?: Record<string, boolean>
-      sms?: Record<string, boolean>
+    if (isTabValue(value)) {
+      setActiveTab(value)
     }
   }
-
-  const preferences = useMemo(
-    () => (profileState.preferences || {}) as PreferencesSnapshot,
-    [profileState.preferences]
-  )
+  const preferences = useMemo(() => {
+    const prefs = isRecord(profileState.preferences)
+      ? profileState.preferences
+      : {}
+    const notifications = isRecord(prefs.notifications)
+      ? {
+          email: parseBooleanRecord(prefs.notifications.email),
+          push: parseBooleanRecord(prefs.notifications.push),
+          sms: parseBooleanRecord(prefs.notifications.sms),
+        }
+      : undefined
+    return {
+      priceRange: parsePriceRange(prefs.priceRange),
+      searchRadius: parseNumber(prefs.searchRadius),
+      notifications,
+    }
+  }, [profileState.preferences])
   const priceRange = preferences.priceRange || DEFAULT_PRICE_RANGE
   const searchRadius = preferences.searchRadius || DEFAULT_SEARCH_RADIUS
   const enabledAlerts = useMemo(() => {
-    const notificationChannels = preferences.notifications || {}
+    const notificationChannels = (preferences.notifications ?? {}) as Record<
+      string,
+      Record<string, boolean> | undefined
+    >
     return Object.values(notificationChannels).reduce((count, channel) => {
-      const channelToggles = Object.values(channel || {}).filter(Boolean)
+      const channelToggles = isRecord(channel)
+        ? Object.values(channel).filter(Boolean)
+        : []
       return count + channelToggles.length
     }, 0)
   }, [preferences.notifications])
 
-  const overviewCards = [
+  type OverviewCard = {
+    label: string
+    value: string
+    icon: typeof Settings
+    gradient: string
+    iconColor: string
+    tab: TabValue
+    sectionId: string
+  }
+  const overviewCards: OverviewCard[] = [
     {
       label: 'Budget focus',
       value: `$${priceRange[0].toLocaleString()} – $${priceRange[1].toLocaleString()}`,
@@ -316,9 +369,7 @@ export function SettingsPageClient({
                   className={`group relative overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-br ${card.gradient} p-3 text-left backdrop-blur-sm transition-all hover:border-white/10 sm:rounded-2xl sm:p-4`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                   type="button"
-                  onClick={() =>
-                    handleOverviewClick(card.tab as TabValue, card.sectionId)
-                  }
+                  onClick={() => handleOverviewClick(card.tab, card.sectionId)}
                   aria-label={`Open ${card.label} settings`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />

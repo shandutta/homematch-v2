@@ -6,16 +6,16 @@ import { HeroMotionEnhancer } from './HeroMotionEnhancer'
 import { MarketingPreviewCardStatic } from './MarketingPreviewCardStatic'
 
 export function HeroSection() {
+  const heroStyle: CSSProperties & Record<string, string> = {
+    '--spotlight-x': '50%',
+    '--spotlight-y': '35%',
+  }
+
   return (
     <section
       data-hero
       className="relative isolate min-h-[680px] overflow-hidden bg-[#030712] text-white sm:min-h-[720px]"
-      style={
-        {
-          '--spotlight-x': '50%',
-          '--spotlight-y': '35%',
-        } as CSSProperties
-      }
+      style={heroStyle}
       data-testid="hero"
     >
       <div className="pointer-events-none absolute inset-0">

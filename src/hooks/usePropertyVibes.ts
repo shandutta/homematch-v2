@@ -5,9 +5,14 @@ import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 import { QUERY_STALE_TIMES } from '@/lib/query/config'
 
 // Query keys for property vibes
+const vibesAllKey: readonly ['property-vibes'] = ['property-vibes']
+const buildPropertyVibesKey = (
+  propertyId: string
+): readonly ['property-vibes', string] => [vibesAllKey[0], propertyId]
+
 export const vibesKeys = {
-  all: ['property-vibes'] as const,
-  property: (propertyId: string) => [...vibesKeys.all, propertyId] as const,
+  all: vibesAllKey,
+  property: buildPropertyVibesKey,
 }
 
 // API response type matching /api/properties/vibes endpoint

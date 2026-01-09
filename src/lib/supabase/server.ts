@@ -1,11 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from './auth-helpers'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 
-const clearStaleSession = async (supabase: SupabaseClient) => {
+const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
   try {
     await supabase.auth.signOut({ scope: 'local' })
   } catch (err) {
@@ -14,16 +15,27 @@ const clearStaleSession = async (supabase: SupabaseClient) => {
 }
 
 const withRefreshRecovery = (
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<AppDatabase>,
   context: 'server' | 'api' = 'server'
 ) => {
-  const describe = (error: unknown) => ({
-    code: (error as AuthApiError | undefined)?.code,
-    message: (error as AuthApiError | undefined)?.message,
-  })
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+  const describe = (error: unknown): { code?: string; message?: string } => {
+    if (error instanceof AuthApiError) {
+      return { code: error.code, message: error.message }
+    }
+    if (isRecord(error)) {
+      return {
+        code: typeof error.code === 'string' ? error.code : undefined,
+        message: typeof error.message === 'string' ? error.message : undefined,
+      }
+    }
+    return {}
+  }
 
   const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
-  supabase.auth.getSession = (async () => {
+  const getSessionWithRecovery: typeof supabase.auth.getSession = async () => {
     try {
       const result = await originalGetSession()
       if (result.error && isInvalidRefreshTokenError(result.error)) {
@@ -46,10 +58,11 @@ const withRefreshRecovery = (
       }
       throw error
     }
-  }) as typeof supabase.auth.getSession
+  }
+  supabase.auth.getSession = getSessionWithRecovery
 
   const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  supabase.auth.getUser = (async () => {
+  const getUserWithRecovery: typeof supabase.auth.getUser = async () => {
     try {
       const result = await originalGetUser()
       if (result.error && isInvalidRefreshTokenError(result.error)) {
@@ -58,7 +71,7 @@ const withRefreshRecovery = (
           describe(result.error)
         )
         await clearStaleSession(supabase)
-        return { data: { user: null }, error: null }
+        return originalGetUser()
       }
       return result
     } catch (error) {
@@ -68,11 +81,12 @@ const withRefreshRecovery = (
           describe(error)
         )
         await clearStaleSession(supabase)
-        return { data: { user: null }, error: null }
+        return originalGetUser()
       }
       throw error
     }
-  }) as typeof supabase.auth.getUser
+  }
+  supabase.auth.getUser = getUserWithRecovery
 }
 
 export const __withRefreshRecovery = withRefreshRecovery
@@ -91,7 +105,7 @@ export async function createClient() {
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -168,7 +182,7 @@ export function createApiClient(request?: NextRequest) {
   const bearerToken = authHeader?.replace('Bearer ', '')
   const cookieName = getSupabaseAuthStorageKey(hostname)
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -209,12 +223,15 @@ export function createApiClient(request?: NextRequest) {
   // Monkey-patch getUser to automatically use the bearer token if available and no token is provided
   // This ensures that client.auth.getUser() works as expected in API routes even without session persistence
   const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  supabase.auth.getUser = (async (token?: string) => {
+  const getUserWithBearer: typeof supabase.auth.getUser = async (
+    token?: string
+  ) => {
     if (!token && bearerToken) {
       return originalGetUser(bearerToken)
     }
     return originalGetUser(token)
-  }) as typeof supabase.auth.getUser
+  }
+  supabase.auth.getUser = getUserWithBearer
 
   return supabase
 }
@@ -231,7 +248,7 @@ export async function createServiceClient() {
     throw new Error('Unauthorized access to service role client')
   }
 
-  return createServerClient(
+  return createServerClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
@@ -265,13 +282,20 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
     // This is a placeholder - implement your actual admin check logic
     const { data: profile } = await client
       .from('user_profiles')
-      .select('role')
+      .select('*')
       .eq('id', user.id)
       .single()
 
     // Only allow service role for admin users
     // Adjust this based on your authorization model
-    return profile?.role === 'admin'
+    const role =
+      profile &&
+      typeof profile === 'object' &&
+      'role' in profile &&
+      typeof profile.role === 'string'
+        ? profile.role
+        : undefined
+    return role === 'admin'
   } catch {
     return false
   }

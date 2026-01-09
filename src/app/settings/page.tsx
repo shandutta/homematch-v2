@@ -26,8 +26,15 @@ export default async function SettingsPage({
   // Create profile if it doesn't exist (OAuth users)
   let profile = userProfile
   if (!profile) {
-    const email =
-      user.email || (user.user_metadata as Record<string, string>)?.email || ''
+    const metadata = user.user_metadata
+    const emailFromMetadata =
+      metadata &&
+      typeof metadata === 'object' &&
+      'email' in metadata &&
+      typeof metadata.email === 'string'
+        ? metadata.email
+        : ''
+    const email = user.email || emailFromMetadata || ''
     profile = await userService.createUserProfile({
       id: user.id,
       email,

@@ -3,10 +3,11 @@
  * Creates real database records for testing without mocks
  */
 import { createClient } from '@/lib/supabase/standalone'
-import { Database } from '@/types/database'
+import type { Database } from '@/types/database'
 import { faker } from '@faker-js/faker'
 
 type SupabaseClient = ReturnType<typeof createClient>
+type TableName = keyof Database['public']['Tables']
 
 export class TestDataFactory {
   private client: SupabaseClient
@@ -72,10 +73,11 @@ export class TestDataFactory {
       }
 
       return profile
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If direct profile lookup fails, provide helpful error message
+      const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `Failed to get test user ${email}: ${error.message}. Make sure test setup (pnpm run test:integration) has created user profiles.`
+        `Failed to get test user ${email}: ${message}. Make sure test setup (pnpm run test:integration) has created user profiles.`
       )
     }
   }
@@ -447,7 +449,7 @@ export class TestDataFactory {
    */
   async cleanup() {
     // Delete in reverse order to handle foreign key constraints
-    const tables = [
+    const tables: TableName[] = [
       'user_property_interactions',
       'properties',
       'households',
@@ -460,10 +462,7 @@ export class TestDataFactory {
         .map((r) => r.id)
 
       if (recordsToDelete.length > 0) {
-        await (this.client as any)
-          .from(table)
-          .delete()
-          .in('id', recordsToDelete)
+        await this.client.from(table).delete().in('id', recordsToDelete)
       }
     }
 
@@ -478,17 +477,18 @@ export class TestDataFactory {
     const user = await this.getTestUser('test1@example.com')
 
     // Update preferences if needed
+    const preferences: Database['public']['Tables']['user_profiles']['Update']['preferences'] =
+      {
+        min_price: 300000,
+        max_price: 600000,
+        min_bedrooms: 2,
+        max_bedrooms: 4,
+        preferred_cities: ['Seattle', 'Bellevue'],
+      }
+
     await this.client
       .from('user_profiles')
-      .update({
-        preferences: {
-          min_price: 300000,
-          max_price: 600000,
-          min_bedrooms: 2,
-          max_bedrooms: 4,
-          preferred_cities: ['Seattle', 'Bellevue'],
-        } as any,
-      })
+      .update({ preferences })
       .eq('id', user.id)
 
     // Create properties with varying match scores

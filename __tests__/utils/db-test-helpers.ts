@@ -4,8 +4,10 @@
  */
 import { createClient } from '@/lib/supabase/standalone'
 import { TestDataFactory } from './test-data-factory'
+import type { Database } from '@/types/database'
 
 type SupabaseClient = ReturnType<typeof createClient>
+type TableName = keyof Database['public']['Tables']
 
 /**
  * Run a test within a database transaction that automatically rolls back
@@ -35,7 +37,7 @@ export async function resetTestDatabase() {
   const client = createClient()
 
   // Clear test data in order (respecting foreign keys)
-  const tables = [
+  const tables: TableName[] = [
     'user_property_interactions',
     'saved_searches',
     'properties',
@@ -143,12 +145,16 @@ export class TestDatabaseQueries {
     radiusMiles: number = 10
   ) {
     // Using PostGIS functions via RPC
-    const { data, error } = await (this.client as any).rpc(
+    const { data, error } = await this.client.rpc(
       'get_properties_within_radius',
       {
         center_lat: lat,
         center_lng: lng,
         radius_miles: radiusMiles,
+      } as unknown as {
+        center_lat: number
+        center_lng: number
+        radius_km: number
       }
     )
 
@@ -226,8 +232,11 @@ export class TestDatabaseAssertions {
   /**
    * Assert that a record exists in the database
    */
-  async assertExists(table: string, conditions: Record<string, any>) {
-    let query = (this.client as any).from(table).select('id')
+  async assertExists(
+    table: TableName,
+    conditions: Record<string, string | number | boolean>
+  ) {
+    let query = this.client.from(table).select('id')
 
     Object.entries(conditions).forEach(([key, value]) => {
       query = query.eq(key, value)
@@ -247,8 +256,11 @@ export class TestDatabaseAssertions {
   /**
    * Assert that a record does not exist
    */
-  async assertNotExists(table: string, conditions: Record<string, any>) {
-    let query = (this.client as any).from(table).select('id')
+  async assertNotExists(
+    table: TableName,
+    conditions: Record<string, string | number | boolean>
+  ) {
+    let query = this.client.from(table).select('id')
 
     Object.entries(conditions).forEach(([key, value]) => {
       query = query.eq(key, value)
@@ -269,13 +281,11 @@ export class TestDatabaseAssertions {
    * Assert record count matches expected
    */
   async assertCount(
-    table: string,
+    table: TableName,
     expectedCount: number,
-    conditions?: Record<string, any>
+    conditions?: Record<string, string | number | boolean>
   ) {
-    let query = (this.client as any)
-      .from(table)
-      .select('id', { count: 'exact' })
+    let query = this.client.from(table).select('id', { count: 'exact' })
 
     if (conditions) {
       Object.entries(conditions).forEach(([key, value]) => {

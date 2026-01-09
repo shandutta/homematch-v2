@@ -4,7 +4,6 @@
  */
 
 import { onCLS, onFCP, onFID, onLCP, onTTFB, type Metric } from 'web-vitals'
-import { WindowWithAnalytics } from '@/types/analytics'
 import { getCookieConsent } from '@/lib/cookies/consent'
 
 export interface PerformanceMetric {
@@ -32,6 +31,46 @@ export const THRESHOLDS: PerformanceThresholds = {
   CLS: { good: 0.1, poor: 0.25 },
   FCP: { good: 1800, poor: 3000 },
   TTFB: { good: 800, poor: 1800 },
+}
+
+type LayoutShiftEntry = PerformanceEntry & {
+  value: number
+  hadRecentInput: boolean
+}
+
+const isNavigationTiming = (
+  entry: PerformanceEntry
+): entry is PerformanceNavigationTiming =>
+  entry.entryType === 'navigation' &&
+  'domContentLoadedEventEnd' in entry &&
+  'domContentLoadedEventStart' in entry &&
+  'loadEventEnd' in entry &&
+  'loadEventStart' in entry &&
+  'domainLookupEnd' in entry &&
+  'domainLookupStart' in entry &&
+  'connectEnd' in entry &&
+  'connectStart' in entry
+
+const isResourceTiming = (
+  entry: PerformanceEntry
+): entry is PerformanceResourceTiming =>
+  entry.entryType === 'resource' && 'transferSize' in entry
+
+const toLayoutShiftEntry = (
+  entry: PerformanceEntry
+): LayoutShiftEntry | null => {
+  if (entry.entryType !== 'layout-shift') return null
+  const valueDescriptor = Object.getOwnPropertyDescriptor(entry, 'value')
+  const hadRecentInputDescriptor = Object.getOwnPropertyDescriptor(
+    entry,
+    'hadRecentInput'
+  )
+  const value: unknown = valueDescriptor?.value
+  const hadRecentInput: unknown = hadRecentInputDescriptor?.value
+  if (typeof value !== 'number' || typeof hadRecentInput !== 'boolean') {
+    return null
+  }
+  return { ...entry, value, hadRecentInput }
 }
 
 class PerformanceTracker {
@@ -206,9 +245,9 @@ class PerformanceTracker {
       document.readyState === 'interactive'
     ) {
       // Use Navigation Timing API instead of deprecated performance.timing
-      const navEntries = performance.getEntriesByType(
-        'navigation'
-      ) as PerformanceNavigationTiming[]
+      const navEntries = performance
+        .getEntriesByType('navigation')
+        .filter(isNavigationTiming)
       if (navEntries.length > 0) {
         const navTiming = navEntries[0]
         const dcl =
@@ -230,12 +269,9 @@ class PerformanceTracker {
 
   private measureHydration() {
     // Measure React hydration time
-    const windowWithAnalytics = window as WindowWithAnalytics
-    if (
-      typeof window !== 'undefined' &&
-      windowWithAnalytics.__REACT_HYDRATION_TIME__
-    ) {
-      const hydrationTime = windowWithAnalytics.__REACT_HYDRATION_TIME__
+    if (typeof window !== 'undefined') {
+      const hydrationTime = window.__REACT_HYDRATION_TIME__
+      if (typeof hydrationTime !== 'number') return
       this.recordMetric({
         name: 'Hydration',
         value: hydrationTime,
@@ -256,9 +292,9 @@ class PerformanceTracker {
 
     window.addEventListener('load', () => {
       // Use Navigation Timing API instead of deprecated performance.timing
-      const navEntries = performance.getEntriesByType(
-        'navigation'
-      ) as PerformanceNavigationTiming[]
+      const navEntries = performance
+        .getEntriesByType('navigation')
+        .filter(isNavigationTiming)
       if (navEntries.length === 0) return
 
       const timing = navEntries[0]
@@ -304,7 +340,7 @@ class PerformanceTracker {
 
   private observeResources() {
     const observer = new PerformanceObserver((list) => {
-      const entries = list.getEntries() as PerformanceResourceTiming[]
+      const entries = list.getEntries().filter(isResourceTiming)
 
       entries.forEach((entry) => {
         // Track slow resources
@@ -380,11 +416,8 @@ class PerformanceTracker {
       const entries = list.getEntries()
 
       entries.forEach((entry) => {
-        // Type assertion for layout shift entry
-        const layoutShiftEntry = entry as PerformanceEntry & {
-          value: number
-          hadRecentInput: boolean
-        }
+        const layoutShiftEntry = toLayoutShiftEntry(entry)
+        if (!layoutShiftEntry) return
 
         // Only count layout shifts without user input
         if (!layoutShiftEntry.hadRecentInput) {
@@ -414,12 +447,10 @@ class PerformanceTracker {
   }
 
   private getRating(
-    name: string,
+    name: keyof PerformanceThresholds,
     value: number
   ): 'good' | 'needs-improvement' | 'poor' {
-    const threshold = THRESHOLDS[name as keyof PerformanceThresholds]
-    if (!threshold) return 'good'
-
+    const threshold = THRESHOLDS[name]
     if (value <= threshold.good) return 'good'
     if (value <= threshold.poor) return 'needs-improvement'
     return 'poor'
@@ -477,10 +508,9 @@ class PerformanceTracker {
       }
 
       // Also send to PostHog if available
-      const windowWithAnalytics = window as WindowWithAnalytics
-      if (typeof window !== 'undefined' && windowWithAnalytics.posthog) {
+      if (typeof window !== 'undefined' && window.posthog) {
         metrics.forEach((metric) => {
-          windowWithAnalytics.posthog!.capture('performance_metric', {
+          window.posthog!.capture('performance_metric', {
             metric_name: metric.name,
             metric_value: metric.value,
             metric_rating: metric.rating,

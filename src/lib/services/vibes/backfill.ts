@@ -5,9 +5,9 @@ import {
   isZillowStaticImageUrl,
   type FetchZillowImagesOptions,
 } from '@/lib/ingestion/zillow-images'
-import type { Property } from '@/lib/schemas/property'
+import { propertySchema, type Property } from '@/lib/schemas/property'
 import { VibesService, type BatchGenerationResult } from '@/lib/services/vibes'
-import type { Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
 
 type Logger = {
   log: (...args: unknown[]) => void
@@ -51,7 +51,7 @@ export type BackfillVibesResult = {
 }
 
 export type BackfillVibesDeps = {
-  supabase: SupabaseClient<Database>
+  supabase: SupabaseClient<AppDatabase>
   vibesService: {
     generateVibesBatch: (
       properties: Property[],
@@ -156,7 +156,11 @@ export async function backfillVibes(
       throw new Error(`Failed to read properties: ${error.message}`)
     }
 
-    const properties = (data || []) as Property[]
+    const parsedProperties = propertySchema.array().safeParse(data ?? [])
+    if (!parsedProperties.success) {
+      throw new Error('Invalid property payload for vibes backfill')
+    }
+    const properties = parsedProperties.data
     if (properties.length === 0) break
     const pageIndexById = new Map(properties.map((p, idx) => [p.id, idx]))
 

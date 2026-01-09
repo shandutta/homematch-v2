@@ -12,6 +12,7 @@ import {
   createTypedRPC,
   type PropertyWithDistance,
   type GeographicDensityResult,
+  type AmenityResult,
   isRPCImplemented,
 } from '@/lib/services/supabase-rpc-types'
 import {
@@ -27,7 +28,6 @@ import {
   isValidLatLng,
   createCircularPolygon,
 } from '@/lib/utils/coordinates'
-import { PROPERTY_TYPE_VALUES, type PropertyType } from '@/lib/schemas/property'
 
 // Legacy interface for backward compatibility
 interface LegacyBoundingBox {
@@ -49,6 +49,67 @@ interface GeographicStats {
     price: number
     density_score: number
   }>
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+const isBoundingBox = (
+  value: BoundingBox | LegacyBoundingBox
+): value is BoundingBox =>
+  'north' in value && 'south' in value && 'east' in value && 'west' in value
+
+const isGeographicDensityResult = (
+  value: unknown
+): value is GeographicDensityResult =>
+  isRecord(value) &&
+  isFiniteNumber(value.total_properties) &&
+  isFiniteNumber(value.avg_price) &&
+  Array.isArray(value.price_density)
+
+const getDistanceValue = (value: unknown): number | null => {
+  if (isFiniteNumber(value)) {
+    return value
+  }
+
+  if (isRecord(value)) {
+    const candidate =
+      value.distance ?? value.calculate_distance ?? value.calculateDistance
+    if (isFiniteNumber(candidate)) {
+      return candidate
+    }
+    if (typeof candidate === 'string') {
+      const numericCandidate = Number(candidate)
+      if (Number.isFinite(numericCandidate)) {
+        return numericCandidate
+      }
+    }
+  }
+
+  return null
+}
+
+type CommuteDestination = {
+  destination_index: number
+  latitude: number
+  longitude: number
+  straight_line_distance_km: number
+  estimated_times_minutes: {
+    driving: number
+    transit: number
+    walking: number
+  }
+  warning: string
+}
+
+type CommuteAnalysisResult = {
+  property_id: string
+  property_coordinates: LatLng
+  destinations: CommuteDestination[]
+  note: string
 }
 
 export interface IGeographicService {
@@ -95,7 +156,7 @@ export interface IGeographicService {
     lng: number,
     amenityTypes: string[],
     radius?: number
-  ): Promise<Record<string, unknown>[]>
+  ): Promise<AmenityResult[]>
   getPropertiesByDistance(
     lat: number,
     lng: number,
@@ -124,45 +185,7 @@ export interface IGeographicService {
 function transformPropertyWithDistanceToProperty(
   item: PropertyWithDistance
 ): Property {
-  const currentTimestamp = new Date().toISOString()
-  const normalizedType = PROPERTY_TYPE_VALUES.includes(
-    item.property_type as PropertyType
-  )
-    ? (item.property_type as PropertyType)
-    : null
-
-  return {
-    // Fields present in PropertyWithDistance
-    id: item.id,
-    address: item.address,
-    city: item.city,
-    state: item.state,
-    price: item.price,
-    bedrooms: item.bedrooms,
-    bathrooms: item.bathrooms,
-    square_feet: item.square_feet,
-    property_type: normalizedType,
-    images: item.images,
-    neighborhood_id: item.neighborhood_id,
-
-    // Required Property fields with appropriate defaults
-    zip_code: '', // Will need to be populated from other sources
-    zpid: null,
-    description: null,
-    year_built: null,
-    lot_size_sqft: null,
-    parking_spots: null,
-    listing_status: null,
-    property_hash: null,
-    amenities: null,
-    is_active: true,
-    coordinates: null,
-    created_at: currentTimestamp,
-    updated_at: currentTimestamp,
-    zillow_images_refreshed_at: null,
-    zillow_images_refreshed_count: null,
-    zillow_images_refresh_status: null,
-  }
+  return item.property
 }
 
 /**
@@ -171,6 +194,10 @@ function transformPropertyWithDistanceToProperty(
 function normalizeBoundingBox(
   bounds: BoundingBox | LegacyBoundingBox
 ): BoundingBox {
+  if (isBoundingBox(bounds)) {
+    return bounds
+  }
+
   if ('northEast' in bounds && 'southWest' in bounds) {
     // Legacy format
     return {
@@ -180,8 +207,7 @@ function normalizeBoundingBox(
       west: bounds.southWest.lng,
     }
   }
-  // Already in standard format
-  return bounds as BoundingBox
+  throw new Error('Invalid bounds format')
 }
 
 /**
@@ -217,7 +243,7 @@ export class GeographicService
     return this.executeArrayQuery(
       'getPropertiesWithinRadius',
       async (supabase) => {
-        return callArrayRPC(
+        const properties = await callArrayRPC(
           supabase,
           'get_properties_within_radius',
           {
@@ -235,6 +261,7 @@ export class GeographicService
             },
           }
         )
+        return properties as unknown as Property[]
       }
     )
   }
@@ -251,7 +278,7 @@ export class GeographicService
     const normalizedBounds = normalizeBoundingBox(bounds)
 
     return this.executeArrayQuery('getPropertiesInBounds', async (supabase) => {
-      return callArrayRPC(
+      const properties = await callArrayRPC(
         supabase,
         'get_properties_in_bounds',
         {
@@ -270,6 +297,7 @@ export class GeographicService
           },
         }
       )
+      return properties as unknown as Property[]
     })
   }
 
@@ -318,7 +346,7 @@ export class GeographicService
           })
         }
 
-        return data || []
+        return (data ?? []) as unknown as Property[]
       }
     )
   }
@@ -334,69 +362,65 @@ export class GeographicService
   ): Promise<number> {
     this.validateRequired({ lat1, lng1, lat2, lng2 })
 
-    return this.executeQuery('calculateDistance', async (supabase) => {
-      const fallbackDistance = calculateHaversineDistance(
-        { lat: lat1, lng: lng1 },
-        { lat: lat2, lng: lng2 }
-      )
+    const fallbackDistance = calculateHaversineDistance(
+      { lat: lat1, lng: lng1 },
+      { lat: lat2, lng: lng2 }
+    )
 
-      try {
-        const distance = await callNumericRPC(
-          supabase,
-          'calculate_distance',
-          {
-            lat1,
-            lng1,
-            lat2,
-            lng2,
-          },
-          {
-            operation: 'calculateDistance',
-            errorContext: { lat1, lng1, lat2, lng2 },
-            fallbackValue: 0,
-            cache: {
-              enabled: true,
-              ttl: 10 * 60 * 1000, // 10 minutes for distance calculations
+    const result = await this.executeQuery(
+      'calculateDistance',
+      async (supabase) => {
+        try {
+          const distance = await callNumericRPC(
+            supabase,
+            'calculate_distance',
+            {
+              lat1,
+              lng1,
+              lat2,
+              lng2,
             },
-          }
-        )
-
-        if (typeof distance === 'number' && Number.isFinite(distance)) {
-          return distance
-        }
-
-        if (
-          distance &&
-          typeof distance === 'object' &&
-          'distance' in (distance as Record<string, unknown>)
-        ) {
-          const numericDistance = Number(
-            (distance as { distance?: unknown; calculate_distance?: unknown })
-              .distance ??
-              (distance as { calculate_distance?: unknown }).calculate_distance
+            {
+              operation: 'calculateDistance',
+              errorContext: { lat1, lng1, lat2, lng2 },
+              fallbackValue: 0,
+              cache: {
+                enabled: true,
+                ttl: 10 * 60 * 1000, // 10 minutes for distance calculations
+                validate: isFiniteNumber,
+              },
+            }
           )
 
-          if (!Number.isNaN(numericDistance)) {
+          const numericDistance = getDistanceValue(distance)
+          if (numericDistance !== null) {
             return numericDistance
           }
-        }
 
-        return fallbackDistance
-      } catch (error) {
-        const message = (error as { message?: string })?.message || ''
-        const networkIssue =
-          /fetch failed|Failed to fetch|AbortSignal|ECONNREFUSED|ENOTFOUND|network/i
-        const unknownFailure =
-          message.trim() === '' ||
-          /failed:\s*$|Unknown database error/i.test(message)
-
-        if (networkIssue.test(message) || unknownFailure) {
           return fallbackDistance
-        }
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : isRecord(error) && typeof error.message === 'string'
+                ? error.message
+                : ''
+          const networkIssue =
+            /fetch failed|Failed to fetch|AbortSignal|ECONNREFUSED|ENOTFOUND|network/i
+          const unknownFailure =
+            message.trim() === '' ||
+            /failed:\s*$|Unknown database error/i.test(message)
 
-        throw error
+          if (networkIssue.test(message) || unknownFailure) {
+            return fallbackDistance
+          }
+
+          throw error
+        }
       }
-    })
+    )
+
+    return result ?? fallbackDistance
   }
 
   /**
@@ -448,43 +472,51 @@ export class GeographicService
     this.validateRequired({ bounds, gridSize })
 
     const normalizedBounds = normalizeBoundingBox(bounds)
+    const fallbackStats: GeographicStats = {
+      total_properties: 0,
+      avg_price: 0,
+      price_density: [],
+    }
 
-    return this.executeQuery('getGeographicDensity', async (supabase) => {
-      const densityResult = (await callSingleRPC(
-        supabase,
-        'get_geographic_density',
-        {
-          north_lat: normalizedBounds.north,
-          south_lat: normalizedBounds.south,
-          east_lng: normalizedBounds.east,
-          west_lng: normalizedBounds.west,
-          grid_size_deg: gridSize,
-        },
-        {
-          operation: 'getGeographicDensity',
-          errorContext: { bounds: normalizedBounds, gridSize },
-          cache: {
-            enabled: true,
-            ttl: 10 * 60 * 1000, // 10 minutes for density analysis
-          },
+    const result = await this.executeQuery(
+      'getGeographicDensity',
+      async (supabase) => {
+        const densityResult: GeographicDensityResult | null =
+          await callSingleRPC(
+            supabase,
+            'get_geographic_density',
+            {
+              north_lat: normalizedBounds.north,
+              south_lat: normalizedBounds.south,
+              east_lng: normalizedBounds.east,
+              west_lng: normalizedBounds.west,
+              grid_size_deg: gridSize,
+            },
+            {
+              operation: 'getGeographicDensity',
+              errorContext: { bounds: normalizedBounds, gridSize },
+              cache: {
+                enabled: true,
+                ttl: 10 * 60 * 1000, // 10 minutes for density analysis
+                validate: isGeographicDensityResult,
+              },
+            }
+          )
+
+        // Transform result with fallback
+        if (!densityResult) {
+          return fallbackStats
         }
-      )) as GeographicDensityResult | null
 
-      // Transform result with fallback
-      if (!densityResult) {
         return {
-          total_properties: 0,
-          avg_price: 0,
-          price_density: [],
+          total_properties: densityResult.total_properties,
+          avg_price: densityResult.avg_price,
+          price_density: densityResult.price_density,
         }
       }
+    )
 
-      return {
-        total_properties: densityResult.total_properties,
-        avg_price: densityResult.avg_price,
-        price_density: densityResult.price_density,
-      }
-    })
+    return result ?? fallbackStats
   }
 
   /**
@@ -536,7 +568,7 @@ export class GeographicService
         }
 
         // Calculate distances using our coordinate utilities
-        const commuteAnalysis: Record<string, unknown> = {
+        const commuteAnalysis: CommuteAnalysisResult = {
           property_id: propertyId,
           property_coordinates: propertyCoords,
           destinations: [],
@@ -556,9 +588,7 @@ export class GeographicService
           // Note: This is a rough approximation - real implementation needs routing API
           const estimatedDrivingTime = Math.round((distanceKm / 50) * 60) // 50 km/h avg
 
-          ;(
-            commuteAnalysis.destinations as Array<Record<string, unknown>>
-          ).push({
+          commuteAnalysis.destinations.push({
             destination_index: i,
             latitude: destination.lat,
             longitude: destination.lng,
@@ -589,25 +619,32 @@ export class GeographicService
   async getWalkabilityScore(lat: number, lng: number): Promise<number> {
     this.validateRequired({ lat, lng })
 
-    return this.executeQuery('getWalkabilityScore', async (supabase) => {
-      return callNumericRPC(
-        supabase,
-        'get_walkability_score',
-        {
-          center_lat: lat,
-          center_lng: lng,
-        },
-        {
-          operation: 'getWalkabilityScore',
-          errorContext: { lat, lng },
-          fallbackValue: 50,
-          cache: {
-            enabled: true,
-            ttl: 15 * 60 * 1000, // 15 minutes for walkability scores
+    const fallbackScore = 50
+    const result = await this.executeQuery(
+      'getWalkabilityScore',
+      async (supabase) => {
+        return callNumericRPC(
+          supabase,
+          'get_walkability_score',
+          {
+            center_lat: lat,
+            center_lng: lng,
           },
-        }
-      )
-    })
+          {
+            operation: 'getWalkabilityScore',
+            errorContext: { lat, lng },
+            fallbackValue: fallbackScore,
+            cache: {
+              enabled: true,
+              ttl: 15 * 60 * 1000, // 15 minutes for walkability scores
+              validate: isFiniteNumber,
+            },
+          }
+        )
+      }
+    )
+
+    return result ?? fallbackScore
   }
 
   /**
@@ -616,23 +653,29 @@ export class GeographicService
   async getTransitScore(lat: number, lng: number): Promise<number> {
     this.validateRequired({ lat, lng })
 
-    return this.executeQuery('getTransitScore', async (supabase) => {
-      const rpc = createTypedRPC(supabase)
-      const { data, error } = await rpc.get_transit_score({
-        center_lat: lat,
-        center_lng: lng,
-      })
+    const fallbackScore = 30
+    const result = await this.executeQuery(
+      'getTransitScore',
+      async (supabase) => {
+        const rpc = createTypedRPC(supabase)
+        const { data, error } = await rpc.get_transit_score({
+          center_lat: lat,
+          center_lng: lng,
+        })
 
-      if (error || data === null || data === undefined) {
-        console.warn(
-          'Transit score calculation failed, using fallback value:',
-          error?.message
-        )
-        return 30
+        if (error || data === null || data === undefined) {
+          console.warn(
+            'Transit score calculation failed, using fallback value:',
+            error?.message
+          )
+          return fallbackScore
+        }
+
+        return data
       }
+    )
 
-      return data
-    })
+    return result ?? fallbackScore
   }
 
   /**
@@ -707,7 +750,7 @@ export class GeographicService
     lng: number,
     amenityTypes: string[],
     radius = 2
-  ): Promise<Array<Record<string, unknown>>> {
+  ): Promise<AmenityResult[]> {
     this.validateRequired({ lat, lng, amenityTypes })
 
     return this.executeArrayQuery('getNearestAmenities', async (supabase) => {
@@ -747,7 +790,7 @@ export class GeographicService
         return []
       }
 
-      return data as unknown as Array<Record<string, unknown>>
+      return data
     })
   }
 

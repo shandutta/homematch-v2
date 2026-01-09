@@ -6,7 +6,12 @@ import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
 
-const HOW_IT_WORKS_STEPS = [
+const HOW_IT_WORKS_STEPS: Array<{
+  icon: typeof Sparkles
+  title: string
+  description: string
+  iconAnimation: string
+}> = [
   {
     icon: Sparkles,
     title: 'Tell Us Your Vibe',
@@ -28,7 +33,7 @@ const HOW_IT_WORKS_STEPS = [
       'Beyond bedrooms—discover areas that fit your lifestyle, commute, and weekend plans.',
     iconAnimation: 'bounce',
   },
-] as const
+]
 
 export function HowItWorks() {
   const sectionRef = useRef<HTMLElement>(null)

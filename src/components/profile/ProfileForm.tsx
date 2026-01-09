@@ -80,14 +80,32 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
   const userService = UserServiceClient
 
   // Extract preferences or use defaults
-  const preferences = (profile.preferences || {}) as Partial<
-    UserPreferences & {
-      display_name?: string
-      phone?: string
-      bio?: string
-      avatar?: AvatarData
-    }
-  >
+  type ProfilePreferences = UserPreferences & {
+    display_name?: string
+    phone?: string
+    bio?: string
+    avatar?: AvatarData
+  }
+  const isJsonRecord = (value: Json): value is Record<string, Json> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+  const basePreferences: Json = profile.preferences ?? {}
+  const preferenceRecord = isJsonRecord(basePreferences) ? basePreferences : {}
+  const isAvatarData = (value: unknown): value is AvatarData =>
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    (value.type === 'preset' || value.type === 'custom') &&
+    'value' in value &&
+    typeof value.value === 'string'
+  const preferences: Partial<ProfilePreferences> = {
+    ...preferenceRecord,
+    avatar: isAvatarData(preferenceRecord.avatar)
+      ? preferenceRecord.avatar
+      : undefined,
+  }
+
+  const toAvatarJson = (value: AvatarData | null): Json =>
+    value ? { type: value.type, value: value.value } : null
 
   // Avatar state - separate from form since it updates immediately
   const [avatar, setAvatar] = useState<AvatarData | null>(
@@ -104,11 +122,12 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     setAvatar(newAvatar)
     // Save avatar immediately when selected
     try {
+      const nextPreferences: Json = {
+        ...preferenceRecord,
+        avatar: toAvatarJson(newAvatar),
+      }
       await userService.updateUserProfile(user.id, {
-        preferences: {
-          ...preferences,
-          avatar: newAvatar ?? undefined,
-        } as unknown as Json,
+        preferences: nextPreferences,
       })
       toast.success('Avatar updated')
       router.refresh()
@@ -125,12 +144,13 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     setError(null)
 
     try {
+      const nextPreferences: Json = {
+        ...preferenceRecord,
+        ...data,
+        avatar: toAvatarJson(avatar),
+      }
       const updatedProfile = await userService.updateUserProfile(user.id, {
-        preferences: {
-          ...preferences,
-          ...data,
-          avatar: avatar ?? undefined,
-        } as unknown as Json,
+        preferences: nextPreferences,
         onboarding_completed: true,
       })
 

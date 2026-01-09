@@ -27,6 +27,14 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [loading, setLoading] = useState(true)
   const userService = useMemo(() => UserServiceClient, [])
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+  const isString = (value: unknown): value is string =>
+    typeof value === 'string'
+  const toStringArray = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter(isString) : []
+  const toNumber = (value: unknown): number | undefined =>
+    typeof value === 'number' ? value : undefined
 
   const loadSavedSearches = useCallback(async () => {
     setLoading(true)
@@ -49,8 +57,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     currentState: boolean
   ) => {
     try {
-      const filters = savedSearches.find((s) => s.id === searchId)
-        ?.filters as Record<string, unknown>
+      const rawFilters = savedSearches.find((s) => s.id === searchId)?.filters
+      const filters = isRecord(rawFilters) ? rawFilters : {}
       await userService.updateSavedSearch(searchId, {
         filters: {
           ...filters,
@@ -80,13 +88,12 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     }
   }
 
-  const formatFilters = (filters: Record<string, unknown>) => {
+  const formatFilters = (filtersInput: unknown) => {
     const parts = []
-    const location = filters.location as string | undefined
-    const cities = Array.isArray(filters.cities) ? filters.cities : []
-    const neighborhoods = Array.isArray(filters.neighborhoods)
-      ? filters.neighborhoods
-      : []
+    const filters = isRecord(filtersInput) ? filtersInput : {}
+    const location = isString(filters.location) ? filters.location : undefined
+    const cities = toStringArray(filters.cities)
+    const neighborhoods = toStringArray(filters.neighborhoods)
 
     if (location) {
       parts.push({
@@ -114,14 +121,10 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
       })
     }
     const priceRange = Array.isArray(filters.priceRange)
-      ? (filters.priceRange as number[])
-      : null
-    const priceMin =
-      (filters.priceMin as number | undefined) ??
-      (priceRange ? priceRange[0] : undefined)
-    const priceMax =
-      (filters.priceMax as number | undefined) ??
-      (priceRange ? priceRange[1] : undefined)
+      ? filters.priceRange
+      : []
+    const priceMin = toNumber(filters.priceMin) ?? toNumber(priceRange[0])
+    const priceMax = toNumber(filters.priceMax) ?? toNumber(priceRange[1])
     if (priceMin || priceMax) {
       const price = `$${priceMin || 0} - $${priceMax || '∞'}`
       parts.push({
@@ -132,19 +135,20 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         bg: 'bg-emerald-500/10',
       })
     }
-    if (filters.bedrooms) {
+    const bedrooms = toNumber(filters.bedrooms)
+    if (bedrooms !== undefined) {
       parts.push({
         icon: Bed,
-        text: `${filters.bedrooms}+ beds`,
+        text: `${bedrooms}+ beds`,
         key: 'bedrooms',
         color: 'text-violet-400',
         bg: 'bg-violet-500/10',
       })
     }
     const propertyTypes = Array.isArray(filters.propertyTypes)
-      ? (filters.propertyTypes as string[])
-      : filters.propertyType
-        ? [filters.propertyType as string]
+      ? filters.propertyTypes.filter(isString)
+      : isString(filters.propertyType)
+        ? [filters.propertyType]
         : []
     if (propertyTypes.length > 0) {
       const label =
@@ -250,7 +254,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
       <AnimatePresence>
         <div className="space-y-4">
           {savedSearches.map((search, index) => {
-            const filters = search.filters as Record<string, unknown>
+            const filters = isRecord(search.filters) ? search.filters : {}
             const hasNotifications = filters.notifications !== false
 
             return (

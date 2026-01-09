@@ -10,8 +10,15 @@
 export const isInvalidRefreshTokenError = (error: unknown): boolean => {
   if (!error) return false
 
-  const code = (error as { code?: string }).code?.toLowerCase?.()
-  const message = (error as { message?: string }).message?.toLowerCase?.() || ''
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+  const toLowerString = (value: unknown): string | undefined =>
+    typeof value === 'string' ? value.toLowerCase() : undefined
+
+  if (!isRecord(error)) return false
+
+  const code = toLowerString(error.code)
+  const message = toLowerString(error.message) || ''
 
   return (
     code === 'refresh_token_not_found' ||

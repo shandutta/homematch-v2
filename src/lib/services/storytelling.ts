@@ -14,9 +14,9 @@ type NormalizedPropertyType =
   | 'other'
 
 const normalizePropertyType = (
-  type?: Property['property_type'] | null
+  type?: string | null
 ): NormalizedPropertyType => {
-  const rawType = (type || '') as string
+  const rawType = typeof type === 'string' ? type : ''
 
   if (!rawType) return 'house'
   if (rawType === 'single_family' || rawType === 'manufactured') return 'house'

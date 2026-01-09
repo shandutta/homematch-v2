@@ -7,12 +7,23 @@ import { createClient } from '@/lib/supabase/client'
 import { createApiClient } from '@/lib/supabase/server'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import type { AuthError } from '@supabase/supabase-js'
+
+type SupabaseAuthOverrides = Partial<Record<string, unknown>>
+type SupabaseFromOverrides = (table: string) => Record<string, unknown>
+type SupabaseOverrides = {
+  auth?: SupabaseAuthOverrides
+  from?: SupabaseFromOverrides
+} & Record<string, unknown>
+
+const asMocked = <T extends (...args: never[]) => unknown>(fn: T) =>
+  fn as jest.MockedFunction<T>
 
 /**
  * Helper to customize Supabase client mock for specific test scenarios
  */
-export function mockSupabaseClient(overrides: any = {}) {
-  const client = (createClient as jest.Mock).mockReturnValue({
+export function mockSupabaseClient(overrides: SupabaseOverrides = {}) {
+  const client = jest.mocked(createClient).mockReturnValue({
     auth: {
       signInWithPassword: jest.fn(() => Promise.resolve({ error: null })),
       signInWithOAuth: jest.fn(() => Promise.resolve({ error: null })),
@@ -47,7 +58,7 @@ export function mockSupabaseClient(overrides: any = {}) {
     })),
     rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
     ...overrides,
-  })
+  } as unknown as ReturnType<typeof createClient>)
 
   return client
 }
@@ -55,8 +66,8 @@ export function mockSupabaseClient(overrides: any = {}) {
 /**
  * Helper to customize Supabase server client mock for API tests
  */
-export function mockSupabaseServerClient(overrides: any = {}) {
-  const client = (createApiClient as jest.Mock).mockReturnValue({
+export function mockSupabaseServerClient(overrides: SupabaseOverrides = {}) {
+  const client = jest.mocked(createApiClient).mockReturnValue({
     auth: {
       getUser: jest.fn(() =>
         Promise.resolve({
@@ -90,7 +101,7 @@ export function mockSupabaseServerClient(overrides: any = {}) {
     })),
     rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
     ...overrides,
-  })
+  } as unknown as ReturnType<typeof createApiClient>)
 
   return client
 }
@@ -98,7 +109,7 @@ export function mockSupabaseServerClient(overrides: any = {}) {
 /**
  * Helper to customize Next.js router mock
  */
-export function mockNextRouter(overrides: any = {}) {
+export function mockNextRouter(overrides: Record<string, unknown> = {}) {
   const router = {
     push: jest.fn(),
     replace: jest.fn(),
@@ -109,7 +120,7 @@ export function mockNextRouter(overrides: any = {}) {
     ...overrides,
   }
 
-  ;(useRouter as jest.Mock).mockReturnValue(router)
+  jest.mocked(useRouter).mockReturnValue(router)
 
   return router
 }
@@ -131,36 +142,42 @@ export function mockAuthenticatedUser(
   }
 
   // Update client mock
-  const clientMock = createClient as jest.Mock
-  const client = clientMock()
-  client.auth.getUser.mockResolvedValue({
+  const clientMock = jest.mocked(createClient)
+  const client = clientMock() as jest.Mocked<ReturnType<typeof createClient>>
+  asMocked(client.auth.getUser).mockResolvedValue({
     data: { user },
     error: null,
   })
-  client.auth.getSession.mockResolvedValue({
+  asMocked(client.auth.getSession).mockResolvedValue({
     data: {
       session: {
         user,
         access_token: 'test-token',
         refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer',
       },
     },
     error: null,
   })
 
   // Update server mock
-  const serverMock = createApiClient as jest.Mock
-  const server = serverMock()
-  server.auth.getUser.mockResolvedValue({
+  const serverMock = jest.mocked(createApiClient)
+  const server = serverMock() as jest.Mocked<ReturnType<typeof createApiClient>>
+  asMocked(server.auth.getUser).mockResolvedValue({
     data: { user },
     error: null,
   })
-  server.auth.getSession.mockResolvedValue({
+  asMocked(server.auth.getSession).mockResolvedValue({
     data: {
       session: {
         user,
         access_token: 'test-token',
         refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer',
       },
     },
     error: null,
@@ -173,24 +190,25 @@ export function mockAuthenticatedUser(
  * Helper to mock unauthenticated state
  */
 export function mockUnauthenticatedUser() {
-  const clientMock = createClient as jest.Mock
-  const client = clientMock()
-  client.auth.getUser.mockResolvedValue({
+  const clientMock = jest.mocked(createClient)
+  const client = clientMock() as jest.Mocked<ReturnType<typeof createClient>>
+  const authError = new Error('Unauthorized') as AuthError
+  asMocked(client.auth.getUser).mockResolvedValue({
     data: { user: null },
-    error: new Error('Unauthorized'),
+    error: authError,
   })
-  client.auth.getSession.mockResolvedValue({
+  asMocked(client.auth.getSession).mockResolvedValue({
     data: { session: null },
     error: null,
   })
 
-  const serverMock = createApiClient as jest.Mock
-  const server = serverMock()
-  server.auth.getUser.mockResolvedValue({
+  const serverMock = jest.mocked(createApiClient)
+  const server = serverMock() as jest.Mocked<ReturnType<typeof createApiClient>>
+  asMocked(server.auth.getUser).mockResolvedValue({
     data: { user: null },
-    error: new Error('Unauthorized'),
+    error: authError,
   })
-  server.auth.getSession.mockResolvedValue({
+  asMocked(server.auth.getSession).mockResolvedValue({
     data: { session: null },
     error: null,
   })
@@ -200,11 +218,15 @@ export function mockUnauthenticatedUser() {
  * Helper to track toast calls
  */
 export function getToastCalls() {
+  const successMock = jest.mocked(toast.success)
+  const errorMock = jest.mocked(toast.error)
+  const infoMock = jest.mocked(toast.info)
+  const warningMock = jest.mocked(toast.warning)
   return {
-    success: (toast.success as jest.Mock).mock.calls,
-    error: (toast.error as jest.Mock).mock.calls,
-    info: (toast.info as jest.Mock).mock.calls,
-    warning: (toast.warning as jest.Mock).mock.calls,
+    success: successMock.mock.calls,
+    error: errorMock.mock.calls,
+    info: infoMock.mock.calls,
+    warning: warningMock.mock.calls,
   }
 }
 

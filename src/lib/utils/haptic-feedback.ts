@@ -1,5 +1,16 @@
 'use client'
 
+type HapticType =
+  | 'light'
+  | 'medium'
+  | 'heavy'
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'selection'
+
+type HapticImpactType = 'light' | 'medium' | 'heavy'
+
 // Enhanced haptic feedback utility for mobile devices
 export class HapticFeedback {
   private static isSupported =
@@ -55,8 +66,8 @@ export class HapticFeedback {
   }
 
   // Impact haptic feedback with variable intensity
-  static impact(intensity: 'light' | 'medium' | 'heavy' = 'medium'): void {
-    const patterns = {
+  static impact(intensity: HapticImpactType = 'medium'): void {
+    const patterns: Record<HapticImpactType, number[]> = {
       light: [5],
       medium: [10],
       heavy: [20],
@@ -82,16 +93,18 @@ export class HapticFeedback {
   }
 
   // iOS-specific haptic feedback
-  private static triggerIOSHaptic(type: string): void {
+  private static triggerIOSHaptic(type: HapticType): void {
     if (typeof window === 'undefined') return
 
     // Check for iOS haptic engine support
-    const hapticFeedback = (
-      window as unknown as { hapticFeedback?: Record<string, () => void> }
-    ).hapticFeedback
-    if (hapticFeedback && typeof hapticFeedback[type] === 'function') {
+    const hapticFeedback = window.hapticFeedback
+    const handler =
+      hapticFeedback && typeof hapticFeedback[type] === 'function'
+        ? hapticFeedback[type]
+        : undefined
+    if (handler) {
       try {
-        hapticFeedback[type]()
+        handler()
       } catch (error) {
         console.debug('iOS haptic feedback not available:', error)
       }
@@ -100,19 +113,13 @@ export class HapticFeedback {
     // Alternative method for iOS Safari
     if ('DeviceMotionEvent' in window) {
       try {
+        const deviceMotionEvent =
+          DeviceMotionEvent as typeof DeviceMotionEvent & {
+            requestPermission?: () => Promise<'granted' | 'denied'>
+          }
         // Request device motion permission for iOS 13+
-        if (
-          typeof (
-            DeviceMotionEvent as unknown as {
-              requestPermission?: () => Promise<string>
-            }
-          ).requestPermission === 'function'
-        ) {
-          ;(
-            DeviceMotionEvent as unknown as {
-              requestPermission: () => Promise<string>
-            }
-          )
+        if (typeof deviceMotionEvent.requestPermission === 'function') {
+          deviceMotionEvent
             .requestPermission()
             .then((permission: string) => {
               if (permission === 'granted') {
@@ -132,15 +139,12 @@ export class HapticFeedback {
   }
 
   // Trigger haptic using device motion (iOS fallback)
-  private static triggerMotionHaptic(type: string): void {
+  private static triggerMotionHaptic(type: HapticType): void {
     // This is a fallback method that uses audio context to create haptic-like feedback
     if (typeof window === 'undefined' || !window.AudioContext) return
 
     try {
-      const AudioContextClass =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext
       if (!AudioContextClass) return
       const audioContext = new AudioContextClass()
       const oscillator = audioContext.createOscillator()
@@ -173,12 +177,15 @@ export class HapticFeedback {
   }
 
   // Get haptic configuration based on type
-  private static getHapticConfig(type: string): {
+  private static getHapticConfig(type: HapticType): {
     frequency: number
     volume: number
     duration: number
   } {
-    const configs = {
+    const configs: Record<
+      HapticType,
+      { frequency: number; volume: number; duration: number }
+    > = {
       light: { frequency: 200, volume: 0.1, duration: 0.05 },
       medium: { frequency: 150, volume: 0.2, duration: 0.1 },
       heavy: { frequency: 100, volume: 0.3, duration: 0.15 },
@@ -188,7 +195,7 @@ export class HapticFeedback {
       selection: { frequency: 250, volume: 0.1, duration: 0.03 },
     }
 
-    return configs[type as keyof typeof configs] || configs.medium
+    return configs[type]
   }
 }
 

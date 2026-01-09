@@ -9,7 +9,13 @@ export interface PlaywrightLocator {
   isVisible(): Promise<boolean>
   isEnabled(): Promise<boolean>
   textContent(): Promise<string | null>
+  count(): Promise<number>
   first(): PlaywrightLocator
+  locator(selector: string): PlaywrightLocator
+  waitFor(options?: {
+    state?: 'attached' | 'detached' | 'visible' | 'hidden'
+    timeout?: number
+  }): Promise<void>
 }
 
 export interface PlaywrightRequest {
@@ -25,6 +31,17 @@ export interface PlaywrightResponse {
   url(): string
   status(): number
   headers(): Record<string, string>
+  request(): PlaywrightRequest
+}
+
+export interface PlaywrightRoute {
+  continue(): Promise<void>
+  fulfill(options: {
+    status: number
+    contentType?: string
+    body?: string
+  }): Promise<void>
+  abort(): Promise<void>
   request(): PlaywrightRequest
 }
 
@@ -56,26 +73,49 @@ export interface PlaywrightPage {
   // Browser context
   context(): {
     clearCookies(): Promise<void>
+    browser(): {
+      browserType(): {
+        name(): string
+      }
+    } | null
   }
 
   // Script evaluation
-  evaluate<T = unknown>(
-    pageFunction: string | ((...args: unknown[]) => unknown),
-    arg?: unknown
+  evaluate<T = unknown>(pageFunction: string, arg?: unknown): Promise<T>
+  evaluate<T = unknown, Arg = unknown>(
+    pageFunction: (arg: Arg) => T | Promise<T>,
+    arg?: Arg
   ): Promise<T>
 
   // Waiting and timeouts
   waitForLoadState(
-    state?: 'load' | 'domcontentloaded' | 'networkidle'
+    state?: 'load' | 'domcontentloaded' | 'networkidle',
+    options?: { timeout?: number }
   ): Promise<void>
   waitForTimeout(timeout: number): Promise<void>
   waitForURL(
-    url: string | RegExp,
+    url: string | RegExp | ((url: URL) => boolean),
     options?: { timeout?: number }
   ): Promise<void>
+  waitForSelector(
+    selector: string,
+    options?: {
+      timeout?: number
+      state?: 'attached' | 'detached' | 'visible' | 'hidden'
+    }
+  ): Promise<PlaywrightLocator | null>
+  waitForFunction(
+    pageFunction: string | ((...args: unknown[]) => unknown),
+    arg?: unknown,
+    options?: { timeout?: number }
+  ): Promise<unknown>
 
   // Element locators (basic interface)
   locator(selector: string): PlaywrightLocator
+  getByRole(
+    role: string,
+    options?: { name?: string | RegExp }
+  ): PlaywrightLocator
 
   // Navigation
   goto(
@@ -84,7 +124,14 @@ export interface PlaywrightPage {
       waitUntil?: 'load' | 'domcontentloaded' | 'networkidle'
       timeout?: number
     }
-  ): Promise<any>
+  ): Promise<PlaywrightResponse | null>
+
+  // Network routing
+  route(
+    url: string | RegExp,
+    handler: (route: PlaywrightRoute) => Promise<void> | void
+  ): Promise<void>
+  unroute(url: string | RegExp): Promise<void>
 }
 
 export interface ConsoleMessage {
@@ -124,25 +171,30 @@ export interface PlaywrightTestInfo {
     name: string
     testDir: string
   }
-  config: any
+  config: Record<string, unknown>
   timeout: number
+  status?: string
+  duration?: number
+  errors?: Array<{ message?: string; value?: unknown; stack?: string }>
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
 /**
  * Type guard to ensure objects have the methods we need
  */
 export function isPlaywrightPage(obj: unknown): obj is PlaywrightPage {
-  const o = obj as Record<string, unknown>
+  if (!isRecord(obj)) return false
   return (
-    !!o &&
-    typeof o.on === 'function' &&
-    typeof o.url === 'function' &&
-    typeof o.title === 'function' &&
-    typeof o.screenshot === 'function'
+    typeof obj.on === 'function' &&
+    typeof obj.url === 'function' &&
+    typeof obj.title === 'function' &&
+    typeof obj.screenshot === 'function'
   )
 }
 
 export function isPlaywrightTestInfo(obj: unknown): obj is PlaywrightTestInfo {
-  const o = obj as Record<string, unknown>
-  return !!o && typeof o.title === 'string' && typeof o.testId === 'string'
+  if (!isRecord(obj)) return false
+  return typeof obj.title === 'string' && typeof obj.testId === 'string'
 }

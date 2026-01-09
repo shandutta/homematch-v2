@@ -6,11 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Property } from '@/types/database'
-import {
-  Neighborhood,
-  PROPERTY_TYPE_VALUES,
-  PropertyType,
-} from '@/lib/schemas/property'
+import { Neighborhood, PROPERTY_TYPE_VALUES } from '@/lib/schemas/property'
+import type { PropertyType } from '@/lib/schemas/property'
 import {
   MapPin,
   Heart,
@@ -30,6 +27,27 @@ interface EnhancedPropertyCardProps {
   showActions?: boolean
   isMutualLike?: boolean
 }
+
+type ListingStatus = 'active' | 'pending' | 'sold'
+
+const propertyTypeSet = new Set<string>(PROPERTY_TYPE_VALUES)
+const listingStatusSet = new Set<string>(['active', 'pending', 'sold'])
+
+const isPropertyType = (value: string): value is PropertyType =>
+  propertyTypeSet.has(value)
+
+const isListingStatus = (value: string): value is ListingStatus =>
+  listingStatusSet.has(value)
+
+const normalizePropertyType = (
+  value: string | null | undefined
+): PropertyType | null =>
+  typeof value === 'string' && isPropertyType(value) ? value : null
+
+const normalizeListingStatus = (
+  value: string | null | undefined
+): ListingStatus | null =>
+  typeof value === 'string' && isListingStatus(value) ? value : null
 
 export function EnhancedPropertyCard({
   property,
@@ -223,17 +241,9 @@ export function EnhancedPropertyCard({
           property={{
             ...property,
             // Ensure property_type matches the expected enum
-            property_type: PROPERTY_TYPE_VALUES.includes(
-              property.property_type as PropertyType
-            )
-              ? (property.property_type as PropertyType)
-              : null,
+            property_type: normalizePropertyType(property.property_type),
             // Ensure listing_status matches the expected enum
-            listing_status: ['active', 'pending', 'sold'].includes(
-              property.listing_status as string
-            )
-              ? (property.listing_status as 'active' | 'pending' | 'sold')
-              : null,
+            listing_status: normalizeListingStatus(property.listing_status),
             // Ensure coordinates is handled properly
             coordinates: property.coordinates || null,
           }}
@@ -249,7 +259,7 @@ export function EnhancedPropertyCard({
         {/* Amenities - Commented out for now */}
         {/* {property.amenities && Array.isArray(property.amenities) && property.amenities.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {(property.amenities as string[]).slice(0, 3).map((amenity, index) => (
+            {property.amenities.slice(0, 3).map((amenity, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
                 {amenity}
               </Badge>

@@ -14,11 +14,28 @@ import { QUERY_STALE_TIMES } from '@/lib/query/config'
 import { couplesKeys } from '@/hooks/useCouples'
 
 // Centralized query keys for interactions, ensures consistency.
+const interactionsAllKey: readonly ['interactions'] = ['interactions']
+const buildInteractionSummaryKey = (): readonly ['interactions', 'summary'] => [
+  interactionsAllKey[0],
+  'summary',
+]
+const buildInteractionListsKey = (): readonly ['interactions', 'list'] => [
+  interactionsAllKey[0],
+  'list',
+]
+const buildInteractionListKey = (
+  type: InteractionType
+): readonly ['interactions', 'list', InteractionType] => [
+  interactionsAllKey[0],
+  'list',
+  type,
+]
+
 export const interactionKeys = {
-  all: ['interactions'] as const,
-  summaries: () => [...interactionKeys.all, 'summary'] as const,
-  lists: () => [...interactionKeys.all, 'list'] as const,
-  list: (type: InteractionType) => [...interactionKeys.lists(), type] as const,
+  all: interactionsAllKey,
+  summaries: buildInteractionSummaryKey,
+  lists: buildInteractionListsKey,
+  list: buildInteractionListKey,
 }
 
 export const summaryKeyForInteraction: Record<
@@ -189,10 +206,10 @@ export function useDeleteInteraction(type: InteractionType) {
 export function useInfiniteInteractions(type: InteractionType) {
   return useInfiniteQuery<PageResponse<Property>, Error>({
     queryKey: interactionKeys.list(type),
-    queryFn: ({ pageParam }) =>
-      InteractionService.getInteractions(type, {
-        cursor: pageParam as string | undefined,
-      }),
+    queryFn: ({ pageParam }) => {
+      const cursor = typeof pageParam === 'string' ? pageParam : undefined
+      return InteractionService.getInteractions(type, { cursor })
+    },
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined,
     staleTime: QUERY_STALE_TIMES.PROPERTY_LIST,

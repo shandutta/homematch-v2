@@ -1,14 +1,19 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { jest } from '@jest/globals'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { Database } from '@/types/database'
 
-// Enhanced mock client with full type safety
-export const createMockSupabaseClient = (): jest.Mocked<
-  SupabaseClient<Database>
-> => {
+type MockSupabaseClient = {
+  from: jest.Mock
+  rpc: jest.Mock
+  auth: {
+    signInWithPassword: jest.Mock
+    signOut: jest.Mock
+    getUser: jest.Mock
+  }
+}
+
+export const createMockSupabaseClient = (): MockSupabaseClient => {
   return {
     from: jest.fn().mockReturnValue({
       select: jest.fn().mockReturnThis(),
@@ -39,7 +44,7 @@ export const createMockSupabaseClient = (): jest.Mocked<
       signOut: jest.fn(),
       getUser: jest.fn(),
     },
-  } as any
+  }
 }
 
 // React Query test renderer to DRY wrapper boilerplate
@@ -62,7 +67,7 @@ export const renderWithQueryClient = (
 
   // Use React.createElement to avoid JSX parsing issues in some TS/Jest setups
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-    React.createElement(QueryClientProvider as any, { client: qc }, children)
+    React.createElement(QueryClientProvider, { client: qc }, children)
 
   return {
     ...render(ui, { wrapper: Wrapper }),

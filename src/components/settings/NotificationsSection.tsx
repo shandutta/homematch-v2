@@ -3,7 +3,7 @@
 import React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { UserProfile, UserPreferences } from '@/types/database'
+import { UserProfile } from '@/types/database'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -50,6 +50,24 @@ const DEFAULT_SMS_NOTIFICATIONS = {
   viewingReminders: false,
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const toBooleanRecord = (
+  value: unknown
+): Record<string, boolean> | undefined => {
+  if (!isRecord(value)) return undefined
+  const record: Record<string, boolean> = {}
+  let hasValue = false
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (typeof entryValue === 'boolean') {
+      record[key] = entryValue
+      hasValue = true
+    }
+  }
+  return hasValue ? record : undefined
+}
+
 export function NotificationsSection({
   user,
   profile,
@@ -69,13 +87,22 @@ export function NotificationsSection({
   }
 
   const preferences = useMemo(
-    () =>
-      (profile.preferences || {}) as UserPreferences & {
-        notifications?: NotificationPreferences
-      },
+    () => (isRecord(profile.preferences) ? profile.preferences : {}),
     [profile.preferences]
   )
-  const notifications = preferences.notifications ?? undefined
+
+  const notifications = useMemo(() => {
+    const rawNotifications = isRecord(preferences.notifications)
+      ? preferences.notifications
+      : undefined
+    return rawNotifications
+      ? {
+          email: toBooleanRecord(rawNotifications.email),
+          push: toBooleanRecord(rawNotifications.push),
+          sms: toBooleanRecord(rawNotifications.sms),
+        }
+      : undefined
+  }, [preferences])
 
   const buildSnapshot = useCallback(
     (source?: NotificationPreferences): NotificationSnapshot => ({

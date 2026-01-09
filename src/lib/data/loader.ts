@@ -3,7 +3,8 @@ import { unstable_cache } from 'next/cache'
 import { createClient as createStandaloneClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ISupabaseClientFactory } from '@/lib/services/interfaces'
-import type { Property, Neighborhood, Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
+import type { Property, Neighborhood } from '@/types/database'
 import {
   PROPERTY_TYPE_VALUES,
   type PropertyFilters,
@@ -18,13 +19,13 @@ import {
 const DASHBOARD_PROPERTY_CACHE_TTL_SECONDS = 60
 
 class StaticSupabaseClientFactory implements ISupabaseClientFactory {
-  private readonly client: SupabaseClient<Database>
+  private readonly client: SupabaseClient<AppDatabase>
 
-  constructor(client: SupabaseClient<Database>) {
+  constructor(client: SupabaseClient<AppDatabase>) {
     this.client = client
   }
 
-  async createClient(): Promise<SupabaseClient<Database>> {
+  async createClient(): Promise<SupabaseClient<AppDatabase>> {
     return this.client
   }
 
@@ -41,7 +42,7 @@ const createAnonPropertyService = () => {
     return null
   }
 
-  const client = createStandaloneClient<Database>(url, anonKey, {
+  const client = createStandaloneClient<AppDatabase>(url, anonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -166,13 +167,13 @@ export function buildPropertyFiltersFromPreferences(
       townhouse: 'townhome',
       condo: 'condo',
     }
-    const propertyTypeSet = new Set<PropertyType>(PROPERTY_TYPE_VALUES)
+    const propertyTypeSet = new Set<string>(PROPERTY_TYPE_VALUES)
+    const isPropertyType = (value: string): value is PropertyType =>
+      propertyTypeSet.has(value)
     const selectedTypes = Object.entries(prefs.propertyTypes)
       .filter(([_, selected]) => selected)
       .map(([type]) => typeMapping[type] || type)
-      .filter((type): type is PropertyType =>
-        propertyTypeSet.has(type as PropertyType)
-      )
+      .filter((type): type is PropertyType => isPropertyType(type))
 
     if (selectedTypes.length > 0) {
       filters.property_types = selectedTypes
@@ -326,11 +327,15 @@ export async function loadScoredProperties(
     // Sort by calculated_match_score if available, otherwise by match_score
     return data.properties.sort((a, b) => {
       const scoreA =
-        (a as Property & { calculated_match_score?: number })
-          .calculated_match_score || 0
+        'calculated_match_score' in a &&
+        typeof a.calculated_match_score === 'number'
+          ? a.calculated_match_score
+          : 0
       const scoreB =
-        (b as Property & { calculated_match_score?: number })
-          .calculated_match_score || 0
+        'calculated_match_score' in b &&
+        typeof b.calculated_match_score === 'number'
+          ? b.calculated_match_score
+          : 0
       return scoreB - scoreA
     })
   } catch (_error) {

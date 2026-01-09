@@ -1,5 +1,6 @@
 import { CouplesService } from './couples'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * Middleware to handle couples-related side effects when property interactions occur
@@ -9,7 +10,7 @@ export class CouplesMiddleware {
    * Call this after any property interaction is saved to the database
    */
   static async onPropertyInteraction(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string,
     propertyId: string,
     interactionType: string
@@ -70,7 +71,7 @@ export class CouplesMiddleware {
    * Call this to warm up the cache for a household
    */
   static async warmCache(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<void> {
     try {

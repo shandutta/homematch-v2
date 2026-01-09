@@ -63,8 +63,7 @@ export async function POST(req: Request) {
 
   const supabase = createStandaloneClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let neighborhoodQuery: any = supabase
+  let neighborhoodQuery = supabase
     .from('neighborhoods')
     .select('*, neighborhood_vibes!left(id)')
     .order('created_at', { ascending: false })
@@ -217,8 +216,16 @@ async function fetchNeighborhoodStats(
   }
 
   if (Array.isArray(data)) {
-    return (data[0] as NeighborhoodStatsResult) || null
+    const [first] = data
+    return isNeighborhoodStatsResult(first) ? first : null
   }
 
-  return (data as NeighborhoodStatsResult) || null
+  return isNeighborhoodStatsResult(data) ? data : null
+}
+
+const isNeighborhoodStatsResult = (
+  value: unknown
+): value is NeighborhoodStatsResult => {
+  if (typeof value !== 'object' || value === null) return false
+  return 'total_properties' in value
 }

@@ -18,17 +18,23 @@ export function getCookieConsent(): CookieConsent | null {
   try {
     const raw = window.localStorage.getItem(CONSENT_STORAGE_KEY)
     if (!raw) return null
-    const parsed = JSON.parse(raw) as CookieConsent
-
-    if (!parsed || typeof parsed !== 'object') return null
-    if (parsed.version !== CONSENT_VERSION) return null
+    const parsed: unknown = JSON.parse(raw)
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    if (!isRecord(parsed)) return null
+    const record = parsed
+    const version = typeof record.version === 'number' ? record.version : null
+    if (version !== CONSENT_VERSION) return null
 
     return {
       version: CONSENT_VERSION,
-      updatedAt: parsed.updatedAt,
-      preferences: Boolean(parsed.preferences),
-      analytics: Boolean(parsed.analytics),
-      advertising: Boolean(parsed.advertising),
+      updatedAt:
+        typeof record.updatedAt === 'string'
+          ? record.updatedAt
+          : new Date(0).toISOString(),
+      preferences: Boolean(record.preferences),
+      analytics: Boolean(record.analytics),
+      advertising: Boolean(record.advertising),
     }
   } catch (error) {
     console.warn('Failed to read cookie consent', error)

@@ -3,13 +3,23 @@
  * Provides authentication utilities and user management
  */
 
-import { AuthFixture, TestUser } from '../types/fixtures'
+import type {
+  AuthFixture,
+  ConfigFixture,
+  TestUser,
+  UtilsFixture,
+} from '../types/fixtures'
+import type { PlaywrightPage } from '../types/playwright-interfaces'
 
 // Export just the fixtures object, not a test object
 export const authFixtures = {
   auth: async (
-    { page, config, utils }: { page: any; config: any; utils: any },
-    use: any
+    {
+      page,
+      config,
+      utils,
+    }: { page: PlaywrightPage; config: ConfigFixture; utils: UtilsFixture },
+    use: (fixture: AuthFixture) => Promise<void>
   ) => {
     const auth: AuthFixture = {
       async login(user: TestUser = config.users.user1) {
@@ -118,7 +128,7 @@ export const authFixtures = {
         if (!currentUrl.includes('/') && !currentUrl.includes('/login')) {
           try {
             await page.waitForURL(
-              (url: any) => {
+              (url: URL) => {
                 const urlStr = url.toString()
                 return urlStr.endsWith('/') || urlStr.includes('/login')
               },
@@ -218,11 +228,11 @@ export const authFixtures = {
             // First, poll Supabase session in the client to ensure auth state is propagated
             await page.waitForFunction(
               () =>
-                (window as any).__supabaseReady === true ||
+                window.__supabaseReady === true ||
                 // lazily query supabase session if helper not available
                 (async () => {
                   try {
-                    const supabase = (window as any)?.supabase
+                    const supabase = window.supabase
                     const getSession = supabase?.auth?.getSession
                     if (typeof getSession !== 'function') return false
                     const { data } = await getSession()
@@ -295,7 +305,7 @@ export const authFixtures = {
         try {
           const sessionCleared = await page.evaluate(async () => {
             try {
-              const supabase = (window as any)?.supabase
+              const supabase = window.supabase
               const getSession = supabase?.auth?.getSession
               if (typeof getSession !== 'function') return true
               const { data } = await getSession()
@@ -311,7 +321,7 @@ export const authFixtures = {
               await page.waitForTimeout(500)
               const ok = await page.evaluate(async () => {
                 try {
-                  const supabase = (window as any)?.supabase
+                  const supabase = window.supabase
                   const getSession = supabase?.auth?.getSession
                   if (typeof getSession !== 'function') return true
                   const { data } = await getSession()

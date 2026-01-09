@@ -30,7 +30,7 @@ export interface ErrorDetectionResult {
 /**
  * Standard error patterns across the application
  */
-const ERROR_PATTERNS: Record<string, ErrorPattern> = {
+const ERROR_PATTERNS: Record<'auth' | 'network' | 'ui', ErrorPattern> = {
   auth: {
     selectors: ['[data-testid="auth-error"]', '.auth-error', '[role="alert"]'],
     messages: [
@@ -118,12 +118,18 @@ const RECOVERY_STRATEGIES = {
  * Create error handler instance
  */
 export function createTestErrorHandler(): TestErrorHandler {
+  const errorTypes: Array<keyof typeof ERROR_PATTERNS> = [
+    'auth',
+    'network',
+    'ui',
+  ]
   return {
     /**
      * Detect if any error is present on the page
      */
     async detectError(page: Page): Promise<ErrorDetectionResult> {
-      for (const [errorType, pattern] of Object.entries(ERROR_PATTERNS)) {
+      for (const errorType of errorTypes) {
+        const pattern = ERROR_PATTERNS[errorType]
         // Check selectors
         for (const selector of pattern.selectors) {
           try {
@@ -132,7 +138,7 @@ export function createTestErrorHandler(): TestErrorHandler {
               const text = (await element.textContent()) || ''
               return {
                 hasError: true,
-                errorType: errorType as any,
+                errorType,
                 errorMessage: text,
                 canRecover: true,
               }
@@ -149,7 +155,7 @@ export function createTestErrorHandler(): TestErrorHandler {
             if (await element.isVisible()) {
               return {
                 hasError: true,
-                errorType: errorType as any,
+                errorType,
                 errorMessage: message,
                 canRecover: true,
               }
@@ -248,7 +254,7 @@ export async function withErrorHandling<T>(
       const result = await operation()
       return result
     } catch (error) {
-      lastError = error as Error
+      lastError = error instanceof Error ? error : new Error(String(error))
 
       if (attempt < maxRetries) {
         // Detect error type

@@ -1,20 +1,34 @@
 // Mock implementation helper to handle environment differences
 import { TextDecoder, TextEncoder } from 'util'
 
-const createMockFn = () => {
+type MockFn<Args extends unknown[] = unknown[], Return = unknown> = ((
+  ...args: Args
+) => Return) & {
+  mockReturnValue: (value: Return) => MockFn<Args, Return>
+  mockResolvedValue: (value: Return) => MockFn<Args, Return>
+  mockImplementation: (impl: (...args: Args) => Return) => MockFn<Args, Return>
+}
+
+const createMockFn = <
+  Args extends unknown[] = unknown[],
+  Return = unknown,
+>(): MockFn<Args, Return> => {
   if (typeof jest !== 'undefined') {
-    return jest.fn()
+    return jest.fn() as unknown as MockFn<Args, Return>
   }
   // Fallback to Vitest's global vi
 
-  return (globalThis as any).vi.fn()
+  if (globalThis.vi) {
+    return globalThis.vi.fn() as unknown as MockFn<Args, Return>
+  }
+  throw new Error('No test mock library found')
 }
 
 export const setupBrowserMocks = () => {
   // TextEncoder/TextDecoder Polyfill
-  if (typeof global.TextEncoder === 'undefined') {
-    global.TextEncoder = TextEncoder
-    global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder
+  if (typeof globalThis.TextEncoder === 'undefined') {
+    globalThis.TextEncoder = TextEncoder as typeof globalThis.TextEncoder
+    globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder
   }
 
   // ResizeObserver Mock
@@ -39,16 +53,19 @@ export const setupBrowserMocks = () => {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       configurable: true,
-      value: createMockFn().mockImplementation((query: string) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: createMockFn(), // deprecated
-        removeListener: createMockFn(), // deprecated
-        addEventListener: createMockFn(),
-        removeEventListener: createMockFn(),
-        dispatchEvent: createMockFn(),
-      })),
+      value: createMockFn<[string], MediaQueryList>().mockImplementation(
+        (query) =>
+          ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addListener: createMockFn(), // deprecated
+            removeListener: createMockFn(), // deprecated
+            addEventListener: createMockFn(),
+            removeEventListener: createMockFn(),
+            dispatchEvent: createMockFn(),
+          }) as MediaQueryList
+      ),
     })
   }
 
@@ -105,7 +122,10 @@ export const setupBrowserMocks = () => {
     Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
       writable: true,
       configurable: true,
-      value: createMockFn().mockImplementation((contextType: string) => {
+      value: createMockFn<
+        [string],
+        CanvasRenderingContext2D | null
+      >().mockImplementation((contextType) => {
         if (contextType === '2d') {
           return {
             fillStyle: '',
@@ -139,7 +159,7 @@ export const setupBrowserMocks = () => {
             createLinearGradient: createMockFn().mockReturnValue({
               addColorStop: createMockFn(),
             }),
-          }
+          } as unknown as CanvasRenderingContext2D
         }
         return null
       }),
@@ -161,7 +181,10 @@ export const setupBrowserMocks = () => {
       unobserve = createMockFn()
       disconnect = createMockFn()
       takeRecords = createMockFn().mockReturnValue([])
-      constructor(_callback: any, _options: any) {}
+      constructor(
+        _callback: IntersectionObserverCallback,
+        _options?: IntersectionObserverInit
+      ) {}
     }
     Object.defineProperty(global, 'IntersectionObserver', {
       writable: true,
@@ -172,11 +195,13 @@ export const setupBrowserMocks = () => {
 
   // Scroll methods
   if (typeof window !== 'undefined') {
-    window.scrollTo = createMockFn()
-    window.scroll = createMockFn()
+    window.scrollTo = createMockFn() as unknown as typeof window.scrollTo
+    window.scroll = createMockFn() as unknown as typeof window.scroll
     if (typeof HTMLElement !== 'undefined') {
-      HTMLElement.prototype.scrollIntoView = createMockFn()
-      HTMLElement.prototype.scrollTo = createMockFn()
+      HTMLElement.prototype.scrollIntoView =
+        createMockFn() as unknown as typeof HTMLElement.prototype.scrollIntoView
+      HTMLElement.prototype.scrollTo =
+        createMockFn() as unknown as typeof HTMLElement.prototype.scrollTo
     }
   }
 }

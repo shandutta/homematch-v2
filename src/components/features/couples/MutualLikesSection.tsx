@@ -68,8 +68,7 @@ export function MutualLikesSection({
   const shouldForceLoading = !usingExternalState && !hasHydrated
 
   const mutualLikes: MutualLike[] =
-    propMutualLikes ??
-    ((shouldForceLoading ? [] : (query.data ?? [])) as MutualLike[])
+    propMutualLikes ?? (shouldForceLoading ? [] : (query.data ?? []))
   const loading = propIsLoading ?? (shouldForceLoading ? true : query.isLoading)
   const error =
     propError ??

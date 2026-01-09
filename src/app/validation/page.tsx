@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
+import type { Database } from '@/types/database'
 import {
   Home,
   BarChart3,
-  Database,
+  Database as DatabaseIcon,
   Building2,
   AlertTriangle,
   Info,
@@ -24,6 +25,12 @@ interface DatabaseStats {
   schema?: unknown[]
 }
 
+type ExtensionRow = { extname: string }
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+const isExtensionRow = (value: unknown): value is ExtensionRow =>
+  isRecord(value) && typeof value.extname === 'string'
+
 export default async function ValidationPage() {
   const supabase = await createClient()
   const propertyService = new PropertyService()
@@ -34,7 +41,7 @@ export default async function ValidationPage() {
   } = await supabase.auth.getUser()
 
   // Validate all database tables
-  const tables = [
+  const tables: Array<keyof Database['public']['Tables']> = [
     'user_profiles',
     'households',
     'neighborhoods',
@@ -93,14 +100,23 @@ export default async function ValidationPage() {
   }
 
   // Check PostGIS extensions
-  let postgisStatus = null
+  let postgisStatus: ExtensionRow[] | null = null
   try {
-    const { data: extensions } = await supabase
+    const extensionClient = supabase as unknown as {
+      from: (relation: string) => {
+        select: (columns: string) => {
+          in: (column: string, values: string[]) => Promise<{ data: unknown }>
+        }
+      }
+    }
+    const { data: extensions }: { data: unknown } = await extensionClient
       .from('pg_extension')
       .select('extname')
       .in('extname', ['postgis', 'uuid-ossp'])
 
-    postgisStatus = extensions
+    postgisStatus = Array.isArray(extensions)
+      ? extensions.filter(isExtensionRow)
+      : null
   } catch {
     // Extensions table might not be accessible, that's OK
     postgisStatus = null
@@ -188,7 +204,7 @@ export default async function ValidationPage() {
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
               <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-blue-600" />
+                <DatabaseIcon className="h-5 w-5 text-blue-600" />
                 <span>Database Tables Status</span>
               </div>
             </h2>
@@ -319,14 +335,21 @@ export default async function ValidationPage() {
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(
                             propertyStats.property_type_distribution
-                          ).map(([type, count]) => (
-                            <span
-                              key={type}
-                              className="rounded bg-green-100 px-2 py-1 text-xs text-green-800"
-                            >
-                              {type}: {count as number}
-                            </span>
-                          ))}
+                          ).map(([type, count]) => {
+                            const numericCount =
+                              typeof count === 'number' ? count : Number(count)
+                            return (
+                              <span
+                                key={type}
+                                className="rounded bg-green-100 px-2 py-1 text-xs text-green-800"
+                              >
+                                {type}:{' '}
+                                {Number.isFinite(numericCount)
+                                  ? numericCount
+                                  : 0}
+                              </span>
+                            )
+                          })}
                         </div>
                       </div>
                     )}

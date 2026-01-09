@@ -6,14 +6,21 @@ import { LayoutDashboard, Monitor, Smartphone } from 'lucide-react'
 
 type AdPreview = 'leaderboard' | 'inline' | 'sticky'
 
-const adConcepts = [
+const adConcepts: Array<{
+  title: string
+  badge: string
+  description: string
+  placement: string
+  preview: AdPreview
+  icon: typeof Monitor
+}> = [
   {
     title: 'Featured brand banner',
     badge: 'Subtle header banner',
     description:
       'Single partner note below the hero or saved searches—clearly labeled and easy to skip.',
     placement: 'Shows under the hero or saved searches when relevant.',
-    preview: 'leaderboard' as AdPreview,
+    preview: 'leaderboard',
     icon: Monitor,
   },
   {
@@ -22,7 +29,7 @@ const adConcepts = [
     description:
       'One sponsored tile between listings so the grid still feels natural and scannable.',
     placement: 'Appears every few cards in recommendations or results.',
-    preview: 'inline' as AdPreview,
+    preview: 'inline',
     icon: LayoutDashboard,
   },
   {
@@ -31,7 +38,7 @@ const adConcepts = [
     description:
       'Light anchor with a “Sponsored” pill you can swipe away. No pop-ups, no sound.',
     placement: 'Slides in after a short scroll on mobile search.',
-    preview: 'sticky' as AdPreview,
+    preview: 'sticky',
     icon: Smartphone,
   },
 ]

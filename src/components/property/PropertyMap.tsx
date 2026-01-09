@@ -13,7 +13,6 @@ import { getGoogleMapsMapId } from '@/lib/maps/config'
 import type {
   GoogleMapInstance,
   GoogleAnyMarkerInstance,
-  GoogleInfoWindowInstance,
 } from '@/types/google-maps'
 
 // Extend Window interface for Google Maps to satisfy TS during SSR/type-check.
@@ -109,10 +108,7 @@ export function PropertyMap({
         })
 
         marker.addListener('click', () => {
-          ;(infoWindow as GoogleInfoWindowInstance).open({
-            map: map as GoogleMapInstance,
-            anchor: marker as GoogleAnyMarkerInstance,
-          })
+          infoWindow.open({ map, anchor: marker })
         })
       }
 
@@ -121,15 +117,7 @@ export function PropertyMap({
       if (typeof ResizeObserver !== 'undefined') {
         resizeObserverRef.current?.disconnect()
         resizeObserverRef.current = new ResizeObserver(() => {
-          const events = window.google?.maps?.event as
-            | {
-                trigger?: (
-                  instance: GoogleMapInstance,
-                  eventName: string
-                ) => void
-              }
-            | undefined
-          events?.trigger?.(map, 'resize')
+          window.google?.maps?.event?.trigger?.(map, 'resize')
           map.setCenter(coords)
         })
         resizeObserverRef.current.observe(mapRef.current)
@@ -137,15 +125,7 @@ export function PropertyMap({
 
       if (typeof window !== 'undefined' && window.requestAnimationFrame) {
         window.requestAnimationFrame(() => {
-          const events = window.google?.maps?.event as
-            | {
-                trigger?: (
-                  instance: GoogleMapInstance,
-                  eventName: string
-                ) => void
-              }
-            | undefined
-          events?.trigger?.(map, 'resize')
+          window.google?.maps?.event?.trigger?.(map, 'resize')
           map.setCenter(coords)
         })
       }
@@ -251,7 +231,7 @@ function createPropertyMarker({
   coords: { lat: number; lng: number }
   map: GoogleMapInstance
   title: string
-}) {
+}): GoogleAnyMarkerInstance {
   const maps = window.google?.maps
   if (!maps) {
     throw new Error('Google Maps API not available')

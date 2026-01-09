@@ -42,16 +42,10 @@ export class PropertySearchService
   ): Promise<PropertySearchResult> {
     this.validateRequired({ searchParams })
 
-    const { filters = {}, pagination = {} } = searchParams
-    const {
-      page = 1,
-      limit = 20,
-      sort,
-    } = pagination as {
-      page?: number
-      limit?: number
-      sort?: { field: string; direction: 'asc' | 'desc' }
-    }
+    const { filters = {}, pagination } = searchParams
+    const page = pagination?.page ?? 1
+    const limit = pagination?.limit ?? 20
+    const sort = pagination?.sort
 
     try {
       const supabase = await this.getSupabase()
@@ -157,7 +151,7 @@ export class PropertySearchService
           })
         }
 
-        return data || []
+        return data ?? []
       }
     )
   }
@@ -191,7 +185,7 @@ export class PropertySearchService
           })
         }
 
-        return data || []
+        return (data ?? []) as unknown as Property[]
       }
     )
   }
@@ -240,71 +234,78 @@ export class PropertySearchService
    * Get property statistics and analytics
    */
   async getPropertyStats(): Promise<PropertyStats> {
-    return this.executeQuery('getPropertyStats', async (supabase) => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('price, bedrooms, bathrooms, square_feet, property_type')
-        .eq('is_active', true)
+    const fallbackStats: PropertyStats = {
+      total_properties: 0,
+      avg_price: 0,
+      median_price: 0,
+      avg_bedrooms: 0,
+      avg_bathrooms: 0,
+      avg_square_feet: 0,
+      property_type_distribution: {},
+    }
 
-      if (error) {
-        this.handleSupabaseError(error, 'getPropertyStats', {})
-      }
+    const result = await this.executeQuery(
+      'getPropertyStats',
+      async (supabase) => {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('price, bedrooms, bathrooms, square_feet, property_type')
+          .eq('is_active', true)
 
-      const properties = data || []
-      const totalProperties = properties.length
+        if (error) {
+          this.handleSupabaseError(error, 'getPropertyStats', {})
+        }
 
-      if (totalProperties === 0) {
+        const properties = data || []
+        const totalProperties = properties.length
+
+        if (totalProperties === 0) {
+          return fallbackStats
+        }
+
+        const prices = properties.map((p) => p.price).sort((a, b) => a - b)
+        const avgPrice =
+          prices.reduce((sum, price) => sum + price, 0) / totalProperties
+        const medianPrice = prices[Math.floor(totalProperties / 2)]
+
+        const avgBedrooms =
+          properties.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
+        const avgBathrooms =
+          properties.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
+
+        const propertiesWithSquareFeet = properties.filter(
+          (p) => p.square_feet !== null
+        )
+        const avgSquareFeet =
+          propertiesWithSquareFeet.length > 0
+            ? propertiesWithSquareFeet.reduce(
+                (sum, p) => sum + (p.square_feet || 0),
+                0
+              ) / propertiesWithSquareFeet.length
+            : 0
+
+        const typeDistribution = properties.reduce<Record<string, number>>(
+          (acc, p) => {
+            const type = p.property_type || 'unknown'
+            acc[type] = (acc[type] || 0) + 1
+            return acc
+          },
+          {}
+        )
+
         return {
-          total_properties: 0,
-          avg_price: 0,
-          median_price: 0,
-          avg_bedrooms: 0,
-          avg_bathrooms: 0,
-          avg_square_feet: 0,
-          property_type_distribution: {},
+          total_properties: totalProperties,
+          avg_price: Math.round(avgPrice),
+          median_price: medianPrice,
+          avg_bedrooms: Math.round(avgBedrooms * 10) / 10,
+          avg_bathrooms: Math.round(avgBathrooms * 10) / 10,
+          avg_square_feet: Math.round(avgSquareFeet),
+          property_type_distribution: typeDistribution,
         }
       }
+    )
 
-      const prices = properties.map((p) => p.price).sort((a, b) => a - b)
-      const avgPrice =
-        prices.reduce((sum, price) => sum + price, 0) / totalProperties
-      const medianPrice = prices[Math.floor(totalProperties / 2)]
-
-      const avgBedrooms =
-        properties.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
-      const avgBathrooms =
-        properties.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
-
-      const propertiesWithSquareFeet = properties.filter(
-        (p) => p.square_feet !== null
-      )
-      const avgSquareFeet =
-        propertiesWithSquareFeet.length > 0
-          ? propertiesWithSquareFeet.reduce(
-              (sum, p) => sum + (p.square_feet || 0),
-              0
-            ) / propertiesWithSquareFeet.length
-          : 0
-
-      const typeDistribution = properties.reduce(
-        (acc, p) => {
-          const type = p.property_type || 'unknown'
-          acc[type] = (acc[type] || 0) + 1
-          return acc
-        },
-        {} as Record<string, number>
-      )
-
-      return {
-        total_properties: totalProperties,
-        avg_price: Math.round(avgPrice),
-        median_price: medianPrice,
-        avg_bedrooms: Math.round(avgBedrooms * 10) / 10,
-        avg_bathrooms: Math.round(avgBathrooms * 10) / 10,
-        avg_square_feet: Math.round(avgSquareFeet),
-        property_type_distribution: typeDistribution,
-      }
-    })
+    return result ?? fallbackStats
   }
 
   /**

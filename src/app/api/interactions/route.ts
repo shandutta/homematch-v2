@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DbInteractionType } from '@/types/app'
-import type { Database, Property } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
+import type { Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import {
   createInteractionRequestSchema,
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     let householdId = userProfile?.household_id ?? null
-    let serviceClient: SupabaseClient<Database> | null = null
+    let serviceClient: SupabaseClient<AppDatabase> | null = null
 
     const fetchHouseholdIdWithServiceRole = async () => {
       try {
@@ -277,7 +278,18 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      const summaryRows = data as InteractionSummaryRow[] | null
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null
+      const isInteractionSummaryRow = (
+        value: unknown
+      ): value is InteractionSummaryRow =>
+        isRecord(value) &&
+        typeof value.interaction_type === 'string' &&
+        ['like', 'dislike', 'skip', 'view'].includes(value.interaction_type) &&
+        typeof value.count === 'number'
+      const summaryRows = Array.isArray(data)
+        ? data.filter(isInteractionSummaryRow)
+        : []
 
       const countFor = (...interactionTypes: DbInteractionType[]) => {
         if (!summaryRows) return 0
@@ -364,7 +376,16 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = queryResult
-    const typedData = data as InteractionWithProperty[] | null
+    const isInteractionWithProperty = (
+      value: unknown
+    ): value is InteractionWithProperty =>
+      typeof value === 'object' &&
+      value !== null &&
+      'created_at' in value &&
+      'property' in value
+    const typedData = Array.isArray(data)
+      ? data.filter(isInteractionWithProperty)
+      : []
 
     if (error) {
       console.error('Interactions list failed:', error)

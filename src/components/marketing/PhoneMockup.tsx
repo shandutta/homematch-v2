@@ -27,11 +27,15 @@ async function fetchMarketingCards(): Promise<MarketingCard[]> {
   try {
     const res = await fetch('/api/properties/marketing', { cache: 'no-store' })
     if (!res.ok) return []
-    const data = (await res.json()) as MarketingCard[]
-    if (Array.isArray(data)) {
-      return data.filter((c) => c?.zpid && typeof c?.imageUrl === 'string')
-    }
-    return []
+    const data: unknown = await res.json()
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    const isMarketingCard = (value: unknown): value is MarketingCard =>
+      isRecord(value) &&
+      typeof value.zpid === 'string' &&
+      (typeof value.imageUrl === 'string' || value.imageUrl === null) &&
+      typeof value.address === 'string'
+    return Array.isArray(data) ? data.filter(isMarketingCard) : []
   } catch (_error) {
     // Silently fail and return empty array for marketing demo
     return []
@@ -199,8 +203,10 @@ function PropertyCard({
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={handleDragEnd}
       onDragStart={() => {
-        const el = document.activeElement as HTMLElement | null
-        if (el?.blur) el.blur()
+        const el = document.activeElement
+        if (el instanceof HTMLElement && typeof el.blur === 'function') {
+          el.blur()
+        }
       }}
       animate={{ scale: 1 - index * 0.05, zIndex: 100 - index }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -218,10 +224,10 @@ function PropertyCard({
             placeholder="blur"
             blurDataURL={getPropertyBlurPlaceholder(property.image)}
             draggable={false}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              if (target && target.src !== placeholderProperties[0]?.image) {
-                target.src = placeholderProperties[0]?.image
+            onError={(event) => {
+              const target = event.currentTarget
+              if (target.src !== placeholderProperties[0]?.image) {
+                target.src = placeholderProperties[0]?.image || target.src
               }
             }}
           />
@@ -237,15 +243,13 @@ function PropertyCard({
             aria-hidden="true"
             style={{ opacity: likeOpacity }}
           >
-            <div
+            <MotionDiv
               className="flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-600/95 px-4 py-2 text-white shadow-lg backdrop-blur-sm"
-              style={{
-                transform: `scale(${(likeScale as unknown as number) || 1})`,
-              }}
+              style={{ scale: likeScale }}
             >
               <Heart className="h-4 w-4 fill-current" aria-hidden="true" />
               <span className="text-sm font-semibold tracking-wide">LIKED</span>
-            </div>
+            </MotionDiv>
           </MotionDiv>
 
           <MotionDiv
@@ -253,17 +257,15 @@ function PropertyCard({
             aria-hidden="true"
             style={{ opacity: passOpacity }}
           >
-            <div
+            <MotionDiv
               className="flex items-center gap-2 rounded-full border border-rose-300/40 bg-rose-600/95 px-4 py-2 text-white shadow-lg backdrop-blur-sm"
-              style={{
-                transform: `scale(${(passScale as unknown as number) || 1})`,
-              }}
+              style={{ scale: passScale }}
             >
               <X className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-semibold tracking-wide">
                 PASSED
               </span>
-            </div>
+            </MotionDiv>
           </MotionDiv>
 
           {/* "It's a Match!" overlay when swiping right far enough */}

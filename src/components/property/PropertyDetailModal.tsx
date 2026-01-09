@@ -75,13 +75,7 @@ export function PropertyDetailModal({
     [property?.images]
   )
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const neighborhoodData =
-    neighborhood ||
-    (property as (Property & { neighborhood?: Neighborhood | null }) | null)
-      ?.neighborhood ||
-    (property as (Property & { neighborhoods?: Neighborhood | null }) | null)
-      ?.neighborhoods ||
-    null
+  const neighborhoodData = neighborhood || getPropertyNeighborhood(property)
   const { data: neighborhoodVibes } = useNeighborhoodVibes(
     neighborhoodData?.id || property?.neighborhood_id || undefined
   )
@@ -571,4 +565,23 @@ export function PropertyDetailModal({
       </DialogContent>
     </Dialog>
   )
+}
+
+function getPropertyNeighborhood(
+  property?: Property | null
+): Neighborhood | null {
+  if (!property) return null
+  const isNeighborhood = (value: unknown): value is Neighborhood =>
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value
+
+  if ('neighborhood' in property && isNeighborhood(property.neighborhood)) {
+    return property.neighborhood
+  }
+  if ('neighborhoods' in property && isNeighborhood(property.neighborhoods)) {
+    return property.neighborhoods
+  }
+  return null
 }

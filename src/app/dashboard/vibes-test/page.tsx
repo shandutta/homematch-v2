@@ -123,6 +123,20 @@ interface GenerateResponse {
   error?: string
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isPropertyVibesData = (value: unknown): value is PropertyVibesData =>
+  isRecord(value) &&
+  typeof value.id === 'string' &&
+  typeof value.property_id === 'string'
+
+const isGenerateResponse = (value: unknown): value is GenerateResponse =>
+  isRecord(value) && typeof value.ok === 'boolean'
+
+const isZillowVibesResponse = (value: unknown): value is ZillowVibesResponse =>
+  isRecord(value) && typeof value.ok === 'boolean'
+
 export default function VibesTestPage() {
   const [cronSecret, setCronSecret] = useState('')
   const [zillowInput, setZillowInput] = useState('')
@@ -138,7 +152,12 @@ export default function VibesTestPage() {
     queryFn: async () => {
       const response = await fetch('/api/properties/vibes?limit=20')
       if (!response.ok) throw new Error('Failed to fetch vibes')
-      return response.json() as Promise<{ data: PropertyVibesData[] }>
+      const data: unknown = await response.json()
+      const items =
+        isRecord(data) && Array.isArray(data.data)
+          ? data.data.filter(isPropertyVibesData)
+          : []
+      return { data: items }
     },
   })
 
@@ -173,10 +192,17 @@ export default function VibesTestPage() {
         }
       )
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to generate vibes')
+        const errorData: unknown = await response.json()
+        const message =
+          isRecord(errorData) && typeof errorData.error === 'string'
+            ? errorData.error
+            : 'Failed to generate vibes'
+        throw new Error(message)
       }
-      return response.json() as Promise<GenerateResponse>
+      const data: unknown = await response.json()
+      return isGenerateResponse(data)
+        ? data
+        : { ok: false, error: 'Invalid response' }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['property-vibes-test'] })
@@ -194,11 +220,14 @@ export default function VibesTestPage() {
           body: JSON.stringify({ zillowUrl: input }),
         }
       )
-      const data = (await response.json()) as ZillowVibesResponse
+      const data: unknown = await response.json()
+      const parsed = isZillowVibesResponse(data)
+        ? data
+        : { ok: false, error: 'Invalid response' }
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate vibes from Zillow')
+        throw new Error(parsed.error || 'Failed to generate vibes from Zillow')
       }
-      return data
+      return parsed
     },
     onSuccess: (data) => {
       setZillowResult(data)

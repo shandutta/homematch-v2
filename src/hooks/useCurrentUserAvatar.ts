@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AvatarData } from '@/lib/constants/avatars'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isAvatarData = (value: unknown): value is AvatarData =>
+  isRecord(value) &&
+  (value.type === 'preset' || value.type === 'custom') &&
+  typeof value.value === 'string'
+
 interface UserAvatarState {
   displayName: string | null
   email: string | null
@@ -49,19 +57,25 @@ export function useCurrentUserAvatar(): UserAvatarState {
           .eq('id', user.id)
           .single()
 
-        const preferences = (profile?.preferences || {}) as {
-          display_name?: string
-          avatar?: AvatarData
-        }
+        const preferences = isRecord(profile?.preferences)
+          ? profile.preferences
+          : {}
+        const displayName =
+          typeof preferences.display_name === 'string'
+            ? preferences.display_name
+            : undefined
+        const avatar = isAvatarData(preferences.avatar)
+          ? preferences.avatar
+          : null
 
         setState({
           displayName:
-            preferences.display_name ||
+            displayName ||
             user.user_metadata?.full_name ||
             user.email?.split('@')[0] ||
             null,
           email: user.email || null,
-          avatar: preferences.avatar || null,
+          avatar,
           isLoading: false,
         })
       } catch (error) {

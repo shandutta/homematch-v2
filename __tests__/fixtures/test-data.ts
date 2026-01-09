@@ -43,7 +43,7 @@ export const getWorkerTestUser = (workerIndex: number = 0) => {
         notification_settings: {
           email_enabled: true,
           push_enabled: true,
-          frequency: 'daily' as const,
+          frequency: 'daily',
         },
       },
     },
@@ -69,7 +69,7 @@ export const TEST_USERS = {
         notification_settings: {
           email_enabled: true,
           push_enabled: true,
-          frequency: 'daily' as const,
+          frequency: 'daily',
         },
       },
       created_at: '2024-01-01T00:00:00Z',
@@ -99,7 +99,7 @@ export const TEST_USERS = {
         notification_settings: {
           email_enabled: false,
           push_enabled: true,
-          frequency: 'weekly' as const,
+          frequency: 'weekly',
         },
       },
       created_at: '2024-01-01T00:00:00Z',
@@ -121,7 +121,7 @@ export const TEST_USERS = {
       household: null,
     },
   },
-} as const
+}
 
 export const TEST_HOUSEHOLDS = {
   primary: {
@@ -145,7 +145,7 @@ export const TEST_HOUSEHOLDS = {
     created_at: '2024-01-03T00:00:00Z',
     updated_at: '2024-01-03T00:00:00Z',
   },
-} as const
+}
 
 export const TEST_MESSAGES = {
   clipboard: {
@@ -164,7 +164,7 @@ export const TEST_MESSAGES = {
     signOutSuccess: 'Signed out successfully',
     signInError: 'Invalid email or password',
   },
-} as const
+}
 
 export const TEST_SELECTORS = {
   // Household section
@@ -193,7 +193,7 @@ export const TEST_SELECTORS = {
   // Navigation
   dashboardLink: '[data-testid="nav-dashboard"]',
   profileLink: '[data-testid="nav-profile"]',
-} as const
+}
 
 export const TEST_ROUTES = {
   auth: {
@@ -212,12 +212,12 @@ export const TEST_ROUTES = {
     users: '/api/users',
     auth: '/api/auth',
   },
-} as const
+}
 
 /**
  * Helper functions for test data generation
  */
-export const createTestProfile = (overrides: any = {}) => ({
+export const createTestProfile = (overrides: Record<string, unknown> = {}) => ({
   ...TEST_USERS.withHousehold.profile,
   ...overrides,
 })
@@ -237,7 +237,7 @@ export const MOCK_SCENARIOS = {
   userWithoutHousehold: () => createTestProfile({ household: null }),
   emptyHousehold: () => createTestHousehold(),
   fullHousehold: () => createTestHousehold(),
-} as const
+}
 
 /**
  * Timeout constants for different test operations
@@ -250,4 +250,4 @@ export const TEST_TIMEOUTS = {
   clipboard: 3000,
   toast: 5000,
   authentication: 60000,
-} as const
+}

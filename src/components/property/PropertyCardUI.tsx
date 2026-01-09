@@ -103,12 +103,15 @@ export function PropertyCardUI({
       ? ['map', 'story']
       : ['story', 'map']
 
+    const isDetailView = (value: string | null): value is 'story' | 'map' =>
+      value === 'story' || value === 'map'
+
     return orderedViews
       .map((view) => {
         if (view === 'story') return shouldShowStory ? view : null
         return shouldShowMap ? view : null
       })
-      .filter(Boolean) as Array<'story' | 'map'>
+      .filter(isDetailView)
   }, [fullHeight, shouldShowMap, shouldShowStory])
 
   const [detailView, setDetailView] = useState<'story' | 'map' | null>(null)

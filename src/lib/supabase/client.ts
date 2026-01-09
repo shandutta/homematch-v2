@@ -1,9 +1,10 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import { isInvalidRefreshTokenError } from './auth-helpers'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 
-const clearStaleSession = async (supabase: SupabaseClient) => {
+const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
   try {
     // Local scope avoids hitting the network when the refresh token is already invalid
     await supabase.auth.signOut({ scope: 'local' })
@@ -12,15 +13,26 @@ const clearStaleSession = async (supabase: SupabaseClient) => {
   }
 }
 
-const withRefreshRecovery = (supabase: SupabaseClient) => {
-  const describe = (error: unknown) => ({
-    code: (error as AuthApiError | undefined)?.code,
-    message: (error as AuthApiError | undefined)?.message,
-  })
+const withRefreshRecovery = (supabase: SupabaseClient<AppDatabase>) => {
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+  const describe = (error: unknown): { code?: string; message?: string } => {
+    if (error instanceof AuthApiError) {
+      return { code: error.code, message: error.message }
+    }
+    if (isRecord(error)) {
+      return {
+        code: typeof error.code === 'string' ? error.code : undefined,
+        message: typeof error.message === 'string' ? error.message : undefined,
+      }
+    }
+    return {}
+  }
 
   const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
 
-  supabase.auth.getSession = (async () => {
+  const getSessionWithRecovery: typeof supabase.auth.getSession = async () => {
     try {
       const result = await originalGetSession()
 
@@ -45,10 +57,11 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
       }
       throw error
     }
-  }) as typeof supabase.auth.getSession
+  }
+  supabase.auth.getSession = getSessionWithRecovery
 
   const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  supabase.auth.getUser = (async () => {
+  const getUserWithRecovery: typeof supabase.auth.getUser = async () => {
     try {
       const result = await originalGetUser()
 
@@ -58,7 +71,7 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
           describe(result.error)
         )
         await clearStaleSession(supabase)
-        return { data: { user: null }, error: null }
+        return originalGetUser()
       }
 
       return result
@@ -69,11 +82,12 @@ const withRefreshRecovery = (supabase: SupabaseClient) => {
           describe(error)
         )
         await clearStaleSession(supabase)
-        return { data: { user: null }, error: null }
+        return originalGetUser()
       }
       throw error
     }
-  }) as typeof supabase.auth.getUser
+  }
+  supabase.auth.getUser = getUserWithRecovery
 }
 
 export const __withRefreshRecovery = withRefreshRecovery
@@ -95,30 +109,38 @@ export function createClient() {
   // Keep cookie/storage key aligned with middleware expectations and Supabase project fingerprint
   const storageKey = getSupabaseAuthStorageKey(hostname)
 
-  const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-    cookieOptions: {
-      name: storageKey,
-      path: '/',
-      sameSite: 'lax',
-    },
-    auth: {
-      detectSessionInUrl: true,
-      storageKey,
-      autoRefreshToken: true,
-      persistSession: true,
-    },
-  })
+  const supabase = createBrowserClient<AppDatabase>(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookieOptions: {
+        name: storageKey,
+        path: '/',
+        sameSite: 'lax',
+      },
+      auth: {
+        detectSessionInUrl: true,
+        storageKey,
+        autoRefreshToken: true,
+        persistSession: true,
+      },
+    }
+  )
 
   withRefreshRecovery(supabase)
 
   return supabase
 }
 
+declare global {
+  interface Window {
+    createSupabaseClient?: typeof createClient
+  }
+}
+
 if (
   typeof window !== 'undefined' &&
   process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 ) {
-  ;(
-    window as typeof window & { createSupabaseClient?: typeof createClient }
-  ).createSupabaseClient = createClient
+  window.createSupabaseClient = createClient
 }

@@ -51,6 +51,18 @@ export type BoundingBox = {
 
 export type PostGISGeometry = unknown // PostGIS geometry column (from database)
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isCoordinateTuple = (value: unknown): value is CoordinateTuple =>
+  Array.isArray(value) &&
+  value.length === 2 &&
+  typeof value[0] === 'number' &&
+  typeof value[1] === 'number'
+
+const isCoordinateTupleArray = (value: unknown): value is CoordinateTuple[] =>
+  Array.isArray(value) && value.every(isCoordinateTuple)
+
 // Validation schemas
 export const latLngSchema = z.object({
   lat: z.number().min(-90).max(90, 'Latitude must be between -90 and 90'),
@@ -94,14 +106,11 @@ export function parsePostGISGeometry(geometry: PostGISGeometry): LatLng | null {
   try {
     // Handle GeoJSON Point format from PostGIS
     if (
-      typeof geometry === 'object' &&
-      'type' in geometry &&
+      isRecord(geometry) &&
       geometry.type === 'Point' &&
-      'coordinates' in geometry &&
-      Array.isArray(geometry.coordinates) &&
-      geometry.coordinates.length === 2
+      isCoordinateTuple(geometry.coordinates)
     ) {
-      const [lng, lat] = geometry.coordinates as [number, number]
+      const [lng, lat] = geometry.coordinates
       return { lat, lng }
     }
 
@@ -156,17 +165,15 @@ export function parsePostGISPolygon(
     return normalizeMultiPolygonCoordinates(geometry)
   }
 
-  if (typeof geometry === 'object') {
-    const candidate = geometry as {
-      type?: string
-      coordinates?: unknown
-    }
-    if (candidate.type === 'Polygon' && candidate.coordinates) {
-      const rings = normalizePolygonCoordinates(candidate.coordinates)
+  if (isRecord(geometry)) {
+    const type = typeof geometry.type === 'string' ? geometry.type : null
+    const coordinates = geometry.coordinates
+    if (type === 'Polygon' && coordinates) {
+      const rings = normalizePolygonCoordinates(coordinates)
       return rings ? [rings] : null
     }
-    if (candidate.type === 'MultiPolygon' && candidate.coordinates) {
-      return normalizeMultiPolygonCoordinates(candidate.coordinates)
+    if (type === 'MultiPolygon' && coordinates) {
+      return normalizeMultiPolygonCoordinates(coordinates)
     }
   }
 
@@ -198,14 +205,14 @@ function normalizePolygonCoordinates(input: unknown): PolygonRings | null {
 
   if (input.length === 0) return null
 
-  if (Array.isArray(input[0]) && typeof input[0][0] === 'number') {
-    const ring = parseCoordinateRing(input as CoordinateTuple[])
+  if (isCoordinateTupleArray(input)) {
+    const ring = parseCoordinateRing(input)
     return ring ? [ring] : null
   }
 
   const rings: LatLng[][] = []
   for (const ringInput of input) {
-    const ring = parseCoordinateRing(ringInput as CoordinateTuple[])
+    const ring = parseCoordinateRing(ringInput)
     if (ring) rings.push(ring)
   }
 
@@ -228,15 +235,13 @@ function normalizeMultiPolygonCoordinates(
   return polygons.length > 0 ? polygons : null
 }
 
-function parseCoordinateRing(
-  coords: CoordinateTuple[] | unknown
-): LatLng[] | null {
+function parseCoordinateRing(coords: unknown): LatLng[] | null {
   if (!Array.isArray(coords) || coords.length < 3) return null
 
   const ring: LatLng[] = []
   for (const tuple of coords) {
-    if (!Array.isArray(tuple) || tuple.length < 2) return null
-    const [lng, lat] = tuple as CoordinateTuple
+    if (!isCoordinateTuple(tuple)) return null
+    const [lng, lat] = tuple
     if (!isValidLongitude(lng) || !isValidLatitude(lat)) return null
     ring.push({ lat, lng })
   }

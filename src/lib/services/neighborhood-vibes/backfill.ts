@@ -5,6 +5,7 @@ import {
   type NeighborhoodVibesResult,
 } from '@/lib/services/neighborhood-vibes/neighborhood-vibes-service'
 import type { NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
+import type { AppDatabase } from '@/types/app-database'
 import type { Database } from '@/types/database'
 
 type Logger = {
@@ -20,6 +21,26 @@ const STATE_RE = /^[A-Z]{2}$/
 
 const defaultSleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isNeighborhoodStatsResult = (
+  value: unknown
+): value is NeighborhoodStatsResult => {
+  if (!isRecord(value)) return false
+  const requiredKeys = [
+    'total_properties',
+    'avg_price',
+    'median_price',
+    'price_range_min',
+    'price_range_max',
+    'avg_bedrooms',
+    'avg_bathrooms',
+    'avg_square_feet',
+  ]
+  return requiredKeys.every((key) => key in value)
+}
 
 export type BackfillNeighborhoodVibesArgs = {
   limit: number | null
@@ -65,7 +86,7 @@ export type BackfillNeighborhoodVibesResult = {
 }
 
 export type BackfillNeighborhoodVibesDeps = {
-  supabase: SupabaseClient<Database>
+  supabase: SupabaseClient<AppDatabase>
   neighborhoodVibesService: {
     generateVibes: (
       context: NeighborhoodContext
@@ -107,10 +128,11 @@ function normalizeStates(states: string[] | null | undefined): string[] | null {
 }
 
 function maybeTableMissing(error: unknown): boolean {
-  const maybe = error as { code?: string; message?: string } | null
-  if (maybe?.code === '42P01') return true
-  const message = maybe?.message
-  if (typeof message !== 'string') return false
+  if (!isRecord(error)) return false
+  const code = typeof error.code === 'string' ? error.code : undefined
+  if (code === '42P01') return true
+  const message = typeof error.message === 'string' ? error.message : undefined
+  if (!message) return false
   return (
     message.includes("Could not find the table 'public.neighborhood_vibes'") ||
     message.includes('schema cache')
@@ -123,7 +145,7 @@ type StatsState = {
 }
 
 async function fetchNeighborhoodStats(
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient<AppDatabase>,
   neighborhoodId: string,
   logger: Logger,
   state: StatsState
@@ -136,7 +158,8 @@ async function fetchNeighborhoodStats(
 
   if (error) {
     const errorMessage = error.message
-    const errorCode = (error as { code?: string } | null)?.code
+    const errorCode =
+      isRecord(error) && typeof error.code === 'string' ? error.code : undefined
 
     const isLikelyGlobalBug =
       errorCode === '42702' || errorMessage.includes('is ambiguous')
@@ -163,15 +186,12 @@ async function fetchNeighborhoodStats(
     return null
   }
 
-  if (Array.isArray(data)) {
-    return (data[0] as NeighborhoodStatsResult) || null
-  }
-
-  return (data as NeighborhoodStatsResult) || null
+  const candidate = Array.isArray(data) ? data[0] : data
+  return isNeighborhoodStatsResult(candidate) ? candidate : null
 }
 
 async function buildNeighborhoodContext(
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient<AppDatabase>,
   neighborhood: NeighborhoodRow,
   sampleLimit: number,
   logger: Logger,
@@ -206,13 +226,28 @@ async function buildNeighborhoodContext(
     })
   }
 
-  const safeListings = (listings || []) as Array<{
-    address: string
-    price: number | null
-    bedrooms: number | null
-    bathrooms: number | null
-    property_type: string | null
-  }>
+  const safeListings = (Array.isArray(listings) ? listings : [])
+    .map((listing) => {
+      if (!isRecord(listing)) return null
+      const address =
+        typeof listing.address === 'string' ? listing.address : null
+      if (!address) return null
+      return {
+        address,
+        price: typeof listing.price === 'number' ? listing.price : null,
+        bedrooms:
+          typeof listing.bedrooms === 'number' ? listing.bedrooms : null,
+        bathrooms:
+          typeof listing.bathrooms === 'number' ? listing.bathrooms : null,
+        property_type:
+          typeof listing.property_type === 'string'
+            ? listing.property_type
+            : null,
+      }
+    })
+    .filter((listing): listing is NonNullable<typeof listing> =>
+      Boolean(listing)
+    )
 
   return {
     neighborhoodId: neighborhood.id,
@@ -330,7 +365,7 @@ export async function backfillNeighborhoodVibes(
       )
     }
 
-    const neighborhoods = (rawNeighborhoods || []) as NeighborhoodRow[]
+    const neighborhoods = rawNeighborhoods ?? []
     if (neighborhoods.length === 0) break
 
     const neighborhoodIds = neighborhoods.map((n) => n.id)
@@ -339,7 +374,7 @@ export async function backfillNeighborhoodVibes(
     const orderedNeighborhoods = args.neighborhoodIds
       ? args.neighborhoodIds
           .map((id) => neighborhoodById.get(id))
-          .filter(Boolean)
+          .filter((value): value is NeighborhoodRow => Boolean(value))
       : neighborhoods
 
     const existingSet = new Set<string>()
@@ -376,7 +411,7 @@ export async function backfillNeighborhoodVibes(
         break
       }
 
-      const neighborhood = orderedNeighborhoods[i] as NeighborhoodRow
+      const neighborhood = orderedNeighborhoods[i]
       lastNeighborhoodId = neighborhood.id
 
       if (!args.force && existingSet.has(neighborhood.id)) {

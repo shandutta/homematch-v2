@@ -78,20 +78,27 @@ class PerformanceMonitor {
 export const performanceMonitor = new PerformanceMonitor()
 let performanceSequence = 0
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const getStatusCode = (value: unknown): number | undefined =>
+  isRecord(value) && typeof value.status === 'number' ? value.status : undefined
+
 // API route performance wrapper
-export function withPerformanceTracking<
-  T extends (...args: unknown[]) => Promise<unknown>,
->(handler: T, routeName: string): T {
-  return (async (...args) => {
+export function withPerformanceTracking<Args extends unknown[], Result>(
+  handler: (...args: Args) => Promise<Result>,
+  routeName: string
+): (...args: Args) => Promise<Result> {
+  return async (...args: Args) => {
     const runId = ++performanceSequence
     const markName = `${routeName}-${runId}-start`
     performanceMonitor.mark(markName)
 
     try {
       const result = await handler(...args)
-      const typedResult = result as { status?: number }
+      const status = getStatusCode(result) ?? 200
       performanceMonitor.measure(`${routeName}`, markName, {
-        status: typedResult.status || 200,
+        status,
       })
       return result
     } catch (error) {
@@ -101,5 +108,5 @@ export function withPerformanceTracking<
       })
       throw error
     }
-  }) as T
+  }
 }

@@ -1780,7 +1780,7 @@ export const Constants = {
   public: {
     Enums: {},
   },
-} as const
+}
 
 // Convenience type aliases for common table types
 export type Property = Tables<'properties'>

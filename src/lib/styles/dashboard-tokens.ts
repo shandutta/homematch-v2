@@ -172,10 +172,16 @@ export const getSpacing = (size: keyof typeof dashboardTokens.spacing) =>
 
 export const getColor = (color: string, shade?: string) => {
   const [colorName] = color.split('.')
-  const colorObj =
-    dashboardTokens.colors[colorName as keyof typeof dashboardTokens.colors]
-  if (shade && typeof colorObj === 'object') {
-    return (colorObj as Record<string, string>)[shade]
+  const isColorKey = (
+    value: string
+  ): value is keyof typeof dashboardTokens.colors =>
+    value in dashboardTokens.colors
+  const colorObj = isColorKey(colorName)
+    ? dashboardTokens.colors[colorName]
+    : undefined
+  if (shade && colorObj && typeof colorObj === 'object') {
+    const record = colorObj as Record<string, string>
+    return shade in record ? record[shade] : undefined
   }
   return colorObj
 }

@@ -164,7 +164,7 @@ export const CouplesMessages = {
     activity: 'Household Activity',
     household: 'Household Search',
   },
-} as const
+}
 
 // Helper functions for dynamic messaging
 export const getRandomEncouragement = (
@@ -203,12 +203,16 @@ export const getEmptyStateText = (
   state: 'loading' | 'empty' | 'error',
   context?: string
 ) => {
+  const isLoadingKey = (
+    value: string
+  ): value is keyof typeof CouplesMessages.loading =>
+    value in CouplesMessages.loading
   switch (state) {
     case 'loading':
       return context
-        ? CouplesMessages.loading[
-            context as keyof typeof CouplesMessages.loading
-          ] || CouplesMessages.loading.general
+        ? isLoadingKey(context)
+          ? CouplesMessages.loading[context]
+          : CouplesMessages.loading.general
         : CouplesMessages.loading.general
     case 'empty':
       return CouplesMessages.empty.noLikes

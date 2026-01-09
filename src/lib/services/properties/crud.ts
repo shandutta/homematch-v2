@@ -79,7 +79,7 @@ export class PropertyCrudService extends BaseService {
     this.validatePropertyData(property)
 
     return this.executeQuery('createProperty', async (supabase) => {
-      const sanitizedProperty = this.sanitizeInput(property) as PropertyInsert
+      const sanitizedProperty = this.sanitizeInput<PropertyInsert>(property)
 
       const { data, error } = await supabase
         .from('properties')
@@ -138,7 +138,7 @@ export class PropertyCrudService extends BaseService {
   async deleteProperty(propertyId: string): Promise<boolean> {
     this.validateRequired({ propertyId })
 
-    return this.executeQuery('deleteProperty', async (supabase) => {
+    return this.executeBooleanQuery('deleteProperty', async (supabase) => {
       // Soft delete by setting is_active to false
       const { error } = await supabase
         .from('properties')

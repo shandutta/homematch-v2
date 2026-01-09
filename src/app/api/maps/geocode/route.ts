@@ -35,11 +35,6 @@ interface GoogleGeocodeResult {
   types: string[]
 }
 
-interface GoogleGeocodeResponse {
-  status: string
-  results: GoogleGeocodeResult[]
-}
-
 /**
  * Secure Geocoding API Proxy
  * Rate-limited server-side proxy for Google Maps Geocoding API
@@ -94,17 +89,36 @@ export async function POST(request: NextRequest) {
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${params}`
 
     const response = await fetch(geocodeUrl)
-    const data = await response.json()
+    const data: unknown = await response.json()
 
-    if (data.status !== 'OK') {
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    const isGeocodeResult = (value: unknown): value is GoogleGeocodeResult =>
+      isRecord(value) &&
+      typeof value.formatted_address === 'string' &&
+      isRecord(value.geometry) &&
+      isRecord(value.geometry.location) &&
+      typeof value.geometry.location.lat === 'number' &&
+      typeof value.geometry.location.lng === 'number' &&
+      typeof value.geometry.location_type === 'string' &&
+      typeof value.place_id === 'string' &&
+      Array.isArray(value.types)
+
+    const status = isRecord(data) ? data.status : undefined
+
+    if (status !== 'OK') {
       return NextResponse.json(
-        { error: 'Geocoding failed', status: data.status },
+        { error: 'Geocoding failed', status },
         { status: 400 }
       )
     }
 
     // Return sanitized results with coordinate validation
-    const results: GeocodeResult[] = (data as GoogleGeocodeResponse).results
+    const resultsRaw =
+      isRecord(data) && Array.isArray(data.results)
+        ? data.results.filter(isGeocodeResult)
+        : []
+    const results: GeocodeResult[] = resultsRaw
       .filter((result: GoogleGeocodeResult) => {
         // Validate coordinates before returning
         const coords = {

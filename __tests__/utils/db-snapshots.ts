@@ -3,17 +3,25 @@
  * Enables saving and restoring database states for efficient testing
  */
 import { createClient } from '@/lib/supabase/standalone'
+import type { Database } from '@/types/database'
 import fs from 'fs/promises'
 import path from 'path'
 import { TestDataFactory } from './test-data-factory'
 
 type SupabaseClient = ReturnType<typeof createClient>
+type TableName =
+  | keyof Database['public']['Tables']
+  | 'household_members'
+  | 'property_images'
+
+const asDbTable = (table: TableName) =>
+  table as keyof Database['public']['Tables']
 
 export interface SnapshotMetadata {
   id: string
   name: string
   description: string
-  tables: string[]
+  tables: TableName[]
   recordCounts: Record<string, number>
   createdAt: string
   version: string
@@ -21,7 +29,7 @@ export interface SnapshotMetadata {
 
 export interface SnapshotData {
   metadata: SnapshotMetadata
-  data: Record<string, any[]>
+  data: Record<string, unknown[]>
 }
 
 /**
@@ -57,7 +65,7 @@ export class DatabaseSnapshotManager {
    */
   async createSnapshot(
     name: string,
-    tables: string[] = [
+    tables: TableName[] = [
       'properties',
       'households',
       'user_property_interactions',
@@ -67,13 +75,13 @@ export class DatabaseSnapshotManager {
     await this.ensureSnapshotDir()
 
     const snapshotId = `${name}_${Date.now()}`
-    const data: Record<string, any[]> = {}
+    const data: Record<string, unknown[]> = {}
     const recordCounts: Record<string, number> = {}
 
     // Export data from each table
     for (const table of tables) {
-      const { data: tableData, error } = await (this.client as any)
-        .from(table)
+      const { data: tableData, error } = await this.client
+        .from(asDbTable(table))
         .select('*')
         .order('created_at', { ascending: true })
 
@@ -115,7 +123,7 @@ export class DatabaseSnapshotManager {
   async loadSnapshot(snapshotId: string): Promise<SnapshotData> {
     const snapshotPath = path.join(this.snapshotDir, `${snapshotId}.json`)
     const snapshotContent = await fs.readFile(snapshotPath, 'utf-8')
-    const snapshot = JSON.parse(snapshotContent) as SnapshotData
+    const snapshot: SnapshotData = JSON.parse(snapshotContent)
 
     this.currentSnapshot = snapshot
     return snapshot
@@ -128,7 +136,7 @@ export class DatabaseSnapshotManager {
     const snapshot = await this.loadSnapshot(snapshotId)
 
     // Complete clearing order for database tables (auth.users handled separately)
-    const clearOrder = [
+    const clearOrder: TableName[] = [
       'user_property_interactions',
       'household_members',
       'property_images',
@@ -141,8 +149,8 @@ export class DatabaseSnapshotManager {
     for (const table of clearOrder) {
       try {
         // Use truncate-like approach: delete all records without conditions
-        const { error } = await (this.client as any)
-          .from(table)
+        const { error } = await this.client
+          .from(asDbTable(table))
           .delete()
           .gte('created_at', '1900-01-01') // Match all records with a date condition
 
@@ -160,7 +168,7 @@ export class DatabaseSnapshotManager {
     }
 
     // Restore data in proper dependency order (auth.users managed separately)
-    const restoreOrder = [
+    const restoreOrder: TableName[] = [
       // user_profiles are preserved to avoid wiping test users
       'households', // Independent table
       'properties', // Independent table
@@ -179,12 +187,15 @@ export class DatabaseSnapshotManager {
             const batch = tableData.slice(i, i + batchSize)
 
             // Use upsert to handle conflicts gracefully
-            const { error } = await (this.client as any)
-              .from(table)
-              .upsert(batch, {
-                onConflict: 'id',
-                ignoreDuplicates: false,
-              })
+            const { error } = await this.client
+              .from(asDbTable(table))
+              .upsert(
+                batch as unknown as Database['public']['Tables'][keyof Database['public']['Tables']]['Insert'][],
+                {
+                  onConflict: 'id',
+                  ignoreDuplicates: false,
+                }
+              )
 
             if (error) {
               if (process.env.DEBUG_SNAPSHOTS) {
@@ -196,10 +207,15 @@ export class DatabaseSnapshotManager {
               // Try individual inserts as fallback
               for (const record of batch) {
                 try {
-                  await (this.client as any).from(table).upsert(record, {
-                    onConflict: 'id',
-                    ignoreDuplicates: true,
-                  })
+                  await this.client
+                    .from(asDbTable(table))
+                    .upsert(
+                      record as unknown as Database['public']['Tables'][keyof Database['public']['Tables']]['Insert'],
+                      {
+                        onConflict: 'id',
+                        ignoreDuplicates: true,
+                      }
+                    )
                 } catch (recordError) {
                   // Silent failure for individual records
                   if (process.env.DEBUG_SNAPSHOTS) {
@@ -234,7 +250,7 @@ export class DatabaseSnapshotManager {
       if (file.endsWith('.json')) {
         const snapshotPath = path.join(this.snapshotDir, file)
         const content = await fs.readFile(snapshotPath, 'utf-8')
-        const snapshot = JSON.parse(content) as SnapshotData
+        const snapshot: SnapshotData = JSON.parse(content)
         snapshots.push(snapshot.metadata)
       }
     }
@@ -256,13 +272,20 @@ export class DatabaseSnapshotManager {
   /**
    * Create a diff between current database and a snapshot
    */
-  async diffWithSnapshot(snapshotId: string): Promise<Record<string, any>> {
+  async diffWithSnapshot(
+    snapshotId: string
+  ): Promise<
+    Record<string, { added: number; snapshot: number; current: number }>
+  > {
     const snapshot = await this.loadSnapshot(snapshotId)
-    const diff: Record<string, any> = {}
+    const diff: Record<
+      string,
+      { added: number; snapshot: number; current: number }
+    > = {}
 
     for (const table of snapshot.metadata.tables) {
-      const { data: currentData } = await (this.client as any)
-        .from(table)
+      const { data: currentData } = await this.client
+        .from(asDbTable(table))
         .select('*')
         .order('created_at', { ascending: true })
 
@@ -296,8 +319,10 @@ export class TestScenarioSnapshots {
    */
   async createNewUserSnapshot(): Promise<SnapshotMetadata> {
     // Create a fresh user with no interactions
+    const newUserPreferences: Database['public']['Tables']['user_profiles']['Update']['preferences'] =
+      { name: 'New User' }
     const _user = await this.factory.createUser({
-      preferences: { name: 'New User' } as any,
+      preferences: newUserPreferences,
     })
 
     // Create available properties
@@ -368,12 +393,16 @@ export class TestScenarioSnapshots {
     )
 
     // Create users with location preferences
+    const seattlePreferences: Database['public']['Tables']['user_profiles']['Update']['preferences'] =
+      { preferred_cities: ['Seattle'] }
     const _seattleUser = await this.factory.createUser({
-      preferences: { preferred_cities: ['Seattle'] } as any,
+      preferences: seattlePreferences,
     })
 
+    const bellevuePreferences: Database['public']['Tables']['user_profiles']['Update']['preferences'] =
+      { preferred_cities: ['Bellevue'] }
     const _bellevueUser = await this.factory.createUser({
-      preferences: { preferred_cities: ['Bellevue'] } as any,
+      preferences: bellevuePreferences,
     })
 
     return await this.manager.createSnapshot(
@@ -419,12 +448,14 @@ export class TestScenarioSnapshots {
       const randomUser = users[Math.floor(Math.random() * users.length)]
       const randomProperty =
         properties[Math.floor(Math.random() * properties.length)]
-      const interactionType = Math.random() > 0.5 ? 'like' : 'dislike'
+      const interactionType = (Math.random() > 0.5 ? 'like' : 'dislike') as
+        | 'like'
+        | 'dislike'
 
       await this.factory.createInteraction(
         randomUser.id,
         randomProperty.id,
-        interactionType as any
+        interactionType
       )
     }
 
@@ -457,19 +488,24 @@ export class TestScenarioSnapshots {
  */
 export function withSnapshot(snapshotName: string) {
   return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
+    _target: object,
+    _propertyKey: string,
+    descriptor: TypedPropertyDescriptor<
+      (...args: unknown[]) => Promise<unknown>
+    >
   ) {
     const originalMethod = descriptor.value
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const manager = new DatabaseSnapshotManager()
 
       // Restore snapshot before test
       await manager.restoreSnapshot(snapshotName)
 
       // Run test
+      if (!originalMethod) {
+        return undefined
+      }
       const result = await originalMethod.apply(this, args)
 
       // Optionally clean up or save state

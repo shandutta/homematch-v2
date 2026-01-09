@@ -9,7 +9,7 @@ import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import { createClient as createStandaloneClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
 import type {
   IBaseService,
   ISupabaseClientFactory,
@@ -23,13 +23,16 @@ import {
   type ErrorHandlingConfig,
 } from './errors'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 /**
  * Default Supabase client factory
  */
 export class DefaultSupabaseClientFactory implements ISupabaseClientFactory {
   async createClient(
     _config?: ClientConfig
-  ): Promise<SupabaseClient<Database>> {
+  ): Promise<SupabaseClient<AppDatabase>> {
     if (typeof window === 'undefined') {
       return await createServerClient()
     }
@@ -52,7 +55,7 @@ export abstract class BaseService implements IBaseService {
   /**
    * Gets a Supabase client instance
    */
-  protected async getSupabase(): Promise<SupabaseClient<Database>> {
+  protected async getSupabase(): Promise<SupabaseClient<AppDatabase>> {
     const isTestEnv =
       process.env.NODE_ENV === 'test' || process.env.IS_TEST_ENV === 'true'
 
@@ -71,7 +74,7 @@ export abstract class BaseService implements IBaseService {
 
       // If credentials are available, use the standalone client (useful for integration/E2E)
       if (url && serviceKey) {
-        return createStandaloneClient<Database>(url, serviceKey, {
+        return createStandaloneClient<AppDatabase>(url, serviceKey, {
           auth: {
             autoRefreshToken: false,
             persistSession: false,
@@ -106,22 +109,23 @@ export abstract class BaseService implements IBaseService {
    * measure for edge cases. Single quotes (apostrophes) are allowed as they are
    * common in names (O'Connor, D'Angelo) and safe with parameterized queries.
    */
-  sanitizeInput<T>(input: T): T {
+  sanitizeInput<T>(input: T): T
+  sanitizeInput(input: unknown): unknown {
     if (input === null || input === undefined) {
       return input
     }
 
     if (typeof input === 'string') {
       // Remove potentially dangerous characters (but allow apostrophes for names)
-      return input.replace(/["`;\\/]/g, '') as T
+      return input.replace(/["`;\\/]/g, '')
     }
 
     if (Array.isArray(input)) {
-      return input.map((item) => this.sanitizeInput(item)) as T
+      return input.map((item) => this.sanitizeInput(item))
     }
 
-    if (typeof input === 'object') {
-      const sanitized = {} as Record<string, unknown>
+    if (isRecord(input)) {
+      const sanitized: Record<string, unknown> = {}
       for (const [key, value] of Object.entries(input)) {
         // Skip potentially dangerous keys
         if (
@@ -132,7 +136,7 @@ export abstract class BaseService implements IBaseService {
         }
         sanitized[key] = this.sanitizeInput(value)
       }
-      return sanitized as T
+      return sanitized
     }
 
     return input
@@ -144,15 +148,15 @@ export abstract class BaseService implements IBaseService {
    */
   async executeQuery<T>(
     operation: string,
-    queryFn: (supabase: SupabaseClient<Database>) => Promise<T>
-  ): Promise<T> {
+    queryFn: (supabase: SupabaseClient<AppDatabase>) => Promise<T>
+  ): Promise<T | null> {
     try {
       const supabase = await this.getSupabase()
       const result = await queryFn(supabase)
       return result
     } catch (error) {
       // Handle error in backward-compatible way
-      return handleErrorLegacy<T>(operation, error) as T
+      return handleErrorLegacy<T>(operation, error, 'single')
     }
   }
 
@@ -162,13 +166,13 @@ export abstract class BaseService implements IBaseService {
    */
   protected async executeSingleQuery<T>(
     operation: string,
-    queryFn: (supabase: SupabaseClient<Database>) => Promise<T>
+    queryFn: (supabase: SupabaseClient<AppDatabase>) => Promise<T>
   ): Promise<T | null> {
     try {
       const supabase = await this.getSupabase()
       return await queryFn(supabase)
     } catch (error) {
-      return handleErrorLegacy<T>(operation, error, 'single') as T | null
+      return handleErrorLegacy<T>(operation, error, 'single')
     }
   }
 
@@ -178,13 +182,13 @@ export abstract class BaseService implements IBaseService {
    */
   protected async executeArrayQuery<T>(
     operation: string,
-    queryFn: (supabase: SupabaseClient<Database>) => Promise<T[]>
+    queryFn: (supabase: SupabaseClient<AppDatabase>) => Promise<T[]>
   ): Promise<T[]> {
     try {
       const supabase = await this.getSupabase()
       return await queryFn(supabase)
     } catch (error) {
-      return handleErrorLegacy<T>(operation, error, 'array') as T[]
+      return handleErrorLegacy<T>(operation, error, 'array')
     }
   }
 
@@ -194,7 +198,7 @@ export abstract class BaseService implements IBaseService {
    */
   protected async executeBooleanQuery(
     operation: string,
-    queryFn: (supabase: SupabaseClient<Database>) => Promise<boolean>
+    queryFn: (supabase: SupabaseClient<AppDatabase>) => Promise<boolean>
   ): Promise<boolean> {
     try {
       const supabase = await this.getSupabase()
@@ -221,11 +225,7 @@ export abstract class BaseService implements IBaseService {
    * Checks if error is a "not found" error
    */
   protected isNotFoundError(error: unknown): boolean {
-    return (
-      typeof error === 'object' &&
-      error !== null &&
-      (error as { code?: string }).code === 'PGRST116'
-    )
+    return isRecord(error) && error.code === 'PGRST116'
   }
 
   /**
@@ -252,26 +252,30 @@ export function withErrorHandling<T extends unknown[], R>(
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: TypedPropertyDescriptor<
+      (...args: T) => Promise<R | null | R[] | boolean>
+    >
   ) {
     const originalMethod = descriptor.value
+    if (!originalMethod) return descriptor
 
-    descriptor.value = async function (...args: T): Promise<R> {
+    descriptor.value = async function (
+      ...args: T
+    ): Promise<R | null | R[] | boolean> {
       try {
         return await originalMethod.apply(this, args)
       } catch (error) {
         // Use the same backward-compatible error handling
-        const result = handleErrorLegacy(
-          operation,
-          error,
-          returnType as 'single' | 'array'
-        )
+        const result =
+          returnType === 'array'
+            ? handleErrorLegacy<R>(operation, error, 'array')
+            : handleErrorLegacy<R>(operation, error, 'single')
 
         if (returnType === 'boolean') {
-          return false as R
+          return false
         }
 
-        return result as R
+        return result
       }
     }
 
@@ -314,8 +318,8 @@ export function validateParams(requiredParams: string[]) {
 
     descriptor.value = function (...args: unknown[]) {
       // Simple validation for first argument if it's an object
-      if (args.length > 0 && typeof args[0] === 'object') {
-        const params = args[0] as Record<string, unknown>
+      if (args.length > 0 && isRecord(args[0])) {
+        const params = args[0]
         for (const param of requiredParams) {
           if (params[param] === undefined || params[param] === null) {
             throw new ValidationError(`Missing required parameter: ${param}`)
@@ -342,22 +346,21 @@ export class LegacyServiceAdapter {
     originalMethod: (...args: T) => Promise<R>,
     operation: string,
     returnType: 'single' | 'array' | 'boolean' = 'single'
-  ): (...args: T) => Promise<R> {
-    return async (...args: T): Promise<R> => {
+  ): (...args: T) => Promise<R | null | R[] | boolean> {
+    return async (...args: T): Promise<R | null | R[] | boolean> => {
       try {
         return await originalMethod(...args)
       } catch (error) {
-        const result = handleErrorLegacy(
-          operation,
-          error,
-          returnType as 'single' | 'array'
-        )
+        const result =
+          returnType === 'array'
+            ? handleErrorLegacy<R>(operation, error, 'array')
+            : handleErrorLegacy<R>(operation, error, 'single')
 
         if (returnType === 'boolean') {
-          return false as R
+          return false
         }
 
-        return result as R
+        return result
       }
     }
   }

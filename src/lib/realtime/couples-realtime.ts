@@ -52,32 +52,29 @@ export class CouplesRealtime {
 
       // Create a new channel for the household
       this.channel = this.supabase.channel(`couples:${householdId}`)
+      const channel = this.channel
 
       // Listen for property interactions in this household
-      this.channel
+      channel
         .on(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          'postgres_changes' as any,
+          'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
             table: 'user_property_interactions',
             filter: `household_id=eq.${householdId}`,
           },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          this.handlePropertyInteraction.bind(this) as any
+          this.handlePropertyInteraction.bind(this)
         )
         .on(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          'postgres_changes' as any,
+          'postgres_changes',
           {
             event: 'UPDATE',
             schema: 'public',
             table: 'user_property_interactions',
             filter: `household_id=eq.${householdId}`,
           },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          this.handlePropertyInteraction.bind(this) as any
+          this.handlePropertyInteraction.bind(this)
         )
         .subscribe((status) => {
           if (process.env.NODE_ENV === 'development') {
@@ -108,11 +105,27 @@ export class CouplesRealtime {
    * Handle property interaction events
    */
   private async handlePropertyInteraction(payload: {
-    eventType: 'INSERT' | 'UPDATE'
-    new: PropertyInteractionPayload
-    old?: PropertyInteractionPayload
+    eventType?: string
+    new?: Record<string, unknown>
+    old?: Record<string, unknown>
   }): Promise<void> {
     try {
+      if (payload.eventType !== 'INSERT' && payload.eventType !== 'UPDATE') {
+        return
+      }
+      if (!payload.new) return
+      const isInteractionPayload = (
+        value: unknown
+      ): value is PropertyInteractionPayload =>
+        typeof value === 'object' &&
+        value !== null &&
+        'id' in value &&
+        'user_id' in value &&
+        'property_id' in value &&
+        'household_id' in value &&
+        'interaction_type' in value &&
+        'created_at' in value
+      if (!isInteractionPayload(payload.new)) return
       const interaction = payload.new
 
       // Get current user ID to check if this interaction is from partner
@@ -200,10 +213,12 @@ export class CouplesRealtime {
     type: string,
     data: Record<string, unknown>
   ): Promise<void> {
-    if (!this.channel) return
+    const channel = this.channel
+    if (!channel) return
 
     try {
-      await this.channel.send({
+      if (typeof channel.send !== 'function') return
+      await channel.send({
         type: 'broadcast',
         event: 'couples_message',
         payload: {

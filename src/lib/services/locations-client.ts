@@ -112,10 +112,29 @@ export class LocationsClient {
       throw new Error(`Failed to load map neighborhoods: ${response.status}`)
     }
 
-    const data = (await response.json()) as MapNeighborhoodResponse
+    const data: unknown = await response.json()
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    const isNeighborhoodOption = (
+      value: unknown
+    ): value is NeighborhoodOption =>
+      isRecord(value) &&
+      typeof value.id === 'string' &&
+      typeof value.name === 'string' &&
+      typeof value.city === 'string' &&
+      typeof value.state === 'string'
+
+    const neighborhoods =
+      isRecord(data) && Array.isArray(data.neighborhoods)
+        ? data.neighborhoods.filter(isNeighborhoodOption)
+        : []
+    const precomputed =
+      isRecord(data) && typeof data.precomputed === 'boolean'
+        ? data.precomputed
+        : false
     return {
-      neighborhoods: data.neighborhoods || [],
-      precomputed: Boolean(data.precomputed),
+      neighborhoods,
+      precomputed,
     }
   }
 

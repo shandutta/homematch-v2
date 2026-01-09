@@ -64,7 +64,7 @@ export function SecureMapLoader({
           hasGoogleMaps: Boolean(window.google?.maps),
         })
         // Set up global callback for Google Maps
-        ;(window as { initGoogleMaps?: () => void }).initGoogleMaps = () => {
+        window.initGoogleMaps = () => {
           logMapLoader('initGoogleMaps called', {
             hasGoogleMaps: Boolean(window.google?.maps),
             mapCtor: typeof window.google?.maps?.Map,

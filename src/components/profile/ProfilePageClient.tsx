@@ -23,7 +23,7 @@ import {
   Check,
 } from 'lucide-react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
@@ -40,14 +40,7 @@ interface ProfilePageClientProps {
   }
 }
 
-type ProfilePreferences = Partial<{
-  display_name: string
-  phone: string
-  bio: string
-  avatar: AvatarData
-}>
-
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -56,33 +49,44 @@ const containerVariants = {
       delayChildren: 0.1,
     },
   },
-} as const
+}
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring' as const,
+      type: 'spring',
       stiffness: 300,
       damping: 30,
     },
   },
 }
 
-const statVariants = {
+const statVariants: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
-      type: 'spring' as const,
+      type: 'spring',
       stiffness: 400,
       damping: 25,
     },
   },
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isAvatarData = (value: unknown): value is AvatarData =>
+  typeof value === 'object' &&
+  value !== null &&
+  'type' in value &&
+  (value.type === 'preset' || value.type === 'custom') &&
+  'value' in value &&
+  typeof value.value === 'string'
 
 export function ProfilePageClient({
   user,
@@ -92,9 +96,16 @@ export function ProfilePageClient({
   const [activeTab, setActiveTab] = useState('profile')
   const [codeCopied, setCodeCopied] = useState(false)
 
-  const profilePreferences = (profile.preferences || {}) as ProfilePreferences
+  const preferenceRecord = isRecord(profile.preferences)
+    ? profile.preferences
+    : {}
+  const avatar = isAvatarData(preferenceRecord.avatar)
+    ? preferenceRecord.avatar
+    : null
   const displayName =
-    profilePreferences.display_name ||
+    (typeof preferenceRecord.display_name === 'string'
+      ? preferenceRecord.display_name
+      : undefined) ||
     user.user_metadata?.full_name ||
     user.email?.split('@')[0] ||
     'Your Profile'
@@ -186,7 +197,7 @@ export function ProfilePageClient({
                 <UserAvatar
                   displayName={displayName}
                   email={user.email}
-                  avatar={profilePreferences.avatar}
+                  avatar={avatar}
                   size="xl"
                   badge={
                     hasHousehold ? (

@@ -10,7 +10,7 @@ import { readFileSync } from 'fs'
 import { parse } from 'csv-parse/sync'
 import path from 'path'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
 
 export interface MigrationRunnerOptions {
   batchSize?: number
@@ -28,9 +28,25 @@ export interface MigrationResult {
 }
 
 export class MigrationRunner {
-  private supabase: SupabaseClient<Database>
+  private supabase: SupabaseClient<AppDatabase>
   private transformer = new DataTransformer()
   private relaxedTransformer = new RelaxedPropertyTransformer()
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null
+  }
+
+  private getString(value: unknown, fallback = ''): string {
+    if (typeof value === 'string') return value
+    if (typeof value === 'number') return value.toString()
+    return fallback
+  }
+
+  private getOptionalString(value: unknown): string | undefined {
+    if (typeof value === 'string') return value || undefined
+    if (typeof value === 'number') return value.toString()
+    return undefined
+  }
 
   constructor() {
     this.supabase = createStandaloneClient()
@@ -144,7 +160,8 @@ export class MigrationRunner {
         'all-neighborhoods-combined.json'
       )
       const jsonContent = readFileSync(jsonPath, 'utf-8')
-      const records = JSON.parse(jsonContent) as unknown[]
+      const parsed = JSON.parse(jsonContent)
+      const records = Array.isArray(parsed) ? parsed : []
 
       console.log(`📊 Found ${records.length} neighborhood records`)
       stats.total_processed = records.length
@@ -161,15 +178,15 @@ export class MigrationRunner {
 
           try {
             // Type guard for record structure
-            const recordData = record as Record<string, unknown>
+            const recordData = this.isRecord(record) ? record : {}
 
             // Convert JSON record to our format
             const rawNeighborhood: RawNeighborhoodData = {
-              metro_area: (recordData.metro_area as string) || 'Unknown',
-              name: (recordData.name as string) || '',
-              region: recordData.region as string | undefined,
-              polygon: (recordData.polygon as string) || '',
-              city: (recordData.city as string) || 'Unknown',
+              metro_area: this.getString(recordData.metro_area, 'Unknown'),
+              name: this.getString(recordData.name),
+              region: this.getOptionalString(recordData.region),
+              polygon: this.getString(recordData.polygon),
+              city: this.getString(recordData.city, 'Unknown'),
               state: 'CA', // Default from data (all current data is CA)
             }
 
@@ -241,7 +258,7 @@ export class MigrationRunner {
             stats.failed++
             stats.errors.push({
               index: globalIndex,
-              data: record as Record<string, unknown>,
+              data: this.isRecord(record) ? record : { value: record },
               errors: [
                 `Processing error: ${
                   error instanceof Error ? error.message : 'Unknown error'
@@ -303,10 +320,13 @@ export class MigrationRunner {
         'properties_rows.csv'
       )
       const csvContent = readFileSync(csvPath, 'utf-8')
-      const records = parse(csvContent, {
+      const parsed = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
-      }) as Record<string, string>[]
+      })
+      const records = Array.isArray(parsed)
+        ? parsed.filter((row) => this.isRecord(row))
+        : []
 
       console.log(`📊 Found ${records.length} property records`)
       stats.total_processed = records.length
@@ -324,36 +344,39 @@ export class MigrationRunner {
           try {
             // Convert CSV record to our format
             const rawProperty: RawPropertyData = {
-              id: record.id,
-              zpid: record.zpid,
-              address: record.address || '',
-              city: record.city || '',
-              state: record.state || 'CA',
-              zip_code: record.zip_code || '',
-              price: parseFloat(record.price) || 0,
-              bedrooms: parseInt(record.bedrooms) || 0,
-              bathrooms: parseFloat(record.bathrooms) || 0,
+              id: this.getOptionalString(record.id),
+              zpid: this.getOptionalString(record.zpid),
+              address: this.getString(record.address),
+              city: this.getString(record.city),
+              state: this.getString(record.state, 'CA'),
+              zip_code: this.getString(record.zip_code),
+              price: Number(this.getString(record.price, '0')) || 0,
+              bedrooms: Number(this.getString(record.bedrooms, '0')) || 0,
+              bathrooms: Number(this.getString(record.bathrooms, '0')) || 0,
               square_feet: record.square_feet
-                ? parseInt(record.square_feet)
+                ? Number(this.getString(record.square_feet, '0'))
                 : undefined,
-              lot_size: record.lot_size ? parseInt(record.lot_size) : undefined,
+              lot_size: record.lot_size
+                ? Number(this.getString(record.lot_size, '0'))
+                : undefined,
               year_built: record.year_built
-                ? parseInt(record.year_built)
+                ? Number(this.getString(record.year_built, '0'))
                 : undefined,
-              property_type: record.property_type,
-              listing_status: record.listing_status || 'active',
-              images: record.images,
-              created_at: record.created_at,
-              updated_at: record.updated_at,
-              neighborhood_id: record.neighborhood_id,
+              property_type: this.getOptionalString(record.property_type),
+              listing_status:
+                this.getOptionalString(record.listing_status) ?? 'active',
+              images: this.getOptionalString(record.images),
+              created_at: this.getOptionalString(record.created_at),
+              updated_at: this.getOptionalString(record.updated_at),
+              neighborhood_id: this.getOptionalString(record.neighborhood_id),
               latitude: record.latitude
-                ? parseFloat(record.latitude)
+                ? Number(this.getString(record.latitude, '0'))
                 : undefined,
               longitude: record.longitude
-                ? parseFloat(record.longitude)
+                ? Number(this.getString(record.longitude, '0'))
                 : undefined,
-              neighborhood: record.neighborhood,
-              property_hash: record.property_hash,
+              neighborhood: this.getOptionalString(record.neighborhood),
+              property_hash: this.getOptionalString(record.property_hash),
             }
 
             // Transform the data using appropriate transformer
@@ -440,7 +463,7 @@ export class MigrationRunner {
             stats.failed++
             stats.errors.push({
               index: globalIndex,
-              data: record as Record<string, string>,
+              data: this.isRecord(record) ? record : { value: record },
               errors: [
                 `Processing error: ${
                   error instanceof Error ? error.message : 'Unknown error'

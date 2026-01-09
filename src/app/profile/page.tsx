@@ -33,10 +33,15 @@ export default async function ProfilePage() {
   let profile = userProfile
   if (!profile) {
     try {
-      const email =
-        user.email ||
-        (user.user_metadata as Record<string, string>)?.email ||
-        ''
+      const metadata = user.user_metadata
+      const emailFromMetadata =
+        metadata &&
+        typeof metadata === 'object' &&
+        'email' in metadata &&
+        typeof metadata.email === 'string'
+          ? metadata.email
+          : ''
+      const email = user.email || emailFromMetadata || ''
       profile = await userService.createUserProfile({
         id: user.id,
         email,

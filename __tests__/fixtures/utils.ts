@@ -4,44 +4,53 @@
  * It provides factory functions compatible with the expectations in unit tests.
  */
 
-type AnyFn = (...args: any[]) => any
+import type { ConfigFixture, UtilsFixture } from '../types/fixtures'
+import type {
+  PlaywrightPage,
+  PlaywrightRoute,
+} from '../types/playwright-interfaces'
+type MockThenCallback = (value: {
+  data: unknown[]
+  error: null
+  count: number | null
+}) => unknown
 
 export interface MockQueryBuilder {
-  select: AnyFn
-  insert: AnyFn
-  update: AnyFn
-  delete: AnyFn
-  eq: AnyFn
-  neq: AnyFn
-  gt: AnyFn
-  gte: AnyFn
-  lt: AnyFn
-  lte: AnyFn
-  like: AnyFn
-  ilike: AnyFn
-  in: AnyFn
-  contains: AnyFn
-  order: AnyFn
-  limit: AnyFn
-  range: AnyFn
-  single: () => Promise<{ data: unknown; error: null }>
-  maybeSingle: () => Promise<{ data: unknown; error: null }>
-  then: (onFulfilled: AnyFn) => Promise<unknown>
+  select: jest.Mock
+  insert: jest.Mock
+  update: jest.Mock
+  delete: jest.Mock
+  eq: jest.Mock
+  neq: jest.Mock
+  gt: jest.Mock
+  gte: jest.Mock
+  lt: jest.Mock
+  lte: jest.Mock
+  like: jest.Mock
+  ilike: jest.Mock
+  in: jest.Mock
+  contains: jest.Mock
+  order: jest.Mock
+  limit: jest.Mock
+  range: jest.Mock
+  single: jest.Mock
+  maybeSingle: jest.Mock
+  then: jest.Mock
 }
 
 export interface MockSupabaseClient {
-  from: (table: string) => MockQueryBuilder
-  rpc: AnyFn
+  from: jest.Mock
+  rpc: jest.Mock
   auth: {
-    getUser: AnyFn
-    getSession: AnyFn
-    signInWithPassword: AnyFn
+    getUser: jest.Mock
+    getSession: jest.Mock
+    signInWithPassword: jest.Mock
   }
   storage: {
-    from: AnyFn
+    from: jest.Mock
   }
   realtime: {
-    channel: AnyFn
+    channel: jest.Mock
   }
 }
 
@@ -50,35 +59,31 @@ const createChainableBuilderInternal = (response: {
   error: null
   count?: number | null
 }): MockQueryBuilder => {
-  const builder: any = {}
-  const chain = () => builder
-
-  Object.assign(builder, {
-    select: jest.fn(chain),
-    insert: jest.fn(chain),
-    update: jest.fn(chain),
-    delete: jest.fn(chain),
-    eq: jest.fn(chain),
-    neq: jest.fn(chain),
-    gt: jest.fn(chain),
-    gte: jest.fn(chain),
-    lt: jest.fn(chain),
-    lte: jest.fn(chain),
-    like: jest.fn(chain),
-    ilike: jest.fn(chain),
-    in: jest.fn(chain),
-    contains: jest.fn(chain),
-    order: jest.fn(chain),
-    limit: jest.fn(chain),
-    range: jest.fn(chain),
-    // Return configured terminal responses when provided
+  const builder: MockQueryBuilder = {
+    select: jest.fn(),
+    insert: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    eq: jest.fn(),
+    neq: jest.fn(),
+    gt: jest.fn(),
+    gte: jest.fn(),
+    lt: jest.fn(),
+    lte: jest.fn(),
+    like: jest.fn(),
+    ilike: jest.fn(),
+    in: jest.fn(),
+    contains: jest.fn(),
+    order: jest.fn(),
+    limit: jest.fn(),
+    range: jest.fn(),
     single: jest.fn(async () => {
       // For default builders (array context), single() should return { data: null, error: null }
       if (Array.isArray(response.data)) {
         return { data: null, error: null }
       }
       // If response.data is non-array and provided, pass it through; otherwise default
-      if (response && 'data' in response && response.data !== undefined) {
+      if (response.data !== undefined) {
         return { data: response.data ?? null, error: null }
       }
       return { data: null, error: null }
@@ -87,12 +92,12 @@ const createChainableBuilderInternal = (response: {
       if (Array.isArray(response.data)) {
         return { data: null, error: null }
       }
-      if (response && 'data' in response && response.data !== undefined) {
+      if (response.data !== undefined) {
         return { data: response.data ?? null, error: null }
       }
       return { data: null, error: null }
     }),
-    then: jest.fn(async (onFulfilled: AnyFn) =>
+    then: jest.fn(async (onFulfilled: MockThenCallback) =>
       onFulfilled({
         data: Array.isArray(response.data) ? response.data : [],
         error: null,
@@ -100,19 +105,50 @@ const createChainableBuilderInternal = (response: {
         count: response.count ?? null,
       })
     ),
-  })
+  }
 
-  return builder as MockQueryBuilder
+  const chain = () => builder
+  const chainMethods: Array<
+    keyof Omit<MockQueryBuilder, 'single' | 'maybeSingle' | 'then'>
+  > = [
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'eq',
+    'neq',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'in',
+    'contains',
+    'order',
+    'limit',
+    'range',
+  ]
+
+  for (const method of chainMethods) {
+    builder[method].mockImplementation(chain)
+  }
+
+  return builder
 }
 
 /**
  * Create a new typed mock Supabase client
  */
 export const makeMockClient = (): MockSupabaseClient => {
-  const defaultResponse = {
+  const defaultResponse: {
+    data: unknown[]
+    error: null
+    count: number | null
+  } = {
     data: [],
-    error: null as null,
-    count: null as number | null,
+    error: null,
+    count: null,
   }
   const defaultBuilder = createChainableBuilderInternal(defaultResponse)
 
@@ -152,7 +188,10 @@ export const makeMockClient = (): MockSupabaseClient => {
 
 // Export for e2e tests - proper Playwright fixture implementing UtilsFixture interface
 export const utilsFixtures = {
-  utils: async ({ page, config }: { page: any; config: any }, use: any) => {
+  utils: async (
+    { page, config }: { page: PlaywrightPage; config: ConfigFixture },
+    use: (fixture: UtilsFixture) => Promise<void>
+  ) => {
     const utils = {
       async clearAuthState() {
         // Check if we're on a valid page first
@@ -207,7 +246,7 @@ export const utilsFixtures = {
         // Wait for any pending React updates
         await page.evaluate(() => {
           return new Promise((resolve) => {
-            if (typeof window !== 'undefined' && (window as any).React) {
+            if (typeof window !== 'undefined' && window.React) {
               // If React is available, wait a tick for updates
               setTimeout(resolve, 100)
             } else {
@@ -244,7 +283,8 @@ export const utilsFixtures = {
             await this.waitForReactToSettle()
             return
           } catch (error) {
-            lastError = error as Error
+            lastError =
+              error instanceof Error ? error : new Error(String(error))
             console.warn(`Navigation attempt ${i + 1} failed:`, error)
 
             if (i < maxRetries - 1) {
@@ -261,7 +301,7 @@ export const utilsFixtures = {
           // Check if Supabase session exists
           const hasSession = await page.evaluate(async () => {
             try {
-              const supabase = (window as any)?.supabase
+              const supabase = window.supabase
               if (!supabase?.auth?.getSession) return false
 
               const { data } = await supabase.auth.getSession()
@@ -330,7 +370,7 @@ export const utilsFixtures = {
 
       async simulateSlowNetwork(delayMs: number = 1000) {
         // Intercept API calls and add artificial delay
-        await page.route('**/api/**', async (route: any) => {
+        await page.route('**/api/**', async (route: PlaywrightRoute) => {
           await new Promise((resolve) => setTimeout(resolve, delayMs))
           route.continue()
         })
@@ -347,7 +387,7 @@ export const utilsFixtures = {
             ? 'DATABASE_CONNECTION_ERROR: Server error'
             : 'API Error')
 
-        await page.route(`**${endpoint}**`, async (route: any) => {
+        await page.route(`**${endpoint}**`, async (route: PlaywrightRoute) => {
           await route.fulfill({
             status: errorCode,
             contentType: 'application/json',
@@ -367,29 +407,38 @@ export const utilsFixtures = {
         }
 
         // Intercept all API routes that might hit the database
-        await page.route('**/api/dashboard/**', async (route: any) => {
-          await route.fulfill({
-            status: 500,
-            contentType: 'application/json',
-            body: JSON.stringify(databaseErrorResponse),
-          })
-        })
+        await page.route(
+          '**/api/dashboard/**',
+          async (route: PlaywrightRoute) => {
+            await route.fulfill({
+              status: 500,
+              contentType: 'application/json',
+              body: JSON.stringify(databaseErrorResponse),
+            })
+          }
+        )
 
-        await page.route('**/api/properties/**', async (route: any) => {
-          await route.fulfill({
-            status: 500,
-            contentType: 'application/json',
-            body: JSON.stringify(databaseErrorResponse),
-          })
-        })
+        await page.route(
+          '**/api/properties/**',
+          async (route: PlaywrightRoute) => {
+            await route.fulfill({
+              status: 500,
+              contentType: 'application/json',
+              body: JSON.stringify(databaseErrorResponse),
+            })
+          }
+        )
 
-        await page.route('**/api/interactions/**', async (route: any) => {
-          await route.fulfill({
-            status: 500,
-            contentType: 'application/json',
-            body: JSON.stringify(databaseErrorResponse),
-          })
-        })
+        await page.route(
+          '**/api/interactions/**',
+          async (route: PlaywrightRoute) => {
+            await route.fulfill({
+              status: 500,
+              contentType: 'application/json',
+              body: JSON.stringify(databaseErrorResponse),
+            })
+          }
+        )
       },
 
       async clearNetworkInterception() {
@@ -434,45 +483,37 @@ export const configureMockResponse = (
         array?: { data: unknown[]; error: null; count: number | null }
       }
 ): void => {
-  ;(client.from as jest.Mock).mockImplementation((t: string) => {
+  client.from.mockImplementation((t: string) => {
     if (t === table) {
       // Normalize provided response to the internal format used by createChainableBuilderInternal
-      if (
-        'single' in (response as any) ||
-        'maybeSingle' in (response as any) ||
-        'array' in (response as any)
-      ) {
-        const complex = response as {
-          single?: { data: unknown; error: null }
-          maybeSingle?: { data: unknown; error: null }
-          array?: { data: unknown[]; error: null; count: number | null }
-        }
-        // Prefer array config for promise resolve
-        const arrayData = complex.array?.data ?? []
-        const count =
-          complex.array?.count ??
-          (Array.isArray(arrayData) ? arrayData.length : null)
-        // Prefer single config for single/maybeSingle when provided; else default to null
-        const chosenSingle = complex.single ?? { data: null, error: null }
-        const builder = createChainableBuilderInternal({
-          data: arrayData,
-          error: null,
-          count,
-        })
-        // Override terminal methods directly on this specific builder to honor complex config
-        ;(builder as any).single = jest.fn(async () => chosenSingle)
-        ;(builder as any).maybeSingle = jest.fn(
-          async () => complex.maybeSingle ?? chosenSingle
-        )
-        return builder
-      } else {
-        const simple = response as { data: unknown; error: null }
+      if ('data' in response) {
+        const simple = response
         return createChainableBuilderInternal({
           data: Array.isArray(simple.data) ? simple.data : (simple.data ?? []),
           error: simple.error,
           count: Array.isArray(simple.data) ? simple.data.length : null,
         })
       }
+
+      const complex = response
+      // Prefer array config for promise resolve
+      const arrayData = complex.array?.data ?? []
+      const count =
+        complex.array?.count ??
+        (Array.isArray(arrayData) ? arrayData.length : null)
+      // Prefer single config for single/maybeSingle when provided; else default to null
+      const chosenSingle = complex.single ?? { data: null, error: null }
+      const builder = createChainableBuilderInternal({
+        data: arrayData,
+        error: null,
+        count,
+      })
+      // Override terminal methods directly on this specific builder to honor complex config
+      builder.single = jest.fn(async () => chosenSingle)
+      builder.maybeSingle = jest.fn(
+        async () => complex.maybeSingle ?? chosenSingle
+      )
+      return builder
     }
     // default builder for other tables
     return createChainableBuilderInternal({ data: [], error: null, count: 0 })

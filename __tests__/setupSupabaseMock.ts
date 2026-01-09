@@ -11,10 +11,38 @@ import { jest } from '@jest/globals'
  * This central setup file is allowed to import internal test helpers.
  * To appease the rule, inline the simple mock here rather than importing from __mocks__.
  */
-type AnyFn = (...args: any[]) => any
 
-const createChainableBuilder = () => {
-  const builder = {
+type MockThenCallback = (value: {
+  data: unknown[]
+  error: null
+  count: number | null
+}) => unknown
+
+type MockChainableBuilder = {
+  select: jest.Mock<MockChainableBuilder, []>
+  insert: jest.Mock<MockChainableBuilder, []>
+  update: jest.Mock<MockChainableBuilder, []>
+  delete: jest.Mock<MockChainableBuilder, []>
+  eq: jest.Mock<MockChainableBuilder, []>
+  neq: jest.Mock<MockChainableBuilder, []>
+  gt: jest.Mock<MockChainableBuilder, []>
+  gte: jest.Mock<MockChainableBuilder, []>
+  lt: jest.Mock<MockChainableBuilder, []>
+  lte: jest.Mock<MockChainableBuilder, []>
+  like: jest.Mock<MockChainableBuilder, []>
+  ilike: jest.Mock<MockChainableBuilder, []>
+  in: jest.Mock<MockChainableBuilder, []>
+  contains: jest.Mock<MockChainableBuilder, []>
+  order: jest.Mock<MockChainableBuilder, []>
+  limit: jest.Mock<MockChainableBuilder, []>
+  range: jest.Mock<MockChainableBuilder, []>
+  single: jest.Mock<Promise<{ data: null; error: null }>, []>
+  maybeSingle: jest.Mock<Promise<{ data: null; error: null }>, []>
+  then: jest.Mock<Promise<unknown>, [MockThenCallback]>
+}
+
+const createChainableBuilder = (): MockChainableBuilder => {
+  const builder: MockChainableBuilder = {
     select: jest.fn(),
     insert: jest.fn(),
     update: jest.fn(),
@@ -34,36 +62,103 @@ const createChainableBuilder = () => {
     range: jest.fn(),
     single: jest.fn().mockResolvedValue({ data: null, error: null }),
     maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
-    then: jest
-      .fn()
-      .mockImplementation((onFulfilled: AnyFn) =>
-        Promise.resolve(onFulfilled({ data: [], error: null, count: null }))
-      ),
-  } as any
+    then: jest.fn(),
+  }
 
   // Set up circular references after builder is created
-  builder.select.mockReturnValue(builder)
-  builder.insert.mockReturnValue(builder)
-  builder.update.mockReturnValue(builder)
-  builder.delete.mockReturnValue(builder)
-  builder.eq.mockReturnValue(builder)
-  builder.neq.mockReturnValue(builder)
-  builder.gt.mockReturnValue(builder)
-  builder.gte.mockReturnValue(builder)
-  builder.lt.mockReturnValue(builder)
-  builder.lte.mockReturnValue(builder)
-  builder.like.mockReturnValue(builder)
-  builder.ilike.mockReturnValue(builder)
-  builder.in.mockReturnValue(builder)
-  builder.contains.mockReturnValue(builder)
-  builder.order.mockReturnValue(builder)
-  builder.limit.mockReturnValue(builder)
-  builder.range.mockReturnValue(builder)
+  const chainMethods: Array<
+    keyof Omit<MockChainableBuilder, 'single' | 'maybeSingle' | 'then'>
+  > = [
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'eq',
+    'neq',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'in',
+    'contains',
+    'order',
+    'limit',
+    'range',
+  ]
+
+  for (const method of chainMethods) {
+    builder[method].mockReturnValue(builder)
+  }
+  builder.then.mockImplementation((onFulfilled: MockThenCallback) =>
+    Promise.resolve(onFulfilled({ data: [], error: null, count: null }))
+  )
 
   return builder
 }
 
-const mockSupabaseClient: any = {
+type MockSupabaseClient = MockChainableBuilder & {
+  from: jest.Mock<MockChainableBuilder, [string]>
+  rpc: jest.Mock<Promise<{ data: null; error: null }>, []>
+  auth: {
+    getUser: jest.Mock<Promise<{ data: { user: null }; error: null }>, []>
+    getSession: jest.Mock<Promise<{ data: { session: null }; error: null }>, []>
+    signInWithPassword: jest.Mock<
+      Promise<{ data: { user: null; session: null }; error: null }>,
+      []
+    >
+    signInWithOAuth: jest.Mock<
+      Promise<{ data: { url: null }; error: null }>,
+      []
+    >
+    signOut: jest.Mock<Promise<{ error: null }>, []>
+    signUp: jest.Mock<
+      Promise<{ data: { user: null; session: null }; error: null }>,
+      []
+    >
+    verifyOtp: jest.Mock<
+      Promise<{ data: { user: null; session: null }; error: null }>,
+      []
+    >
+    resend: jest.Mock<Promise<{ data: null; error: null }>, []>
+    resetPasswordForEmail: jest.Mock<
+      Promise<{ data: Record<string, never>; error: null }>,
+      []
+    >
+    updateUser: jest.Mock<Promise<{ data: { user: null }; error: null }>, []>
+    onAuthStateChange: jest.Mock<
+      { data: { subscription: { unsubscribe: jest.Mock } } },
+      []
+    >
+  }
+  storage: {
+    from: jest.Mock<
+      {
+        upload: jest.Mock<Promise<{ data: null; error: null }>, []>
+        download: jest.Mock<Promise<{ data: null; error: null }>, []>
+        getPublicUrl: jest.Mock<{ data: { publicUrl: string } }, [string]>
+        remove: jest.Mock<Promise<{ data: null; error: null }>, []>
+        list: jest.Mock<Promise<{ data: unknown[]; error: null }>, []>
+      },
+      [string]
+    >
+  }
+  realtime: {
+    channel: jest.Mock<
+      {
+        subscribe: jest.Mock
+        unsubscribe: jest.Mock
+        on: jest.Mock
+      },
+      []
+    >
+  }
+}
+
+const chainableBuilder = createChainableBuilder()
+const mockSupabaseClient: MockSupabaseClient = {
+  ...chainableBuilder,
   from: jest.fn(() => createChainableBuilder()),
   rpc: jest.fn(async () => ({ data: null, error: null })),
   auth: {
@@ -111,8 +206,6 @@ const mockSupabaseClient: any = {
       on: jest.fn().mockReturnThis(),
     })),
   },
-  // Enhanced chainable builder with more methods
-  ...createChainableBuilder(),
 }
 
 // Mock the Supabase client creation globally by mocking the original module path

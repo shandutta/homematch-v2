@@ -27,6 +27,27 @@ type DetailsResponse = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const toDetailsResponse = (value: unknown): DetailsResponse => {
+  if (!isRecord(value)) return {}
+  const listingSubType = isRecord(value.listingSubType)
+    ? {
+        is_pending:
+          typeof value.listingSubType.is_pending === 'boolean'
+            ? value.listingSubType.is_pending
+            : undefined,
+      }
+    : undefined
+  return {
+    homeStatus:
+      typeof value.homeStatus === 'string' ? value.homeStatus : undefined,
+    listingSubType,
+    price: typeof value.price === 'number' ? value.price : undefined,
+  }
+}
+
 function normalizeStatus(detail: DetailsResponse): {
   listing_status: string
   is_active: boolean
@@ -68,7 +89,7 @@ async function fetchDetails(zpid: string) {
       continue
     }
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return (await res.json()) as DetailsResponse
+    return toDetailsResponse(await res.json())
   }
   throw new Error('HTTP 429 after retries')
 }
@@ -177,7 +198,7 @@ export async function POST(req: Request) {
     while (rows.length > 0 && !shouldStop()) {
       for (const row of rows) {
         if (shouldStop()) break
-        const zpid = (row.zpid as string | null) || ''
+        const zpid = row.zpid ?? ''
         if (
           !zpid ||
           !row.address ||
@@ -198,7 +219,7 @@ export async function POST(req: Request) {
           requests++
           processed++
           const norm = normalizeStatus(details || { homeStatus: 'off_market' })
-          const previousStatus = (row.listing_status as string | null) || ''
+          const previousStatus = row.listing_status ?? ''
           const previousActive =
             typeof row.is_active === 'boolean' ? row.is_active : null
 
@@ -244,7 +265,9 @@ export async function POST(req: Request) {
           updates.push(record)
           await sleep(delayMs)
         } catch (err) {
-          if ((err as Error).message.includes('429')) rateLimitHits++
+          if (err instanceof Error && err.message.includes('429')) {
+            rateLimitHits++
+          }
           skipped++
           console.error('[status-refresh] fetchDetails failed', {
             zpid,

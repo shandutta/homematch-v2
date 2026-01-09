@@ -4,18 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
 import { MapPin, Loader2 } from 'lucide-react'
 import { getGoogleMapsMapId } from '@/lib/maps/config'
+import { parsePostGISGeometry, isValidLatLng } from '@/lib/utils/coordinates'
 
-// Strong typing for Google Maps
-interface Coordinates {
-  lat: number
-  lng: number
-}
-
-import type {
-  GoogleMapInstance,
-  GoogleMarkerInstance,
-  GoogleInfoWindowInstance,
-} from '@/types/google-maps'
+import type { GoogleMapInstance } from '@/types/google-maps'
 
 // Extend Window interface for Google Maps to satisfy TS during SSR/type-check.
 // The actual Google Maps script populates window.google at runtime in the browser.
@@ -48,32 +39,9 @@ export function EnhancedPropertyMap({
     }
 
     try {
-      // Handle different coordinate formats
-      let coords: Coordinates | null = null
+      const coords = parsePostGISGeometry(property.coordinates)
 
-      if (property.coordinates && typeof property.coordinates === 'object') {
-        const coordsObj = property.coordinates as Record<string, unknown>
-
-        // Handle GeoJSON Point format
-        if (
-          coordsObj.type === 'Point' &&
-          Array.isArray(coordsObj.coordinates)
-        ) {
-          coords = {
-            lat: coordsObj.coordinates[1], // latitude is second
-            lng: coordsObj.coordinates[0], // longitude is first
-          }
-        }
-        // Handle lat/lng object format
-        else if (
-          typeof coordsObj.lat === 'number' &&
-          typeof coordsObj.lng === 'number'
-        ) {
-          coords = coordsObj as unknown as Coordinates
-        }
-      }
-
-      if (!coords?.lat || !coords?.lng) {
+      if (!coords || !isValidLatLng(coords)) {
         setError('No coordinates available')
         setIsLoading(false)
         return
@@ -82,32 +50,35 @@ export function EnhancedPropertyMap({
       const mapId = getGoogleMapsMapId()
 
       // Create map with proper typing
-      const map = new window.google.maps.Map(mapRef.current, {
-        center: coords,
-        zoom,
-        ...(mapId ? { mapId } : {}),
-        ...(!mapId
-          ? {
-              styles: [
-                {
-                  featureType: 'poi',
-                  elementType: 'labels',
-                  stylers: [{ visibility: 'off' }],
-                },
-                {
-                  featureType: 'transit',
-                  elementType: 'labels',
-                  stylers: [{ visibility: 'off' }],
-                },
-              ],
-            }
-          : {}),
-        disableDefaultUI: false,
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      })
+      const map: GoogleMapInstance = new window.google.maps.Map(
+        mapRef.current,
+        {
+          center: coords,
+          zoom,
+          ...(mapId ? { mapId } : {}),
+          ...(!mapId
+            ? {
+                styles: [
+                  {
+                    featureType: 'poi',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'off' }],
+                  },
+                  {
+                    featureType: 'transit',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'off' }],
+                  },
+                ],
+              }
+            : {}),
+          disableDefaultUI: false,
+          zoomControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        }
+      )
 
       // Add marker
       if (showMarker) {
@@ -140,11 +111,8 @@ export function EnhancedPropertyMap({
           `,
         })
 
-        ;(marker as GoogleMarkerInstance).addListener('click', () => {
-          ;(infoWindow as GoogleInfoWindowInstance).open(
-            map as GoogleMapInstance,
-            marker as GoogleMarkerInstance
-          )
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker)
         })
       }
 

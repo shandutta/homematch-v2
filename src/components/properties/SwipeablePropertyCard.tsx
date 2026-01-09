@@ -40,13 +40,19 @@ function usePropertyDetailSafe() {
 
 function getPropertyNeighborhood(property?: Property | null) {
   if (!property) return undefined
-  return (
-    (property as (Property & { neighborhood?: Neighborhood | null }) | null)
-      ?.neighborhood ||
-    (property as (Property & { neighborhoods?: Neighborhood | null }) | null)
-      ?.neighborhoods ||
-    undefined
-  )
+  const isNeighborhood = (value: unknown): value is Neighborhood =>
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value
+
+  if ('neighborhood' in property && isNeighborhood(property.neighborhood)) {
+    return property.neighborhood
+  }
+  if ('neighborhoods' in property && isNeighborhood(property.neighborhoods)) {
+    return property.neighborhoods
+  }
+  return undefined
 }
 
 function isTapOnInteractiveElement(target: EventTarget | null) {

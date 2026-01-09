@@ -11,6 +11,9 @@ const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Square_Feet',
 ]
 
+const isZillowSortOption = (value: string): value is ZillowSortOption =>
+  VALID_SORT_OPTIONS.some((option) => option === value)
+
 const DEFAULT_BAY_AREA_LOCATIONS = [
   'San Francisco, CA',
   'Alameda, CA',
@@ -120,10 +123,10 @@ export async function POST(req: Request) {
 
   // Parse optional query parameters
   const sortParam = url.searchParams.get('sort')
-  const sort: ZillowSortOption | undefined =
-    sortParam && VALID_SORT_OPTIONS.includes(sortParam as ZillowSortOption)
-      ? (sortParam as ZillowSortOption)
-      : 'Newest' // Default to Newest to catch new listings
+  const sortCandidate = sortParam ?? ''
+  const sort: ZillowSortOption = isZillowSortOption(sortCandidate)
+    ? sortCandidate
+    : 'Newest' // Default to Newest to catch new listings
 
   const minPriceParam = url.searchParams.get('minPrice')
   const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined

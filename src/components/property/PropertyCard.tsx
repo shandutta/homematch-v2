@@ -49,13 +49,7 @@ export function PropertyCard({
   const { data: mutualLikes = [] } = useMutualLikes()
   const { data: vibes } = usePropertyVibes(showStory ? property.id : undefined)
 
-  const neighborhoodData =
-    neighborhood ||
-    (property as Property & { neighborhood?: Neighborhood | null })
-      .neighborhood ||
-    (property as Property & { neighborhoods?: Neighborhood | null })
-      .neighborhoods ||
-    null
+  const neighborhoodData = neighborhood || getPropertyNeighborhood(property)
 
   const { data: neighborhoodVibes } = useNeighborhoodVibes(
     neighborhoodData?.id || property.neighborhood_id || undefined
@@ -91,4 +85,20 @@ export function PropertyCard({
       fullHeight={fullHeight}
     />
   )
+}
+
+function getPropertyNeighborhood(property: Property): Neighborhood | null {
+  const isNeighborhood = (value: unknown): value is Neighborhood =>
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value
+
+  if ('neighborhood' in property && isNeighborhood(property.neighborhood)) {
+    return property.neighborhood
+  }
+  if ('neighborhoods' in property && isNeighborhood(property.neighborhoods)) {
+    return property.neighborhoods
+  }
+  return null
 }

@@ -1,24 +1,24 @@
 import {
-  Interaction,
   InteractionSummary,
   InteractionType,
   PageRequest,
   PageResponse,
 } from '@/types/app'
+import { propertySchema, type Property } from '@/lib/schemas/property'
+import { interactionSummarySchema } from '@/lib/schemas/api'
 import { z } from 'zod'
 
 // If project has a central fetch wrapper, swap to it. Keep native fetch for now.
-const SummarySchema = z.object({
-  viewed: z.number().int().nonnegative(),
-  liked: z.number().int().nonnegative(),
-  passed: z.number().int().nonnegative(),
+const interactionListSchema = z.object({
+  items: z.array(propertySchema),
+  nextCursor: z.string().nullable().optional(),
 })
 
 export const InteractionService = {
   async recordInteraction(
     propertyId: string,
     type: InteractionType
-  ): Promise<Interaction> {
+  ): Promise<void> {
     const res = await fetch('/api/interactions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -29,8 +29,6 @@ export const InteractionService = {
       const text = await res.text().catch(() => '')
       throw new Error(`Failed to record interaction (${res.status}): ${text}`)
     }
-    const json = await res.json()
-    return json.interaction as Interaction
   },
 
   async getInteractionSummary(): Promise<InteractionSummary> {
@@ -45,17 +43,17 @@ export const InteractionService = {
       )
     }
     const json = await res.json()
-    const parsed = SummarySchema.safeParse(json)
+    const parsed = interactionSummarySchema.safeParse(json)
     if (!parsed.success) {
       throw new Error('Invalid summary payload')
     }
     return parsed.data
   },
 
-  async getInteractions<T extends { id: string }>(
+  async getInteractions(
     type: InteractionType,
     { cursor, limit = 12 }: PageRequest
-  ): Promise<PageResponse<T>> {
+  ): Promise<PageResponse<Property>> {
     const params = new URLSearchParams({ type, limit: String(limit) })
     if (cursor) params.set('cursor', cursor)
     const res = await fetch(`/api/interactions?${params.toString()}`, {
@@ -66,7 +64,12 @@ export const InteractionService = {
       const text = await res.text().catch(() => '')
       throw new Error(`Failed to fetch interactions (${res.status}): ${text}`)
     }
-    return (await res.json()) as PageResponse<T>
+    const json = await res.json()
+    const parsed = interactionListSchema.safeParse(json)
+    if (!parsed.success) {
+      throw new Error('Invalid interactions payload')
+    }
+    return parsed.data
   },
 
   async deleteInteraction(propertyId: string): Promise<void> {

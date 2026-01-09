@@ -15,6 +15,25 @@ type FilterableQuery<T> = {
   contains(column: string, value: ContainsValue): T
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isInFilterValues = (value: unknown): value is InFilterValues =>
+  Array.isArray(value) &&
+  value.every((item) => typeof item === 'string' || typeof item === 'number')
+
+const isContainsValue = (value: unknown): value is ContainsValue =>
+  typeof value === 'string' || Array.isArray(value) || isRecord(value)
+
+const getNonNullFilterValue = (
+  value: PropertyFilters[keyof PropertyFilters]
+): NonNullFilterValue => {
+  if (value === null || value === undefined) {
+    throw new Error('Invalid filter value')
+  }
+  return value
+}
+
 /**
  * Filter operation types supported by the PropertyFilterBuilder
  */
@@ -31,7 +50,9 @@ export interface FilterRule {
   /** The operation to perform */
   operation: FilterOperation
   /** Optional value transformer */
-  transform?: (value: unknown) => unknown
+  transform?: (
+    value: PropertyFilters[keyof PropertyFilters]
+  ) => PropertyFilters[keyof PropertyFilters]
 }
 
 /**
@@ -144,25 +165,44 @@ export class PropertyFilterBuilder {
 
     // Transform value if transformer provided
     const value = rule.transform ? rule.transform(filterValue) : filterValue
+    const nonNullValue = getNonNullFilterValue(value)
 
     // Apply the appropriate Supabase operation
     switch (rule.operation) {
       case 'gte':
-        return query.gte(rule.column, value as NonNullFilterValue)
+        if (typeof nonNullValue === 'number') {
+          return query.gte(rule.column, nonNullValue)
+        }
+        return query
 
       case 'lte':
-        return query.lte(rule.column, value as NonNullFilterValue)
+        if (typeof nonNullValue === 'number') {
+          return query.lte(rule.column, nonNullValue)
+        }
+        return query
 
       case 'eq':
-        return query.eq(rule.column, value as NonNullFilterValue)
+        if (
+          typeof nonNullValue === 'number' ||
+          typeof nonNullValue === 'string' ||
+          typeof nonNullValue === 'boolean'
+        ) {
+          return query.eq(rule.column, nonNullValue)
+        }
+        return query
 
       case 'in': {
-        const arrayValue = value as unknown as InFilterValues
-        return query.in(rule.column, arrayValue)
+        if (isInFilterValues(nonNullValue)) {
+          return query.in(rule.column, nonNullValue)
+        }
+        return query
       }
 
       case 'contains':
-        return query.contains(rule.column, value as ContainsValue)
+        if (isContainsValue(nonNullValue)) {
+          return query.contains(rule.column, nonNullValue)
+        }
+        return query
 
       default: {
         // TypeScript exhaustiveness check

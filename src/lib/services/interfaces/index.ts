@@ -16,6 +16,7 @@ import {
 } from '@/types/database'
 import { PropertySearch } from '@/lib/schemas/property'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import type { NextRequest } from 'next/server'
 
 // ============================================================================
@@ -180,7 +181,7 @@ export interface ClientConfig {
 }
 
 export interface ISupabaseClientFactory {
-  createClient(config?: ClientConfig): SupabaseClient
+  createClient(config?: ClientConfig): SupabaseClient<AppDatabase>
   getInstance(): ISupabaseClientFactory
 }
 
@@ -223,7 +224,7 @@ export interface IErrorHandler {
 // ============================================================================
 
 export interface IBaseService {
-  getSupabase(config?: ClientConfig): Promise<SupabaseClient>
+  getSupabase(config?: ClientConfig): Promise<SupabaseClient<AppDatabase>>
 }
 
 // ============================================================================

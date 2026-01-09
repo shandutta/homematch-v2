@@ -63,6 +63,20 @@ type PropertyTypePreferences = Partial<
   Record<PropertyTypeKey | PropertyTypeLegacyKey, boolean>
 >
 type MustHaveKey = 'parking' | 'pool' | 'gym' | 'petFriendly'
+type LocalPreferences = Omit<
+  UserPreferences,
+  'priceRange' | 'bedrooms' | 'bathrooms' | 'propertyTypes'
+> & {
+  priceRange?: [number, number]
+  bedrooms?: number
+  bathrooms?: number
+  propertyTypes?: PropertyTypePreferences
+  mustHaves?: Record<string, boolean>
+  searchRadius?: number
+  allCities?: boolean
+  cities?: CityOption[]
+  neighborhoods?: string[]
+}
 
 type SaveState = {
   isSaving: boolean
@@ -111,14 +125,172 @@ const MUST_HAVE_LABELS: Record<MustHaveKey, string> = {
   petFriendly: 'Pet Friendly',
 }
 
-const defaultPropertyTypes: Record<PropertyTypeKey, boolean> =
-  PROPERTY_TYPE_VALUES.reduce(
-    (acc, type) => {
-      acc[type] = true
-      return acc
-    },
-    {} as Record<PropertyTypeKey, boolean>
-  )
+const MUST_HAVE_KEYS: ReadonlyArray<MustHaveKey> = [
+  'parking',
+  'pool',
+  'gym',
+  'petFriendly',
+]
+
+const defaultPropertyTypes: Record<PropertyTypeKey, boolean> = {
+  single_family: true,
+  condo: true,
+  townhome: true,
+  multi_family: true,
+  manufactured: true,
+  land: true,
+  other: true,
+}
+
+const defaultMustHaves: Record<MustHaveKey, boolean> = {
+  parking: false,
+  pool: false,
+  gym: false,
+  petFriendly: false,
+}
+
+const createPropertyTypeRecord = (
+  value: boolean
+): Record<PropertyTypeKey, boolean> => ({
+  single_family: value,
+  condo: value,
+  townhome: value,
+  multi_family: value,
+  manufactured: value,
+  land: value,
+  other: value,
+})
+
+const createMustHaveRecord = (
+  value: boolean
+): Record<MustHaveKey, boolean> => ({
+  parking: value,
+  pool: value,
+  gym: value,
+  petFriendly: value,
+})
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isString = (value: unknown): value is string => typeof value === 'string'
+const isNumber = (value: unknown): value is number => typeof value === 'number'
+const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean'
+
+const isPropertyTypeKey = (value: string): value is PropertyTypeKey =>
+  PROPERTY_TYPE_VALUES.some((type) => type === value)
+
+const isLegacyPropertyTypeKey = (
+  value: string
+): value is PropertyTypeLegacyKey => value === 'house' || value === 'townhouse'
+
+const isMustHaveKey = (value: string): value is MustHaveKey =>
+  MUST_HAVE_KEYS.some((item) => item === value)
+
+const parsePriceRange = (value: unknown): [number, number] | undefined => {
+  if (Array.isArray(value) && value.length === 2) {
+    const [min, max] = value
+    if (isNumber(min) && isNumber(max)) return [min, max]
+  }
+  if (isRecord(value)) {
+    const min = value.min
+    const max = value.max
+    if (isNumber(min) && isNumber(max)) return [min, max]
+  }
+  return undefined
+}
+
+const parseNumber = (value: unknown): number | undefined =>
+  isNumber(value) ? value : undefined
+
+const parseBoolean = (value: unknown): boolean | undefined =>
+  isBoolean(value) ? value : undefined
+
+const parseStringArray = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) return undefined
+  const items = value.filter(isString)
+  return items.length ? items : undefined
+}
+
+const parseCities = (value: unknown): CityOption[] | undefined => {
+  if (!Array.isArray(value)) return undefined
+  const items = value
+    .filter(isRecord)
+    .map((city) => {
+      const cityName = city.city
+      const state = city.state
+      if (isString(cityName) && isString(state)) {
+        return { city: cityName, state }
+      }
+      return null
+    })
+    .filter((item): item is CityOption => Boolean(item))
+  return items.length ? items : undefined
+}
+
+const parsePropertyTypes = (
+  value: unknown
+): PropertyTypePreferences | undefined => {
+  const result: PropertyTypePreferences = {}
+  let hasValue = false
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (isString(item) && isPropertyTypeKey(item)) {
+        result[item] = true
+        hasValue = true
+      }
+    }
+  } else if (isRecord(value)) {
+    for (const [key, entryValue] of Object.entries(value)) {
+      if (isBoolean(entryValue)) {
+        if (isPropertyTypeKey(key) || isLegacyPropertyTypeKey(key)) {
+          result[key] = entryValue
+          hasValue = true
+        }
+      }
+    }
+  }
+
+  return hasValue ? result : undefined
+}
+
+const parseMustHaves = (
+  value: unknown
+): Record<MustHaveKey, boolean> | undefined => {
+  if (!isRecord(value)) return undefined
+  const result: Record<MustHaveKey, boolean> = { ...defaultMustHaves }
+  let hasValue = false
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (isMustHaveKey(key) && isBoolean(entryValue)) {
+      result[key] = entryValue
+      hasValue = true
+    }
+  }
+  return hasValue ? result : undefined
+}
+
+const parseLocalPreferences = (value: unknown): LocalPreferences => {
+  if (!isRecord(value)) return {}
+  return {
+    priceRange: parsePriceRange(value.priceRange),
+    bedrooms: parseNumber(value.bedrooms),
+    bathrooms: parseNumber(value.bathrooms),
+    propertyTypes: parsePropertyTypes(value.propertyTypes),
+    mustHaves: parseMustHaves(value.mustHaves),
+    searchRadius: parseNumber(value.searchRadius),
+    allCities: parseBoolean(value.allCities),
+    cities: parseCities(value.cities),
+    neighborhoods: parseStringArray(value.neighborhoods),
+  }
+}
+
+const isLocationView = (value: string): value is 'map' | 'list' =>
+  value === 'map' || value === 'list'
+
+const isPriceRangeValue = (value: number[]): value is [number, number] =>
+  value.length === 2 && value.every((entry) => typeof entry === 'number')
 
 const cityKey = (city: CityOption) =>
   `${city.city.toLowerCase()}|${city.state.toLowerCase()}`
@@ -142,20 +314,8 @@ export function PreferencesSection({
 }: PreferencesSectionProps) {
   const userService = UserServiceClient
   const router = useRouter()
-  type LocalPreferences = UserPreferences & {
-    priceRange?: [number, number]
-    bedrooms?: number
-    bathrooms?: number
-    propertyTypes?: PropertyTypePreferences
-    mustHaves?: Record<string, boolean>
-    searchRadius?: number
-    allCities?: boolean
-    cities?: CityOption[]
-    neighborhoods?: string[]
-  }
-
   const preferences = useMemo(
-    () => (profile.preferences || {}) as LocalPreferences,
+    () => parseLocalPreferences(profile.preferences),
     [profile.preferences]
   )
 
@@ -179,23 +339,26 @@ export function PreferencesSection({
   )
   const normalizePropertyTypes = useCallback(
     (existing?: PropertyTypePreferences): Record<PropertyTypeKey, boolean> => {
-      return PROPERTY_TYPE_VALUES.reduce<Record<PropertyTypeKey, boolean>>(
-        (acc, type) => {
-          const legacyValue =
-            type === 'single_family'
-              ? existing?.house
-              : type === 'townhome'
-                ? existing?.townhouse
-                : undefined
-
-          acc[type] =
-            (existing?.[type] as boolean | undefined) ??
-            legacyValue ??
-            defaultPropertyTypes[type]
-          return acc
-        },
-        {} as Record<PropertyTypeKey, boolean>
-      )
+      const normalized: Record<PropertyTypeKey, boolean> = {
+        ...defaultPropertyTypes,
+      }
+      for (const type of PROPERTY_TYPE_VALUES) {
+        const legacyValue =
+          type === 'single_family'
+            ? existing?.house
+            : type === 'townhome'
+              ? existing?.townhouse
+              : undefined
+        const existingValue = existing?.[type]
+        const resolved =
+          typeof existingValue === 'boolean'
+            ? existingValue
+            : typeof legacyValue === 'boolean'
+              ? legacyValue
+              : defaultPropertyTypes[type]
+        normalized[type] = resolved
+      }
+      return normalized
     },
     []
   )
@@ -204,12 +367,7 @@ export function PreferencesSection({
     Record<PropertyTypeKey, boolean>
   >(normalizePropertyTypes(preferences.propertyTypes))
   const [mustHaves, setMustHaves] = useState<Record<MustHaveKey, boolean>>(
-    preferences.mustHaves || {
-      parking: false,
-      pool: false,
-      gym: false,
-      petFriendly: false,
-    }
+    preferences.mustHaves ?? defaultMustHaves
   )
   const [searchRadius, setSearchRadius] = useState(
     preferences.searchRadius || DEFAULT_SEARCH_RADIUS
@@ -821,22 +979,14 @@ export function PreferencesSection({
       const normalizedNeighborhoods = Array.from(
         new Set(values.neighborhoods || [])
       ).sort()
-      const normalizedPropertyTypes = PROPERTY_TYPE_VALUES.reduce(
-        (acc, type) => {
-          acc[type] = Boolean(values.propertyTypes?.[type])
-          return acc
-        },
-        {} as Record<PropertyTypeKey, boolean>
-      )
-      const normalizedMustHaves = (
-        ['parking', 'pool', 'gym', 'petFriendly'] as MustHaveKey[]
-      ).reduce<Record<MustHaveKey, boolean>>(
-        (acc, key) => {
-          acc[key] = Boolean(values.mustHaves?.[key])
-          return acc
-        },
-        {} as Record<MustHaveKey, boolean>
-      )
+      const normalizedPropertyTypes = createPropertyTypeRecord(false)
+      for (const type of PROPERTY_TYPE_VALUES) {
+        normalizedPropertyTypes[type] = Boolean(values.propertyTypes?.[type])
+      }
+      const normalizedMustHaves = createMustHaveRecord(false)
+      for (const key of MUST_HAVE_KEYS) {
+        normalizedMustHaves[key] = Boolean(values.mustHaves?.[key])
+      }
 
       return {
         priceRange: values.priceRange || DEFAULT_PRICE_RANGE,
@@ -960,12 +1110,7 @@ export function PreferencesSection({
         bathrooms: preferences.bathrooms,
         searchRadius: preferences.searchRadius,
         propertyTypes: normalizePropertyTypes(preferences.propertyTypes),
-        mustHaves: (preferences.mustHaves || {
-          parking: false,
-          pool: false,
-          gym: false,
-          petFriendly: false,
-        }) as Record<MustHaveKey, boolean>,
+        mustHaves: preferences.mustHaves ?? defaultMustHaves,
         allCities: preferences.allCities,
         cities: preferences.cities || [],
         neighborhoods: preferences.neighborhoods || [],
@@ -1106,7 +1251,7 @@ export function PreferencesSection({
       )
       const selectedAmenities = Object.entries(mustHaves)
         .filter(([_, selected]) => selected)
-        .map(([key]) => MUST_HAVE_LABELS[key as MustHaveKey] || key)
+        .map(([key]) => (isMustHaveKey(key) ? MUST_HAVE_LABELS[key] : key))
 
       const filters = {
         location: buildLocationLabel(),
@@ -1212,7 +1357,11 @@ export function PreferencesSection({
               value={locationView}
               onValueChange={
                 MAP_VIEW_ENABLED
-                  ? (value) => setLocationView(value as 'map' | 'list')
+                  ? (value) => {
+                      if (isLocationView(value)) {
+                        setLocationView(value)
+                      }
+                    }
                   : undefined
               }
               className="space-y-4"
@@ -1580,9 +1729,11 @@ export function PreferencesSection({
             </div>
             <Slider
               value={priceRange}
-              onValueChange={(value) =>
-                setPriceRange(value as [number, number])
-              }
+              onValueChange={(value) => {
+                if (isPriceRangeValue(value)) {
+                  setPriceRange(value)
+                }
+              }}
               min={50000}
               max={10000000}
               step={25000}

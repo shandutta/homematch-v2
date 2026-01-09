@@ -5,14 +5,22 @@ import { redirect } from 'next/navigation'
 import { createClient } from './server'
 import { buildServerRedirectUrl } from '@/lib/utils/server-url'
 
+const requireFormString = (formData: FormData, key: string): string => {
+  const value = formData.get(key)
+  if (typeof value !== 'string') {
+    throw new Error(`Expected form field "${key}" to be a string`)
+  }
+  return value
+}
+
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
   const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: requireFormString(formData, 'email'),
+    password: requireFormString(formData, 'password'),
   }
 
   const { error } = await supabase.auth.signInWithPassword(data)
@@ -31,8 +39,8 @@ export async function signup(formData: FormData) {
   // type-casting here for convenience
   // in practice, you should validate your inputs
   const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: requireFormString(formData, 'email'),
+    password: requireFormString(formData, 'password'),
   }
 
   const { error } = await supabase.auth.signUp(data)

@@ -7,6 +7,7 @@
 
 import { LRUCache } from 'lru-cache'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * Represents a property that has been liked by multiple household members
@@ -86,9 +87,9 @@ type CouplesServiceCaches = {
 }
 
 const getCouplesServiceCaches = (): CouplesServiceCaches => {
-  const globalForCouples = globalThis as typeof globalThis & {
+  const globalForCouples: typeof globalThis & {
     __homematchCouplesCaches?: CouplesServiceCaches
-  }
+  } = globalThis
 
   if (!globalForCouples.__homematchCouplesCaches) {
     globalForCouples.__homematchCouplesCaches = {
@@ -115,6 +116,17 @@ const getHouseholdActivityCache = () =>
   getCouplesServiceCaches().householdActivityCache
 const getHouseholdStatsCache = () =>
   getCouplesServiceCaches().householdStatsCache
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isDbInteractionType = (
+  value: unknown
+): value is 'like' | 'dislike' | 'skip' | 'view' =>
+  value === 'like' ||
+  value === 'dislike' ||
+  value === 'skip' ||
+  value === 'view'
 
 /**
  * Service class for managing household property interactions and couples' features
@@ -150,14 +162,14 @@ export class CouplesService {
   /**
    * Retrieves the household ID for a given user
    * @private
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the user
    * @returns {Promise<string | null>} The household ID or null if user has no household
    * @complexity O(1) - Single database query
    * @description Fetches household association from user_profiles table
    */
   private static async getUserHousehold(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<string | null> {
     const { data: userProfile } = await supabase
@@ -174,7 +186,7 @@ export class CouplesService {
    * @private
    */
   private static async fetchMutualLikesFromRPC(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     householdId: string
   ): Promise<{ data: unknown[]; error?: unknown }> {
     const { data: mutualLikesData, error } = await supabase.rpc(
@@ -201,18 +213,31 @@ export class CouplesService {
       user_ids?: string[]
     }
 
-    return rawData.map((item) => {
-      const typedItem = item as MutualLikeRaw
-      return {
-        property_id: typedItem.property_id,
-        liked_by_count:
-          typeof typedItem.liked_by_count === 'string'
-            ? parseInt(typedItem.liked_by_count, 10)
-            : typedItem.liked_by_count,
-        first_liked_at: typedItem.first_liked_at,
-        last_liked_at: typedItem.last_liked_at,
-        user_ids: typedItem.user_ids || [],
+    const isMutualLikeRaw = (value: unknown): value is MutualLikeRaw =>
+      isRecord(value) &&
+      typeof value.property_id === 'string' &&
+      typeof value.first_liked_at === 'string' &&
+      typeof value.last_liked_at === 'string'
+
+    return rawData.flatMap((item) => {
+      if (!isMutualLikeRaw(item)) {
+        return []
       }
+
+      const likedByCount =
+        typeof item.liked_by_count === 'string'
+          ? parseInt(item.liked_by_count, 10)
+          : item.liked_by_count
+
+      return [
+        {
+          property_id: item.property_id,
+          liked_by_count: Number.isNaN(likedByCount) ? 0 : likedByCount,
+          first_liked_at: item.first_liked_at,
+          last_liked_at: item.last_liked_at,
+          user_ids: Array.isArray(item.user_ids) ? item.user_ids : [],
+        },
+      ]
     })
   }
 
@@ -231,7 +256,7 @@ export class CouplesService {
 
   /**
    * Retrieves all properties that have been liked by multiple household members
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the requesting user
    * @returns {Promise<MutualLike[]>} Array of mutual likes with metadata
    * @complexity O(n) where n is the number of mutual likes
@@ -240,7 +265,7 @@ export class CouplesService {
    * @callsTo get_household_mutual_likes (RPC), getMutualLikesFallback (fallback)
    */
   static async getMutualLikes(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<MutualLike[]> {
     const startTime = Date.now()
@@ -288,7 +313,7 @@ export class CouplesService {
   /**
    * Fallback implementation for retrieving mutual likes using client-side aggregation
    * @private
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} householdId - The unique identifier of the household
    * @returns {Promise<MutualLike[]>} Array of mutual likes with metadata
    * @complexity O(n*m) where n is likes and m is unique properties
@@ -296,7 +321,7 @@ export class CouplesService {
    * Groups interactions by property and filters for 2+ unique users.
    */
   private static async getMutualLikesFallback(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     householdId: string
   ): Promise<MutualLike[]> {
     const { data: likesWithUsers } = await supabase
@@ -318,22 +343,24 @@ export class CouplesService {
     >()
 
     likesWithUsers.forEach((like) => {
+      if (!like.created_at) return
+      const createdAt = like.created_at
       if (!propertyLikes.has(like.property_id)) {
         propertyLikes.set(like.property_id, {
           users: new Set(),
-          firstLiked: like.created_at,
-          lastLiked: like.created_at,
+          firstLiked: createdAt,
+          lastLiked: createdAt,
         })
       }
 
       const prop = propertyLikes.get(like.property_id)!
       prop.users.add(like.user_id)
 
-      if (like.created_at < prop.firstLiked) {
-        prop.firstLiked = like.created_at
+      if (createdAt < prop.firstLiked) {
+        prop.firstLiked = createdAt
       }
-      if (like.created_at > prop.lastLiked) {
-        prop.lastLiked = like.created_at
+      if (createdAt > prop.lastLiked) {
+        prop.lastLiked = createdAt
       }
     })
 
@@ -359,7 +386,7 @@ export class CouplesService {
    * @private
    */
   private static async fetchHouseholdActivityData(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     householdId: string,
     limit: number,
     offset: number
@@ -389,7 +416,7 @@ export class CouplesService {
    * @private
    */
   private static async getMutualPropertyIds(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<Set<string>> {
     const mutualLikes = await this.getMutualLikes(supabase, userId)
@@ -420,28 +447,45 @@ export class CouplesService {
       property_images?: string[]
     }
 
-    return rawActivities.map((activity) => {
-      const typedActivity = activity as HouseholdActivityRaw
-      return {
-        id: typedActivity.id,
-        user_id: typedActivity.user_id,
-        property_id: typedActivity.property_id,
-        interaction_type: typedActivity.interaction_type as
-          | 'like'
-          | 'dislike'
-          | 'skip'
-          | 'view',
-        created_at: typedActivity.created_at,
-        user_display_name: typedActivity.user_display_name || 'Unknown',
-        property_address: typedActivity.property_address || '',
-        property_price: typedActivity.property_price || 0,
-        property_bedrooms: typedActivity.property_bedrooms || 0,
-        property_bathrooms: typedActivity.property_bathrooms || 0,
-        property_images: typedActivity.property_images || [],
-        is_mutual:
-          typedActivity.interaction_type === 'like' &&
-          mutualPropertyIds.has(typedActivity.property_id),
+    const isHouseholdActivityRaw = (
+      value: unknown
+    ): value is HouseholdActivityRaw =>
+      isRecord(value) &&
+      typeof value.id === 'string' &&
+      typeof value.user_id === 'string' &&
+      typeof value.property_id === 'string' &&
+      typeof value.interaction_type === 'string' &&
+      typeof value.created_at === 'string'
+
+    return rawActivities.flatMap((activity) => {
+      if (!isHouseholdActivityRaw(activity)) {
+        return []
       }
+
+      const interactionType = isDbInteractionType(activity.interaction_type)
+        ? activity.interaction_type
+        : 'view'
+
+      return [
+        {
+          id: activity.id,
+          user_id: activity.user_id,
+          property_id: activity.property_id,
+          interaction_type: interactionType,
+          created_at: activity.created_at,
+          user_display_name: activity.user_display_name || 'Unknown',
+          property_address: activity.property_address || '',
+          property_price: activity.property_price || 0,
+          property_bedrooms: activity.property_bedrooms || 0,
+          property_bathrooms: activity.property_bathrooms || 0,
+          property_images: Array.isArray(activity.property_images)
+            ? activity.property_images
+            : [],
+          is_mutual:
+            interactionType === 'like' &&
+            mutualPropertyIds.has(activity.property_id),
+        },
+      ]
     })
   }
 
@@ -461,7 +505,7 @@ export class CouplesService {
 
   /**
    * Retrieves recent household activity timeline with property details
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the requesting user
    * @param {number} [limit=20] - Maximum number of activities to retrieve
    * @param {number} [offset=0] - Number of records to skip for pagination
@@ -472,7 +516,7 @@ export class CouplesService {
    * @callsTo get_household_activity_enhanced (RPC), getMutualLikes
    */
   static async getHouseholdActivity(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string,
     limit = 20,
     offset = 0
@@ -517,7 +561,7 @@ export class CouplesService {
 
   /**
    * Calculates comprehensive statistics for a household's property search activity
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the requesting user
    * @returns {Promise<CouplesStats | null>} Household statistics or null if no household
    * @complexity O(n) where n is the number of interactions
@@ -527,7 +571,7 @@ export class CouplesService {
    * @callsTo getMutualLikes
    */
   static async getHouseholdStats(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<CouplesStats | null> {
     try {
@@ -564,9 +608,12 @@ export class CouplesService {
       if (recentActivity && recentActivity.length > 0) {
         const dates = [
           ...new Set(
-            recentActivity.map(
-              (a) => new Date(a.created_at).toISOString().split('T')[0]
-            )
+            recentActivity
+              .map((activity) => activity.created_at)
+              .filter((value): value is string => Boolean(value))
+              .map(
+                (createdAt) => new Date(createdAt).toISOString().split('T')[0]
+              )
           ),
         ]
           .sort()
@@ -622,7 +669,7 @@ export class CouplesService {
 
   /**
    * Checks if liking a property would create a mutual like with another household member
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the user considering the like
    * @param {string} propertyId - The unique identifier of the property
    * @returns {Promise<{ wouldBeMutual: boolean; partnerUserId?: string }>}
@@ -632,7 +679,7 @@ export class CouplesService {
    * useful for UI feedback and notifications.
    */
   static async checkPotentialMutualLike(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string,
     propertyId: string
   ): Promise<{ wouldBeMutual: boolean; partnerUserId?: string }> {
@@ -668,7 +715,7 @@ export class CouplesService {
 
   /**
    * Handles notification logic when a user interacts with a property
-   * @param {SupabaseClient} supabase - Supabase client instance
+   * @param {SupabaseClient<AppDatabase>} supabase - Supabase client instance
    * @param {string} userId - The unique identifier of the user who interacted
    * @param {string} propertyId - The unique identifier of the property
    * @param {string} interactionType - Type of interaction (like, dislike, skip, view)
@@ -679,7 +726,7 @@ export class CouplesService {
    * @callsTo clearHouseholdCache, checkPotentialMutualLike
    */
   static async notifyInteraction(
-    supabase: SupabaseClient,
+    supabase: SupabaseClient<AppDatabase>,
     userId: string,
     propertyId: string,
     interactionType: string

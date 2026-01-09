@@ -44,11 +44,6 @@ interface GooglePlacePrediction {
   }
 }
 
-interface GooglePlacesResponse {
-  status: string
-  predictions: GooglePlacePrediction[]
-}
-
 /**
  * Secure Places Autocomplete API Proxy
  * Rate-limited server-side proxy for Google Maps Places Autocomplete API
@@ -114,30 +109,43 @@ export async function POST(request: NextRequest) {
     const response = await fetch(autocompleteUrl)
     const data = await response.json()
 
-    if (data.status !== 'OK') {
-      if (data.status === 'ZERO_RESULTS') {
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+
+    if (!isRecord(data) || data.status !== 'OK') {
+      if (isRecord(data) && data.status === 'ZERO_RESULTS') {
         return NextResponse.json({ predictions: [] })
       }
 
       return NextResponse.json(
-        { error: 'Places autocomplete failed', status: data.status },
+        { error: 'Places autocomplete failed', status: data?.status },
         { status: 400 }
       )
     }
 
     // Return sanitized predictions
-    const predictions: PlacePrediction[] = (
-      data as GooglePlacesResponse
-    ).predictions.map((prediction: GooglePlacePrediction) => ({
-      description: prediction.description,
-      place_id: prediction.place_id,
-      types: prediction.types,
-      matched_substrings: prediction.matched_substrings || [],
-      structured_formatting: {
-        main_text: prediction.structured_formatting?.main_text || '',
-        secondary_text: prediction.structured_formatting?.secondary_text,
-      },
-    }))
+    const rawPredictions = Array.isArray(data.predictions)
+      ? data.predictions
+      : []
+    const predictions: PlacePrediction[] = rawPredictions
+      .filter((prediction): prediction is GooglePlacePrediction => {
+        if (!isRecord(prediction)) return false
+        return (
+          typeof prediction.description === 'string' &&
+          typeof prediction.place_id === 'string' &&
+          Array.isArray(prediction.types)
+        )
+      })
+      .map((prediction) => ({
+        description: prediction.description,
+        place_id: prediction.place_id,
+        types: prediction.types,
+        matched_substrings: prediction.matched_substrings || [],
+        structured_formatting: {
+          main_text: prediction.structured_formatting?.main_text || '',
+          secondary_text: prediction.structured_formatting?.secondary_text,
+        },
+      }))
 
     return NextResponse.json({ predictions })
   } catch (error) {

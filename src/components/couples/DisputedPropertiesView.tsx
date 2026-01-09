@@ -172,16 +172,14 @@ export function DisputedPropertiesView({
       )
 
       // Show appropriate success message
-      const messages = {
+      const messages: Record<string, string> = {
         discussion_needed: 'Marked for discussion',
         scheduled_viewing: 'Scheduled viewing',
         saved_for_later: 'Saved for later',
         final_pass: 'Agreed to skip this property',
       }
 
-      toast.success(
-        messages[resolutionType as keyof typeof messages] || 'Resolution saved'
-      )
+      toast.success(messages[resolutionType] || 'Resolution saved')
     } catch (error) {
       console.error('Error updating resolution:', error)
       toast.error('Failed to save resolution')

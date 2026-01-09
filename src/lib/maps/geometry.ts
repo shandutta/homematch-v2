@@ -263,9 +263,11 @@ export function ringArea(ring: LatLng[]): number {
   return area / 2
 }
 
-export function toGeoJsonMultiPolygon(polygons: PolygonRings[]) {
+export function toGeoJsonMultiPolygon(
+  polygons: PolygonRings[]
+): MapNeighborhoodOutput['bounds'] {
   return {
-    type: 'MultiPolygon' as const,
+    type: 'MultiPolygon',
     coordinates: polygons.map((rings) =>
       rings.map((ring) => ring.map((point) => [point.lng, point.lat]))
     ),

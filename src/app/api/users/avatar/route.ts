@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { rateLimit } from '@/lib/middleware/rateLimiter'
+import type { Json } from '@/types/database'
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp']
@@ -37,6 +38,11 @@ function validateMagicBytes(buffer: ArrayBuffer, mimeType: string): boolean {
   })
 }
 
+const isJsonRecord = (
+  value: Json | null | undefined
+): value is Record<string, Json> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 /**
  * POST /api/users/avatar
  * Upload a custom avatar image
@@ -63,11 +69,11 @@ export async function POST(request: NextRequest) {
 
     // Parse multipart form data
     const formData = await request.formData()
-    const file = formData.get('file') as File | null
-
-    if (!file) {
+    const fileEntry = formData.get('file')
+    if (!(fileEntry instanceof File)) {
       return ApiErrorHandler.badRequest('No file provided')
     }
+    const file = fileEntry
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -144,10 +150,9 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const currentPreferences = (profile?.preferences || {}) as Record<
-      string,
-      unknown
-    >
+    const currentPreferences = isJsonRecord(profile?.preferences)
+      ? profile.preferences
+      : {}
 
     const { error: updateError } = await supabase
       .from('user_profiles')
@@ -212,10 +217,9 @@ export async function DELETE(request: NextRequest) {
       return ApiErrorHandler.notFound('User profile not found')
     }
 
-    const currentPreferences = (profile.preferences || {}) as Record<
-      string,
-      unknown
-    >
+    const currentPreferences = isJsonRecord(profile.preferences)
+      ? profile.preferences
+      : {}
 
     // Remove avatar from preferences
     const { avatar: _, ...preferencesWithoutAvatar } = currentPreferences

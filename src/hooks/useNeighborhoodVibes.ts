@@ -4,9 +4,16 @@ import { useQuery } from '@tanstack/react-query'
 import { QUERY_STALE_TIMES } from '@/lib/query/config'
 import type { NeighborhoodVibesRecord } from '@/lib/schemas/neighborhood-vibes'
 
+const neighborhoodVibesAllKey: readonly ['neighborhood-vibes'] = [
+  'neighborhood-vibes',
+]
+const buildNeighborhoodVibeKey = (
+  id: string
+): readonly ['neighborhood-vibes', string] => [neighborhoodVibesAllKey[0], id]
+
 const neighborhoodVibeKeys = {
-  all: ['neighborhood-vibes'] as const,
-  neighborhood: (id: string) => ['neighborhood-vibes', id] as const,
+  all: neighborhoodVibesAllKey,
+  neighborhood: buildNeighborhoodVibeKey,
 }
 
 interface NeighborhoodVibesApiResponse {

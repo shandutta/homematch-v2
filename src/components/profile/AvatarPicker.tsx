@@ -46,9 +46,13 @@ export function AvatarPicker({
   enableUpload = false,
 }: AvatarPickerProps) {
   const [view, setView] = useState<PickerView>('presets')
+  const isPresetAvatarId = (value: string): value is PresetAvatarId =>
+    PRESET_AVATARS.some((avatar) => avatar.id === value)
   const [selectedPreset, setSelectedPreset] = useState<PresetAvatarId | null>(
     currentAvatar?.type === 'preset'
-      ? (currentAvatar.value as PresetAvatarId)
+      ? isPresetAvatarId(currentAvatar.value)
+        ? currentAvatar.value
+        : null
       : null
   )
 
@@ -114,9 +118,7 @@ export function AvatarPicker({
                   <button
                     key={avatar.id}
                     type="button"
-                    onClick={() =>
-                      handlePresetSelect(avatar.id as PresetAvatarId)
-                    }
+                    onClick={() => handlePresetSelect(avatar.id)}
                     className={cn(
                       'group relative aspect-square rounded-xl p-1 transition-all',
                       'hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500',

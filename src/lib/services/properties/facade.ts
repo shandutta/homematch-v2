@@ -121,11 +121,10 @@ export class PropertyServiceFacade
       return await this.searchService.searchProperties(searchParams)
     } catch (_error) {
       // Return structured error response for search operations
-      const { pagination = {} } = searchParams
-      const { page = 1, limit = 20 } = pagination as {
-        page?: number
-        limit?: number
-      }
+      const pagination = searchParams.pagination
+      const page = typeof pagination?.page === 'number' ? pagination.page : 1
+      const limit =
+        typeof pagination?.limit === 'number' ? pagination.limit : 20
 
       return {
         properties: [],

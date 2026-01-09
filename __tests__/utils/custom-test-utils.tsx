@@ -7,42 +7,143 @@ export * from '@testing-library/react'
 
 // Mock Supabase Client Factory
 // Uses Jest if available, otherwise falls back to Vitest's vi
-const createMockFn = () =>
-  typeof jest !== 'undefined' ? jest.fn() : (globalThis as any).vi.fn()
+type MockFn<Args extends unknown[] = unknown[], Return = unknown> = ((
+  ...args: Args
+) => Return) & {
+  mockReturnValue: (value: Return) => MockFn<Args, Return>
+  mockReturnThis: () => MockFn<Args, Return>
+  mockImplementation: (impl: (...args: Args) => Return) => MockFn<Args, Return>
+}
 
-export const createMockSupabaseClient = (): any => {
+const createMockFn = <
+  Args extends unknown[] = unknown[],
+  Return = unknown,
+>(): MockFn<Args, Return> => {
+  if (typeof jest !== 'undefined') {
+    return jest.fn() as unknown as MockFn<Args, Return>
+  }
+  if (globalThis.vi) {
+    return globalThis.vi.fn() as unknown as MockFn<Args, Return>
+  }
+  throw new Error('No test mock library found')
+}
+
+type MockSupabaseQuery = {
+  select: MockFn<unknown[], MockSupabaseQuery>
+  insert: MockFn<unknown[], MockSupabaseQuery>
+  update: MockFn<unknown[], MockSupabaseQuery>
+  delete: MockFn<unknown[], MockSupabaseQuery>
+  upsert: MockFn<unknown[], MockSupabaseQuery>
+  eq: MockFn<unknown[], MockSupabaseQuery>
+  neq: MockFn<unknown[], MockSupabaseQuery>
+  gt: MockFn<unknown[], MockSupabaseQuery>
+  gte: MockFn<unknown[], MockSupabaseQuery>
+  lt: MockFn<unknown[], MockSupabaseQuery>
+  lte: MockFn<unknown[], MockSupabaseQuery>
+  like: MockFn<unknown[], MockSupabaseQuery>
+  ilike: MockFn<unknown[], MockSupabaseQuery>
+  is: MockFn<unknown[], MockSupabaseQuery>
+  in: MockFn<unknown[], MockSupabaseQuery>
+  contains: MockFn<unknown[], MockSupabaseQuery>
+  containedBy: MockFn<unknown[], MockSupabaseQuery>
+  range: MockFn<unknown[], MockSupabaseQuery>
+  order: MockFn<unknown[], MockSupabaseQuery>
+  limit: MockFn<unknown[], MockSupabaseQuery>
+  single: MockFn<[], Promise<{ data: null; error: null }>>
+  maybeSingle: MockFn<[], Promise<{ data: null; error: null }>>
+  url: URL
+  headers: Record<string, string>
+}
+
+type MockSupabaseClient = {
+  from: MockFn<[string], MockSupabaseQuery>
+  rpc: MockFn
+  auth: {
+    signInWithPassword: MockFn
+    signOut: MockFn
+    getUser: MockFn
+    getSession: MockFn
+    onAuthStateChange: MockFn
+  }
+  storage: {
+    from: MockFn<
+      [string],
+      {
+        upload: MockFn
+        getPublicUrl: MockFn
+      }
+    >
+  }
+}
+
+export const createMockSupabaseClient = (): MockSupabaseClient => {
   const mockFn = createMockFn()
+  const query: MockSupabaseQuery = {
+    select: createMockFn(),
+    insert: createMockFn(),
+    update: createMockFn(),
+    delete: createMockFn(),
+    upsert: createMockFn(),
+    eq: createMockFn(),
+    neq: createMockFn(),
+    gt: createMockFn(),
+    gte: createMockFn(),
+    lt: createMockFn(),
+    lte: createMockFn(),
+    like: createMockFn(),
+    ilike: createMockFn(),
+    is: createMockFn(),
+    in: createMockFn(),
+    contains: createMockFn(),
+    containedBy: createMockFn(),
+    range: createMockFn(),
+    order: createMockFn(),
+    limit: createMockFn(),
+    single: createMockFn(),
+    maybeSingle: createMockFn(),
+    url: new URL('http://localhost:54200'),
+    headers: {},
+  }
+
+  const chainMethods: Array<
+    keyof Omit<MockSupabaseQuery, 'single' | 'maybeSingle' | 'url' | 'headers'>
+  > = [
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'upsert',
+    'eq',
+    'neq',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'is',
+    'in',
+    'contains',
+    'containedBy',
+    'range',
+    'order',
+    'limit',
+  ]
+
+  for (const method of chainMethods) {
+    query[method].mockReturnValue(query)
+  }
+  query.single.mockImplementation(() =>
+    Promise.resolve({ data: null, error: null })
+  )
+  query.maybeSingle.mockImplementation(() =>
+    Promise.resolve({ data: null, error: null })
+  )
+
   return {
-    from: mockFn.mockReturnValue({
-      select: mockFn.mockReturnThis(),
-      insert: mockFn.mockReturnThis(),
-      update: mockFn.mockReturnThis(),
-      delete: mockFn.mockReturnThis(),
-      upsert: mockFn.mockReturnThis(),
-      eq: mockFn.mockReturnThis(),
-      neq: mockFn.mockReturnThis(),
-      gt: mockFn.mockReturnThis(),
-      gte: mockFn.mockReturnThis(),
-      lt: mockFn.mockReturnThis(),
-      lte: mockFn.mockReturnThis(),
-      like: mockFn.mockReturnThis(),
-      ilike: mockFn.mockReturnThis(),
-      is: mockFn.mockReturnThis(),
-      in: mockFn.mockReturnThis(),
-      contains: mockFn.mockReturnThis(),
-      containedBy: mockFn.mockReturnThis(),
-      range: mockFn.mockReturnThis(),
-      order: mockFn.mockReturnThis(),
-      limit: mockFn.mockReturnThis(),
-      single: mockFn.mockImplementation(() =>
-        Promise.resolve({ data: null, error: null })
-      ),
-      maybeSingle: mockFn.mockImplementation(() =>
-        Promise.resolve({ data: null, error: null })
-      ),
-      url: new URL('http://localhost:54200'),
-      headers: {},
-    }),
+    from: (mockFn as MockFn<[string], MockSupabaseQuery>).mockReturnValue(
+      query
+    ),
     rpc: mockFn.mockReturnThis(),
     auth: {
       signInWithPassword: mockFn,
@@ -54,7 +155,15 @@ export const createMockSupabaseClient = (): any => {
       }),
     },
     storage: {
-      from: mockFn.mockReturnValue({
+      from: (
+        mockFn as MockFn<
+          [string],
+          {
+            upload: MockFn
+            getPublicUrl: MockFn
+          }
+        >
+      ).mockReturnValue({
         upload: mockFn,
         getPublicUrl: mockFn.mockReturnValue({
           data: { publicUrl: 'https://example.com/image.png' },

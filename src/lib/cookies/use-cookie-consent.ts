@@ -14,8 +14,17 @@ export function useCookieConsent() {
     setConsent(getCookieConsent())
 
     const handleCustomEvent = (event: Event) => {
-      const customEvent = event as CustomEvent<CookieConsent | null>
-      setConsent(customEvent.detail ?? getCookieConsent())
+      const detail: unknown = event instanceof CustomEvent ? event.detail : null
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null
+      const isCookieConsent = (value: unknown): value is CookieConsent =>
+        isRecord(value) &&
+        typeof value.updatedAt === 'string' &&
+        typeof value.preferences === 'boolean' &&
+        typeof value.analytics === 'boolean' &&
+        typeof value.advertising === 'boolean' &&
+        typeof value.version === 'number'
+      setConsent(isCookieConsent(detail) ? detail : getCookieConsent())
     }
 
     const handleStorage = () => {

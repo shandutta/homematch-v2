@@ -3,14 +3,7 @@
 import { useEffect } from 'react'
 
 const isLowDataMode = () => {
-  const connection = (
-    navigator as Navigator & {
-      connection?: {
-        saveData?: boolean
-        effectiveType?: string
-      }
-    }
-  ).connection
+  const connection = navigator.connection
 
   if (connection?.saveData) return true
   const effectiveType = connection?.effectiveType

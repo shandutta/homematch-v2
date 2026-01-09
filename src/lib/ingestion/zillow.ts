@@ -4,10 +4,20 @@ import {
   DataTransformer,
   RawPropertyData,
 } from '@/lib/migration/data-transformer'
-import type { Database, PropertyInsert } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
+import type { PropertyInsert } from '@/types/database'
 import { defaultZipForCityState } from './default-zips'
 
-const ALLOWED_PROPERTY_TYPES = [
+type AllowedPropertyType =
+  | 'single_family'
+  | 'condo'
+  | 'townhome'
+  | 'multi_family'
+  | 'manufactured'
+  | 'land'
+  | 'other'
+
+const ALLOWED_PROPERTY_TYPES: ReadonlyArray<AllowedPropertyType> = [
   'single_family',
   'condo',
   'townhome',
@@ -15,8 +25,7 @@ const ALLOWED_PROPERTY_TYPES = [
   'manufactured',
   'land',
   'other',
-] as const
-type AllowedPropertyType = (typeof ALLOWED_PROPERTY_TYPES)[number]
+]
 
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_PAGE_SIZE = 50
@@ -36,15 +45,24 @@ export type ZillowSortOption =
 
 type FetchLike = typeof fetch
 
-type SupabaseLike = Pick<SupabaseClient<Database>, 'from' | 'rpc'>
+type SupabaseLike = Pick<SupabaseClient<AppDatabase>, 'from' | 'rpc'>
+
+const allowedPropertyTypeSet = new Set<string>(ALLOWED_PROPERTY_TYPES)
+
+const isAllowedPropertyType = (value: string): value is AllowedPropertyType =>
+  allowedPropertyTypeSet.has(value)
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isZillowSearchItem = (value: unknown): value is ZillowSearchItem =>
+  isRecord(value)
 
 function normalizePropertyTypeForDb(
   type: string | null | undefined
 ): AllowedPropertyType {
   const t = type?.toString().toLowerCase() || ''
-  if ((ALLOWED_PROPERTY_TYPES as readonly string[]).includes(t)) {
-    return t as AllowedPropertyType
-  }
+  if (isAllowedPropertyType(t)) return t
   if (['house', 'singlefamily'].includes(t)) return 'single_family'
   if (['townhouse'].includes(t)) return 'townhome'
   if (['multifamily', 'apartment', 'duplex', 'triplex'].includes(t))
@@ -76,21 +94,6 @@ export type ZillowSearchItem = {
   longitude?: number
   imgSrc?: string
   images?: string[]
-  [k: string]: unknown
-}
-
-type ZillowSearchResponse = {
-  props?: ZillowSearchItem[]
-  results?: ZillowSearchItem[]
-  data?: { results?: ZillowSearchItem[] }
-  totalResultCount?: number
-  totalCount?: number
-  hasNextPage?: boolean
-  page?: number
-  totalPages?: number
-  resultsPerPage?: number
-  currentPage?: number
-  pagination?: { totalPages?: number; currentPage?: number }
   [k: string]: unknown
 }
 
@@ -222,30 +225,55 @@ function collectZipFallbacks(
   })
 }
 
-function extractResults(data: ZillowSearchResponse): ZillowSearchItem[] {
-  if (Array.isArray(data.props)) return data.props
-  if (Array.isArray(data.results)) return data.results
-  if (Array.isArray(data.data?.results)) return data.data.results
+function extractResults(data: unknown): ZillowSearchItem[] {
+  if (!isRecord(data)) return []
+
+  const props = data.props
+  if (Array.isArray(props)) {
+    return props.filter(isZillowSearchItem)
+  }
+
+  const results = data.results
+  if (Array.isArray(results)) {
+    return results.filter(isZillowSearchItem)
+  }
+
+  const nested = isRecord(data.data) ? data.data.results : undefined
+  if (Array.isArray(nested)) {
+    return nested.filter(isZillowSearchItem)
+  }
+
   return []
 }
 
 function hasAnotherPage(
-  data: ZillowSearchResponse,
+  data: unknown,
   page: number,
   pageSize: number,
   returnedCount: number
 ): boolean {
-  if (typeof data.hasNextPage === 'boolean') return data.hasNextPage
+  if (!isRecord(data)) return returnedCount >= pageSize
+  const hasNextPage =
+    typeof data.hasNextPage === 'boolean' ? data.hasNextPage : undefined
+  if (hasNextPage !== undefined) return hasNextPage
+
   const totalCount =
     typeof data.totalCount === 'number'
       ? data.totalCount
       : typeof data.totalResultCount === 'number'
         ? data.totalResultCount
         : undefined
+
   const totalPages =
-    data.totalPages ||
-    data.pagination?.totalPages ||
-    (totalCount ? Math.ceil(totalCount / pageSize) : undefined)
+    typeof data.totalPages === 'number'
+      ? data.totalPages
+      : isRecord(data.pagination) &&
+          typeof data.pagination.totalPages === 'number'
+        ? data.pagination.totalPages
+        : totalCount
+          ? Math.ceil(totalCount / pageSize)
+          : undefined
+
   if (totalPages && !Number.isNaN(totalPages)) {
     return page < totalPages
   }
@@ -332,7 +360,7 @@ export async function fetchZillowSearchPage(options: {
     )
   }
 
-  const data = (await res.json()) as ZillowSearchResponse
+  const data: unknown = await res.json()
   const items = extractResults(data)
   const hasNextPage = hasAnotherPage(data, page, pageSize, items.length)
 
@@ -429,9 +457,13 @@ export function mapSearchItemToRaw(
   if (!parsed) return null
   const { address, city, state, zip } = parsed
 
-  const propertyType = ZillowUtils.mapPropertyType(
-    (item.propertyType || item.homeType || '') as string
-  )
+  const rawPropertyType =
+    typeof item.propertyType === 'string'
+      ? item.propertyType
+      : typeof item.homeType === 'string'
+        ? item.homeType
+        : ''
+  const propertyType = ZillowUtils.mapPropertyType(rawPropertyType)
 
   const images =
     Array.isArray(item.images) && item.images.length > 0
@@ -551,7 +583,7 @@ export async function ingestZillowLocations(
 
       const rawItems = pageResult.items
         .map((it) => mapSearchItemToRaw(it, location, zipFallbacks))
-        .filter(Boolean) as RawPropertyData[]
+        .filter((item): item is RawPropertyData => item !== null)
 
       locationSummary.attempted += pageResult.items.length
       summary.totals.attempted += pageResult.items.length
@@ -605,7 +637,9 @@ export async function ingestZillowLocations(
 
         if (error) {
           const errMsg =
-            (error as { message?: string }).message ||
+            (isRecord(error) && typeof error.message === 'string'
+              ? error.message
+              : undefined) ||
             JSON.stringify(error) ||
             'Failed to upsert properties'
           const typesList = Object.entries(locationTypeCounts)

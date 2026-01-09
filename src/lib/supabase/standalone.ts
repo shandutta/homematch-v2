@@ -2,10 +2,10 @@ import {
   createClient as createSupabaseClient,
   type SupabaseClient,
 } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
 
 // Cache clients per unique URL/key to avoid multiple GoTrue instances in tests
-const cachedTestClients = new Map<string, SupabaseClient<Database>>()
+const cachedTestClients = new Map<string, SupabaseClient<AppDatabase>>()
 
 /**
  * Create a standalone Supabase client for scripts and migrations
@@ -14,7 +14,7 @@ const cachedTestClients = new Map<string, SupabaseClient<Database>>()
 export function createClient(
   overrideUrl?: string,
   overrideServiceKey?: string
-): SupabaseClient<Database> {
+): SupabaseClient<AppDatabase> {
   const supabaseUrl =
     overrideUrl ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -33,7 +33,7 @@ export function createClient(
     if (!cachedTestClients.has(cacheKey)) {
       cachedTestClients.set(
         cacheKey,
-        createSupabaseClient<Database>(supabaseUrl, supabaseServiceKey, {
+        createSupabaseClient<AppDatabase>(supabaseUrl, supabaseServiceKey, {
           auth: {
             autoRefreshToken: false,
             persistSession: false,
@@ -47,7 +47,7 @@ export function createClient(
     return cachedTestClients.get(cacheKey)!
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseServiceKey, {
+  return createSupabaseClient<AppDatabase>(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

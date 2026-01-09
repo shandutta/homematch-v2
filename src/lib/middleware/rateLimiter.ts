@@ -4,7 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // Different rate limit tiers
-const RATE_LIMIT_TIERS = {
+type RateLimitTierConfig = {
+  points: number
+  duration: number
+  blockDuration: number
+}
+
+type RateLimitTierKey = 'strict' | 'standard' | 'relaxed' | 'auth' | 'testing'
+
+const RATE_LIMIT_TIERS: Record<RateLimitTierKey, RateLimitTierConfig> = {
   strict: {
     points: 10,
     duration: 60, // 10 requests per minute
@@ -30,11 +38,18 @@ const RATE_LIMIT_TIERS = {
     duration: 60, // 1000 requests per minute for testing
     blockDuration: 5, // Block for 5 seconds only
   },
-} as const
+}
 
 // Create rate limiter instances
 // Deep import to avoid pulling optional adapters (e.g. Drizzle) from the package entrypoint
 const rateLimiters = new Map<string, RateLimiterMemoryType>()
+
+const isRateLimiterResponse = (
+  value: unknown
+): value is { msBeforeNext?: number; remainingPoints?: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  ('msBeforeNext' in value || 'remainingPoints' in value)
 
 function getRateLimiter(
   tier: keyof typeof RATE_LIMIT_TIERS
@@ -101,11 +116,12 @@ export async function rateLimit(
     return null
   } catch (rateLimiterRes: unknown) {
     // Rate limit exceeded
-    const res = rateLimiterRes as {
-      msBeforeNext?: number
-      remainingPoints?: number
-    }
-    const retryAfter = Math.round(res.msBeforeNext || 60000 / 1000) || 60
+    const res = isRateLimiterResponse(rateLimiterRes) ? rateLimiterRes : {}
+    const msBeforeNext =
+      typeof res.msBeforeNext === 'number' ? res.msBeforeNext : 60000
+    const remainingPoints =
+      typeof res.remainingPoints === 'number' ? res.remainingPoints : 0
+    const retryAfter = Math.round(msBeforeNext / 1000) || 60
 
     return NextResponse.json(
       {
@@ -118,9 +134,9 @@ export async function rateLimit(
         headers: {
           'Retry-After': String(retryAfter),
           'X-RateLimit-Limit': String(RATE_LIMIT_TIERS[tier].points),
-          'X-RateLimit-Remaining': String(res.remainingPoints || 0),
+          'X-RateLimit-Remaining': String(remainingPoints),
           'X-RateLimit-Reset': new Date(
-            Date.now() + (res.msBeforeNext || 60000)
+            Date.now() + msBeforeNext
           ).toISOString(),
         },
       }
@@ -198,17 +214,18 @@ export async function authRateLimit(
     return null
   } catch (rateLimiterRes: unknown) {
     // Auth rate limit exceeded - potential brute force attempt
-    const res = rateLimiterRes as {
-      msBeforeNext?: number
-      remainingPoints?: number
-    }
-    const retryAfter = Math.round((res.msBeforeNext || 1800000) / 1000) || 1800
+    const res = isRateLimiterResponse(rateLimiterRes) ? rateLimiterRes : {}
+    const msBeforeNext =
+      typeof res.msBeforeNext === 'number' ? res.msBeforeNext : 1800000
+    const remainingPoints =
+      typeof res.remainingPoints === 'number' ? res.remainingPoints : 0
+    const retryAfter = Math.round(msBeforeNext / 1000) || 1800
 
     // Log potential security incident
     console.warn('[Security] Auth rate limit exceeded:', {
       clientId: identifier || 'unknown',
-      remainingPoints: res.remainingPoints || 0,
-      msBeforeNext: res.msBeforeNext,
+      remainingPoints,
+      msBeforeNext,
     })
 
     return NextResponse.json(
@@ -223,9 +240,9 @@ export async function authRateLimit(
         headers: {
           'Retry-After': String(retryAfter),
           'X-RateLimit-Limit': String(RATE_LIMIT_TIERS.auth.points),
-          'X-RateLimit-Remaining': String(res.remainingPoints || 0),
+          'X-RateLimit-Remaining': String(remainingPoints),
           'X-RateLimit-Reset': new Date(
-            Date.now() + (res.msBeforeNext || 1800000)
+            Date.now() + msBeforeNext
           ).toISOString(),
         },
       }

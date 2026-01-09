@@ -38,12 +38,29 @@ interface NotifyInteractionResponse {
 }
 
 // Query keys
+const couplesAllKey: readonly ['couples'] = ['couples']
+const buildCouplesMutualLikesKey = (): readonly ['couples', 'mutual-likes'] => [
+  couplesAllKey[0],
+  'mutual-likes',
+]
+const buildCouplesActivityKey = (
+  limit?: number,
+  offset?: number
+): readonly ['couples', 'activity', { limit?: number; offset?: number }] => [
+  couplesAllKey[0],
+  'activity',
+  { limit, offset },
+]
+const buildCouplesStatsKey = (): readonly ['couples', 'stats'] => [
+  couplesAllKey[0],
+  'stats',
+]
+
 const COUPLES_KEYS = {
-  all: ['couples'] as const,
-  mutualLikes: () => [...COUPLES_KEYS.all, 'mutual-likes'] as const,
-  activity: (limit?: number, offset?: number) =>
-    [...COUPLES_KEYS.all, 'activity', { limit, offset }] as const,
-  stats: () => [...COUPLES_KEYS.all, 'stats'] as const,
+  all: couplesAllKey,
+  mutualLikes: buildCouplesMutualLikesKey,
+  activity: buildCouplesActivityKey,
+  stats: buildCouplesStatsKey,
 }
 
 /**

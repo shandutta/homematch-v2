@@ -1,14 +1,23 @@
 import type { NextConfig } from 'next'
 
 // Bundle analyzer configuration
-let withBundleAnalyzer: any
+const defaultBundleAnalyzer = (config: NextConfig): NextConfig => config
+type NextConfigTransform = typeof defaultBundleAnalyzer
+const isNextConfigTransform = (value: unknown): value is NextConfigTransform =>
+  typeof value === 'function'
+let withBundleAnalyzer = defaultBundleAnalyzer
 try {
-  withBundleAnalyzer = require('@next/bundle-analyzer')({
+  const analyzerModule: unknown = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true',
   })
+  if (isNextConfigTransform(analyzerModule)) {
+    withBundleAnalyzer = analyzerModule
+  } else {
+    withBundleAnalyzer = defaultBundleAnalyzer
+  }
 } catch {
   // Fallback if bundle analyzer is not installed
-  withBundleAnalyzer = (config: any) => config
+  withBundleAnalyzer = defaultBundleAnalyzer
 }
 
 const normalizeOriginHost = (value?: string | null) => {
@@ -34,8 +43,8 @@ const allowedDevOrigins = [
       )
     : []),
 ]
-  .filter(Boolean)
-  .map((origin) => origin!.toLowerCase()) as string[]
+  .filter((origin): origin is string => Boolean(origin))
+  .map((origin) => origin.toLowerCase())
 
 const stripTrailingSlash = (value?: string | null) =>
   value ? value.replace(/\/+$/, '') : value

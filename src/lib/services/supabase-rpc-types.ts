@@ -6,7 +6,8 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Property } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
+import type { Property } from '@/types/database'
 
 // ============================================================================
 // RPC FUNCTION PARAMETER TYPES
@@ -16,6 +17,9 @@ import type { Database, Property } from '@/types/database'
 interface BaseRPCParams {
   [key: string]: unknown
 }
+
+type FunctionReturn<TName extends keyof AppDatabase['public']['Functions']> =
+  AppDatabase['public']['Functions'][TName]['Returns']
 
 export interface GetPropertiesWithinRadiusParams extends BaseRPCParams {
   center_lat: number
@@ -222,17 +226,7 @@ export interface RPCResponse<T> {
 // Result type for get_properties_by_distance RPC function
 // Returns partial property data with distance
 export interface PropertyWithDistance {
-  id: string
-  address: string
-  city: string
-  state: string
-  price: number
-  bedrooms: number
-  bathrooms: number
-  square_feet: number
-  property_type: string
-  images: string[]
-  neighborhood_id: string | null
+  property: Property
   distance_km: number
 }
 
@@ -270,65 +264,67 @@ export interface PropertyCoordinatesResult {
 export interface TypedSupabaseRPC {
   get_properties_within_radius(
     params: GetPropertiesWithinRadiusParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_properties_within_radius'>>>
   get_properties_in_bounds(
     params: GetPropertiesInBoundsParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_properties_in_bounds'>>>
   calculate_distance(
     params: CalculateDistanceParams
-  ): Promise<RPCResponse<number>>
+  ): Promise<RPCResponse<FunctionReturn<'calculate_distance'>>>
   get_walkability_score(
     params: GetWalkabilityScoreParams
-  ): Promise<RPCResponse<number>>
-  get_transit_score(params: GetTransitScoreParams): Promise<RPCResponse<number>>
+  ): Promise<RPCResponse<FunctionReturn<'get_walkability_score'>>>
+  get_transit_score(
+    params: GetTransitScoreParams
+  ): Promise<RPCResponse<FunctionReturn<'get_transit_score'>>>
   get_neighborhood_stats(
     params: GetNeighborhoodStatsParams
-  ): Promise<RPCResponse<NeighborhoodStatsResult>>
+  ): Promise<RPCResponse<FunctionReturn<'get_neighborhood_stats'>>>
   get_user_interaction_summary(
     params: GetUserInteractionSummaryParams
-  ): Promise<RPCResponse<InteractionSummaryRow[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_user_interaction_summary'>>>
   get_market_trends(
     params: GetMarketTrendsParams
-  ): Promise<RPCResponse<MarketTrend[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_market_trends'>>>
   get_property_market_comparisons(
     params: GetPropertyMarketComparisonsParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_property_market_comparisons'>>>
   get_market_velocity(
     params: GetMarketVelocityParams
-  ): Promise<RPCResponse<MarketVelocityResult>>
+  ): Promise<RPCResponse<FunctionReturn<'get_market_velocity'>>>
   get_similar_properties(
     params: GetSimilarPropertiesParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_similar_properties'>>>
   get_neighborhoods_in_bounds(
     params: GetNeighborhoodsInBoundsParams
-  ): Promise<RPCResponse<NeighborhoodBounds[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_neighborhoods_in_bounds'>>>
   get_properties_by_distance(
     params: GetPropertiesByDistanceParams
-  ): Promise<RPCResponse<PropertyWithDistance[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_properties_by_distance'>>>
   get_property_clusters(
     params: GetPropertyClustersParams
-  ): Promise<RPCResponse<PropertyCluster[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_property_clusters'>>>
   get_properties_in_polygon(
     params: GetPropertiesInPolygonParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_properties_in_polygon'>>>
   get_properties_along_route(
     params: GetPropertiesAlongRouteParams
-  ): Promise<RPCResponse<Property[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_properties_along_route'>>>
   get_geographic_density(
     params: GetGeographicDensityParams
-  ): Promise<RPCResponse<GeographicDensityResult>>
+  ): Promise<RPCResponse<FunctionReturn<'get_geographic_density'>>>
   get_nearest_amenities(
     params: GetNearestAmenitiesParams
-  ): Promise<RPCResponse<AmenityResult[]>>
+  ): Promise<RPCResponse<FunctionReturn<'get_nearest_amenities'>>>
   geocode_address(
     params: GeocodeAddressParams
-  ): Promise<RPCResponse<GeocodeResult[]>>
+  ): Promise<RPCResponse<FunctionReturn<'geocode_address'>>>
   get_property_coordinates(
     params: GetPropertyCoordinatesParams
-  ): Promise<RPCResponse<PropertyCoordinatesResult>>
+  ): Promise<RPCResponse<FunctionReturn<'get_property_coordinates'>>>
   backfill_property_neighborhoods(
     params: BackfillPropertyNeighborhoodsParams
-  ): Promise<RPCResponse<number>>
+  ): Promise<RPCResponse<FunctionReturn<'backfill_property_neighborhoods'>>>
 }
 
 // ============================================================================
@@ -339,82 +335,85 @@ export interface TypedSupabaseRPC {
  * Creates a type-safe wrapper around Supabase RPC calls
  */
 export function createTypedRPC(
-  supabase: SupabaseClient<Database>
+  supabase: SupabaseClient<AppDatabase>
 ): TypedSupabaseRPC {
-  // Cast to unknown first, then to our extended interface to bypass TypeScript's strict RPC typing
-  // since our custom functions aren't defined in the generated Database types
-  const typedSupabase = supabase as unknown as {
-    rpc: <T>(
-      functionName: string,
-      params?: BaseRPCParams
-    ) => Promise<RPCResponse<T>>
+  const callRpc = async <
+    FnName extends keyof AppDatabase['public']['Functions'],
+  >(
+    functionName: FnName,
+    params: AppDatabase['public']['Functions'][FnName]['Args']
+  ): Promise<
+    RPCResponse<AppDatabase['public']['Functions'][FnName]['Returns']>
+  > => {
+    const { data, error } = await supabase.rpc(functionName, params)
+    return { data, error }
   }
 
   return {
     get_properties_within_radius: (params: GetPropertiesWithinRadiusParams) =>
-      typedSupabase.rpc('get_properties_within_radius', params),
+      callRpc('get_properties_within_radius', params),
 
     get_properties_in_bounds: (params: GetPropertiesInBoundsParams) =>
-      typedSupabase.rpc('get_properties_in_bounds', params),
+      callRpc('get_properties_in_bounds', params),
 
     calculate_distance: (params: CalculateDistanceParams) =>
-      typedSupabase.rpc('calculate_distance', params),
+      callRpc('calculate_distance', params),
 
     get_walkability_score: (params: GetWalkabilityScoreParams) =>
-      typedSupabase.rpc('get_walkability_score', params),
+      callRpc('get_walkability_score', params),
 
     get_transit_score: (params: GetTransitScoreParams) =>
-      typedSupabase.rpc('get_transit_score', params),
+      callRpc('get_transit_score', params),
 
     get_neighborhood_stats: (params: GetNeighborhoodStatsParams) =>
-      typedSupabase.rpc('get_neighborhood_stats', params),
+      callRpc('get_neighborhood_stats', params),
 
     get_user_interaction_summary: (params: GetUserInteractionSummaryParams) =>
-      typedSupabase.rpc('get_user_interaction_summary', params),
+      callRpc('get_user_interaction_summary', params),
 
     get_market_trends: (params: GetMarketTrendsParams) =>
-      typedSupabase.rpc('get_market_trends', params),
+      callRpc('get_market_trends', params),
 
     get_property_market_comparisons: (
       params: GetPropertyMarketComparisonsParams
-    ) => typedSupabase.rpc('get_property_market_comparisons', params),
+    ) => callRpc('get_property_market_comparisons', params),
 
     get_market_velocity: (params: GetMarketVelocityParams) =>
-      typedSupabase.rpc('get_market_velocity', params),
+      callRpc('get_market_velocity', params),
 
     get_similar_properties: (params: GetSimilarPropertiesParams) =>
-      typedSupabase.rpc('get_similar_properties', params),
+      callRpc('get_similar_properties', params),
 
     get_neighborhoods_in_bounds: (params: GetNeighborhoodsInBoundsParams) =>
-      typedSupabase.rpc('get_neighborhoods_in_bounds', params),
+      callRpc('get_neighborhoods_in_bounds', params),
 
     get_properties_by_distance: (params: GetPropertiesByDistanceParams) =>
-      typedSupabase.rpc('get_properties_by_distance', params),
+      callRpc('get_properties_by_distance', params),
 
     get_property_clusters: (params: GetPropertyClustersParams) =>
-      typedSupabase.rpc('get_property_clusters', params),
+      callRpc('get_property_clusters', params),
 
     get_properties_in_polygon: (params: GetPropertiesInPolygonParams) =>
-      typedSupabase.rpc('get_properties_in_polygon', params),
+      callRpc('get_properties_in_polygon', params),
 
     get_properties_along_route: (params: GetPropertiesAlongRouteParams) =>
-      typedSupabase.rpc('get_properties_along_route', params),
+      callRpc('get_properties_along_route', params),
 
     get_geographic_density: (params: GetGeographicDensityParams) =>
-      typedSupabase.rpc('get_geographic_density', params),
+      callRpc('get_geographic_density', params),
 
     get_nearest_amenities: (params: GetNearestAmenitiesParams) =>
-      typedSupabase.rpc('get_nearest_amenities', params),
+      callRpc('get_nearest_amenities', params),
 
     geocode_address: (params: GeocodeAddressParams) =>
-      typedSupabase.rpc('geocode_address', params),
+      callRpc('geocode_address', params),
 
     get_property_coordinates: (params: GetPropertyCoordinatesParams) =>
-      typedSupabase.rpc('get_property_coordinates', params),
+      callRpc('get_property_coordinates', params),
 
     backfill_property_neighborhoods: (
       params: BackfillPropertyNeighborhoodsParams
-    ) => typedSupabase.rpc('backfill_property_neighborhoods', params),
+    ) => callRpc('backfill_property_neighborhoods', params),
   }
 }
 
@@ -425,30 +424,31 @@ export function createTypedRPC(
 /**
  * Type-safe RPC function caller with error handling
  */
-export async function callRPC<T>(
-  supabase: SupabaseClient<Database>,
-  functionName: keyof TypedSupabaseRPC,
-  params: BaseRPCParams
-): Promise<RPCResponse<T>> {
+export async function callRPC<TFunctionName extends keyof TypedSupabaseRPC>(
+  supabase: SupabaseClient<AppDatabase>,
+  functionName: TFunctionName,
+  params: Parameters<TypedSupabaseRPC[TFunctionName]>[0]
+): Promise<Awaited<ReturnType<TypedSupabaseRPC[TFunctionName]>>> {
   const rpc = createTypedRPC(supabase)
 
   try {
-    // TypeScript will ensure the function exists and has the right signature
-    const typedFunction = rpc[functionName] as (
-      params: BaseRPCParams
-    ) => Promise<RPCResponse<T>>
-    const result = await typedFunction(params)
-    return result
+    const rpcFunction = rpc[functionName] as (
+      params: Parameters<TypedSupabaseRPC[keyof TypedSupabaseRPC]>[0]
+    ) => Promise<RPCResponse<unknown>>
+    return (await rpcFunction(params)) as Awaited<
+      ReturnType<TypedSupabaseRPC[TFunctionName]>
+    >
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
-    return {
+    const fallback = {
       data: null,
       error: {
-        message: `RPC call to ${functionName} failed`,
+        message: `RPC call to ${String(functionName)} failed`,
         details: errorMessage,
       },
-    }
+    } as Awaited<ReturnType<TypedSupabaseRPC[TFunctionName]>>
+    return fallback
   }
 }
 

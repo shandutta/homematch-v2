@@ -11,24 +11,37 @@ const RUBBER_BAND_FACTOR = 0.25 // Slightly less elastic for better control
 const MAX_ROTATION = 25 // Maximum rotation angle
 const _ROTATION_FACTOR = 0.1 // How much rotation is applied per pixel (reserved for future use)
 
-export const SPRING_CONFIG = {
-  type: 'spring' as const,
+type SpringConfig = {
+  type: 'spring'
+  stiffness: number
+  damping: number
+  mass: number
+}
+
+type TweenConfig = {
+  type: 'tween'
+  ease: 'easeOut'
+  duration: number
+}
+
+export const SPRING_CONFIG: SpringConfig = {
+  type: 'spring',
   stiffness: 280,
   damping: 25,
   mass: 0.8,
 }
 
 // Specialized spring configs for different animations
-export const SNAP_BACK_CONFIG = {
-  type: 'spring' as const,
+export const SNAP_BACK_CONFIG: SpringConfig = {
+  type: 'spring',
   stiffness: 400,
   damping: 35,
   mass: 0.6,
 }
 
-export const EXIT_CONFIG = {
-  type: 'tween' as const,
-  ease: 'easeOut' as const,
+export const EXIT_CONFIG: TweenConfig = {
+  type: 'tween',
+  ease: 'easeOut',
   duration: 0.16,
 }
 

@@ -6,6 +6,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import type {
   Property,
   PropertyInsert,
@@ -27,7 +28,6 @@ import type {
   SavedSearchUpdate,
 } from '@/types/database'
 import type { PropertySearch } from '@/lib/schemas/property'
-import type { Database } from '@/types/database'
 import type { NextRequest } from 'next/server'
 
 /**
@@ -35,7 +35,7 @@ import type { NextRequest } from 'next/server'
  * Enables dependency injection and testing
  */
 export interface ISupabaseClientFactory {
-  createClient(config?: ClientConfig): Promise<SupabaseClient<Database>>
+  createClient(config?: ClientConfig): Promise<SupabaseClient<AppDatabase>>
 }
 
 /**
@@ -57,8 +57,8 @@ export interface IBaseService {
    */
   executeQuery<T>(
     operation: string,
-    queryFn: (supabase: SupabaseClient<Database>) => Promise<T>
-  ): Promise<T>
+    queryFn: (supabase: SupabaseClient<AppDatabase>) => Promise<T>
+  ): Promise<T | null>
 }
 
 /**

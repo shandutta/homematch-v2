@@ -47,13 +47,23 @@ export interface MutualLike {
  * @constant
  * @description Provides consistent cache keys for React Query to manage couples-related data
  */
+const couplesAllKey: readonly ['couples'] = ['couples']
+const buildCouplesMutualLikesKey = (): readonly ['couples', 'mutual-likes'] => [
+  couplesAllKey[0],
+  'mutual-likes',
+]
+const buildCouplesActivityKey = (): readonly ['couples', 'activity'] => [
+  couplesAllKey[0],
+  'activity',
+]
+
 export const couplesKeys = {
   /** Base key for all couples-related queries */
-  all: ['couples'] as const,
+  all: couplesAllKey,
   /** Query key for mutual likes data */
-  mutualLikes: () => [...couplesKeys.all, 'mutual-likes'] as const,
+  mutualLikes: buildCouplesMutualLikesKey,
   /** Query key for household activity timeline */
-  activity: () => [...couplesKeys.all, 'activity'] as const,
+  activity: buildCouplesActivityKey,
 }
 
 /**

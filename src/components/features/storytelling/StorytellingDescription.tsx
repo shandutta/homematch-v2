@@ -73,18 +73,23 @@ const CATEGORY_DISPLAY: Record<
   location: { icon: MapPin, color: 'bg-blue-500 text-white' },
 }
 
+const TAG_CATEGORIES: TagCategory[] = [
+  'architectural',
+  'outdoor',
+  'interior',
+  'lifestyle',
+  'aesthetic',
+  'location',
+]
+
 // Build tag->category mapping from schema tags
-const TAG_CATEGORY_MAP: Record<string, TagCategory> = Object.entries(
-  PROPERTY_TAGS
-).reduce(
-  (acc, [category, tags]) => {
-    for (const tag of tags as readonly string[]) {
-      acc[tag] = category as TagCategory
-    }
-    return acc
-  },
-  {} as Record<string, TagCategory>
-)
+const TAG_CATEGORY_MAP: Record<string, TagCategory> = {}
+TAG_CATEGORIES.forEach((category) => {
+  const tags = PROPERTY_TAGS[category]
+  for (const tag of tags) {
+    TAG_CATEGORY_MAP[tag] = category
+  }
+})
 
 // Legacy lifestyle tags with custom icons/colors (kept for template fallbacks)
 const LEGACY_TAG_DISPLAY: Record<string, Omit<TagDisplayConfig, 'category'>> = {
@@ -141,7 +146,7 @@ const TAG_DISPLAY_MAP: Record<string, TagDisplayConfig> = {
   ...Object.fromEntries(
     Object.entries(LEGACY_TAG_DISPLAY).map(([tag, config]) => [
       tag,
-      { ...config, category: 'legacy' as const },
+      { ...config, category: 'legacy' },
     ])
   ),
 }
@@ -391,9 +396,9 @@ type NormalizedPropertyType =
   | 'other'
 
 const normalizePropertyType = (
-  type?: Property['property_type'] | null
+  type?: string | null
 ): NormalizedPropertyType => {
-  const rawType = (type || '') as string
+  const rawType = typeof type === 'string' ? type : ''
 
   if (!rawType) return 'house'
   if (rawType === 'single_family' || rawType === 'manufactured') return 'house'

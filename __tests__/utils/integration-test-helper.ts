@@ -147,7 +147,9 @@ export class IntegrationTestHelper {
   /**
    * Inserts properties using service role to bypass RLS
    */
-  async insertProperties(properties: any[]): Promise<void> {
+  async insertProperties(
+    properties: Array<Record<string, unknown>>
+  ): Promise<void> {
     const { error } = await this.serviceClient
       .from('properties')
       .upsert(properties)
@@ -160,7 +162,9 @@ export class IntegrationTestHelper {
   /**
    * Inserts user-property interactions using service role to bypass RLS
    */
-  async insertInteractions(interactions: any[]): Promise<void> {
+  async insertInteractions(
+    interactions: Array<Record<string, unknown>>
+  ): Promise<void> {
     const { error } = await this.serviceClient
       .from('user_property_interactions')
       .upsert(interactions)

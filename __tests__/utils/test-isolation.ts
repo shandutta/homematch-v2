@@ -32,7 +32,7 @@ export function setupTestIsolation() {
     }
 
     // Reset any global variables
-    delete (global as any).mockUserAgent
+    delete globalThis.mockUserAgent
   })
 }
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, RefreshCw, RotateCcw, Wifi, WifiOff } from 'lucide-react'
-import type { WindowWithAnalytics, SentryScope } from '@/types/analytics'
+import type { SentryScope } from '@/types/analytics'
 
 interface Props {
   children: ReactNode
@@ -79,9 +79,8 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     const errorType = this.categorizeError(error)
 
     // Report to analytics if available
-    const analyticsWindow = window as unknown as WindowWithAnalytics
-    if (typeof window !== 'undefined' && analyticsWindow.gtag) {
-      analyticsWindow.gtag('event', 'exception', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'exception', {
         event_category: 'async_error',
         event_label: errorType,
         custom_parameters: {
@@ -95,8 +94,8 @@ export class AsyncErrorBoundary extends Component<Props, State> {
     }
 
     // Report to Sentry if available
-    if (typeof window !== 'undefined' && analyticsWindow.Sentry) {
-      analyticsWindow.Sentry.withScope((scope: SentryScope) => {
+    if (typeof window !== 'undefined' && window.Sentry) {
+      window.Sentry.withScope((scope: SentryScope) => {
         scope.setTag('error_boundary', 'async')
         scope.setContext('async_operation', {
           operation: this.props.operation,
@@ -104,7 +103,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
           isOnline: this.state.isOnline,
           retryCount: this.state.retryCount,
         })
-        analyticsWindow.Sentry!.captureException(error)
+        window.Sentry!.captureException(error)
       })
     }
 
@@ -189,8 +188,10 @@ export class AsyncErrorBoundary extends Component<Props, State> {
       this.autoRetryCount = 0
     } catch (error) {
       // Update with new error
+      const nextError =
+        error instanceof Error ? error : new Error('Unknown error')
       this.setState({
-        error: error as Error,
+        error: nextError,
         isRetrying: false,
       })
     }

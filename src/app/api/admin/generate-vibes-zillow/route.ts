@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createVibesService } from '@/lib/services/vibes'
-import type { Property } from '@/lib/schemas/property'
+import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 
 const isDev = process.env.NODE_ENV === 'development'
+
+type PropertyType = NonNullable<Property['property_type']>
+
+const isPropertyType = (value: string): value is PropertyType =>
+  PROPERTY_TYPE_VALUES.some((item) => item === value)
+
+const normalizePropertyType = (
+  value: string | null | undefined
+): PropertyType => {
+  const normalized = (value || 'single_family')
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+  return isPropertyType(normalized) ? normalized : 'single_family'
+}
 
 interface ZillowPropertyResponse {
   zpid?: number | string
@@ -386,13 +400,9 @@ export async function POST(req: Request): Promise<NextResponse> {
       lot_size_sqft: zillowData.lotAreaValue || null,
       year_built: zillowData.yearBuilt || null,
       parking_spots: null,
-      property_type: (
-        zillowData.homeType ||
-        zillowData.propertyType ||
-        'single_family'
-      )
-        .toLowerCase()
-        .replace(/\s+/g, '_') as Property['property_type'],
+      property_type: normalizePropertyType(
+        zillowData.homeType || zillowData.propertyType || 'single_family'
+      ),
       listing_status: 'active',
       images,
       description: zillowData.description || null,

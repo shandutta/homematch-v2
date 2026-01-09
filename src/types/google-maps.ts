@@ -100,6 +100,7 @@ declare global {
             eventName: string,
             handler: (...args: unknown[]) => void
           ) => unknown
+          trigger?: (instance: object, eventName: string) => void
         }
       }
     }

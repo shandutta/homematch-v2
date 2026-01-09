@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   }
 
   const { buildMeceNeighborhoods } = await import('@/lib/maps/geometry')
-  const neighborhoods = (data || []) as MapNeighborhoodInput[]
+  const neighborhoods: MapNeighborhoodInput[] = data || []
   const processed = buildMeceNeighborhoods(neighborhoods)
   const response = {
     metro,

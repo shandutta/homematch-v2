@@ -25,8 +25,21 @@ export interface CustomMetric {
   timestamp?: number
 }
 
+export type MetricName =
+  | 'LCP'
+  | 'FID'
+  | 'CLS'
+  | 'FCP'
+  | 'TTFB'
+  | 'INP'
+  | 'propertyCardRender'
+  | 'searchResultsLoad'
+  | 'imageOptimization'
+  | 'apiResponse'
+  | 'bundleSize'
+
 // Performance thresholds based on Web Vitals recommendations
-export const THRESHOLDS = {
+export const THRESHOLDS: Record<MetricName, { good: number; poor: number }> = {
   // Core Web Vitals
   LCP: { good: 2500, poor: 4000 }, // Largest Contentful Paint
   FID: { good: 100, poor: 300 }, // First Input Delay
@@ -41,9 +54,9 @@ export const THRESHOLDS = {
   imageOptimization: { good: 50, poor: 150 },
   apiResponse: { good: 200, poor: 1000 },
   bundleSize: { good: 500, poor: 1000 }, // in KB
-} as const
+}
 
-export type MetricName = keyof typeof THRESHOLDS
+const isMetricName = (value: string): value is MetricName => value in THRESHOLDS
 
 /**
  * Rate a metric value based on thresholds
@@ -52,7 +65,7 @@ export function rateMetric(
   name: string,
   value: number
 ): 'good' | 'needs-improvement' | 'poor' {
-  const threshold = THRESHOLDS[name as MetricName]
+  const threshold = isMetricName(name) ? THRESHOLDS[name] : undefined
 
   if (!threshold) {
     // Default rating for unknown metrics
@@ -380,9 +393,15 @@ export function observeResourceTiming(
   }
 
   try {
+    const isResourceTiming = (
+      entry: PerformanceEntry
+    ): entry is PerformanceResourceTiming => entry.entryType === 'resource'
+
     const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as PerformanceResourceTiming[]) {
-        callback(entry)
+      for (const entry of list.getEntries()) {
+        if (isResourceTiming(entry)) {
+          callback(entry)
+        }
       }
     })
 

@@ -21,6 +21,9 @@ interface OptimizedTestSession {
   }
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 export class OptimizedDatabaseHelper {
   private static instance: OptimizedDatabaseHelper
   private session: OptimizedTestSession | null = null
@@ -125,11 +128,11 @@ export class OptimizedDatabaseHelper {
   /**
    * Bulk insert operations with transaction support
    */
-  async bulkInsertWithTracking<T extends Record<string, any>>(
+  async bulkInsertWithTracking(
     table: string,
-    data: T[],
+    data: Array<Record<string, unknown>>,
     trackingCategory: keyof OptimizedTestSession['testData']
-  ): Promise<T[]> {
+  ): Promise<Array<Record<string, unknown> & { id: string }>> {
     if (!this.session) {
       throw new Error('Database session not initialized')
     }
@@ -147,11 +150,19 @@ export class OptimizedDatabaseHelper {
       throw new Error(`No data returned from ${table} insert`)
     }
 
+    const records: Array<Record<string, unknown> & { id: string }> = []
+    for (const item of insertedData) {
+      if (!isRecord(item) || typeof item.id !== 'string') {
+        throw new Error(`Inserted ${table} row is missing an id`)
+      }
+      records.push({ ...item, id: item.id })
+    }
+
     // Track inserted IDs for efficient cleanup
-    const ids = (insertedData as any[]).map((item) => item.id)
+    const ids = records.map((item) => item.id)
     this.session.testData[trackingCategory].push(...ids)
 
-    return insertedData as T[]
+    return records
   }
 
   /**
@@ -181,11 +192,11 @@ export class OptimizedDatabaseHelper {
     })
 
     // Create household
-    const [household] = (await this.bulkInsertWithTracking(
+    const [household] = await this.bulkInsertWithTracking(
       'households',
       [{ name }],
       'households'
-    )) as Array<{ id: string; name: string }>
+    )
 
     // Bulk update user profiles
     const { error: profileError } = await this.session.serviceClient

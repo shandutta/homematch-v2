@@ -1,7 +1,16 @@
 import { z } from 'zod'
 
 // Property type literals (canonical set aligned with DB constraint and ingestion)
-export const PROPERTY_TYPE_VALUES = [
+export type PropertyType =
+  | 'single_family'
+  | 'condo'
+  | 'townhome'
+  | 'multi_family'
+  | 'manufactured'
+  | 'land'
+  | 'other'
+
+export const PROPERTY_TYPE_VALUES: [PropertyType, ...PropertyType[]] = [
   'single_family',
   'condo',
   'townhome',
@@ -9,7 +18,7 @@ export const PROPERTY_TYPE_VALUES = [
   'manufactured',
   'land',
   'other',
-] as const
+]
 const propertyTypeEnum = z.enum(PROPERTY_TYPE_VALUES)
 
 // Property Schemas
@@ -231,8 +240,6 @@ export {
 export type Property = z.infer<typeof propertySchema>
 export type PropertyInsert = z.infer<typeof propertyInsertSchema>
 export type PropertyUpdate = z.infer<typeof propertyUpdateSchema>
-export type PropertyType = (typeof PROPERTY_TYPE_VALUES)[number]
-
 export type Neighborhood = z.infer<typeof neighborhoodSchema>
 export type NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>
 export type NeighborhoodUpdate = z.infer<typeof neighborhoodUpdateSchema>

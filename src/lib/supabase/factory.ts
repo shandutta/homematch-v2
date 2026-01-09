@@ -9,7 +9,7 @@ import { createBrowserClient, createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database'
+import type { AppDatabase } from '@/types/app-database'
 import {
   ClientContext,
   ClientConfig,
@@ -22,7 +22,7 @@ import {
  */
 export class SupabaseClientFactory implements ISupabaseClientFactory {
   private static instance: SupabaseClientFactory
-  private clientCache = new Map<string, SupabaseClient<Database>>()
+  private clientCache = new Map<string, SupabaseClient<AppDatabase>>()
 
   private constructor() {}
 
@@ -38,7 +38,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Automatically detects context if not specified
    */ async createClient(
     config?: ClientConfig
-  ): Promise<SupabaseClient<Database>> {
+  ): Promise<SupabaseClient<AppDatabase>> {
     const context = config?.context || this.detectContext()
     const cacheKey = this.getCacheKey(context, config)
 
@@ -47,7 +47,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
       return this.clientCache.get(cacheKey)!
     }
 
-    let client: SupabaseClient<Database>
+    let client: SupabaseClient<AppDatabase>
 
     switch (context) {
       case ClientContext.BROWSER:
@@ -78,8 +78,8 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Browser client for client-side operations
    * Same as current client.ts implementation
    */
-  private createBrowserClient(): SupabaseClient<Database> {
-    return createBrowserClient<Database>(
+  private createBrowserClient(): SupabaseClient<AppDatabase> {
+    return createBrowserClient<AppDatabase>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
@@ -89,7 +89,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Server client for Server Components and server contexts
    * Based on current server.ts createClient() implementation
    */
-  private createServerClientAsync(): SupabaseClient<Database> {
+  private createServerClientAsync(): SupabaseClient<AppDatabase> {
     // Note: This needs to be async in real implementation
     // For now, we'll handle this in the consumer
     throw new Error('Use createServerClient() for async server contexts')
@@ -99,7 +99,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Async server client for Server Components
    * Handles cookies and headers properly
    */
-  async createServerClient(): Promise<SupabaseClient<Database>> {
+  async createServerClient(): Promise<SupabaseClient<AppDatabase>> {
     const cookieStore = await cookies()
     const headerStore = await headers()
 
@@ -107,7 +107,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
     const authHeader = headerStore.get('authorization')
     const bearerToken = authHeader?.replace('Bearer ', '')
 
-    return createServerClient<Database>(
+    return createServerClient<AppDatabase>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -153,7 +153,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * API client for API routes with request context
    * Based on current server.ts createApiClient() implementation
    */
-  private createApiClient(request?: NextRequest): SupabaseClient<Database> {
+  private createApiClient(request?: NextRequest): SupabaseClient<AppDatabase> {
     let authHeader: string | null = null
     let cookieData: { name: string; value: string }[] = []
 
@@ -174,7 +174,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
 
     const bearerToken = authHeader?.replace('Bearer ', '')
 
-    return createServerClient<Database>(
+    return createServerClient<AppDatabase>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -207,8 +207,8 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Service role client for administrative operations
    * Based on current server.ts createServiceClient() implementation
    */
-  private createServiceClient(): SupabaseClient<Database> {
-    return createServerClient<Database>(
+  private createServiceClient(): SupabaseClient<AppDatabase> {
+    return createServerClient<AppDatabase>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
@@ -292,7 +292,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
  */
 export async function createClient(
   config?: ClientConfig
-): Promise<SupabaseClient<Database>> {
+): Promise<SupabaseClient<AppDatabase>> {
   const factory = SupabaseClientFactory.getInstance()
   return await factory.createClient(config)
 }
@@ -302,7 +302,7 @@ export async function createClient(
  * For gradual migration from existing server.ts usage
  */
 export async function createServerClientCompat(): Promise<
-  SupabaseClient<Database>
+  SupabaseClient<AppDatabase>
 > {
   const factory = SupabaseClientFactory.getInstance()
   return factory.createServerClient()
@@ -314,7 +314,7 @@ export async function createServerClientCompat(): Promise<
  */
 export async function createApiClientCompat(
   request?: NextRequest
-): Promise<SupabaseClient<Database>> {
+): Promise<SupabaseClient<AppDatabase>> {
   const factory = SupabaseClientFactory.getInstance()
   return await factory.createClient({
     context: ClientContext.API,
@@ -327,7 +327,7 @@ export async function createApiClientCompat(
  * For gradual migration from existing service client usage
  */
 export async function createServiceClientCompat(): Promise<
-  SupabaseClient<Database>
+  SupabaseClient<AppDatabase>
 > {
   const factory = SupabaseClientFactory.getInstance()
   return await factory.createClient({
@@ -345,14 +345,14 @@ export async function createServiceClientCompat(): Promise<
  */
 export async function createClientWithFeatureFlag(
   config?: ClientConfig
-): Promise<SupabaseClient<Database>> {
+): Promise<SupabaseClient<AppDatabase>> {
   const useNewFactory = process.env.FEATURE_UNIFIED_CLIENT_FACTORY === 'true'
 
   if (!useNewFactory) {
     // Fall back to original implementations
     if (typeof window !== 'undefined') {
       // Original client.ts logic
-      return createBrowserClient<Database>(
+      return createBrowserClient<AppDatabase>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
@@ -373,15 +373,15 @@ export async function createClientWithFeatureFlag(
  * Test factory for mocking Supabase clients
  */
 export class MockSupabaseClientFactory implements ISupabaseClientFactory {
-  private mockClient: SupabaseClient<Database>
+  private mockClient: SupabaseClient<AppDatabase>
 
-  constructor(mockClient: SupabaseClient<Database>) {
+  constructor(mockClient: SupabaseClient<AppDatabase>) {
     this.mockClient = mockClient
   }
 
   async createClient(
     _config?: ClientConfig
-  ): Promise<SupabaseClient<Database>> {
+  ): Promise<SupabaseClient<AppDatabase>> {
     return this.mockClient
   }
 
@@ -394,7 +394,7 @@ export class MockSupabaseClientFactory implements ISupabaseClientFactory {
  * Creates a test-friendly factory
  */
 export function createTestFactory(
-  mockClient: SupabaseClient<Database>
+  mockClient: SupabaseClient<AppDatabase>
 ): MockSupabaseClientFactory {
   return new MockSupabaseClientFactory(mockClient)
 }

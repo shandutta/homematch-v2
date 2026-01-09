@@ -7,8 +7,10 @@ import { ConfigFixture } from '../types/fixtures'
 
 // Export just the fixtures object, not a test object
 export const configFixtures = {
-  // eslint-disable-next-line no-empty-pattern
-  config: async ({}: any, use: any) => {
+  config: async (
+    _fixture: Record<string, never>,
+    use: (fixture: ConfigFixture) => Promise<void>
+  ) => {
     const config: ConfigFixture = {
       baseUrl: process.env.BASE_URL || 'http://localhost:3000',
       timeouts: {

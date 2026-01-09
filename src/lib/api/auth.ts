@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import type { NextRequest } from 'next/server'
 
 /**
@@ -7,7 +8,7 @@ import type { NextRequest } from 'next/server'
  * the first lookup fails to smooth over occasional header parsing issues.
  */
 export async function getUserFromRequest(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<AppDatabase>,
   request: NextRequest
 ) {
   const authHeader = request.headers.get('authorization') || ''

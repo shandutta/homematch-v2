@@ -310,6 +310,16 @@ export function GroupedViewedPropertiesPage() {
   const passedCount = passedProperties.length
   const viewedOnlyCount = viewedOnlyProperties.length
 
+  const sections: Array<{
+    id: ViewedSectionType
+    label: string
+    count: number
+  }> = [
+    { id: 'liked', label: 'Liked', count: likedCount },
+    { id: 'skip', label: 'Passed', count: passedCount },
+    { id: 'viewed-only', label: 'Undecided', count: viewedOnlyCount },
+  ]
+
   const defaultSection: ViewedSectionType = likedCount
     ? 'liked'
     : passedCount
@@ -418,24 +428,14 @@ export function GroupedViewedPropertiesPage() {
         <>
           <div className="sm:hidden">
             <div className="flex w-full items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
-              {[
-                { id: 'liked', label: 'Liked', count: likedCount },
-                { id: 'skip', label: 'Passed', count: passedCount },
-                {
-                  id: 'viewed-only',
-                  label: 'Undecided',
-                  count: viewedOnlyCount,
-                },
-              ].map((section) => {
+              {sections.map((section) => {
                 const isActive = activeSection === section.id
                 const isDisabled = section.count === 0
                 return (
                   <button
                     key={section.id}
                     type="button"
-                    onClick={() =>
-                      setActiveSection(section.id as ViewedSectionType)
-                    }
+                    onClick={() => setActiveSection(section.id)}
                     disabled={isDisabled}
                     aria-pressed={isActive}
                     className={cn(

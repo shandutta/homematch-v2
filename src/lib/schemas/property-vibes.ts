@@ -1,7 +1,15 @@
 import { z } from 'zod'
 
+export type TagCategory =
+  | 'architectural'
+  | 'outdoor'
+  | 'interior'
+  | 'lifestyle'
+  | 'aesthetic'
+  | 'location'
+
 // Expanded property tags organized by category (~80 total)
-export const PROPERTY_TAGS = {
+export const PROPERTY_TAGS: Record<TagCategory, string[]> = {
   // Architectural Style (15)
   architectural: [
     'Victorian Character',
@@ -110,28 +118,32 @@ export const PROPERTY_TAGS = {
     'Established Community',
     'Privacy & Space',
   ],
-} as const
+}
 
 // Flatten all tags into a single array for validation
-export const ALL_PROPERTY_TAGS = [
+export const ALL_PROPERTY_TAGS: ReadonlyArray<string> = [
   ...PROPERTY_TAGS.architectural,
   ...PROPERTY_TAGS.outdoor,
   ...PROPERTY_TAGS.interior,
   ...PROPERTY_TAGS.lifestyle,
   ...PROPERTY_TAGS.aesthetic,
   ...PROPERTY_TAGS.location,
-] as const
+]
 
-export type PropertyTag = (typeof ALL_PROPERTY_TAGS)[number]
-export type TagCategory = keyof typeof PROPERTY_TAGS
+export type PropertyTag = string
 
 // Legacy alias for backwards compatibility
 export const LIFESTYLE_TAGS = ALL_PROPERTY_TAGS
 export type LifestyleTag = PropertyTag
 
 // Lifestyle fit tiers (replacing arbitrary percentages)
-export const FIT_TIERS = ['perfect', 'strong', 'good', 'possible'] as const
-export type FitTier = (typeof FIT_TIERS)[number]
+export type FitTier = 'perfect' | 'strong' | 'good' | 'possible'
+export const FIT_TIERS: [FitTier, ...FitTier[]] = [
+  'perfect',
+  'strong',
+  'good',
+  'possible',
+]
 
 // Individual vibe with intensity score
 // Note: name can be longer (80 chars) to allow unique, property-specific descriptors
@@ -150,6 +162,10 @@ export const lifestyleFitSchema = z.object({
   tier: z.enum(FIT_TIERS).optional(),
   reason: z.string().min(1).max(200),
 })
+
+const propertyTagSchema = z
+  .string()
+  .refine((tag) => ALL_PROPERTY_TAGS.includes(tag), 'Invalid property tag')
 
 // Helper to convert score to tier
 export function scoreToTier(score: number): FitTier {
@@ -217,7 +233,7 @@ export const llmVibesOutputSchema = z.object({
   // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
   emotionalHooks: z.array(z.string().max(200)).min(0).max(4),
   // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
-  suggestedTags: z.array(z.enum(ALL_PROPERTY_TAGS)).min(2).max(8),
+  suggestedTags: z.array(propertyTagSchema).min(2).max(8),
 })
 
 // LLM Input Schema - what we send to the model

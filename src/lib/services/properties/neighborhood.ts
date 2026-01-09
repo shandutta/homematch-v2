@@ -364,13 +364,13 @@ export class NeighborhoodService
             ) / propertiesWithSquareFeet.length
           : 0
 
-      const typeDistribution = propertyData.reduce(
+      const typeDistribution = propertyData.reduce<Record<string, number>>(
         (acc, p) => {
           const type = p.property_type || 'unknown'
           acc[type] = (acc[type] || 0) + 1
           return acc
         },
-        {} as Record<string, number>
+        {}
       )
 
       return {

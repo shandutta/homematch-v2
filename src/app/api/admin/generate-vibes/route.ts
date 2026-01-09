@@ -104,7 +104,7 @@ export async function POST(
         .in('id', body.propertyIds.slice(0, 50))
 
       if (error) throw error
-      properties = (data || []) as Property[]
+      properties = (data ?? []) as Property[]
     } else if (diverse) {
       // Select diverse mix of properties
       properties = await selectDiverseProperties(supabase, count)
@@ -121,8 +121,10 @@ export async function POST(
       if (error) throw error
 
       // Random sample
-      const shuffled = (data || []).sort(() => Math.random() - 0.5)
-      properties = shuffled.slice(0, count) as Property[]
+      const shuffled = ((data ?? []) as Property[]).sort(
+        () => Math.random() - 0.5
+      )
+      properties = shuffled.slice(0, count)
     }
 
     if (properties.length === 0) {
@@ -163,8 +165,7 @@ export async function POST(
     }
 
     // Skip properties whose source hash hasn't changed (unless forced)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existingVibes } = await (supabase as any)
+    const { data: existingVibes } = await supabase
       .from('property_vibes')
       .select('property_id, source_data_hash')
       .in(
@@ -237,8 +238,8 @@ export async function POST(
     )
 
     // Store results in database
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const insertRecords: any[] = []
+    const insertRecords: Array<ReturnType<typeof VibesService.toInsertRecord>> =
+      []
     for (const result of batchResult.success) {
       const property = propertiesToProcess.find(
         (p) => p.id === result.propertyId
@@ -261,8 +262,7 @@ export async function POST(
       }
       // Note: property_vibes table is not in generated types yet
       // Using type assertion until types are regenerated after migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: insertData, error: insertError } = await (supabase as any)
+      const { data: insertData, error: insertError } = await supabase
         .from('property_vibes')
         .upsert(insertRecords, {
           onConflict: 'property_id',
@@ -340,10 +340,11 @@ async function selectDiverseProperties(
       .order('price', { ascending: false })
       .limit(perType * 2)
 
-    if (data && data.length > 0) {
+    const typedData = (data ?? []) as Property[]
+    if (typedData.length > 0) {
       // Take mix of price ranges
-      const shuffled = data.sort(() => Math.random() - 0.5)
-      results.push(...(shuffled.slice(0, perType) as Property[]))
+      const shuffled = typedData.sort(() => Math.random() - 0.5)
+      results.push(...shuffled.slice(0, perType))
     }
   }
 
@@ -368,8 +369,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   const supabase = createStandaloneClient()
 
   // Note: property_vibes table is not in generated types yet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { count: vibesCount } = await (supabase as any)
+  const { count: vibesCount } = await supabase
     .from('property_vibes')
     .select('*', { count: 'exact', head: true })
 

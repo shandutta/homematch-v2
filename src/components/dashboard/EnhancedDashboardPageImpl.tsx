@@ -8,7 +8,7 @@ import {
 import { useCouplesInteraction } from '@/hooks/useCouplesInteractions'
 import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
 import { DashboardPropertyGrid } from '@/components/features/dashboard/DashboardPropertyGrid'
-import { Property } from '@/lib/schemas/property'
+import { propertySchema, Property } from '@/lib/schemas/property'
 import { InteractionType, InteractionSummary } from '@/types/app'
 import { DashboardData } from '@/lib/data/loader'
 import { useRenderPerformance } from '@/lib/utils/client-performance'
@@ -71,12 +71,12 @@ export function EnhancedDashboardPageImpl({
   // Performance monitoring
   useRenderPerformance('EnhancedDashboardPageImpl')
 
-  // Component State
-  // Cast/normalize initialData.properties (runtime data) to our UI Property type.
-  // The source data may have looser string enums; we trust upstream Zod parsing on fetch/load.
-  const [properties, setProperties] = useState<Property[]>(
-    initialData.properties as unknown as Property[]
-  )
+  const initialProperties = useMemo(() => {
+    const parsed = propertySchema.array().safeParse(initialData.properties)
+    return parsed.success ? parsed.data : []
+  }, [initialData.properties])
+
+  const [properties, setProperties] = useState<Property[]>(initialProperties)
   const [optimisticSummary, setOptimisticSummary] = useState<
     InteractionSummary | undefined
   >(undefined)
