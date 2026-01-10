@@ -14,6 +14,11 @@ import {
   isZillowStaticImageUrl,
 } from '@/lib/ingestion/zillow-images'
 
+type FetchFn = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
 describe('zillow images', () => {
   test('isStreetViewImageUrl detects Google Street View URLs', () => {
     expect(
@@ -38,10 +43,7 @@ describe('zillow images', () => {
   })
 
   test('fetchZillowImageUrls returns [] on 404', async () => {
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('not found', { status: 404, statusText: 'Not Found' })
     )
@@ -56,10 +58,7 @@ describe('zillow images', () => {
   })
 
   test('fetchZillowImageUrls trims, filters, dedupes, and caps results', async () => {
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -99,10 +98,7 @@ describe('zillow images', () => {
     })
 
     test('retries on 429 and succeeds', async () => {
-      const fetchMock: jest.Mock<
-        Promise<Response>,
-        [RequestInfo | URL, RequestInit?]
-      > = jest.fn()
+      const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
       fetchMock
         .mockResolvedValueOnce(
           new Response('rate limited', {

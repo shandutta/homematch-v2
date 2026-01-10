@@ -9,6 +9,10 @@ import {
 import { GET } from '@/app/api/maps/proxy-script/route'
 
 describe('/api/maps/proxy-script', () => {
+  type FetchFn = (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ) => Promise<Response>
   const originalKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
   const originalMapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
   const originalFetch = global.fetch
@@ -39,10 +43,7 @@ describe('/api/maps/proxy-script', () => {
   })
 
   it('forwards a stable referrer origin to Google', async () => {
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
         status: 200,
@@ -80,10 +81,7 @@ describe('/api/maps/proxy-script', () => {
   })
 
   it('uses the origin header when referer is missing', async () => {
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
         status: 200,
@@ -110,10 +108,7 @@ describe('/api/maps/proxy-script', () => {
   })
 
   it('falls back to the request url when referrer headers are invalid', async () => {
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
         status: 200,
@@ -140,10 +135,7 @@ describe('/api/maps/proxy-script', () => {
   it('includes the marker library when a map ID is configured', async () => {
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = 'test-map-id'
 
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
         status: 200,

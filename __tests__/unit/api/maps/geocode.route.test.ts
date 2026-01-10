@@ -3,6 +3,11 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 // Store original env
 const originalEnv = process.env
 
+type FetchFn = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
 // Mock next/server before imports
 jest.mock('next/server', () => {
   const makeResponse = (body: unknown, init?: { status?: number }) => {
@@ -31,10 +36,7 @@ jest.mock('@/lib/utils/rate-limit', () => ({
 }))
 
 // Mock fetch globally
-const mockFetch: jest.Mock<
-  Promise<Response>,
-  [RequestInfo | URL, RequestInit?]
-> = jest.fn()
+const mockFetch: jest.MockedFunction<FetchFn> = jest.fn()
 global.fetch = mockFetch
 
 // Import after mocks

@@ -9,6 +9,11 @@ import {
 } from '@jest/globals'
 import { GET } from '@/app/api/zillow/random-image/route'
 
+type FetchFn = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
   body,
@@ -23,10 +28,7 @@ jest.mock('next/server', () => ({
 
 const originalEnv = process.env
 const originalFetch = global.fetch
-const fetchMock: jest.Mock<
-  Promise<Response>,
-  [RequestInfo | URL, RequestInit?]
-> = jest.fn()
+const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
 
 const createJsonResponse = (body: unknown, init: ResponseInit = {}) =>
   new Response(JSON.stringify(body), {

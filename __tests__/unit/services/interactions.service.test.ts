@@ -7,7 +7,11 @@ import type {
 } from '@/types/app'
 
 const originalFetch = global.fetch
-type FetchMock = jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
+type FetchFn = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+type FetchMock = jest.MockedFunction<FetchFn>
 
 const createFetchMock = (response: Response) => {
   const fetchMock: FetchMock = jest.fn()

@@ -8,7 +8,31 @@ import fs from 'fs/promises'
 import path from 'path'
 import { TestDataFactory } from './test-data-factory'
 
-type SupabaseClient = ReturnType<typeof createClient>
+type SnapshotQueryResult<T> = {
+  data: T | null
+  error: { message?: string } | null
+}
+
+type SnapshotQueryBuilder = {
+  select: (columns: string) => SnapshotQueryBuilder
+  order: (
+    column: string,
+    options?: { ascending?: boolean }
+  ) => Promise<SnapshotQueryResult<unknown[]>>
+  delete: () => SnapshotQueryBuilder
+  gte: (
+    column: string,
+    value: string
+  ) => Promise<{ error: { message?: string } | null }>
+  upsert: (
+    values: unknown | unknown[],
+    options?: { onConflict?: string; ignoreDuplicates?: boolean }
+  ) => Promise<{ error: { message?: string } | null }>
+}
+
+type SupabaseClient = {
+  from: (table: TableName) => SnapshotQueryBuilder
+}
 type TableName = keyof AppDatabase['public']['Tables']
 
 export interface SnapshotMetadata {
@@ -23,9 +47,7 @@ export interface SnapshotMetadata {
 
 export interface SnapshotData {
   metadata: SnapshotMetadata
-  data: Partial<{
-    [K in TableName]: AppDatabase['public']['Tables'][K]['Row'][]
-  }>
+  data: Partial<Record<TableName, unknown[]>>
 }
 
 /**
@@ -75,7 +97,7 @@ export class DatabaseSnapshotManager {
     const recordCounts: Record<string, number> = {}
     const setTableData = <K extends TableName>(
       tableName: K,
-      rows: AppDatabase['public']['Tables'][K]['Row'][]
+      rows: unknown[]
     ) => {
       data[tableName] = rows
     }
@@ -92,7 +114,7 @@ export class DatabaseSnapshotManager {
         continue
       }
 
-      const rows = tableData ?? []
+      const rows = Array.isArray(tableData) ? tableData : []
       setTableData(table, rows)
       recordCounts[table] = rows.length
     }
@@ -183,8 +205,7 @@ export class DatabaseSnapshotManager {
           // Insert in batches with conflict resolution
           const batchSize = 100
           for (let i = 0; i < tableData.length; i += batchSize) {
-            const batch: AppDatabase['public']['Tables'][typeof table]['Insert'][] =
-              tableData.slice(i, i + batchSize)
+            const batch = tableData.slice(i, i + batchSize)
 
             // Use upsert to handle conflicts gracefully
             const { error } = await this.client.from(table).upsert(batch, {

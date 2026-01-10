@@ -39,7 +39,7 @@ export interface MockQueryBuilder {
 }
 
 export interface MockSupabaseClient {
-  from: jest.Mock<MockQueryBuilder, [string]>
+  from: jest.MockedFunction<(table: string) => MockQueryBuilder>
   rpc: jest.Mock
   auth: {
     getUser: jest.Mock
@@ -153,7 +153,9 @@ export const makeMockClient = (): MockSupabaseClient => {
   const defaultBuilder = createChainableBuilderInternal(defaultResponse)
 
   const client: MockSupabaseClient = {
-    from: jest.fn((_table: string) => defaultBuilder),
+    from: jest.fn<(table: string) => MockQueryBuilder>(
+      (_table: string) => defaultBuilder
+    ),
     rpc: jest.fn(async () => ({ data: null, error: null })),
     auth: {
       getUser: jest.fn(async () => ({ data: { user: null }, error: null })),

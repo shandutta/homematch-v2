@@ -116,22 +116,23 @@ export function createMockSession(overrides: Partial<Session> = {}): Session {
 // ============================================================================
 
 export function createMockQueryBuilder<T>(): MockQueryBuilder<T> {
+  const chain = () => builder
   const builder: MockQueryBuilder<T> = {
-    select: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    neq: jest.fn().mockReturnThis(),
-    gt: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    lt: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    in: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: null, error: null }),
-    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    select: jest.fn(chain),
+    insert: jest.fn(chain),
+    update: jest.fn(chain),
+    delete: jest.fn(chain),
+    eq: jest.fn(chain),
+    neq: jest.fn(chain),
+    gt: jest.fn(chain),
+    gte: jest.fn(chain),
+    lt: jest.fn(chain),
+    lte: jest.fn(chain),
+    in: jest.fn(chain),
+    order: jest.fn(chain),
+    limit: jest.fn(chain),
+    single: jest.fn(async () => ({ data: null, error: null })),
+    maybeSingle: jest.fn(async () => ({ data: null, error: null })),
     then: jest.fn().mockImplementation((cb) =>
       Promise.resolve(
         cb({

@@ -5,8 +5,10 @@ import {
   type MapNeighborhoodInput,
 } from '@/lib/maps/geometry'
 
-type PolygonCoordinates = number[][][]
-type MultiPolygonCoordinates = number[][][][]
+type Point = [number, number]
+type RingCoordinates = Point[]
+type PolygonCoordinates = RingCoordinates[]
+type MultiPolygonCoordinates = PolygonCoordinates[]
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -16,11 +18,11 @@ const isNumber = (value: unknown): value is number =>
 
 const isCoordinatePair = (value: unknown): value is [number, number] =>
   Array.isArray(value) &&
-  value.length >= 2 &&
+  value.length === 2 &&
   isNumber(value[0]) &&
   isNumber(value[1])
 
-const isRing = (value: unknown): value is [number, number][] =>
+const isRing = (value: unknown): value is RingCoordinates =>
   Array.isArray(value) && value.every(isCoordinatePair)
 
 const isPolygonCoordinates = (value: unknown): value is PolygonCoordinates =>
@@ -69,7 +71,7 @@ const toClippingMultiPolygon = (bounds: unknown) => {
   return []
 }
 
-const clippingRingArea = (ring: number[][]) => {
+const clippingRingArea = (ring: RingCoordinates) => {
   if (ring.length < 3) return 0
   let area = 0
   for (let i = 0; i < ring.length - 1; i += 1) {
@@ -80,7 +82,7 @@ const clippingRingArea = (ring: number[][]) => {
   return area / 2
 }
 
-const clippingPolygonArea = (polygon: number[][][]) => {
+const clippingPolygonArea = (polygon: PolygonCoordinates) => {
   if (polygon.length === 0) return 0
   const outer = Math.abs(clippingRingArea(polygon[0]!))
   const holes = polygon
@@ -148,23 +150,6 @@ test('buildMeceNeighborhoods removes overlap between neighborhoods', () => {
   const secondClip = toClippingMultiPolygon(second!.bounds)
 
   const overlap = polygonClipping.intersection(firstClip, secondClip)
-  const isMultiPolygonCoordinates = (value: unknown): value is number[][][][] =>
-    Array.isArray(value) &&
-    value.every(
-      (polygon) =>
-        Array.isArray(polygon) &&
-        polygon.every(
-          (ring) =>
-            Array.isArray(ring) &&
-            ring.every(
-              (point) =>
-                Array.isArray(point) &&
-                point.length >= 2 &&
-                typeof point[0] === 'number' &&
-                typeof point[1] === 'number'
-            )
-        )
-    )
   if (!isMultiPolygonCoordinates(overlap)) {
     throw new Error('Expected overlap to be a multipolygon')
   }

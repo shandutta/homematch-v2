@@ -50,7 +50,7 @@ const createSupabaseStub = (): SupabaseClient<AppDatabase> => {
 describe('withRefreshRecovery (browser)', () => {
   let supabase: SupabaseClient<AppDatabase>
   let applyRecovery: (client: SupabaseClient) => void
-  let warnSpy: jest.SpyInstance
+  let warnSpy: jest.SpiedFunction<typeof console.warn>
 
   beforeEach(async () => {
     jest.clearAllMocks()

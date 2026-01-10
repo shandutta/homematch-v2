@@ -9,6 +9,10 @@ import {
 
 type IngestOptions = Parameters<typeof ingestZillowLocations>[0]
 type SupabaseLike = IngestOptions['supabase']
+type FetchFn = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
 
 describe('zillow ingestion helpers', () => {
   test('buildSearchUrl encodes location and params', () => {
@@ -76,10 +80,7 @@ describe('fetchZillowSearchPage', () => {
       zipcode: '94105',
     }
 
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -119,10 +120,7 @@ describe('ingestZillowLocations', () => {
       imgSrc: 'http://example.com/a.jpg',
     }
 
-    const fetchMock: jest.Mock<
-      Promise<Response>,
-      [RequestInfo | URL, RequestInit?]
-    > = jest.fn()
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response(
         JSON.stringify({

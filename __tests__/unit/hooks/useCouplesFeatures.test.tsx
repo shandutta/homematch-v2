@@ -249,7 +249,7 @@ describe('useCouplesStats', () => {
 
 describe('useNotifyInteraction', () => {
   let queryClient: QueryClient
-  let invalidateQueriesSpy: jest.SpyInstance
+  let invalidateQueriesSpy: jest.SpiedFunction<QueryClient['invalidateQueries']>
 
   const createWrapper = () => {
     queryClient = new QueryClient({

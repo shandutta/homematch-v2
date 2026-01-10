@@ -12,8 +12,10 @@ type VitestMockFn<Args extends unknown[] = unknown[], Return = unknown> = Mock<
   (...args: Args) => Return
 >
 
-type JestMockFn<Args extends unknown[] = unknown[], Return = unknown> =
-  jest.MockedFunction<(...args: Args) => Return>
+type JestMockFn<
+  Args extends unknown[] = unknown[],
+  Return = unknown,
+> = jest.MockedFunction<(...args: Args) => Return>
 
 type MockFn<Args extends unknown[] = unknown[], Return = unknown> =
   | JestMockFn<Args, Return>
