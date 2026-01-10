@@ -17,15 +17,41 @@ jest.mock('framer-motion', () => ({
   ),
 }))
 
-jest.mock('@/components/ui/motion-components', () => ({
-  MotionDiv: ({
-    children,
-    ...props
-  }: {
-    children: React.ReactNode
-    [key: string]: unknown
-  }) => <div {...props}>{children}</div>,
-}))
+jest.mock('@/components/ui/motion-components', () => {
+  type MotionDivProps = React.HTMLAttributes<HTMLDivElement> & {
+    animate?: unknown
+    initial?: unknown
+    exit?: unknown
+    variants?: unknown
+    whileHover?: unknown
+    whileTap?: unknown
+    whileInView?: unknown
+    transition?: unknown
+    layout?: unknown
+    layoutId?: unknown
+    onAnimationComplete?: unknown
+  }
+
+  const MotionDiv = ({ children, ...props }: MotionDivProps) => {
+    const {
+      animate: _animate,
+      initial: _initial,
+      exit: _exit,
+      variants: _variants,
+      whileHover: _whileHover,
+      whileTap: _whileTap,
+      whileInView: _whileInView,
+      transition: _transition,
+      layout: _layout,
+      layoutId: _layoutId,
+      onAnimationComplete: _onAnimationComplete,
+      ...rest
+    } = props
+    return <div {...rest}>{children}</div>
+  }
+
+  return { MotionDiv }
+})
 
 jest.mock('@/components/couples/CouplesEmptyStates', () => ({
   NoHouseholdState: () => <div data-testid="no-household-state" />,

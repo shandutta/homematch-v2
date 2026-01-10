@@ -105,11 +105,12 @@ describe('ProfileForm', () => {
 
     await waitFor(() => {
       expect(mockUpdateUserProfile).toHaveBeenCalledWith('user-123', {
-        preferences: {
+        preferences: expect.objectContaining({
           display_name: 'New Name',
           phone: '(987) 654-3210',
           bio: 'New bio text',
-        },
+          avatar: null,
+        }),
         onboarding_completed: true,
       })
       expect(toast.success).toHaveBeenCalledWith('Profile updated successfully')

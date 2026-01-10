@@ -74,10 +74,13 @@ describe('POST /api/admin/generate-vibes', () => {
   test('skips generation when source hash unchanged', async () => {
     const existingHash = VibesService.generateSourceHash(mockProperty)
 
-    const propertiesInMock = jest.fn().mockResolvedValue({
+    const propertiesOverrideMock = jest.fn().mockResolvedValue({
       data: [mockProperty],
       error: null,
     })
+    const propertiesInMock = jest.fn(() => ({
+      overrideTypes: propertiesOverrideMock,
+    }))
     const propertiesSelectMock = jest.fn(() => ({ in: propertiesInMock }))
 
     const vibesInMock = jest.fn().mockResolvedValue({
@@ -118,10 +121,13 @@ describe('POST /api/admin/generate-vibes', () => {
   test('forces regeneration when force=true', async () => {
     const existingHash = VibesService.generateSourceHash(mockProperty)
 
-    const propertiesInMock = jest.fn().mockResolvedValue({
+    const propertiesOverrideMock = jest.fn().mockResolvedValue({
       data: [mockProperty],
       error: null,
     })
+    const propertiesInMock = jest.fn(() => ({
+      overrideTypes: propertiesOverrideMock,
+    }))
     const propertiesSelectMock = jest.fn(() => ({ in: propertiesInMock }))
 
     const vibesInMock = jest.fn().mockResolvedValue({

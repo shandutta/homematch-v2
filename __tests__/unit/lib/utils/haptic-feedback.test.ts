@@ -8,39 +8,53 @@ import {
 } from '@jest/globals'
 import HapticFeedback, { useHapticFeedback } from '@/lib/utils/haptic-feedback'
 
-const originalNavigator = global.navigator
-const originalWindow = global.window
 const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
 
 describe('HapticFeedback', () => {
+  let originalVibrate: Navigator['vibrate'] | undefined
+  let originalHapticFeedback: Window['hapticFeedback'] | undefined
+  let originalDeviceMotionEvent: typeof window.DeviceMotionEvent | undefined
+  let originalAudioContext: typeof window.AudioContext | undefined
+
   beforeEach(() => {
     jest.clearAllMocks()
     debugSpy.mockImplementation(() => {})
     Reflect.set(HapticFeedback, 'isSupported', false)
     Reflect.set(HapticFeedback, 'isIOSSupported', false)
-    Object.defineProperty(globalThis, 'navigator', {
-      value: originalNavigator,
-      configurable: true,
-      writable: true,
-    })
-    Object.defineProperty(globalThis, 'window', {
-      value: originalWindow,
-      configurable: true,
-      writable: true,
-    })
+    originalVibrate = globalThis.navigator?.vibrate
+    originalHapticFeedback = globalThis.window?.hapticFeedback
+    originalDeviceMotionEvent = globalThis.window?.DeviceMotionEvent
+    originalAudioContext = globalThis.window?.AudioContext
   })
 
   afterEach(() => {
-    Object.defineProperty(globalThis, 'navigator', {
-      value: originalNavigator,
-      configurable: true,
-      writable: true,
-    })
-    Object.defineProperty(globalThis, 'window', {
-      value: originalWindow,
-      configurable: true,
-      writable: true,
-    })
+    if (typeof originalVibrate === 'function') {
+      globalThis.navigator.vibrate = originalVibrate
+    } else {
+      Reflect.deleteProperty(globalThis.navigator, 'vibrate')
+    }
+
+    globalThis.window.hapticFeedback = originalHapticFeedback
+
+    if (originalDeviceMotionEvent) {
+      Object.defineProperty(window, 'DeviceMotionEvent', {
+        value: originalDeviceMotionEvent,
+        configurable: true,
+        writable: true,
+      })
+    } else {
+      Reflect.deleteProperty(window, 'DeviceMotionEvent')
+    }
+
+    if (originalAudioContext) {
+      Object.defineProperty(window, 'AudioContext', {
+        value: originalAudioContext,
+        configurable: true,
+        writable: true,
+      })
+    } else {
+      Reflect.deleteProperty(window, 'AudioContext')
+    }
   })
 
   afterAll(() => {

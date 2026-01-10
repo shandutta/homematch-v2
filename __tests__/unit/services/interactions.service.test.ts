@@ -1,10 +1,10 @@
 import { InteractionService } from '@/lib/services/interactions'
 import type {
-  Interaction,
   InteractionSummary,
   PageResponse,
   InteractionType,
 } from '@/types/app'
+import type { Property } from '@/lib/schemas/property'
 
 const originalFetch = global.fetch
 type FetchFn = (
@@ -20,6 +20,33 @@ const createFetchMock = (response: Response) => {
   return fetchMock
 }
 
+const mockProperty: Property = {
+  id: '00000000-0000-0000-0000-000000000001',
+  zpid: 'zpid-1',
+  address: '123 Main St',
+  city: 'San Francisco',
+  state: 'CA',
+  zip_code: '94102',
+  price: 500000,
+  bedrooms: 3,
+  bathrooms: 2,
+  square_feet: 1500,
+  property_type: 'single_family',
+  images: ['https://example.com/image1.jpg'],
+  description: 'Beautiful home',
+  coordinates: { lat: 37.7749, lng: -122.4194 },
+  neighborhood_id: null,
+  amenities: ['parking'],
+  year_built: 2000,
+  lot_size_sqft: 5000,
+  parking_spots: 2,
+  listing_status: 'active',
+  property_hash: null,
+  is_active: true,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+}
+
 describe('InteractionService', () => {
   beforeEach(() => {
     jest.resetAllMocks()
@@ -30,29 +57,23 @@ describe('InteractionService', () => {
   })
 
   describe('recordInteraction', () => {
-    test('success: returns created interaction', async () => {
-      const mockInteraction: Interaction = {
-        userId: 'u1',
-        propertyId: 'p1',
-        type: 'liked',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-
+    test('success: resolves without error', async () => {
       const fetchMock = createFetchMock(
-        new Response(JSON.stringify({ interaction: mockInteraction }), {
+        new Response(JSON.stringify({ ok: true }), {
           status: 201,
           headers: { 'Content-Type': 'application/json' },
         })
       )
 
-      const res = await InteractionService.recordInteraction('p1', 'liked')
-      expect(res).toEqual(mockInteraction)
+      await expect(
+        InteractionService.recordInteraction('p1', 'liked')
+      ).resolves.toBeUndefined()
       expect(global.fetch).toHaveBeenCalledWith(
         '/api/interactions',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
         })
       )
       const init = fetchMock.mock.calls[0]?.[1]
@@ -118,8 +139,11 @@ describe('InteractionService', () => {
 
   describe('getInteractions', () => {
     test('success: builds query params and returns page response', async () => {
-      const mockResponse: PageResponse<{ id: string }> = {
-        items: [{ id: 'p1' }, { id: 'p2' }],
+      const mockResponse: PageResponse<Property> = {
+        items: [
+          mockProperty,
+          { ...mockProperty, id: '00000000-0000-0000-0000-000000000002' },
+        ],
         nextCursor: 'cursor-2',
       }
 
@@ -149,8 +173,8 @@ describe('InteractionService', () => {
     })
 
     test('success: omits cursor when not provided, defaults limit to 12', async () => {
-      const mockResponse: PageResponse<{ id: string }> = {
-        items: [{ id: 'p1' }],
+      const mockResponse: PageResponse<Property> = {
+        items: [mockProperty],
         nextCursor: null,
       }
 

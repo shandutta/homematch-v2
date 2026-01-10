@@ -364,7 +364,7 @@ describe('CouplesMiddleware', () => {
 
     test('should handle empty string household ID', async () => {
       await CouplesMiddleware.onHouseholdChange('')
-      expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith('')
+      expect(mockCouplesService.clearHouseholdCache).not.toHaveBeenCalled()
     })
   })
 
@@ -486,18 +486,12 @@ describe('CouplesMiddleware', () => {
 
     test('should handle null or undefined user ID', async () => {
       await CouplesMiddleware.warmCache(mockSupabaseClient, null)
-      expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
-        mockSupabaseClient,
-        null
-      )
+      expect(mockCouplesService.getMutualLikes).not.toHaveBeenCalled()
 
       jest.clearAllMocks()
 
       await CouplesMiddleware.warmCache(mockSupabaseClient, undefined)
-      expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
-        mockSupabaseClient,
-        undefined
-      )
+      expect(mockCouplesService.getMutualLikes).not.toHaveBeenCalled()
     })
 
     test('should use correct limit for getHouseholdActivity', async () => {

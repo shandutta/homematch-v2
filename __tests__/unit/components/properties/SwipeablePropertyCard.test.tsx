@@ -4,20 +4,86 @@ import '@testing-library/jest-dom'
 
 // Mock framer-motion
 jest.mock('framer-motion', () => {
-  const MockMotionDiv = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
-  >(({ children, ...rest }, ref) => (
-    <div ref={ref} {...rest}>
-      {children}
-    </div>
-  ))
+  type MotionDivProps = React.HTMLProps<HTMLDivElement> & {
+    animate?: unknown
+    initial?: unknown
+    exit?: unknown
+    variants?: unknown
+    whileHover?: unknown
+    whileTap?: unknown
+    whileInView?: unknown
+    transition?: unknown
+    drag?: unknown
+    dragConstraints?: unknown
+    dragElastic?: unknown
+    dragTransition?: unknown
+    layout?: unknown
+    layoutId?: unknown
+    transformTemplate?: unknown
+    onUpdate?: unknown
+    onAnimationComplete?: unknown
+    viewport?: unknown
+  }
+
+  type MotionButtonProps = React.HTMLProps<HTMLButtonElement> & {
+    whileHover?: unknown
+    whileTap?: unknown
+    whileInView?: unknown
+    transition?: unknown
+    layout?: unknown
+    layoutId?: unknown
+  }
+
+  const MockMotionDiv = React.forwardRef<HTMLDivElement, MotionDivProps>(
+    (
+      {
+        children,
+        animate: _animate,
+        initial: _initial,
+        exit: _exit,
+        variants: _variants,
+        whileHover: _whileHover,
+        whileTap: _whileTap,
+        whileInView: _whileInView,
+        transition: _transition,
+        drag: _drag,
+        dragConstraints: _dragConstraints,
+        dragElastic: _dragElastic,
+        dragTransition: _dragTransition,
+        layout: _layout,
+        layoutId: _layoutId,
+        transformTemplate: _transformTemplate,
+        onUpdate: _onUpdate,
+        onAnimationComplete: _onAnimationComplete,
+        viewport: _viewport,
+        ...rest
+      },
+      ref
+    ) => (
+      <div ref={ref} {...rest}>
+        {children}
+      </div>
+    )
+  )
   MockMotionDiv.displayName = 'MockMotionDiv'
 
   const MockMotionButton = React.forwardRef<
     HTMLButtonElement,
-    React.HTMLProps<HTMLButtonElement>
-  >((props, ref) => <button ref={ref} {...props} />)
+    MotionButtonProps
+  >(
+    (
+      {
+        whileHover: _whileHover,
+        whileTap: _whileTap,
+        whileInView: _whileInView,
+        transition: _transition,
+        layout: _layout,
+        layoutId: _layoutId,
+        ...rest
+      },
+      ref
+    ) => <button ref={ref} {...rest} />
+  )
   MockMotionButton.displayName = 'MockMotionButton'
 
   return {
@@ -45,22 +111,66 @@ jest.mock('framer-motion', () => {
 
 // Mock the motion components
 jest.mock('@/components/ui/motion-components', () => {
-  const MockMotionDiv = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLProps<HTMLDivElement>
-  >(({ children, ...rest }, ref) => {
-    const { 'data-testid': dataTestId, onTap, onClick, ...restProps } = rest
-    return (
-      <div
-        ref={ref}
-        data-testid={dataTestId ?? 'motion-div'}
-        onClick={onTap ?? onClick}
-        {...restProps}
-      >
-        {children}
-      </div>
-    )
-  })
+  type MotionDivProps = React.HTMLProps<HTMLDivElement> & {
+    animate?: unknown
+    initial?: unknown
+    exit?: unknown
+    variants?: unknown
+    whileHover?: unknown
+    whileTap?: unknown
+    whileInView?: unknown
+    transition?: unknown
+    drag?: unknown
+    dragConstraints?: unknown
+    dragElastic?: unknown
+    dragTransition?: unknown
+    layout?: unknown
+    layoutId?: unknown
+    transformTemplate?: unknown
+    onUpdate?: unknown
+    onAnimationComplete?: unknown
+    viewport?: unknown
+  }
+
+  const MockMotionDiv = React.forwardRef<HTMLDivElement, MotionDivProps>(
+    (
+      {
+        children,
+        animate: _animate,
+        initial: _initial,
+        exit: _exit,
+        variants: _variants,
+        whileHover: _whileHover,
+        whileTap: _whileTap,
+        whileInView: _whileInView,
+        transition: _transition,
+        drag: _drag,
+        dragConstraints: _dragConstraints,
+        dragElastic: _dragElastic,
+        dragTransition: _dragTransition,
+        layout: _layout,
+        layoutId: _layoutId,
+        transformTemplate: _transformTemplate,
+        onUpdate: _onUpdate,
+        onAnimationComplete: _onAnimationComplete,
+        viewport: _viewport,
+        ...rest
+      },
+      ref
+    ) => {
+      const { 'data-testid': dataTestId, onTap, onClick, ...restProps } = rest
+      return (
+        <div
+          ref={ref}
+          data-testid={dataTestId ?? 'motion-div'}
+          onClick={onTap ?? onClick}
+          {...restProps}
+        >
+          {children}
+        </div>
+      )
+    }
+  )
   MockMotionDiv.displayName = 'MockMotionDiv'
   return { MotionDiv: MockMotionDiv }
 })
@@ -69,10 +179,11 @@ jest.mock('@/components/ui/motion-components', () => {
 jest.mock('@/components/ui/motion-button', () => ({
   MotionButton: ({
     children,
+    motionProps: _motionProps,
     ...props
-  }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button {...props}>{children}</button>
-  ),
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    motionProps?: Record<string, unknown>
+  }) => <button {...props}>{children}</button>,
 }))
 
 // Mock the PropertyCard component
