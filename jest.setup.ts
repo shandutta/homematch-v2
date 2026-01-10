@@ -1,12 +1,10 @@
 import '@testing-library/jest-dom'
-import type { ReactNode } from 'react'
+import * as React from 'react'
 import { setupBrowserMocks } from './__tests__/utils/browser-mocks'
+import './__tests__/setupSupabaseMock'
 
 // Initialize shared browser mocks (TextEncoder, ResizeObserver, matchMedia, etc.)
 setupBrowserMocks()
-
-// Import and setup our comprehensive typed Supabase mock
-require('./__tests__/setupSupabaseMock')
 
 // Handle React 19 AggregateError in tests
 global.AggregateError =
@@ -94,37 +92,39 @@ console.error = (...args: unknown[]) => {
 
 // Simple framer-motion mock for remaining edge cases
 jest.mock('framer-motion', () => {
-  const React = require('react')
-
   // Strip motion-only props so React DOM doesn't warn during tests
-  const createMotionComponent = (element: keyof JSX.IntrinsicElements) =>
-    React.forwardRef(
+  const createMotionComponent = (element: keyof JSX.IntrinsicElements) => {
+    const MotionComponent = React.forwardRef(
       (props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
         const {
-          animate,
-          initial,
-          exit,
-          variants,
-          whileHover,
-          whileTap,
-          whileInView,
-          transition,
-          drag,
-          dragConstraints,
-          dragElastic,
-          dragTransition,
-          layout,
-          layoutId,
-          transformTemplate,
-          onUpdate,
-          onAnimationComplete,
-          viewport,
+          animate: _animate,
+          initial: _initial,
+          exit: _exit,
+          variants: _variants,
+          whileHover: _whileHover,
+          whileTap: _whileTap,
+          whileInView: _whileInView,
+          transition: _transition,
+          drag: _drag,
+          dragConstraints: _dragConstraints,
+          dragElastic: _dragElastic,
+          dragTransition: _dragTransition,
+          layout: _layout,
+          layoutId: _layoutId,
+          transformTemplate: _transformTemplate,
+          onUpdate: _onUpdate,
+          onAnimationComplete: _onAnimationComplete,
+          viewport: _viewport,
           ...rest
         } = props
 
         return React.createElement(element, { ref, ...rest })
       }
     )
+
+    MotionComponent.displayName = `Motion(${element})`
+    return MotionComponent
+  }
 
   return {
     motion: {
@@ -140,7 +140,7 @@ jest.mock('framer-motion', () => {
       ul: createMotionComponent('ul'),
       li: createMotionComponent('li'),
     },
-    AnimatePresence: ({ children }: { children?: ReactNode }) => children,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
     useScroll: () => ({ scrollY: { get: () => 0 } }),
     useTransform: () => 0,
     useMotionValue: <T>(initial: T) => ({
@@ -155,9 +155,6 @@ jest.mock('framer-motion', () => {
 // Add global test helpers
 global.beforeEach = global.beforeEach || (() => {})
 global.afterEach = global.afterEach || (() => {})
-
-// Enhanced React 19 compatibility for async components
-const React = require('react')
 
 // Mock React.act for React 19 compatibility
 if (!global.React) {
@@ -183,11 +180,17 @@ afterEach(() => {
   }
 })
 
-// Polyfill fetch for integration tests using node-fetch
-if (typeof global.fetch === 'undefined') {
-  const fetch = require('node-fetch')
-  global.fetch = fetch
-  global.Request = fetch.Request
-  global.Response = fetch.Response
-  global.Headers = fetch.Headers
+const ensureFetch = async () => {
+  if (typeof global.fetch !== 'undefined') {
+    return
+  }
+  const { fetch, Headers, Request, Response } = await import('undici')
+  Object.defineProperty(global, 'fetch', { value: fetch })
+  Object.defineProperty(global, 'Request', { value: Request })
+  Object.defineProperty(global, 'Response', { value: Response })
+  Object.defineProperty(global, 'Headers', { value: Headers })
 }
+
+beforeAll(async () => {
+  await ensureFetch()
+})

@@ -9,6 +9,12 @@ type MockFn<Args extends unknown[] = unknown[], Return = unknown> = ((
   mockImplementation: (impl: (...args: Args) => Return) => MockFn<Args, Return>
 }
 
+type VitestGlobal = typeof globalThis & {
+  vi?: typeof import('vitest').vi
+}
+
+const vitestGlobal: VitestGlobal = globalThis
+
 const createMockFn = <
   Args extends unknown[] = unknown[],
   Return = unknown,
@@ -19,8 +25,8 @@ const createMockFn = <
   }
   // Fallback to Vitest's global vi
 
-  if (globalThis.vi) {
-    const fn: MockFn<Args, Return> = globalThis.vi.fn()
+  if (vitestGlobal.vi) {
+    const fn: MockFn<Args, Return> = vitestGlobal.vi.fn()
     return fn
   }
   throw new Error('No test mock library found')

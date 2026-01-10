@@ -40,12 +40,15 @@
     // ensure ESLint project parsing can find these top-level TS files
     "playwright.config.ts",
     "playwright.remote.config.ts",
+    "jest.setup.ts",
     "scripts/**/*.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
     "types/**/*.d.ts",
     // scripts
     "vitest.config.ts",
+    "vitest.ci.config.ts",
+    "vitest.setup.ts",
     ".next-build/types/**/*.ts"
   ],
   "exclude": [

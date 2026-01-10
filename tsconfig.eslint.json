@@ -19,6 +19,7 @@
     "playwright.config.ts",
     "playwright.remote.config.ts",
     "vitest.config.ts",
+    "vitest.ci.config.ts",
     "vitest.setup.ts",
     "scripts/**/*.ts"
   ],

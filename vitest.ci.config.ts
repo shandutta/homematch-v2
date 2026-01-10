@@ -32,7 +32,7 @@ export default defineConfig({
         '**/dist/**',
       ],
     },
-    reporter: ['verbose', 'json'],
+    reporters: ['verbose', 'json'],
     outputFile: {
       json: './test-reports/integration-results.json',
     },

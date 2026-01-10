@@ -86,6 +86,7 @@ export default [
       '__tests__/**/*.{ts,tsx}',
       'types/**/*.d.ts',
       'middleware.ts',
+      'jest.setup.ts',
       'vitest.setup.ts',
     ],
     languageOptions: {
