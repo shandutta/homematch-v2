@@ -132,11 +132,18 @@ export async function POST(request: NextRequest) {
 
     householdId = await resolveHouseholdId()
 
-    // Clear any previous interaction for this user/property to enforce a single definitive state
-    const { error: deleteError } = await supabase
+    // Clear any previous interaction for this user/property to enforce a single definitive state.
+    // For "view" events we only reset existing views so likes/skips persist.
+    const deleteQuery = supabase
       .from('user_property_interactions')
       .delete()
       .match({ user_id: user.id, property_id: propertyId })
+
+    if (dbInteractionType === 'view') {
+      deleteQuery.eq('interaction_type', 'view')
+    }
+
+    const { error: deleteError } = await deleteQuery
 
     if (deleteError) {
       // Not fatal; insert might still succeed if no matching row existed
