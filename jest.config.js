@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'jsdom',
+  setupFiles: ['<rootDir>/jest.preload.ts'],
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.ts',
     '<rootDir>/__tests__/test-env.ts',

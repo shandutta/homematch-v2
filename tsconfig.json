@@ -41,6 +41,7 @@
     "playwright.config.ts",
     "playwright.remote.config.ts",
     "jest.setup.ts",
+    "jest.preload.ts",
     "scripts/**/*.ts",
     "src/**/*.ts",
     "src/**/*.tsx",

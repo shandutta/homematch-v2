@@ -87,6 +87,7 @@ export default [
       'types/**/*.d.ts',
       'middleware.ts',
       'jest.setup.ts',
+      'jest.preload.ts',
       'vitest.setup.ts',
     ],
     languageOptions: {

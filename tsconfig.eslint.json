@@ -12,6 +12,7 @@
     "__tests__/**/*.ts",
     "__tests__/**/*.tsx",
     "jest.setup.ts",
+    "jest.preload.ts",
     ".next/types/**/*.ts",
     "types/**/*.d.ts",
     "middleware.ts",

@@ -179,18 +179,3 @@ afterEach(() => {
     global.gc()
   }
 })
-
-const ensureFetch = async () => {
-  if (typeof global.fetch !== 'undefined') {
-    return
-  }
-  const { fetch, Headers, Request, Response } = await import('undici')
-  Object.defineProperty(global, 'fetch', { value: fetch })
-  Object.defineProperty(global, 'Request', { value: Request })
-  Object.defineProperty(global, 'Response', { value: Response })
-  Object.defineProperty(global, 'Headers', { value: Headers })
-}
-
-beforeAll(async () => {
-  await ensureFetch()
-})
