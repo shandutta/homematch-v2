@@ -76,9 +76,9 @@ export class PropertyCrudService extends BaseService {
 
   async createProperty(property: PropertyInsert): Promise<Property | null> {
     this.validateRequired({ property })
-    this.validatePropertyData(property)
 
     return this.executeQuery('createProperty', async (supabase) => {
+      this.validatePropertyData(property)
       const sanitizedProperty = this.sanitizeInput<PropertyInsert>(property)
 
       const { data, error } = await supabase

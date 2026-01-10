@@ -21,6 +21,22 @@ export const PROPERTY_TYPE_VALUES: [PropertyType, ...PropertyType[]] = [
 ]
 const propertyTypeEnum = z.enum(PROPERTY_TYPE_VALUES)
 
+const coerceNumber = (value: unknown): unknown => {
+  if (value === null || value === undefined) return value
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (trimmed.length === 0) return value
+    const parsed = Number(trimmed)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return value
+}
+
+const numberFromString = (schema: z.ZodNumber) =>
+  z.preprocess(coerceNumber, schema)
+
+const timestampSchema = z.string().datetime({ offset: true })
+
 // Property Schemas
 export const propertySchema = z.object({
   id: z.string().uuid('Invalid uuid'),
@@ -35,18 +51,22 @@ export const propertySchema = z.object({
     .max(100),
   state: z.string().length(2),
   zip_code: z.string().min(5).max(10),
-  price: z
-    .number()
-    .min(0, { message: 'Number must be greater than or equal to 0' }),
-  bedrooms: z
-    .number()
-    .min(0)
-    .max(20, { message: 'Number must be less than or equal to 20' }),
-  bathrooms: z
-    .number()
-    .min(0)
-    .max(20, { message: 'Number must be less than or equal to 20' }),
-  square_feet: z.number().min(0).nullable(),
+  price: numberFromString(
+    z.number().min(0, { message: 'Number must be greater than or equal to 0' })
+  ),
+  bedrooms: numberFromString(
+    z
+      .number()
+      .min(0)
+      .max(20, { message: 'Number must be less than or equal to 20' })
+  ),
+  bathrooms: numberFromString(
+    z
+      .number()
+      .min(0)
+      .max(20, { message: 'Number must be less than or equal to 20' })
+  ),
+  square_feet: numberFromString(z.number().min(0)).nullable(),
   // Must match DB check constraint in Supabase
   property_type: propertyTypeEnum.nullable(),
   images: z.array(z.string().url()).nullable(),
@@ -67,21 +87,24 @@ export const propertySchema = z.object({
     .nullable(),
   neighborhood_id: z.string().uuid('Invalid uuid').nullable(),
   amenities: z.array(z.string()).nullable(),
-  year_built: z
-    .number()
-    .min(1800)
-    .max(new Date().getFullYear() + 5)
-    .nullable(),
-  lot_size_sqft: z.number().min(0).nullable(),
-  parking_spots: z.number().min(0).max(20).nullable(),
+  year_built: numberFromString(
+    z
+      .number()
+      .min(1800)
+      .max(new Date().getFullYear() + 5)
+  ).nullable(),
+  lot_size_sqft: numberFromString(z.number().min(0)).nullable(),
+  parking_spots: numberFromString(z.number().min(0).max(20)).nullable(),
   // Constrain listing_status to known literals; allow null; coerce unknown strings via preprocess if needed upstream
   listing_status: z.enum(['active', 'pending', 'sold']).nullable(),
   property_hash: z.string().nullable(),
   is_active: z.boolean().default(true).nullable(),
-  created_at: z.string().datetime().nullable(),
-  updated_at: z.string().datetime().nullable(),
-  zillow_images_refreshed_at: z.string().datetime().nullable().optional(),
-  zillow_images_refreshed_count: z.number().int().min(0).nullable().optional(),
+  created_at: timestampSchema.nullable(),
+  updated_at: timestampSchema.nullable(),
+  zillow_images_refreshed_at: timestampSchema.nullable().optional(),
+  zillow_images_refreshed_count: numberFromString(z.number().int().min(0))
+    .nullable()
+    .optional(),
   zillow_images_refresh_status: z
     .enum(['ok', 'no_images'])
     .nullable()
@@ -134,7 +157,7 @@ export const neighborhoodSchema = z.object({
   median_price: z.number().min(0).nullable(),
   walk_score: z.number().min(0).max(100).nullable(),
   transit_score: z.number().min(0).max(100).nullable(),
-  created_at: z.string().datetime().nullable(),
+  created_at: timestampSchema.nullable(),
 })
 
 export const neighborhoodInsertSchema = neighborhoodSchema

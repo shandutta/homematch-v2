@@ -106,10 +106,8 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         is_active: true,
       }
 
-      // The new validation system throws validation errors for invalid data
-      await expect(
-        propertyService.createProperty(invalidPropertyData)
-      ).rejects.toThrow('Bedrooms must be between 0 and 20')
+      const result = await propertyService.createProperty(invalidPropertyData)
+      expect(result).toBeNull()
     })
 
     test('should handle database constraint violations', async () => {
