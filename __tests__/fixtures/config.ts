@@ -8,7 +8,7 @@ import { ConfigFixture } from '../types/fixtures'
 // Export just the fixtures object, not a test object
 export const configFixtures = {
   config: async (
-    _fixture: Record<string, never>,
+    {}: Record<string, never>,
     use: (fixture: ConfigFixture) => Promise<void>
   ) => {
     const config: ConfigFixture = {

@@ -257,6 +257,12 @@ export default [
     },
   },
   {
+    files: ['__tests__/fixtures/**/*.ts'],
+    rules: {
+      'no-empty-pattern': 'off',
+    },
+  },
+  {
     files: ['**/__tests__/fixtures/**/*'],
     rules: {
       'react-hooks/rules-of-hooks': 'off', // Playwright fixtures use 'use' function which is not a React hook

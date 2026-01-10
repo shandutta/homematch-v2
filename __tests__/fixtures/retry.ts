@@ -8,7 +8,7 @@ import { RetryFixture } from '../types/fixtures'
 // Export just the fixtures object, not a test object
 export const retryFixtures = {
   retry: async (
-    _fixture: Record<string, never>,
+    {}: Record<string, never>,
     use: (fixture: RetryFixture) => Promise<void>
   ) => {
     const retryFixture: RetryFixture = {
