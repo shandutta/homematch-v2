@@ -1,8 +1,18 @@
 import { describe, beforeEach, test, expect, jest } from '@jest/globals'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 
 jest.unmock('@/lib/supabase/server')
+
+type AuthSubset = Pick<
+  import('@supabase/supabase-js').SupabaseClient<AppDatabase>['auth'],
+  'getSession' | 'getUser' | 'signOut'
+>
+
+type AuthMocks = {
+  getSession: jest.MockedFunction<AuthSubset['getSession']>
+  getUser: jest.MockedFunction<AuthSubset['getUser']>
+  signOut: jest.MockedFunction<AuthSubset['signOut']>
+}
 
 const createServerClientMock = jest.fn()
 
@@ -22,45 +32,18 @@ jest.mock('next/headers', () => ({
   }),
 }))
 
-const createSupabaseStub = (): SupabaseClient<AppDatabase> => {
-  const client = createClient<AppDatabase>(
-    'http://localhost:54321',
-    'test-key',
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false,
-      },
-      global: {
-        fetch: async () =>
-          new Response(JSON.stringify({ data: null, error: null }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }),
-      },
-    }
-  )
-
-  const auth = client.auth
-  auth.getUser = jest.fn<
-    ReturnType<typeof auth.getUser>,
-    Parameters<typeof auth.getUser>
-  >()
-  auth.getSession = jest.fn<
-    ReturnType<typeof auth.getSession>,
-    Parameters<typeof auth.getSession>
-  >()
-  auth.signOut = jest
-    .fn<ReturnType<typeof auth.signOut>, Parameters<typeof auth.signOut>>()
-    .mockResolvedValue({ error: null })
-
-  return client
+const createSupabaseStub = () => {
+  const auth: AuthMocks = {
+    getSession: jest.fn(),
+    getUser: jest.fn(),
+    signOut: jest.fn().mockResolvedValue({ error: null }),
+  }
+  return { auth }
 }
 
 describe('withRefreshRecovery', () => {
-  let supabase: SupabaseClient<AppDatabase>
-  let applyRecovery: (client: SupabaseClient) => void
+  let supabase: ReturnType<typeof createSupabaseStub>
+  let applyRecovery: (client: { auth: AuthSubset }) => void
   let warnSpy: jest.SpiedFunction<typeof console.warn>
 
   beforeEach(async () => {
@@ -77,13 +60,15 @@ describe('withRefreshRecovery', () => {
   })
 
   test('clears invalid refresh token errors returned from getUser', async () => {
-    supabase.auth.getUser.mockResolvedValue({
-      data: { user: null },
-      error: {
-        code: 'refresh_token_not_found',
-        message: 'Invalid Refresh Token: Refresh Token Not Found',
-      },
-    })
+    supabase.auth.getUser
+      .mockResolvedValueOnce({
+        data: { user: null },
+        error: {
+          code: 'refresh_token_not_found',
+          message: 'Invalid Refresh Token: Refresh Token Not Found',
+        },
+      })
+      .mockResolvedValueOnce({ data: { user: null }, error: null })
 
     applyRecovery(supabase)
 

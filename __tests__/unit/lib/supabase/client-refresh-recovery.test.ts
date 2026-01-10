@@ -6,50 +6,33 @@ import {
   expect,
   jest,
 } from '@jest/globals'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 
 jest.unmock('@/lib/supabase/client')
 
-const createSupabaseStub = (): SupabaseClient<AppDatabase> => {
-  const client = createClient<AppDatabase>(
-    'http://localhost:54321',
-    'test-key',
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false,
-      },
-      global: {
-        fetch: async () =>
-          new Response(JSON.stringify({ data: null, error: null }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }),
-      },
-    }
-  )
+type AuthSubset = Pick<
+  import('@supabase/supabase-js').SupabaseClient<AppDatabase>['auth'],
+  'getSession' | 'getUser' | 'signOut'
+>
 
-  const auth = client.auth
-  auth.getUser = jest.fn<
-    ReturnType<typeof auth.getUser>,
-    Parameters<typeof auth.getUser>
-  >()
-  auth.getSession = jest.fn<
-    ReturnType<typeof auth.getSession>,
-    Parameters<typeof auth.getSession>
-  >()
-  auth.signOut = jest
-    .fn<ReturnType<typeof auth.signOut>, Parameters<typeof auth.signOut>>()
-    .mockResolvedValue({ error: null })
+type AuthMocks = {
+  getSession: jest.MockedFunction<AuthSubset['getSession']>
+  getUser: jest.MockedFunction<AuthSubset['getUser']>
+  signOut: jest.MockedFunction<AuthSubset['signOut']>
+}
 
-  return client
+const createSupabaseStub = () => {
+  const auth: AuthMocks = {
+    getSession: jest.fn(),
+    getUser: jest.fn(),
+    signOut: jest.fn().mockResolvedValue({ error: null }),
+  }
+  return { auth }
 }
 
 describe('withRefreshRecovery (browser)', () => {
-  let supabase: SupabaseClient<AppDatabase>
-  let applyRecovery: (client: SupabaseClient) => void
+  let supabase: ReturnType<typeof createSupabaseStub>
+  let applyRecovery: (client: { auth: AuthSubset }) => void
   let warnSpy: jest.SpiedFunction<typeof console.warn>
 
   beforeEach(async () => {
@@ -83,9 +66,13 @@ describe('withRefreshRecovery (browser)', () => {
   })
 
   test('returns empty user when getUser throws invalid refresh token error', async () => {
-    supabase.auth.getUser.mockRejectedValue({
+    supabase.auth.getUser.mockRejectedValueOnce({
       code: 'invalid_refresh_token',
       message: 'Invalid Refresh Token',
+    })
+    supabase.auth.getUser.mockResolvedValueOnce({
+      data: { user: null },
+      error: null,
     })
 
     applyRecovery(supabase)

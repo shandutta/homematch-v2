@@ -6,7 +6,16 @@ import type { NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from './auth-helpers'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 
-const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
+type SupabaseAuthSubset = Pick<
+  SupabaseClient<AppDatabase>['auth'],
+  'getSession' | 'getUser' | 'signOut'
+>
+
+type SupabaseAuthClient = {
+  auth: SupabaseAuthSubset
+}
+
+const clearStaleSession = async (supabase: SupabaseAuthClient) => {
   try {
     await supabase.auth.signOut({ scope: 'local' })
   } catch (err) {
@@ -15,7 +24,7 @@ const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
 }
 
 const withRefreshRecovery = (
-  supabase: SupabaseClient<AppDatabase>,
+  supabase: SupabaseAuthClient,
   context: 'server' | 'api' = 'server'
 ) => {
   const isRecord = (value: unknown): value is Record<string, unknown> =>

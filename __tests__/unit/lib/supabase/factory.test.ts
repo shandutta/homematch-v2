@@ -26,12 +26,6 @@ jest.mock('next/headers', () => ({
 }))
 
 const resetEnv = () => {
-  Reflect.deleteProperty(globalThis, 'window')
-  Object.defineProperty(globalThis, 'window', {
-    value: undefined,
-    configurable: true,
-    writable: true,
-  })
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://supabase.test'
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key'
@@ -68,12 +62,6 @@ describe('SupabaseClientFactory', () => {
   })
 
   test('creates browser client when window is defined and caches it', async () => {
-    Object.defineProperty(globalThis, 'window', {
-      value: {},
-      configurable: true,
-      writable: true,
-    })
-
     const factory = SupabaseClientFactory.getInstance()
     const first = await factory.createClient()
     const second = await factory.createClient()
@@ -125,11 +113,6 @@ describe('SupabaseClientFactory', () => {
   })
 
   test('compat helper createClient uses factory detection', async () => {
-    Object.defineProperty(globalThis, 'window', {
-      value: {},
-      configurable: true,
-      writable: true,
-    })
     const client = await createClient()
     expect(client.client).toBe('browser')
   })

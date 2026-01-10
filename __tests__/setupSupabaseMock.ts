@@ -22,6 +22,18 @@ type MockFn<Args extends unknown[], Return> = jest.MockedFunction<
   (...args: Args) => Return
 >
 
+class AuthApiError extends Error {
+  code?: string
+  status?: number
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message)
+    this.name = 'AuthApiError'
+    this.status = status
+    this.code = code
+  }
+}
+
 type MockChainableBuilder = {
   select: MockFn<[], MockChainableBuilder>
   insert: MockFn<[], MockChainableBuilder>
@@ -215,6 +227,7 @@ jest.mock('@supabase/supabase-js', () => {
   // Avoid spreading non-object types; return only what we need
   return {
     createClient: jest.fn(() => mockSupabaseClient),
+    AuthApiError,
   }
 })
 

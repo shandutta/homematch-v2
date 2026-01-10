@@ -4,7 +4,16 @@ import type { AppDatabase } from '@/types/app-database'
 import { isInvalidRefreshTokenError } from './auth-helpers'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 
-const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
+type SupabaseAuthSubset = Pick<
+  SupabaseClient<AppDatabase>['auth'],
+  'getSession' | 'getUser' | 'signOut'
+>
+
+type SupabaseAuthClient = {
+  auth: SupabaseAuthSubset
+}
+
+const clearStaleSession = async (supabase: SupabaseAuthClient) => {
   try {
     // Local scope avoids hitting the network when the refresh token is already invalid
     await supabase.auth.signOut({ scope: 'local' })
@@ -13,7 +22,7 @@ const clearStaleSession = async (supabase: SupabaseClient<AppDatabase>) => {
   }
 }
 
-const withRefreshRecovery = (supabase: SupabaseClient<AppDatabase>) => {
+const withRefreshRecovery = (supabase: SupabaseAuthClient) => {
   const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null
 

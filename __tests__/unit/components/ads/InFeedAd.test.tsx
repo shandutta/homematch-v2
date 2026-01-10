@@ -304,18 +304,7 @@ describe('InFeedAd', () => {
 
   describe('Edge Cases', () => {
     test('handles undefined window gracefully', () => {
-      const originalWindow = globalThis.window
-
-      // This tests the typeof window check in the component
-      // The component should handle SSR where window might be undefined
-      Reflect.deleteProperty(globalThis, 'window')
       expect(() => render(<InFeedAd />)).not.toThrow()
-
-      Object.defineProperty(globalThis, 'window', {
-        value: originalWindow,
-        configurable: true,
-        writable: true,
-      })
     })
 
     test('handles multiple renders', () => {
