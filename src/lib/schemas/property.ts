@@ -38,6 +38,8 @@ const numberFromString = (schema: z.ZodNumber) =>
 const timestampSchema = z.string().datetime({ offset: true })
 
 // Property Schemas
+const imagePathSchema = z.string().url().or(z.string().startsWith('/'))
+
 export const propertySchema = z.object({
   id: z.string().uuid('Invalid uuid'),
   zpid: z.string().nullable(),
@@ -69,7 +71,7 @@ export const propertySchema = z.object({
   square_feet: numberFromString(z.number().min(0)).nullable(),
   // Must match DB check constraint in Supabase
   property_type: propertyTypeEnum.nullable(),
-  images: z.array(z.string().url()).nullable(),
+  images: z.array(imagePathSchema).nullable(),
   description: z.string().nullable(),
   // Coordinates can be GeoJSON Point, lat/lng object, or null when unknown
   coordinates: z
@@ -96,7 +98,9 @@ export const propertySchema = z.object({
   lot_size_sqft: numberFromString(z.number().min(0)).nullable(),
   parking_spots: numberFromString(z.number().min(0).max(20)).nullable(),
   // Constrain listing_status to known literals; allow null; coerce unknown strings via preprocess if needed upstream
-  listing_status: z.enum(['active', 'pending', 'sold']).nullable(),
+  listing_status: z
+    .enum(['active', 'pending', 'sold', 'for_sale', 'removed'])
+    .nullable(),
   property_hash: z.string().nullable(),
   is_active: z.boolean().default(true).nullable(),
   created_at: timestampSchema.nullable(),
