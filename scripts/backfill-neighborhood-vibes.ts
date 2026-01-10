@@ -266,6 +266,26 @@ function areStateFiltersEqual(a: string[] | null, b: string[] | null): boolean {
   return aKey === bKey
 }
 
+type CursorFilePayload = {
+  offset: unknown
+  states: unknown
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const parseCursorFilePayload = (value: unknown): CursorFilePayload => {
+  if (!isRecord(value)) {
+    return { offset: undefined, states: undefined }
+  }
+
+  const offset = value.offset
+  const filters = isRecord(value.filters) ? value.filters : null
+  const states = filters ? filters.states : undefined
+
+  return { offset, states }
+}
+
 async function readCursorOffset(
   cursorFile: string,
   expectedFilters: {
@@ -281,11 +301,9 @@ async function readCursorOffset(
     : path.join(process.cwd(), cursorFile)
   try {
     const text = await fs.readFile(resolvedPath, 'utf8')
-    const parsed = JSON.parse(text) as {
-      offset?: unknown
-      filters?: { states?: unknown }
-    }
-    const cursorStates = normalizeStatesFilter(parsed.filters?.states)
+    const parsedValue: unknown = JSON.parse(text)
+    const parsed = parseCursorFilePayload(parsedValue)
+    const cursorStates = normalizeStatesFilter(parsed.states)
 
     if (!areStateFiltersEqual(cursorStates, expectedFilters.states)) {
       return {

@@ -396,7 +396,10 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
     test('should return empty results for a property type not in test data', async () => {
       // Use a valid property type that's not seeded in this dataset
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['land'] },
+        filters: {
+          property_types: ['land'],
+          cities: [{ city: 'Filter City', state: 'CA' }],
+        },
       })
 
       expect(result.properties).toHaveLength(0)

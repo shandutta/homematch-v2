@@ -66,6 +66,35 @@ function normalizeCityKey(city: string): string {
   return city.trim().toUpperCase()
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const toFiniteNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
+}
+
+const readRapidTotal = (payload: unknown): number => {
+  if (!isRecord(payload)) return 0
+
+  const candidates = [
+    payload.totalResultCount,
+    payload.totalCount,
+    payload.total_count,
+  ]
+
+  for (const candidate of candidates) {
+    const value = toFiniteNumber(candidate)
+    if (value != null) return value
+  }
+
+  return 0
+}
+
 async function loadActiveCounts(includePending: boolean) {
   const supabase = createStandaloneClient()
   const counts = new Map<string, number>()
@@ -131,14 +160,8 @@ async function fetchRapidTotal(location: string): Promise<number> {
     const text = await res.text()
     throw new Error(`RapidAPI ${res.status}: ${text.slice(0, 160)}`)
   }
-  const body = (await res.json()) as {
-    totalResultCount?: number
-    totalCount?: number
-    total_count?: number
-  }
-  return Number(
-    body.totalResultCount || body.totalCount || body.total_count || 0
-  )
+  const payload: unknown = await res.json()
+  return readRapidTotal(payload)
 }
 
 function formatRatio(ratio: number | null): string {

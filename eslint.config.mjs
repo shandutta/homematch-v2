@@ -84,6 +84,7 @@ export default [
     files: [
       'src/**/*.{ts,tsx}',
       '__tests__/**/*.{ts,tsx}',
+      'types/**/*.d.ts',
       'middleware.ts',
       'vitest.setup.ts',
     ],

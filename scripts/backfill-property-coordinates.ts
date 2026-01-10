@@ -98,6 +98,39 @@ type GeocodeAttempt = {
   query: string | null
 }
 
+type GeocodePayload = {
+  status: string | null
+  location: GeocodeResult | null
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const extractGeocodePayload = (value: unknown): GeocodePayload => {
+  if (!isRecord(value)) {
+    return { status: null, location: null }
+  }
+
+  const status = typeof value.status === 'string' ? value.status : null
+  const results = Array.isArray(value.results) ? value.results : []
+
+  for (const result of results) {
+    if (!isRecord(result)) continue
+    const geometry = isRecord(result.geometry) ? result.geometry : null
+    if (!geometry || !isRecord(geometry.location)) continue
+
+    const location = geometry.location
+    const lat = typeof location.lat === 'number' ? location.lat : null
+    const lng = typeof location.lng === 'number' ? location.lng : null
+
+    if (lat != null && lng != null) {
+      return { status, location: { lat, lng } }
+    }
+  }
+
+  return { status, location: null }
+}
+
 async function geocodeAddress(
   apiKey: string,
   address: string,
@@ -112,20 +145,15 @@ async function geocodeAddress(
     const url = `https://maps.googleapis.com/maps/api/geocode/json?${params.toString()}`
 
     const response = await fetch(url)
-    const data = (await response.json()) as {
-      status?: string
-      results?: Array<{
-        geometry?: { location?: { lat: number; lng: number } }
-      }>
-    }
+    const payloadJson: unknown = await response.json()
+    const payload = extractGeocodePayload(payloadJson)
 
-    lastStatus = data.status || null
+    lastStatus = payload.status
 
-    if (lastStatus === 'OK' && data.results?.length) {
-      const location = data.results[0]?.geometry?.location
-      if (location && isValidLatLng(location)) {
+    if (lastStatus === 'OK') {
+      if (payload.location && isValidLatLng(payload.location)) {
         return {
-          result: { lat: location.lat, lng: location.lng },
+          result: { lat: payload.location.lat, lng: payload.location.lng },
           status: lastStatus,
         }
       }
