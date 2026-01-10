@@ -6,6 +6,11 @@ import { createWorkerAuthHelper } from '../utils/auth-helper'
 import { waitForHydration } from '../utils/hydration'
 import { maybeClickWhenReady } from '../utils/uiActions'
 
+type UserPreferences = Record<string, unknown> | null
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
   if (!value) {
@@ -56,27 +61,27 @@ function cityOptionTestId(city: string, state: string) {
 async function fetchUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string
-): Promise<any> {
+): Promise<UserPreferences> {
   const { data, error } = await supabase
     .from('user_profiles')
     .select('preferences')
     .eq('id', userId)
     .single()
   if (error) throw new Error(error.message)
-  return data?.preferences ?? null
+  return isRecord(data?.preferences) ? data.preferences : null
 }
 
 async function waitForUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string,
-  predicate: (preferences: any) => boolean,
+  predicate: (preferences: UserPreferences) => boolean,
   options: { timeoutMs?: number; intervalMs?: number } = {}
-): Promise<any> {
+): Promise<UserPreferences> {
   const timeoutMs = options.timeoutMs ?? 15_000
   const intervalMs = options.intervalMs ?? 500
   const start = Date.now()
 
-  let lastPreferences: any = null
+  let lastPreferences: UserPreferences = null
 
   while (Date.now() - start < timeoutMs) {
     lastPreferences = await fetchUserPreferences(supabase, userId)
@@ -299,13 +304,21 @@ test.describe('Settings location preferences', () => {
       await page.getByTestId(cityOptionTestId(cityB, stateB)).click()
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
-        const cities = preferences?.cities
-        const neighborhoods = preferences?.neighborhoods
+        const cities =
+          preferences && isRecord(preferences) ? preferences.cities : undefined
+        const neighborhoods =
+          preferences && isRecord(preferences)
+            ? preferences.neighborhoods
+            : undefined
 
         return (
           Array.isArray(cities) &&
-          cities.some((c: any) => c?.city === cityA && c?.state === stateA) &&
-          cities.some((c: any) => c?.city === cityB && c?.state === stateB) &&
+          cities.some(
+            (c) => isRecord(c) && c.city === cityA && c.state === stateA
+          ) &&
+          cities.some(
+            (c) => isRecord(c) && c.city === cityB && c.state === stateB
+          ) &&
           Array.isArray(neighborhoods) &&
           neighborhoods.includes(neighborhoodA1Id) &&
           neighborhoods.includes(neighborhoodA2Id) &&

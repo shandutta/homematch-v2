@@ -594,6 +594,12 @@ export type Database = {
       }
     }
     Views: {
+      pg_extension: {
+        Row: {
+          extname: string
+        }
+        Relationships: []
+      }
       geography_columns: {
         Row: {
           coord_dimension: number | null

@@ -59,7 +59,7 @@ const createMockNeighborhood = (
 })
 
 describe('StorytellingService', () => {
-  let mathRandomSpy: jest.SpyInstance
+  let mathRandomSpy: jest.SpiedFunction<typeof Math.random>
 
   beforeEach(() => {
     // Mock Math.random to ensure deterministic output for randomized selections
@@ -145,10 +145,10 @@ describe('StorytellingService', () => {
       expect(story).toBe('Cozy mornings in a calm, comfortable space')
     })
 
-    test('should handle null/undefined property fields gracefully', () => {
+    test('should handle missing optional property fields gracefully', () => {
       const property = createMockProperty({
-        bedrooms: null,
-        bathrooms: null,
+        bedrooms: 0,
+        bathrooms: 0,
         square_feet: null,
         amenities: null,
         lot_size_sqft: null,
@@ -165,9 +165,7 @@ describe('StorytellingService', () => {
   describe('getNeighborhoodLifestyle', () => {
     test('should return null if no neighborhood is provided', () => {
       expect(StorytellingService.getNeighborhoodLifestyle(undefined)).toBeNull()
-      expect(
-        StorytellingService.getNeighborhoodLifestyle(null as any)
-      ).toBeNull()
+      expect(StorytellingService.getNeighborhoodLifestyle(null)).toBeNull()
     })
 
     test('should return a perk for high walk score (>80)', () => {
@@ -507,10 +505,10 @@ describe('StorytellingService', () => {
       )
     })
 
-    test('should handle null bedrooms, bathrooms, and square_feet', () => {
+    test('should handle zero bedrooms/bathrooms and null square_feet', () => {
       const property = createMockProperty({
-        bedrooms: null,
-        bathrooms: null,
+        bedrooms: 0,
+        bathrooms: 0,
         square_feet: null,
         amenities: [],
         lot_size_sqft: null,
@@ -564,7 +562,7 @@ describe('StorytellingService', () => {
 })
 
 describe('generatePropertyStory (convenience function)', () => {
-  let mathRandomSpy: jest.SpyInstance
+  let mathRandomSpy: jest.SpiedFunction<typeof Math.random>
 
   beforeEach(() => {
     mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0)

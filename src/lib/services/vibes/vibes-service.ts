@@ -25,6 +25,23 @@ import {
   type ImageSelectionResult,
 } from './image-selector'
 
+type PropertySource = {
+  address: string
+  city: string
+  property_type: string | null
+  bedrooms: number
+  bathrooms: number
+  square_feet: number | null
+  price: number
+  year_built: number | null
+  images: string[] | null
+}
+
+type OpenRouterClientLike = Pick<
+  OpenRouterClient,
+  'createVisionMessage' | 'chatCompletion'
+>
+
 type CanonicalTag = (typeof ALL_PROPERTY_TAGS)[number]
 
 function normalizeTagKey(tag: string): string {
@@ -150,9 +167,9 @@ export interface BatchGenerationResult {
 }
 
 export class VibesService {
-  private client: OpenRouterClient
+  private client: OpenRouterClientLike
 
-  constructor(client?: OpenRouterClient) {
+  constructor(client?: OpenRouterClientLike) {
     this.client = client || createOpenRouterClient()
   }
 
@@ -681,7 +698,7 @@ export class VibesService {
   /**
    * Generate a source data hash for cache invalidation
    */
-  static generateSourceHash(property: Property): string {
+  static generateSourceHash(property: PropertySource): string {
     const hashInput = JSON.stringify({
       address: property.address,
       city: property.city,

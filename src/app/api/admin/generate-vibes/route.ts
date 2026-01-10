@@ -102,9 +102,10 @@ export async function POST(
         .from('properties')
         .select('*')
         .in('id', body.propertyIds.slice(0, 50))
+        .overrideTypes<Property[], { merge: false }>()
 
       if (error) throw error
-      properties = (data ?? []) as Property[]
+      properties = data ?? []
     } else if (diverse) {
       // Select diverse mix of properties
       properties = await selectDiverseProperties(supabase, count)
@@ -117,13 +118,12 @@ export async function POST(
         .gte('price', 100000) // Filter out likely bad data
         .order('created_at', { ascending: false })
         .limit(count * 2) // Get more, then sample
+        .overrideTypes<Property[], { merge: false }>()
 
       if (error) throw error
 
       // Random sample
-      const shuffled = ((data ?? []) as Property[]).sort(
-        () => Math.random() - 0.5
-      )
+      const shuffled = (data ?? []).sort(() => Math.random() - 0.5)
       properties = shuffled.slice(0, count)
     }
 
@@ -339,8 +339,9 @@ async function selectDiverseProperties(
       .gte('price', 100000)
       .order('price', { ascending: false })
       .limit(perType * 2)
+      .overrideTypes<Property[], { merge: false }>()
 
-    const typedData = (data ?? []) as Property[]
+    const typedData = data ?? []
     if (typedData.length > 0) {
       // Take mix of price ranges
       const shuffled = typedData.sort(() => Math.random() - 0.5)

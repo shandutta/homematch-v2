@@ -1,5 +1,4 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
-import type { NextRequest } from 'next/server'
 
 // Store original env
 const originalEnv = process.env
@@ -32,11 +31,15 @@ jest.mock('@/lib/utils/rate-limit', () => ({
 }))
 
 // Mock fetch globally
-const mockFetch = jest.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+const mockFetch: jest.Mock<
+  Promise<Response>,
+  [RequestInfo | URL, RequestInit?]
+> = jest.fn()
+global.fetch = mockFetch
 
 // Import after mocks
 import * as geocodeRoute from '@/app/api/maps/geocode/route'
+import { getRequestUrl } from '@/__tests__/utils/http-helpers'
 
 describe('/api/maps/geocode route', () => {
   beforeEach(() => {
@@ -53,12 +56,14 @@ describe('/api/maps/geocode route', () => {
     body: Record<string, unknown>,
     headers: Record<string, string> = {}
   ) =>
-    ({
-      json: async () => body,
+    new Request('http://localhost/api/maps/geocode', {
+      method: 'POST',
       headers: {
-        get: (key: string) => headers[key] || null,
+        'Content-Type': 'application/json',
+        ...headers,
       },
-    }) as unknown as NextRequest
+      body: JSON.stringify(body),
+    })
 
   describe('POST', () => {
     it('returns 429 when rate limited', async () => {
@@ -225,7 +230,7 @@ describe('/api/maps/geocode route', () => {
       await geocodeRoute.POST(request)
 
       expect(mockFetch).toHaveBeenCalled()
-      const fetchUrl = mockFetch.mock.calls[0][0] as string
+      const fetchUrl = getRequestUrl(mockFetch.mock.calls[0]?.[0])
       expect(fetchUrl).toContain('bounds=')
       // URL encodes the comma as %2C
       expect(decodeURIComponent(fetchUrl)).toContain('37.7,-122.5')

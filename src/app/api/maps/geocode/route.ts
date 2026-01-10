@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { isValidLatLng, boundingBoxSchema } from '@/lib/utils/coordinates'
@@ -39,7 +39,7 @@ interface GoogleGeocodeResult {
  * Secure Geocoding API Proxy
  * Rate-limited server-side proxy for Google Maps Geocoding API
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Rate limiting by IP
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'

@@ -10,6 +10,9 @@ import { randomUUID } from 'crypto'
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { E2EHttpClient } from '../../utils/e2e-http-client'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 // Increase timeout for integration tests making real HTTP requests
 const TEST_TIMEOUT = 60000 // 60s per test
 
@@ -179,7 +182,12 @@ describe('E2E: /api/couples/mutual-likes', () => {
     })
 
     test('should reject non-GET methods', async () => {
-      const methods = ['POST', 'PUT', 'DELETE', 'PATCH'] as const
+      const methods: Array<'POST' | 'PUT' | 'DELETE' | 'PATCH'> = [
+        'POST',
+        'PUT',
+        'DELETE',
+        'PATCH',
+      ]
 
       for (const method of methods) {
         try {
@@ -478,12 +486,19 @@ describe('E2E: /api/couples/mutual-likes', () => {
           expect(mutualRes.status).toBe(200)
           const mutualData = await mutualRes.json()
 
-          const match = (mutualData.mutualLikes ?? []).find(
-            (ml: any) => ml.property_id === propertyId
+          const mutualLikes =
+            isRecord(mutualData) && Array.isArray(mutualData.mutualLikes)
+              ? mutualData.mutualLikes
+              : []
+
+          const match = mutualLikes.find(
+            (ml) => isRecord(ml) && ml.property_id === propertyId
           )
 
           expect(match).toBeDefined()
-          expect(match.liked_by_count).toBeGreaterThanOrEqual(2)
+          if (isRecord(match)) {
+            expect(match.liked_by_count).toBeGreaterThanOrEqual(2)
+          }
         } finally {
           if (client2) {
             await client2.cleanup()

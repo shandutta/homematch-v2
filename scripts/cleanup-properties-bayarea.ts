@@ -5,6 +5,7 @@ config({ path: '.env.local' })
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import type { Database } from '@/types/database'
 
 const ALLOWED_CITIES = new Set([
   'SAN FRANCISCO',
@@ -70,6 +71,11 @@ const ALLOWED_CITIES = new Set([
   'SONOMA',
 ])
 
+type PropertyRow = Pick<
+  Database['public']['Tables']['properties']['Row'],
+  'id' | 'city' | 'zpid'
+>
+
 async function deleteByIds(
   client: ReturnType<typeof createStandaloneClient>,
   ids: string[]
@@ -100,7 +106,7 @@ async function main() {
 
   const pageSize = 1000
   let offset = 0
-  let rows: any[] = []
+  let rows: PropertyRow[] = []
 
   while (true) {
     const { data, error } = await supabase
@@ -121,16 +127,16 @@ async function main() {
   const toDelete: string[] = []
 
   rows.forEach((row) => {
-    const zpid = (row.zpid as string | null) || ''
-    const city = ((row.city as string | null) || '').trim().toUpperCase()
+    const zpid = row.zpid ?? ''
+    const city = (row.city ?? '').trim().toUpperCase()
 
     if (zpid.startsWith('dev-')) {
-      toDelete.push(row.id as string)
+      toDelete.push(row.id)
       return
     }
 
     if (!ALLOWED_CITIES.has(city)) {
-      toDelete.push(row.id as string)
+      toDelete.push(row.id)
     }
   })
 
@@ -146,8 +152,9 @@ async function main() {
       await deleteByIds(supabase, chunk)
       console.log(`Deleted ${i + chunk.length}/${toDelete.length}`)
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
       console.warn(
-        `Delete failed for batch ${i}-${i + chunk.length - 1}, will soft-disable instead: ${(err as Error).message}`
+        `Delete failed for batch ${i}-${i + chunk.length - 1}, will soft-disable instead: ${message}`
       )
       failedDeletes.push(...chunk)
     }

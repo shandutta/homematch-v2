@@ -1,10 +1,12 @@
 import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { CouplesService } from '@/lib/services/couples'
 import { createClient as createStandaloneClient } from '@/lib/supabase/standalone'
 import { createAuthenticatedClient } from '../utils/test-users'
 import { getTestDataFactory } from '../utils/test-data-factory'
 import { randomUUID } from 'crypto'
+import type { AppDatabase } from '@/types/app-database'
 
 let TEST_HOUSEHOLD_ID: string = randomUUID()
 const TEST_USERS: { id: string }[] = []
@@ -12,12 +14,12 @@ const TEST_USERS: { id: string }[] = []
 // Remove hardcoded properties - we'll create them dynamically in tests
 
 describe('Couples E2E Integration Tests', () => {
-  let supabase: any
+  let supabase: SupabaseClient<AppDatabase> | null = null
 
   beforeAll(async () => {
     try {
       // Create service role client for admin operations
-      supabase = createClient(
+      supabase = createClient<AppDatabase>(
         process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       )
@@ -42,11 +44,10 @@ describe('Couples E2E Integration Tests', () => {
         TEST_USERS.length,
         ...authenticatedUsers.map(({ user }) => ({ id: user.id }))
       )
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `Supabase unavailable for couples integration tests: ${
-          error?.message || error
-        }`
+        `Supabase unavailable for couples integration tests: ${message}`
       )
     }
   })
@@ -131,9 +132,9 @@ describe('Couples E2E Integration Tests', () => {
           if (error && error.code === '42883') {
             console.warn(`Function ${func} does not exist`)
           }
-        } catch (err: any) {
+        } catch (err) {
           results.push({ func, exists: false })
-          if (err.message.includes('does not exist')) {
+          if (err instanceof Error && err.message.includes('does not exist')) {
             console.warn(`Function ${func} not found in database`)
           }
         }

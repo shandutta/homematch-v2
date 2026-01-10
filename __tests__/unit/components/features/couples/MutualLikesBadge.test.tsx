@@ -251,17 +251,14 @@ describe('MutualLikesIndicator Component', () => {
   describe('Edge Cases', () => {
     test('should handle undefined mutualLikes gracefully', () => {
       const { container } = render(
-        <MutualLikesIndicator propertyId="prop-1" mutualLikes={[] as any} />
+        <MutualLikesIndicator propertyId="prop-1" mutualLikes={undefined} />
       )
       expect(container.firstChild).toBeNull()
     })
 
     test('should handle null propertyId gracefully', () => {
       const { container } = render(
-        <MutualLikesIndicator
-          propertyId={null as any}
-          mutualLikes={mockMutualLikes}
-        />
+        <MutualLikesIndicator propertyId={null} mutualLikes={mockMutualLikes} />
       )
       expect(container.firstChild).toBeNull()
     })
@@ -270,7 +267,7 @@ describe('MutualLikesIndicator Component', () => {
       const invalidMutualLikes = [
         { liked_by_count: 2 }, // Missing property_id
         { property_id: 'prop-1', liked_by_count: 3 },
-      ] as any
+      ]
 
       render(
         <MutualLikesIndicator

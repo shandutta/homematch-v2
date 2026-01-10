@@ -52,11 +52,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
-import {
-  createTypedRPC,
-  type TypedSupabaseRPC,
-  type RPCResponse,
-} from '@/lib/services/supabase-rpc-types'
+import { type TypedSupabaseRPC } from '@/lib/services/supabase-rpc-types'
 import { LRUCache } from 'lru-cache'
 
 // ============================================================================
@@ -76,10 +72,10 @@ interface CacheOptions<T> {
   validate?: (value: unknown) => value is T
 }
 
-type RpcCacheValue = object
-
 // Global cache instance for RPC results
-const rpcCache = new LRUCache<string, RpcCacheValue>({
+type CacheValue = NonNullable<unknown>
+
+const rpcCache = new LRUCache<string, CacheValue>({
   max: 1000,
   ttl: 5 * 60 * 1000, // 5 minutes default
 })
@@ -101,18 +97,19 @@ interface RPCWrapperOptions<T> {
   enableLogging?: boolean
 }
 
-type RPCResultValue<TFunctionName extends keyof TypedSupabaseRPC> =
-  Awaited<ReturnType<TypedSupabaseRPC[TFunctionName]>> extends RPCResponse<
-    infer TResult
-  >
-    ? TResult
-    : never
+type RPCFunctionName = keyof TypedSupabaseRPC &
+  keyof AppDatabase['public']['Functions']
 
-type RPCArrayResult<TFunctionName extends keyof TypedSupabaseRPC> =
-  RPCResultValue<TFunctionName> extends Array<infer TItem> ? TItem[] : never
+type RPCResultValue<TFunctionName extends RPCFunctionName> =
+  AppDatabase['public']['Functions'][TFunctionName]['Returns']
 
-const coalesce = <T>(value: T | null | undefined, fallback: T): T =>
-  value ?? fallback
+type RPCArrayFunctionName = {
+  [K in RPCFunctionName]: RPCResultValue<K> extends Array<unknown> ? K : never
+}[RPCFunctionName]
+
+type RPCNumericFunctionName = {
+  [K in RPCFunctionName]: RPCResultValue<K> extends number ? K : never
+}[RPCFunctionName]
 
 // ============================================================================
 // ERROR HANDLING UTILITIES
@@ -210,19 +207,22 @@ function generateCacheKey(functionName: string, params: unknown): string {
 /**
  * Gets cached result if available
  */
-function getCachedResult(cacheKey: string): unknown {
+function getCachedResult(cacheKey: string): CacheValue | undefined {
   return rpcCache.get(cacheKey)
 }
 
 /**
  * Sets cache result
  */
-function setCachedResult<T>(cacheKey: string, result: T, ttl?: number): void {
-  const cacheValue = result as unknown as RpcCacheValue
+function setCachedResult(
+  cacheKey: string,
+  result: CacheValue,
+  ttl?: number
+): void {
   if (ttl) {
-    rpcCache.set(cacheKey, cacheValue, { ttl })
+    rpcCache.set(cacheKey, result, { ttl })
   } else {
-    rpcCache.set(cacheKey, cacheValue)
+    rpcCache.set(cacheKey, result)
   }
 }
 
@@ -238,15 +238,32 @@ function setCachedResult<T>(cacheKey: string, result: T, ttl?: number): void {
  * 4. Processing results with optional caching
  */
 export async function callRPC<
-  TFunctionName extends keyof TypedSupabaseRPC,
+  TFunctionName extends RPCFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
-  TReturn = RPCResultValue<TFunctionName>,
 >(
   supabase: SupabaseClient<AppDatabase>,
   functionName: TFunctionName,
   params: TParams,
-  options: RPCWrapperOptions<TReturn>
-): Promise<TReturn> {
+  options: RPCWrapperOptions<RPCResultValue<TFunctionName>>
+): Promise<RPCResultValue<TFunctionName>>
+export async function callRPC<
+  TFunctionName extends RPCFunctionName,
+  TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
+>(
+  supabase: SupabaseClient<AppDatabase>,
+  functionName: TFunctionName,
+  params: TParams,
+  options: RPCWrapperOptions<RPCResultValue<TFunctionName> | null>
+): Promise<RPCResultValue<TFunctionName> | null>
+export async function callRPC<
+  TFunctionName extends RPCFunctionName,
+  TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
+>(
+  supabase: SupabaseClient<AppDatabase>,
+  functionName: TFunctionName,
+  params: TParams,
+  options: RPCWrapperOptions<RPCResultValue<TFunctionName> | null>
+): Promise<RPCResultValue<TFunctionName> | null> {
   const { operation, fallbackValue, cache, errorContext, enableLogging } =
     options
 
@@ -279,12 +296,7 @@ export async function callRPC<
       })
     }
 
-    // Create typed RPC client and call function
-    const rpc = createTypedRPC(supabase)
-    const rpcFunction = rpc[functionName] as (
-      params: TParams
-    ) => Promise<RPCResponse<unknown>>
-    const { data, error } = await rpcFunction(params)
+    const { data, error } = await supabase.rpc(functionName, params)
 
     // Handle RPC errors
     if (error) {
@@ -298,10 +310,10 @@ export async function callRPC<
     }
 
     // Use fallback if data is null/undefined
-    const result = coalesce(data, fallbackValue) as TReturn
+    const result = data ?? fallbackValue
 
     // Cache the result if caching is enabled
-    if (cache?.enabled && cacheKey) {
+    if (cache?.enabled && cacheKey && result !== null && result !== undefined) {
       setCachedResult(cacheKey, result, cache.ttl)
     }
 
@@ -312,7 +324,7 @@ export async function callRPC<
       })
     }
 
-    return result as TReturn
+    return result
   } catch (error) {
     // If it's already a structured error from handleRPCError, re-throw it
     if (error instanceof Error && 'context' in error) {
@@ -333,27 +345,22 @@ export async function callRPC<
  * Automatically provides empty array as fallback
  */
 export async function callArrayRPC<
-  TFunctionName extends keyof TypedSupabaseRPC,
+  TFunctionName extends RPCArrayFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
   supabase: SupabaseClient<AppDatabase>,
   functionName: TFunctionName,
   params: TParams,
   options: Omit<
-    RPCWrapperOptions<RPCArrayResult<TFunctionName>>,
+    RPCWrapperOptions<RPCResultValue<TFunctionName>>,
     'fallbackValue'
   >
-): Promise<RPCArrayResult<TFunctionName>> {
-  const emptyFallback = [] as unknown as RPCArrayResult<TFunctionName>
-  return callRPC<TFunctionName, TParams, RPCArrayResult<TFunctionName>>(
-    supabase,
-    functionName,
-    params,
-    {
-      ...options,
-      fallbackValue: emptyFallback,
-    }
-  )
+): Promise<RPCResultValue<TFunctionName>> {
+  const emptyFallback: RPCResultValue<TFunctionName> = []
+  return callRPC(supabase, functionName, params, {
+    ...options,
+    fallbackValue: emptyFallback,
+  })
 }
 
 /**
@@ -361,7 +368,7 @@ export async function callArrayRPC<
  * Automatically provides null as fallback
  */
 export async function callSingleRPC<
-  TFunctionName extends keyof TypedSupabaseRPC,
+  TFunctionName extends RPCFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
   supabase: SupabaseClient<AppDatabase>,
@@ -372,22 +379,17 @@ export async function callSingleRPC<
     'fallbackValue'
   >
 ): Promise<RPCResultValue<TFunctionName> | null> {
-  return callRPC<TFunctionName, TParams, RPCResultValue<TFunctionName> | null>(
-    supabase,
-    functionName,
-    params,
-    {
-      ...options,
-      fallbackValue: null,
-    }
-  )
+  return callRPC(supabase, functionName, params, {
+    ...options,
+    fallbackValue: null,
+  })
 }
 
 /**
  * Wrapper for RPC calls that return numbers with fallback
  */
 export async function callNumericRPC<
-  TFunctionName extends keyof TypedSupabaseRPC,
+  TFunctionName extends RPCNumericFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
   supabase: SupabaseClient<AppDatabase>,
@@ -397,22 +399,17 @@ export async function callNumericRPC<
     fallbackValue?: number
   }
 ): Promise<number> {
-  return callRPC<TFunctionName, TParams, number>(
-    supabase,
-    functionName,
-    params,
-    {
-      ...options,
-      fallbackValue: options.fallbackValue ?? 0,
-    }
-  )
+  return callRPC(supabase, functionName, params, {
+    ...options,
+    fallbackValue: options.fallbackValue ?? 0,
+  })
 }
 
 // ============================================================================
 // BATCH RPC OPERATIONS
 // ============================================================================
 
-type BatchRPCCall<K extends keyof TypedSupabaseRPC = keyof TypedSupabaseRPC> = {
+type BatchRPCCall<K extends RPCFunctionName = RPCFunctionName> = {
   functionName: K
   params: Parameters<TypedSupabaseRPC[K]>[0]
   options: RPCWrapperOptions<RPCResultValue<K>>

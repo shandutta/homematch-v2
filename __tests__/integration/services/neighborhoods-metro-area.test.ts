@@ -15,8 +15,8 @@ describe('NeighborhoodService metro area queries', () => {
 
   const shouldRun = Boolean(supabaseKey)
 
-  const supabase = shouldRun
-    ? createClient<Database>(supabaseUrl, supabaseKey as string)
+  const supabase = supabaseKey
+    ? createClient<Database>(supabaseUrl, supabaseKey)
     : null
 
   const neighborhoodService = new NeighborhoodService({

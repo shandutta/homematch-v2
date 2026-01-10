@@ -11,6 +11,11 @@ const DEFAULT_BEDROOMS = 2
 const DEFAULT_BATHROOMS = 2
 const DEFAULT_SEARCH_RADIUS = 10
 
+type UserPreferences = Record<string, unknown> | null
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
   if (!value) {
@@ -61,27 +66,27 @@ function cityOptionTestId(city: string, state: string) {
 async function fetchUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string
-): Promise<any> {
+): Promise<UserPreferences> {
   const { data, error } = await supabase
     .from('user_profiles')
     .select('preferences')
     .eq('id', userId)
     .single()
   if (error) throw new Error(error.message)
-  return data?.preferences ?? null
+  return isRecord(data?.preferences) ? data.preferences : null
 }
 
 async function waitForUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string,
-  predicate: (preferences: any) => boolean,
+  predicate: (preferences: UserPreferences) => boolean,
   options: { timeoutMs?: number; intervalMs?: number } = {}
-): Promise<any> {
+): Promise<UserPreferences> {
   const timeoutMs = options.timeoutMs ?? 15_000
   const intervalMs = options.intervalMs ?? 500
   const start = Date.now()
 
-  let lastPreferences: any = null
+  let lastPreferences: UserPreferences = null
 
   while (Date.now() - start < timeoutMs) {
     lastPreferences = await fetchUserPreferences(supabase, userId)
@@ -223,17 +228,22 @@ test.describe('Settings filter reset + dashboard impact', () => {
       await page.getByTestId(cityOptionTestId(city, state)).click()
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
-        const cities = preferences?.cities
+        const cities =
+          preferences && isRecord(preferences) ? preferences.cities : undefined
         return (
           Array.isArray(cities) &&
-          cities.some((c: any) => c?.city === city && c?.state === state)
+          cities.some(
+            (c) => isRecord(c) && c.city === city && c.state === state
+          )
         )
       })
 
       await page.getByRole('switch', { name: /^pool$/i }).click()
 
       await waitForUserPreferences(supabase, userId, (preferences) => {
-        return preferences?.mustHaves?.pool === true
+        if (!preferences || !isRecord(preferences)) return false
+        const mustHaves = preferences.mustHaves
+        return isRecord(mustHaves) && mustHaves.pool === true
       })
 
       await page.goto(TEST_ROUTES.app.dashboard, {

@@ -166,11 +166,11 @@ export function SettingsPageClient({
   }, [profileState.preferences])
   const priceRange = preferences.priceRange || DEFAULT_PRICE_RANGE
   const searchRadius = preferences.searchRadius || DEFAULT_SEARCH_RADIUS
-  const enabledAlerts = useMemo(() => {
-    const notificationChannels = (preferences.notifications ?? {}) as Record<
+  const enabledAlerts = useMemo<number>(() => {
+    const notificationChannels: Record<
       string,
       Record<string, boolean> | undefined
-    >
+    > = preferences.notifications ?? {}
     return Object.values(notificationChannels).reduce((count, channel) => {
       const channelToggles = isRecord(channel)
         ? Object.values(channel).filter(Boolean)

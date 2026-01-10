@@ -6,8 +6,7 @@ import {
   test,
   jest,
 } from '@jest/globals'
-import type { NextRequest } from 'next/server'
-import { createApiClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -19,35 +18,55 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (...args: unknown[]) => jsonMock(...args),
   },
+  NextRequest:
+    jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
-const supabaseMock = {
+const createApiClientMock = jest.fn()
+
+jest.mock('@/lib/supabase/server', () => ({
+  __esModule: true,
+  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(),
 }
 
-const createApiClientMock = jest.mocked(createApiClient)
+type QueryResult = { data: unknown; error: unknown }
+type QueryChain = {
+  select: jest.Mock
+  order: jest.Mock
+  eq: jest.Mock
+  range: jest.Mock
+  then: <TResult>(
+    resolve: (value: QueryResult) => TResult,
+    reject: (reason: unknown) => TResult
+  ) => Promise<TResult>
+}
 
-const createQueryChain = (result: { data: any; error: any }) => {
-  const chain: any = {
+const createQueryChain = (result: QueryResult): QueryChain => {
+  const chain: QueryChain = {
     select: jest.fn(() => chain),
     order: jest.fn(() => chain),
     eq: jest.fn(() => chain),
     range: jest.fn(() => chain),
-    then: (resolve: any, reject: any) =>
-      Promise.resolve(result).then(resolve, reject),
+    then: (resolve, reject) => Promise.resolve(result).then(resolve, reject),
   }
   return chain
 }
 
-const createRequest = (url: string) =>
-  ({
-    url,
-    headers: { get: jest.fn() },
-    cookies: { getAll: jest.fn() },
-  }) as unknown as NextRequest
+const createRequest = (url: string) => new NextRequest(url)
 
 describe('neighborhoods vibes API route', () => {
   let route: typeof import('@/app/api/neighborhoods/vibes/route')
@@ -59,7 +78,7 @@ describe('neighborhoods vibes API route', () => {
   beforeEach(() => {
     jsonMock.mockClear()
     createApiClientMock.mockReset()
-    createApiClientMock.mockReturnValue(supabaseMock as any)
+    createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockReset()
   })

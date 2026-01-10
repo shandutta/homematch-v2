@@ -5,13 +5,36 @@ import {
   createMockProperty,
   createMockNeighborhood,
 } from '@/__tests__/factories/test-data-factory'
+import type { ReactNode } from 'react'
 
 // Mock the PropertyCard component
 jest.mock('@/components/property/PropertyCard', () => ({
-  PropertyCard: ({ property }: any) => (
+  PropertyCard: ({ property }: { property: { address: string } }) => (
     <div data-testid="property-card">{property.address}</div>
   ),
 }))
+
+type MotionDivProps = JSX.IntrinsicElements['div'] & {
+  whileHover?: unknown
+  whileTap?: unknown
+  animate?: unknown
+  initial?: unknown
+  transition?: unknown
+  drag?: unknown
+  dragConstraints?: unknown
+  dragElastic?: unknown
+  onDragStart?: (...args: unknown[]) => void
+  onDrag?: (...args: unknown[]) => void
+  onDragEnd?: (...args: unknown[]) => void
+}
+
+type MotionButtonProps = JSX.IntrinsicElements['button'] & {
+  whileHover?: unknown
+  whileTap?: unknown
+  animate?: unknown
+  initial?: unknown
+  transition?: unknown
+}
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
@@ -31,7 +54,7 @@ jest.mock('framer-motion', () => ({
       onDrag: _onDrag,
       onDragEnd: _onDragEnd,
       ...props
-    }: any) => (
+    }: MotionDivProps) => (
       <div {...props} style={style}>
         {children}
       </div>
@@ -44,9 +67,9 @@ jest.mock('framer-motion', () => ({
       initial: _initial,
       transition: _transition,
       ...props
-    }: any) => <button {...props}>{children}</button>,
+    }: MotionButtonProps) => <button {...props}>{children}</button>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children?: ReactNode }) => <>{children}</>,
   useMotionValue: () => ({
     get: jest.fn(() => 0),
     set: jest.fn(),
@@ -63,7 +86,9 @@ jest.mock('framer-motion', () => ({
 
 // Mock the useSwipePhysics hook
 jest.mock('@/hooks/useSwipePhysics', () => ({
-  useSwipePhysics: (options: any) => ({
+  useSwipePhysics: (options: {
+    onSwipeComplete?: (direction: 'left' | 'right') => void
+  }) => ({
     x: { get: () => 0, set: jest.fn() },
     y: { get: () => 0, set: jest.fn() },
     rotate: { get: () => 0, set: jest.fn() },
@@ -91,7 +116,7 @@ jest.mock('@/hooks/useSwipePhysics', () => ({
     SWIPE_VELOCITY_THRESHOLD: 400,
   }),
   SPRING_CONFIG: {
-    type: 'spring' as const,
+    type: 'spring',
     stiffness: 280,
     damping: 25,
     mass: 0.8,

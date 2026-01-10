@@ -1,5 +1,4 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
-import type { NextRequest } from 'next/server'
 
 // Store original env
 const originalEnv = process.env
@@ -32,11 +31,15 @@ jest.mock('@/lib/utils/rate-limit', () => ({
 }))
 
 // Mock fetch globally
-const mockFetch = jest.fn()
-global.fetch = mockFetch as unknown as typeof fetch
+const mockFetch: jest.Mock<
+  Promise<Response>,
+  [RequestInfo | URL, RequestInit?]
+> = jest.fn()
+global.fetch = mockFetch
 
 // Import after mocks
 import * as autocompleteRoute from '@/app/api/maps/places/autocomplete/route'
+import { getRequestUrl } from '@/__tests__/utils/http-helpers'
 
 describe('/api/maps/places/autocomplete route', () => {
   beforeEach(() => {
@@ -53,12 +56,14 @@ describe('/api/maps/places/autocomplete route', () => {
     body: Record<string, unknown>,
     headers: Record<string, string> = {}
   ) =>
-    ({
-      json: async () => body,
+    new Request('http://localhost/api/maps/places/autocomplete', {
+      method: 'POST',
       headers: {
-        get: (key: string) => headers[key] || null,
+        'Content-Type': 'application/json',
+        ...headers,
       },
-    }) as unknown as NextRequest
+      body: JSON.stringify(body),
+    })
 
   describe('POST', () => {
     it('returns 429 when rate limited', async () => {
@@ -192,7 +197,7 @@ describe('/api/maps/places/autocomplete route', () => {
       await autocompleteRoute.POST(request)
 
       expect(mockFetch).toHaveBeenCalled()
-      const fetchUrl = mockFetch.mock.calls[0][0] as string
+      const fetchUrl = getRequestUrl(mockFetch.mock.calls[0]?.[0])
       // URL encodes the comma as %2C
       expect(decodeURIComponent(fetchUrl)).toContain(
         'location=37.7749,-122.4194'
@@ -211,7 +216,7 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      const fetchUrl = mockFetch.mock.calls[0][0] as string
+      const fetchUrl = getRequestUrl(mockFetch.mock.calls[0]?.[0])
       expect(fetchUrl).toContain('radius=5000')
     })
 
@@ -239,7 +244,7 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      const fetchUrl = mockFetch.mock.calls[0][0] as string
+      const fetchUrl = getRequestUrl(mockFetch.mock.calls[0]?.[0])
       // URL encodes the pipe as %7C
       expect(decodeURIComponent(fetchUrl)).toContain(
         'types=establishment|geocode'
@@ -258,7 +263,7 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      const fetchUrl = mockFetch.mock.calls[0][0] as string
+      const fetchUrl = getRequestUrl(mockFetch.mock.calls[0]?.[0])
       expect(fetchUrl).toContain('strictbounds=true')
     })
 

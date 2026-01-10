@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import type { ReactNode } from 'react'
 import { setupBrowserMocks } from './__tests__/utils/browser-mocks'
 
 // Initialize shared browser mocks (TextEncoder, ResizeObserver, matchMedia, etc.)
@@ -11,7 +12,9 @@ require('./__tests__/setupSupabaseMock')
 global.AggregateError =
   global.AggregateError ||
   class AggregateError extends Error {
-    constructor(errors, message) {
+    errors: unknown[]
+
+    constructor(errors: unknown[], message?: string) {
       super(message)
       this.name = 'AggregateError'
       this.errors = errors
@@ -20,31 +23,34 @@ global.AggregateError =
 
 // Add error boundary for React 19 compatibility
 const originalConsoleError = console.error
-console.error = (...args) => {
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isString = (value: unknown): value is string => typeof value === 'string'
+
+const getMessage = (value: unknown): string | null => {
+  if (!isRecord(value)) return null
+  const message = value.message
+  return typeof message === 'string' ? message : null
+}
+
+console.error = (...args: unknown[]) => {
   // Suppress React 19 AggregateError warnings in tests
-  if (args[0] && args[0].includes && args[0].includes('AggregateError')) {
+  if (isString(args[0]) && args[0].includes('AggregateError')) {
     return
   }
   // Suppress React act() warnings in tests - these are expected in form tests
-  if (
-    args[0] &&
-    args[0].includes &&
-    args[0].includes('not wrapped in act(...)')
-  ) {
+  if (isString(args[0]) && args[0].includes('not wrapped in act(...)')) {
     return
   }
   // Suppress jsdom navigation warnings
-  if (
-    args[0] &&
-    args[0].message &&
-    args[0].message.includes('Not implemented: navigation')
-  ) {
+  const message = getMessage(args[0])
+  if (message && message.includes('Not implemented: navigation')) {
     return
   }
   // Suppress Framer Motion prop warnings - these are expected when mocking
   if (
-    args[0] &&
-    args[0].includes &&
+    isString(args[0]) &&
     (args[0].includes('whileHover') ||
       args[0].includes('whileInView') ||
       args[0].includes('React does not recognize'))
@@ -53,8 +59,7 @@ console.error = (...args) => {
   }
   // Suppress Radix UI React 19 compatibility warnings
   if (
-    args[0] &&
-    args[0].includes &&
+    isString(args[0]) &&
     (args[0].includes('validateDOMNesting') ||
       args[0].includes('portal') ||
       args[0].includes('dialog'))
@@ -63,8 +68,7 @@ console.error = (...args) => {
   }
   // Suppress React 19 concurrent rendering warnings in tests
   if (
-    args[0] &&
-    args[0].includes &&
+    isString(args[0]) &&
     (args[0].includes('concurrent rendering') || args[0].includes('flushSync'))
   ) {
     return
@@ -72,8 +76,7 @@ console.error = (...args) => {
   // Suppress expected API route error logging in tests (ZodError validation, etc.)
   // Jest's console has issues serializing ZodError objects, causing "Cannot read properties of undefined"
   if (
-    args[0] &&
-    typeof args[0] === 'string' &&
+    isString(args[0]) &&
     (args[0].includes('Error in couples notification API') ||
       args[0].includes('Invalid request data'))
   ) {
@@ -81,8 +84,7 @@ console.error = (...args) => {
   }
   // Suppress expected VibesService parse errors in tests
   if (
-    args[0] &&
-    typeof args[0] === 'string' &&
+    isString(args[0]) &&
     args[0].includes('[VibesService] Failed to parse/validate LLM response')
   ) {
     return
@@ -138,10 +140,13 @@ jest.mock('framer-motion', () => {
       ul: createMotionComponent('ul'),
       li: createMotionComponent('li'),
     },
-    AnimatePresence: ({ children }) => children,
+    AnimatePresence: ({ children }: { children?: ReactNode }) => children,
     useScroll: () => ({ scrollY: { get: () => 0 } }),
     useTransform: () => 0,
-    useMotionValue: (initial) => ({ get: () => initial, set: jest.fn() }),
+    useMotionValue: <T>(initial: T) => ({
+      get: () => initial,
+      set: jest.fn(),
+    }),
     useAnimation: () => ({ start: jest.fn(), stop: jest.fn() }),
     useInView: () => false,
   }

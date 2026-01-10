@@ -6,8 +6,7 @@ import {
   test,
   jest,
 } from '@jest/globals'
-import type { NextRequest } from 'next/server'
-import { createApiClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -19,6 +18,8 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (...args: unknown[]) => jsonMock(...args),
   },
+  NextRequest:
+    jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
 const getUserFromRequestMock = jest.fn()
@@ -38,17 +39,36 @@ jest.mock('@/lib/services/couples', () => ({
   },
 }))
 
-const supabaseMock = {
+const createApiClientMock = jest.fn()
+
+jest.mock('@/lib/supabase/server', () => ({
+  __esModule: true,
+  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(),
 }
 
-const createApiClientMock = jest.mocked(createApiClient)
+type SingleResult = { data: unknown }
+type SingleChain = {
+  select: jest.Mock
+  eq: jest.Mock
+  single: jest.Mock
+}
 
-const createSingleChain = (result: { data: any }) => {
-  const chain: any = {
+const createSingleChain = (result: SingleResult): SingleChain => {
+  const chain: SingleChain = {
     select: jest.fn(() => chain),
     eq: jest.fn(() => chain),
     single: jest.fn(async () => result),
@@ -56,10 +76,7 @@ const createSingleChain = (result: { data: any }) => {
   return chain
 }
 
-const createRequest = (url: string) =>
-  ({
-    nextUrl: new URL(url),
-  }) as unknown as NextRequest
+const createRequest = (url: string) => new NextRequest(url)
 
 describe('couples check-mutual API route', () => {
   let route: typeof import('@/app/api/couples/check-mutual/route')
@@ -74,7 +91,7 @@ describe('couples check-mutual API route', () => {
     checkPotentialMutualLikeMock.mockReset()
     getHouseholdStatsMock.mockReset()
     createApiClientMock.mockReset()
-    createApiClientMock.mockReturnValue(supabaseMock as any)
+    createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.from.mockReset()
   })
 

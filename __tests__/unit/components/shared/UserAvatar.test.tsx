@@ -146,7 +146,13 @@ describe('UserAvatar Component', () => {
     })
 
     test('badge is positioned correctly for different sizes', () => {
-      const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const
+      const sizes: Array<'xs' | 'sm' | 'md' | 'lg' | 'xl'> = [
+        'xs',
+        'sm',
+        'md',
+        'lg',
+        'xl',
+      ]
 
       sizes.forEach((size) => {
         const { container, unmount } = render(

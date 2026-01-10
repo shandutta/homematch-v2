@@ -16,18 +16,30 @@ const mockSentry = {
   captureException: jest.fn(),
 }
 
+const setWindowProp = (key: string, value: unknown) => {
+  Object.defineProperty(window, key, {
+    value,
+    writable: true,
+    configurable: true,
+  })
+}
+
+const deleteWindowProp = (key: string) => {
+  Reflect.deleteProperty(window, key)
+}
+
 // Mock console.error
 const originalConsoleError = console.error
 beforeAll(() => {
   console.error = jest.fn()
-  ;(window as any).gtag = mockGtag
-  ;(window as any).Sentry = mockSentry
+  setWindowProp('gtag', mockGtag)
+  setWindowProp('Sentry', mockSentry)
 })
 
 afterAll(() => {
   console.error = originalConsoleError
-  delete (window as any).gtag
-  delete (window as any).Sentry
+  deleteWindowProp('gtag')
+  deleteWindowProp('Sentry')
 })
 
 // Test components with different error types
@@ -77,8 +89,10 @@ const AsyncComponent = ({
         }
         setData('Data loaded successfully')
       } catch (err) {
-        setError(err as Error)
-        throw err // This will be caught by error boundary
+        const error =
+          err instanceof Error ? err : new Error('Async fetch failed')
+        setError(error)
+        throw error // This will be caught by error boundary
       }
     }
 
@@ -100,6 +114,13 @@ Object.defineProperty(window, 'navigator', {
   writable: true,
 })
 
+const requireBoundaryRef = (ref: AsyncErrorBoundary | null) => {
+  if (!ref) {
+    throw new Error('Expected AsyncErrorBoundary ref to be set')
+  }
+  return ref
+}
+
 describe('AsyncErrorBoundary', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -107,7 +128,7 @@ describe('AsyncErrorBoundary', () => {
     mockNavigator.onLine = true
 
     // Re-setup analytics mocks after clearing - need fresh mock functions
-    ;(window as any).gtag = mockGtag
+    setWindowProp('gtag', mockGtag)
 
     // Create fresh Sentry mock with implementation after clearAllMocks
     const freshSentryMock = {
@@ -120,7 +141,7 @@ describe('AsyncErrorBoundary', () => {
       }),
       captureException: jest.fn(),
     }
-    ;(window as any).Sentry = freshSentryMock
+    setWindowProp('Sentry', freshSentryMock)
 
     // Update mockSentry reference to use the fresh mock
     Object.assign(mockSentry, freshSentryMock)
@@ -288,7 +309,7 @@ describe('AsyncErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: AsyncErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -307,7 +328,8 @@ describe('AsyncErrorBoundary', () => {
         window.dispatchEvent(new Event('offline'))
       })
 
-      expect(boundaryRef.getState().isOnline).toBe(false)
+      const boundary = requireBoundaryRef(boundaryRef)
+      expect(boundary.getState().isOnline).toBe(false)
 
       // Simulate coming back online
       mockNavigator.onLine = true
@@ -315,7 +337,7 @@ describe('AsyncErrorBoundary', () => {
         window.dispatchEvent(new Event('online'))
       })
 
-      expect(boundaryRef.getState().isOnline).toBe(true)
+      expect(boundary.getState().isOnline).toBe(true)
     })
   })
 
@@ -327,7 +349,7 @@ describe('AsyncErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: AsyncErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -341,8 +363,9 @@ describe('AsyncErrorBoundary', () => {
       )
 
       // Verify initial error state
-      expect(boundaryRef.getState().hasError).toBe(true)
-      expect(boundaryRef.getState().retryCount).toBe(0)
+      const boundary = requireBoundaryRef(boundaryRef)
+      expect(boundary.getState().hasError).toBe(true)
+      expect(boundary.getState().retryCount).toBe(0)
 
       // Auto-retry should trigger
       act(() => {
@@ -351,7 +374,7 @@ describe('AsyncErrorBoundary', () => {
 
       // Wait for auto-retry to complete
       await waitFor(() => {
-        expect(boundaryRef.getState().retryCount).toBe(1)
+        expect(boundary.getState().retryCount).toBe(1)
       })
     })
 
@@ -362,7 +385,7 @@ describe('AsyncErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: AsyncErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -393,7 +416,9 @@ describe('AsyncErrorBoundary', () => {
       })
 
       await waitFor(() => {
-        expect(boundaryRef.getState().retryCount).toBeGreaterThan(0)
+        expect(
+          requireBoundaryRef(boundaryRef).getState().retryCount
+        ).toBeGreaterThan(0)
       })
     })
 
@@ -404,7 +429,7 @@ describe('AsyncErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: AsyncErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -423,7 +448,7 @@ describe('AsyncErrorBoundary', () => {
       })
 
       await waitFor(() => {
-        expect(boundaryRef.getState().retryCount).toBe(1)
+        expect(requireBoundaryRef(boundaryRef).getState().retryCount).toBe(1)
       })
 
       // Second retry should happen after ~2 seconds (exponential backoff)
@@ -432,7 +457,7 @@ describe('AsyncErrorBoundary', () => {
       })
 
       await waitFor(() => {
-        expect(boundaryRef.getState().retryCount).toBe(2)
+        expect(requireBoundaryRef(boundaryRef).getState().retryCount).toBe(2)
       })
     })
 
@@ -443,7 +468,7 @@ describe('AsyncErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: AsyncErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -465,7 +490,9 @@ describe('AsyncErrorBoundary', () => {
 
       await waitFor(() => {
         // Should not exceed 2 auto-retries
-        expect(boundaryRef.getState().retryCount).toBeLessThanOrEqual(2)
+        expect(
+          requireBoundaryRef(boundaryRef).getState().retryCount
+        ).toBeLessThanOrEqual(2)
       })
     })
   })
@@ -582,7 +609,7 @@ describe('AsyncErrorBoundary', () => {
 
       // Create boundary with max retries reached
       const TestBoundary = class extends AsyncErrorBoundary {
-        constructor(props: any) {
+        constructor(props: React.ComponentProps<typeof AsyncErrorBoundary>) {
           super(props)
           this.state = {
             hasError: true,
@@ -814,8 +841,8 @@ describe('AsyncErrorBoundary', () => {
     })
 
     it('handles missing analytics services gracefully', () => {
-      delete (window as any).gtag
-      delete (window as any).Sentry
+      deleteWindowProp('gtag')
+      deleteWindowProp('Sentry')
 
       expect(() => {
         render(

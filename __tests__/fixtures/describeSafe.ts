@@ -6,29 +6,12 @@ export function describeSafe(name: string, cb: (t: typeof test) => void) {
   let testCount = 0
 
   // Create a counting facade for test that increments on each test() registration
-  const countingTest = Object.assign(
-    ((
-      title: string,
-      fn: Parameters<typeof test>[1],
-      opts?: Parameters<typeof test>[2]
-    ) => {
+  const countingTest: typeof test = Object.assign(
+    (...args: Parameters<typeof test>) => {
       testCount++
-      // @ts-expect-error - passthrough to Playwright test with same signature
-      return test(title, fn, opts)
-    }) as unknown as typeof test,
-    {
-      describe: test.describe,
-      beforeEach: test.beforeEach,
-      afterEach: test.afterEach,
-      beforeAll: test.beforeAll,
-      afterAll: test.afterAll,
-      fixme: test.fixme,
-      skip: test.skip,
-      slow: test.slow,
-      setTimeout: test.setTimeout,
-      use: test.use,
-      only: test.only,
-    }
+      return test(...args)
+    },
+    test
   )
 
   test.describe(name, () => {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
@@ -48,7 +48,7 @@ interface GooglePlacePrediction {
  * Secure Places Autocomplete API Proxy
  * Rate-limited server-side proxy for Google Maps Places Autocomplete API
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Rate limiting by IP (more restrictive for Places API due to cost)
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'

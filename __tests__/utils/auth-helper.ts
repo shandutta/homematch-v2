@@ -118,12 +118,11 @@ export class AuthHelper {
     }
 
     // Final fallback: set value directly and dispatch input/change events
-    await locator.evaluate((element, text) => {
-      const input = element as HTMLInputElement
-      input.focus()
-      input.value = text
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-      input.dispatchEvent(new Event('change', { bubbles: true }))
+    await locator.evaluate((element: HTMLInputElement, text) => {
+      element.focus()
+      element.value = text
+      element.dispatchEvent(new Event('input', { bubbles: true }))
+      element.dispatchEvent(new Event('change', { bubbles: true }))
     }, value)
 
     const finalValue = await locator.inputValue()

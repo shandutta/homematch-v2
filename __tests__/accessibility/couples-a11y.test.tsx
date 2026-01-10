@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest'
+import type { ReactElement, ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -7,6 +8,7 @@ import {
   MutualLikesIndicator,
 } from '@/components/features/couples/MutualLikesBadge'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
+import { createJsonResponse } from '../utils/http-helpers'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)
@@ -14,9 +16,11 @@ expect.extend(toHaveNoViolations)
 // Mock dependencies to avoid issues in accessibility testing
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children?: ReactNode }) => children,
 }))
 
 // Mock MotionDiv to be a simple div in tests
@@ -32,12 +36,21 @@ vi.mock('@/components/ui/motion-components', () => ({
     layout: _layout,
     layoutId: _layoutId,
     ...props
-  }: any) => <div {...props}>{children}</div>,
+  }: JSX.IntrinsicElements['div'] & {
+    whileHover?: unknown
+    initial?: unknown
+    animate?: unknown
+    transition?: unknown
+    variants?: unknown
+    exit?: unknown
+    layout?: unknown
+    layoutId?: string
+  }) => <div {...props}>{children}</div>,
 }))
 
 vi.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, ...props }: JSX.IntrinsicElements['img']) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
@@ -45,7 +58,7 @@ vi.mock('next/image', () => ({
 
 vi.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: JSX.IntrinsicElements['a']) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -54,7 +67,17 @@ vi.mock('next/link', () => ({
 
 // Mock PropertyImage component
 vi.mock('@/components/ui/property-image', () => ({
-  PropertyImage: ({ src, alt, fill, width, height, ...props }: any) => (
+  PropertyImage: ({
+    src,
+    alt,
+    fill,
+    width,
+    height,
+    ...props
+  }: Omit<JSX.IntrinsicElements['img'], 'src'> & {
+    src?: string | string[]
+    fill?: boolean
+  }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={Array.isArray(src) ? src[0] : src || '/test-image.jpg'}
@@ -79,7 +102,11 @@ vi.mock('@/lib/utils/toast', () => ({
 
 // Mock fetch globally for MutualLikesSection tests
 const mockFetch = vi.fn()
-global.fetch = mockFetch as any
+Object.defineProperty(globalThis, 'fetch', {
+  value: mockFetch,
+  configurable: true,
+  writable: true,
+})
 
 describe('Couples Components Accessibility Tests', () => {
   let queryClient: QueryClient
@@ -95,7 +122,7 @@ describe('Couples Components Accessibility Tests', () => {
     vi.clearAllMocks()
   })
 
-  const renderWithQueryClient = (component: React.ReactElement) => {
+  const renderWithQueryClient = (component: ReactElement) => {
     return render(
       <QueryClientProvider client={queryClient}>
         {component}
@@ -247,10 +274,7 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have no accessibility violations in empty state', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection userId="user-123" />
@@ -264,10 +288,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have no accessibility violations with populated content', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection userId="user-123" />
@@ -281,10 +304,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have proper heading hierarchy', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -296,10 +318,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have accessible image alt text', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -311,10 +332,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have keyboard accessible links', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -330,10 +350,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have accessible color contrast for all text elements', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -364,10 +383,9 @@ describe('Couples Components Accessibility Tests', () => {
         },
       }))
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: manyMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: manyMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -380,10 +398,9 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should have accessible focus indicators', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection userId="user-123" />
@@ -400,10 +417,7 @@ describe('Couples Components Accessibility Tests', () => {
     })
 
     test('should handle icon accessibility', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection userId="user-123" />)
 
@@ -419,9 +433,8 @@ describe('Couples Components Accessibility Tests', () => {
 
   describe('Glass Morphism Accessibility', () => {
     test('should maintain sufficient contrast with glass morphism effects', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({
           mutualLikes: [
             {
               property_id: 'prop-1',
@@ -437,8 +450,8 @@ describe('Couples Components Accessibility Tests', () => {
               },
             },
           ],
-        }),
-      } as Response)
+        })
+      )
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection userId="user-123" />
@@ -499,9 +512,8 @@ describe('Couples Components Accessibility Tests', () => {
         value: 667,
       })
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({
           mutualLikes: [
             {
               property_id: 'prop-1',
@@ -517,8 +529,8 @@ describe('Couples Components Accessibility Tests', () => {
               },
             },
           ],
-        }),
-      } as Response)
+        })
+      )
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection userId="user-123" />

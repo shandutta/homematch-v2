@@ -3,6 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 
+type ErrorBoundaryState = InstanceType<typeof ErrorBoundary>['state']
+
 // Mock console.error to avoid test output noise
 const originalConsoleError = console.error
 beforeAll(() => {
@@ -249,22 +251,24 @@ describe('ErrorBoundary', () => {
       const user = userEvent.setup()
 
       const TestErrorBoundary = class extends ErrorBoundary {
+        wasReset = false
+
         getErrorState() {
           return this.state
         }
 
         // Override setState to capture the moment of reset
-        setState(updater: any) {
+        setState(updater: React.SetStateAction<ErrorBoundaryState>) {
           const prevState = this.state
           super.setState(updater)
           // Store the reset event for testing
           if (prevState.hasError && !this.state.hasError) {
-            ;(this as any).wasReset = true
+            this.wasReset = true
           }
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: InstanceType<typeof TestErrorBoundary> | null = null
       let shouldThrow = true
 
       const ControlledThrowError = () => {
@@ -285,6 +289,9 @@ describe('ErrorBoundary', () => {
       )
 
       // Verify error state is set
+      if (!boundaryRef) {
+        throw new Error('Expected ErrorBoundary ref to be set')
+      }
       expect(boundaryRef.getErrorState().hasError).toBe(true)
       expect(boundaryRef.getErrorState().error).toBeInstanceOf(Error)
 
@@ -307,6 +314,9 @@ describe('ErrorBoundary', () => {
       )
 
       // Error state should be reset now that the underlying issue is fixed
+      if (!boundaryRef) {
+        throw new Error('Expected ErrorBoundary ref to be set')
+      }
       expect(boundaryRef.getErrorState().hasError).toBe(false)
       expect(boundaryRef.getErrorState().error).toBeUndefined()
     })

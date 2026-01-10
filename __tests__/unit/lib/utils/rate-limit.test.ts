@@ -3,7 +3,7 @@ import { RateLimiter, resetRateLimitStore } from '@/lib/utils/rate-limit'
 
 describe('RateLimiter', () => {
   const now = 1_000_000
-  let nowSpy: jest.SpyInstance<number, []>
+  let nowSpy: jest.SpiedFunction<typeof Date.now>
   const originalEnv = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
 
   beforeEach(() => {

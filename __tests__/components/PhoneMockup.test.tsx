@@ -11,16 +11,18 @@ import { PhoneMockup } from '@/components/marketing/PhoneMockup'
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.ComponentProps<'div'>) => (
+      <div {...props}>{children}</div>
+    ),
   },
   useMotionValue: () => ({ get: () => 0, set: jest.fn() }),
   useTransform: () => ({ get: () => 0 }),
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: React.PropsWithChildren) => children,
 }))
 
 // Mock Next.js Image component
 jest.mock('next/image', () => {
-  return function Image({ src, alt, ...props }: any) {
+  return function Image({ src, alt, ...props }: React.ComponentProps<'img'>) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} {...props} />
   }

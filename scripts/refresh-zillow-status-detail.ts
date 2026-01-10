@@ -5,6 +5,7 @@ config({ path: '.env.local' })
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import type { AppDatabase } from '@/types/app-database'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -27,7 +28,28 @@ type DetailsResponse = {
   price?: number
 }
 
+type PropertyInsert = AppDatabase['public']['Tables']['properties']['Insert']
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+function parseDetailsResponse(value: unknown): DetailsResponse {
+  if (!isRecord(value)) return {}
+  const listingSubTypeValue = value.listingSubType
+  const listingSubType =
+    isRecord(listingSubTypeValue) &&
+    typeof listingSubTypeValue.is_pending === 'boolean'
+      ? { is_pending: listingSubTypeValue.is_pending }
+      : undefined
+  return {
+    homeStatus:
+      typeof value.homeStatus === 'string' ? value.homeStatus : undefined,
+    listingSubType,
+    price: typeof value.price === 'number' ? value.price : undefined,
+  }
+}
 
 function normalizeStatus(detail: DetailsResponse): {
   listing_status: string
@@ -65,7 +87,8 @@ async function fetchDetails(zpid: string) {
       continue
     }
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return (await res.json()) as DetailsResponse
+    const payload = await res.json()
+    return parseDetailsResponse(payload)
   }
   throw new Error('HTTP 429 after retries')
 }
@@ -92,10 +115,10 @@ async function main() {
     `Refreshing status via details for ${data.length} properties (batch size=${BATCH_LIMIT})`
   )
 
-  const updates: any[] = []
+  const updates: PropertyInsert[] = []
   let requests = 0
   for (const row of data) {
-    const zpid = (row.zpid as string | null) || ''
+    const zpid = row.zpid ?? ''
     if (!zpid) continue
     // Ensure required fields to avoid NOT NULL violations
     if (
@@ -134,7 +157,8 @@ async function main() {
       })
       await sleep(REQUEST_DELAY_MS)
     } catch (err) {
-      console.warn(`details failed for ${zpid}: ${(err as Error).message}`)
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn(`details failed for ${zpid}: ${message}`)
       await sleep(REQUEST_DELAY_MS)
     }
   }

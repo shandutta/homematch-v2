@@ -7,7 +7,8 @@ import {
   afterEach,
 } from '@jest/globals'
 import { CouplesService } from '@/lib/services/couples'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * CouplesService Unit Tests
@@ -25,14 +26,39 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  */
 describe('CouplesService', () => {
   // Create a mock Supabase client
-  const mockSupabaseClient = {
-    from: jest.fn(),
-    select: jest.fn(),
-    rpc: jest.fn(),
-  } as unknown as SupabaseClient
+  const mockSupabaseClient: SupabaseClient<AppDatabase> = createClient(
+    'http://localhost:54321',
+    'test-key',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        fetch: async () =>
+          new Response(JSON.stringify({ data: null, error: null }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+      },
+    }
+  )
+  const fromMock: jest.MockedFunction<typeof mockSupabaseClient.from> =
+    jest.fn()
+  const rpcMock: jest.MockedFunction<typeof mockSupabaseClient.rpc> = jest.fn()
+
+  mockSupabaseClient.from = fromMock
+  mockSupabaseClient.rpc = rpcMock
 
   const mockUserId = 'user-123'
   const mockHouseholdId = 'household-456'
+
+  const createSingleMock = <T>(data: T, error: Error | null = null) =>
+    jest.fn<Promise<{ data: T; error: Error | null }>, []>().mockResolvedValue({
+      data,
+      error,
+    })
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -59,12 +85,9 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: null },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: null }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       const result = await CouplesService.getMutualLikes(
         mockSupabaseClient,
@@ -77,13 +100,10 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
-      ;(mockSupabaseClient.rpc as jest.Mock).mockResolvedValue({
+      fromMock.mockReturnValue(mockChain)
+      rpcMock.mockResolvedValue({
         data: [{ property_id: 'prop-1', liked_by_count: 2 }],
         error: null,
       })
@@ -107,13 +127,10 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
-      ;(mockSupabaseClient.rpc as jest.Mock).mockResolvedValue({
+      fromMock.mockReturnValue(mockChain)
+      rpcMock.mockResolvedValue({
         data: null,
         error: new Error('RPC failed'),
       })
@@ -135,12 +152,9 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: null },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: null }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       const result = await CouplesService.getHouseholdStats(
         mockSupabaseClient,
@@ -156,7 +170,7 @@ describe('CouplesService', () => {
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockRejectedValue(new Error('Database error')),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       // Should not throw, should return null or handle gracefully
       await expect(
@@ -173,10 +187,7 @@ describe('CouplesService', () => {
       const mockUserChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
 
       // Mock existing likes query
@@ -189,7 +200,7 @@ describe('CouplesService', () => {
         }),
       }
 
-      ;(mockSupabaseClient.from as jest.Mock)
+      fromMock
         .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
         .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
 
@@ -210,10 +221,7 @@ describe('CouplesService', () => {
       const mockUserChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
 
       // Mock existing likes query with empty result
@@ -226,7 +234,7 @@ describe('CouplesService', () => {
         }),
       }
 
-      ;(mockSupabaseClient.from as jest.Mock)
+      fromMock
         .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
         .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
 
@@ -245,12 +253,9 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: null },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: null }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       const result = await CouplesService.checkPotentialMutualLike(
         mockSupabaseClient,
@@ -268,10 +273,7 @@ describe('CouplesService', () => {
       const mockUserChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
 
       // Mock existing likes query with error
@@ -281,7 +283,7 @@ describe('CouplesService', () => {
         neq: jest.fn().mockRejectedValue(new Error('Database error')),
       }
 
-      ;(mockSupabaseClient.from as jest.Mock)
+      fromMock
         .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
         .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
 
@@ -305,10 +307,7 @@ describe('CouplesService', () => {
       const mockUserChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
 
       // Mock existing likes query
@@ -321,7 +320,7 @@ describe('CouplesService', () => {
         }),
       }
 
-      ;(mockSupabaseClient.from as jest.Mock)
+      fromMock
         .mockReturnValueOnce(mockUserChain) // First call for notifyInteraction getUserHousehold
         .mockReturnValueOnce(mockUserChain) // Second call for checkPotentialMutualLike getUserHousehold
         .mockReturnValueOnce(mockLikesChain) // Third call for existing likes
@@ -341,12 +340,9 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: mockHouseholdId },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: mockHouseholdId }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       await CouplesService.notifyInteraction(
         mockSupabaseClient,
@@ -366,7 +362,7 @@ describe('CouplesService', () => {
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockRejectedValue(new Error('Database error')),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       // Should not throw
       await expect(
@@ -383,12 +379,9 @@ describe('CouplesService', () => {
       const mockChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { household_id: null },
-          error: null,
-        }),
+        single: createSingleMock({ household_id: null }),
       }
-      ;(mockSupabaseClient.from as jest.Mock).mockReturnValue(mockChain)
+      fromMock.mockReturnValue(mockChain)
 
       await CouplesService.notifyInteraction(
         mockSupabaseClient,

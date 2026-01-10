@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, jest } from '@jest/globals'
-import type { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -11,19 +11,21 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (...args: unknown[]) => jsonMock(...args),
   },
+  NextRequest:
+    jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
 const createPostRequest = (body: unknown) =>
-  ({
-    json: async () => body,
-    headers: { get: jest.fn(() => '127.0.0.1') },
-    url: 'http://localhost/api/performance/metrics',
-  }) as unknown as NextRequest
+  new NextRequest('http://localhost/api/performance/metrics', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'content-type': 'application/json',
+      'x-forwarded-for': '127.0.0.1',
+    },
+  })
 
-const createGetRequest = (url: string) =>
-  ({
-    url,
-  }) as unknown as NextRequest
+const createGetRequest = (url: string) => new NextRequest(url)
 
 describe('performance metrics API route', () => {
   beforeEach(() => {

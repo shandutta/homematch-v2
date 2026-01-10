@@ -84,9 +84,10 @@ async function loadActiveCounts(includePending: boolean) {
     if (!data || data.length === 0) break
 
     for (const row of data) {
-      const city = (row.city as string | null) || ''
+      const city = typeof row.city === 'string' ? row.city : ''
       if (!city) continue
-      const status = (row.listing_status as string | null) || ''
+      const status =
+        typeof row.listing_status === 'string' ? row.listing_status : ''
       const isActive =
         row.is_active === true ||
         status.toLowerCase() === 'active' ||

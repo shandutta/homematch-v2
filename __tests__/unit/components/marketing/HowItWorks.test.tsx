@@ -4,21 +4,25 @@ import { HowItWorks } from '@/components/marketing/HowItWorks'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
+      <p {...props}>{children}</p>
+    ),
   },
   useInView: () => true,
 }))
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Heart: ({ className }: any) => (
+  Heart: ({ className }: { className?: string }) => (
     <svg data-testid="heart-icon" className={className} />
   ),
-  MapPin: ({ className }: any) => (
+  MapPin: ({ className }: { className?: string }) => (
     <svg data-testid="mappin-icon" className={className} />
   ),
-  Sparkles: ({ className }: any) => (
+  Sparkles: ({ className }: { className?: string }) => (
     <svg data-testid="sparkles-icon" className={className} />
   ),
 }))

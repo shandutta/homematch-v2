@@ -15,8 +15,8 @@ jest.mock('@/lib/services/vibes', () => {
   }
 })
 
-const mockCreateClient = createStandaloneClient as jest.Mock
-const mockCreateVibesService = createVibesService as jest.Mock
+const mockCreateClient = jest.mocked(createStandaloneClient)
+const mockCreateVibesService = jest.mocked(createVibesService)
 
 const mockProperty: Property = {
   id: 'prop-1',

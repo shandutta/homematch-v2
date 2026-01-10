@@ -62,7 +62,8 @@ const mockProperty: Property = {
 
 describe('PropertyCard neighborhood vibes', () => {
   test('renders neighborhood vibes when available', () => {
-    ;(useNeighborhoodVibes as jest.Mock).mockReturnValue({
+    const mockUseNeighborhoodVibes = jest.mocked(useNeighborhoodVibes)
+    mockUseNeighborhoodVibes.mockReturnValue({
       data: {
         tagline: 'Coffee shops and quiet streets',
         vibe_statement: 'A leafy pocket with weekend brunch energy.',

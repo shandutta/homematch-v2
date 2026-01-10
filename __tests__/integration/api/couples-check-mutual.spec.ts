@@ -126,7 +126,12 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
   })
 
   test('should reject non-GET methods', async () => {
-    const methods = ['POST', 'PUT', 'DELETE', 'PATCH'] as const
+    const methods: Array<'POST' | 'PUT' | 'DELETE' | 'PATCH'> = [
+      'POST',
+      'PUT',
+      'DELETE',
+      'PATCH',
+    ]
     const testPropertyId = 'test-property-123'
 
     for (const method of methods) {

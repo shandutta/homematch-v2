@@ -6,6 +6,37 @@ import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 
 const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
 
+type PerformanceMetricRating = 'good' | 'needs-improvement' | 'poor'
+
+type PerformanceMetric = {
+  name: string
+  value: number
+  rating: PerformanceMetricRating
+  delta?: number
+  id: string
+  navigationType?: string
+  timestamp: number
+}
+
+type CustomMetric = {
+  name: string
+  value: number
+  unit?: string
+  tags?: Record<string, string>
+  timestamp: number
+}
+
+type MetricsPayload = {
+  metrics: PerformanceMetric[]
+  customMetrics?: CustomMetric[]
+  url: string
+  userAgent: string
+  timestamp: number
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 const fetchJson = async (path: string, init?: RequestInit) => {
   const res = await fetch(`${API_URL}${path}`, {
     headers: {
@@ -15,55 +46,57 @@ const fetchJson = async (path: string, init?: RequestInit) => {
     ...init,
   })
 
-  let body: any = {}
+  let body: unknown = {}
   try {
     body = await res.json()
   } catch {
     // non-JSON body
   }
 
-  return { status: res.status, body, headers: res.headers }
+  const bodyRecord = isRecord(body) ? body : {}
+  return { status: res.status, body: bodyRecord, headers: res.headers }
 }
 
 // Valid performance metrics payload for testing
-const createValidMetricsPayload = (overrides?: any) => ({
-  metrics: [
-    {
-      name: 'lcp',
-      value: 2500,
-      rating: 'good' as const,
-      id: 'lcp-1',
-      timestamp: Date.now(),
-    },
-    {
-      name: 'fid',
-      value: 100,
-      rating: 'needs-improvement' as const,
-      id: 'fid-1',
-      timestamp: Date.now(),
-    },
-    {
-      name: 'cls',
-      value: 0.1,
-      rating: 'poor' as const,
-      id: 'cls-1',
-      timestamp: Date.now(),
-    },
-  ],
-  customMetrics: [
-    {
-      name: 'long_task',
-      value: 150,
-      unit: 'ms',
-      tags: { page: 'dashboard' },
-      timestamp: Date.now(),
-    },
-  ],
-  url: 'https://example.com/dashboard',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  timestamp: Date.now(),
-  ...overrides,
-})
+const createValidMetricsPayload = (overrides: Partial<MetricsPayload> = {}) =>
+  ({
+    metrics: [
+      {
+        name: 'lcp',
+        value: 2500,
+        rating: 'good',
+        id: 'lcp-1',
+        timestamp: Date.now(),
+      },
+      {
+        name: 'fid',
+        value: 100,
+        rating: 'needs-improvement',
+        id: 'fid-1',
+        timestamp: Date.now(),
+      },
+      {
+        name: 'cls',
+        value: 0.1,
+        rating: 'poor',
+        id: 'cls-1',
+        timestamp: Date.now(),
+      },
+    ],
+    customMetrics: [
+      {
+        name: 'long_task',
+        value: 150,
+        unit: 'ms',
+        tags: { page: 'dashboard' },
+        timestamp: Date.now(),
+      },
+    ],
+    url: 'https://example.com/dashboard',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    timestamp: Date.now(),
+    ...overrides,
+  }) satisfies MetricsPayload
 
 describe('Integration: /api/performance/metrics', () => {
   beforeAll(() => {
@@ -314,7 +347,11 @@ describe('Integration: /api/performance/metrics', () => {
       const { status, body } = await fetchJson('/api/performance/metrics')
 
       expect(status).toBe(200)
-      expect(body.metrics.length).toBeLessThanOrEqual(100)
+      const metrics = body.metrics
+      expect(Array.isArray(metrics)).toBe(true)
+      if (Array.isArray(metrics)) {
+        expect(metrics.length).toBeLessThanOrEqual(100)
+      }
     })
 
     test('should calculate aggregates correctly', async () => {
@@ -329,8 +366,13 @@ describe('Integration: /api/performance/metrics', () => {
 
       expect(status).toBe(200)
 
-      if (Object.keys(body.aggregates).length > 0) {
-        Object.values(body.aggregates).forEach((aggregate: any) => {
+      const aggregates = body.aggregates
+      if (isRecord(aggregates) && Object.keys(aggregates).length > 0) {
+        Object.values(aggregates).forEach((aggregate) => {
+          if (!isRecord(aggregate)) return
+
+          const { count, min, max, mean, p50, p75, p95, p99 } = aggregate
+
           expect(aggregate).toHaveProperty('count')
           expect(aggregate).toHaveProperty('min')
           expect(aggregate).toHaveProperty('max')
@@ -340,20 +382,30 @@ describe('Integration: /api/performance/metrics', () => {
           expect(aggregate).toHaveProperty('p95')
           expect(aggregate).toHaveProperty('p99')
 
-          expect(typeof aggregate.count).toBe('number')
-          expect(typeof aggregate.min).toBe('number')
-          expect(typeof aggregate.max).toBe('number')
-          expect(typeof aggregate.mean).toBe('number')
-          expect(typeof aggregate.p50).toBe('number')
-          expect(typeof aggregate.p75).toBe('number')
-          expect(typeof aggregate.p95).toBe('number')
-          expect(typeof aggregate.p99).toBe('number')
+          expect(typeof count).toBe('number')
+          expect(typeof min).toBe('number')
+          expect(typeof max).toBe('number')
+          expect(typeof mean).toBe('number')
+          expect(typeof p50).toBe('number')
+          expect(typeof p75).toBe('number')
+          expect(typeof p95).toBe('number')
+          expect(typeof p99).toBe('number')
 
-          expect(aggregate.count).toBeGreaterThan(0)
-          expect(aggregate.min).toBeLessThanOrEqual(aggregate.max)
-          expect(aggregate.p50).toBeLessThanOrEqual(aggregate.p75)
-          expect(aggregate.p75).toBeLessThanOrEqual(aggregate.p95)
-          expect(aggregate.p95).toBeLessThanOrEqual(aggregate.p99)
+          if (
+            typeof count === 'number' &&
+            typeof min === 'number' &&
+            typeof max === 'number' &&
+            typeof p50 === 'number' &&
+            typeof p75 === 'number' &&
+            typeof p95 === 'number' &&
+            typeof p99 === 'number'
+          ) {
+            expect(count).toBeGreaterThan(0)
+            expect(min).toBeLessThanOrEqual(max)
+            expect(p50).toBeLessThanOrEqual(p75)
+            expect(p75).toBeLessThanOrEqual(p95)
+            expect(p95).toBeLessThanOrEqual(p99)
+          }
         })
       }
     })

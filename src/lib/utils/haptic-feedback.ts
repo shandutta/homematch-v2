@@ -113,12 +113,13 @@ export class HapticFeedback {
     // Alternative method for iOS Safari
     if ('DeviceMotionEvent' in window) {
       try {
-        const deviceMotionEvent =
-          DeviceMotionEvent as typeof DeviceMotionEvent & {
-            requestPermission?: () => Promise<'granted' | 'denied'>
-          }
+        const deviceMotionEvent = window.DeviceMotionEvent
         // Request device motion permission for iOS 13+
-        if (typeof deviceMotionEvent.requestPermission === 'function') {
+        if (
+          deviceMotionEvent &&
+          'requestPermission' in deviceMotionEvent &&
+          typeof deviceMotionEvent.requestPermission === 'function'
+        ) {
           deviceMotionEvent
             .requestPermission()
             .then((permission: string) => {

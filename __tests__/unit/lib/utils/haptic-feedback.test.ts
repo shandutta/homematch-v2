@@ -16,15 +16,31 @@ describe('HapticFeedback', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     debugSpy.mockImplementation(() => {})
-    ;(HapticFeedback as any).isSupported = false
-    ;(HapticFeedback as any).isIOSSupported = false
-    ;(global as any).navigator = originalNavigator
-    ;(global as any).window = originalWindow
+    Reflect.set(HapticFeedback, 'isSupported', false)
+    Reflect.set(HapticFeedback, 'isIOSSupported', false)
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+      writable: true,
+    })
+    Object.defineProperty(globalThis, 'window', {
+      value: originalWindow,
+      configurable: true,
+      writable: true,
+    })
   })
 
   afterEach(() => {
-    ;(global as any).navigator = originalNavigator
-    ;(global as any).window = originalWindow
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+      writable: true,
+    })
+    Object.defineProperty(globalThis, 'window', {
+      value: originalWindow,
+      configurable: true,
+      writable: true,
+    })
   })
 
   afterAll(() => {
@@ -36,23 +52,43 @@ describe('HapticFeedback', () => {
   })
 
   test('vibrates when supported and handles safe fallback', () => {
-    const vibrate = jest.fn()
-    ;(HapticFeedback as any).isSupported = true
-    ;(global.navigator as any).vibrate = vibrate
+    type VibrateFn = NonNullable<Navigator['vibrate']>
+    const vibrate: VibrateFn = jest.fn(() => true)
+    Reflect.set(HapticFeedback, 'isSupported', true)
+    Object.defineProperty(globalThis.navigator, 'vibrate', {
+      value: vibrate,
+      configurable: true,
+      writable: true,
+    })
     HapticFeedback.light()
     expect(vibrate).toHaveBeenCalledWith([5])
   })
 
   test('triggerIOSHaptic uses custom hapticFeedback when available', () => {
     const mockIOSHaptic = jest.fn()
-    ;(HapticFeedback as any).isSupported = true
-    ;(HapticFeedback as any).isIOSSupported = true
-    ;(global.navigator as any).vibrate = jest.fn()
-    ;(global.window as any).hapticFeedback = { light: mockIOSHaptic }
-    ;(global.window as any).DeviceMotionEvent = {
-      requestPermission: jest.fn().mockResolvedValue('denied'),
-    }
-    ;(global.window as any).AudioContext = undefined
+    Reflect.set(HapticFeedback, 'isSupported', true)
+    Reflect.set(HapticFeedback, 'isIOSSupported', true)
+    const vibrate: NonNullable<Navigator['vibrate']> = jest.fn(() => true)
+    Object.defineProperty(globalThis.navigator, 'vibrate', {
+      value: vibrate,
+      configurable: true,
+      writable: true,
+    })
+    window.hapticFeedback = { light: mockIOSHaptic }
+    Object.defineProperty(window, 'DeviceMotionEvent', {
+      value: {
+        requestPermission: jest
+          .fn<Promise<'granted' | 'denied'>, []>()
+          .mockResolvedValue('denied'),
+      },
+      configurable: true,
+      writable: true,
+    })
+    Object.defineProperty(window, 'AudioContext', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    })
 
     HapticFeedback.light()
     expect(mockIOSHaptic).toHaveBeenCalled()

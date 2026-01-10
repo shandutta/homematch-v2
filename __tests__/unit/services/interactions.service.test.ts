@@ -7,6 +7,14 @@ import type {
 } from '@/types/app'
 
 const originalFetch = global.fetch
+type FetchMock = jest.Mock<Promise<Response>, [RequestInfo | URL, RequestInit?]>
+
+const createFetchMock = (response: Response) => {
+  const fetchMock: FetchMock = jest.fn()
+  fetchMock.mockResolvedValue(response)
+  global.fetch = fetchMock
+  return fetchMock
+}
 
 describe('InteractionService', () => {
   beforeEach(() => {
@@ -14,7 +22,7 @@ describe('InteractionService', () => {
   })
 
   afterAll(() => {
-    global.fetch = originalFetch as any
+    global.fetch = originalFetch
   })
 
   describe('recordInteraction', () => {
@@ -27,11 +35,12 @@ describe('InteractionService', () => {
         updatedAt: new Date().toISOString(),
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 201,
-        json: async () => ({ interaction: mockInteraction }),
-      } as any)
+      const fetchMock = createFetchMock(
+        new Response(JSON.stringify({ interaction: mockInteraction }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
 
       const res = await InteractionService.recordInteraction('p1', 'liked')
       expect(res).toEqual(mockInteraction)
@@ -42,16 +51,14 @@ describe('InteractionService', () => {
           headers: { 'Content-Type': 'application/json' },
         })
       )
-      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)
+      const init = fetchMock.mock.calls[0]?.[1]
+      const body =
+        init && typeof init.body === 'string' ? JSON.parse(init.body) : null
       expect(body).toEqual({ propertyId: 'p1', type: 'liked' })
     })
 
     test('error: throws with status and body text', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: async () => 'Internal error',
-      } as any)
+      createFetchMock(new Response('Internal error', { status: 500 }))
 
       await expect(
         InteractionService.recordInteraction('p1', 'viewed')
@@ -67,11 +74,12 @@ describe('InteractionService', () => {
         passed: 2,
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => mockSummary,
-      } as any)
+      createFetchMock(
+        new Response(JSON.stringify(mockSummary), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
 
       const res = await InteractionService.getInteractionSummary()
       expect(res).toEqual(mockSummary)
@@ -82,11 +90,7 @@ describe('InteractionService', () => {
     })
 
     test('error: throws on non-2xx', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        text: async () => 'Not found',
-      } as any)
+      createFetchMock(new Response('Not found', { status: 404 }))
 
       await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
         'Failed to fetch interaction summary (404): Not found'
@@ -95,11 +99,12 @@ describe('InteractionService', () => {
 
     test('error: throws on invalid payload shape', async () => {
       // Missing a required key or wrong type triggers zod failure
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ viewed: 1, liked: 'oops', passed: 0 }),
-      } as any)
+      createFetchMock(
+        new Response(JSON.stringify({ viewed: 1, liked: 'oops', passed: 0 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
 
       await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
         'Invalid summary payload'
@@ -114,11 +119,12 @@ describe('InteractionService', () => {
         nextCursor: 'cursor-2',
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => mockResponse,
-      } as any)
+      const fetchMock = createFetchMock(
+        new Response(JSON.stringify(mockResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
 
       const res = await InteractionService.getInteractions('viewed', {
         cursor: 'cursor-1',
@@ -126,7 +132,9 @@ describe('InteractionService', () => {
       })
       expect(res).toEqual(mockResponse)
 
-      const urlCalled = (global.fetch as jest.Mock).mock.calls[0][0] as string
+      const urlArg = fetchMock.mock.calls[0]?.[0]
+      const urlCalled =
+        typeof urlArg === 'string' ? urlArg : urlArg?.toString() || ''
       expect(urlCalled).toContain('/api/interactions?')
       // Verify params
       const qs = urlCalled.split('?')[1]
@@ -142,13 +150,17 @@ describe('InteractionService', () => {
         nextCursor: null,
       }
 
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as any)
+      const fetchMock = createFetchMock(
+        new Response(JSON.stringify(mockResponse), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
 
       await InteractionService.getInteractions('liked', {})
-      const urlCalled = (global.fetch as jest.Mock).mock.calls[0][0] as string
+      const urlArg = fetchMock.mock.calls[0]?.[0]
+      const urlCalled =
+        typeof urlArg === 'string' ? urlArg : urlArg?.toString() || ''
       const qs = urlCalled.split('?')[1]
       const params = new URLSearchParams(qs)
       expect(params.get('type')).toBe('liked')
@@ -157,11 +169,7 @@ describe('InteractionService', () => {
     })
 
     test('error: throws with status and body', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        text: async () => 'Bad request',
-      } as any)
+      createFetchMock(new Response('Bad request', { status: 400 }))
 
       const passed: InteractionType = 'skip'
       await expect(
@@ -172,10 +180,7 @@ describe('InteractionService', () => {
 
   describe('deleteInteraction', () => {
     test('success: sends DELETE with body', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-      } as any)
+      const fetchMock = createFetchMock(new Response(null, { status: 200 }))
 
       await InteractionService.deleteInteraction('prop-1')
 
@@ -186,16 +191,14 @@ describe('InteractionService', () => {
           headers: { 'Content-Type': 'application/json' },
         })
       )
-      const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)
+      const init = fetchMock.mock.calls[0]?.[1]
+      const body =
+        init && typeof init.body === 'string' ? JSON.parse(init.body) : null
       expect(body).toEqual({ propertyId: 'prop-1' })
     })
 
     test('error: throws on non-2xx response', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: false,
-        status: 403,
-        text: async () => 'Forbidden',
-      } as any)
+      createFetchMock(new Response('Forbidden', { status: 403 }))
 
       await expect(
         InteractionService.deleteInteraction('prop-2')

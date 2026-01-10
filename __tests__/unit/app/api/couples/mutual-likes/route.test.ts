@@ -24,9 +24,16 @@ jest.mock('@/lib/middleware/rateLimiter', () => ({
   withRateLimit: (_req: unknown, handler: () => Promise<unknown>) => handler(),
 }))
 
+type Chain = {
+  select: jest.Mock
+  in: jest.Mock
+  eq: jest.Mock
+  then: jest.Mock
+}
+
 // Create a chainable mock that returns itself for chaining
-const createChainMock = () => {
-  const chain: any = {
+const createChainMock = (): Chain => {
+  const chain: Chain = {
     select: jest.fn(() => chain),
     in: jest.fn(() => chain),
     eq: jest.fn(() => chain),
@@ -35,7 +42,14 @@ const createChainMock = () => {
   return chain
 }
 
-const supabaseMock: any = {
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
@@ -90,13 +104,14 @@ describe('couples mutual-likes API route', () => {
       data: { user: { id: 'u1' } },
       error: null,
     })
-    ;(CouplesService.getMutualLikes as jest.Mock).mockResolvedValue([
-      { property_id: 'p1', liked_by_count: 2 },
-    ])
+    jest
+      .mocked(CouplesService.getMutualLikes)
+      .mockResolvedValue([{ property_id: 'p1', liked_by_count: 2 }])
     // Configure from() to return a chain that errors on .in()
-    const errorChain: any = {
+    const errorChain: Chain = {
       select: jest.fn(() => errorChain),
       in: jest.fn(() => errorChain),
+      eq: jest.fn(() => errorChain),
       then: jest.fn((resolve) =>
         resolve({ data: null, error: { message: 'db-error' } })
       ),

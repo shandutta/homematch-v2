@@ -69,7 +69,6 @@ export default async function DashboardPage({
           // returning={returning}
           // userProfile={finalUserData}
           // initialSwipeStats={swipeStats}
-          // session={{ user } as Session}
         />
       </DashboardErrorBoundary>
     )

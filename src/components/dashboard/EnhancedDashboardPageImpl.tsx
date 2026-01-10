@@ -20,9 +20,9 @@ interface EnhancedDashboardPageImplProps {
   // These props are passed from the server component but not currently used in the client component
   // They will be used in future iterations for enhanced functionality
   // _returning?: boolean  // Prefixed with _ to indicate unused variable
-  // _userProfile?: any // Will be typed properly with Zod later
-  // _initialSwipeStats?: any // Will be typed properly with Zod later
-  // _session?: any // Will be typed properly with Zod later
+  // _userProfile?: unknown // Will be typed properly with Zod later
+  // _initialSwipeStats?: unknown // Will be typed properly with Zod later
+  // _session?: unknown // Will be typed properly with Zod later
 }
 
 const MutualLikesSection = lazy(() =>

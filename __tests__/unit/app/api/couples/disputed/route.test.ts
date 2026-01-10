@@ -17,8 +17,20 @@ jest.mock('next/server', () => {
   }
 })
 
-const createChainMock = (result: any) => {
-  const chain: any = {
+type ChainResult = { data: unknown; error: unknown }
+type Chain = {
+  select: jest.Mock
+  eq: jest.Mock
+  in: jest.Mock
+  order: jest.Mock
+  upsert: jest.Mock
+  single: jest.Mock
+  maybeSingle: jest.Mock
+  then: jest.Mock
+}
+
+const createChainMock = (result: ChainResult): Chain => {
+  const chain: Chain = {
     select: jest.fn(() => chain),
     eq: jest.fn(() => chain),
     in: jest.fn(() => chain),
@@ -32,14 +44,25 @@ const createChainMock = (result: any) => {
   return chain
 }
 
-const supabaseMock: any = {
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(),
 }
 
-const serviceClientMock: any = {
+type ServiceClientMock = {
+  from: jest.Mock
+}
+
+const serviceClientMock: ServiceClientMock = {
   from: jest.fn(),
 }
 
@@ -224,9 +247,13 @@ describe('couples disputed API route', () => {
       error: null,
     })
 
-    const req = {
-      json: async () => ({}),
-    } as unknown as NextRequest
+    const req = new NextRequest('https://example.com/api/couples/disputed', {
+      method: 'PATCH',
+      body: JSON.stringify({}),
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
 
     await PATCH(req)
 
@@ -241,9 +268,13 @@ describe('couples disputed API route', () => {
       error: null,
     })
 
-    const req = {
-      json: async () => ({ property_id: 'property-1' }),
-    } as unknown as NextRequest
+    const req = new NextRequest('https://example.com/api/couples/disputed', {
+      method: 'PATCH',
+      body: JSON.stringify({ property_id: 'property-1' }),
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
 
     await PATCH(req)
 
@@ -271,12 +302,16 @@ describe('couples disputed API route', () => {
       })
     )
 
-    const req = {
-      json: async () => ({
+    const req = new NextRequest('https://example.com/api/couples/disputed', {
+      method: 'PATCH',
+      body: JSON.stringify({
         property_id: 'property-1',
         resolution_type: 'saved_for_later',
       }),
-    } as unknown as NextRequest
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
 
     await PATCH(req)
 

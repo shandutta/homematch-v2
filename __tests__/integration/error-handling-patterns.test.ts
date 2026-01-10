@@ -13,6 +13,15 @@ const skipHeavy =
   process.env.SKIP_HEAVY_TESTS === 'true'
 const describeOrSkip = skipHeavy ? describe.skip : describe
 
+type PropertyInsertInput = Parameters<PropertyService['createProperty']>[0]
+
+const getServiceMethod = (target: object, key: string) =>
+  Reflect.get(target, key)
+
+const setServiceMethod = (target: object, key: string, value: unknown) => {
+  Reflect.set(target, key, value)
+}
+
 /**
  * NOTE: Some tests in this suite use mocking to simulate error conditions.
  * This is intentional for error handling tests because:
@@ -33,8 +42,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
   describe('PropertyService Error Patterns', () => {
     let propertyService: PropertyService
-    let _testUser: any
-    let testClient: any
+    let testClient: ReturnType<typeof createClient>
     let createdPropertyIds: string[] = []
 
     beforeEach(async () => {
@@ -47,7 +55,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
       // Get existing test user (from setup-test-users-admin.js)
       const factory = getTestDataFactory(testClient)
-      _testUser = await factory.getTestUser('test1@example.com')
+      await factory.getTestUser('test1@example.com')
 
       // Reset created properties list
       createdPropertyIds = []
@@ -68,22 +76,27 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
     // NOTE: Uses mocking to simulate network failure (can't reliably cause real network errors)
     test('should handle Supabase connection errors gracefully', async () => {
       // Mock Supabase to simulate network failure - testing SERVICE error handling
-      const originalGetSupabase = (propertyService as any).getSupabase
-      ;(propertyService as any).getSupabase = vi
-        .fn()
-        .mockRejectedValue(new Error('Network connection failed'))
+      const originalGetSupabase = getServiceMethod(
+        propertyService,
+        'getSupabase'
+      )
+      setServiceMethod(
+        propertyService,
+        'getSupabase',
+        vi.fn().mockRejectedValue(new Error('Network connection failed'))
+      )
 
       const result = await propertyService.getProperty(randomUUID())
       expect(result).toBeNull()
 
       // Restore original method
-      ;(propertyService as any).getSupabase = originalGetSupabase
+      setServiceMethod(propertyService, 'getSupabase', originalGetSupabase)
     })
 
     test('should handle malformed property data errors', async () => {
-      const invalidPropertyData = {
-        address: null, // Invalid: should be string
-        price: 'not-a-number', // Invalid: should be number
+      const invalidPropertyData: PropertyInsertInput = {
+        address: '123 Test St',
+        price: 500000,
         bedrooms: 25, // Invalid: outside range 0-20
         city: 'Test City',
         state: 'CA',
@@ -91,7 +104,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         property_type: 'single_family',
         listing_status: 'active',
         is_active: true,
-      } as any
+      }
 
       // The new validation system throws validation errors for invalid data
       await expect(
@@ -167,16 +180,23 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
         }),
       })
 
-      const originalGetSupabase = (propertyService as any).getSupabase
-      ;(propertyService as any).getSupabase = vi.fn().mockResolvedValue({
-        from: mockFrom,
-      })
+      const originalGetSupabase = getServiceMethod(
+        propertyService,
+        'getSupabase'
+      )
+      setServiceMethod(
+        propertyService,
+        'getSupabase',
+        vi.fn().mockResolvedValue({
+          from: mockFrom,
+        })
+      )
 
       const result = await propertyService.getProperty(randomUUID())
       expect(result).toBeNull()
 
       // Restore original method
-      ;(propertyService as any).getSupabase = originalGetSupabase
+      setServiceMethod(propertyService, 'getSupabase', originalGetSupabase)
     })
 
     test('should handle timeout errors consistently', async () => {
@@ -206,26 +226,33 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
     })
 
     test('should handle partial data corruption gracefully', async () => {
-      const originalGetSupabase = (propertyService as any).getSupabase
-      ;(propertyService as any).getSupabase = vi.fn().mockResolvedValue({
-        from: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
+      const originalGetSupabase = getServiceMethod(
+        propertyService,
+        'getSupabase'
+      )
+      setServiceMethod(
+        propertyService,
+        'getSupabase',
+        vi.fn().mockResolvedValue({
+          from: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: 'valid-id',
-                    address: null, // Corrupted data
-                    price: undefined, // Missing data
-                    corrupted_json_field: '{"invalid": json}', // Invalid JSON
-                  },
-                  error: null,
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: {
+                      id: 'valid-id',
+                      address: null, // Corrupted data
+                      price: undefined, // Missing data
+                      corrupted_json_field: '{"invalid": json}', // Invalid JSON
+                    },
+                    error: null,
+                  }),
                 }),
               }),
             }),
           }),
-        }),
-      })
+        })
+      )
 
       const result = await propertyService.getProperty(randomUUID())
       // The new error handling system returns null for data corruption
@@ -233,7 +260,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       expect(result).toBeNull()
 
       // Restore original method
-      ;(propertyService as any).getSupabase = originalGetSupabase
+      setServiceMethod(propertyService, 'getSupabase', originalGetSupabase)
     })
   })
 
@@ -241,11 +268,11 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
     test('should handle API endpoint failures gracefully', async () => {
       // Mock fetch to simulate API failure
       const originalFetch = global.fetch
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: vi.fn().mockResolvedValue('Internal Server Error'),
-      }) as any
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        new Response('Internal Server Error', { status: 500 })
+      )
+      global.fetch = fetchMock
 
       await expect(
         InteractionService.recordInteraction('property-id', 'like')
@@ -259,9 +286,9 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
     test('should handle network timeouts', async () => {
       const originalFetch = global.fetch
-      global.fetch = vi
-        .fn()
-        .mockRejectedValue(new Error('Network timeout')) as any
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockRejectedValue(new Error('Network timeout'))
+      global.fetch = fetchMock
 
       await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
         'Network timeout'
@@ -273,13 +300,17 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
     test('should handle malformed API responses', async () => {
       const originalFetch = global.fetch
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          // Invalid response structure - missing required fields
-          invalid: 'response',
-        }),
-      }) as any
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            // Invalid response structure - missing required fields
+            invalid: 'response',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+      global.fetch = fetchMock
 
       await expect(InteractionService.getInteractionSummary()).rejects.toThrow(
         'Invalid summary payload'
@@ -291,11 +322,11 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
     test('should handle pagination errors correctly', async () => {
       const originalFetch = global.fetch
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        text: vi.fn().mockResolvedValue('Invalid cursor parameter'),
-      }) as any
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        new Response('Invalid cursor parameter', { status: 400 })
+      )
+      global.fetch = fetchMock
 
       await expect(
         InteractionService.getInteractions('viewed', {
@@ -317,29 +348,36 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       const propertyService = new PropertyService(clientFactory)
 
       // Test scenario: Property creation fails, should not leave orphaned data
-      const originalGetSupabase = (propertyService as any).getSupabase
+      const originalGetSupabase = getServiceMethod(
+        propertyService,
+        'getSupabase'
+      )
       let callCount = 0
-      ;(propertyService as any).getSupabase = vi.fn().mockImplementation(() => {
-        callCount++
-        if (callCount === 1) {
-          // First call succeeds (for property creation)
-          return Promise.resolve({
-            from: vi.fn().mockReturnValue({
-              insert: vi.fn().mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                  single: vi.fn().mockResolvedValue({
-                    data: { id: 'temp-id', address: '123 Test St' },
-                    error: null,
+      setServiceMethod(
+        propertyService,
+        'getSupabase',
+        vi.fn().mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            // First call succeeds (for property creation)
+            return Promise.resolve({
+              from: vi.fn().mockReturnValue({
+                insert: vi.fn().mockReturnValue({
+                  select: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                      data: { id: 'temp-id', address: '123 Test St' },
+                      error: null,
+                    }),
                   }),
                 }),
               }),
-            }),
-          })
-        } else {
-          // Subsequent calls fail
-          return Promise.reject(new Error('Secondary operation failed'))
-        }
-      })
+            })
+          } else {
+            // Subsequent calls fail
+            return Promise.reject(new Error('Secondary operation failed'))
+          }
+        })
+      )
 
       const propertyData = {
         address: '123 Cascade Test',
@@ -361,7 +399,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       expect(result).toBeTruthy() // First operation succeeded
 
       // Restore original method
-      ;(propertyService as any).getSupabase = originalGetSupabase
+      setServiceMethod(propertyService, 'getSupabase', originalGetSupabase)
     })
   })
 
@@ -375,7 +413,21 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       const getResult = await propertyService.getProperty('non-existent')
       expect(getResult).toBeNull()
 
-      const createResult = await propertyService.createProperty({} as any)
+      const invalidPropertyData: PropertyInsertInput = {
+        address: '123 Invalid',
+        city: 'Test City',
+        state: 'CA',
+        zip_code: '90210',
+        price: 500000,
+        bedrooms: 25,
+        bathrooms: 2,
+        square_feet: 1500,
+        property_type: 'single_family',
+        listing_status: 'active',
+        is_active: true,
+      }
+      const createResult =
+        await propertyService.createProperty(invalidPropertyData)
       expect(createResult).toBeNull()
 
       const updateResult = await propertyService.updateProperty(
@@ -432,21 +484,28 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       // Force an error to test logging
-      const originalGetSupabase = (propertyService as any).getSupabase
-      ;(propertyService as any).getSupabase = vi.fn().mockResolvedValue({
-        from: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
+      const originalGetSupabase = getServiceMethod(
+        propertyService,
+        'getSupabase'
+      )
+      setServiceMethod(
+        propertyService,
+        'getSupabase',
+        vi.fn().mockResolvedValue({
+          from: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: 'Test error', code: 'TEST_ERROR' },
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: { message: 'Test error', code: 'TEST_ERROR' },
+                  }),
                 }),
               }),
             }),
           }),
-        }),
-      })
+        })
+      )
 
       await propertyService.getProperty(randomUUID())
 
@@ -460,7 +519,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
       // Cleanup
       consoleSpy.mockRestore()
-      ;(propertyService as any).getSupabase = originalGetSupabase
+      setServiceMethod(propertyService, 'getSupabase', originalGetSupabase)
     })
 
     test('should include contextual information in error logs', async () => {
@@ -470,11 +529,14 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       // Mock the CRUD service's getSupabase method to simulate database error
-      const originalGetSupabase = (propertyService.crudService as any)
-        .getSupabase
-      ;(propertyService.crudService as any).getSupabase = vi
-        .fn()
-        .mockResolvedValue({
+      const originalGetSupabase = getServiceMethod(
+        propertyService.crudService,
+        'getSupabase'
+      )
+      setServiceMethod(
+        propertyService.crudService,
+        'getSupabase',
+        vi.fn().mockResolvedValue({
           from: vi.fn().mockReturnValue({
             update: vi.fn().mockReturnValue({
               eq: vi.fn().mockResolvedValue({
@@ -487,6 +549,7 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
             }),
           }),
         })
+      )
 
       await propertyService.deleteProperty(randomUUID())
 
@@ -500,7 +563,11 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
       // Cleanup
       consoleSpy.mockRestore()
-      ;(propertyService.crudService as any).getSupabase = originalGetSupabase
+      setServiceMethod(
+        propertyService.crudService,
+        'getSupabase',
+        originalGetSupabase
+      )
     })
   })
 })

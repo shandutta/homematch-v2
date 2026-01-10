@@ -7,8 +7,8 @@ import { createStandaloneClient } from '@/lib/supabase/standalone'
 jest.mock('@/lib/ingestion/zillow')
 jest.mock('@/lib/supabase/standalone')
 
-const mockIngest = ingestZillowLocations as jest.Mock
-const mockCreateClient = createStandaloneClient as jest.Mock
+const mockIngest = jest.mocked(ingestZillowLocations)
+const mockCreateClient = jest.mocked(createStandaloneClient)
 
 describe('POST /api/admin/ingest/zillow', () => {
   beforeEach(() => {

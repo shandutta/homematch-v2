@@ -14,12 +14,14 @@ const createMockFn = <
   Return = unknown,
 >(): MockFn<Args, Return> => {
   if (typeof jest !== 'undefined') {
-    return jest.fn() as unknown as MockFn<Args, Return>
+    const fn: MockFn<Args, Return> = jest.fn()
+    return fn
   }
   // Fallback to Vitest's global vi
 
   if (globalThis.vi) {
-    return globalThis.vi.fn() as unknown as MockFn<Args, Return>
+    const fn: MockFn<Args, Return> = globalThis.vi.fn()
+    return fn
   }
   throw new Error('No test mock library found')
 }
@@ -27,8 +29,16 @@ const createMockFn = <
 export const setupBrowserMocks = () => {
   // TextEncoder/TextDecoder Polyfill
   if (typeof globalThis.TextEncoder === 'undefined') {
-    globalThis.TextEncoder = TextEncoder as typeof globalThis.TextEncoder
-    globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder
+    Object.defineProperty(globalThis, 'TextEncoder', {
+      writable: true,
+      configurable: true,
+      value: TextEncoder,
+    })
+    Object.defineProperty(globalThis, 'TextDecoder', {
+      writable: true,
+      configurable: true,
+      value: TextDecoder,
+    })
   }
 
   // ResizeObserver Mock
@@ -54,8 +64,8 @@ export const setupBrowserMocks = () => {
       writable: true,
       configurable: true,
       value: createMockFn<[string], MediaQueryList>().mockImplementation(
-        (query) =>
-          ({
+        (query) => {
+          const list: MediaQueryList = {
             matches: false,
             media: query,
             onchange: null,
@@ -64,7 +74,9 @@ export const setupBrowserMocks = () => {
             addEventListener: createMockFn(),
             removeEventListener: createMockFn(),
             dispatchEvent: createMockFn(),
-          }) as MediaQueryList
+          }
+          return list
+        }
       ),
     })
   }
@@ -122,47 +134,46 @@ export const setupBrowserMocks = () => {
     Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
       writable: true,
       configurable: true,
-      value: createMockFn<
-        [string],
-        CanvasRenderingContext2D | null
-      >().mockImplementation((contextType) => {
-        if (contextType === '2d') {
-          return {
-            fillStyle: '',
-            fillRect: createMockFn(),
-            getImageData: createMockFn().mockReturnValue({
-              data: new Uint8ClampedArray(4),
-            }),
-            putImageData: createMockFn(),
-            createImageData: createMockFn().mockReturnValue({
-              data: new Uint8ClampedArray(4),
-            }),
-            setTransform: createMockFn(),
-            drawImage: createMockFn(),
-            save: createMockFn(),
-            fillText: createMockFn(),
-            restore: createMockFn(),
-            beginPath: createMockFn(),
-            moveTo: createMockFn(),
-            lineTo: createMockFn(),
-            closePath: createMockFn(),
-            stroke: createMockFn(),
-            translate: createMockFn(),
-            scale: createMockFn(),
-            rotate: createMockFn(),
-            arc: createMockFn(),
-            fill: createMockFn(),
-            measureText: createMockFn().mockReturnValue({ width: 0 }),
-            transform: createMockFn(),
-            rect: createMockFn(),
-            clip: createMockFn(),
-            createLinearGradient: createMockFn().mockReturnValue({
-              addColorStop: createMockFn(),
-            }),
-          } as unknown as CanvasRenderingContext2D
+      value: createMockFn<[string], unknown>().mockImplementation(
+        (contextType) => {
+          if (contextType === '2d') {
+            return {
+              fillStyle: '',
+              fillRect: createMockFn(),
+              getImageData: createMockFn().mockReturnValue({
+                data: new Uint8ClampedArray(4),
+              }),
+              putImageData: createMockFn(),
+              createImageData: createMockFn().mockReturnValue({
+                data: new Uint8ClampedArray(4),
+              }),
+              setTransform: createMockFn(),
+              drawImage: createMockFn(),
+              save: createMockFn(),
+              fillText: createMockFn(),
+              restore: createMockFn(),
+              beginPath: createMockFn(),
+              moveTo: createMockFn(),
+              lineTo: createMockFn(),
+              closePath: createMockFn(),
+              stroke: createMockFn(),
+              translate: createMockFn(),
+              scale: createMockFn(),
+              rotate: createMockFn(),
+              arc: createMockFn(),
+              fill: createMockFn(),
+              measureText: createMockFn().mockReturnValue({ width: 0 }),
+              transform: createMockFn(),
+              rect: createMockFn(),
+              clip: createMockFn(),
+              createLinearGradient: createMockFn().mockReturnValue({
+                addColorStop: createMockFn(),
+              }),
+            }
+          }
+          return null
         }
-        return null
-      }),
+      ),
     })
 
     Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
@@ -195,13 +206,27 @@ export const setupBrowserMocks = () => {
 
   // Scroll methods
   if (typeof window !== 'undefined') {
-    window.scrollTo = createMockFn() as unknown as typeof window.scrollTo
-    window.scroll = createMockFn() as unknown as typeof window.scroll
+    Object.defineProperty(window, 'scrollTo', {
+      writable: true,
+      configurable: true,
+      value: createMockFn(),
+    })
+    Object.defineProperty(window, 'scroll', {
+      writable: true,
+      configurable: true,
+      value: createMockFn(),
+    })
     if (typeof HTMLElement !== 'undefined') {
-      HTMLElement.prototype.scrollIntoView =
-        createMockFn() as unknown as typeof HTMLElement.prototype.scrollIntoView
-      HTMLElement.prototype.scrollTo =
-        createMockFn() as unknown as typeof HTMLElement.prototype.scrollTo
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+        writable: true,
+        configurable: true,
+        value: createMockFn(),
+      })
+      Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+        writable: true,
+        configurable: true,
+        value: createMockFn(),
+      })
     }
   }
 }

@@ -19,8 +19,10 @@ jest.mock('@/lib/services/interactions', () => ({
   },
 }))
 
+const mockedInteractionService = jest.mocked(InteractionService)
+
 describe('useInteractionSummary', () => {
-  const getSummary = InteractionService.getInteractionSummary as jest.Mock
+  const getSummary = mockedInteractionService.getInteractionSummary
 
   const createWrapper = () => {
     const qc = new QueryClient({
@@ -73,7 +75,7 @@ describe('useInteractionSummary', () => {
 })
 
 describe('useInfiniteInteractions', () => {
-  const getInteractions = InteractionService.getInteractions as jest.Mock
+  const getInteractions = mockedInteractionService.getInteractions
 
   const createWrapper = () => {
     const qc = new QueryClient({
@@ -158,7 +160,7 @@ describe('useInfiniteInteractions', () => {
 })
 
 describe('useRecordInteraction', () => {
-  const recordInteraction = InteractionService.recordInteraction as jest.Mock
+  const recordInteraction = mockedInteractionService.recordInteraction
 
   let queryClient: QueryClient
 
@@ -331,7 +333,7 @@ describe('useRecordInteraction', () => {
 })
 
 describe('useDeleteInteraction', () => {
-  const deleteInteraction = InteractionService.deleteInteraction as jest.Mock
+  const deleteInteraction = mockedInteractionService.deleteInteraction
 
   let queryClient: QueryClient
 

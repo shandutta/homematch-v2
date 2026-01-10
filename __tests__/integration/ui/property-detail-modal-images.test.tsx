@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ComponentProps, ReactNode } from 'react'
 
 import { PropertyDetailModal } from '@/components/property/PropertyDetailModal'
 import { Property } from '@/lib/schemas/property'
 
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => (
+  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) => (
     <div data-testid="dialog" data-open={open}>
       {children}
     </div>
@@ -16,14 +17,23 @@ vi.mock('@/components/ui/dialog', () => ({
     onCloseAutoFocus: _onCloseAutoFocus,
     showCloseButton: _showCloseButton,
     ...props
-  }: any) => (
+  }: ComponentProps<'div'> & {
+    onCloseAutoFocus?: (event: Event) => void
+    showCloseButton?: boolean
+  }) => (
     <div data-testid="dialog-content" {...props}>
       {children}
     </div>
   ),
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogDescription: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 vi.mock('@/components/ui/property-image', () => ({

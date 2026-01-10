@@ -35,6 +35,10 @@ jest.mock('@/hooks/useNeighborhoodVibes', () => ({
   useNeighborhoodVibes: jest.fn(),
 }))
 
+const mockedUseMutualLikes = jest.mocked(useMutualLikes)
+const mockedUsePropertyVibes = jest.mocked(usePropertyVibes)
+const mockedUseNeighborhoodVibes = jest.mocked(useNeighborhoodVibes)
+
 const mockProperty: Property = {
   id: 'test-perk-4',
   zpid: '12345678',
@@ -114,9 +118,9 @@ const mockVibes: PropertyVibes = {
 
 describe('PropertyDetailModal', () => {
   beforeEach(() => {
-    ;(useMutualLikes as jest.Mock).mockReturnValue({ data: [] })
-    ;(usePropertyVibes as jest.Mock).mockReturnValue({ data: mockVibes })
-    ;(useNeighborhoodVibes as jest.Mock).mockReturnValue({ data: null })
+    mockedUseMutualLikes.mockReturnValue({ data: [] })
+    mockedUsePropertyVibes.mockReturnValue({ data: mockVibes })
+    mockedUseNeighborhoodVibes.mockReturnValue({ data: null })
   })
 
   it('keeps tags and future vision, but hides vibe statement and quotes', () => {
@@ -160,7 +164,7 @@ describe('PropertyDetailModal', () => {
       suggested_tags: ['Walkable', 'Food', 'Transit'],
     }
 
-    ;(useNeighborhoodVibes as jest.Mock).mockReturnValue({
+    mockedUseNeighborhoodVibes.mockReturnValue({
       data: neighborhoodVibes,
     })
 

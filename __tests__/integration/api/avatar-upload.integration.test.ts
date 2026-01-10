@@ -1,6 +1,8 @@
 import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAuthenticatedClient } from '../../utils/test-users'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * Integration tests for the /api/users/avatar endpoint
@@ -10,8 +12,14 @@ import { createAuthenticatedClient } from '../../utils/test-users'
  * Run: pnpm dlx supabase@latest start
  */
 describe('Avatar Upload API Integration', () => {
-  let serviceClient: any
+  let serviceClient: SupabaseClient<AppDatabase> | null = null
   let supabaseUrl: string
+
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+  const toPreferences = (value: unknown): Record<string, unknown> =>
+    isRecord(value) ? value : {}
 
   beforeAll(async () => {
     try {
@@ -23,7 +31,7 @@ describe('Avatar Upload API Integration', () => {
         throw new Error('Supabase environment variables not set')
       }
 
-      serviceClient = createClient(supabaseUrl, supabaseKey)
+      serviceClient = createClient<AppDatabase>(supabaseUrl, supabaseKey)
 
       // Test connection
       const { error } = await serviceClient
@@ -33,9 +41,10 @@ describe('Avatar Upload API Integration', () => {
       if (error && error.code !== 'PGRST116') {
         throw error
       }
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `Supabase unavailable for avatar upload tests: ${error?.message || error}`
+        `Supabase unavailable for avatar upload tests: ${message}`
       )
     }
   })
@@ -60,7 +69,7 @@ describe('Avatar Upload API Integration', () => {
           return
         }
 
-        const avatarsBucket = buckets?.find((b: any) => b.name === 'avatars')
+        const avatarsBucket = buckets?.find((b) => b.name === 'avatars')
 
         // Note: bucket might not exist if Supabase storage hasn't been restarted
         // after config change. This is expected in CI without full setup.
@@ -72,8 +81,9 @@ describe('Avatar Upload API Integration', () => {
             'Avatars bucket not found - storage may need restart after config change'
           )
         }
-      } catch (e: any) {
-        console.warn('Storage bucket test skipped:', e.message)
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e)
+        console.warn('Storage bucket test skipped:', message)
       }
     })
   })
@@ -92,10 +102,9 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const currentPreferences = (profile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const currentPreferences = isRecord(profile?.preferences)
+        ? profile.preferences
+        : {}
 
       // Update with avatar
       const { error: updateError } = await supabase
@@ -117,8 +126,10 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const preferences = updatedProfile?.preferences as Record<string, unknown>
-      expect(preferences?.avatar).toEqual(avatarData)
+      const preferences = isRecord(updatedProfile?.preferences)
+        ? updatedProfile.preferences
+        : {}
+      expect(preferences.avatar).toEqual(avatarData)
 
       // Clean up - remove avatar from preferences
       const { avatar: _, ...preferencesWithoutAvatar } = preferences
@@ -144,10 +155,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const currentPreferences = (profile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const currentPreferences = toPreferences(profile?.preferences)
 
       // Update with avatar
       const { error: updateError } = await supabase
@@ -169,7 +177,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const preferences = updatedProfile?.preferences as Record<string, unknown>
+      const preferences = toPreferences(updatedProfile?.preferences)
       expect(preferences?.avatar).toEqual(avatarData)
 
       // Clean up
@@ -192,10 +200,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const currentPreferences = (profile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const currentPreferences = toPreferences(profile?.preferences)
 
       await supabase
         .from('user_profiles')
@@ -214,8 +219,9 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const preferencesWithAvatar = (profileWithAvatar?.preferences ||
-        {}) as Record<string, unknown>
+      const preferencesWithAvatar = toPreferences(
+        profileWithAvatar?.preferences
+      )
 
       const { avatar: _, ...preferencesWithoutAvatar } = preferencesWithAvatar
 
@@ -235,10 +241,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const clearedPreferences = clearedProfile?.preferences as Record<
-        string,
-        unknown
-      >
+      const clearedPreferences = toPreferences(clearedProfile?.preferences)
       expect(clearedPreferences?.avatar).toBeUndefined()
     })
   })
@@ -254,10 +257,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const currentPreferences = (profile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const currentPreferences = toPreferences(profile?.preferences)
 
       // Valid preset avatar
       const presetAvatar = { type: 'preset', value: 'cat' }
@@ -297,10 +297,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
         .single()
 
-      const finalPreferences = (finalProfile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const finalPreferences = toPreferences(finalProfile?.preferences)
       const { avatar: _, ...clean } = finalPreferences
       await supabase
         .from('user_profiles')
@@ -321,10 +318,7 @@ describe('Avatar Upload API Integration', () => {
       expect(error).toBeNull()
 
       // Avatar should be undefined or null when not set
-      const preferences = (profile?.preferences || {}) as Record<
-        string,
-        unknown
-      >
+      const preferences = toPreferences(profile?.preferences)
       // Should not throw when accessing avatar that doesn't exist
       const avatar = preferences?.avatar
       expect(avatar === undefined || avatar === null).toBe(true)
@@ -366,10 +360,7 @@ describe('Avatar Upload API Integration', () => {
           .eq('id', user2.id)
           .single()
 
-        const preferences = (user2Profile?.preferences || {}) as Record<
-          string,
-          unknown
-        >
+        const preferences = toPreferences(user2Profile?.preferences)
         // Avatar should not be the one user1 tried to set
         expect(preferences?.avatar).not.toEqual({
           type: 'preset',

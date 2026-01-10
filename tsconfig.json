@@ -13,7 +13,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "types": ["jest", "@testing-library/jest-dom", "./src/types/jest"],
+    "types": [
+      "jest",
+      "@testing-library/jest-dom",
+      "react",
+      "react-dom",
+      "./src/types/jest"
+    ],
     "incremental": true,
     "plugins": [
       {
@@ -28,9 +34,6 @@
   "include": [
     ".next-run-local-api/types/**/*.ts",
     ".next/types/**/*.ts",
-    "__tests__/**/*.ts",
-    "__tests__/**/*.tsx",
-    "jest.setup.ts",
     "middleware.ts",
     "next-env.d.ts",
     "next.config.ts",
@@ -43,7 +46,6 @@
     "types/**/*.d.ts",
     // scripts
     "vitest.config.ts",
-    "vitest.setup.ts",
     ".next-build/types/**/*.ts"
   ],
   "exclude": [
@@ -56,11 +58,6 @@
     "playwright-report",
     "test-results",
     "migrated_data",
-    "__tests__/**/*.test.ts",
-    "__tests__/**/*.test.tsx",
-    "__tests__/**/*.spec.ts",
-    "__tests__/**/*.spec.tsx",
-    "__tests__/setupSupabaseMock.ts",
-    "jest.setup.ts"
+    "__tests__/setupSupabaseMock.ts"
   ]
 }

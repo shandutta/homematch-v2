@@ -1,35 +1,56 @@
 import { PropertySearchService } from '@/lib/services/properties/search'
-import type { ISupabaseClientFactory } from '@/lib/services/interfaces'
-import type { SupabaseClient } from '@supabase/supabase-js'
+
+type QueryResult = { data: unknown[]; error: null }
+type MockQueryBuilder = {
+  select: jest.MockedFunction<() => MockQueryBuilder>
+  eq: jest.MockedFunction<() => MockQueryBuilder>
+  or: jest.MockedFunction<(filters: string) => MockQueryBuilder>
+  order: jest.MockedFunction<() => MockQueryBuilder>
+  limit: jest.MockedFunction<() => MockQueryBuilder>
+  then: jest.MockedFunction<
+    <TResult>(
+      onFulfilled: (value: QueryResult) => TResult | PromiseLike<TResult>,
+      onRejected?: (reason: unknown) => TResult | PromiseLike<TResult>
+    ) => Promise<TResult>
+  >
+}
+
+const createMockQueryBuilder = (
+  resolvedResult: QueryResult
+): MockQueryBuilder => {
+  const builder: MockQueryBuilder = {
+    select: jest.fn(() => builder),
+    eq: jest.fn(() => builder),
+    or: jest.fn(() => builder),
+    order: jest.fn(() => builder),
+    limit: jest.fn(() => builder),
+    then: jest.fn((onFulfilled, onRejected) =>
+      Promise.resolve(resolvedResult).then(onFulfilled, onRejected)
+    ),
+  }
+
+  return builder
+}
 
 describe('PropertySearchService Security Tests', () => {
   let service: PropertySearchService
-  let mockSupabase: any
-  let mockClientFactory: ISupabaseClientFactory
+  let mockSupabase: {
+    from: jest.MockedFunction<(table: string) => MockQueryBuilder>
+  }
 
   beforeEach(() => {
-    const resolvedResult = { data: [], error: null }
-    // Mock Supabase query builder
-    const mockQueryBuilder = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      or: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      then: jest.fn((onFulfilled, onRejected) =>
-        Promise.resolve(resolvedResult).then(onFulfilled, onRejected)
-      ),
-    }
+    const resolvedResult: QueryResult = { data: [], error: null }
+    const mockQueryBuilder = createMockQueryBuilder(resolvedResult)
 
     mockSupabase = {
       from: jest.fn().mockReturnValue(mockQueryBuilder),
     }
-
-    mockClientFactory = {
-      createClient: jest.fn().mockResolvedValue(mockSupabase as SupabaseClient),
-    }
-
-    service = new PropertySearchService(mockClientFactory)
+    service = new PropertySearchService()
+    Reflect.set(
+      service,
+      'getSupabase',
+      jest.fn().mockResolvedValue(mockSupabase)
+    )
   })
 
   describe('searchPropertiesText', () => {

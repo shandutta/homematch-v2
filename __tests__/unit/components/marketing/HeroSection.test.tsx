@@ -4,27 +4,35 @@ import { HeroSection } from '@/components/marketing/HeroSection'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-    section: ({ children, ...props }: any) => (
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    h1: ({ children, ...props }: JSX.IntrinsicElements['h1']) => (
+      <h1 {...props}>{children}</h1>
+    ),
+    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
+      <p {...props}>{children}</p>
+    ),
+    section: ({ children, ...props }: JSX.IntrinsicElements['section']) => (
       <section {...props}>{children}</section>
     ),
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-    button: ({ children, ...props }: any) => (
+    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
+      <span {...props}>{children}</span>
+    ),
+    button: ({ children, ...props }: JSX.IntrinsicElements['button']) => (
       <button {...props}>{children}</button>
     ),
   },
   useScroll: () => ({ scrollYProgress: { get: () => 0 } }),
   useTransform: () => ({ get: () => 0 }),
   useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: (value: any) => value,
+  useSpring: <T,>(value: T) => value,
 }))
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: JSX.IntrinsicElements['a']) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -34,7 +42,16 @@ jest.mock('next/link', () => ({
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, priority, fill, ...props }: any) => (
+  default: ({
+    src,
+    alt,
+    priority,
+    fill,
+    ...props
+  }: JSX.IntrinsicElements['img'] & {
+    priority?: boolean
+    fill?: boolean
+  }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}

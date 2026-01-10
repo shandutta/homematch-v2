@@ -178,7 +178,12 @@ describe('E2E: /api/couples/activity', () => {
     })
 
     test('should reject non-GET methods', async () => {
-      const methods = ['POST', 'PUT', 'DELETE', 'PATCH'] as const
+      const methods: Array<'POST' | 'PUT' | 'DELETE' | 'PATCH'> = [
+        'POST',
+        'PUT',
+        'DELETE',
+        'PATCH',
+      ]
 
       for (const method of methods) {
         try {

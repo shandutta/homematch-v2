@@ -74,9 +74,7 @@ const createCachedClient = (
   options?: SupabaseCreateClientOptions
 ): CachedSupabaseClient => {
   // Include auth header and test user index in cache key to ensure different auth contexts get different clients
-  const globalHeaders = (
-    options?.global as { headers?: Record<string, string> }
-  )?.headers
+  const globalHeaders = options?.global?.headers
   const authHeader = globalHeaders?.Authorization
   const testUserIndex = globalHeaders?.['X-Test-User-Index']
 
@@ -175,8 +173,8 @@ function calculateBackoffDelay(attempt: number): number {
 }
 
 async function fetchWithRetry(
-  input: RequestInfo | URL,
-  init?: RequestInit,
+  input: UndiciFetchInput,
+  init?: UndiciFetchInit,
   attempt = 0
 ): Promise<UndiciFetchResponse> {
   const url = input.toString()
@@ -192,13 +190,10 @@ async function fetchWithRetry(
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs)
 
-    const response = await undiciFetch(
-      input as unknown as UndiciFetchInput,
-      {
-        ...init,
-        signal: controller.signal,
-      } as unknown as UndiciFetchInit
-    )
+    const response = await undiciFetch(input, {
+      ...init,
+      signal: controller.signal,
+    })
 
     clearTimeout(timeoutId)
 
@@ -215,14 +210,15 @@ async function fetchWithRetry(
   } catch (error) {
     // Handle AggregateError from Node fetch - errors are nested
     let message = error instanceof Error ? error.message : String(error)
-    if (
-      error &&
-      typeof error === 'object' &&
-      'errors' in error &&
-      Array.isArray((error as { errors: unknown[] }).errors)
-    ) {
-      const nestedErrors = (error as { errors: Error[] }).errors
-      message = nestedErrors.map((e) => e.message).join(' ')
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    if (isRecord(error) && Array.isArray(error.errors)) {
+      const nestedMessages = error.errors
+        .filter((nested): nested is Error => nested instanceof Error)
+        .map((nested) => nested.message)
+      if (nestedMessages.length > 0) {
+        message = nestedMessages.join(' ')
+      }
     }
 
     const isRetryable =
@@ -237,20 +233,32 @@ async function fetchWithRetry(
 }
 
 // Apply the resilient fetch globally for integration tests
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-;(globalThis as any).fetch = fetchWithRetry
+Object.defineProperty(globalThis, 'fetch', {
+  value: fetchWithRetry,
+  writable: true,
+  configurable: true,
+})
 // Ensure associated fetch globals are available (helps when Node lacks them)
 if (typeof globalThis.Headers === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).Headers = UndiciHeaders
+  Object.defineProperty(globalThis, 'Headers', {
+    value: UndiciHeaders,
+    writable: true,
+    configurable: true,
+  })
 }
 if (typeof globalThis.Request === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).Request = UndiciRequest
+  Object.defineProperty(globalThis, 'Request', {
+    value: UndiciRequest,
+    writable: true,
+    configurable: true,
+  })
 }
 if (typeof globalThis.Response === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).Response = UndiciResponse
+  Object.defineProperty(globalThis, 'Response', {
+    value: UndiciResponse,
+    writable: true,
+    configurable: true,
+  })
 }
 
 // Provide a minimal localStorage/sessionStorage implementation when Node's
@@ -375,12 +383,9 @@ vi.mock('framer-motion', async () => {
     return Component
   }
 
-  const motion = new Proxy(
-    {},
-    {
-      get: (_, tag: string) => createMotionComponent(tag),
-    }
-  ) as typeof actual.motion
+  const motion = new Proxy(actual.motion, {
+    get: (_, tag: string) => createMotionComponent(tag),
+  })
 
   return {
     ...actual,
@@ -648,7 +653,11 @@ async function ensureBaselinePropertyData(
 
 if (typeof AbortCtor === 'function') {
   // Align global AbortController for any downstream fetch usage
-  globalThis.AbortController = AbortCtor as typeof AbortController
+  Object.defineProperty(globalThis, 'AbortController', {
+    value: AbortCtor,
+    writable: true,
+    configurable: true,
+  })
 }
 
 if (!supabaseAnonKey || !supabaseServiceRoleKey) {

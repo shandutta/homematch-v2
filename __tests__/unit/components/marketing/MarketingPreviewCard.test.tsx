@@ -4,21 +4,32 @@ import { MarketingPreviewCard } from '@/components/marketing/MarketingPreviewCar
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: any) => (
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    button: ({ children, ...props }: JSX.IntrinsicElements['button']) => (
       <button {...props}>{children}</button>
     ),
   },
   useScroll: () => ({ scrollY: { get: () => 0 } }),
   useTransform: () => ({ get: () => 0 }),
   useMotionValue: () => ({ set: jest.fn(), get: () => 0.5 }),
-  useSpring: (value: any) => value,
+  useSpring: <T,>(value: T) => value,
 }))
 
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, priority, fill, ...props }: any) => (
+  default: ({
+    src,
+    alt,
+    priority,
+    fill,
+    ...props
+  }: JSX.IntrinsicElements['img'] & {
+    priority?: boolean
+    fill?: boolean
+  }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}

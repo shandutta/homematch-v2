@@ -22,15 +22,6 @@ type ZillowListing = {
   [k: string]: unknown
 }
 
-type PropertyExtendedSearchResponse = {
-  results?: ZillowListing[]
-  props?: ZillowListing[]
-  data?: {
-    results?: ZillowListing[]
-  }
-  [k: string]: unknown
-}
-
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // Kept for future use when switching to the dedicated Zillow images endpoint
 type ZillowImagesResponse = {
@@ -50,6 +41,43 @@ const BACKUP_PATH = path.join(
   'migrated_data',
   'seed-properties.backup.json'
 )
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isSeedProperty = (value: unknown): value is SeedProperty =>
+  isRecord(value) &&
+  typeof value.address === 'string' &&
+  typeof value.city === 'string' &&
+  typeof value.state === 'string'
+
+const parseSeedProperties = (value: unknown): SeedProperty[] => {
+  if (!Array.isArray(value)) {
+    throw new Error('Seed file must contain a JSON array')
+  }
+  const valid = value.filter(isSeedProperty)
+  if (valid.length !== value.length) {
+    console.warn(
+      `[update-seed-zillow-images] Skipping ${
+        value.length - valid.length
+      } invalid seed records`
+    )
+  }
+  return valid
+}
+
+const isZillowListing = (value: unknown): value is ZillowListing =>
+  isRecord(value)
+
+const getListingsFromSearch = (value: unknown): ZillowListing[] => {
+  if (!isRecord(value)) return []
+  if (Array.isArray(value.results)) return value.results.filter(isZillowListing)
+  if (Array.isArray(value.props)) return value.props.filter(isZillowListing)
+  if (isRecord(value.data) && Array.isArray(value.data.results)) {
+    return value.data.results.filter(isZillowListing)
+  }
+  return []
+}
 
 function parseArgs(argv: string[]): Record<string, string | boolean> {
   const args: Record<string, string | boolean> = {}
@@ -129,13 +157,14 @@ async function propertyExtendedSearch(
   key: string,
   host: string,
   retries = 3
-): Promise<PropertyExtendedSearchResponse | undefined> {
+): Promise<ZillowListing[] | undefined> {
   const url = `https://${host}/propertyExtendedSearch?location=${encodeURIComponent(location)}`
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      return (await rapidJson(url, key, host)) as PropertyExtendedSearchResponse
+      const data = await rapidJson(url, key, host)
+      return getListingsFromSearch(data)
     } catch (err) {
-      const msg = (err as Error).message || ''
+      const msg = err instanceof Error ? err.message : String(err)
       const is429 = /429/.test(msg)
       const is404 = /404/.test(msg)
       if (is404) {
@@ -171,13 +200,13 @@ async function pickFirstListingImageFromSearch(
     ? undefined
     : [p.city, p.state].filter(Boolean).join(', ')
 
-  const locations = [primaryLoc, secondaryLoc].filter(Boolean) as string[]
+  const locations = [primaryLoc, secondaryLoc].filter(
+    (loc): loc is string => typeof loc === 'string' && loc.length > 0
+  )
 
   for (const loc of locations) {
-    const data = await propertyExtendedSearch(loc, key, host, 4)
-    if (!data) continue
-    const list: ZillowListing[] =
-      data.results ?? data.props ?? data.data?.results ?? []
+    const list = (await propertyExtendedSearch(loc, key, host, 4)) ?? []
+    if (list.length === 0) continue
 
     // Try to find a listing in the same city/state first
     const normalizedCity = normalizeString(p.city)
@@ -218,9 +247,9 @@ async function main() {
   }
 
   const raw = fs.readFileSync(SEED_PATH, 'utf-8')
-  const seed = JSON.parse(raw) as SeedProperty[]
+  const seed = parseSeedProperties(JSON.parse(raw))
 
-  const updated: SeedProperty[] = JSON.parse(raw)
+  const updated: SeedProperty[] = seed.map((item) => ({ ...item }))
 
   let changed = 0
   for (let i = 0; i < seed.length; i++) {

@@ -7,7 +7,15 @@ import { createClient } from '@/lib/supabase/client'
 import { createApiClient } from '@/lib/supabase/server'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import type { AuthError } from '@supabase/supabase-js'
+import {
+  AuthError,
+  createClient as createSupabaseClient,
+} from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
+import {
+  createMockSession,
+  createMockUser,
+} from '@/__tests__/factories/typed-mock-factory'
 
 type SupabaseAuthOverrides = Partial<Record<string, unknown>>
 type SupabaseFromOverrides = (table: string) => Record<string, unknown>
@@ -16,49 +24,115 @@ type SupabaseOverrides = {
   from?: SupabaseFromOverrides
 } & Record<string, unknown>
 
-const asMocked = <T extends (...args: never[]) => unknown>(fn: T) =>
-  fn as jest.MockedFunction<T>
+const createMockFetch = (): typeof fetch => {
+  return async () =>
+    new Response(JSON.stringify({ data: null, error: null }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+}
+
+const createBaseClient = () =>
+  createSupabaseClient<AppDatabase>('http://localhost:54321', 'test-key', {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      fetch: createMockFetch(),
+    },
+  })
 
 /**
  * Helper to customize Supabase client mock for specific test scenarios
  */
 export function mockSupabaseClient(overrides: SupabaseOverrides = {}) {
-  const client = jest.mocked(createClient).mockReturnValue({
-    auth: {
-      signInWithPassword: jest.fn(() => Promise.resolve({ error: null })),
-      signInWithOAuth: jest.fn(() => Promise.resolve({ error: null })),
-      signUp: jest.fn(() => Promise.resolve({ error: null })),
-      signOut: jest.fn(() => Promise.resolve({ error: null })),
-      getUser: jest.fn(() =>
-        Promise.resolve({
-          data: { user: null },
-          error: null,
-        })
-      ),
-      getSession: jest.fn(() =>
-        Promise.resolve({
-          data: { session: null },
-          error: null,
-        })
-      ),
-      onAuthStateChange: jest.fn((_callback) => ({
-        data: { subscription: { unsubscribe: jest.fn() } },
-      })),
-      ...overrides.auth,
+  const client = createBaseClient()
+  const {
+    auth: authOverrides,
+    from: fromOverrides,
+    ...restOverrides
+  } = overrides
+
+  const auth = client.auth
+  const defaultUser = createMockUser()
+  const defaultSession = createMockSession({ user: defaultUser })
+  auth.signInWithPassword = jest.fn<
+    ReturnType<typeof auth.signInWithPassword>,
+    Parameters<typeof auth.signInWithPassword>
+  >(async () => ({
+    data: { user: defaultUser, session: defaultSession },
+    error: null,
+  }))
+  auth.signInWithOAuth = jest.fn<
+    ReturnType<typeof auth.signInWithOAuth>,
+    Parameters<typeof auth.signInWithOAuth>
+  >(async () => ({
+    data: { provider: 'google', url: 'https://example.com/oauth' },
+    error: null,
+  }))
+  auth.signUp = jest.fn<
+    ReturnType<typeof auth.signUp>,
+    Parameters<typeof auth.signUp>
+  >(async () => ({
+    data: { user: defaultUser, session: defaultSession },
+    error: null,
+  }))
+  auth.signOut = jest.fn<
+    ReturnType<typeof auth.signOut>,
+    Parameters<typeof auth.signOut>
+  >(async () => ({ error: null }))
+  auth.getUser = jest.fn<
+    ReturnType<typeof auth.getUser>,
+    Parameters<typeof auth.getUser>
+  >(async () => ({
+    data: { user: defaultUser },
+    error: null,
+  }))
+  auth.getSession = jest.fn<
+    ReturnType<typeof auth.getSession>,
+    Parameters<typeof auth.getSession>
+  >(async () => ({
+    data: { session: defaultSession },
+    error: null,
+  }))
+  auth.onAuthStateChange = jest.fn<
+    ReturnType<typeof auth.onAuthStateChange>,
+    Parameters<typeof auth.onAuthStateChange>
+  >((callback) => ({
+    data: {
+      subscription: {
+        id: 'test-subscription',
+        callback,
+        unsubscribe: jest.fn(),
+      },
     },
-    from: jest.fn((table: string) => ({
-      select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn(() => Promise.resolve({ data: null, error: null })),
-      then: jest.fn((onFulfilled) => onFulfilled({ data: [], error: null })),
-      ...overrides.from?.(table),
-    })),
-    rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
-    ...overrides,
-  } as unknown as ReturnType<typeof createClient>)
+  }))
+
+  if (authOverrides) {
+    Object.assign(auth, authOverrides)
+  }
+
+  if (fromOverrides) {
+    const baseFrom = client.from.bind(client)
+    const fromMock = jest.fn<
+      ReturnType<typeof client.from>,
+      Parameters<typeof client.from>
+    >((table) => {
+      const query = baseFrom(table)
+      const extra = fromOverrides(String(table))
+      if (extra && typeof extra === 'object') {
+        return Object.assign(query, extra)
+      }
+      return query
+    })
+    client.from = fromMock
+  }
+
+  Object.assign(client, restOverrides)
+
+  jest.mocked(createClient).mockReturnValue(client)
 
   return client
 }
@@ -67,41 +141,62 @@ export function mockSupabaseClient(overrides: SupabaseOverrides = {}) {
  * Helper to customize Supabase server client mock for API tests
  */
 export function mockSupabaseServerClient(overrides: SupabaseOverrides = {}) {
-  const client = jest.mocked(createApiClient).mockReturnValue({
-    auth: {
-      getUser: jest.fn(() =>
-        Promise.resolve({
-          data: { user: { id: 'test-user-id', email: 'test@example.com' } },
-          error: null,
-        })
-      ),
-      getSession: jest.fn(() =>
-        Promise.resolve({
-          data: {
-            session: {
-              user: { id: 'test-user-id', email: 'test@example.com' },
-              access_token: 'test-token',
-              refresh_token: 'test-refresh-token',
-            },
-          },
-          error: null,
-        })
-      ),
-      ...overrides.auth,
+  const client = createBaseClient()
+  const {
+    auth: authOverrides,
+    from: fromOverrides,
+    ...restOverrides
+  } = overrides
+
+  const auth = client.auth
+  const user = createMockUser()
+  auth.getUser = jest.fn<
+    ReturnType<typeof auth.getUser>,
+    Parameters<typeof auth.getUser>
+  >(async () => ({
+    data: { user },
+    error: null,
+  }))
+  auth.getSession = jest.fn<
+    ReturnType<typeof auth.getSession>,
+    Parameters<typeof auth.getSession>
+  >(async () => ({
+    data: {
+      session: {
+        user,
+        access_token: 'test-token',
+        refresh_token: 'test-refresh-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer',
+      },
     },
-    from: jest.fn((table: string) => ({
-      select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn(() => Promise.resolve({ data: null, error: null })),
-      then: jest.fn((onFulfilled) => onFulfilled({ data: [], error: null })),
-      ...overrides.from?.(table),
-    })),
-    rpc: jest.fn(() => Promise.resolve({ data: null, error: null })),
-    ...overrides,
-  } as unknown as ReturnType<typeof createApiClient>)
+    error: null,
+  }))
+
+  if (authOverrides) {
+    Object.assign(auth, authOverrides)
+  }
+
+  if (fromOverrides) {
+    const baseFrom = client.from.bind(client)
+    const fromMock = jest.fn<
+      ReturnType<typeof client.from>,
+      Parameters<typeof client.from>
+    >((table) => {
+      const query = baseFrom(table)
+      const extra = fromOverrides(String(table))
+      if (extra && typeof extra === 'object') {
+        return Object.assign(query, extra)
+      }
+      return query
+    })
+    client.from = fromMock
+  }
+
+  Object.assign(client, restOverrides)
+
+  jest.mocked(createApiClient).mockReturnValue(client)
 
   return client
 }
@@ -143,12 +238,12 @@ export function mockAuthenticatedUser(
 
   // Update client mock
   const clientMock = jest.mocked(createClient)
-  const client = clientMock() as jest.Mocked<ReturnType<typeof createClient>>
-  asMocked(client.auth.getUser).mockResolvedValue({
+  const client = clientMock()
+  jest.mocked(client.auth.getUser).mockResolvedValue({
     data: { user },
     error: null,
   })
-  asMocked(client.auth.getSession).mockResolvedValue({
+  jest.mocked(client.auth.getSession).mockResolvedValue({
     data: {
       session: {
         user,
@@ -164,12 +259,12 @@ export function mockAuthenticatedUser(
 
   // Update server mock
   const serverMock = jest.mocked(createApiClient)
-  const server = serverMock() as jest.Mocked<ReturnType<typeof createApiClient>>
-  asMocked(server.auth.getUser).mockResolvedValue({
+  const server = serverMock()
+  jest.mocked(server.auth.getUser).mockResolvedValue({
     data: { user },
     error: null,
   })
-  asMocked(server.auth.getSession).mockResolvedValue({
+  jest.mocked(server.auth.getSession).mockResolvedValue({
     data: {
       session: {
         user,
@@ -191,24 +286,24 @@ export function mockAuthenticatedUser(
  */
 export function mockUnauthenticatedUser() {
   const clientMock = jest.mocked(createClient)
-  const client = clientMock() as jest.Mocked<ReturnType<typeof createClient>>
-  const authError = new Error('Unauthorized') as AuthError
-  asMocked(client.auth.getUser).mockResolvedValue({
+  const client = clientMock()
+  const authError = new AuthError('Unauthorized')
+  jest.mocked(client.auth.getUser).mockResolvedValue({
     data: { user: null },
     error: authError,
   })
-  asMocked(client.auth.getSession).mockResolvedValue({
+  jest.mocked(client.auth.getSession).mockResolvedValue({
     data: { session: null },
     error: null,
   })
 
   const serverMock = jest.mocked(createApiClient)
-  const server = serverMock() as jest.Mocked<ReturnType<typeof createApiClient>>
-  asMocked(server.auth.getUser).mockResolvedValue({
+  const server = serverMock()
+  jest.mocked(server.auth.getUser).mockResolvedValue({
     data: { user: null },
     error: authError,
   })
-  asMocked(server.auth.getSession).mockResolvedValue({
+  jest.mocked(server.auth.getSession).mockResolvedValue({
     data: { session: null },
     error: null,
   })

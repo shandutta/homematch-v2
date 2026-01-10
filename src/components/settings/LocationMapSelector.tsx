@@ -186,10 +186,7 @@ export function LocationMapSelector({
   const [drawMode, setDrawMode] = useState<DrawMode>(null)
   const updateDebugState = useCallback((next: Record<string, unknown>) => {
     if (!isMapDebug) return
-    const debugWindow = window as Window & {
-      __hmMapDebug?: Record<string, unknown>
-    }
-    debugWindow.__hmMapDebug = { ...(debugWindow.__hmMapDebug || {}), ...next }
+    window.__hmMapDebug = { ...(window.__hmMapDebug || {}), ...next }
   }, [])
 
   const selectedNeighborhoodSet = useMemo(
@@ -854,7 +851,8 @@ export function LocationMapSelector({
         const match = cityShapes.find((item) => item.key === key)
         if (match) onToggleCity(match.city)
       },
-      drawSelection: (ring: LatLng[]) => {
+      drawSelection: (ring: unknown) => {
+        if (!isLatLngArray(ring)) return
         handleDrawSelection(ring)
       },
     }
@@ -993,6 +991,10 @@ const isLatLngLike = (value: unknown): value is LatLngLike => {
   const latOk = typeof lat === 'number' || typeof lat === 'function'
   const lngOk = typeof lng === 'number' || typeof lng === 'function'
   return latOk && lngOk
+}
+
+function isLatLngArray(value: unknown): value is LatLng[] {
+  return Array.isArray(value) && value.every(isLatLngLike)
 }
 
 function extractDrawnRing(event: unknown): LatLng[] {

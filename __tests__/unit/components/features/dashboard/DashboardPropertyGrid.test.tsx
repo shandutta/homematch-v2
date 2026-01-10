@@ -1,17 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { DashboardPropertyGrid } from '@/components/features/dashboard/DashboardPropertyGrid'
+import type { Property } from '@/lib/schemas/property'
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ href, children }: any) => <a href={href}>{children}</a>,
+  default: ({ href, children }: JSX.IntrinsicElements['a']) => (
+    <a href={href}>{children}</a>
+  ),
 }))
 
-const mockPropertyCard = jest.fn(({ property }: any) => (
+const mockPropertyCard = jest.fn(({ property }: { property: Property }) => (
   <div data-testid="property-card">{property.address}</div>
 ))
 
 jest.mock('@/components/property/PropertyCard', () => ({
-  PropertyCard: (props: any) => mockPropertyCard(props),
+  PropertyCard: (props: { property: Property }) => mockPropertyCard(props),
 }))
 
 jest.mock('@/components/properties/SwipeablePropertyCard', () => ({
@@ -22,8 +25,9 @@ jest.mock('@/components/ads/InFeedAd', () => ({
   InFeedAd: () => <div data-testid="in-feed-ad" />,
 }))
 
-const mockProperty = {
+const mockProperty: Property = {
   id: 'property-1',
+  zpid: null,
   address: '123 Main St',
   city: 'San Francisco',
   state: 'CA',
@@ -36,6 +40,7 @@ const mockProperty = {
   listing_status: 'active',
   images: [],
   description: null,
+  coordinates: null,
   neighborhood_id: null,
   amenities: [],
   year_built: 1990,
@@ -45,7 +50,7 @@ const mockProperty = {
   is_active: true,
   created_at: null,
   updated_at: null,
-} as any
+}
 
 describe('DashboardPropertyGrid', () => {
   beforeEach(() => {

@@ -4,18 +4,22 @@ import { Header } from '@/components/marketing/Header'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    header: ({ children, ...props }: any) => (
+    header: ({ children, ...props }: JSX.IntrinsicElements['header']) => (
       <header {...props}>{children}</header>
     ),
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    nav: ({ children, ...props }: any) => <nav {...props}>{children}</nav>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    nav: ({ children, ...props }: JSX.IntrinsicElements['nav']) => (
+      <nav {...props}>{children}</nav>
+    ),
   },
 }))
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: JSX.IntrinsicElements['a']) => (
     <a href={href} {...props}>
       {children}
     </a>

@@ -16,6 +16,7 @@ jest.mock('sonner', () => ({
 }))
 
 describe('NotificationsSection', () => {
+  const mockedUserService = jest.mocked(UserServiceClient)
   const mockUpdateUserProfile = jest.fn()
   const mockUser: User = {
     id: 'user-123',
@@ -24,7 +25,7 @@ describe('NotificationsSection', () => {
     user_metadata: {},
     aud: 'authenticated',
     created_at: '2024-01-01',
-  } as User
+  }
 
   const mockProfile: UserProfile = {
     id: 'user-123',
@@ -55,7 +56,9 @@ describe('NotificationsSection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(UserServiceClient.updateUserProfile as jest.Mock) = mockUpdateUserProfile
+    mockedUserService.updateUserProfile.mockImplementation(
+      mockUpdateUserProfile
+    )
   })
 
   afterEach(() => {
@@ -84,15 +87,13 @@ describe('NotificationsSection', () => {
       .getByText('Email Notifications')
       .closest('.space-y-4')
 
-    expect(emailSection).not.toBeNull()
-    expect(emailSection as HTMLElement).toHaveTextContent(
-      'New property matches'
-    )
-    expect(emailSection as HTMLElement).toHaveTextContent('Price drops')
-    expect(emailSection as HTMLElement).toHaveTextContent(
-      'Saved search updates'
-    )
-    expect(emailSection as HTMLElement).toHaveTextContent('Weekly digest')
+    if (!(emailSection instanceof HTMLElement)) {
+      throw new Error('Expected email notification section')
+    }
+    expect(emailSection).toHaveTextContent('New property matches')
+    expect(emailSection).toHaveTextContent('Price drops')
+    expect(emailSection).toHaveTextContent('Saved search updates')
+    expect(emailSection).toHaveTextContent('Weekly digest')
   })
 
   test('renders all push notification options', () => {
@@ -101,10 +102,12 @@ describe('NotificationsSection', () => {
     const pushSection = screen
       .getByText('Push Notifications')
       .closest('.space-y-4')
-    expect(pushSection).not.toBeNull()
-    expect(pushSection as HTMLElement).toHaveTextContent('New listing matches')
-    expect(pushSection as HTMLElement).toHaveTextContent('Price drops')
-    expect(pushSection as HTMLElement).toHaveTextContent('Household messages')
+    if (!(pushSection instanceof HTMLElement)) {
+      throw new Error('Expected push notification section')
+    }
+    expect(pushSection).toHaveTextContent('New listing matches')
+    expect(pushSection).toHaveTextContent('Price drops')
+    expect(pushSection).toHaveTextContent('Household messages')
   })
 
   test('renders all SMS notification options', () => {
@@ -284,11 +287,11 @@ describe('NotificationsSection', () => {
     const emailSection = screen
       .getByText('Email Notifications')
       .closest('.space-y-4')
-    expect(emailSection).not.toBeNull()
-    expect(emailSection as HTMLElement).toHaveTextContent(
-      'New property matches'
-    )
-    expect(emailSection as HTMLElement).toHaveTextContent('Weekly digest')
+    if (!(emailSection instanceof HTMLElement)) {
+      throw new Error('Expected email notification section')
+    }
+    expect(emailSection).toHaveTextContent('New property matches')
+    expect(emailSection).toHaveTextContent('Weekly digest')
 
     // Check that all sections are rendered
     expect(screen.getByText('Push Notifications')).toBeInTheDocument()

@@ -135,11 +135,14 @@ async function fetchZillowImages(
       return []
     }
 
-    const data = (await response.json()) as {
-      images?: string[]
-      [k: string]: unknown
-    }
-    const images = Array.isArray(data.images) ? data.images : []
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    const isStringArray = (value: unknown): value is string[] =>
+      Array.isArray(value) && value.every((item) => typeof item === 'string')
+
+    const data: unknown = await response.json()
+    const images =
+      isRecord(data) && isStringArray(data.images) ? data.images : []
     if (isDev) {
       console.log(
         `[fetchZillowImages] Got ${images.length} images from /images endpoint`

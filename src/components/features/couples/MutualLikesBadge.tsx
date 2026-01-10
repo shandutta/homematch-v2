@@ -74,9 +74,9 @@ export function MutualLikesBadge({
 }
 
 interface MutualLikesIndicatorProps {
-  propertyId: string
-  mutualLikes: Array<{
-    property_id: string
+  propertyId?: string | null
+  mutualLikes?: Array<{
+    property_id?: string | null
     liked_by_count: number
   }>
   variant?: 'default' | 'compact' | 'large'
@@ -87,7 +87,10 @@ export function MutualLikesIndicator({
   mutualLikes,
   variant = 'default',
 }: MutualLikesIndicatorProps) {
-  const mutualLike = mutualLikes.find((ml) => ml.property_id === propertyId)
+  if (!propertyId) return null
+  const mutualLike = (mutualLikes ?? []).find(
+    (ml) => ml.property_id === propertyId
+  )
 
   if (!mutualLike) return null
 

@@ -4,19 +4,31 @@ import { Footer } from '@/components/marketing/Footer'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    a: ({ children, ...props }: any) => <a {...props}>{children}</a>,
-    h3: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
-    h4: ({ children, ...props }: any) => <h4 {...props}>{children}</h4>,
-    li: ({ children, ...props }: any) => <li {...props}>{children}</li>,
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    a: ({ children, ...props }: JSX.IntrinsicElements['a']) => (
+      <a {...props}>{children}</a>
+    ),
+    h3: ({ children, ...props }: JSX.IntrinsicElements['h3']) => (
+      <h3 {...props}>{children}</h3>
+    ),
+    h4: ({ children, ...props }: JSX.IntrinsicElements['h4']) => (
+      <h4 {...props}>{children}</h4>
+    ),
+    li: ({ children, ...props }: JSX.IntrinsicElements['li']) => (
+      <li {...props}>{children}</li>
+    ),
+    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
+      <span {...props}>{children}</span>
+    ),
   },
 }))
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: JSX.IntrinsicElements['a']) => (
     <a href={href} {...props}>
       {children}
     </a>

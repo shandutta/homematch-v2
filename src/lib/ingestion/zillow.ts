@@ -1,10 +1,8 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { ZillowUtils } from '@/lib/api/zillow-client'
 import {
   DataTransformer,
   RawPropertyData,
 } from '@/lib/migration/data-transformer'
-import type { AppDatabase } from '@/types/app-database'
 import type { PropertyInsert } from '@/types/database'
 import { defaultZipForCityState } from './default-zips'
 
@@ -45,7 +43,18 @@ export type ZillowSortOption =
 
 type FetchLike = typeof fetch
 
-type SupabaseLike = Pick<SupabaseClient<AppDatabase>, 'from' | 'rpc'>
+type SupabaseLike = {
+  from: (table: 'properties') => {
+    upsert: (
+      rows: PropertyInsert[],
+      options?: { onConflict?: string }
+    ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>
+  }
+  rpc: (
+    fn: 'backfill_property_neighborhoods',
+    args: { target_zpids: string[] }
+  ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>
+}
 
 const allowedPropertyTypeSet = new Set<string>(ALLOWED_PROPERTY_TYPES)
 

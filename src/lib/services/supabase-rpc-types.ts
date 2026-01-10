@@ -2,7 +2,7 @@
  * Supabase RPC Type Definitions
  *
  * Provides type-safe RPC function calls for custom Supabase database functions.
- * Eliminates the need for `(supabase as any)` casts throughout the codebase.
+ * Eliminates the need for loose Supabase typing throughout the codebase.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -424,31 +424,35 @@ export function createTypedRPC(
 /**
  * Type-safe RPC function caller with error handling
  */
-export async function callRPC<TFunctionName extends keyof TypedSupabaseRPC>(
+type RPCFunctionName = keyof TypedSupabaseRPC &
+  keyof AppDatabase['public']['Functions']
+type RPCReturn<TFunctionName extends RPCFunctionName> = RPCResponse<
+  FunctionReturn<TFunctionName>
+>
+
+export async function callRPC<TFunctionName extends RPCFunctionName>(
   supabase: SupabaseClient<AppDatabase>,
   functionName: TFunctionName,
-  params: Parameters<TypedSupabaseRPC[TFunctionName]>[0]
-): Promise<Awaited<ReturnType<TypedSupabaseRPC[TFunctionName]>>> {
-  const rpc = createTypedRPC(supabase)
-
-  try {
-    const rpcFunction = rpc[functionName] as (
-      params: Parameters<TypedSupabaseRPC[keyof TypedSupabaseRPC]>[0]
-    ) => Promise<RPCResponse<unknown>>
-    return (await rpcFunction(params)) as Awaited<
-      ReturnType<TypedSupabaseRPC[TFunctionName]>
-    >
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error'
-    const fallback = {
+  params: AppDatabase['public']['Functions'][TFunctionName]['Args']
+): Promise<RPCReturn<TFunctionName>> {
+  const createFallback = (details: string): RPCReturn<TFunctionName> => {
+    const fallback: RPCReturn<TFunctionName> = {
       data: null,
       error: {
         message: `RPC call to ${String(functionName)} failed`,
-        details: errorMessage,
+        details,
       },
-    } as Awaited<ReturnType<TypedSupabaseRPC[TFunctionName]>>
+    }
     return fallback
+  }
+
+  try {
+    const { data, error } = await supabase.rpc(functionName, params)
+    return { data, error }
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+    return createFallback(errorMessage)
   }
 }
 

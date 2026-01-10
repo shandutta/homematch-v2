@@ -39,9 +39,9 @@ describe('HouseholdSection Error Scenarios', () => {
   const profileWithHousehold = TEST_USERS.withHousehold.profile
   const profileWithoutHousehold = TEST_USERS.withoutHousehold.profile
 
-  let mockCreateHousehold: any
-  let mockJoinHousehold: any
-  let mockLeaveHousehold: any
+  let mockCreateHousehold = vi.fn()
+  let mockJoinHousehold = vi.fn()
+  let mockLeaveHousehold = vi.fn()
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -54,9 +54,9 @@ describe('HouseholdSection Error Scenarios', () => {
       .mockResolvedValue({ id: 'household-123', name: 'Test Household' })
     mockJoinHousehold = vi.fn().mockResolvedValue(true)
     mockLeaveHousehold = vi.fn().mockResolvedValue(true)
-    ;(UserServiceClient.createHousehold as any) = mockCreateHousehold
-    ;(UserServiceClient.joinHousehold as any) = mockJoinHousehold
-    ;(UserServiceClient.leaveHousehold as any) = mockLeaveHousehold
+    UserServiceClient.createHousehold = mockCreateHousehold
+    UserServiceClient.joinHousehold = mockJoinHousehold
+    UserServiceClient.leaveHousehold = mockLeaveHousehold
   })
 
   describe('Clipboard API Error Scenarios', () => {
@@ -381,7 +381,7 @@ describe('HouseholdSection Error Scenarios', () => {
       const user = userEvent.setup()
 
       // Mock toast system that throws errors
-      ;(toast.success as any).mockImplementation(() => {
+      vi.mocked(toast.success).mockImplementation(() => {
         throw new Error('Toast system unavailable')
       })
 

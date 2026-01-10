@@ -8,7 +8,7 @@ jest.mock('framer-motion', () => ({
     set: mockSet,
     get: () => 0,
   }),
-  useSpring: (value: any) => value,
+  useSpring: <T>(value: T) => value,
 }))
 
 describe('useMousePosition', () => {

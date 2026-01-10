@@ -4,28 +4,6 @@ import { LoginForm } from '@/components/features/auth/LoginForm'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
-// import { z } from 'zod'
-// Type-safe expectation helper
-// const expectToBeCalledWithValidData = (
-//   mockFn: jest.Mock,
-//   schema: any,
-//   expectedData?: any
-// ) => {
-//   expect(mockFn).toHaveBeenCalled()
-//   const callArgs = mockFn.mock.calls[0][0]
-//
-//   // Validate the call arguments against the schema
-//   const result = schema.safeParse(callArgs)
-//   if (!result.success) {
-//     throw new Error(`Mock called with invalid data: ${result.error.message}`)
-//   }
-//
-//   if (expectedData) {
-//     expect(callArgs).toMatchObject(expectedData)
-//   }
-//
-//   return callArgs
-// }
 
 // Mock data factory using Zod validation
 const createMockLoginData = (overrides?: Partial<LoginData>): LoginData => {
@@ -69,7 +47,7 @@ describe('LoginForm', () => {
       refresh: jest.fn(),
       prefetch: jest.fn(),
     }
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    jest.mocked(useRouter).mockReturnValue(mockRouter)
 
     // Mock the Supabase client
     const mockSupabaseClient = {
@@ -88,12 +66,14 @@ describe('LoginForm', () => {
         update: jest.fn().mockReturnThis(),
         delete: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        then: jest.fn(async (onFulfilled: any) =>
-          onFulfilled({ data: [], error: null })
+        then: jest.fn(
+          async (
+            onFulfilled: (value: { data: unknown[]; error: null }) => unknown
+          ) => onFulfilled({ data: [], error: null })
         ),
       })),
     }
-    ;(createClient as jest.Mock).mockReturnValue(mockSupabaseClient)
+    jest.mocked(createClient).mockReturnValue(mockSupabaseClient)
   })
 
   test('renders login form with all elements', () => {

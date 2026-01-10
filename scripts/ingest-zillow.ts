@@ -38,6 +38,9 @@ const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Square_Feet',
 ]
 
+const isZillowSortOption = (value: string): value is ZillowSortOption =>
+  VALID_SORT_OPTIONS.some((option) => option === value)
+
 const DEFAULT_BAY_AREA_LOCATIONS = [
   'San Francisco, CA',
   'Alameda, CA',
@@ -148,11 +151,7 @@ function parseArgs(argv: string[]): Args {
     args.debug && ['1', 'true', 'yes'].includes(args.debug.toLowerCase())
   )
   const sortRaw = args.sort || process.env.ZILLOW_SORT
-  const sort = sortRaw
-    ? VALID_SORT_OPTIONS.includes(sortRaw as ZillowSortOption)
-      ? (sortRaw as ZillowSortOption)
-      : defaults.sort
-    : defaults.sort
+  const sort = sortRaw && isZillowSortOption(sortRaw) ? sortRaw : defaults.sort
 
   if (sortRaw && sortRaw !== sort) {
     console.warn(

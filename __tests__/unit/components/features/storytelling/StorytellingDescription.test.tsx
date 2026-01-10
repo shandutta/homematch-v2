@@ -6,7 +6,16 @@ import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 // Mock framer-motion to avoid animation complexity in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className, ...props }: any) => {
+    div: ({
+      children,
+      className,
+      ...props
+    }: JSX.IntrinsicElements['div'] & {
+      initial?: unknown
+      animate?: unknown
+      transition?: unknown
+      whileHover?: unknown
+    }) => {
       const {
         initial: _initial,
         animate: _animate,
@@ -20,7 +29,15 @@ jest.mock('framer-motion', () => ({
         </div>
       )
     },
-    p: ({ children, className, ...props }: any) => {
+    p: ({
+      children,
+      className,
+      ...props
+    }: JSX.IntrinsicElements['p'] & {
+      initial?: unknown
+      animate?: unknown
+      transition?: unknown
+    }) => {
       const {
         initial: _initial,
         animate: _animate,
@@ -33,7 +50,15 @@ jest.mock('framer-motion', () => ({
         </p>
       )
     },
-    span: ({ children, className, ...props }: any) => {
+    span: ({
+      children,
+      className,
+      ...props
+    }: JSX.IntrinsicElements['span'] & {
+      initial?: unknown
+      animate?: unknown
+      transition?: unknown
+    }) => {
       const {
         initial: _initial,
         animate: _animate,

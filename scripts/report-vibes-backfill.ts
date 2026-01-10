@@ -18,6 +18,32 @@ config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { VibesService } from '@/lib/services/vibes/vibes-service'
+import type { Database } from '@/types/database'
+
+type PropertyRow = Pick<
+  Database['public']['Tables']['properties']['Row'],
+  | 'id'
+  | 'zpid'
+  | 'address'
+  | 'city'
+  | 'state'
+  | 'created_at'
+  | 'images'
+  | 'price'
+  | 'bedrooms'
+  | 'bathrooms'
+  | 'square_feet'
+  | 'property_type'
+  | 'year_built'
+>
+type PropertyVibeRow = Pick<
+  Database['public']['Tables']['property_vibes']['Row'],
+  | 'property_id'
+  | 'model_used'
+  | 'generation_cost_usd'
+  | 'images_analyzed'
+  | 'source_data_hash'
+>
 
 type Args = {
   limit: number
@@ -75,7 +101,7 @@ async function main() {
     throw new Error(`Failed to load properties: ${propsError.message}`)
   }
 
-  const rows = properties || []
+  const rows: PropertyRow[] = properties ?? []
   if (rows.length === 0) {
     console.log('[report-vibes-backfill] No properties matched query.')
     return
@@ -94,8 +120,8 @@ async function main() {
     throw new Error(`Failed to load property_vibes: ${vibesError.message}`)
   }
 
-  const vibesByPropertyId = new Map(
-    (vibes || []).map((v) => [v.property_id, v])
+  const vibesByPropertyId = new Map<string, PropertyVibeRow>(
+    (vibes ?? []).map((v) => [v.property_id, v])
   )
 
   console.log(
@@ -106,17 +132,17 @@ async function main() {
   let missing = 0
 
   for (const p of rows) {
-    const v: any = vibesByPropertyId.get(p.id)
+    const v = vibesByPropertyId.get(p.id)
     const hasVibes = Boolean(v)
-    const currentHash = VibesService.generateSourceHash(p as any)
-    const stale =
-      hasVibes && v?.source_data_hash && v.source_data_hash !== currentHash
+    const currentHash = VibesService.generateSourceHash(p)
+    const sourceHash = v?.source_data_hash
+    const stale = Boolean(sourceHash && sourceHash !== currentHash)
 
     if (!hasVibes) missing++
     else if (!stale) ok++
 
-    const images = Array.isArray((p as any).images) ? (p as any).images : []
-    const analyzed = Array.isArray(v?.images_analyzed) ? v.images_analyzed : []
+    const images = p.images ?? []
+    const analyzed = v?.images_analyzed ?? []
     const first = images[0] ? String(images[0]) : ''
 
     console.log(
@@ -127,7 +153,7 @@ async function main() {
         `imgs=${images.length}`,
         first ? `host=${safeHost(first)}` : 'host=',
         hasVibes ? `analyzed=${analyzed.length}` : null,
-        hasVibes ? `cost=${v.generation_cost_usd ?? 'null'}` : null,
+        hasVibes ? `cost=${v?.generation_cost_usd ?? 'null'}` : null,
         hasVibes ? `hash=${stale ? 'mismatch' : 'match'}` : null,
         (p.address || '').slice(0, 50),
       ]
@@ -137,9 +163,10 @@ async function main() {
   }
 
   const staleCount = rows.filter((p) => {
-    const v: any = vibesByPropertyId.get(p.id)
-    if (!v?.source_data_hash) return false
-    return v.source_data_hash !== VibesService.generateSourceHash(p as any)
+    const v = vibesByPropertyId.get(p.id)
+    const sourceHash = v?.source_data_hash
+    if (!sourceHash) return false
+    return sourceHash !== VibesService.generateSourceHash(p)
   }).length
 
   console.log(

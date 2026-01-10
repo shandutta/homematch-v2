@@ -1,7 +1,7 @@
 /**
  * E2E tests for clipboard functionality in HouseholdSection component
  */
-import { test, expect } from '@playwright/test'
+import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import {
   TEST_HOUSEHOLDS,
   TEST_SELECTORS,
@@ -11,8 +11,13 @@ import {
 } from '../fixtures/test-data'
 import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 
+type BrowserName = 'chromium' | 'firefox' | 'webkit'
+
 // Browser-specific clipboard helpers
-async function grantClipboardPermissions(context: any, browserName: string) {
+async function grantClipboardPermissions(
+  context: BrowserContext,
+  browserName: BrowserName
+) {
   if (browserName === 'webkit') {
     // WebKit doesn't support clipboard-write permission via automation
     return
@@ -25,8 +30,8 @@ async function grantClipboardPermissions(context: any, browserName: string) {
 }
 
 async function readClipboard(
-  page: any,
-  browserName: string
+  page: Page,
+  browserName: BrowserName
 ): Promise<string | null> {
   if (browserName === 'webkit') {
     return null
@@ -40,9 +45,9 @@ async function readClipboard(
 
 test.describe('Household Clipboard Functionality', () => {
   // Shared auth helper for the suite
-  let auth: any
-  let testUser: any
-  const ensureHouseholdAvailable = async (page: any) => {
+  let auth: ReturnType<typeof createWorkerAuthHelper>['auth']
+  let testUser: ReturnType<typeof createWorkerAuthHelper>['testUser']
+  const ensureHouseholdAvailable = async (page: Page) => {
     // Wait for either the copy button OR the create form to appear
     const copyButton = page.getByRole('button', {
       name: /copy household code/i,

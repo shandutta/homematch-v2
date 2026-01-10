@@ -3,6 +3,18 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary'
 
+const setWindowProp = (key: string, value: unknown) => {
+  Object.defineProperty(window, key, {
+    value,
+    writable: true,
+    configurable: true,
+  })
+}
+
+const deleteWindowProp = (key: string) => {
+  Reflect.deleteProperty(window, key)
+}
+
 // Component that throws an error for testing
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) {
@@ -141,7 +153,7 @@ describe('DashboardErrorBoundary', () => {
 
   test('logs to analytics when available', () => {
     const mockGtag = jest.fn()
-    ;(window as any).gtag = mockGtag
+    setWindowProp('gtag', mockGtag)
 
     render(
       <DashboardErrorBoundary>
@@ -157,7 +169,7 @@ describe('DashboardErrorBoundary', () => {
       },
     })
 
-    delete (window as any).gtag
+    deleteWindowProp('gtag')
   })
 
   test('handles errors during lifecycle methods', () => {
@@ -205,7 +217,7 @@ describe('DashboardErrorBoundary', () => {
 
   test('handles missing window.gtag gracefully', () => {
     // Ensure gtag is not defined
-    delete (window as any).gtag
+    deleteWindowProp('gtag')
 
     expect(() => {
       render(

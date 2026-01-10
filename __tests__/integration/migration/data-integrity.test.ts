@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/standalone'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 
 const skipHeavy =
   process.env.SKIP_HEAVY_INTEGRATION === 'true' ||
@@ -6,7 +8,7 @@ const skipHeavy =
 const describeOrSkip = skipHeavy ? describe.skip : describe
 
 describeOrSkip('Migration Data Integrity', () => {
-  let supabase: any
+  let supabase: SupabaseClient<AppDatabase>
 
   beforeAll(() => {
     supabase = createClient()
@@ -35,7 +37,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(sampleNeighborhoods).toBeDefined()
       expect(sampleNeighborhoods!.length).toBeGreaterThan(0)
 
-      sampleNeighborhoods!.forEach((neighborhood: any) => {
+      sampleNeighborhoods!.forEach((neighborhood) => {
         expect(neighborhood.id).toBeDefined()
         expect(neighborhood.name).toBeDefined()
         expect(neighborhood.name).not.toBe('')
@@ -73,7 +75,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(sampleProperties).toBeDefined()
       expect(sampleProperties!.length).toBeGreaterThan(0)
 
-      sampleProperties!.forEach((property: any) => {
+      sampleProperties!.forEach((property) => {
         expect(property.id).toBeDefined()
         expect(property.address).toBeDefined()
         expect(property.address).not.toBe('')
@@ -107,7 +109,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(neighborhoodsWithBounds).toBeDefined()
       expect(neighborhoodsWithBounds!.length).toBeGreaterThan(0)
 
-      neighborhoodsWithBounds!.forEach((neighborhood: any) => {
+      neighborhoodsWithBounds!.forEach((neighborhood) => {
         expect(neighborhood.bounds).toBeDefined()
         expect(neighborhood.bounds).not.toBeNull()
         // PostGIS bounds should be some kind of spatial object
@@ -126,7 +128,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(propertiesWithCoords).toBeDefined()
       expect(propertiesWithCoords!.length).toBeGreaterThan(0)
 
-      propertiesWithCoords!.forEach((property: any) => {
+      propertiesWithCoords!.forEach((property) => {
         expect(property.coordinates).toBeDefined()
         expect(property.coordinates).not.toBeNull()
         // PostGIS coordinates should be some kind of spatial object
@@ -150,7 +152,7 @@ describeOrSkip('Migration Data Integrity', () => {
 
       // Verify that all referenced neighborhoods exist
       const neighborhoodIds = propertiesWithNeighborhoods!.map(
-        (p: any) => p.neighborhood_id
+        (p) => p.neighborhood_id
       )
       const uniqueNeighborhoodIds = [...new Set(neighborhoodIds)]
 
@@ -179,7 +181,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(propertiesWithHashes!.length).toBeGreaterThan(0)
 
       // Check for hash uniqueness
-      const hashes = propertiesWithHashes!.map((p: any) => p.property_hash)
+      const hashes = propertiesWithHashes!.map((p) => p.property_hash)
       const uniqueHashes = new Set(hashes)
 
       // All hashes should be unique (no duplicates)
@@ -205,7 +207,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(spatialTestData!.length).toBeGreaterThan(0)
 
       // Verify bounds data structure is consistent
-      spatialTestData!.forEach((neighborhood: any) => {
+      spatialTestData!.forEach((neighborhood) => {
         expect(neighborhood.bounds).toBeDefined()
         expect(neighborhood.bounds).not.toBeNull()
 
@@ -228,7 +230,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(neighborhoodsWithSpatialData).toBeDefined()
       expect(neighborhoodsWithSpatialData!.length).toBeGreaterThan(0)
 
-      neighborhoodsWithSpatialData!.forEach((neighborhood: any) => {
+      neighborhoodsWithSpatialData!.forEach((neighborhood) => {
         expect(neighborhood.id).toBeDefined()
         expect(neighborhood.name).toBeDefined()
         expect(neighborhood.city).toBeDefined()
@@ -239,10 +241,10 @@ describeOrSkip('Migration Data Integrity', () => {
 
       // Verify we have data from multiple states/cities (diverse geographic coverage)
       const cities = [
-        ...new Set(neighborhoodsWithSpatialData!.map((n: any) => n.city)),
+        ...new Set(neighborhoodsWithSpatialData!.map((n) => n.city)),
       ]
       const states = [
-        ...new Set(neighborhoodsWithSpatialData!.map((n: any) => n.state)),
+        ...new Set(neighborhoodsWithSpatialData!.map((n) => n.state)),
       ]
 
       expect(cities.length).toBeGreaterThan(0)
@@ -262,7 +264,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(propertiesWithCoords).toBeDefined()
       expect(propertiesWithCoords!.length).toBeGreaterThan(0)
 
-      propertiesWithCoords!.forEach((property: any) => {
+      propertiesWithCoords!.forEach((property) => {
         expect(property.coordinates).toBeDefined()
         expect(property.coordinates).not.toBeNull()
         expect(property.city).toBeDefined()
@@ -271,10 +273,8 @@ describeOrSkip('Migration Data Integrity', () => {
       })
 
       // Verify geographic diversity
-      const cities = [...new Set(propertiesWithCoords!.map((p: any) => p.city))]
-      const states = [
-        ...new Set(propertiesWithCoords!.map((p: any) => p.state)),
-      ]
+      const cities = [...new Set(propertiesWithCoords!.map((p) => p.city))]
+      const states = [...new Set(propertiesWithCoords!.map((p) => p.state))]
 
       expect(cities.length).toBeGreaterThan(0)
       expect(states.length).toBeGreaterThan(0)
@@ -326,12 +326,12 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(propertySpatialData!.length).toBeGreaterThan(0)
 
       // If we have spatial data, verify it's consistently formatted
-      neighborhoodSpatialData!.forEach((neighborhood: any) => {
+      neighborhoodSpatialData!.forEach((neighborhood) => {
         expect(neighborhood.bounds).toBeDefined()
         expect(typeof neighborhood.bounds).toBe('object')
       })
 
-      propertySpatialData!.forEach((property: any) => {
+      propertySpatialData!.forEach((property) => {
         expect(property.coordinates).toBeDefined()
         expect(typeof property.coordinates).toBe('object')
       })
@@ -405,9 +405,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(stateDistribution).toBeDefined()
       expect(stateDistribution!.length).toBeGreaterThan(0)
 
-      const uniqueStates = [
-        ...new Set(stateDistribution!.map((p: any) => p.state)),
-      ]
+      const uniqueStates = [...new Set(stateDistribution!.map((p) => p.state))]
       // Should have properties from at least one state
       expect(uniqueStates.length).toBeGreaterThanOrEqual(1)
 
@@ -424,7 +422,7 @@ describeOrSkip('Migration Data Integrity', () => {
       expect(priceDistribution).toBeDefined()
       expect(priceDistribution!.length).toBeGreaterThan(0)
 
-      const prices = priceDistribution!.map((p: any) => p.price)
+      const prices = priceDistribution!.map((p) => p.price)
       const avgPrice =
         prices.reduce((sum: number, price: number) => sum + price, 0) /
         prices.length

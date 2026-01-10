@@ -9,7 +9,7 @@ jest.mock('@/lib/cookies/use-cookie-consent', () => ({
 }))
 
 // Store original window.adsbygoogle
-const originalAdsbygoogle = (global.window as any).adsbygoogle
+const originalAdsbygoogle = window.adsbygoogle
 
 // Store original NODE_ENV
 const originalNodeEnv = process.env.NODE_ENV
@@ -17,12 +17,12 @@ const originalNodeEnv = process.env.NODE_ENV
 describe('InFeedAd', () => {
   beforeEach(() => {
     // Reset the adsbygoogle mock before each test
-    ;(global.window as any).adsbygoogle = []
+    window.adsbygoogle = []
   })
 
   afterEach(() => {
     // Restore original
-    ;(global.window as any).adsbygoogle = originalAdsbygoogle
+    window.adsbygoogle = originalAdsbygoogle
     process.env.NODE_ENV = originalNodeEnv
     jest.clearAllMocks()
   })
@@ -102,7 +102,7 @@ describe('InFeedAd', () => {
   describe('AdSense Integration', () => {
     test('pushes to adsbygoogle array on mount', async () => {
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       render(<InFeedAd />)
 
@@ -124,13 +124,13 @@ describe('InFeedAd', () => {
     })
 
     test('initializes adsbygoogle array if not present', async () => {
-      delete (global.window as any).adsbygoogle
+      delete window.adsbygoogle
 
       render(<InFeedAd />)
 
       await waitFor(() => {
-        expect((global.window as any).adsbygoogle).toBeDefined()
-        expect(Array.isArray((global.window as any).adsbygoogle)).toBe(true)
+        expect(window.adsbygoogle).toBeDefined()
+        expect(Array.isArray(window.adsbygoogle)).toBe(true)
       })
     })
   })
@@ -146,7 +146,7 @@ describe('InFeedAd', () => {
           throw new Error('Ad blocked')
         }),
       }
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       // Should not throw
       expect(() => render(<InFeedAd />)).not.toThrow()
@@ -170,7 +170,7 @@ describe('InFeedAd', () => {
           throw new Error('Ad blocked')
         }),
       }
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       const { container } = render(<InFeedAd />)
 
@@ -234,7 +234,7 @@ describe('InFeedAd', () => {
 
   describe('Loading State', () => {
     test('hides loading spinner after ad loads', async () => {
-      ;(global.window as any).adsbygoogle = []
+      window.adsbygoogle = []
 
       render(<InFeedAd />)
 
@@ -247,17 +247,17 @@ describe('InFeedAd', () => {
     })
 
     test('ad element has correct display style when loaded', async () => {
-      ;(global.window as any).adsbygoogle = []
+      window.adsbygoogle = []
 
       render(<InFeedAd />)
 
       await waitFor(() => {
-        const adElement = document.querySelector(
-          '.adsbygoogle'
-        ) as HTMLElement | null
+        const adElement = document.querySelector('.adsbygoogle')
         expect(adElement).toBeInTheDocument()
         // When loaded, display should be 'block'
-        expect(adElement?.style.display).toBe('block')
+        if (adElement instanceof HTMLElement) {
+          expect(adElement.style.display).toBe('block')
+        }
       })
     })
   })
@@ -304,18 +304,23 @@ describe('InFeedAd', () => {
 
   describe('Edge Cases', () => {
     test('handles undefined window gracefully', () => {
-      const originalWindow = global.window
+      const originalWindow = globalThis.window
 
       // This tests the typeof window check in the component
       // The component should handle SSR where window might be undefined
+      Reflect.deleteProperty(globalThis, 'window')
       expect(() => render(<InFeedAd />)).not.toThrow()
 
-      global.window = originalWindow
+      Object.defineProperty(globalThis, 'window', {
+        value: originalWindow,
+        configurable: true,
+        writable: true,
+      })
     })
 
     test('handles multiple renders', () => {
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       const { rerender } = render(<InFeedAd position={1} />)
       rerender(<InFeedAd position={2} />)
@@ -365,7 +370,7 @@ describe('InFeedAd', () => {
     test('does not push to adsbygoogle in development mode', () => {
       process.env.NODE_ENV = 'development'
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       render(<InFeedAd />)
 
@@ -419,7 +424,7 @@ describe('InFeedAd', () => {
     test('pushes to adsbygoogle in production mode', async () => {
       process.env.NODE_ENV = 'production'
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       render(<InFeedAd />)
 
@@ -473,7 +478,7 @@ describe('InFeedAd', () => {
 
     test('multiple ads push to adsbygoogle array separately', async () => {
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       render(
         <>
@@ -493,7 +498,7 @@ describe('InFeedAd', () => {
   describe('Already Processed Ads', () => {
     test('skips push if ad already has data-adsbygoogle-status', async () => {
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       const { container, rerender } = render(<InFeedAd />)
 
@@ -576,38 +581,50 @@ describe('InFeedAd', () => {
     test('ad element has display block style', () => {
       render(<InFeedAd />)
 
-      const adElement = document.querySelector('.adsbygoogle') as HTMLElement
-      expect(adElement?.style.display).toBe('block')
+      const adElement = document.querySelector('.adsbygoogle')
+      expect(adElement).toBeInTheDocument()
+      if (adElement instanceof HTMLElement) {
+        expect(adElement.style.display).toBe('block')
+      }
     })
 
     test('ad element has 100% width style', () => {
       render(<InFeedAd />)
 
-      const adElement = document.querySelector('.adsbygoogle') as HTMLElement
-      expect(adElement?.style.width).toBe('100%')
+      const adElement = document.querySelector('.adsbygoogle')
+      expect(adElement).toBeInTheDocument()
+      if (adElement instanceof HTMLElement) {
+        expect(adElement.style.width).toBe('100%')
+      }
     })
 
     test('ad element height changes based on load state', async () => {
-      ;(global.window as any).adsbygoogle = []
+      window.adsbygoogle = []
 
       render(<InFeedAd />)
 
       await waitFor(() => {
-        const adElement = document.querySelector('.adsbygoogle') as HTMLElement
+        const adElement = document.querySelector('.adsbygoogle')
+        expect(adElement).toBeInTheDocument()
         // When loaded, should have auto height
-        expect(adElement?.style.height).toBe('auto')
+        if (adElement instanceof HTMLElement) {
+          expect(adElement.style.height).toBe('auto')
+        }
       })
     })
 
     test('ad element minHeight changes based on load state', async () => {
-      ;(global.window as any).adsbygoogle = []
+      window.adsbygoogle = []
 
       render(<InFeedAd />)
 
       await waitFor(() => {
-        const adElement = document.querySelector('.adsbygoogle') as HTMLElement
+        const adElement = document.querySelector('.adsbygoogle')
+        expect(adElement).toBeInTheDocument()
         // When loaded, should have minHeight
-        expect(adElement?.style.minHeight).toBe('380px')
+        if (adElement instanceof HTMLElement) {
+          expect(adElement.style.minHeight).toBe('380px')
+        }
       })
     })
   })
@@ -787,7 +804,7 @@ describe('InFeedAd', () => {
 
     test('multiple mount/unmount cycles work correctly', () => {
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       const { unmount: unmount1 } = render(<InFeedAd position={1} />)
       unmount1()
@@ -855,7 +872,7 @@ describe('InFeedAd', () => {
     test('gracefully handles missing ins element', async () => {
       // This tests the null check for insElement
       const mockAdsbygoogle: Array<Record<string, unknown>> = []
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       // Even if something goes wrong, component should not crash
       expect(() => render(<InFeedAd />)).not.toThrow()
@@ -873,7 +890,7 @@ describe('InFeedAd', () => {
           }
         }),
       }
-      ;(global.window as any).adsbygoogle = mockAdsbygoogle
+      window.adsbygoogle = mockAdsbygoogle
 
       render(<InFeedAd />)
 

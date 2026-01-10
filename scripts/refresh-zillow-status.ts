@@ -16,8 +16,11 @@ if (!RAPIDAPI_KEY) {
   process.exit(1)
 }
 
-type DetailsResponse = { listingStatus?: string; price?: number }
-type PropertyUpdate = Database['public']['Tables']['properties']['Update']
+type DetailsResponse = {
+  listingStatus?: string
+  price?: number
+}
+type PropertyInsert = Database['public']['Tables']['properties']['Insert']
 type Args = {
   limit: number | null
   batchSize: number
@@ -80,6 +83,18 @@ function normalizeStatus(status?: string): {
   return { listing_status: 'active', is_active: true }
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+function parseDetailsResponse(value: unknown): DetailsResponse {
+  if (!isRecord(value)) return {}
+  return {
+    listingStatus:
+      typeof value.listingStatus === 'string' ? value.listingStatus : undefined,
+    price: typeof value.price === 'number' ? value.price : undefined,
+  }
+}
+
 async function fetchDetails(zpid: string) {
   const url = `https://${RAPIDAPI_HOST}/property-details?zpid=${encodeURIComponent(zpid)}`
   const res = await fetch(url, {
@@ -90,7 +105,8 @@ async function fetchDetails(zpid: string) {
   })
   if (res.status === 404) return { listingStatus: 'off_market' }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return (await res.json()) as DetailsResponse
+  const payload = await res.json()
+  return parseDetailsResponse(payload)
 }
 
 async function main() {
@@ -98,7 +114,9 @@ async function main() {
   const supabase = createStandaloneClient()
   let query = supabase
     .from('properties')
-    .select('id, zpid')
+    .select(
+      'id, zpid, address, city, state, zip_code, price, bedrooms, bathrooms'
+    )
     .order('updated_at', { ascending: true, nullsFirst: true })
     .order('id', { ascending: true })
 
@@ -127,10 +145,10 @@ async function main() {
 
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize)
-    const updates: PropertyUpdate[] = []
+    const updates: PropertyInsert[] = []
 
     for (const row of batch) {
-      const zpid = (row.zpid as string | null) || ''
+      const zpid = row.zpid ?? ''
       if (!zpid) continue
       try {
         const details = await fetchDetails(zpid)
@@ -140,24 +158,28 @@ async function main() {
             ? Math.round(details.price)
             : undefined
         updates.push({
-          id: row.id as string,
+          id: row.id,
+          zpid: row.zpid,
+          address: row.address,
+          city: row.city,
+          state: row.state,
+          zip_code: row.zip_code,
+          bedrooms: row.bedrooms,
+          bathrooms: row.bathrooms,
+          price: normalizedPrice ?? row.price,
           listing_status: norm.listing_status,
           is_active: norm.is_active,
-          price: normalizedPrice,
           updated_at: new Date().toISOString(),
         })
       } catch (err) {
-        console.warn(`details failed for ${zpid}: ${(err as Error).message}`)
+        const message = err instanceof Error ? err.message : String(err)
+        console.warn(`details failed for ${zpid}: ${message}`)
       }
       await delay(requestDelayMs)
     }
 
     if (updates.length > 0) {
-      const { error: upErr } = await supabase
-        .from('properties')
-        .upsert(
-          updates as unknown as Database['public']['Tables']['properties']['Insert'][]
-        )
+      const { error: upErr } = await supabase.from('properties').upsert(updates)
       if (upErr) {
         console.error('Update failed:', upErr.message)
       } else {

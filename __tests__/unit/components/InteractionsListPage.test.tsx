@@ -44,9 +44,22 @@ import {
   _mockRecordMutate as mockRecordMutate,
 } from '@/hooks/useInteractions'
 
-const mockedUseInfinite = useInfiniteInteractions as unknown as jest.Mock
-const mockedUseDeleteInteraction = useDeleteInteraction as unknown as jest.Mock
-const mockedUseRecordInteraction = useRecordInteraction as unknown as jest.Mock
+const mockedUseInfinite = jest.mocked(useInfiniteInteractions)
+const mockedUseDeleteInteraction = jest.mocked(useDeleteInteraction)
+const mockedUseRecordInteraction = jest.mocked(useRecordInteraction)
+
+type UseInfiniteInteractionsResult = ReturnType<typeof useInfiniteInteractions>
+type BaseHookState = Pick<
+  UseInfiniteInteractionsResult,
+  'data' | 'fetchNextPage' | 'hasNextPage' | 'isLoading' | 'isFetchingNextPage'
+>
+
+const requireButton = (element: Element | null, label: string) => {
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error(`Expected ${label} to be a button`)
+  }
+  return element
+}
 
 // Sample property fixture for testing
 const createMockProperty = (id: string, address: string) => ({
@@ -77,8 +90,8 @@ const createMockProperty = (id: string, address: string) => ({
 })
 
 describe('InteractionsListPage', () => {
-  const baseHookState = {
-    data: undefined as any,
+  const baseHookState: BaseHookState = {
+    data: undefined,
     fetchNextPage: jest.fn(),
     hasNextPage: false,
     isLoading: false,
@@ -209,9 +222,9 @@ describe('InteractionsListPage', () => {
 
     renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
-    const btn = screen.getByRole('button', {
+    const btn = screen.getByRole<HTMLButtonElement>('button', {
       name: /Load More/i,
-    }) as HTMLButtonElement
+    })
     expect(btn.disabled).toBe(false)
 
     fireEvent.click(btn)
@@ -249,9 +262,9 @@ describe('InteractionsListPage', () => {
     renderWithQuery(<InteractionsListPage type="viewed" title="Viewed" />)
 
     // Updated to match new UI text (just "Loading...")
-    const btn = screen.getByRole('button', {
+    const btn = screen.getByRole<HTMLButtonElement>('button', {
       name: /Loading\.\.\./i,
-    }) as HTMLButtonElement
+    })
     expect(btn.disabled).toBe(true)
   })
 
@@ -509,12 +522,12 @@ describe('InteractionsListPage', () => {
         <InteractionsListPage type="viewed" title="Viewed Properties" />
       )
 
-      const passButton = screen.getByRole('button', {
+      const passButton = screen.getByRole<HTMLButtonElement>('button', {
         name: /Pass on this home/i,
-      }) as HTMLButtonElement
-      const likeButton = screen.getByRole('button', {
+      })
+      const likeButton = screen.getByRole<HTMLButtonElement>('button', {
         name: /Like this home/i,
-      }) as HTMLButtonElement
+      })
 
       // Before decision, buttons should be enabled
       expect(passButton.disabled).toBe(false)
@@ -530,16 +543,20 @@ describe('InteractionsListPage', () => {
         // Find the pass and like buttons again after state update
         const updatedPassButton = buttons.find((b) =>
           b.getAttribute('aria-label')?.includes('Pass')
-        ) as HTMLButtonElement | undefined
+        )
         const updatedLikeButton = buttons.find((b) =>
           b.getAttribute('aria-label')?.includes('Like')
-        ) as HTMLButtonElement | undefined
+        )
 
         if (updatedPassButton) {
-          expect(updatedPassButton.disabled).toBe(true)
+          expect(requireButton(updatedPassButton, 'Pass button').disabled).toBe(
+            true
+          )
         }
         if (updatedLikeButton) {
-          expect(updatedLikeButton.disabled).toBe(true)
+          expect(requireButton(updatedLikeButton, 'Like button').disabled).toBe(
+            true
+          )
         }
       })
     })

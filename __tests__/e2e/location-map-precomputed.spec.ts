@@ -1,4 +1,10 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test'
+import {
+  test,
+  expect,
+  type Page,
+  type TestInfo,
+  type Route,
+} from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
@@ -70,7 +76,7 @@ function resolveBaseUrl(testInfo: TestInfo) {
 }
 
 async function stubGoogleMaps(page: Page) {
-  await page.route('**/api/maps/proxy-script*', (route: any) => {
+  await page.route('**/api/maps/proxy-script*', (route: Route) => {
     return route.fulfill({
       status: 200,
       contentType: 'application/javascript',

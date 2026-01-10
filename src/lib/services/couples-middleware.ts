@@ -56,8 +56,9 @@ export class CouplesMiddleware {
   /**
    * Call this when a user joins or leaves a household
    */
-  static async onHouseholdChange(householdId: string): Promise<void> {
+  static async onHouseholdChange(householdId?: string | null): Promise<void> {
     try {
+      if (!householdId) return
       CouplesService.clearHouseholdCache(householdId)
     } catch (error) {
       console.error(
@@ -72,9 +73,10 @@ export class CouplesMiddleware {
    */
   static async warmCache(
     supabase: SupabaseClient<AppDatabase>,
-    userId: string
+    userId?: string | null
   ): Promise<void> {
     try {
+      if (!userId) return
       // Trigger cache population by calling the main services
       await Promise.all([
         CouplesService.getMutualLikes(supabase, userId),

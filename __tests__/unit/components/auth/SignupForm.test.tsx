@@ -18,29 +18,20 @@ import { SignupForm } from '@/components/features/auth/SignupForm'
 import { createClient } from '@/lib/supabase/client'
 import { SignupSchema, type SignupData } from '@/lib/schemas/auth'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
-// import { z } from 'zod'
+import type { ReactNode } from 'react'
 
-// Type-safe expectation helper
-// const expectToBeCalledWithValidData = (
-//   mockFn: jest.Mock,
-//   schema: any,
-//   expectedData?: any
-// ) => {
-//   expect(mockFn).toHaveBeenCalled()
-//   const callArgs = mockFn.mock.calls[0][0]
-//
-//   // Validate the call arguments against the schema
-//   const result = schema.safeParse(callArgs)
-//   if (!result.success) {
-//     throw new Error(`Mock called with invalid data: ${result.error.message}`)
-//   }
-//
-//   if (expectedData) {
-//     expect(callArgs).toMatchObject(expectedData)
-//   }
-//
-//   return callArgs
-// }
+type MockField = {
+  name: string
+  value: string
+  onChange: () => void
+  onBlur: () => void
+  ref: () => void
+}
+
+type FormFieldProps = {
+  render: (props: { field: MockField }) => ReactNode
+  name: string
+}
 
 // Mock data factory using Zod validation
 const createMockSignupData = (overrides?: Partial<SignupData>): SignupData => {
@@ -64,6 +55,64 @@ const validSignupData = createMockSignupData()
 //   confirmPassword: 'WrongPassword123'
 // })
 
+type SubmitHandler = (values: SignupData) => void | Promise<void>
+type SubmitEvent = { preventDefault?: () => void }
+
+const createMockForm = (defaultValues?: Partial<SignupData>) => ({
+  control: {
+    register: jest.fn(),
+    unregister: jest.fn(),
+    getFieldState: jest.fn(),
+    _names: {
+      array: new Set(),
+      mount: new Set(),
+      unMount: new Set(),
+      watch: new Set(),
+      focus: '',
+      watchAll: false,
+    },
+    _subjects: {
+      watch: { next: jest.fn(), subscribe: jest.fn() },
+      array: { next: jest.fn(), subscribe: jest.fn() },
+      state: { next: jest.fn(), subscribe: jest.fn() },
+    },
+    _getWatch: jest.fn(),
+    _formValues: defaultValues || {},
+    _defaultValues: defaultValues || {},
+  },
+  handleSubmit: (fn: SubmitHandler) => (event?: SubmitEvent) => {
+    event?.preventDefault?.()
+    return fn(validSignupData)
+  },
+  formState: {
+    isValid: true,
+    errors: {},
+    isDirty: false,
+    isSubmitted: false,
+    isSubmitting: false,
+    isValidating: false,
+    isLoading: false,
+    submitCount: 0,
+    dirtyFields: {},
+    touchedFields: {},
+    validatingFields: {},
+    defaultValues: defaultValues || {},
+  },
+  setValue: jest.fn(),
+  watch: jest.fn(),
+  reset: jest.fn(),
+  getValues: jest.fn(() => defaultValues || {}),
+  getFieldState: jest.fn(() => ({
+    invalid: false,
+    isDirty: false,
+    isTouched: false,
+  })),
+  trigger: jest.fn(),
+  setError: jest.fn(),
+  clearErrors: jest.fn(),
+  setFocus: jest.fn(),
+})
+
 // Mock dependencies
 jest.mock('@/lib/supabase/client', () => ({
   createClient: jest.fn(),
@@ -73,20 +122,23 @@ jest.mock('@/lib/supabase/client', () => ({
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
 
 // Mock location for the component (if it's not already set)
-if (!global.location) {
-  global.location = {
-    origin: 'http://localhost:3000',
-  } as any
+if (!globalThis.location) {
+  Object.defineProperty(globalThis, 'location', {
+    value: { origin: 'http://localhost:3000' },
+    writable: true,
+  })
 }
 
 // Mock UI components to avoid complex rendering issues
 jest.mock('@/components/ui/form', () => ({
-  Form: ({ children }: any) => <div data-testid="form">{children}</div>,
-  FormControl: ({ children }: any) => (
+  Form: ({ children }: { children?: ReactNode }) => (
+    <div data-testid="form">{children}</div>
+  ),
+  FormControl: ({ children }: { children?: ReactNode }) => (
     <div data-testid="form-control">{children}</div>
   ),
-  FormField: ({ render, name }: any) => {
-    const field = {
+  FormField: ({ render, name }: FormFieldProps) => {
+    const field: MockField = {
       name,
       value:
         name === 'email'
@@ -104,10 +156,10 @@ jest.mock('@/components/ui/form', () => ({
     }
     return render({ field })
   },
-  FormItem: ({ children }: any) => (
+  FormItem: ({ children }: { children?: ReactNode }) => (
     <div data-testid="form-item">{children}</div>
   ),
-  FormLabel: ({ children }: any) => {
+  FormLabel: ({ children }: { children?: ReactNode }) => {
     const labelText = children?.toString() || ''
     let htmlFor = 'input'
     if (labelText === 'Email') htmlFor = 'email'
@@ -119,34 +171,59 @@ jest.mock('@/components/ui/form', () => ({
 }))
 
 jest.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
-  ),
-  CardContent: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
-  ),
-  CardHeader: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children, className }: any) => (
-    <h1 className={className}>{children}</h1>
-  ),
+  Card: ({
+    children,
+    className,
+  }: {
+    children?: ReactNode
+    className?: string
+  }) => <div className={className}>{children}</div>,
+  CardContent: ({
+    children,
+    className,
+  }: {
+    children?: ReactNode
+    className?: string
+  }) => <div className={className}>{children}</div>,
+  CardHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  CardTitle: ({
+    children,
+    className,
+  }: {
+    children?: ReactNode
+    className?: string
+  }) => <h1 className={className}>{children}</h1>,
 }))
 
 jest.mock('@/components/ui/alert', () => ({
-  Alert: ({ children, variant }: any) => (
-    <div data-variant={variant}>{children}</div>
+  Alert: ({
+    children,
+    variant,
+  }: {
+    children?: ReactNode
+    variant?: string
+  }) => <div data-variant={variant}>{children}</div>,
+  AlertDescription: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
   ),
-  AlertDescription: ({ children }: any) => <div>{children}</div>,
 }))
 
 jest.mock('@/components/ui/input', () => ({
-  Input: (props: any) => {
+  Input: (props: JSX.IntrinsicElements['input']) => {
     const id = props.name || props.type || 'input'
     return <input {...props} id={id} />
   },
 }))
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, type, variant, className }: any) => (
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    type,
+    variant,
+    className,
+  }: JSX.IntrinsicElements['button'] & { variant?: string }) => (
     <button
       onClick={onClick}
       disabled={disabled}
@@ -160,70 +237,17 @@ jest.mock('@/components/ui/button', () => ({
 }))
 
 jest.mock('lucide-react', () => ({
-  Loader2: ({ className }: any) => (
+  Loader2: ({ className }: { className?: string }) => (
     <div className={className} data-testid="loader" />
   ),
 }))
 
 // Mock the form hook with proper react-hook-form structure
 jest.mock('@/hooks/useValidatedForm', () => ({
-  useValidatedForm: jest.fn((schema, defaultValues) => {
-    const mockForm = {
-      control: {
-        register: jest.fn(),
-        unregister: jest.fn(),
-        getFieldState: jest.fn(),
-        _names: {
-          array: new Set(),
-          mount: new Set(),
-          unMount: new Set(),
-          watch: new Set(),
-          focus: '',
-          watchAll: false,
-        },
-        _subjects: {
-          watch: { next: jest.fn(), subscribe: jest.fn() },
-          array: { next: jest.fn(), subscribe: jest.fn() },
-          state: { next: jest.fn(), subscribe: jest.fn() },
-        },
-        _getWatch: jest.fn(),
-        _formValues: defaultValues || {},
-        _defaultValues: defaultValues || {},
-      },
-      handleSubmit: (fn: any) => (e: any) => {
-        e?.preventDefault?.()
-        return fn(validSignupData)
-      },
-      formState: {
-        isValid: true,
-        errors: {},
-        isDirty: false,
-        isSubmitted: false,
-        isSubmitting: false,
-        isValidating: false,
-        isLoading: false,
-        submitCount: 0,
-        dirtyFields: {},
-        touchedFields: {},
-        validatingFields: {},
-        defaultValues: defaultValues || {},
-      },
-      setValue: jest.fn(),
-      watch: jest.fn(),
-      reset: jest.fn(),
-      getValues: jest.fn(() => defaultValues || {}),
-      getFieldState: jest.fn(() => ({
-        invalid: false,
-        isDirty: false,
-        isTouched: false,
-      })),
-      trigger: jest.fn(),
-      setError: jest.fn(),
-      clearErrors: jest.fn(),
-      setFocus: jest.fn(),
-    }
-    return mockForm
-  }),
+  useValidatedForm: jest.fn(
+    (schema: typeof SignupSchema, defaultValues?: Partial<SignupData>) =>
+      createMockForm(defaultValues)
+  ),
 }))
 
 describe('SignupForm', () => {
@@ -240,68 +264,15 @@ describe('SignupForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(createClient as jest.Mock).mockReturnValue(mockSupabaseClient)
+    jest.mocked(createClient).mockReturnValue(mockSupabaseClient)
 
     // Re-create the useValidatedForm mock after clearAllMocks
-    ;(useValidatedForm as jest.Mock).mockImplementation(
-      (schema, defaultValues) => {
-        const mockForm = {
-          control: {
-            register: jest.fn(),
-            unregister: jest.fn(),
-            getFieldState: jest.fn(),
-            _names: {
-              array: new Set(),
-              mount: new Set(),
-              unMount: new Set(),
-              watch: new Set(),
-              focus: '',
-              watchAll: false,
-            },
-            _subjects: {
-              watch: { next: jest.fn(), subscribe: jest.fn() },
-              array: { next: jest.fn(), subscribe: jest.fn() },
-              state: { next: jest.fn(), subscribe: jest.fn() },
-            },
-            _getWatch: jest.fn(),
-            _formValues: defaultValues || {},
-            _defaultValues: defaultValues || {},
-          },
-          handleSubmit: (fn: any) => (e: any) => {
-            e?.preventDefault?.()
-            return fn(validSignupData)
-          },
-          formState: {
-            isValid: true,
-            errors: {},
-            isDirty: false,
-            isSubmitted: false,
-            isSubmitting: false,
-            isValidating: false,
-            isLoading: false,
-            submitCount: 0,
-            dirtyFields: {},
-            touchedFields: {},
-            validatingFields: {},
-            defaultValues: defaultValues || {},
-          },
-          setValue: jest.fn(),
-          watch: jest.fn(),
-          reset: jest.fn(),
-          getValues: jest.fn(() => defaultValues || {}),
-          getFieldState: jest.fn(() => ({
-            invalid: false,
-            isDirty: false,
-            isTouched: false,
-          })),
-          trigger: jest.fn(),
-          setError: jest.fn(),
-          clearErrors: jest.fn(),
-          setFocus: jest.fn(),
-        }
-        return mockForm
-      }
-    )
+    jest
+      .mocked(useValidatedForm)
+      .mockImplementation(
+        (schema: typeof SignupSchema, defaultValues?: Partial<SignupData>) =>
+          createMockForm(defaultValues)
+      )
   })
 
   test('renders signup form with all elements', () => {

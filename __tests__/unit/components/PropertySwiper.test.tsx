@@ -12,14 +12,14 @@
 import { jest, describe, test, expect } from '@jest/globals'
 import { screen } from '@testing-library/react'
 import { PropertySwiper } from '@/components/features/properties/PropertySwiper'
-import { Property } from '@/lib/schemas/property'
+import type { Property } from '@/lib/schemas/property'
 import { renderWithQuery } from '@/__tests__/utils/TestQueryProvider'
 
 // NOTE: framer-motion is mocked globally in jest.setup.ts for JSDOM compatibility
 
 // Mock child components to avoid complex dependency chains
 jest.mock('@/components/property/PropertyCard', () => ({
-  PropertyCard: ({ property }: any) => (
+  PropertyCard: ({ property }: { property: Property }) => (
     <div data-testid="property-card">
       <h3>{property.address}</h3>
       <p>
@@ -31,7 +31,13 @@ jest.mock('@/components/property/PropertyCard', () => ({
 }))
 
 jest.mock('@/components/properties/SwipeablePropertyCard', () => ({
-  SwipeablePropertyCard: ({ properties, currentIndex }: any) => {
+  SwipeablePropertyCard: ({
+    properties,
+    currentIndex,
+  }: {
+    properties: Property[]
+    currentIndex: number
+  }) => {
     const currentProperty = properties[currentIndex]
     return (
       <div data-testid="swipeable-card">

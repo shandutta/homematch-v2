@@ -6,8 +6,7 @@ import {
   beforeEach,
   jest,
 } from '@jest/globals'
-import type { NextRequest } from 'next/server'
-import { createApiClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -24,14 +23,26 @@ jest.mock('next/server', () => {
   }
 })
 
-const supabaseMock = {
+const createApiClientMock = jest.fn()
+
+jest.mock('@/lib/supabase/server', () => ({
+  __esModule: true,
+  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(),
 }
-
-const createApiClientMock = jest.mocked(createApiClient)
 
 const notifyInteractionMock = jest.fn()
 const checkPotentialMutualLikeMock = jest.fn()
@@ -45,8 +56,15 @@ jest.mock('@/lib/services/couples', () => ({
   },
 }))
 
-const createChainMock = (result: any) => {
-  const chain: any = {
+type ChainResult = { data: unknown; error: unknown }
+type Chain = {
+  select: jest.Mock
+  eq: jest.Mock
+  single: jest.Mock
+}
+
+const createChainMock = (result: ChainResult): Chain => {
+  const chain: Chain = {
     select: jest.fn(() => chain),
     eq: jest.fn(() => chain),
     single: jest.fn(async () => result),
@@ -56,9 +74,13 @@ const createChainMock = (result: any) => {
 }
 
 const createRequest = (body: Record<string, unknown>) =>
-  ({
-    json: async () => body,
-  }) as unknown as NextRequest
+  new NextRequest('https://example.com/api/couples/notify', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'content-type': 'application/json',
+    },
+  })
 
 describe('couples notify API route', () => {
   let route: typeof import('@/app/api/couples/notify/route')

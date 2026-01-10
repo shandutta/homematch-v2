@@ -1,7 +1,9 @@
 import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { createAuthenticatedClient } from '../utils/test-users'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * Test household management functionality end-to-end
@@ -9,7 +11,7 @@ import { createAuthenticatedClient } from '../utils/test-users'
  * and business logic for household features
  */
 describe('Household Functionality Tests', () => {
-  let supabase: any
+  let supabase: SupabaseClient<AppDatabase> | null = null
 
   beforeAll(async () => {
     try {
@@ -21,7 +23,7 @@ describe('Household Functionality Tests', () => {
         throw new Error('Supabase environment variables not set')
       }
 
-      supabase = createClient(supabaseUrl, supabaseKey)
+      supabase = createClient<AppDatabase>(supabaseUrl, supabaseKey)
 
       // Test connection
       const { error } = await supabase
@@ -32,11 +34,10 @@ describe('Household Functionality Tests', () => {
         // PGRST116 is "no rows returned", which is fine
         throw error
       }
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `Supabase unavailable for household functionality tests: ${
-          error?.message || error
-        }`
+        `Supabase unavailable for household functionality tests: ${message}`
       )
     }
   })
@@ -147,9 +148,12 @@ describe('Household Functionality Tests', () => {
         try {
           await supabase.auth.admin.deleteUser(testUserId1)
           await supabase.auth.admin.deleteUser(testUserId2)
-        } catch (authError: any) {
+        } catch (authError) {
           // Ignore if users don't exist
-          if (!authError.message?.includes('not found')) {
+          if (
+            !(authError instanceof Error) ||
+            !authError.message.includes('not found')
+          ) {
             console.warn('Auth user cleanup warning:', authError)
           }
         }
@@ -292,8 +296,8 @@ describe('Household Functionality Tests', () => {
       }
 
       expect(members).toHaveLength(2)
-      expect(members.map((m: any) => m.id)).toContain(actualUserId1)
-      expect(members.map((m: any) => m.id)).toContain(actualUserId2)
+      expect(members.map((m) => m.id)).toContain(actualUserId1)
+      expect(members.map((m) => m.id)).toContain(actualUserId2)
     })
   })
 
@@ -328,9 +332,12 @@ describe('Household Functionality Tests', () => {
         try {
           await supabase.auth.admin.deleteUser(testUserId1)
           await supabase.auth.admin.deleteUser(testUserId2)
-        } catch (authError: any) {
+        } catch (authError) {
           // Ignore if users don't exist
-          if (!authError.message?.includes('not found')) {
+          if (
+            !(authError instanceof Error) ||
+            !authError.message.includes('not found')
+          ) {
             console.warn('Auth user cleanup warning:', authError)
           }
         }
@@ -469,7 +476,7 @@ describe('Household Functionality Tests', () => {
 
       // Check mutual likes
       const property1Likes = householdInteractions.filter(
-        (i: any) =>
+        (i) =>
           i.property_id === testPropertyId1 && i.interaction_type === 'like'
       )
       expect(property1Likes).toHaveLength(2) // Both users liked property 1
@@ -588,9 +595,12 @@ describe('Household Functionality Tests', () => {
         // Clean up auth user using Admin API
         try {
           await supabase.auth.admin.deleteUser(testUserId)
-        } catch (authError: any) {
+        } catch (authError) {
           // Ignore if user doesn't exist
-          if (!authError.message?.includes('not found')) {
+          if (
+            !(authError instanceof Error) ||
+            !authError.message.includes('not found')
+          ) {
             console.warn('Auth user cleanup warning:', authError)
           }
         }

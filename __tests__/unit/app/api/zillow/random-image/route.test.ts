@@ -23,18 +23,23 @@ jest.mock('next/server', () => ({
 
 const originalEnv = process.env
 const originalFetch = global.fetch
-const fetchMock = jest.fn()
+const fetchMock: jest.Mock<
+  Promise<Response>,
+  [RequestInfo | URL, RequestInit?]
+> = jest.fn()
 
-const createFetchResponse = (options: {
-  ok: boolean
-  status?: number
-  statusText?: string
-  json: () => Promise<unknown>
-}) => options
+const createJsonResponse = (body: unknown, init: ResponseInit = {}) =>
+  new Response(JSON.stringify(body), {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init.headers || {}),
+    },
+  })
 
 describe('zillow random image API route', () => {
   beforeAll(() => {
-    global.fetch = fetchMock as unknown as typeof fetch
+    global.fetch = fetchMock
   })
 
   beforeEach(() => {
@@ -73,12 +78,7 @@ describe('zillow random image API route', () => {
   test('returns 502 when search request fails', async () => {
     process.env.RAPIDAPI_KEY = 'test-key'
     fetchMock.mockResolvedValueOnce(
-      createFetchResponse({
-        ok: false,
-        status: 502,
-        statusText: 'Bad Gateway',
-        json: async () => ({}),
-      })
+      createJsonResponse({}, { status: 502, statusText: 'Bad Gateway' })
     )
 
     await GET()
@@ -91,10 +91,7 @@ describe('zillow random image API route', () => {
   test('returns 204 when search has no candidates', async () => {
     process.env.RAPIDAPI_KEY = 'test-key'
     fetchMock.mockResolvedValueOnce(
-      createFetchResponse({
-        ok: true,
-        json: async () => ({ props: [{ zpid: null }] }),
-      })
+      createJsonResponse({ props: [{ zpid: null }] })
     )
 
     await GET()
@@ -107,18 +104,8 @@ describe('zillow random image API route', () => {
   test('returns 204 when images are missing', async () => {
     process.env.RAPIDAPI_KEY = 'test-key'
     fetchMock
-      .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({ props: [{ zpid: 1 }] }),
-        })
-      )
-      .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({ images: [] }),
-        })
-      )
+      .mockResolvedValueOnce(createJsonResponse({ props: [{ zpid: 1 }] }))
+      .mockResolvedValueOnce(createJsonResponse({ images: [] }))
 
     await GET()
 
@@ -131,28 +118,22 @@ describe('zillow random image API route', () => {
     process.env.RAPIDAPI_KEY = 'test-key'
     fetchMock
       .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({
-            props: [
-              {
-                zpid: 1,
-                price: 100,
-                bedrooms: 2,
-                bathrooms: 1,
-                address: 'Test Address',
-                latitude: 1,
-                longitude: 2,
-              },
-            ],
-          }),
+        createJsonResponse({
+          props: [
+            {
+              zpid: 1,
+              price: 100,
+              bedrooms: 2,
+              bathrooms: 1,
+              address: 'Test Address',
+              latitude: 1,
+              longitude: 2,
+            },
+          ],
         })
       )
       .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({ images: ['https://example.com/img.jpg'] }),
-        })
+        createJsonResponse({ images: ['https://example.com/img.jpg'] })
       )
 
     await GET()
@@ -172,27 +153,18 @@ describe('zillow random image API route', () => {
     process.env.RAPIDAPI_KEY = 'test-key'
     fetchMock
       .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({
-            props: [
-              { zpid: 1, address: 'One' },
-              { zpid: 2, address: 'Two' },
-            ],
-          }),
+        createJsonResponse({
+          props: [
+            { zpid: 1, address: 'One' },
+            { zpid: 2, address: 'Two' },
+          ],
         })
       )
       .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({ images: ['https://example.com/1.jpg'] }),
-        })
+        createJsonResponse({ images: ['https://example.com/1.jpg'] })
       )
       .mockResolvedValueOnce(
-        createFetchResponse({
-          ok: true,
-          json: async () => ({ images: ['https://example.com/2.jpg'] }),
-        })
+        createJsonResponse({ images: ['https://example.com/2.jpg'] })
       )
 
     await GET()

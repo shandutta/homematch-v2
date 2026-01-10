@@ -6,8 +6,7 @@ import {
   test,
   jest,
 } from '@jest/globals'
-import type { NextRequest } from 'next/server'
-import { createApiClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
 
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
@@ -19,6 +18,8 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (...args: unknown[]) => jsonMock(...args),
   },
+  NextRequest:
+    jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
 const checkMock = jest.fn()
@@ -37,17 +38,36 @@ jest.mock('@/lib/services/couples', () => ({
   },
 }))
 
-const supabaseMock = {
+const createApiClientMock = jest.fn()
+
+jest.mock('@/lib/supabase/server', () => ({
+  __esModule: true,
+  createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  from: jest.Mock
+}
+
+const supabaseMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(),
 }
 
-const createApiClientMock = jest.mocked(createApiClient)
+type DeleteResult = { data: unknown; error: unknown }
+type DeleteChain = {
+  delete: jest.Mock
+  eq: jest.Mock
+  select: jest.Mock
+}
 
-const createDeleteChain = (result: { data: any; error: any }) => {
-  const chain: any = {
+const createDeleteChain = (result: DeleteResult): DeleteChain => {
+  const chain: DeleteChain = {
     delete: jest.fn(() => chain),
     eq: jest.fn(() => chain),
     select: jest.fn(async () => result),
@@ -67,7 +87,7 @@ describe('interactions reset API route', () => {
     checkMock.mockReset()
     clearHouseholdCacheMock.mockReset()
     createApiClientMock.mockReset()
-    createApiClientMock.mockReturnValue(supabaseMock as any)
+    createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockReset()
   })
@@ -78,7 +98,11 @@ describe('interactions reset API route', () => {
       error: null,
     })
 
-    await route.DELETE({} as NextRequest)
+    await route.DELETE(
+      new NextRequest('http://localhost/api/interactions/reset', {
+        method: 'DELETE',
+      })
+    )
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(401)
@@ -92,7 +116,11 @@ describe('interactions reset API route', () => {
     })
     checkMock.mockResolvedValue({ success: false })
 
-    await route.DELETE({} as NextRequest)
+    await route.DELETE(
+      new NextRequest('http://localhost/api/interactions/reset', {
+        method: 'DELETE',
+      })
+    )
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(400)
@@ -112,7 +140,11 @@ describe('interactions reset API route', () => {
     })
     supabaseMock.from.mockReturnValue(chain)
 
-    await route.DELETE({} as NextRequest)
+    await route.DELETE(
+      new NextRequest('http://localhost/api/interactions/reset', {
+        method: 'DELETE',
+      })
+    )
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(500)
@@ -130,7 +162,11 @@ describe('interactions reset API route', () => {
     chain.select = jest.fn(() => Promise.reject(new Error('boom')))
     supabaseMock.from.mockReturnValue(chain)
 
-    await route.DELETE({} as NextRequest)
+    await route.DELETE(
+      new NextRequest('http://localhost/api/interactions/reset', {
+        method: 'DELETE',
+      })
+    )
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(500)
@@ -154,7 +190,11 @@ describe('interactions reset API route', () => {
     })
     supabaseMock.from.mockReturnValue(chain)
 
-    await route.DELETE({} as NextRequest)
+    await route.DELETE(
+      new NextRequest('http://localhost/api/interactions/reset', {
+        method: 'DELETE',
+      })
+    )
 
     expect(supabaseMock.from).toHaveBeenCalledWith('user_property_interactions')
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-1')

@@ -199,7 +199,7 @@ describe('PropertyServiceFacade Integration', () => {
           999, // Invalid longitude
           -1 // Invalid radius
         )
-      } catch (error: any) {
+      } catch (error) {
         expect(error).toBeDefined()
       }
     })
@@ -214,16 +214,17 @@ describe('PropertyServiceFacade Integration', () => {
           5 // 5km radius
         )
         expect(Array.isArray(result)).toBe(true)
-      } catch (error: any) {
+      } catch (error) {
         if (
-          error.message?.includes('function') &&
-          error.message?.includes('does not exist')
+          error instanceof Error &&
+          error.message.includes('function') &&
+          error.message.includes('does not exist')
         ) {
           throw new Error(
             'RPC function get_properties_within_radius does not exist - migration conflict not resolved!'
           )
         }
-        if (error.message?.includes('not unique')) {
+        if (error instanceof Error && error.message.includes('not unique')) {
           throw new Error(
             'RPC function get_properties_within_radius has conflicting definitions!'
           )
@@ -244,10 +245,11 @@ describe('PropertyServiceFacade Integration', () => {
         expect(typeof distance).toBe('number')
         expect(distance).toBeGreaterThan(1)
         expect(distance).toBeLessThan(2)
-      } catch (error: any) {
+      } catch (error) {
         if (
-          error.message?.includes('function') &&
-          error.message?.includes('does not exist')
+          error instanceof Error &&
+          error.message.includes('function') &&
+          error.message.includes('does not exist')
         ) {
           throw new Error('RPC function calculate_distance does not exist!')
         }

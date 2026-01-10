@@ -6,7 +6,12 @@ import { CouplesErrorBoundary } from '@/components/couples/CouplesErrorBoundary'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({
+      children,
+      ...props
+    }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
+      <div {...props}>{children}</div>
+    ),
   },
 }))
 
@@ -164,7 +169,7 @@ describe('CouplesErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: TestBoundary | null = null
 
       render(
         <TestBoundary
@@ -179,6 +184,9 @@ describe('CouplesErrorBoundary', () => {
         </TestBoundary>
       )
 
+      if (!boundaryRef) {
+        throw new Error('Expected boundary ref to be set')
+      }
       const errorState = boundaryRef.getErrorState()
       expect(errorState.hasError).toBe(true)
       expect(errorState.error).toBeInstanceOf(Error)
@@ -307,7 +315,7 @@ describe('CouplesErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: TestBoundary | null = null
       let shouldThrow = true
 
       const ControlledThrowError = () => {
@@ -327,6 +335,9 @@ describe('CouplesErrorBoundary', () => {
         </TestBoundary>
       )
 
+      if (!boundaryRef) {
+        throw new Error('Expected boundary ref to be set')
+      }
       // Verify error state
       expect(boundaryRef.getErrorState().hasError).toBe(true)
       expect(boundaryRef.getErrorState().error).toBeInstanceOf(Error)
@@ -349,6 +360,9 @@ describe('CouplesErrorBoundary', () => {
         </TestBoundary>
       )
 
+      if (!boundaryRef) {
+        throw new Error('Expected boundary ref to be set')
+      }
       // Error state should be reset now that the underlying issue is fixed
       expect(boundaryRef.getErrorState().hasError).toBe(false)
       expect(boundaryRef.getErrorState().error).toBeUndefined()

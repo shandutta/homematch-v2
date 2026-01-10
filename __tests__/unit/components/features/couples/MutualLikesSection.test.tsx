@@ -10,6 +10,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import { toast } from '@/lib/utils/toast'
+import { createJsonResponse } from '@/__tests__/utils/http-helpers'
 
 // Mock the child components and dependencies
 jest.mock('@/components/features/couples/MutualLikesBadge', () => ({
@@ -19,7 +20,7 @@ jest.mock('@/components/features/couples/MutualLikesBadge', () => ({
 }))
 
 jest.mock('@/components/ui/skeleton', () => ({
-  Skeleton: ({ className, ...props }: any) => (
+  Skeleton: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
       data-testid="skeleton"
       className={className}
@@ -31,14 +32,23 @@ jest.mock('@/components/ui/skeleton', () => ({
 
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }))
 
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, width, height, className, ...props }: any) => {
+  default: ({
+    src,
+    alt,
+    width,
+    height,
+    className,
+    ...props
+  }: React.ComponentProps<'img'>) => {
     // Filter out Next.js specific props that aren't valid HTML attributes
     const validProps = props
 
@@ -58,7 +68,13 @@ jest.mock('next/image', () => ({
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href }: any) => <a href={href}>{children}</a>,
+  default: ({
+    children,
+    href,
+  }: {
+    children?: React.ReactNode
+    href: string
+  }) => <a href={href}>{children}</a>,
 }))
 
 jest.mock('@/lib/utils/toast', () => ({
@@ -72,7 +88,15 @@ jest.mock('@/lib/utils/toast', () => ({
 }))
 
 jest.mock('@/components/ui/property-image', () => ({
-  PropertyImage: ({ src: _src, alt, className }: any) => (
+  PropertyImage: ({
+    src: _src,
+    alt,
+    className,
+  }: {
+    src?: string | null
+    alt?: string
+    className?: string
+  }) => (
     <div className={className} data-testid="property-image">
       <span>Image: {alt}</span>
     </div>
@@ -80,22 +104,38 @@ jest.mock('@/components/ui/property-image', () => ({
 }))
 
 jest.mock('@/components/ui/card', () => ({
-  Card: ({ children, className, ...props }: any) => (
+  Card: ({
+    children,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={className} {...props}>
       {children}
     </div>
   ),
-  CardContent: ({ children, className, ...props }: any) => (
+  CardContent: ({
+    children,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={className} {...props}>
       {children}
     </div>
   ),
-  CardHeader: ({ children, className, ...props }: any) => (
+  CardHeader: ({
+    children,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={className} {...props}>
       {children}
     </div>
   ),
-  CardTitle: ({ children, className, ...props }: any) => (
+  CardTitle: ({
+    children,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3 className={className} {...props}>
       {children}
     </h3>
@@ -103,7 +143,13 @@ jest.mock('@/components/ui/card', () => ({
 }))
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, className, onClick, asChild, ...props }: any) =>
+  Button: ({
+    children,
+    className,
+    onClick,
+    asChild,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }) =>
     asChild ? (
       <>{children}</>
     ) : (
@@ -114,32 +160,38 @@ jest.mock('@/components/ui/button', () => ({
 }))
 
 jest.mock('lucide-react', () => ({
-  Heart: ({ className, ...props }: any) => (
+  Heart: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-heart ${className}`} {...props} />
   ),
-  Users: ({ className, ...props }: any) => (
+  Users: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-users ${className}`} {...props} />
   ),
-  ChevronRight: ({ className, ...props }: any) => (
+  ChevronRight: ({
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-chevron-right ${className}`} {...props} />
   ),
-  RefreshCw: ({ className, ...props }: any) => (
+  RefreshCw: ({
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-refresh-cw ${className}`} {...props} />
   ),
-  Sparkles: ({ className, ...props }: any) => (
+  Sparkles: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-sparkles ${className}`} {...props} />
   ),
-  Star: ({ className, ...props }: any) => (
+  Star: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-star ${className}`} {...props} />
   ),
-  Home: ({ className, ...props }: any) => (
+  Home: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div className={`lucide-home ${className}`} {...props} />
   ),
 }))
 
 // Mock fetch globally
-const mockFetch = jest.fn()
-global.fetch = mockFetch as jest.MockedFunction<typeof fetch>
+const mockFetch: jest.MockedFunction<typeof fetch> = jest.fn()
+global.fetch = mockFetch
 
 const renderWithQueryClient = (ui: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -231,10 +283,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should show error message when API returns error status', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      } as Response)
+      mockFetch.mockResolvedValueOnce(new Response(null, { status: 500 }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -246,10 +295,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should prompt sign-in when API returns 401', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-      } as Response)
+      mockFetch.mockResolvedValueOnce(new Response(null, { status: 401 }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -263,11 +309,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should surface API-provided error messages', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: async () => ({ error: 'Forbidden' }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ error: 'Forbidden' }, { status: 403 })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -292,10 +336,7 @@ describe('MutualLikesSection Component', () => {
 
   describe('Empty State', () => {
     test('should show empty state when no mutual likes exist', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -310,10 +351,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should use high-contrast headings in empty state', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -328,10 +366,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should show overlapping hearts in empty state', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -344,10 +379,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should include users icon in header for empty state', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -361,10 +393,9 @@ describe('MutualLikesSection Component', () => {
 
   describe('Populated State', () => {
     test('should display mutual likes with correct count in header', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -374,10 +405,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should render property cards with correct information', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -394,10 +424,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should use higher-contrast text for metadata on dark cards', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -413,10 +442,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should display property images when available', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -438,10 +466,9 @@ describe('MutualLikesSection Component', () => {
       ]
 
       mockFetch.mockReset()
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mutualLikesNoImages }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mutualLikesNoImages })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -456,10 +483,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should render mutual likes badges for each property', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -472,10 +498,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should create clickable links to property details', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -497,10 +522,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should format dates correctly', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -512,10 +536,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should not show a success toast on load', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -529,10 +552,9 @@ describe('MutualLikesSection Component', () => {
 
   describe('View All Link', () => {
     test('should not show "View all" when 3 or fewer mutual likes', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }), // 2 items
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -572,10 +594,9 @@ describe('MutualLikesSection Component', () => {
         },
       ]
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: manyMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: manyMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -601,10 +622,9 @@ describe('MutualLikesSection Component', () => {
         },
       }))
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: manyMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: manyMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -621,10 +641,7 @@ describe('MutualLikesSection Component', () => {
 
   describe('API Integration', () => {
     test('should call the correct API endpoint', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -637,10 +654,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should handle API response without mutualLikes property', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}), // Missing mutualLikes property
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({}))
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -662,10 +676,9 @@ describe('MutualLikesSection Component', () => {
         },
       ]
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: partialMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: partialMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -676,10 +689,7 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should apply custom className', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: [] }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(createJsonResponse({ mutualLikes: [] }))
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection {...defaultProps} className="custom-class" />
@@ -704,10 +714,9 @@ describe('MutualLikesSection Component', () => {
 
   describe('Accessibility', () => {
     test('should have proper heading structure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -717,10 +726,9 @@ describe('MutualLikesSection Component', () => {
     })
 
     test('should have accessible links with proper labels', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
@@ -735,10 +743,9 @@ describe('MutualLikesSection Component', () => {
 
   describe('Responsive Design', () => {
     test('should maintain card styling with dashboard tokens', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ mutualLikes: mockMutualLikes }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ mutualLikes: mockMutualLikes })
+      )
 
       const { container } = renderWithQueryClient(
         <MutualLikesSection {...defaultProps} />

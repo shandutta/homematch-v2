@@ -44,9 +44,30 @@ import {
   _mockRecordMutate as mockRecordMutate,
 } from '@/hooks/useInteractions'
 
-const mockedUseInfinite = useInfiniteInteractions as unknown as jest.Mock
-const mockedUseDeleteInteraction = useDeleteInteraction as unknown as jest.Mock
-const mockedUseRecordInteraction = useRecordInteraction as unknown as jest.Mock
+const mockedUseInfinite = jest.mocked(useInfiniteInteractions)
+const mockedUseDeleteInteraction = jest.mocked(useDeleteInteraction)
+const mockedUseRecordInteraction = jest.mocked(useRecordInteraction)
+
+type UseInfiniteInteractionsResult = ReturnType<typeof useInfiniteInteractions>
+type BaseHookState = Pick<
+  UseInfiniteInteractionsResult,
+  'data' | 'fetchNextPage' | 'hasNextPage' | 'isLoading' | 'isFetchingNextPage'
+>
+
+const requireHTMLElement = (element: Element | null, label: string) => {
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`Expected ${label} to be an HTMLElement`)
+  }
+  return element
+}
+
+const getButtonByTestId = (testId: string) => {
+  const element = screen.getByTestId(testId)
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error(`Expected ${testId} to be a button`)
+  }
+  return element
+}
 
 // Sample property fixture for testing
 const createMockProperty = (
@@ -82,7 +103,7 @@ const createMockProperty = (
 })
 
 describe('GroupedViewedPropertiesPage', () => {
-  const baseHookState = {
+  const baseHookState: BaseHookState = {
     data: { pages: [{ items: [] }] },
     fetchNextPage: jest.fn(),
     hasNextPage: false,
@@ -217,8 +238,14 @@ describe('GroupedViewedPropertiesPage', () => {
       const likedSection = screen.getByTestId('section-liked')
       const passedSection = screen.getByTestId('section-skip')
 
-      const likedWrapper = likedSection.parentElement as HTMLElement
-      const passedWrapper = passedSection.parentElement as HTMLElement
+      const likedWrapper = requireHTMLElement(
+        likedSection.parentElement,
+        'liked section wrapper'
+      )
+      const passedWrapper = requireHTMLElement(
+        passedSection.parentElement,
+        'passed section wrapper'
+      )
 
       expect(likedWrapper.className).not.toContain('hidden')
       expect(passedWrapper.className).toContain('hidden')
@@ -537,12 +564,8 @@ describe('GroupedViewedPropertiesPage', () => {
 
       renderWithQuery(<GroupedViewedPropertiesPage />)
 
-      const passButton = screen.getByTestId(
-        'pass-viewed-1'
-      ) as HTMLButtonElement
-      const likeButton = screen.getByTestId(
-        'like-viewed-1'
-      ) as HTMLButtonElement
+      const passButton = getButtonByTestId('pass-viewed-1')
+      const likeButton = getButtonByTestId('like-viewed-1')
 
       expect(passButton.disabled).toBe(false)
       expect(likeButton.disabled).toBe(false)
@@ -550,12 +573,8 @@ describe('GroupedViewedPropertiesPage', () => {
       fireEvent.click(passButton)
 
       await waitFor(() => {
-        const updatedPassButton = screen.getByTestId(
-          'pass-viewed-1'
-        ) as HTMLButtonElement
-        const updatedLikeButton = screen.getByTestId(
-          'like-viewed-1'
-        ) as HTMLButtonElement
+        const updatedPassButton = getButtonByTestId('pass-viewed-1')
+        const updatedLikeButton = getButtonByTestId('like-viewed-1')
         expect(updatedPassButton.disabled).toBe(true)
         expect(updatedLikeButton.disabled).toBe(true)
       })

@@ -9,7 +9,7 @@ import { createStandaloneClient } from '@/lib/supabase/standalone'
 async function main() {
   const supabase = createStandaloneClient()
 
-  const superset: { city: string; listing_status: string | null }[] = []
+  const superset: Array<{ city: string; listing_status: string | null }> = []
   const pageSize = 1000
   let offset = 0
   while (true) {
@@ -29,8 +29,9 @@ async function main() {
     if (!data || data.length === 0) break
     superset.push(
       ...data.map((d) => ({
-        city: d.city as string,
-        listing_status: d.listing_status as string | null,
+        city: typeof d.city === 'string' ? d.city : 'Unknown',
+        listing_status:
+          typeof d.listing_status === 'string' ? d.listing_status : null,
       }))
     )
     if (data.length < pageSize) break
@@ -42,9 +43,9 @@ async function main() {
     { total: number; statuses: Record<string, number> }
   >()
 
-  superset.forEach((row: any) => {
-    const city = (row.city as string) || 'Unknown'
-    const status = (row.listing_status as string) || 'unknown'
+  superset.forEach((row) => {
+    const city = row.city || 'Unknown'
+    const status = row.listing_status || 'unknown'
     if (!map.has(city)) {
       map.set(city, { total: 0, statuses: {} })
     }

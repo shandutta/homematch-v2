@@ -142,13 +142,13 @@ import { useSwipePhysics } from '@/hooks/useSwipePhysics'
 import type { Property } from '@/lib/schemas/property'
 
 // Get mock references
-const mockUseSwipePhysics = useSwipePhysics as jest.Mock
-const mockUsePropertyDetail = usePropertyDetail as jest.Mock
+const mockUseSwipePhysics = jest.mocked(useSwipePhysics)
+const mockUsePropertyDetail = jest.mocked(usePropertyDetail)
 const mockSwipeCard = jest.fn()
 const mockHandleDragStart = jest.fn()
 const mockHandleDrag = jest.fn()
 const mockHandleDragEnd = jest.fn()
-let lastSwipeOptions: Record<string, any> | null = null
+let lastSwipeOptions: Record<string, unknown> | null = null
 const mockOpenPropertyDetail = jest.fn()
 
 const createMockProperty = (overrides: Partial<Property> = {}): Property => ({

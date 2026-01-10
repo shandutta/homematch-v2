@@ -81,11 +81,7 @@ export class UserServiceClient {
 
     // Use the RPC function which handles RLS via SECURITY DEFINER
     // and atomically links the user profile to the household
-    const createHouseholdRpc = supabase.rpc as unknown as (
-      functionName: 'create_household_for_user',
-      params: { p_name: string | null }
-    ) => Promise<{ data: string | null; error: { message: string } | null }>
-    const { data: householdId, error: rpcError } = await createHouseholdRpc(
+    const { data: householdId, error: rpcError } = await supabase.rpc(
       'create_household_for_user',
       { p_name: household.name || null }
     )

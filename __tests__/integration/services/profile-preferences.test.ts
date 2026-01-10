@@ -10,6 +10,11 @@ import { UserService } from '@/lib/services/users'
 import type { Database } from '@/types/database'
 import { describe, test, expect, beforeAll } from 'vitest'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+const getPreferences = (value: unknown): Record<string, unknown> =>
+  isRecord(value) ? value : {}
+
 describe('Profile Preferences Integration Tests', () => {
   let userService: UserService
   let supabase: ReturnType<typeof createClient<Database>>
@@ -43,7 +48,9 @@ describe('Profile Preferences Integration Tests', () => {
 
     if (users && users.length > 0) {
       existingUserId = users[0].id
-      originalPreferences = users[0].preferences as Record<string, unknown>
+      originalPreferences = isRecord(users[0].preferences)
+        ? users[0].preferences
+        : null
       console.log('Found existing user for testing:', existingUserId)
     }
   })
@@ -67,7 +74,7 @@ describe('Profile Preferences Integration Tests', () => {
       expect(updated).not.toBeNull()
       expect(updated?.preferences).toBeDefined()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.phone).toBe(testPhone)
 
       // Restore original state
@@ -99,7 +106,7 @@ describe('Profile Preferences Integration Tests', () => {
       })
 
       expect(updated).not.toBeNull()
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.phone).toBe('')
 
       // Restore original state
@@ -127,7 +134,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.display_name).toBe(testDisplayName)
 
       // Restore original state
@@ -153,7 +160,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.display_name).toBe(testDisplayName)
 
       // Restore original state
@@ -181,7 +188,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.bio).toBe(testBio)
 
       // Restore original state
@@ -208,7 +215,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.bio).toBe(testBio)
 
       // Restore original state
@@ -240,7 +247,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.phone).toBe(testData.phone)
       expect(prefs.display_name).toBe(testData.display_name)
       expect(prefs.bio).toBe(testData.bio)
@@ -282,7 +289,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(updated).not.toBeNull()
 
-      const prefs = updated?.preferences as Record<string, unknown>
+      const prefs = getPreferences(updated?.preferences)
       expect(prefs.phone).toBe('(999) 888-7777')
       // Other fields should be preserved
       expect(prefs.display_name).toBe(initialData.display_name)
@@ -320,7 +327,7 @@ describe('Profile Preferences Integration Tests', () => {
 
       expect(fetched).not.toBeNull()
 
-      const prefs = fetched?.preferences as Record<string, unknown>
+      const prefs = getPreferences(fetched?.preferences)
       expect(prefs.phone).toBe(testData.phone)
       expect(prefs.display_name).toBe(testData.display_name)
 

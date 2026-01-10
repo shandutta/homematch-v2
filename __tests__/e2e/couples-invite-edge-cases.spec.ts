@@ -154,7 +154,8 @@ test.describe('Couples invites (edge cases)', () => {
     }
   })
 
-  for (const status of ['revoked', 'accepted'] as const) {
+  const statuses: Array<'revoked' | 'accepted'> = ['revoked', 'accepted']
+  for (const status of statuses) {
     test(`${status} invite hides accept CTA and sign-in CTA`, async ({
       page,
     }, testInfo) => {

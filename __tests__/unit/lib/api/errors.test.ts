@@ -75,7 +75,11 @@ describe('ApiErrorHandler', () => {
     try {
       schema.parse({ name: '' })
     } catch (error) {
-      ApiErrorHandler.fromZodError(error as z.ZodError)
+      if (error instanceof z.ZodError) {
+        ApiErrorHandler.fromZodError(error)
+      } else {
+        throw error
+      }
     }
 
     const [body, init] = jsonMock.mock.calls.at(-1)!

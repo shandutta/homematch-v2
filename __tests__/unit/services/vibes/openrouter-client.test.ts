@@ -7,28 +7,38 @@ const originalFetch = global.fetch
 
 describe('OpenRouterClient', () => {
   afterEach(() => {
-    global.fetch = originalFetch as any
+    global.fetch = originalFetch
     jest.restoreAllMocks()
   })
 
   test('chatCompletion returns zeroed usage when response omits usage', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        id: 'r1',
-        model: 'qwen/qwen3-vl-8b-instruct',
-        choices: [
-          {
-            index: 0,
-            message: { role: 'assistant', content: '{}' },
-            finish_reason: 'stop',
-          },
-        ],
-      }),
-    } as any)
+    type FetchFn = (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => Promise<Response>
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'r1',
+          model: 'qwen/qwen3-vl-8b-instruct',
+          choices: [
+            {
+              index: 0,
+              message: { role: 'assistant', content: '{}' },
+              finish_reason: 'stop',
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    )
+    global.fetch = fetchMock
 
     const client = new OpenRouterClient({
       apiKey: 'test',

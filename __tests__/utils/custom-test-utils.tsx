@@ -1,29 +1,33 @@
 import React, { ReactElement } from 'react'
 import { render, RenderOptions, RenderResult } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { Mock } from 'vitest'
 
 // Re-export everything from testing-library
 export * from '@testing-library/react'
 
 // Mock Supabase Client Factory
 // Uses Jest if available, otherwise falls back to Vitest's vi
-type MockFn<Args extends unknown[] = unknown[], Return = unknown> = ((
-  ...args: Args
-) => Return) & {
-  mockReturnValue: (value: Return) => MockFn<Args, Return>
-  mockReturnThis: () => MockFn<Args, Return>
-  mockImplementation: (impl: (...args: Args) => Return) => MockFn<Args, Return>
-}
+type VitestMockFn<Args extends unknown[] = unknown[], Return = unknown> = Mock<
+  (...args: Args) => Return
+>
+
+type JestMockFn<Args extends unknown[] = unknown[], Return = unknown> =
+  jest.MockedFunction<(...args: Args) => Return>
+
+type MockFn<Args extends unknown[] = unknown[], Return = unknown> =
+  | JestMockFn<Args, Return>
+  | VitestMockFn<Args, Return>
 
 const createMockFn = <
   Args extends unknown[] = unknown[],
   Return = unknown,
 >(): MockFn<Args, Return> => {
   if (typeof jest !== 'undefined') {
-    return jest.fn() as unknown as MockFn<Args, Return>
+    return jest.fn<(...args: Args) => Return>()
   }
   if (globalThis.vi) {
-    return globalThis.vi.fn() as unknown as MockFn<Args, Return>
+    return globalThis.vi.fn<(...args: Args) => Return>()
   }
   throw new Error('No test mock library found')
 }
@@ -140,10 +144,25 @@ export const createMockSupabaseClient = (): MockSupabaseClient => {
     Promise.resolve({ data: null, error: null })
   )
 
+  const fromMock = createMockFn<[string], MockSupabaseQuery>()
+  fromMock.mockReturnValue(query)
+
+  const storageFromMock = createMockFn<
+    [string],
+    {
+      upload: MockFn
+      getPublicUrl: MockFn
+    }
+  >()
+  storageFromMock.mockReturnValue({
+    upload: mockFn,
+    getPublicUrl: mockFn.mockReturnValue({
+      data: { publicUrl: 'https://example.com/image.png' },
+    }),
+  })
+
   return {
-    from: (mockFn as MockFn<[string], MockSupabaseQuery>).mockReturnValue(
-      query
-    ),
+    from: fromMock,
     rpc: mockFn.mockReturnThis(),
     auth: {
       signInWithPassword: mockFn,
@@ -155,20 +174,7 @@ export const createMockSupabaseClient = (): MockSupabaseClient => {
       }),
     },
     storage: {
-      from: (
-        mockFn as MockFn<
-          [string],
-          {
-            upload: MockFn
-            getPublicUrl: MockFn
-          }
-        >
-      ).mockReturnValue({
-        upload: mockFn,
-        getPublicUrl: mockFn.mockReturnValue({
-          data: { publicUrl: 'https://example.com/image.png' },
-        }),
-      }),
+      from: storageFromMock,
     },
   }
 }

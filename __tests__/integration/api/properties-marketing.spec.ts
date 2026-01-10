@@ -9,6 +9,9 @@ const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
 // Increase timeout for integration tests making real HTTP requests
 const TEST_TIMEOUT = 60000 // 60s per test
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 const fetchJson = async (path: string, init?: RequestInit) => {
   const res = await fetch(`${API_URL}${path}`, {
     method: 'GET',
@@ -19,25 +22,15 @@ const fetchJson = async (path: string, init?: RequestInit) => {
     ...init,
   })
 
-  let body: any = {}
+  let body: unknown = []
   try {
     body = await res.json()
   } catch {
     // non-JSON body
   }
 
-  return { status: res.status, body, headers: res.headers }
-}
-
-type MarketingCard = {
-  zpid: string
-  imageUrl: string | null
-  price: number | null
-  bedrooms: number | null
-  bathrooms: number | null
-  address: string
-  latitude: number | null
-  longitude: number | null
+  const bodyArray = Array.isArray(body) ? body : []
+  return { status: res.status, body: bodyArray, headers: res.headers }
 }
 
 describe('Integration: /api/properties/marketing', () => {
@@ -64,13 +57,16 @@ describe('Integration: /api/properties/marketing', () => {
 
     // If there are cards, validate their structure
     if (body.length > 0) {
-      body.forEach((card: MarketingCard) => {
+      body.forEach((card) => {
         expect(card).toBeDefined()
-        expect(typeof card).toBe('object')
+        expect(isRecord(card)).toBe(true)
+        if (!isRecord(card)) return
 
         // Required fields
         expect(typeof card.zpid).toBe('string')
-        expect(card.zpid.length).toBeGreaterThan(0)
+        if (typeof card.zpid === 'string') {
+          expect(card.zpid.length).toBeGreaterThan(0)
+        }
         expect(typeof card.address).toBe('string')
 
         // Optional fields that can be null
@@ -82,30 +78,30 @@ describe('Integration: /api/properties/marketing', () => {
         expect([null, 'number'].includes(typeof card.longitude)).toBe(true)
 
         // If price exists, should be positive
-        if (card.price !== null) {
+        if (typeof card.price === 'number') {
           expect(card.price).toBeGreaterThan(0)
         }
 
         // If bedrooms/bathrooms exist, should be non-negative
-        if (card.bedrooms !== null) {
+        if (typeof card.bedrooms === 'number') {
           expect(card.bedrooms).toBeGreaterThanOrEqual(0)
         }
-        if (card.bathrooms !== null) {
+        if (typeof card.bathrooms === 'number') {
           expect(card.bathrooms).toBeGreaterThanOrEqual(0)
         }
 
         // If coordinates exist, should be valid
-        if (card.latitude !== null) {
+        if (typeof card.latitude === 'number') {
           expect(card.latitude).toBeGreaterThanOrEqual(-90)
           expect(card.latitude).toBeLessThanOrEqual(90)
         }
-        if (card.longitude !== null) {
+        if (typeof card.longitude === 'number') {
           expect(card.longitude).toBeGreaterThanOrEqual(-180)
           expect(card.longitude).toBeLessThanOrEqual(180)
         }
 
         // If imageUrl exists, should be a valid URL or at least a non-empty string
-        if (card.imageUrl !== null) {
+        if (typeof card.imageUrl === 'string') {
           expect(card.imageUrl.length).toBeGreaterThan(0)
         }
       })
@@ -144,15 +140,18 @@ describe('Integration: /api/properties/marketing', () => {
       if (body.length > 0) {
         // In development or with proper data, should prefer cards with images
         const cardsWithImages = body.filter(
-          (card: MarketingCard) => card.imageUrl !== null
+          (card) => isRecord(card) && typeof card.imageUrl === 'string'
         )
 
         // If there are any cards with images, they should be prioritized
         if (cardsWithImages.length > 0) {
-          cardsWithImages.forEach((card: MarketingCard) => {
+          cardsWithImages.forEach((card) => {
+            if (!isRecord(card)) return
             expect(card.imageUrl).not.toBeNull()
             expect(typeof card.imageUrl).toBe('string')
-            expect((card.imageUrl as string).length).toBeGreaterThan(0)
+            if (typeof card.imageUrl === 'string') {
+              expect(card.imageUrl.length).toBeGreaterThan(0)
+            }
           })
         }
       }
@@ -165,16 +164,23 @@ describe('Integration: /api/properties/marketing', () => {
     async () => {
       const { body } = await fetchJson('/api/properties/marketing')
 
-      body.forEach((card: MarketingCard) => {
+      body.forEach((card) => {
+        expect(isRecord(card)).toBe(true)
+        if (!isRecord(card)) return
+
         expect(typeof card.address).toBe('string')
 
         // Address should not be empty
-        expect(card.address.length).toBeGreaterThan(0)
+        if (typeof card.address === 'string') {
+          expect(card.address.length).toBeGreaterThan(0)
+        }
 
         // Should not have double commas or leading/trailing commas
-        expect(card.address).not.toContain(',,')
-        expect(card.address).not.toMatch(/^,/)
-        expect(card.address).not.toMatch(/,$/)
+        if (typeof card.address === 'string') {
+          expect(card.address).not.toContain(',,')
+          expect(card.address).not.toMatch(/^,/)
+          expect(card.address).not.toMatch(/,$/)
+        }
       })
     },
     TEST_TIMEOUT
@@ -242,12 +248,18 @@ describe('Integration: /api/properties/marketing', () => {
 
       // Even in fallback scenarios (like when using seed data or external API),
       // the response should maintain the same structure
-      body.forEach((card: MarketingCard) => {
+      body.forEach((card) => {
+        expect(isRecord(card)).toBe(true)
+        if (!isRecord(card)) return
+
         expect(card.zpid).toBeDefined()
         expect(card.address).toBeDefined()
 
         // Fallback cards might have different zpid patterns
-        if (card.zpid.startsWith('fallback-')) {
+        if (
+          typeof card.zpid === 'string' &&
+          card.zpid.startsWith('fallback-')
+        ) {
           expect(card.address).toBe('Coming soon')
           expect(card.price).toBeNull()
           expect(card.bedrooms).toBeNull()

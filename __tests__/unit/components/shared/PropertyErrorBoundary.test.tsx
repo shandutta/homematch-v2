@@ -16,18 +16,30 @@ const mockSentry = {
   captureException: jest.fn(),
 }
 
+const setWindowProp = (key: string, value: unknown) => {
+  Object.defineProperty(window, key, {
+    value,
+    writable: true,
+    configurable: true,
+  })
+}
+
+const deleteWindowProp = (key: string) => {
+  Reflect.deleteProperty(window, key)
+}
+
 // Mock console.error
 const originalConsoleError = console.error
 beforeAll(() => {
   console.error = jest.fn()
-  ;(window as any).gtag = mockGtag
-  ;(window as any).Sentry = mockSentry
+  setWindowProp('gtag', mockGtag)
+  setWindowProp('Sentry', mockSentry)
 })
 
 afterAll(() => {
   console.error = originalConsoleError
-  delete (window as any).gtag
-  delete (window as any).Sentry
+  deleteWindowProp('gtag')
+  deleteWindowProp('Sentry')
 })
 
 // Test components
@@ -60,11 +72,18 @@ const ThrowAsyncError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   return <div>Loading property...</div>
 }
 
+const requireBoundaryRef = (ref: PropertyErrorBoundary | null) => {
+  if (!ref) {
+    throw new Error('Expected PropertyErrorBoundary ref to be set')
+  }
+  return ref
+}
+
 describe('PropertyErrorBoundary', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Re-setup analytics mocks after clearing - need fresh mock functions
-    ;(window as any).gtag = mockGtag
+    setWindowProp('gtag', mockGtag)
 
     // Create fresh Sentry mock with implementation after clearAllMocks
     const freshSentryMock = {
@@ -77,7 +96,7 @@ describe('PropertyErrorBoundary', () => {
       }),
       captureException: jest.fn(),
     }
-    ;(window as any).Sentry = freshSentryMock
+    setWindowProp('Sentry', freshSentryMock)
 
     // Update mockSentry reference to use the fresh mock
     Object.assign(mockSentry, freshSentryMock)
@@ -270,7 +289,7 @@ describe('PropertyErrorBoundary', () => {
 
       // Create a test boundary that starts with max retries reached
       const TestBoundary = class extends PropertyErrorBoundary {
-        constructor(props: any) {
+        constructor(props: React.ComponentProps<typeof PropertyErrorBoundary>) {
           super(props)
           this.state = {
             hasError: true,
@@ -295,7 +314,7 @@ describe('PropertyErrorBoundary', () => {
     it('tracks retry count in analytics', () => {
       // Create boundary with retry count
       const TestBoundary = class extends PropertyErrorBoundary {
-        constructor(props: any) {
+        constructor(props: React.ComponentProps<typeof PropertyErrorBoundary>) {
           super(props)
           this.state = { hasError: false, error: null, retryCount: 2 }
         }
@@ -335,7 +354,7 @@ describe('PropertyErrorBoundary', () => {
         return <div>Property loaded successfully</div>
       }
 
-      let boundaryRef: any
+      let boundaryRef: PropertyErrorBoundary | null = null
 
       const { rerender } = render(
         <TestBoundary
@@ -349,8 +368,9 @@ describe('PropertyErrorBoundary', () => {
       )
 
       // Verify error state
-      expect(boundaryRef.getState().hasError).toBe(true)
-      expect(boundaryRef.getState().retryCount).toBe(0)
+      const boundary = requireBoundaryRef(boundaryRef)
+      expect(boundary.getState().hasError).toBe(true)
+      expect(boundary.getState().retryCount).toBe(0)
 
       // Fix the error condition before resetting
       shouldThrow = false
@@ -373,8 +393,9 @@ describe('PropertyErrorBoundary', () => {
       )
 
       // State should be reset
-      expect(boundaryRef.getState().hasError).toBe(false)
-      expect(boundaryRef.getState().retryCount).toBe(0)
+      const resetBoundary = requireBoundaryRef(boundaryRef)
+      expect(resetBoundary.getState().hasError).toBe(false)
+      expect(resetBoundary.getState().retryCount).toBe(0)
     })
   })
 
@@ -442,7 +463,7 @@ describe('PropertyErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: PropertyErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -455,7 +476,7 @@ describe('PropertyErrorBoundary', () => {
         </TestBoundary>
       )
 
-      const errorState = boundaryRef.getErrorState()
+      const errorState = requireBoundaryRef(boundaryRef).getErrorState()
       expect(errorState.hasError).toBe(true)
       expect(errorState.error).toBeInstanceOf(Error)
       expect(errorState.error.message).toBe('Property load failed')
@@ -471,7 +492,7 @@ describe('PropertyErrorBoundary', () => {
         }
       }
 
-      let boundaryRef: any
+      let boundaryRef: PropertyErrorBoundary | null = null
 
       render(
         <TestBoundary
@@ -485,7 +506,7 @@ describe('PropertyErrorBoundary', () => {
       )
 
       // Initial retry count
-      expect(boundaryRef.getErrorState().retryCount).toBe(0)
+      expect(requireBoundaryRef(boundaryRef).getErrorState().retryCount).toBe(0)
 
       // Click retry
       const retryButton = screen.getByRole('button', { name: /Retry/ })
@@ -493,7 +514,9 @@ describe('PropertyErrorBoundary', () => {
 
       // Retry count should increment
       await waitFor(() => {
-        expect(boundaryRef.getErrorState().retryCount).toBe(1)
+        expect(requireBoundaryRef(boundaryRef).getErrorState().retryCount).toBe(
+          1
+        )
       })
     })
   })
@@ -543,8 +566,8 @@ describe('PropertyErrorBoundary', () => {
 
   describe('Integration', () => {
     it('handles missing analytics gracefully', () => {
-      delete (window as any).gtag
-      delete (window as any).Sentry
+      deleteWindowProp('gtag')
+      deleteWindowProp('Sentry')
 
       expect(() => {
         render(

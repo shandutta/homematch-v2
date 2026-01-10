@@ -225,12 +225,13 @@ describe.sequential('Integration: backfill-vibes', () => {
       .from('properties')
       .select('*')
       .in('id', [p1.id, p2.id])
+      .returns<Property[]>()
 
     if (readError) throw readError
     const fullP1 = inserted?.find((row) => row.id === p1.id)
     if (!fullP1) throw new Error('Missing inserted property')
 
-    const matchingHash = VibesService.generateSourceHash(fullP1 as any)
+    const matchingHash = VibesService.generateSourceHash(fullP1)
 
     await supabaseAdmin.from('property_vibes').insert({
       property_id: p1.id,
@@ -395,11 +396,13 @@ describe.sequential('Integration: backfill-vibes', () => {
       .from('properties')
       .select('*')
       .eq('id', property.id)
-      .single()
+      .returns<Property[]>()
 
     if (readError) throw readError
+    const insertedProperty = inserted?.[0]
+    if (!insertedProperty) throw new Error('Missing inserted property')
 
-    const matchingHash = VibesService.generateSourceHash(inserted as any)
+    const matchingHash = VibesService.generateSourceHash(insertedProperty)
 
     await supabaseAdmin.from('property_vibes').insert({
       property_id: property.id,

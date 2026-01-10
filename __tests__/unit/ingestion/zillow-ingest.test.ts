@@ -7,6 +7,9 @@ import {
   mapSearchItemToRaw,
 } from '@/lib/ingestion/zillow'
 
+type IngestOptions = Parameters<typeof ingestZillowLocations>[0]
+type SupabaseLike = IngestOptions['supabase']
+
 describe('zillow ingestion helpers', () => {
   test('buildSearchUrl encodes location and params', () => {
     const url = buildSearchUrl({
@@ -73,21 +76,25 @@ describe('fetchZillowSearchPage', () => {
       zipcode: '94105',
     }
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: async () => ({
-        props: [sample],
-        hasNextPage: true,
-      }),
-    })
+    const fetchMock: jest.Mock<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit?]
+    > = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          props: [sample],
+          hasNextPage: true,
+        }),
+        { status: 200, statusText: 'OK' }
+      )
+    )
 
     const page = await fetchZillowSearchPage({
       location: 'SF',
       page: 1,
       rapidApiKey: 'test',
-      fetchImpl: fetchMock as any,
+      fetchImpl: fetchMock,
     })
 
     expect(page.items).toHaveLength(1)
@@ -112,19 +119,23 @@ describe('ingestZillowLocations', () => {
       imgSrc: 'http://example.com/a.jpg',
     }
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: async () => ({
-        results: [item],
-        hasNextPage: false,
-      }),
-    })
+    const fetchMock: jest.Mock<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit?]
+    > = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          results: [item],
+          hasNextPage: false,
+        }),
+        { status: 200, statusText: 'OK' }
+      )
+    )
 
     const upsertMock = jest.fn().mockResolvedValue({ data: [], error: null })
     const rpcMock = jest.fn().mockResolvedValue({ data: null, error: null })
-    const supabaseMock = {
+    const supabaseMock: SupabaseLike = {
       from: jest.fn().mockReturnValue({
         upsert: upsertMock,
       }),
@@ -134,8 +145,8 @@ describe('ingestZillowLocations', () => {
     const summary = await ingestZillowLocations({
       locations: ['San Francisco, CA'],
       rapidApiKey: 'test',
-      supabase: supabaseMock as any,
-      fetchImpl: fetchMock as any,
+      supabase: supabaseMock,
+      fetchImpl: fetchMock,
       delayMs: 0,
       maxPages: 1,
     })

@@ -35,7 +35,7 @@ describe('Typed Mock Factory', () => {
       single: mockResponse,
       maybeSingle: mockResponse,
       array: { data: mockResponse.data, error: null, count: null },
-    } as any)
+    })
 
     const result = await mockClient
       .from('properties')
@@ -49,22 +49,22 @@ describe('Typed Mock Factory', () => {
 
   test('should support all query builder methods', () => {
     // Narrow the builder to the generic mock filter builder to access chainable methods in tests
-    const builder = mockClient.from('properties') as any
+    const builder = mockClient.from('properties')
 
     // These should all return the builder for chaining
     expect(builder.select('*')).toBe(builder)
 
-    // Provide minimally valid payload for typed insert/update, but cast to any to avoid generated DB Insert constraints
+    // Provide minimally valid payload for typed insert/update in mock chaining
     const minimalProperty = {
       address: '123 Test St',
       bathrooms: 1,
       bedrooms: 1,
       city: 'Testville',
       price: 1,
-    } as any
+    }
 
     expect(builder.insert(minimalProperty)).toBe(builder)
-    expect(builder.update({ price: 2 } as any)).toBe(builder)
+    expect(builder.update({ price: 2 })).toBe(builder)
     expect(builder.delete()).toBe(builder)
 
     // Common filter methods
@@ -79,14 +79,14 @@ describe('Typed Mock Factory', () => {
     expect(builder.in('property_type', ['single_family', 'condo'])).toBe(
       builder
     )
-    expect(builder.contains('amenities', ['pool'] as any)).toBe(builder)
+    expect(builder.contains('amenities', ['pool'])).toBe(builder)
     expect(builder.order('created_at')).toBe(builder)
     expect(builder.limit(10)).toBe(builder)
     expect(builder.range(0, 9)).toBe(builder)
   })
 
   test('should support terminating operations', async () => {
-    const builder = mockClient.from('properties') as any
+    const builder = mockClient.from('properties')
 
     const singleResult = await builder.single()
     expect(singleResult).toEqual({ data: null, error: null })
@@ -94,8 +94,8 @@ describe('Typed Mock Factory', () => {
     const maybeSingleResult = await builder.maybeSingle()
     expect(maybeSingleResult).toEqual({ data: null, error: null })
 
-    const arrayResult = await (builder as Promise<any>).then(
-      (result: any) => result
+    const arrayResult = await builder.then(
+      (result: { data: unknown[]; error: null; count: number | null }) => result
     )
     expect(arrayResult).toEqual({ data: [], error: null, count: null })
   })
@@ -137,8 +137,7 @@ describe('Typed Mock Factory', () => {
   })
 
   test('should support RPC calls', async () => {
-    // Cast to any for the RPC function name in this generic mock
-    const rpcResult = await (mockClient as any).rpc('custom_function', {
+    const rpcResult = await mockClient.rpc('custom_function', {
       param: 'value',
     })
     expect(rpcResult).toEqual({ data: null, error: null })

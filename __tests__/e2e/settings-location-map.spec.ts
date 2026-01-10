@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page, type Route } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { TEST_ROUTES } from '../fixtures/test-data'
@@ -7,6 +7,11 @@ import { createWorkerAuthHelper } from '../utils/auth-helper'
 const MAP_VIEW_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_LOCATION_MAP_VIEW === 'true'
 test.skip(!MAP_VIEW_ENABLED, 'Location map view is disabled')
+
+type UserPreferences = Record<string, unknown> | null
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
 const MAPS_STUB_SCRIPT = `
   (function() {
@@ -112,8 +117,8 @@ function cityKey(city: string, state: string) {
   return `${city.toLowerCase()}|${state.toLowerCase()}`
 }
 
-async function stubGoogleMaps(page: any) {
-  await page.route('**/api/maps/proxy-script*', (route: any) => {
+async function stubGoogleMaps(page: Page) {
+  await page.route('**/api/maps/proxy-script*', (route: Route) => {
     return route.fulfill({
       status: 200,
       contentType: 'application/javascript',
@@ -177,7 +182,7 @@ test.describe('Settings location map selection', () => {
       created_at: createdAt,
     }
 
-    let originalPreferences: any = null
+    let originalPreferences: UserPreferences = null
 
     try {
       const { data: profile, error: profileError } = await supabase
@@ -186,7 +191,9 @@ test.describe('Settings location map selection', () => {
         .eq('id', userId)
         .single()
       if (profileError) throw new Error(profileError.message)
-      originalPreferences = profile?.preferences ?? null
+      originalPreferences = isRecord(profile?.preferences)
+        ? profile.preferences
+        : null
 
       const { error: resetError } = await supabase
         .from('user_profiles')
@@ -215,12 +222,12 @@ test.describe('Settings location map selection', () => {
       await page.getByTestId('map-overlay-cities').click()
 
       await page.waitForFunction(
-        () => (window as any).__homematchMapTestHooks?.selectCity
+        () => window.__homematchMapTestHooks?.selectCity
       )
 
       const cityAKey = cityKey(cityA, state)
       await page.evaluate((key) => {
-        ;(window as any).__homematchMapTestHooks?.selectCity(key)
+        window.__homematchMapTestHooks?.selectCity(key)
       }, cityAKey)
 
       await expect(page.getByTestId('location-summary')).toContainText('1 city')
@@ -238,7 +245,7 @@ test.describe('Settings location map selection', () => {
       ]
 
       await page.evaluate((ring) => {
-        ;(window as any).__homematchMapTestHooks?.drawSelection(ring)
+        window.__homematchMapTestHooks?.drawSelection(ring)
       }, drawRing)
 
       await expect(page.getByTestId('location-summary')).toContainText(

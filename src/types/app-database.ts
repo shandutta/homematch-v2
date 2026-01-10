@@ -4,6 +4,21 @@ type PropertyRow = Database['public']['Tables']['properties']['Row']
 type NeighborhoodRow = Database['public']['Tables']['neighborhoods']['Row']
 
 type AdditionalFunctions = {
+  create_household_for_user: {
+    Args: {
+      p_name: string | null
+    }
+    Returns: string
+  }
+  get_properties_within_radius: {
+    Args: {
+      center_lat: number
+      center_lng: number
+      radius_km: number
+      result_limit?: number
+    }
+    Returns: PropertyRow[]
+  }
   get_properties_in_bounds: {
     Args: {
       north_lat: number

@@ -6,6 +6,9 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import { GET } from '@/app/api/properties/vibes/route'
 import type { Database } from '@/types/database'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 const requireSupabaseEnv = () => {
   const supabaseUrl =
     process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -133,9 +136,20 @@ describe.sequential('Integration: /api/properties/vibes', () => {
     )
     const res = await GET(req)
     expect(res.status).toBe(200)
-    const body = (await res.json()) as { data: any[] }
-    expect(body.data).toHaveLength(1)
-    expect(body.data[0].property_id).toBe(propertyId)
-    expect(body.data[0].tagline).toBe('Test tagline')
+    const body = await res.json()
+    expect(isRecord(body)).toBe(true)
+    if (!isRecord(body)) return
+
+    const data = body.data
+    expect(Array.isArray(data)).toBe(true)
+    if (!Array.isArray(data)) return
+
+    expect(data).toHaveLength(1)
+    const first = data[0]
+    expect(isRecord(first)).toBe(true)
+    if (!isRecord(first)) return
+
+    expect(first.property_id).toBe(propertyId)
+    expect(first.tagline).toBe('Test tagline')
   })
 })

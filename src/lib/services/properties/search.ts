@@ -185,7 +185,7 @@ export class PropertySearchService
           })
         }
 
-        return (data ?? []) as unknown as Property[]
+        return data ?? []
       }
     )
   }

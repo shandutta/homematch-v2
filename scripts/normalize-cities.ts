@@ -30,10 +30,10 @@ async function main() {
     if (!data || data.length === 0) break
 
     data.forEach((row) => {
-      const currentCity = (row.city as string | null) || ''
+      const currentCity = typeof row.city === 'string' ? row.city : ''
       const normalized = normalizeCityName(currentCity)
-      if (normalized !== currentCity) {
-        updates.push({ id: row.id as string, city: normalized })
+      if (normalized !== currentCity && typeof row.id === 'string') {
+        updates.push({ id: row.id, city: normalized })
       }
     })
 
@@ -46,7 +46,9 @@ async function main() {
   const chunkSize = 500
   for (let i = 0; i < updates.length; i += chunkSize) {
     const chunk = updates.slice(i, i + chunkSize)
-    const ids = chunk.map((c) => c.id).filter(Boolean) as string[]
+    const ids = chunk
+      .map((c) => c.id)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0)
     if (ids.length === 0) continue
     const city = chunk[0]?.city || ''
     const { error } = await supabase

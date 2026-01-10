@@ -36,20 +36,23 @@ describe('Couples Frontend Integration', () => {
     // Setup default mock implementations
     const { useCouples, useMutualLikes } = await import('@/hooks/useCouples')
     const { useCouplesFeatures } = await import('@/hooks/useCouplesFeatures')
+    const useCouplesMock = vi.mocked(useCouples)
+    const useMutualLikesMock = vi.mocked(useMutualLikes)
+    const useCouplesFeaturesMock = vi.mocked(useCouplesFeatures)
 
-    ;(useCouples as any).mockReturnValue({
+    useCouplesMock.mockReturnValue({
       mutualLikes: [],
       householdActivity: [],
       isLoading: false,
       error: null,
     })
-    ;(useMutualLikes as any).mockReturnValue({
+    useMutualLikesMock.mockReturnValue({
       data: [],
       isLoading: false,
       error: null,
       refetch: vi.fn(),
     })
-    ;(useCouplesFeatures as any).mockReturnValue({
+    useCouplesFeaturesMock.mockReturnValue({
       mutualLikesCount: 0,
       recentActivity: [],
       isLoading: false,
@@ -171,43 +174,51 @@ describe('Couples Frontend Integration', () => {
   describe('Hook Integration', () => {
     test('should handle API call failures gracefully', async () => {
       // Mock fetch to simulate API failure
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockRejectedValue(new Error('Network error'))
+      global.fetch = fetchMock
 
       const { useCouples } = await import('@/hooks/useCouples')
+      const useCouplesMock = vi.mocked(useCouples)
 
       // The hook should handle errors gracefully
-      ;(useCouples as any).mockReturnValue({
+      useCouplesMock.mockReturnValue({
         mutualLikes: [],
         householdActivity: [],
         isLoading: false,
         error: new Error('Network error'),
       })
 
-      const result = (useCouples as any)()
+      const result = useCouplesMock()
       expect(result).toBeDefined()
       expect(result.error).toBeDefined()
     })
 
     test('should handle successful API responses', async () => {
       // Mock successful API response
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          mutualLikes: [
-            {
-              property_id: 'prop-1',
-              liked_by_count: 2,
-              first_liked_at: '2024-01-01T00:00:00.000Z',
-              last_liked_at: '2024-01-02T00:00:00.000Z',
-              user_ids: ['user-1', 'user-2'],
-            },
-          ],
-        }),
-      })
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            mutualLikes: [
+              {
+                property_id: 'prop-1',
+                liked_by_count: 2,
+                first_liked_at: '2024-01-01T00:00:00.000Z',
+                last_liked_at: '2024-01-02T00:00:00.000Z',
+                user_ids: ['user-1', 'user-2'],
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+      global.fetch = fetchMock
 
       const { useCouples } = await import('@/hooks/useCouples')
+      const useCouplesMock = vi.mocked(useCouples)
 
-      ;(useCouples as any).mockReturnValue({
+      useCouplesMock.mockReturnValue({
         mutualLikes: [
           {
             property_id: 'prop-1',
@@ -222,7 +233,7 @@ describe('Couples Frontend Integration', () => {
         error: null,
       })
 
-      const result = (useCouples as any)()
+      const result = useCouplesMock()
       expect(result.mutualLikes).toHaveLength(1)
       expect(result.mutualLikes[0].property_id).toBe('prop-1')
     })

@@ -10,27 +10,30 @@ import { DashboardStats } from '@/components/features/dashboard/DashboardStats'
 import { EnhancedPropertyCard } from '@/components/dashboard/EnhancedPropertyCard'
 
 // Mock data generators
-const generateMockProperty = (id: number) => ({
-  id: `property-${id}`,
-  address: `${id * 100} Test Street`,
-  city: 'San Francisco',
-  state: 'CA',
-  zip_code: '94102',
-  price: 500000 + id * 10000,
-  bedrooms: 3,
-  bathrooms: 2,
-  sqft: 1500 + id * 100,
-  property_type: 'single_family',
-  listing_status: 'for_sale' as const,
-  year_built: 2000 + id,
-  lot_size: 5000,
-  latitude: 37.7749 + id * 0.001,
-  longitude: -122.4194 + id * 0.001,
-  images: [`/image-${id}-1.jpg`, `/image-${id}-2.jpg`],
-  description: `Beautiful property ${id} with modern amenities`,
-  ml_score: 0.75 + id * 0.01,
-  features: ['garage', 'pool', 'garden'],
-})
+const generateMockProperty = (id: number) => {
+  const listingStatus = 'for_sale'
+  return {
+    id: `property-${id}`,
+    address: `${id * 100} Test Street`,
+    city: 'San Francisco',
+    state: 'CA',
+    zip_code: '94102',
+    price: 500000 + id * 10000,
+    bedrooms: 3,
+    bathrooms: 2,
+    sqft: 1500 + id * 100,
+    property_type: 'single_family',
+    listing_status: listingStatus,
+    year_built: 2000 + id,
+    lot_size: 5000,
+    latitude: 37.7749 + id * 0.001,
+    longitude: -122.4194 + id * 0.001,
+    images: [`/image-${id}-1.jpg`, `/image-${id}-2.jpg`],
+    description: `Beautiful property ${id} with modern amenities`,
+    ml_score: 0.75 + id * 0.01,
+    features: ['garage', 'pool', 'garden'],
+  }
+}
 
 const generateMockInteraction = (propertyId: string, type: string) => ({
   id: `interaction-${propertyId}-${type}`,
@@ -442,9 +445,11 @@ describe('Core Performance Tests', () => {
       )
 
       // Trigger animation
-      const element = container.firstChild as HTMLElement
-      if (element) {
+      const element = container.firstChild
+      if (element instanceof HTMLElement) {
         element.style.transform = 'translateX(100px)'
+      } else {
+        throw new Error('Expected rendered element for animation test')
       }
 
       // Wait for animation to complete

@@ -125,12 +125,18 @@ export default [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
+      '@typescript-eslint/no-redeclare': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
 
       // Important in TS projects: rely on TS for undefined symbols
       'no-undef': 'off',
+      'no-redeclare': 'off',
     },
     settings: { react: { version: 'detect' } },
   },
@@ -150,7 +156,15 @@ export default [
         ...globals.node,
       },
     },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
     rules: {
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off', // Often disabled in TS projects in favor of TS's own checks
     },
@@ -227,7 +241,6 @@ export default [
     },
     rules: {
       ...jestPlugin.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'off',
       'jest/no-conditional-expect': 'off', // TODO: Refactor test files to eliminate conditional expects
       'jest/expect-expect': [
         'warn',

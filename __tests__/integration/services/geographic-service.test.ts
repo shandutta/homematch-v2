@@ -265,11 +265,12 @@ describeOrSkip('GeographicService Integration Tests', () => {
     })
 
     test('should validate required parameters', async () => {
+      const args: unknown[] = [null, -122.4194, 5]
       await expect(
-        geographicService.getPropertiesWithinRadius(
-          null as unknown as number,
-          -122.4194,
-          5
+        Reflect.apply(
+          geographicService.getPropertiesWithinRadius,
+          geographicService,
+          args
         )
       ).rejects.toThrow()
     })

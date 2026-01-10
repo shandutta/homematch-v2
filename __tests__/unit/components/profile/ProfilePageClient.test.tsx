@@ -2,6 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { useRouter } from 'next/navigation'
+import type { User } from '@supabase/supabase-js'
+import type { Household, UserProfile } from '@/types/database'
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -12,13 +14,25 @@ jest.mock('next/navigation', () => ({
 jest.mock('next/link', () => {
   return {
     __esModule: true,
-    default: ({ children, href }: any) => <a href={href}>{children}</a>,
+    default: ({
+      children,
+      href,
+    }: {
+      children?: React.ReactNode
+      href: string
+    }) => <a href={href}>{children}</a>,
   }
 })
 
 // Mock child components
 jest.mock('@/components/profile/ProfileForm', () => ({
-  ProfileForm: ({ user, profile }: any) => (
+  ProfileForm: ({
+    user,
+    profile,
+  }: {
+    user: User
+    profile: UserProfile & { household?: Household | null }
+  }) => (
     <div data-testid="profile-form">
       ProfileForm - User: {user.email}, Profile: {profile.id}
     </div>
@@ -26,7 +40,11 @@ jest.mock('@/components/profile/ProfileForm', () => ({
 }))
 
 jest.mock('@/components/profile/HouseholdSection', () => ({
-  HouseholdSection: ({ profile }: any) => (
+  HouseholdSection: ({
+    profile,
+  }: {
+    profile: UserProfile & { household?: Household | null }
+  }) => (
     <div data-testid="household-component">
       HouseholdSection - Profile: {profile.id}
     </div>
@@ -34,26 +52,47 @@ jest.mock('@/components/profile/HouseholdSection', () => ({
 }))
 
 jest.mock('@/components/profile/ActivityStats', () => ({
-  ActivityStats: ({ summary }: any) => (
+  ActivityStats: ({
+    summary,
+  }: {
+    summary: { likes: number; views: number }
+  }) => (
     <div data-testid="activity-stats">
       ActivityStats - Likes: {summary.likes}, Views: {summary.views}
     </div>
   ),
 }))
 
-const mockUser = {
+const mockUser: User = {
   id: 'user-123',
   email: 'test@example.com',
-} as any
+  aud: 'authenticated',
+  app_metadata: {},
+  user_metadata: {},
+  created_at: '2024-01-01T00:00:00.000Z',
+}
 
-const mockProfile = {
+const mockHousehold: Household = {
+  id: 'household-456',
+  name: 'Test Household',
+  collaboration_mode: null,
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: null,
+  created_by: null,
+  user_count: 2,
+}
+
+const mockProfile: UserProfile & { household?: Household | null } = {
   id: 'profile-123',
-  user_id: 'user-123',
-  household: {
-    id: 'household-456',
-    name: 'Test Household',
-  },
-} as any
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: null,
+  display_name: null,
+  email: 'test@example.com',
+  household_id: mockHousehold.id,
+  onboarding_completed: true,
+  preferences: {},
+  household: mockHousehold,
+}
 
 const mockActivitySummary = {
   likes: 25,
@@ -71,7 +110,7 @@ describe('ProfilePageClient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    jest.mocked(useRouter).mockReturnValue(mockRouter)
   })
 
   it('renders all navigation elements', () => {
@@ -223,8 +262,10 @@ describe('ProfilePageClient', () => {
     const header = screen
       .getByRole('link', { name: /back to dashboard/i })
       .closest('section')
-    expect(header).not.toBeNull()
-    expect(header as HTMLElement).toHaveClass('border-b', 'border-white/5')
+    if (!(header instanceof HTMLElement)) {
+      throw new Error('Expected header section element')
+    }
+    expect(header).toHaveClass('border-b', 'border-white/5')
 
     const tabsList = screen.getByRole('tablist')
     expect(tabsList).toHaveClass(
@@ -274,9 +315,10 @@ describe('ProfilePageClient', () => {
       />
     )
 
-    const joinCodeSection = screen
-      .getByText(/join code/i)
-      .closest('div') as HTMLElement
+    const joinCodeSection = screen.getByText(/join code/i).closest('div')
+    if (!(joinCodeSection instanceof HTMLElement)) {
+      throw new Error('Expected join code container')
+    }
     const copyButton = within(joinCodeSection).getAllByRole('button')[0]
 
     await user.click(copyButton)

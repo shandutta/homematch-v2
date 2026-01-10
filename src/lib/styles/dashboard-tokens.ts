@@ -170,6 +170,13 @@ export const getElevation = (level: keyof typeof dashboardTokens.shadows) =>
 export const getSpacing = (size: keyof typeof dashboardTokens.spacing) =>
   dashboardTokens.spacing[size]
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isStringRecord = (value: unknown): value is Record<string, string> =>
+  isRecord(value) &&
+  Object.values(value).every((item) => typeof item === 'string')
+
 export const getColor = (color: string, shade?: string) => {
   const [colorName] = color.split('.')
   const isColorKey = (
@@ -179,9 +186,9 @@ export const getColor = (color: string, shade?: string) => {
   const colorObj = isColorKey(colorName)
     ? dashboardTokens.colors[colorName]
     : undefined
-  if (shade && colorObj && typeof colorObj === 'object') {
-    const record = colorObj as Record<string, string>
-    return shade in record ? record[shade] : undefined
+  if (shade && isStringRecord(colorObj)) {
+    const shadeEntry = Object.entries(colorObj).find(([key]) => key === shade)
+    return shadeEntry ? shadeEntry[1] : undefined
   }
   return colorObj
 }

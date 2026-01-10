@@ -25,11 +25,7 @@ interface DatabaseStats {
   schema?: unknown[]
 }
 
-type ExtensionRow = { extname: string }
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-const isExtensionRow = (value: unknown): value is ExtensionRow =>
-  isRecord(value) && typeof value.extname === 'string'
+type ExtensionRow = Database['public']['Views']['pg_extension']['Row']
 
 export default async function ValidationPage() {
   const supabase = await createClient()
@@ -102,21 +98,12 @@ export default async function ValidationPage() {
   // Check PostGIS extensions
   let postgisStatus: ExtensionRow[] | null = null
   try {
-    const extensionClient = supabase as unknown as {
-      from: (relation: string) => {
-        select: (columns: string) => {
-          in: (column: string, values: string[]) => Promise<{ data: unknown }>
-        }
-      }
-    }
-    const { data: extensions }: { data: unknown } = await extensionClient
+    const { data: extensions } = await supabase
       .from('pg_extension')
       .select('extname')
       .in('extname', ['postgis', 'uuid-ossp'])
 
-    postgisStatus = Array.isArray(extensions)
-      ? extensions.filter(isExtensionRow)
-      : null
+    postgisStatus = extensions ?? null
   } catch {
     // Extensions table might not be accessible, that's OK
     postgisStatus = null

@@ -1,13 +1,13 @@
 /**
  * Typed Mock Factory
  *
- * This module provides strongly-typed mock factories to replace loose `any` types
+ * This module provides strongly-typed mock factories to replace loose typing
  * in tests. Use these factories instead of raw mock objects to ensure type safety.
  *
  * @example
  * ```typescript
- * // Instead of:
- * const mockSupabase = { ... } as any
+ * // Instead of a raw object:
+ * const mockSupabase = { ... }
  *
  * // Use:
  * const mockSupabase = createMockSupabaseClient()
@@ -26,6 +26,10 @@ import type {
 // Supabase Mock Types
 // ============================================================================
 
+type MockFn<Args extends unknown[], Return> = jest.MockedFunction<
+  (...args: Args) => Return
+>
+
 interface MockQueryResponse<T> {
   data: T | null
   error: Error | null
@@ -33,44 +37,44 @@ interface MockQueryResponse<T> {
 }
 
 interface MockQueryBuilder<T> {
-  select: jest.Mock<MockQueryBuilder<T>, [string?]>
-  insert: jest.Mock<MockQueryBuilder<T>, [unknown]>
-  update: jest.Mock<MockQueryBuilder<T>, [unknown]>
-  delete: jest.Mock<MockQueryBuilder<T>, []>
-  eq: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  neq: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  gt: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  gte: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  lt: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  lte: jest.Mock<MockQueryBuilder<T>, [string, unknown]>
-  in: jest.Mock<MockQueryBuilder<T>, [string, unknown[]]>
-  order: jest.Mock<MockQueryBuilder<T>, [string, { ascending?: boolean }?]>
-  limit: jest.Mock<MockQueryBuilder<T>, [number]>
-  single: jest.Mock<Promise<MockQueryResponse<T>>, []>
-  maybeSingle: jest.Mock<Promise<MockQueryResponse<T>>, []>
+  select: MockFn<[string?], MockQueryBuilder<T>>
+  insert: MockFn<[unknown], MockQueryBuilder<T>>
+  update: MockFn<[unknown], MockQueryBuilder<T>>
+  delete: MockFn<[], MockQueryBuilder<T>>
+  eq: MockFn<[string, unknown], MockQueryBuilder<T>>
+  neq: MockFn<[string, unknown], MockQueryBuilder<T>>
+  gt: MockFn<[string, unknown], MockQueryBuilder<T>>
+  gte: MockFn<[string, unknown], MockQueryBuilder<T>>
+  lt: MockFn<[string, unknown], MockQueryBuilder<T>>
+  lte: MockFn<[string, unknown], MockQueryBuilder<T>>
+  in: MockFn<[string, unknown[]], MockQueryBuilder<T>>
+  order: MockFn<[string, { ascending?: boolean }?], MockQueryBuilder<T>>
+  limit: MockFn<[number], MockQueryBuilder<T>>
+  single: MockFn<[], Promise<MockQueryResponse<T>>>
+  maybeSingle: MockFn<[], Promise<MockQueryResponse<T>>>
   then: <TResult>(
     callback: (value: MockQueryResponse<T[]>) => TResult
   ) => Promise<TResult>
 }
 
 interface MockAuthClient {
-  getUser: jest.Mock<
+  getUser: MockFn<
     Promise<{ data: { user: User | null }; error: Error | null }>,
     []
   >
-  getSession: jest.Mock<
+  getSession: MockFn<
     Promise<{ data: { session: Session | null }; error: Error | null }>,
     []
   >
-  signInWithPassword: jest.Mock
-  signOut: jest.Mock
-  onAuthStateChange: jest.Mock
+  signInWithPassword: MockFn<[unknown], Promise<unknown>>
+  signOut: MockFn<[], Promise<unknown>>
+  onAuthStateChange: MockFn<[unknown], unknown>
 }
 
 interface MockSupabaseClient {
   auth: MockAuthClient
-  from: jest.Mock<MockQueryBuilder<unknown>, [string]>
-  rpc: jest.Mock<Promise<MockQueryResponse<unknown>>, [string, unknown?]>
+  from: MockFn<[string], MockQueryBuilder<unknown>>
+  rpc: MockFn<[string, unknown?], Promise<MockQueryResponse<unknown>>>
 }
 
 // ============================================================================

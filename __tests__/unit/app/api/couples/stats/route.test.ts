@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
-import type { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { GET } from '@/app/api/couples/stats/route'
 
 const jsonMock = jest.fn((body, init) => ({
@@ -14,6 +14,7 @@ jest.mock('next/server', () => {
     NextResponse: {
       json: (...args: unknown[]) => jsonMock(...args),
     },
+    NextRequest: actual.NextRequest,
   }
 })
 
@@ -42,6 +43,9 @@ jest.mock('@/lib/services/couples', () => ({
 }))
 
 describe('couples stats API route', () => {
+  const createRequest = () =>
+    new NextRequest('http://localhost/api/couples/stats')
+
   beforeEach(() => {
     jsonMock.mockClear()
     createApiClientMock.mockClear()
@@ -55,7 +59,7 @@ describe('couples stats API route', () => {
       error: null,
     })
 
-    await GET({} as NextRequest)
+    await GET(createRequest())
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(401)
@@ -69,7 +73,7 @@ describe('couples stats API route', () => {
     })
     getHouseholdStatsMock.mockResolvedValue(null)
 
-    await GET({} as NextRequest)
+    await GET(createRequest())
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(404)
@@ -83,7 +87,7 @@ describe('couples stats API route', () => {
     })
     getHouseholdStatsMock.mockResolvedValue({ viewed: 12 })
 
-    await GET({} as NextRequest)
+    await GET(createRequest())
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
@@ -97,7 +101,7 @@ describe('couples stats API route', () => {
     })
     getHouseholdStatsMock.mockRejectedValue(new Error('boom'))
 
-    await GET({} as NextRequest)
+    await GET(createRequest())
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(500)

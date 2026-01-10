@@ -76,8 +76,28 @@ describe('Coordinate Utilities Integration', () => {
       }
 
       // This function would be used in the geographic service
-      const normalizeBounds = (bounds: any) => {
-        if ('northEast' in bounds && 'southWest' in bounds) {
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null
+
+      const isLatLng = (
+        value: unknown
+      ): value is { lat: number; lng: number } =>
+        isRecord(value) &&
+        typeof value.lat === 'number' &&
+        typeof value.lng === 'number'
+
+      const isLegacyBounds = (
+        value: unknown
+      ): value is {
+        northEast: { lat: number; lng: number }
+        southWest: { lat: number; lng: number }
+      } =>
+        isRecord(value) &&
+        isLatLng(value.northEast) &&
+        isLatLng(value.southWest)
+
+      const normalizeBounds = (bounds: unknown) => {
+        if (isLegacyBounds(bounds)) {
           return {
             north: bounds.northEast.lat,
             south: bounds.southWest.lat,

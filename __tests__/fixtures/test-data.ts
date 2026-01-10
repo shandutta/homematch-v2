@@ -31,6 +31,8 @@ export const getWorkerTestUser = (workerIndex: number = 0) => {
     password: 'testpassword123',
     profile: {
       id: `test-user-worker-${normalizedWorkerIndex}`,
+      display_name: `Worker ${normalizedWorkerIndex}`,
+      email: `test-worker-${normalizedWorkerIndex}@example.com`,
       household_id: `household-worker-${normalizedWorkerIndex}`,
       onboarding_completed: true,
       preferences: {
@@ -57,6 +59,8 @@ export const TEST_USERS = {
     password: 'testpassword123',
     profile: {
       id: 'test-user-1',
+      display_name: 'Test User 1',
+      email: 'test1@example.com',
       household_id: 'household-456',
       onboarding_completed: true,
       preferences: {
@@ -78,6 +82,8 @@ export const TEST_USERS = {
         id: 'household-456',
         name: 'Smith Family',
         collaboration_mode: 'shared',
+        created_by: 'test-user-1',
+        user_count: 2,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
       },
@@ -89,6 +95,8 @@ export const TEST_USERS = {
     password: 'testpassword456',
     profile: {
       id: 'test-user-2',
+      display_name: 'Test User 2',
+      email: 'test2@example.com',
       household_id: null,
       onboarding_completed: true,
       preferences: {
@@ -113,6 +121,8 @@ export const TEST_USERS = {
     password: 'testpassword789',
     profile: {
       id: 'test-user-3',
+      display_name: 'Test User 3',
+      email: 'test3@example.com',
       household_id: null,
       onboarding_completed: false,
       preferences: null,
@@ -128,6 +138,8 @@ export const TEST_HOUSEHOLDS = {
     id: 'household-456',
     name: 'Smith Family',
     collaboration_mode: 'shared',
+    created_by: 'test-user-1',
+    user_count: 2,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
   },
@@ -135,6 +147,8 @@ export const TEST_HOUSEHOLDS = {
     id: 'household-789',
     name: 'Johnson Family',
     collaboration_mode: 'shared',
+    created_by: 'test-user-2',
+    user_count: 2,
     created_at: '2024-01-02T00:00:00Z',
     updated_at: '2024-01-02T00:00:00Z',
   },
@@ -142,6 +156,8 @@ export const TEST_HOUSEHOLDS = {
     id: 'test-household-123',
     name: 'Test Family Household',
     collaboration_mode: 'shared',
+    created_by: 'test-user-3',
+    user_count: 1,
     created_at: '2024-01-03T00:00:00Z',
     updated_at: '2024-01-03T00:00:00Z',
   },

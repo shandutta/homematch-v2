@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
+import type { User } from '@supabase/supabase-js'
+import type { UserProfile } from '@/types/database'
 
 // Mock dependencies
 jest.mock('@/lib/services/users-client')
@@ -17,27 +19,39 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-const mockUser = {
+const mockUser: User = {
   id: 'user-123',
   email: 'test@example.com',
-} as any
+  aud: 'authenticated',
+  app_metadata: {},
+  user_metadata: {},
+  created_at: '2024-01-01T00:00:00.000Z',
+}
 
-const mockProfile = {
+const mockProfile: UserProfile = {
   id: 'user-123',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: null,
+  display_name: null,
+  email: 'test@example.com',
+  household_id: null,
+  onboarding_completed: true,
   preferences: {
     display_name: 'Test User',
     phone: '(123) 456-7890',
     bio: 'Test bio',
   },
-} as any
+}
 
 describe('ProfileForm', () => {
-  let mockUpdateUserProfile: jest.Mock
+  let mockUpdateUserProfile: jest.MockedFunction<
+    typeof UserServiceClient.updateUserProfile
+  >
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUpdateUserProfile = jest.fn().mockResolvedValue(mockProfile)
-    ;(UserServiceClient.updateUserProfile as jest.Mock) = mockUpdateUserProfile
+    mockUpdateUserProfile = jest.mocked(UserServiceClient.updateUserProfile)
+    mockUpdateUserProfile.mockResolvedValue(mockProfile)
   })
 
   it('renders form with initial values from profile', () => {

@@ -486,10 +486,15 @@ describe('PropertyService Integration Tests', () => {
 
     test('should handle invalid property data gracefully', async () => {
       // Missing required fields
-      const invalidProperty = {
+      const invalidProperty: PropertyInsert = {
         address: 'Invalid Property',
-        // Missing required fields like city, state, etc.
-      } as PropertyInsert
+        city: '',
+        state: '',
+        zip_code: '',
+        price: -1,
+        bedrooms: -1,
+        bathrooms: -1,
+      }
 
       const result = await propertyService.createProperty(invalidProperty)
       expect(result).toBeNull()

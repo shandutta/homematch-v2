@@ -49,7 +49,11 @@ function makeSupabaseStub(rows: Row[]) {
 describe('POST /api/admin/status-refresh', () => {
   beforeEach(() => {
     jest.resetAllMocks()
-    ;(global as any).fetch = undefined
+    Object.defineProperty(globalThis, 'fetch', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    })
     jest.resetModules()
   })
 
@@ -124,7 +128,11 @@ describe('POST /api/admin/status-refresh', () => {
       }
       return { status: 500, ok: false, json: async () => ({}) }
     })
-    ;(global as any).fetch = fetchMock
+    Object.defineProperty(globalThis, 'fetch', {
+      value: fetchMock,
+      configurable: true,
+      writable: true,
+    })
 
     const { POST } = await import('@/app/api/admin/status-refresh/route')
 
@@ -148,10 +156,10 @@ describe('POST /api/admin/status-refresh', () => {
     expect(stub.upsert).toHaveBeenCalledTimes(1)
     const payload = stub.upsert.mock.calls[0][0]
     const statusByZpid = Object.fromEntries(
-      payload.map((row: any) => [row.zpid, row.listing_status])
+      payload.map((row) => [row.zpid, row.listing_status])
     )
     const activeByZpid = Object.fromEntries(
-      payload.map((row: any) => [row.zpid, row.is_active])
+      payload.map((row) => [row.zpid, row.is_active])
     )
     expect(statusByZpid).toEqual({ z1: 'sold', z2: 'removed' })
     expect(activeByZpid).toEqual({ z1: false, z2: false })

@@ -22,13 +22,8 @@ jest.mock('@/lib/services/properties', () => {
   }
 })
 
-const { searchPropertiesMock, getNeighborhoodsByCityMock } = (
-  jest.requireMock('@/lib/services/properties') as {
-    __mock__: {
-      searchPropertiesMock: jest.Mock
-      getNeighborhoodsByCityMock: jest.Mock
-    }
-  }
+const { searchPropertiesMock, getNeighborhoodsByCityMock } = jest.requireMock(
+  '@/lib/services/properties'
 ).__mock__
 
 describe('loadDashboardData', () => {

@@ -31,11 +31,11 @@ const CITY_LIST = Array.from(
 )
 
 // RapidAPI supported values observed: ForSale, RecentlySold
-const STATUSES = ['ForSale', 'RecentlySold'] as const
+const STATUSES: Array<'ForSale' | 'RecentlySold'> = ['ForSale', 'RecentlySold']
 const MAX_PAGES = 5
 const PAGE_SIZE = 50
 const DELAY_MS = 350 // stay under 3 rps with headroom
-type PropertyUpdate = Database['public']['Tables']['properties']['Update']
+type PropertyInsert = Database['public']['Tables']['properties']['Insert']
 
 type SearchItem = {
   zpid?: string | number
@@ -46,6 +46,24 @@ type SearchItem = {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+function toSearchItem(value: unknown): SearchItem {
+  if (!isRecord(value)) return {}
+  return {
+    zpid:
+      typeof value.zpid === 'string' || typeof value.zpid === 'number'
+        ? value.zpid
+        : undefined,
+    listingStatus:
+      typeof value.listingStatus === 'string' ? value.listingStatus : undefined,
+    price: typeof value.price === 'number' ? value.price : undefined,
+    city: typeof value.city === 'string' ? value.city : undefined,
+    state: typeof value.state === 'string' ? value.state : undefined,
+  }
+}
 
 function normalizeStatus(status?: string): {
   listing_status: string
@@ -97,12 +115,16 @@ async function fetchStatusPage(
     )
   }
   const body = await res.json()
-  const list = Array.isArray(body.props)
-    ? body.props
-    : Array.isArray(body.results)
-      ? body.results
-      : body.data?.results || []
-  return list as SearchItem[]
+  const list = (() => {
+    if (!isRecord(body)) return []
+    if (Array.isArray(body.props)) return body.props
+    if (Array.isArray(body.results)) return body.results
+    if (isRecord(body.data) && Array.isArray(body.data.results)) {
+      return body.data.results
+    }
+    return []
+  })()
+  return list.map(toSearchItem)
 }
 
 async function main() {
@@ -113,7 +135,15 @@ async function main() {
   // Build map of existing properties to preserve required fields on upsert
   const baseMap = new Map<
     string,
-    { address: string; city: string; state: string; zip_code: string | null }
+    {
+      address: string
+      city: string
+      state: string
+      zip_code: string | null
+      bedrooms: number
+      bathrooms: number
+      price: number
+    }
   >()
   {
     const pageSize = 1000
@@ -121,7 +151,9 @@ async function main() {
     while (true) {
       const { data, error } = await supabase
         .from('properties')
-        .select('zpid, address, city, state, zip_code')
+        .select(
+          'zpid, address, city, state, zip_code, bedrooms, bathrooms, price'
+        )
         .range(offset, offset + pageSize - 1)
 
       if (error) {
@@ -130,13 +162,16 @@ async function main() {
       }
       if (!data || data.length === 0) break
       data.forEach((row) => {
-        const zpid = row.zpid as string | null
+        const zpid = row.zpid
         if (zpid) {
           baseMap.set(zpid, {
-            address: row.address as string,
-            city: row.city as string,
-            state: row.state as string,
-            zip_code: (row.zip_code as string | null) || null,
+            address: row.address,
+            city: row.city,
+            state: row.state,
+            zip_code: row.zip_code || null,
+            bedrooms: row.bedrooms,
+            bathrooms: row.bathrooms,
+            price: row.price,
           })
         }
       })
@@ -154,7 +189,7 @@ async function main() {
           if (items.length === 0) break
 
           const updates = items
-            .map((item): PropertyUpdate | null => {
+            .map((item): PropertyInsert | null => {
               const zpid = toZpid(item)
               if (!zpid) return null
               const base = baseMap.get(zpid)
@@ -174,34 +209,25 @@ async function main() {
                 zpid,
                 listing_status: normStatus.listing_status,
                 is_active: normStatus.is_active,
-                price: normalizedPrice,
+                price: normalizedPrice ?? base.price,
                 city: base.city,
                 state: base.state,
                 address: base.address,
                 zip_code: zip,
+                bedrooms: base.bedrooms,
+                bathrooms: base.bathrooms,
               }
             })
-            .filter(Boolean) as PropertyUpdate[]
+            .filter((value): value is PropertyInsert => value !== null)
 
           if (updates.length > 0) {
-            const payload: Database['public']['Tables']['properties']['Update'][] =
-              updates.map((u) => ({
-                zpid: u.zpid,
-                listing_status: u.listing_status,
-                is_active: u.is_active,
-                price: u.price,
-                city: u.city,
-                state: u.state,
-                address: u.address,
-                zip_code: u.zip_code,
-                updated_at: new Date().toISOString(),
-              }))
+            const payload = updates.map((u) => ({
+              ...u,
+              updated_at: new Date().toISOString(),
+            }))
             const { error } = await supabase
               .from('properties')
-              .upsert(
-                payload as unknown as Database['public']['Tables']['properties']['Insert'][],
-                { onConflict: 'zpid' }
-              )
+              .upsert(payload, { onConflict: 'zpid' })
             if (error) {
               console.warn(
                 `Update failed for ${city} status ${status} page ${page}: ${error.message}`
@@ -215,8 +241,9 @@ async function main() {
           if (items.length < PAGE_SIZE) break
           await sleep(DELAY_MS)
         } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
           console.warn(
-            `Fetch failed for ${city} status ${status} page ${page}: ${(err as Error).message}`
+            `Fetch failed for ${city} status ${status} page ${page}: ${message}`
           )
           break
         }

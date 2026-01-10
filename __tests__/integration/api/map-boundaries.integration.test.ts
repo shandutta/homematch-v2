@@ -3,6 +3,46 @@ import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import polygonClipping from 'polygon-clipping'
 
+type PolygonCoordinates = number[][][]
+type MultiPolygonCoordinates = number[][][][]
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value)
+
+const isCoordinatePair = (value: unknown): value is [number, number] =>
+  Array.isArray(value) &&
+  value.length >= 2 &&
+  isNumber(value[0]) &&
+  isNumber(value[1])
+
+const isRing = (value: unknown): value is [number, number][] =>
+  Array.isArray(value) && value.every(isCoordinatePair)
+
+const isPolygonCoordinates = (value: unknown): value is PolygonCoordinates =>
+  Array.isArray(value) && value.every(isRing)
+
+const isMultiPolygonCoordinates = (
+  value: unknown
+): value is MultiPolygonCoordinates =>
+  Array.isArray(value) && value.every(isPolygonCoordinates)
+
+const isPolygonBounds = (
+  value: unknown
+): value is { type: 'Polygon'; coordinates: PolygonCoordinates } =>
+  isRecord(value) &&
+  value.type === 'Polygon' &&
+  isPolygonCoordinates(value.coordinates)
+
+const isMultiPolygonBounds = (
+  value: unknown
+): value is { type: 'MultiPolygon'; coordinates: MultiPolygonCoordinates } =>
+  isRecord(value) &&
+  value.type === 'MultiPolygon' &&
+  isMultiPolygonCoordinates(value.coordinates)
+
 const toSquarePolygon = (
   west: number,
   south: number,
@@ -21,10 +61,9 @@ const toSquarePolygon = (
   ],
 })
 
-const toClippingMultiPolygon = (bounds: any) => {
-  if (!bounds) return []
-  if (bounds.type === 'MultiPolygon') return bounds.coordinates
-  if (bounds.type === 'Polygon') return [bounds.coordinates]
+const toClippingMultiPolygon = (bounds: unknown) => {
+  if (isMultiPolygonBounds(bounds)) return bounds.coordinates
+  if (isPolygonBounds(bounds)) return [bounds.coordinates]
   return []
 }
 
@@ -125,7 +164,10 @@ describe('Map boundaries API', () => {
     const firstClip = toClippingMultiPolygon(first.bounds)
     const secondClip = toClippingMultiPolygon(second.bounds)
     const overlap = polygonClipping.intersection(firstClip, secondClip)
-    const overlapArea = clippingMultiPolygonArea(overlap as number[][][][])
+    if (!isMultiPolygonCoordinates(overlap)) {
+      throw new Error('Expected overlap to be a multipolygon')
+    }
+    const overlapArea = clippingMultiPolygonArea(overlap)
 
     expect(overlapArea).toBe(0)
   })

@@ -32,7 +32,7 @@ const mockProperty: Property = {
   bathrooms: 2,
   square_feet: 1500,
   images: ['/image1.jpg'],
-  coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+  coordinates: { lat: 37.7749, lng: -122.4194 },
   created_at: '2024-01-01T00:00:00.000Z',
   amenities: null,
   description: null,

@@ -393,11 +393,10 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
       ).toBe(true)
     })
 
-    test('should return empty results for non-existent property type', async () => {
-      // Use a property type that doesn't exist in the database
-      // Note: 'land' is a valid type that TestDataFactory can create
+    test('should return empty results for a property type not in test data', async () => {
+      // Use a valid property type that's not seeded in this dataset
       const result = await propertyService.searchProperties({
-        filters: { property_types: ['nonexistent_type_xyz'] as any },
+        filters: { property_types: ['land'] },
       })
 
       expect(result.properties).toHaveLength(0)
@@ -647,13 +646,9 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
       expect(includesAllTestProperties).toBe(true)
     })
 
-    test('should handle null filter values gracefully', async () => {
+    test('should handle missing filter values gracefully', async () => {
       const result = await propertyService.searchProperties({
-        filters: {
-          price_min: null as any,
-          bedrooms_min: null as any,
-          property_types: null as any,
-        },
+        filters: {},
       })
 
       // Should return properties when filters are null

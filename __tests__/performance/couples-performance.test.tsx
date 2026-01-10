@@ -3,19 +3,28 @@ import { render, waitFor } from '@testing-library/react'
 import { createMocks } from 'node-mocks-http'
 import { GET as getMutualLikes } from '@/app/api/couples/mutual-likes/route'
 import { GET as getActivity } from '@/app/api/couples/activity/route'
-import { createClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { NextRequest } from 'next/server'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
 import { MutualLikesSection } from '@/components/features/couples/MutualLikesSection'
 import React from 'react'
 
+type MockSupabaseClient = {
+  auth: {
+    getUser: ReturnType<typeof vi.fn>
+  }
+}
+
+const mockCreateClient = vi.fn<Promise<MockSupabaseClient>, []>()
+
 // Mock dependencies
-vi.mock('@/lib/supabase/server')
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: mockCreateClient,
+}))
 vi.mock('@/lib/services/couples')
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className, ...props }: any) => (
+    div: ({ children, className, ...props }: React.ComponentProps<'div'>) => (
       <div className={className} {...props}>
         {children}
       </div>
@@ -25,21 +34,26 @@ vi.mock('framer-motion', () => ({
 
 // Mock Next.js Image and Link
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, ...props }: React.ComponentProps<'img'>) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} {...props} />
   ),
 }))
 vi.mock('next/link', () => ({
-  default: ({ href, children, ...props }: any) => (
+  default: ({ href, children, ...props }: React.ComponentProps<'a'>) => (
     <a href={href} {...props}>
       {children}
     </a>
   ),
 }))
 
-const mockCreateClient = vi.mocked(createClient)
 const mockCouplesService = vi.mocked(CouplesService)
+
+const createJsonResponse = (payload: unknown) =>
+  new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
 
 describe('Couples Features Performance Tests', () => {
   const mockUser = {
@@ -51,7 +65,7 @@ describe('Couples Features Performance Tests', () => {
     auth: {
       getUser: vi.fn(),
     },
-  }
+  } satisfies MockSupabaseClient
 
   const mockMutualLikes = Array.from({ length: 100 }, (_, i) => ({
     property_id: `prop-${i}`,
@@ -81,7 +95,7 @@ describe('Couples Features Performance Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockCreateClient.mockResolvedValue(mockSupabaseClient as any)
+    mockCreateClient.mockResolvedValue(mockSupabaseClient)
     mockSupabaseClient.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
@@ -218,13 +232,14 @@ describe('Couples Features Performance Tests', () => {
     })
 
     test('MutualLikesSection should handle large datasets without performance degradation', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        createJsonResponse({
           mutualLikes: mockMutualLikes,
           performance: { totalTime: 150, cached: false, count: 100 },
-        }),
-      })
+        })
+      )
+      global.fetch = fetchMock
 
       const startTime = performance.now()
 
@@ -363,13 +378,14 @@ describe('Couples Features Performance Tests', () => {
       }))
 
       // Mock fetch for the large dataset
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
+      const fetchMock = vi.fn<Promise<Response>, Parameters<typeof fetch>>()
+      fetchMock.mockResolvedValue(
+        createJsonResponse({
           mutualLikes: largeMutualLikes,
           performance: { totalTime: 200, cached: false, count: 1000 },
-        }),
-      })
+        })
+      )
+      global.fetch = fetchMock
 
       const { unmount } = render(<MutualLikesSection />)
       unmount()

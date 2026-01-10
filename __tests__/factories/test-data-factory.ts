@@ -48,7 +48,7 @@ export const createMockProperty = (
   coordinates: {
     type: 'Point',
     coordinates: [faker.location.longitude(), faker.location.latitude()],
-  } as unknown,
+  },
   amenities: [faker.word.adjective(), faker.word.adjective()],
   parking_spots: faker.number.int({ min: 0, max: 10 }),
   property_hash: faker.string.alphanumeric(32),
@@ -83,7 +83,7 @@ export const createMockDatabaseProperty = (
   coordinates: {
     type: 'Point',
     coordinates: [faker.location.longitude(), faker.location.latitude()],
-  } as unknown,
+  },
   amenities: [faker.word.adjective(), faker.word.adjective()],
   parking_spots: faker.number.int({ min: 0, max: 10 }),
   property_hash: faker.string.alphanumeric(32),

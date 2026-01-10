@@ -72,15 +72,7 @@ testFiles.forEach((file) => {
       modified = true
     }
 
-    // Replace vi.mocked with jest.mocked (if it exists)
-    if (content.includes('jest.mocked')) {
-      // jest.mocked doesn't exist in Jest, use 'as jest.MockedFunction' pattern instead
-      content = content.replace(
-        /jest\.mocked\(([^)]+)\)/g,
-        '$1 as jest.MockedFunction<typeof $1>'
-      )
-      modified = true
-    }
+    // Leave jest.mocked in place (provided via @jest/globals).
 
     if (modified) {
       fs.writeFileSync(file, content, 'utf8')

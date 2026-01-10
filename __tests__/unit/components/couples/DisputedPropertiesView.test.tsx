@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DisputedPropertiesView } from '@/components/couples/DisputedPropertiesView'
+import { createJsonResponse } from '@/__tests__/utils/http-helpers'
 
 jest.mock('@/lib/utils/toast', () => ({
   toast: {
@@ -59,6 +60,7 @@ jest.mock('@/lib/supabase/client', () => ({
 }))
 
 describe('DisputedPropertiesView', () => {
+  const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn()
   const mockSession = {
     access_token: 'test-token',
     user: {
@@ -69,7 +71,11 @@ describe('DisputedPropertiesView', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    global.fetch = jest.fn()
+    fetchMock.mockReset()
+    Object.defineProperty(global, 'fetch', {
+      value: fetchMock,
+      writable: true,
+    })
 
     mockSupabaseClient.auth.getSession.mockResolvedValue({
       data: { session: mockSession },
@@ -178,10 +184,7 @@ describe('DisputedPropertiesView', () => {
         maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
       }
     })
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ disputedProperties: [] }),
-    })
+    fetchMock.mockResolvedValue(createJsonResponse({ disputedProperties: [] }))
 
     render(<DisputedPropertiesView />)
 
@@ -220,10 +223,7 @@ describe('DisputedPropertiesView', () => {
         maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
       }
     })
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: false,
-      status: 500,
-    })
+    fetchMock.mockResolvedValue(new Response(null, { status: 500 }))
 
     render(<DisputedPropertiesView />)
 

@@ -91,11 +91,13 @@ export async function GET(request: NextRequest) {
       response.database = 'connected'
     } catch (dbError) {
       response.database = 'error'
+      const isRecord = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null
       const dbMessage =
         dbError instanceof Error
           ? dbError.message
-          : typeof (dbError as { message?: unknown })?.message === 'string'
-            ? (dbError as { message: string }).message
+          : isRecord(dbError) && typeof dbError.message === 'string'
+            ? dbError.message
             : typeof dbError === 'string'
               ? dbError
               : 'Unknown database error'

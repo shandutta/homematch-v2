@@ -3,36 +3,41 @@ import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuil
 import type { PropertyFilters } from '@/lib/schemas/property'
 
 describe('PropertyFilterBuilder', () => {
+  type MockQuery = {
+    appliedFilters: Array<{ method: string; column: string; value: unknown }>
+    gte: (column: string, value: unknown) => MockQuery
+    lte: (column: string, value: unknown) => MockQuery
+    eq: (column: string, value: unknown) => MockQuery
+    in: (column: string, value: unknown[]) => MockQuery
+    contains: (column: string, value: unknown) => MockQuery
+  }
+
   let filterBuilder: PropertyFilterBuilder
-  let mockQuery: any
+  let mockQuery: MockQuery
 
   beforeEach(() => {
     filterBuilder = new PropertyFilterBuilder()
 
     // Create a comprehensive mock query object that tracks all applied filters
     mockQuery = {
-      appliedFilters: [] as Array<{
-        method: string
-        column: string
-        value: any
-      }>,
-      gte: function (column: string, value: any) {
+      appliedFilters: [],
+      gte: function (column: string, value: unknown) {
         this.appliedFilters.push({ method: 'gte', column, value })
         return this
       },
-      lte: function (column: string, value: any) {
+      lte: function (column: string, value: unknown) {
         this.appliedFilters.push({ method: 'lte', column, value })
         return this
       },
-      eq: function (column: string, value: any) {
+      eq: function (column: string, value: unknown) {
         this.appliedFilters.push({ method: 'eq', column, value })
         return this
       },
-      in: function (column: string, value: any[]) {
+      in: function (column: string, value: unknown[]) {
         this.appliedFilters.push({ method: 'in', column, value })
         return this
       },
-      contains: function (column: string, value: any) {
+      contains: function (column: string, value: unknown) {
         this.appliedFilters.push({ method: 'contains', column, value })
         return this
       },
@@ -253,8 +258,9 @@ describe('PropertyFilterBuilder', () => {
     test('should allow adding new filter rules', () => {
       const initialRulesCount = filterBuilder.getFilterRules().length
 
+      const filterKey: keyof PropertyFilters = 'property_types'
       filterBuilder.addFilterRule({
-        filterKey: 'property_types' as keyof PropertyFilters, // Reusing existing key for simplicity
+        filterKey, // Reusing existing key for simplicity
         column: 'custom_column',
         operation: 'eq',
       })

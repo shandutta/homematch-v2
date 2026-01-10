@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await query
 
   if (error) {
-    const errorCode = (error as { code?: string }).code
+    const errorCode = error.code
     if (errorCode === '42P01') {
       return NextResponse.json(
         {

@@ -64,8 +64,11 @@ const getStatValueByLabel = (label: string) => {
     )
   })
   // The value is the previous sibling with class "font-medium"
-  const valueElement = labelElement.previousElementSibling as HTMLElement | null
-  if (!valueElement || !valueElement.classList.contains('font-medium')) {
+  const valueElement = labelElement.previousElementSibling
+  if (!(valueElement instanceof HTMLElement)) {
+    throw new Error(`Value element for ${label} stat not found`)
+  }
+  if (!valueElement.classList.contains('font-medium')) {
     throw new Error(`Value element for ${label} stat not found`)
   }
   return valueElement
@@ -128,7 +131,7 @@ describe('PropertyCard Component', () => {
   test('should render PropertyMap when coordinates are present', () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
-      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+      coordinates: { lat: 37.7749, lng: -122.4194 },
     }
     renderWithQuery(<PropertyCard property={propertyWithCoords} />)
     expect(screen.getByTestId('property-map')).toBeDefined()
@@ -169,7 +172,7 @@ describe('PropertyCard Component', () => {
   test('defaults to map view in full-height toggle mode', () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
-      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+      coordinates: { lat: 37.7749, lng: -122.4194 },
     }
 
     renderWithQuery(
@@ -187,7 +190,7 @@ describe('PropertyCard Component', () => {
   test('does not render map/story toggle buttons in detail mode', () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
-      coordinates: { lat: 37.7749, lng: -122.4194 } as any,
+      coordinates: { lat: 37.7749, lng: -122.4194 },
     }
 
     renderWithQuery(

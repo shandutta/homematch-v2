@@ -1,18 +1,32 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
+import type { User } from '@supabase/supabase-js'
+import type { UserProfile } from '@/types/database'
 
 // Mock next/link
 jest.mock('next/link', () => {
   return {
     __esModule: true,
-    default: ({ children, href }: any) => <a href={href}>{children}</a>,
+    default: ({
+      children,
+      href,
+    }: {
+      children?: React.ReactNode
+      href: string
+    }) => <a href={href}>{children}</a>,
   }
 })
 
 // Mock child components
 jest.mock('@/components/settings/PreferencesSection', () => ({
-  PreferencesSection: ({ user, profile }: any) => (
+  PreferencesSection: ({
+    user,
+    profile,
+  }: {
+    user: User
+    profile: UserProfile
+  }) => (
     <div data-testid="preferences-section">
       PreferencesSection - User: {user.email}, Profile: {profile.id}
     </div>
@@ -20,7 +34,13 @@ jest.mock('@/components/settings/PreferencesSection', () => ({
 }))
 
 jest.mock('@/components/settings/NotificationsSection', () => ({
-  NotificationsSection: ({ user, profile }: any) => (
+  NotificationsSection: ({
+    user,
+    profile,
+  }: {
+    user: User
+    profile: UserProfile
+  }) => (
     <div data-testid="notifications-section">
       NotificationsSection - User: {user.email}, Profile: {profile.id}
     </div>
@@ -28,7 +48,7 @@ jest.mock('@/components/settings/NotificationsSection', () => ({
 }))
 
 jest.mock('@/components/settings/SavedSearchesSection', () => ({
-  SavedSearchesSection: ({ userId }: any) => (
+  SavedSearchesSection: ({ userId }: { userId: string }) => (
     <div data-testid="saved-searches-section">
       SavedSearchesSection - UserId: {userId}
     </div>
@@ -36,21 +56,30 @@ jest.mock('@/components/settings/SavedSearchesSection', () => ({
 }))
 
 jest.mock('@/components/settings/AccountSection', () => ({
-  AccountSection: ({ user }: any) => (
+  AccountSection: ({ user }: { user: User }) => (
     <div data-testid="account-section">AccountSection - User: {user.email}</div>
   ),
 }))
 
-const mockUser = {
+const mockUser: User = {
   id: 'user-123',
   email: 'test@example.com',
-} as any
+  aud: 'authenticated',
+  app_metadata: {},
+  user_metadata: {},
+  created_at: '2024-01-01T00:00:00.000Z',
+}
 
-const mockProfile = {
+const mockProfile: UserProfile = {
   id: 'profile-123',
-  user_id: 'user-123',
+  display_name: null,
+  email: 'test@example.com',
+  household_id: null,
+  onboarding_completed: true,
   preferences: {},
-} as any
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: null,
+}
 
 describe('SettingsPageClient', () => {
   beforeEach(() => {

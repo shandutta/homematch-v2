@@ -1,8 +1,16 @@
 /** @jest-environment node */
 
 import { describe, test, expect, jest } from '@jest/globals'
-import { VibesService } from '@/lib/services/vibes/vibes-service'
+import {
+  VibesService,
+  type VibesGenerationResult,
+} from '@/lib/services/vibes/vibes-service'
 import type { Property } from '@/lib/schemas/property'
+import type { LLMVibesOutput } from '@/lib/schemas/property-vibes'
+import type {
+  CompletionResponse,
+  UsageInfo,
+} from '@/lib/services/vibes/openrouter-client'
 
 const mockProperty = (overrides?: Partial<Property>): Property => ({
   id: 'prop-1',
@@ -36,7 +44,7 @@ const mockProperty = (overrides?: Partial<Property>): Property => ({
   ...overrides,
 })
 
-const validVibesOutput = {
+const validVibesOutput: LLMVibesOutput = {
   tagline: 'Industrial Bones, Warm Soul',
   vibeStatement: 'A bright, practical layout with room to breathe.',
   primaryVibes: [
@@ -82,6 +90,53 @@ const validVibesOutput = {
   ],
 }
 
+type VibesClient = NonNullable<ConstructorParameters<typeof VibesService>[0]>
+type CreateVisionMessage = VibesClient['createVisionMessage']
+type ChatCompletion = VibesClient['chatCompletion']
+
+const createVisionMessageMock = (): jest.MockedFunction<CreateVisionMessage> =>
+  jest.fn<CreateVisionMessage>((prompt) => ({
+    role: 'user',
+    content: [{ type: 'text', text: prompt }],
+  }))
+
+const buildCompletionPayload = (
+  content: string
+): { response: CompletionResponse; usage: UsageInfo } => ({
+  response: {
+    id: 'r1',
+    model: 'test',
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content,
+        },
+        finish_reason: 'stop',
+      },
+    ],
+    usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+  },
+  usage: {
+    promptTokens: 1,
+    completionTokens: 1,
+    totalTokens: 2,
+    estimatedCostUsd: 0.001,
+  },
+})
+
+const createChatCompletionMock = (payload: {
+  response: CompletionResponse
+  usage: UsageInfo
+}): jest.MockedFunction<ChatCompletion> =>
+  jest.fn<ChatCompletion>().mockResolvedValue(payload)
+
+const createMockClient = (content: string): VibesClient => ({
+  createVisionMessage: createVisionMessageMock(),
+  chatCompletion: createChatCompletionMock(buildCompletionPayload(content)),
+})
+
 describe('VibesService', () => {
   test('generateSourceHash is stable and changes on input differences', () => {
     const base = mockProperty()
@@ -95,35 +150,7 @@ describe('VibesService', () => {
   })
 
   test('generateVibes parses and validates LLM output', async () => {
-    const mockClient = {
-      createVisionMessage: jest.fn((_prompt, _urls) => ({
-        role: 'user',
-        content: [{ type: 'text', text: 'x' }],
-      })),
-      chatCompletion: jest.fn().mockResolvedValue({
-        response: {
-          id: 'r1',
-          model: 'test',
-          choices: [
-            {
-              index: 0,
-              message: {
-                role: 'assistant',
-                content: JSON.stringify(validVibesOutput),
-              },
-              finish_reason: 'stop',
-            },
-          ],
-          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
-        },
-        usage: {
-          promptTokens: 1,
-          completionTokens: 1,
-          totalTokens: 2,
-          estimatedCostUsd: 0.001,
-        },
-      }),
-    } as any
+    const mockClient = createMockClient(JSON.stringify(validVibesOutput))
 
     const service = new VibesService(mockClient)
     const result = await service.generateVibes(mockProperty())
@@ -158,35 +185,7 @@ describe('VibesService', () => {
       suggestedTags: Array.from({ length: 12 }, (_, i) => `tag-${i}`),
     }
 
-    const mockClient = {
-      createVisionMessage: jest.fn((_prompt, _urls) => ({
-        role: 'user',
-        content: [{ type: 'text', text: 'x' }],
-      })),
-      chatCompletion: jest.fn().mockResolvedValue({
-        response: {
-          id: 'r1',
-          model: 'test',
-          choices: [
-            {
-              index: 0,
-              message: {
-                role: 'assistant',
-                content: JSON.stringify(needsRepair),
-              },
-              finish_reason: 'stop',
-            },
-          ],
-          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
-        },
-        usage: {
-          promptTokens: 1,
-          completionTokens: 1,
-          totalTokens: 2,
-          estimatedCostUsd: 0.001,
-        },
-      }),
-    } as any
+    const mockClient = createMockClient(JSON.stringify(needsRepair))
 
     const service = new VibesService(mockClient)
     const result = await service.generateVibes(mockProperty())
@@ -224,35 +223,7 @@ describe('VibesService', () => {
       ],
     }
 
-    const mockClient = {
-      createVisionMessage: jest.fn((_prompt, _urls) => ({
-        role: 'user',
-        content: [{ type: 'text', text: 'x' }],
-      })),
-      chatCompletion: jest.fn().mockResolvedValue({
-        response: {
-          id: 'r1',
-          model: 'test',
-          choices: [
-            {
-              index: 0,
-              message: {
-                role: 'assistant',
-                content: JSON.stringify(needsRepair),
-              },
-              finish_reason: 'stop',
-            },
-          ],
-          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
-        },
-        usage: {
-          promptTokens: 1,
-          completionTokens: 1,
-          totalTokens: 2,
-          estimatedCostUsd: 0.001,
-        },
-      }),
-    } as any
+    const mockClient = createMockClient(JSON.stringify(needsRepair))
 
     const service = new VibesService(mockClient)
     const result = await service.generateVibes(mockProperty())
@@ -272,12 +243,12 @@ describe('VibesService', () => {
 
   test('toInsertRecord stores suggested tags as-is', () => {
     const property = mockProperty()
-    const result = {
+    const result: VibesGenerationResult = {
       propertyId: property.id,
-      vibes: validVibesOutput as any,
+      vibes: validVibesOutput,
       images: {
         selectedImages: [
-          { url: 'https://example.com/0.jpg', category: 'exterior' },
+          { url: 'https://example.com/0.jpg', category: 'exterior', index: 0 },
         ],
         strategy: 'single',
         totalAvailable: 1,
@@ -294,7 +265,7 @@ describe('VibesService', () => {
     }
 
     const insert = VibesService.toInsertRecord(
-      result as any,
+      result,
       property,
       result.rawOutput
     )
@@ -302,32 +273,7 @@ describe('VibesService', () => {
   })
 
   test('generateVibes throws on invalid JSON', async () => {
-    const mockClient = {
-      createVisionMessage: jest.fn((_prompt, _urls) => ({
-        role: 'user',
-        content: [{ type: 'text', text: 'x' }],
-      })),
-      chatCompletion: jest.fn().mockResolvedValue({
-        response: {
-          id: 'r1',
-          model: 'test',
-          choices: [
-            {
-              index: 0,
-              message: { role: 'assistant', content: '{not-json' },
-              finish_reason: 'stop',
-            },
-          ],
-          usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
-        },
-        usage: {
-          promptTokens: 1,
-          completionTokens: 1,
-          totalTokens: 2,
-          estimatedCostUsd: 0.001,
-        },
-      }),
-    } as any
+    const mockClient = createMockClient('{not-json')
 
     const service = new VibesService(mockClient)
     await expect(service.generateVibes(mockProperty())).rejects.toThrow(
@@ -336,18 +282,19 @@ describe('VibesService', () => {
   })
 
   test('generateVibesBatch runs beforeEach and uses prepared property', async () => {
-    const mockClient = {
-      createVisionMessage: jest.fn(),
-      chatCompletion: jest.fn(),
-    } as any
+    const mockClient: VibesClient = {
+      createVisionMessage: createVisionMessageMock(),
+      chatCompletion: createChatCompletionMock(
+        buildCompletionPayload(JSON.stringify(validVibesOutput))
+      ),
+    }
 
     const service = new VibesService(mockClient)
 
-    const generateSpy = jest
-      .spyOn(service, 'generateVibes')
-      .mockImplementation(async (property: Property) => ({
+    const generateSpy = jest.spyOn(service, 'generateVibes').mockImplementation(
+      async (property: Property): Promise<VibesGenerationResult> => ({
         propertyId: property.id,
-        vibes: validVibesOutput as any,
+        vibes: validVibesOutput,
         images: { selectedImages: [], strategy: 'single', totalAvailable: 0 },
         usage: {
           promptTokens: 0,
@@ -358,7 +305,8 @@ describe('VibesService', () => {
         processingTimeMs: 1,
         rawOutput: JSON.stringify(validVibesOutput),
         repairApplied: false,
-      }))
+      })
+    )
 
     const beforeEachHook = jest.fn(
       async (property: Property, _index: number, _total: number) => ({
@@ -386,10 +334,12 @@ describe('VibesService', () => {
   })
 
   test('generateVibesBatch records failure when beforeEach throws', async () => {
-    const mockClient = {
-      createVisionMessage: jest.fn(),
-      chatCompletion: jest.fn(),
-    } as any
+    const mockClient: VibesClient = {
+      createVisionMessage: createVisionMessageMock(),
+      chatCompletion: createChatCompletionMock(
+        buildCompletionPayload(JSON.stringify(validVibesOutput))
+      ),
+    }
 
     const service = new VibesService(mockClient)
     const generateSpy = jest.spyOn(service, 'generateVibes')

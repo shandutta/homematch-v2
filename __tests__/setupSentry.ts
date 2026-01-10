@@ -3,52 +3,38 @@
  * Supports all Sentry methods used in error boundaries
  */
 
+import type { ComponentType, ReactNode } from 'react'
+
 // Mock Sentry scope object
 const createMockScope = () => {
-  const scope = {
-    setContext: jest.fn(function (this: any) {
-      return this
-    }),
-    setTag: jest.fn(function (this: any) {
-      return this
-    }),
-    setLevel: jest.fn(function (this: any) {
-      return this
-    }),
-    setUser: jest.fn(function (this: any) {
-      return this
-    }),
-    setExtra: jest.fn(function (this: any) {
-      return this
-    }),
-    setFingerprint: jest.fn(function (this: any) {
-      return this
-    }),
-    addBreadcrumb: jest.fn(function (this: any) {
-      return this
-    }),
-    clearBreadcrumbs: jest.fn(function (this: any) {
-      return this
-    }),
-    setSpan: jest.fn(function (this: any) {
-      return this
-    }),
-    getSpan: jest.fn(() => null),
-    clear: jest.fn(function (this: any) {
-      return this
-    }),
+  type ScopeMethod = (...args: unknown[]) => Scope
+  type Scope = {
+    setContext: ScopeMethod
+    setTag: ScopeMethod
+    setLevel: ScopeMethod
+    setUser: ScopeMethod
+    setExtra: ScopeMethod
+    setFingerprint: ScopeMethod
+    addBreadcrumb: ScopeMethod
+    clearBreadcrumbs: ScopeMethod
+    setSpan: ScopeMethod
+    getSpan: () => null
+    clear: ScopeMethod
   }
 
-  // Ensure all methods return the scope for chaining
-  Object.keys(scope).forEach((key) => {
-    if (typeof scope[key as keyof typeof scope] === 'function') {
-      const originalFn = scope[key as keyof typeof scope]
-      scope[key as keyof typeof scope] = jest.fn((...args: any[]) => {
-        ;(originalFn as any).apply(this, args)
-        return scope
-      }) as any
-    }
-  })
+  const scope: Scope = {
+    setContext: jest.fn(() => scope),
+    setTag: jest.fn(() => scope),
+    setLevel: jest.fn(() => scope),
+    setUser: jest.fn(() => scope),
+    setExtra: jest.fn(() => scope),
+    setFingerprint: jest.fn(() => scope),
+    addBreadcrumb: jest.fn(() => scope),
+    clearBreadcrumbs: jest.fn(() => scope),
+    setSpan: jest.fn(() => scope),
+    getSpan: jest.fn(() => null),
+    clear: jest.fn(() => scope),
+  }
 
   return scope
 }
@@ -149,8 +135,13 @@ jest.mock('@sentry/nextjs', () => {
     lastEventId: jest.fn(() => 'mock-event-id'),
 
     // React ErrorBoundary specific
-    ErrorBoundary: ({ children, fallback: _fallback }: any) => children,
-    withErrorBoundary: (component: any) => component,
+    ErrorBoundary: ({
+      children,
+    }: {
+      children?: ReactNode
+      fallback?: ReactNode
+    }) => children,
+    withErrorBoundary: (component: ComponentType<unknown>) => component,
   }
 })
 
@@ -159,8 +150,13 @@ jest.mock('@sentry/react', () => {
   const nextjsMock = jest.requireMock('@sentry/nextjs')
   return {
     ...nextjsMock,
-    ErrorBoundary: ({ children, fallback: _fallback }: any) => children,
-    withErrorBoundary: (component: any) => component,
+    ErrorBoundary: ({
+      children,
+    }: {
+      children?: ReactNode
+      fallback?: ReactNode
+    }) => children,
+    withErrorBoundary: (component: ComponentType<unknown>) => component,
     useErrorBoundary: () => ({
       resetBoundary: jest.fn(),
       showBoundary: jest.fn(),

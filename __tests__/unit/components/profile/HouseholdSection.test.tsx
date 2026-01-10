@@ -20,6 +20,7 @@ jest.mock('next/navigation', () => ({
 }))
 
 describe('HouseholdSection', () => {
+  const mockedUserService = jest.mocked(UserServiceClient)
   let mockCreateHousehold: jest.Mock
   let mockJoinHousehold: jest.Mock
   let mockLeaveHousehold: jest.Mock
@@ -66,14 +67,16 @@ describe('HouseholdSection', () => {
       status: 'pending',
     })
     mockRevokeInvite = jest.fn().mockResolvedValue(true)
-    ;(UserServiceClient.createHousehold as jest.Mock) = mockCreateHousehold
-    ;(UserServiceClient.joinHousehold as jest.Mock) = mockJoinHousehold
-    ;(UserServiceClient.leaveHousehold as jest.Mock) = mockLeaveHousehold
-    ;(UserServiceClient.getHouseholdInvitations as jest.Mock) = mockGetInvites
-    ;(UserServiceClient.createHouseholdInvitation as jest.Mock) =
+    mockedUserService.createHousehold.mockImplementation(mockCreateHousehold)
+    mockedUserService.joinHousehold.mockImplementation(mockJoinHousehold)
+    mockedUserService.leaveHousehold.mockImplementation(mockLeaveHousehold)
+    mockedUserService.getHouseholdInvitations.mockImplementation(mockGetInvites)
+    mockedUserService.createHouseholdInvitation.mockImplementation(
       mockCreateInvite
-    ;(UserServiceClient.revokeHouseholdInvitation as jest.Mock) =
+    )
+    mockedUserService.revokeHouseholdInvitation.mockImplementation(
       mockRevokeInvite
+    )
   })
 
   describe('without household', () => {

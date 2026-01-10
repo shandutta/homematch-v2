@@ -4,10 +4,12 @@ import { FeatureGrid } from '@/components/marketing/FeatureGrid'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
   },
   useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: (value: any) => value,
+  useSpring: <T,>(value: T) => value,
   useTransform: () => ({ get: () => 0 }),
 }))
 

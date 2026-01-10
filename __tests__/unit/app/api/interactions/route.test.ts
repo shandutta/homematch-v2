@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
+import { NextRequest } from 'next/server'
 import { POST, GET } from '@/app/api/interactions/route'
 
 const jsonMock = jest.fn((body, init) => ({
@@ -13,7 +14,8 @@ jest.mock('next/server', () => ({
   NextResponse: {
     json: (...args: unknown[]) => jsonMock(...args),
   },
-  NextRequest: class {},
+  NextRequest:
+    jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
 jest.mock('@/lib/supabase/server', () => ({
@@ -27,7 +29,23 @@ jest.mock('@/lib/utils/rate-limit', () => ({
   },
 }))
 
-let supabaseMock: any
+type SupabaseMock = {
+  auth: {
+    getUser: jest.Mock
+  }
+  rpc: jest.Mock
+  from: jest.Mock
+  select: jest.Mock
+  delete: jest.Mock
+  match: jest.Mock
+  insert: jest.Mock
+  eq: jest.Mock
+  in: jest.Mock
+  order: jest.Mock
+  limit: jest.Mock
+}
+
+let supabaseMock: SupabaseMock
 
 const resetSupabaseMock = () => {
   supabaseMock = {
@@ -73,9 +91,14 @@ describe('interactions API route', () => {
       error: null,
     })
 
-    await POST({
-      json: async () => ({ propertyId: 'p1', type: 'like' }),
-    } as any)
+    const request = new NextRequest('http://localhost/api/interactions', {
+      method: 'POST',
+      body: JSON.stringify({ propertyId: 'p1', type: 'like' }),
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
+    await POST(request)
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(401)
@@ -92,9 +115,10 @@ describe('interactions API route', () => {
       error: { message: 'boom' },
     })
 
-    await GET({
-      url: 'https://example.com/api/interactions?type=summary',
-    } as any)
+    const request = new NextRequest(
+      'https://example.com/api/interactions?type=summary'
+    )
+    await GET(request)
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(500)

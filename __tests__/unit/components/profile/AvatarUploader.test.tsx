@@ -1,10 +1,14 @@
 import { jest, describe, test, expect, beforeEach } from '@jest/globals'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AvatarUploader } from '@/components/profile/AvatarUploader'
+import { createJsonResponse } from '@/__tests__/utils/http-helpers'
 
 // Mock fetch
-const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>
-global.fetch = mockFetch
+const mockFetch: jest.MockedFunction<typeof fetch> = jest.fn()
+Object.defineProperty(global, 'fetch', {
+  value: mockFetch,
+  writable: true,
+})
 
 // Mock URL.createObjectURL and URL.revokeObjectURL
 const mockCreateObjectURL = jest.fn()
@@ -185,10 +189,9 @@ describe('AvatarUploader Component', () => {
   describe('Upload Flow', () => {
     test('calls onUpload with URL on success', async () => {
       const mockUrl = 'https://storage.example.com/avatar.png'
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: { url: mockUrl } }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ data: { url: mockUrl } })
+      )
 
       render(<AvatarUploader onUpload={mockOnUpload} onCancel={mockOnCancel} />)
 
@@ -209,10 +212,11 @@ describe('AvatarUploader Component', () => {
     })
 
     test('sends POST request to /api/users/avatar', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: { url: 'https://example.com/avatar.png' } }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({
+          data: { url: 'https://example.com/avatar.png' },
+        })
+      )
 
       render(<AvatarUploader onUpload={mockOnUpload} onCancel={mockOnCancel} />)
 
@@ -236,10 +240,9 @@ describe('AvatarUploader Component', () => {
     })
 
     test('shows error state on upload failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: 'Upload failed' }),
-      } as Response)
+      mockFetch.mockResolvedValueOnce(
+        createJsonResponse({ error: 'Upload failed' }, { status: 400 })
+      )
 
       render(<AvatarUploader onUpload={mockOnUpload} onCancel={mockOnCancel} />)
 
@@ -314,10 +317,11 @@ describe('AvatarUploader Component', () => {
       })
 
       // Clean up by resolving the promise
-      resolveUpload!({
-        ok: true,
-        json: async () => ({ data: { url: 'https://example.com/avatar.png' } }),
-      } as Response)
+      resolveUpload!(
+        createJsonResponse({
+          data: { url: 'https://example.com/avatar.png' },
+        })
+      )
     })
   })
 

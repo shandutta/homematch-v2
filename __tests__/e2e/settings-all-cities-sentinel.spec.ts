@@ -8,6 +8,11 @@ import { maybeClickWhenReady } from '../utils/uiActions'
 
 const ALL_CITIES_SENTINEL_THRESHOLD = 200
 
+type UserPreferences = Record<string, unknown> | null
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
   if (!value) {
@@ -52,27 +57,27 @@ async function getAuthUserIdByEmail(
 async function fetchUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string
-): Promise<any> {
+): Promise<UserPreferences> {
   const { data, error } = await supabase
     .from('user_profiles')
     .select('preferences')
     .eq('id', userId)
     .single()
   if (error) throw new Error(error.message)
-  return data?.preferences ?? null
+  return isRecord(data?.preferences) ? data.preferences : null
 }
 
 async function waitForUserPreferences(
   supabase: ReturnType<typeof createServiceRoleClient>,
   userId: string,
-  predicate: (preferences: any) => boolean,
+  predicate: (preferences: UserPreferences) => boolean,
   options: { timeoutMs?: number; intervalMs?: number } = {}
-): Promise<any> {
+): Promise<UserPreferences> {
   const timeoutMs = options.timeoutMs ?? 15_000
   const intervalMs = options.intervalMs ?? 500
   const start = Date.now()
 
-  let lastPreferences: any = null
+  let lastPreferences: UserPreferences = null
 
   while (Date.now() - start < timeoutMs) {
     lastPreferences = await fetchUserPreferences(supabase, userId)

@@ -8,11 +8,12 @@ import {
 } from '@jest/globals'
 import { CouplesMiddleware } from '@/lib/services/couples-middleware'
 import { CouplesService } from '@/lib/services/couples'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 
 // Mock the CouplesService
 jest.mock('@/lib/services/couples')
-const mockCouplesService = CouplesService as jest.Mocked<typeof CouplesService>
+const mockCouplesService = jest.mocked(CouplesService)
 
 /**
  * CouplesMiddleware Unit Tests
@@ -30,7 +31,24 @@ const mockCouplesService = CouplesService as jest.Mocked<typeof CouplesService>
  * - __tests__/integration/couples-e2e.test.ts (full integration)
  */
 describe('CouplesMiddleware', () => {
-  const mockSupabaseClient = {} as SupabaseClient
+  const mockSupabaseClient: SupabaseClient<AppDatabase> = createClient(
+    'http://localhost:54321',
+    'test-key',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        fetch: async () =>
+          new Response(JSON.stringify({ data: null, error: null }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+      },
+    }
+  )
   const mockUserId = 'user-123'
   const mockPropertyId = 'prop-456'
   const mockHouseholdId = 'household-789'
@@ -178,7 +196,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle error in checkPotentialMutualLike gracefully', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       mockCouplesService.checkPotentialMutualLike.mockRejectedValue(
         new Error('Database connection failed')
@@ -204,7 +224,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle error in notifyInteraction gracefully', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       mockCouplesService.checkPotentialMutualLike.mockResolvedValue({
         wouldBeMutual: true,
@@ -306,7 +328,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle cache clearing errors gracefully', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       mockCouplesService.clearHouseholdCache.mockImplementation(() => {
         throw new Error('Cache clear failed')
@@ -329,15 +353,13 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle null or undefined household ID', async () => {
-      await CouplesMiddleware.onHouseholdChange(null as any)
-      expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(null)
+      await CouplesMiddleware.onHouseholdChange(null)
+      expect(mockCouplesService.clearHouseholdCache).not.toHaveBeenCalled()
 
       jest.clearAllMocks()
 
-      await CouplesMiddleware.onHouseholdChange(undefined as any)
-      expect(mockCouplesService.clearHouseholdCache).toHaveBeenCalledWith(
-        undefined
-      )
+      await CouplesMiddleware.onHouseholdChange(undefined)
+      expect(mockCouplesService.clearHouseholdCache).not.toHaveBeenCalled()
     })
 
     test('should handle empty string household ID', async () => {
@@ -366,7 +388,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle individual service failures gracefully', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       mockCouplesService.getMutualLikes.mockRejectedValue(
         new Error('Failed to get mutual likes')
@@ -385,7 +409,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle all services failing', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       const errorMessage = 'Database connection failed'
       mockCouplesService.getMutualLikes.mockRejectedValue(
@@ -459,7 +485,7 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should handle null or undefined user ID', async () => {
-      await CouplesMiddleware.warmCache(mockSupabaseClient, null as any)
+      await CouplesMiddleware.warmCache(mockSupabaseClient, null)
       expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
         mockSupabaseClient,
         null
@@ -467,7 +493,7 @@ describe('CouplesMiddleware', () => {
 
       jest.clearAllMocks()
 
-      await CouplesMiddleware.warmCache(mockSupabaseClient, undefined as any)
+      await CouplesMiddleware.warmCache(mockSupabaseClient, undefined)
       expect(mockCouplesService.getMutualLikes).toHaveBeenCalledWith(
         mockSupabaseClient,
         undefined
@@ -500,7 +526,9 @@ describe('CouplesMiddleware', () => {
 
   describe('error logging', () => {
     test('should log errors with consistent format', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       mockCouplesService.checkPotentialMutualLike.mockRejectedValue(
         new Error('Test error')
@@ -522,7 +550,9 @@ describe('CouplesMiddleware', () => {
     })
 
     test('should maintain consistent logging prefix across methods', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       // Test onPropertyInteraction error
       mockCouplesService.checkPotentialMutualLike.mockRejectedValue(

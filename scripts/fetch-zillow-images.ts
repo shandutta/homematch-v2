@@ -11,6 +11,9 @@ type ZillowImagesResponse = {
   [k: string]: unknown
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const OUTPUT_DIR = path.join(process.cwd(), 'public', 'images', 'properties')
 const MAX_IMAGES = 6
@@ -92,9 +95,10 @@ async function main() {
     process.exit(1)
   }
 
-  const data = (await res.json()) as ZillowImagesResponse
-  const images = Array.isArray(data.images)
-    ? data.images.slice(0, MAX_IMAGES)
+  const data: ZillowImagesResponse | unknown = await res.json()
+  const imagesValue = isRecord(data) ? data.images : undefined
+  const images = Array.isArray(imagesValue)
+    ? imagesValue.slice(0, MAX_IMAGES)
     : []
 
   if (images.length === 0) {
@@ -122,8 +126,9 @@ async function main() {
       console.log(`[fetch-zillow-images] Saved real-${index}.jpg`)
       downloaded++
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
       console.warn(
-        `[fetch-zillow-images] Failed real-${index}.jpg from ${imgUrl}: ${(err as Error).message}`
+        `[fetch-zillow-images] Failed real-${index}.jpg from ${imgUrl}: ${message}`
       )
     }
   }

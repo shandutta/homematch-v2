@@ -242,6 +242,9 @@ type OffsetCursorState = {
   updatedAt: string
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 function resolvePath(filePath: string): string {
   return path.isAbsolute(filePath)
     ? filePath
@@ -253,32 +256,26 @@ async function readOffsetCursorState(
 ): Promise<OffsetCursorState | null> {
   try {
     const raw = await fs.readFile(cursorFilePath, 'utf8')
-    const parsed = JSON.parse(raw) as unknown
-    if (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      (parsed as { version?: unknown }).version === 1 &&
-      (parsed as { mode?: unknown }).mode === 'offset'
-    ) {
-      const offset = Number((parsed as { offset?: unknown }).offset)
-      const supabaseHost = String(
-        (parsed as { supabaseHost?: unknown }).supabaseHost ?? ''
-      )
-      const minPrice = Number((parsed as { minPrice?: unknown }).minPrice)
-      const envFile = String((parsed as { envFile?: unknown }).envFile ?? '')
-      const updatedAt = String(
-        (parsed as { updatedAt?: unknown }).updatedAt ?? ''
-      )
+    const parsed = JSON.parse(raw)
+    if (!isRecord(parsed)) return null
+    if (parsed.version !== 1 || parsed.mode !== 'offset') return null
 
-      return {
-        version: 1,
-        mode: 'offset',
-        offset: Number.isFinite(offset) && offset >= 0 ? offset : 0,
-        envFile,
-        supabaseHost,
-        minPrice: Number.isFinite(minPrice) && minPrice >= 0 ? minPrice : 0,
-        updatedAt,
-      }
+    const offset = Number(parsed.offset)
+    const supabaseHost =
+      typeof parsed.supabaseHost === 'string' ? parsed.supabaseHost : ''
+    const minPrice = Number(parsed.minPrice)
+    const envFile = typeof parsed.envFile === 'string' ? parsed.envFile : ''
+    const updatedAt =
+      typeof parsed.updatedAt === 'string' ? parsed.updatedAt : ''
+
+    return {
+      version: 1,
+      mode: 'offset',
+      offset: Number.isFinite(offset) && offset >= 0 ? offset : 0,
+      envFile,
+      supabaseHost,
+      minPrice: Number.isFinite(minPrice) && minPrice >= 0 ? minPrice : 0,
+      updatedAt,
     }
   } catch {
     // Ignore missing/invalid cursor state.

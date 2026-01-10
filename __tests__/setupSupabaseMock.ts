@@ -18,27 +18,31 @@ type MockThenCallback = (value: {
   count: number | null
 }) => unknown
 
+type MockFn<Args extends unknown[], Return> = jest.MockedFunction<
+  (...args: Args) => Return
+>
+
 type MockChainableBuilder = {
-  select: jest.Mock<MockChainableBuilder, []>
-  insert: jest.Mock<MockChainableBuilder, []>
-  update: jest.Mock<MockChainableBuilder, []>
-  delete: jest.Mock<MockChainableBuilder, []>
-  eq: jest.Mock<MockChainableBuilder, []>
-  neq: jest.Mock<MockChainableBuilder, []>
-  gt: jest.Mock<MockChainableBuilder, []>
-  gte: jest.Mock<MockChainableBuilder, []>
-  lt: jest.Mock<MockChainableBuilder, []>
-  lte: jest.Mock<MockChainableBuilder, []>
-  like: jest.Mock<MockChainableBuilder, []>
-  ilike: jest.Mock<MockChainableBuilder, []>
-  in: jest.Mock<MockChainableBuilder, []>
-  contains: jest.Mock<MockChainableBuilder, []>
-  order: jest.Mock<MockChainableBuilder, []>
-  limit: jest.Mock<MockChainableBuilder, []>
-  range: jest.Mock<MockChainableBuilder, []>
-  single: jest.Mock<Promise<{ data: null; error: null }>, []>
-  maybeSingle: jest.Mock<Promise<{ data: null; error: null }>, []>
-  then: jest.Mock<Promise<unknown>, [MockThenCallback]>
+  select: MockFn<[], MockChainableBuilder>
+  insert: MockFn<[], MockChainableBuilder>
+  update: MockFn<[], MockChainableBuilder>
+  delete: MockFn<[], MockChainableBuilder>
+  eq: MockFn<[], MockChainableBuilder>
+  neq: MockFn<[], MockChainableBuilder>
+  gt: MockFn<[], MockChainableBuilder>
+  gte: MockFn<[], MockChainableBuilder>
+  lt: MockFn<[], MockChainableBuilder>
+  lte: MockFn<[], MockChainableBuilder>
+  like: MockFn<[], MockChainableBuilder>
+  ilike: MockFn<[], MockChainableBuilder>
+  in: MockFn<[], MockChainableBuilder>
+  contains: MockFn<[], MockChainableBuilder>
+  order: MockFn<[], MockChainableBuilder>
+  limit: MockFn<[], MockChainableBuilder>
+  range: MockFn<[], MockChainableBuilder>
+  single: MockFn<[], Promise<{ data: null; error: null }>>
+  maybeSingle: MockFn<[], Promise<{ data: null; error: null }>>
+  then: MockFn<[MockThenCallback], Promise<unknown>>
 }
 
 const createChainableBuilder = (): MockChainableBuilder => {
@@ -99,59 +103,56 @@ const createChainableBuilder = (): MockChainableBuilder => {
 }
 
 type MockSupabaseClient = MockChainableBuilder & {
-  from: jest.Mock<MockChainableBuilder, [string]>
-  rpc: jest.Mock<Promise<{ data: null; error: null }>, []>
+  from: MockFn<[string], MockChainableBuilder>
+  rpc: MockFn<[], Promise<{ data: null; error: null }>>
   auth: {
-    getUser: jest.Mock<Promise<{ data: { user: null }; error: null }>, []>
-    getSession: jest.Mock<Promise<{ data: { session: null }; error: null }>, []>
-    signInWithPassword: jest.Mock<
-      Promise<{ data: { user: null; session: null }; error: null }>,
-      []
+    getUser: MockFn<[], Promise<{ data: { user: null }; error: null }>>
+    getSession: MockFn<[], Promise<{ data: { session: null }; error: null }>>
+    signInWithPassword: MockFn<
+      [],
+      Promise<{ data: { user: null; session: null }; error: null }>
     >
-    signInWithOAuth: jest.Mock<
-      Promise<{ data: { url: null }; error: null }>,
-      []
+    signInWithOAuth: MockFn<[], Promise<{ data: { url: null }; error: null }>>
+    signOut: MockFn<[], Promise<{ error: null }>>
+    signUp: MockFn<
+      [],
+      Promise<{ data: { user: null; session: null }; error: null }>
     >
-    signOut: jest.Mock<Promise<{ error: null }>, []>
-    signUp: jest.Mock<
-      Promise<{ data: { user: null; session: null }; error: null }>,
-      []
+    verifyOtp: MockFn<
+      [],
+      Promise<{ data: { user: null; session: null }; error: null }>
     >
-    verifyOtp: jest.Mock<
-      Promise<{ data: { user: null; session: null }; error: null }>,
-      []
+    resend: MockFn<[], Promise<{ data: null; error: null }>>
+    resetPasswordForEmail: MockFn<
+      [],
+      Promise<{ data: Record<string, never>; error: null }>
     >
-    resend: jest.Mock<Promise<{ data: null; error: null }>, []>
-    resetPasswordForEmail: jest.Mock<
-      Promise<{ data: Record<string, never>; error: null }>,
-      []
-    >
-    updateUser: jest.Mock<Promise<{ data: { user: null }; error: null }>, []>
-    onAuthStateChange: jest.Mock<
-      { data: { subscription: { unsubscribe: jest.Mock } } },
-      []
+    updateUser: MockFn<[], Promise<{ data: { user: null }; error: null }>>
+    onAuthStateChange: MockFn<
+      [],
+      { data: { subscription: { unsubscribe: MockFn<[], void> } } }
     >
   }
   storage: {
-    from: jest.Mock<
+    from: MockFn<
+      [string],
       {
-        upload: jest.Mock<Promise<{ data: null; error: null }>, []>
-        download: jest.Mock<Promise<{ data: null; error: null }>, []>
-        getPublicUrl: jest.Mock<{ data: { publicUrl: string } }, [string]>
-        remove: jest.Mock<Promise<{ data: null; error: null }>, []>
-        list: jest.Mock<Promise<{ data: unknown[]; error: null }>, []>
-      },
-      [string]
+        upload: MockFn<[], Promise<{ data: null; error: null }>>
+        download: MockFn<[], Promise<{ data: null; error: null }>>
+        getPublicUrl: MockFn<[string], { data: { publicUrl: string } }>
+        remove: MockFn<[], Promise<{ data: null; error: null }>>
+        list: MockFn<[], Promise<{ data: unknown[]; error: null }>>
+      }
     >
   }
   realtime: {
-    channel: jest.Mock<
+    channel: MockFn<
+      [],
       {
-        subscribe: jest.Mock
-        unsubscribe: jest.Mock
-        on: jest.Mock
-      },
-      []
+        subscribe: MockFn<[], void>
+        unsubscribe: MockFn<[], void>
+        on: MockFn<[], void>
+      }
     >
   }
 }

@@ -145,16 +145,13 @@ export class TestDatabaseQueries {
     radiusMiles: number = 10
   ) {
     // Using PostGIS functions via RPC
+    const radiusKm = radiusMiles * 1.60934
     const { data, error } = await this.client.rpc(
       'get_properties_within_radius',
       {
         center_lat: lat,
         center_lng: lng,
-        radius_miles: radiusMiles,
-      } as unknown as {
-        center_lat: number
-        center_lng: number
-        radius_km: number
+        radius_km: radiusKm,
       }
     )
 

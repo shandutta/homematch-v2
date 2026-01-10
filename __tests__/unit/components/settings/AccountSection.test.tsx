@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AccountSection } from '@/components/settings/AccountSection'
 import { createClient } from '@/lib/supabase/client'
 import { InteractionService } from '@/lib/services/interactions'
+import type { User } from '@supabase/supabase-js'
 
 // Mock dependencies
 const mockPush = jest.fn()
@@ -42,25 +43,28 @@ const renderWithQueryClient = (ui: React.ReactElement) => {
   )
 }
 
-const mockUser = {
+const mockUser: User = {
   id: 'user-123',
   email: 'test@example.com',
   created_at: '2024-01-15T10:30:00Z',
+  aud: 'authenticated',
   app_metadata: {
     provider: 'google',
   },
-} as any
+  user_metadata: {},
+}
 
 describe('AccountSection', () => {
+  const mockedInteractionService = jest.mocked(InteractionService)
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(createClient as jest.Mock).mockReturnValue({
+    jest.mocked(createClient).mockReturnValue({
       auth: {
         signOut: mockSignOut,
       },
     })
     mockSignOut.mockResolvedValue({ error: null })
-    ;(InteractionService.resetAllInteractions as jest.Mock).mockResolvedValue({
+    jest.mocked(InteractionService.resetAllInteractions).mockResolvedValue({
       deleted: true,
       count: 5,
     })
@@ -283,9 +287,9 @@ describe('AccountSection', () => {
       const user = userEvent.setup()
       global.confirm = jest.fn().mockReturnValueOnce(true)
       const errorMessage = 'Failed to reset'
-      ;(
-        InteractionService.resetAllInteractions as jest.Mock
-      ).mockRejectedValueOnce(new Error(errorMessage))
+      mockedInteractionService.resetAllInteractions.mockRejectedValueOnce(
+        new Error(errorMessage)
+      )
 
       renderWithQueryClient(<AccountSection user={mockUser} />)
 
@@ -302,9 +306,7 @@ describe('AccountSection', () => {
     it('shows singular message for single interaction reset', async () => {
       const user = userEvent.setup()
       global.confirm = jest.fn().mockReturnValueOnce(true)
-      ;(
-        InteractionService.resetAllInteractions as jest.Mock
-      ).mockResolvedValueOnce({
+      mockedInteractionService.resetAllInteractions.mockResolvedValueOnce({
         deleted: true,
         count: 1,
       })

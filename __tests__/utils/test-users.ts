@@ -48,7 +48,7 @@ export const TEST_USERS = {
     email: 'test-worker-7@example.com',
     password: 'testpassword123',
   },
-} as const
+}
 
 export type TestUser = (typeof TEST_USERS)[keyof typeof TEST_USERS]
 

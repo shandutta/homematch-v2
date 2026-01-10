@@ -13,8 +13,8 @@ afterEach(() => {
   document
     .querySelectorAll('script[src="/api/maps/proxy-script"]')
     .forEach((script) => script.remove())
-  delete (window as any).google
-  delete (window as any).initGoogleMaps
+  Reflect.deleteProperty(window, 'google')
+  Reflect.deleteProperty(window, 'initGoogleMaps')
 })
 
 describe('SecureMapLoader', () => {
@@ -38,12 +38,18 @@ describe('SecureMapLoader', () => {
 
     const script = document.querySelector(
       'script[src="/api/maps/proxy-script"]'
-    ) as HTMLScriptElement
+    )
     expect(script).toBeTruthy()
-    ;(window as any).google = { maps: { Map: function Map() {} } }
+    if (!(script instanceof HTMLScriptElement)) {
+      throw new Error('Expected Google Maps script to be an HTMLScriptElement')
+    }
+    Reflect.set(window, 'google', { maps: { Map: function Map() {} } })
 
     await act(async () => {
-      ;(window as any).initGoogleMaps?.()
+      const init = Reflect.get(window, 'initGoogleMaps')
+      if (typeof init === 'function') {
+        init()
+      }
     })
 
     await waitFor(() =>
@@ -60,11 +66,14 @@ describe('SecureMapLoader', () => {
 
     const script = document.querySelector(
       'script[src="/api/maps/proxy-script"]'
-    ) as HTMLScriptElement
+    )
     expect(script).toBeTruthy()
+    if (!(script instanceof HTMLScriptElement)) {
+      throw new Error('Expected Google Maps script to be an HTMLScriptElement')
+    }
 
     await act(async () => {
-      script.onerror?.(new Event('error') as any)
+      script.onerror?.(new Event('error'))
     })
 
     expect(screen.getByText(/Map Unavailable/i)).toBeInTheDocument()

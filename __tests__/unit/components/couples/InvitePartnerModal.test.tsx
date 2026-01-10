@@ -9,6 +9,10 @@ import {
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { InvitePartnerModal } from '@/components/couples/InvitePartnerModal'
+import {
+  createJsonResponse,
+  getRequestUrl,
+} from '@/__tests__/utils/http-helpers'
 
 // Mock the UserServiceClient
 jest.mock('@/lib/services/users-client', () => ({
@@ -74,7 +78,10 @@ jest.mock('@/components/ui/button', () => ({
     variant,
     size,
     ...props
-  }: any) => (
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: string
+    size?: string
+  }) => (
     <button
       onClick={onClick}
       disabled={disabled}
@@ -97,7 +104,7 @@ jest.mock('@/components/ui/input', () => ({
     className,
     type,
     ...props
-  }: any) => (
+  }: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
       type={type || 'text'}
       value={value}
@@ -156,8 +163,11 @@ jest.mock('lucide-react', () => ({
 }))
 
 // Mock fetch globally
-const mockFetch = jest.fn()
-global.fetch = mockFetch as jest.MockedFunction<typeof fetch>
+const mockFetch: jest.MockedFunction<typeof fetch> = jest.fn()
+Object.defineProperty(global, 'fetch', {
+  value: mockFetch,
+  writable: true,
+})
 
 // Mock clipboard
 const mockClipboard = {
@@ -168,10 +178,8 @@ Object.assign(navigator, { clipboard: mockClipboard })
 import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 
-const mockedUserService = UserServiceClient as jest.Mocked<
-  typeof UserServiceClient
->
-const mockedToast = toast as jest.Mocked<typeof toast>
+const mockedUserService = jest.mocked(UserServiceClient)
+const mockedToast = jest.mocked(toast)
 
 describe('InvitePartnerModal Component', () => {
   const defaultProps = {
@@ -181,7 +189,14 @@ describe('InvitePartnerModal Component', () => {
     userId: 'test-user-456',
   }
 
-  const mockPendingInvites = [
+  type HouseholdInviteList = Awaited<
+    ReturnType<typeof UserServiceClient.getHouseholdInvitations>
+  >
+  type HouseholdInvite = HouseholdInviteList[number]
+  type CreateInviteResult = Awaited<
+    ReturnType<typeof UserServiceClient.createHouseholdInvitation>
+  >
+  const mockPendingInvites: HouseholdInvite[] = [
     {
       id: 'invite-1',
       household_id: 'test-household-123',
@@ -193,21 +208,34 @@ describe('InvitePartnerModal Component', () => {
       status: 'pending',
       expires_at: '2024-12-31T00:00:00.000Z',
       created_at: '2024-01-01T00:00:00.000Z',
+      accepted_at: null,
+      accepted_by: null,
+      updated_at: null,
     },
   ]
+  const newInvite: CreateInviteResult = {
+    id: 'new-invite',
+    household_id: 'test-household-123',
+    invited_email: 'partner2@example.com',
+    invited_name: 'Partner Two',
+    created_by: 'test-user-456',
+    message: null,
+    token: 'token-new',
+    status: 'pending',
+    expires_at: '2024-12-31T00:00:00.000Z',
+    created_at: '2024-01-01T00:00:00.000Z',
+    accepted_at: null,
+    accepted_by: null,
+    updated_at: null,
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(mockedUserService.getHouseholdInvitations as jest.Mock).mockResolvedValue(
-      []
-    )
-    ;(
-      mockedUserService.createHouseholdInvitation as jest.Mock
-    ).mockResolvedValue({ id: 'new-invite' })
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ users: [] }),
-    } as Response)
+    jest.mocked(mockedUserService.getHouseholdInvitations).mockResolvedValue([])
+    jest
+      .mocked(mockedUserService.createHouseholdInvitation)
+      .mockResolvedValue(newInvite)
+    mockFetch.mockResolvedValue(createJsonResponse({ users: [] }))
   })
 
   afterEach(() => {
@@ -269,10 +297,7 @@ describe('InvitePartnerModal Component', () => {
         },
       ]
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ users: mockUsers }),
-      } as Response)
+      mockFetch.mockResolvedValue(createJsonResponse({ users: mockUsers }))
 
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
@@ -301,16 +326,13 @@ describe('InvitePartnerModal Component', () => {
 
       // The fetch should only be called for initial invite loading, not search
       const searchCalls = mockFetch.mock.calls.filter((call) =>
-        (call[0] as string).includes('/api/users/search')
+        getRequestUrl(call[0]).includes('/api/users/search')
       )
       expect(searchCalls.length).toBe(0)
     })
 
     test('should show "no users found" message when search returns empty', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ users: [] }),
-      } as Response)
+      mockFetch.mockResolvedValue(createJsonResponse({ users: [] }))
 
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
@@ -340,10 +362,7 @@ describe('InvitePartnerModal Component', () => {
         },
       ]
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ users: mockUsers }),
-      } as Response)
+      mockFetch.mockResolvedValue(createJsonResponse({ users: mockUsers }))
 
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
@@ -365,9 +384,8 @@ describe('InvitePartnerModal Component', () => {
 
       await waitFor(() => {
         // Email field should be populated
-        const emailInput = screen.getByPlaceholderText(
-          'member@example.com'
-        ) as HTMLInputElement
+        const emailInput =
+          screen.getByPlaceholderText<HTMLInputElement>('member@example.com')
         expect(emailInput.value).toBe('selected@example.com')
       })
     })
@@ -418,9 +436,9 @@ describe('InvitePartnerModal Component', () => {
     })
 
     test('should show error when sending invitation fails', async () => {
-      ;(
-        mockedUserService.createHouseholdInvitation as jest.Mock
-      ).mockRejectedValue(new Error('Failed to send'))
+      mockedUserService.createHouseholdInvitation.mockRejectedValue(
+        new Error('Failed to send')
+      )
 
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
@@ -454,12 +472,11 @@ describe('InvitePartnerModal Component', () => {
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)
 
-      const nameInput = screen.getByPlaceholderText(
+      const nameInput = screen.getByPlaceholderText<HTMLInputElement>(
         'Their name (optional)'
-      ) as HTMLInputElement
-      const emailInput = screen.getByPlaceholderText(
-        'member@example.com'
-      ) as HTMLInputElement
+      )
+      const emailInput =
+        screen.getByPlaceholderText<HTMLInputElement>('member@example.com')
       const sendButton = screen.getByRole('button', {
         name: /send invitation/i,
       })
@@ -477,9 +494,9 @@ describe('InvitePartnerModal Component', () => {
 
   describe('Pending Invitations', () => {
     test('should show pending invitations when they exist', async () => {
-      ;(
-        mockedUserService.getHouseholdInvitations as jest.Mock
-      ).mockResolvedValue(mockPendingInvites)
+      mockedUserService.getHouseholdInvitations.mockResolvedValue(
+        mockPendingInvites
+      )
 
       render(<InvitePartnerModal {...defaultProps} />)
 
@@ -490,9 +507,9 @@ describe('InvitePartnerModal Component', () => {
     })
 
     test('should show badge with pending invite count', async () => {
-      ;(
-        mockedUserService.getHouseholdInvitations as jest.Mock
-      ).mockResolvedValue(mockPendingInvites)
+      mockedUserService.getHouseholdInvitations.mockResolvedValue(
+        mockPendingInvites
+      )
 
       render(<InvitePartnerModal {...defaultProps} />)
 
@@ -523,9 +540,9 @@ describe('InvitePartnerModal Component', () => {
     })
 
     test('should display pending invitations with copy buttons', async () => {
-      ;(
-        mockedUserService.getHouseholdInvitations as jest.Mock
-      ).mockResolvedValue(mockPendingInvites)
+      jest
+        .mocked(mockedUserService.getHouseholdInvitations)
+        .mockResolvedValue(mockPendingInvites)
 
       render(<InvitePartnerModal {...defaultProps} />)
 
@@ -546,13 +563,13 @@ describe('InvitePartnerModal Component', () => {
   describe('Loading States', () => {
     test('should show loading indicator when fetching pending invites', async () => {
       // Create a promise that doesn't resolve immediately
-      let resolveInvites: (value: any) => void
-      const invitesPromise = new Promise((resolve) => {
+      let resolveInvites: (value: HouseholdInviteList) => void
+      const invitesPromise = new Promise<HouseholdInviteList>((resolve) => {
         resolveInvites = resolve
       })
-      ;(mockedUserService.getHouseholdInvitations as jest.Mock).mockReturnValue(
-        invitesPromise
-      )
+      jest
+        .mocked(mockedUserService.getHouseholdInvitations)
+        .mockReturnValue(invitesPromise)
 
       render(<InvitePartnerModal {...defaultProps} />)
 
@@ -570,13 +587,13 @@ describe('InvitePartnerModal Component', () => {
 
     test('should show loading state when sending invitation', async () => {
       // Create a promise that doesn't resolve immediately
-      let resolveCreate: (value: any) => void
-      const createPromise = new Promise((resolve) => {
+      let resolveCreate: (value: CreateInviteResult) => void
+      const createPromise = new Promise<CreateInviteResult>((resolve) => {
         resolveCreate = resolve
       })
-      ;(
-        mockedUserService.createHouseholdInvitation as jest.Mock
-      ).mockReturnValue(createPromise)
+      jest
+        .mocked(mockedUserService.createHouseholdInvitation)
+        .mockReturnValue(createPromise)
 
       const user = userEvent.setup()
       render(<InvitePartnerModal {...defaultProps} />)

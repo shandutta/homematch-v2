@@ -57,22 +57,22 @@ const perfResultsDir = path.join(__dirname, '../../test-results/performance')
 
 const setupPerfObservers = async (page: Page) => {
   await page.addInitScript(() => {
-    const win = window as typeof window & {
-      __hmPerf?: { lcp: number; cls: number }
-    }
-
-    win.__hmPerf = { lcp: 0, cls: 0 }
+    window.__hmPerf = { lcp: 0, cls: 0 }
 
     try {
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const candidate =
-            entry.startTime ||
-            (entry as any).renderTime ||
-            (entry as any).loadTime ||
-            0
-          if (candidate > win.__hmPerf!.lcp) {
-            win.__hmPerf!.lcp = candidate
+          const renderTime =
+            'renderTime' in entry && typeof entry.renderTime === 'number'
+              ? entry.renderTime
+              : 0
+          const loadTime =
+            'loadTime' in entry && typeof entry.loadTime === 'number'
+              ? entry.loadTime
+              : 0
+          const candidate = entry.startTime || renderTime || loadTime || 0
+          if (window.__hmPerf && candidate > window.__hmPerf.lcp) {
+            window.__hmPerf.lcp = candidate
           }
         }
       }).observe({ type: 'largest-contentful-paint', buffered: true })
@@ -83,12 +83,17 @@ const setupPerfObservers = async (page: Page) => {
     try {
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const shift = entry as PerformanceEntry & {
-            value?: number
-            hadRecentInput?: boolean
-          }
-          if (!shift.hadRecentInput) {
-            win.__hmPerf!.cls += shift.value ?? 0
+          const hadRecentInput =
+            'hadRecentInput' in entry &&
+            typeof entry.hadRecentInput === 'boolean'
+              ? entry.hadRecentInput
+              : false
+          const shiftValue =
+            'value' in entry && typeof entry.value === 'number'
+              ? entry.value
+              : 0
+          if (!hadRecentInput && window.__hmPerf) {
+            window.__hmPerf.cls += shiftValue
           }
         }
       }).observe({ type: 'layout-shift', buffered: true })
@@ -100,9 +105,16 @@ const setupPerfObservers = async (page: Page) => {
 
 const collectPerfMetrics = async (page: Page): Promise<PerfMetrics> => {
   return page.evaluate(() => {
-    const navEntry = performance.getEntriesByType('navigation')[0] as
-      | PerformanceNavigationTiming
-      | undefined
+    const isNavigationTiming = (
+      entry: PerformanceEntry
+    ): entry is PerformanceNavigationTiming =>
+      'responseStart' in entry &&
+      'domContentLoadedEventEnd' in entry &&
+      'loadEventEnd' in entry
+
+    const navEntry = performance
+      .getEntriesByType('navigation')
+      .find(isNavigationTiming)
     const navStart = navEntry?.startTime ?? 0
     const ttfb = navEntry ? navEntry.responseStart - navStart : 0
     const domContentLoaded = navEntry
@@ -116,25 +128,26 @@ const collectPerfMetrics = async (page: Page): Promise<PerfMetrics> => {
     )
     const fcp = fcpEntry ? fcpEntry.startTime : 0
 
-    const resourceEntries = performance.getEntriesByType(
-      'resource'
-    ) as PerformanceResourceTiming[]
+    const isResourceTiming = (
+      entry: PerformanceEntry
+    ): entry is PerformanceResourceTiming =>
+      'transferSize' in entry || 'encodedBodySize' in entry
+
+    const resourceEntries = performance
+      .getEntriesByType('resource')
+      .filter(isResourceTiming)
     const totalTransferBytes = resourceEntries.reduce((total, entry) => {
       const transferSize = entry.transferSize || entry.encodedBodySize || 0
       return total + transferSize
     }, 0)
-
-    const win = window as typeof window & {
-      __hmPerf?: { lcp: number; cls: number }
-    }
 
     return {
       ttfb,
       domContentLoaded,
       load,
       fcp,
-      lcp: win.__hmPerf?.lcp ?? 0,
-      cls: win.__hmPerf?.cls ?? 0,
+      lcp: window.__hmPerf?.lcp ?? 0,
+      cls: window.__hmPerf?.cls ?? 0,
       resourceCount: resourceEntries.length,
       totalTransferKb: Math.round(totalTransferBytes / 1024),
     }
@@ -179,18 +192,17 @@ const assertBudgets = (label: string, metrics: PerfMetrics) => {
     ).toBeLessThanOrEqual(max)
   }
 
-  ;(
-    [
-      'ttfb',
-      'domContentLoaded',
-      'load',
-      'fcp',
-      'lcp',
-      'cls',
-      'resourceCount',
-      'totalTransferKb',
-    ] as const
-  ).forEach(check)
+  const budgetKeys: Array<keyof PerfMetrics> = [
+    'ttfb',
+    'domContentLoaded',
+    'load',
+    'fcp',
+    'lcp',
+    'cls',
+    'resourceCount',
+    'totalTransferKb',
+  ]
+  budgetKeys.forEach(check)
 }
 
 const runPerfScenario = async ({

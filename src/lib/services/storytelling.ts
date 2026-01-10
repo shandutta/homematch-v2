@@ -2,7 +2,7 @@ import { Property, Neighborhood } from '@/lib/schemas/property'
 
 interface LifestyleContext {
   property: Property
-  neighborhood?: Neighborhood
+  neighborhood?: Neighborhood | null
   isMutualLike?: boolean
 }
 
@@ -42,13 +42,19 @@ export class StorytellingService {
     }
 
     const features = this.analyzePropertyFeatures(property)
-    return this.buildStoryFromFeatures(features, property, neighborhood)
+    return this.buildStoryFromFeatures(
+      features,
+      property,
+      neighborhood ?? undefined
+    )
   }
 
   /**
    * Get neighborhood-specific lifestyle perks
    */
-  static getNeighborhoodLifestyle(neighborhood?: Neighborhood): string | null {
+  static getNeighborhoodLifestyle(
+    neighborhood?: Neighborhood | null
+  ): string | null {
     if (!neighborhood) return null
 
     const perks: string[] = []

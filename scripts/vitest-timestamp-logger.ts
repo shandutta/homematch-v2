@@ -64,12 +64,14 @@ export default class TimestampReporter implements Reporter {
         result.state === 'todo'
       ) {
         const startedAt = this.startTimes.get(taskId)
+        const durationFromResult =
+          'duration' in result && typeof result.duration === 'number'
+            ? Math.max(0, result.duration)
+            : 0
         const duration =
           typeof startedAt === 'number'
             ? Math.max(0, Date.now() - startedAt)
-            : typeof (result as { duration?: number }).duration === 'number'
-              ? Math.max(0, (result as { duration: number }).duration)
-              : 0
+            : durationFromResult
 
         this.append(
           `${timestamp} | ${result.state.toUpperCase()} | ${duration}ms | ${task.name} | ${filePath}`
@@ -86,10 +88,7 @@ export default class TimestampReporter implements Reporter {
   private collectTask(task: Task, currentFilePath?: string) {
     this.tasksById.set(task.id, task)
 
-    const nextFilePath =
-      this.isFileTask(task) && 'filepath' in task
-        ? (task as File).filepath
-        : currentFilePath
+    const nextFilePath = this.isFileTask(task) ? task.filepath : currentFilePath
 
     if (nextFilePath) {
       this.taskFilePath.set(task.id, nextFilePath)

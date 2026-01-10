@@ -15,15 +15,17 @@ describe('PropertyMap', () => {
   beforeEach(() => {
     __resetSecureMapLoaderStateForTests()
     // Clean any previous google mocks
-    delete (global as any).window?.google
+    if (typeof window !== 'undefined') {
+      Reflect.deleteProperty(window, 'google')
+    }
   })
 
   afterEach(() => {
     document
       .querySelectorAll('script[src="/api/maps/proxy-script"]')
       .forEach((script) => script.remove())
-    delete (window as any).google
-    delete (window as any).initGoogleMaps
+    Reflect.deleteProperty(window, 'google')
+    Reflect.deleteProperty(window, 'initGoogleMaps')
     delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
   })
 
@@ -75,16 +77,19 @@ describe('PropertyMap', () => {
     const pointCtor = jest.fn().mockImplementation(() => ({}))
 
     // Minimal google maps shim
-    ;(global as any).window = (global as any).window ?? {}
-    ;(global as any).window.google = {
-      maps: {
-        Map: mapCtor,
-        Marker: markerCtor,
-        InfoWindow: infoWindowCtor,
-        Size: sizeCtor,
-        Point: pointCtor,
+    Object.defineProperty(window, 'google', {
+      value: {
+        maps: {
+          Map: mapCtor,
+          Marker: markerCtor,
+          InfoWindow: infoWindowCtor,
+          Size: sizeCtor,
+          Point: pointCtor,
+        },
       },
-    }
+      writable: true,
+      configurable: true,
+    })
 
     const { container } = render(
       <PropertyMap
@@ -136,16 +141,19 @@ describe('PropertyMap', () => {
     const sizeCtor = jest.fn().mockImplementation(() => ({}))
     const pointCtor = jest.fn().mockImplementation(() => ({}))
 
-    ;(global as any).window = (global as any).window ?? {}
-    ;(global as any).window.google = {
-      maps: {
-        Map: mapCtor,
-        Marker: markerCtor,
-        InfoWindow: infoWindowCtor,
-        Size: sizeCtor,
-        Point: pointCtor,
+    Object.defineProperty(window, 'google', {
+      value: {
+        maps: {
+          Map: mapCtor,
+          Marker: markerCtor,
+          InfoWindow: infoWindowCtor,
+          Size: sizeCtor,
+          Point: pointCtor,
+        },
       },
-    }
+      writable: true,
+      configurable: true,
+    })
 
     render(
       <PropertyMap
@@ -179,7 +187,12 @@ describe('PropertyMap', () => {
     )
 
     await waitFor(() => expect(mapCtor).toHaveBeenCalled())
-    const mapOptions = mapCtor.mock.calls[0]?.[1] as Record<string, unknown>
+    const mapOptions = mapCtor.mock.calls[0]?.[1]
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null
+    if (!isRecord(mapOptions)) {
+      throw new Error('Expected map options to be an object')
+    }
     expect(mapOptions.mapId).toBe('test-map-id')
   })
 })

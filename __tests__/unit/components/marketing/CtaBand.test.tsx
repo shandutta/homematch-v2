@@ -4,16 +4,22 @@ import { CtaBand } from '@/components/marketing/CtaBand'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    h3: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
-    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    h3: ({ children, ...props }: JSX.IntrinsicElements['h3']) => (
+      <h3 {...props}>{children}</h3>
+    ),
+    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
+      <span {...props}>{children}</span>
+    ),
   },
 }))
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: JSX.IntrinsicElements['a']) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -22,7 +28,13 @@ jest.mock('next/link', () => ({
 
 // Mock GradientMeshBackground
 jest.mock('@/components/marketing/GradientMeshBackground', () => ({
-  GradientMeshBackground: ({ variant, intensity }: any) => (
+  GradientMeshBackground: ({
+    variant,
+    intensity,
+  }: {
+    variant?: string
+    intensity?: number
+  }) => (
     <div
       data-testid="gradient-mesh-bg"
       data-variant={variant}

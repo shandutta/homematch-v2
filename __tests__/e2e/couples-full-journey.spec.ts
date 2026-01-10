@@ -9,12 +9,21 @@
  * - Dashboard + Couples surfaces the mutual like
  */
 
-import { test, expect, type BrowserContext, type Page } from '@playwright/test'
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Page,
+  type Request,
+} from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
 import { ensureOnDashboard } from '../utils/navigation'
 import { getWorkerTestUser } from '../fixtures/test-data'
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -129,11 +138,17 @@ async function waitForMutualLikeInApi(
 
     if (result.ok) {
       try {
-        const data = JSON.parse(result.text)
-        const likes = (data?.mutualLikes ?? []) as Array<{
-          property_id?: string
-        }>
-        if (likes.some((like) => like.property_id === propertyId)) {
+        const data: unknown = JSON.parse(result.text)
+        const likes = (() => {
+          if (!isRecord(data)) return []
+          const mutualLikes = data['mutualLikes']
+          return Array.isArray(mutualLikes) ? mutualLikes : []
+        })()
+        if (
+          likes.some(
+            (like) => isRecord(like) && like.property_id === propertyId
+          )
+        ) {
           return
         }
       } catch {
@@ -235,7 +250,7 @@ async function likePropertyFromDashboard(
   const likeButton = card.locator('button[aria-label="Like this home"]')
   await expect(likeButton).toBeVisible({ timeout: 20000 })
 
-  const isLikeRequest = (req: any) => {
+  const isLikeRequest = (req: Request) => {
     if (!req.url().includes('/api/interactions')) return false
     if (req.method() !== 'POST') return false
 

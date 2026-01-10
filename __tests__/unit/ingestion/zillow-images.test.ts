@@ -38,45 +38,50 @@ describe('zillow images', () => {
   })
 
   test('fetchZillowImageUrls returns [] on 404', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: false,
-      status: 404,
-      statusText: 'Not Found',
-      text: async () => 'not found',
-    })
+    const fetchMock: jest.Mock<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit?]
+    > = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response('not found', { status: 404, statusText: 'Not Found' })
+    )
 
     await expect(
       fetchZillowImageUrls({
         zpid: '123',
         rapidApiKey: 'test',
-        fetchImpl: fetchMock as any,
+        fetchImpl: fetchMock,
       })
     ).resolves.toEqual([])
   })
 
   test('fetchZillowImageUrls trims, filters, dedupes, and caps results', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      json: async () => ({
-        images: [
-          ' https://a.com/1.jpg ',
-          'https://a.com/1.jpg',
-          'https://b.com/2.jpg',
-          'https://c.com/3.jpg',
-          null,
-          123,
-          '',
-        ],
-      }),
-    })
+    const fetchMock: jest.Mock<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit?]
+    > = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          images: [
+            ' https://a.com/1.jpg ',
+            'https://a.com/1.jpg',
+            'https://b.com/2.jpg',
+            'https://c.com/3.jpg',
+            null,
+            123,
+            '',
+          ],
+        }),
+        { status: 200, statusText: 'OK' }
+      )
+    )
 
     await expect(
       fetchZillowImageUrls({
         zpid: '123',
         rapidApiKey: 'test',
-        fetchImpl: fetchMock as any,
+        fetchImpl: fetchMock,
         maxImages: 2,
       })
     ).resolves.toEqual(['https://a.com/1.jpg', 'https://b.com/2.jpg'])
@@ -94,27 +99,30 @@ describe('zillow images', () => {
     })
 
     test('retries on 429 and succeeds', async () => {
-      const fetchMock = jest
-        .fn()
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 429,
-          statusText: 'Too Many Requests',
-          text: async () => 'rate limited',
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          statusText: 'OK',
-          json: async () => ({
-            images: ['https://photos.zillowstatic.com/fp/1.jpg'],
-          }),
-        })
+      const fetchMock: jest.Mock<
+        Promise<Response>,
+        [RequestInfo | URL, RequestInit?]
+      > = jest.fn()
+      fetchMock
+        .mockResolvedValueOnce(
+          new Response('rate limited', {
+            status: 429,
+            statusText: 'Too Many Requests',
+          })
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              images: ['https://photos.zillowstatic.com/fp/1.jpg'],
+            }),
+            { status: 200, statusText: 'OK' }
+          )
+        )
 
       const promise = fetchZillowImageUrls({
         zpid: '123',
         rapidApiKey: 'test',
-        fetchImpl: fetchMock as any,
+        fetchImpl: fetchMock,
         retries: 2,
       })
 

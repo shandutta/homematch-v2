@@ -12,6 +12,8 @@ import {
 import { LocationsClient } from '@/lib/services/locations-client'
 import { toast } from 'sonner'
 import { mockNextRouter } from '../../../utils/mock-helpers'
+import type { User } from '@supabase/supabase-js'
+import type { SavedSearch, UserProfile } from '@/types/database'
 
 // Mock dependencies
 jest.mock('@/lib/services/users-client', () => ({
@@ -33,13 +35,23 @@ jest.mock('sonner', () => ({
   },
 }))
 
-const mockUser = {
+const mockUser: User = {
   id: 'user-123',
   email: 'test@example.com',
-} as any
+  aud: 'authenticated',
+  app_metadata: {},
+  user_metadata: {},
+  created_at: '2024-01-01T00:00:00.000Z',
+}
 
-const mockProfile = {
+const mockProfile: UserProfile = {
   id: 'user-123',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: null,
+  display_name: null,
+  email: 'test@example.com',
+  household_id: null,
+  onboarding_completed: true,
   preferences: {
     priceRange: [300000, 700000],
     bedrooms: 3,
@@ -57,7 +69,17 @@ const mockProfile = {
     },
     searchRadius: 15,
   },
-} as any
+}
+
+const mockSavedSearch: SavedSearch = {
+  id: 'search-1',
+  name: 'Test Search',
+  user_id: 'user-123',
+  household_id: null,
+  is_active: true,
+  created_at: '2024-01-01T00:00:00.000Z',
+  filters: {},
+}
 
 async function ensureListView(user: ReturnType<typeof userEvent.setup>) {
   const listTab = screen.queryByRole('tab', { name: /list view/i })
@@ -68,11 +90,12 @@ async function ensureListView(user: ReturnType<typeof userEvent.setup>) {
 
 beforeAll(() => {
   class ResizeObserverMock {
+    constructor(_callback: ResizeObserverCallback) {}
     observe() {}
     unobserve() {}
     disconnect() {}
   }
-  ;(global as any).ResizeObserver = ResizeObserverMock
+  globalThis.ResizeObserver = ResizeObserverMock
   if (!Element.prototype.hasPointerCapture) {
     Element.prototype.hasPointerCapture = () => false
   }
@@ -94,15 +117,14 @@ describe('PreferencesSection', () => {
     jest.clearAllMocks()
     mockUpdateUserProfile = jest
       .spyOn(UserServiceClient, 'updateUserProfile')
-      .mockResolvedValue(true as any)
+      .mockResolvedValue(mockProfile)
     mockCreateSavedSearch = jest
       .spyOn(UserServiceClient, 'createSavedSearch')
-      .mockResolvedValue({
-        id: 'search-1',
-      } as any)
-    mockGetCities = LocationsClient.getCities as jest.Mock
-    mockGetNeighborhoodsForCities =
-      LocationsClient.getNeighborhoodsForCities as jest.Mock
+      .mockResolvedValue(mockSavedSearch)
+    mockGetCities = jest.mocked(LocationsClient.getCities)
+    mockGetNeighborhoodsForCities = jest.mocked(
+      LocationsClient.getNeighborhoodsForCities
+    )
     mockGetCities.mockResolvedValue([
       { city: 'Austin', state: 'TX' },
       { city: 'Dallas', state: 'TX' },

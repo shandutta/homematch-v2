@@ -3,9 +3,25 @@
  * This extends the Window interface with analytics and monitoring properties
  */
 
+import type { JSX as ReactJSX } from 'react'
 import type { GtagFunction, SentryHub, PostHogFunction } from './analytics'
 
 declare global {
+  namespace JSX {
+    type Element = ReactJSX.Element
+    /* eslint-disable @typescript-eslint/no-empty-object-type */
+    interface ElementClass extends ReactJSX.ElementClass {}
+    interface ElementAttributesProperty
+      extends ReactJSX.ElementAttributesProperty {}
+    interface ElementChildrenAttribute
+      extends ReactJSX.ElementChildrenAttribute {}
+    interface IntrinsicAttributes extends ReactJSX.IntrinsicAttributes {}
+    interface IntrinsicClassAttributes<T>
+      extends ReactJSX.IntrinsicClassAttributes<T> {}
+    interface IntrinsicElements extends ReactJSX.IntrinsicElements {}
+    /* eslint-enable @typescript-eslint/no-empty-object-type */
+  }
+
   interface Window {
     // Analytics
     gtag?: GtagFunction
@@ -41,6 +57,15 @@ declare global {
     __homematchMapTestHooks?: {
       selectCity?: (key: string) => void
       drawSelection?: (ring: unknown) => void
+    }
+
+    // Debug state for map selection
+    __hmMapDebug?: Record<string, unknown>
+
+    // Performance budget helpers (Playwright)
+    __hmPerf?: {
+      lcp: number
+      cls: number
     }
 
     // Google Maps loader callback

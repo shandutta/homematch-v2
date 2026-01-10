@@ -45,14 +45,22 @@ describe('Supabase Client Patterns E2E Tests', () => {
 
     test('should handle browser environment correctly', () => {
       // Simulate browser environment
-      const originalWindow = global.window
-      global.window = {} as any
+      const originalWindow = globalThis.window
+      Object.defineProperty(globalThis, 'window', {
+        value: {},
+        configurable: true,
+        writable: true,
+      })
 
       const client = createBrowserClient()
       expect(client).toBeTruthy()
 
       // Restore original environment
-      global.window = originalWindow
+      Object.defineProperty(globalThis, 'window', {
+        value: originalWindow,
+        configurable: true,
+        writable: true,
+      })
     })
 
     test('should maintain consistent API surface with server client', () => {
@@ -115,23 +123,37 @@ describe('Supabase Client Patterns E2E Tests', () => {
       const service = new PropertyService(clientFactory)
 
       // Test server environment
-      const originalWindow = global.window
-      delete (global as any).window
+      const originalWindow = globalThis.window
+      Reflect.deleteProperty(globalThis, 'window')
 
-      const serverClient = await (service as any).getSupabase()
+      const getSupabase = Reflect.get(service, 'getSupabase')
+      if (typeof getSupabase !== 'function') {
+        throw new Error(
+          'Expected getSupabase to be available on PropertyService'
+        )
+      }
+      const serverClient = await getSupabase.call(service)
       expect(serverClient).toBeTruthy()
 
       // Test browser environment
-      global.window = {} as any
+      Object.defineProperty(globalThis, 'window', {
+        value: {},
+        configurable: true,
+        writable: true,
+      })
 
-      const browserClient = await (service as any).getSupabase()
+      const browserClient = await getSupabase.call(service)
       expect(browserClient).toBeTruthy()
 
       // Restore original environment
       if (originalWindow) {
-        global.window = originalWindow
+        Object.defineProperty(globalThis, 'window', {
+          value: originalWindow,
+          configurable: true,
+          writable: true,
+        })
       } else {
-        delete (global as any).window
+        Reflect.deleteProperty(globalThis, 'window')
       }
     })
 

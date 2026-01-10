@@ -19,6 +19,7 @@ const mockConfirm = jest.fn()
 window.confirm = mockConfirm
 
 describe('SavedSearchesSection', () => {
+  const mockedUserService = jest.mocked(UserServiceClient)
   const mockGetUserSavedSearches = jest.fn()
   const mockUpdateSavedSearch = jest.fn()
   const mockDeleteSavedSearch = jest.fn()
@@ -61,10 +62,15 @@ describe('SavedSearchesSection', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockConfirm.mockReturnValue(true)
-    ;(UserServiceClient.getUserSavedSearches as jest.Mock) =
+    mockedUserService.getUserSavedSearches.mockImplementation(
       mockGetUserSavedSearches
-    ;(UserServiceClient.updateSavedSearch as jest.Mock) = mockUpdateSavedSearch
-    ;(UserServiceClient.deleteSavedSearch as jest.Mock) = mockDeleteSavedSearch
+    )
+    mockedUserService.updateSavedSearch.mockImplementation(
+      mockUpdateSavedSearch
+    )
+    mockedUserService.deleteSavedSearch.mockImplementation(
+      mockDeleteSavedSearch
+    )
   })
 
   test('renders loading state initially', () => {

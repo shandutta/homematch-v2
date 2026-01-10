@@ -2,24 +2,31 @@
 import { describe, expect, it, jest } from '@jest/globals'
 import userEvent from '@testing-library/user-event'
 import { render, screen } from '@testing-library/react'
+import type { ComponentProps, ReactNode } from 'react'
 
 import { PropertyDetailModal } from '@/components/property/PropertyDetailModal'
 import type { Property } from '@/lib/schemas/property'
 
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => (
+  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) => (
     <div data-testid="dialog" data-open={open}>
       {children}
     </div>
   ),
-  DialogContent: ({ children, ...props }: any) => (
+  DialogContent: ({ children, ...props }: ComponentProps<'div'>) => (
     <div data-testid="dialog-content" {...props}>
       {children}
     </div>
   ),
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <div>{children}</div>,
-  DialogDescription: ({ children }: any) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogDescription: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 jest.mock('@/components/property/PropertyMap', () => ({
@@ -149,12 +156,7 @@ describe('PropertyDetailModal gallery', () => {
   it('filters falsy image entries and keeps the counter accurate', async () => {
     const propertyWithMixedImages: Property = {
       ...baseProperty,
-      images: [
-        'https://img/one.jpg',
-        '',
-        null as unknown as string,
-        'https://img/three.jpg',
-      ],
+      images: ['https://img/one.jpg', '', 'https://img/three.jpg'],
     }
 
     renderModal(propertyWithMixedImages)

@@ -261,7 +261,7 @@ export class GeographicService
             },
           }
         )
-        return properties as unknown as Property[]
+        return properties
       }
     )
   }
@@ -297,7 +297,7 @@ export class GeographicService
           },
         }
       )
-      return properties as unknown as Property[]
+      return properties
     })
   }
 
@@ -346,7 +346,7 @@ export class GeographicService
           })
         }
 
-        return (data ?? []) as unknown as Property[]
+        return data ?? []
       }
     )
   }

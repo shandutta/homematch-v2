@@ -1,13 +1,15 @@
 import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAuthenticatedClient } from '../../utils/test-users'
+import type { AppDatabase } from '@/types/app-database'
 
 /**
  * Integration tests for the /api/users/search endpoint
  * Tests user search functionality for the couples invite feature
  */
 describe('User Search API Integration', () => {
-  let supabase: any
+  let supabase: SupabaseClient<AppDatabase> | null = null
 
   beforeAll(async () => {
     try {
@@ -18,7 +20,7 @@ describe('User Search API Integration', () => {
         throw new Error('Supabase environment variables not set')
       }
 
-      supabase = createClient(supabaseUrl, supabaseKey)
+      supabase = createClient<AppDatabase>(supabaseUrl, supabaseKey)
 
       // Test connection
       const { error } = await supabase
@@ -28,10 +30,9 @@ describe('User Search API Integration', () => {
       if (error && error.code !== 'PGRST116') {
         throw error
       }
-    } catch (error: any) {
-      throw new Error(
-        `Supabase unavailable for user search tests: ${error?.message || error}`
-      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Supabase unavailable for user search tests: ${message}`)
     }
   })
 
@@ -80,7 +81,7 @@ describe('User Search API Integration', () => {
       }
 
       // All returned users should have no household
-      users.forEach((user: any) => {
+      users.forEach((user) => {
         expect(user.household_id).toBeNull()
       })
     })
@@ -154,9 +155,7 @@ describe('User Search API Integration', () => {
       }
 
       // Current user should not be in results
-      const currentUserInResults = users.find(
-        (u: any) => u.id === currentUser.id
-      )
+      const currentUserInResults = users.find((u) => u.id === currentUser.id)
       expect(currentUserInResults).toBeUndefined()
     })
 
@@ -176,7 +175,7 @@ describe('User Search API Integration', () => {
       }
 
       // All returned users should have completed onboarding
-      users.forEach((user: any) => {
+      users.forEach((user) => {
         expect(user.onboarding_completed).toBe(true)
       })
     })
@@ -207,9 +206,10 @@ describe('User Search API Integration', () => {
               error.message.includes('does not exist') === false
           ).toBe(true)
         }
-      } catch (e: any) {
+      } catch (e) {
         // Handle unexpected errors gracefully
-        console.warn('Invitation data test warning:', e.message)
+        const message = e instanceof Error ? e.message : String(e)
+        console.warn('Invitation data test warning:', message)
         expect(true).toBe(true) // Test passes
       }
     })
