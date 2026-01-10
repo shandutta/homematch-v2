@@ -111,10 +111,16 @@ export const DASHBOARD_PROPERTY_SELECT = `
   description,
   amenities,
   lot_size_sqft,
+  parking_spots,
   neighborhood_id,
   zpid,
   year_built,
-  coordinates
+  coordinates,
+  listing_status,
+  property_hash,
+  is_active,
+  created_at,
+  updated_at
 `
 
 const shouldTreatAsAllCities = (
