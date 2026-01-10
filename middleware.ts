@@ -85,6 +85,13 @@ const withTimeout = async <T>(
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   let supabaseResponse = NextResponse.next({ request })
+  const isApiRoute = pathname.startsWith('/api/')
+  const isTestMode =
+    process.env.NODE_ENV === 'test' ||
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+  const shouldLog =
+    process.env.DEBUG_MIDDLEWARE === 'true' ||
+    process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
 
   if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
     return applySecurityHeaders(supabaseResponse)
@@ -152,11 +159,6 @@ export async function middleware(request: NextRequest) {
   let authError = null
 
   try {
-    const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
-    const isTestMode =
-      process.env.NODE_ENV === 'test' ||
-      process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-
     // Check if the auth cookie exists to avoid unnecessary Supabase calls
     const hasAuthCookie = request.cookies
       .getAll()
@@ -168,10 +170,12 @@ export async function middleware(request: NextRequest) {
       user = null
     } else if (isApiRoute && isTestMode) {
       // Skip auth check for API routes in test mode
-      console.log(
-        '[Middleware] Skipping auth check for API route in test mode:',
-        request.nextUrl.pathname
-      )
+      if (shouldLog) {
+        console.log(
+          '[Middleware] Skipping auth check for API route in test mode:',
+          request.nextUrl.pathname
+        )
+      }
       // user remains null, which is fine as API routes extract token from headers
     } else {
       const result = await withTimeout(
@@ -229,10 +233,6 @@ export async function middleware(request: NextRequest) {
       throw e
     }
   }
-
-  const shouldLog =
-    process.env.DEBUG_MIDDLEWARE === 'true' ||
-    process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
 
   if (shouldLog) {
     const cookieNames = request.cookies.getAll().map((c) => c.name)

@@ -226,24 +226,12 @@ async function startDevServer() {
     warmupEnv.WARMUP_DEV_COMMAND = warmupDevCommand
   }
 
+  const shouldLogDevServer = process.env.DEBUG_TEST_SETUP === 'true'
   devServerProcess = spawn(pnpmCmd, ['run', devScript], {
-    stdio: ['pipe', 'pipe', 'pipe'],
+    stdio: shouldLogDevServer ? 'inherit' : 'ignore',
     env: warmupEnv,
     cwd: path.join(__dirname, '..'),
     detached: false,
-  })
-
-  // Log server output for debugging
-  devServerProcess.stdout?.on('data', (data) => {
-    if (process.env.DEBUG_TEST_SETUP) {
-      process.stdout.write(`[dev] ${data}`)
-    }
-  })
-
-  devServerProcess.stderr?.on('data', (data) => {
-    if (process.env.DEBUG_TEST_SETUP) {
-      process.stderr.write(`[dev] ${data}`)
-    }
   })
 
   devServerProcess.on('error', (err) => {
