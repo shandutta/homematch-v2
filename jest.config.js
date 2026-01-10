@@ -36,7 +36,6 @@ module.exports = {
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/homematch-original-analysis/',
-    '<rootDir>/v1-reference/',
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
