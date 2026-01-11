@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { createWorkerAuthHelper } from '../utils/auth-helper'
+import { waitForHydration } from '../utils/hydration'
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -486,6 +487,7 @@ test.describe('Property Vibes - UI', () => {
 
       await page.setViewportSize({ width: 1280, height: 720 })
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+      await waitForHydration(page)
 
       const gridToggle = page.getByRole('button', { name: 'Grid' })
       if (await gridToggle.isVisible().catch(() => false)) {
@@ -501,7 +503,12 @@ test.describe('Property Vibes - UI', () => {
       await card.scrollIntoViewIfNeeded()
       const cardImage = card.getByRole('img', { name: seeded.address })
       await expect(cardImage).toBeVisible()
-      await card.click({ force: true })
+      const detailsCta = card.getByTestId('details-cta')
+      if (await detailsCta.isVisible().catch(() => false)) {
+        await detailsCta.click({ force: true })
+      } else {
+        await card.click({ force: true })
+      }
 
       const dialog = page.getByRole('dialog')
       await expect(dialog).toBeVisible({ timeout: 15000 })
