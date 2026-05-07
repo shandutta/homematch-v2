@@ -22,8 +22,8 @@ In progress:
 ## Prerequisites
 
 - Node.js 24.x (matches Vercel) and pnpm
-- Docker (for local Supabase)
-- Supabase CLI (`pnpm dlx supabase@latest`)
+- A configured Supabase project in `.env.local` for the fast `pnpm dev` loop
+- Docker and Supabase CLI (`pnpm dlx supabase@latest`) only when running the explicit local DB/reset workflow
 
 ## Environment Setup
 
@@ -68,14 +68,31 @@ pnpm dev
 
 `pnpm dev` will:
 
+- Validate required Supabase env values
+- Generate `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if missing
+- Start the Next.js dev server on port 3000
+
+It does **not** start Docker, reset the database, or create test users. This keeps daily product work fast and avoids destructive local resets.
+
+### Local DB reset/dev
+
+When you explicitly want a fresh local Supabase stack, seed data, and test users:
+
+```bash
+pnpm dev:db
+```
+
+`pnpm dev:db` will:
+
+- Check/start Docker
 - Start local Supabase
 - Reset and seed the database
 - Create test users via `scripts/setup-test-users-admin.js`
-- Generate `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if missing
+- Start the Next.js dev server on port 3000
 
-### Dev without resets
+### Integration dev server
 
-If you already have Supabase running and want to avoid a reset:
+If you already have Supabase running and want the same no-reset server command used by the integration runner:
 
 ```bash
 pnpm dev:integration

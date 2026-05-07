@@ -17,7 +17,7 @@ HomeMatch is an AI-assisted home discovery app that helps households shortlist p
 pnpm install
 cp .env.example .env.local
 
-# Start local dev (starts Supabase, resets DB, seeds, and creates test users)
+# Start the fast local Next.js loop against the env you configured
 pnpm dev
 ```
 
@@ -25,15 +25,17 @@ Visit http://localhost:3000.
 
 Optional:
 
-- Use `pnpm dev:integration` if Supabase is already running and you do not want a reset.
+- Use `pnpm dev:db` when you explicitly want to start/reset local Supabase, seed data, and create test users.
+- Use `pnpm dev:integration` if Supabase is already running and you want the same Next.js command used by integration tests.
 - If you want to start Supabase manually, run:
   `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`
 
 ## Essential Commands
 
 ```bash
-pnpm dev                # Local dev with Supabase reset + test users
-pnpm dev:integration    # Local dev without reset
+pnpm dev                # Fast local Next.js dev loop; no DB reset
+pnpm dev:db             # Start/reset local Supabase + seed + test users
+pnpm dev:integration    # Integration-test dev server; no reset
 pnpm build              # Production build
 pnpm start              # Serve production build
 pnpm lint               # ESLint

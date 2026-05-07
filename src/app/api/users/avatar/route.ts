@@ -58,10 +58,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    const { user, response: unauthorizedResponse } = await requireUserFromRequest(
-      supabase,
-      request
-    )
+    const { user, response: unauthorizedResponse } =
+      await requireUserFromRequest(supabase, request)
     if (unauthorizedResponse) {
       return unauthorizedResponse
     }
@@ -194,10 +192,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    const { user, response: unauthorizedResponse } = await requireUserFromRequest(
-      supabase,
-      request
-    )
+    const { user, response: unauthorizedResponse } =
+      await requireUserFromRequest(supabase, request)
     if (unauthorizedResponse) {
       return unauthorizedResponse
     }

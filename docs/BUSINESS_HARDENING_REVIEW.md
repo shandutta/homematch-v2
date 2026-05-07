@@ -20,13 +20,13 @@ Migration trigger later: choose Clerk only if product needs hosted organization/
 
 ### Local development / Docker
 
-**Decision: prefer Vercel-linked local Next.js + Supabase cloud/dev project as the default path. Keep Docker/Supabase CLI paths only for integration parity and schema work.**
+**Decision implemented: `pnpm dev` is now the fast Vercel-style Next.js loop. Docker/Supabase reset moved to explicit `pnpm dev:db`. Keep Docker/Supabase CLI paths only for integration parity and schema work.**
 
-The current `dev` script still hard-depends on Docker through `ensure:docker` and a DB reset. That is high-friction for normal product work. The repo should eventually split:
+Why:
 
-- `dev`: no Docker, no destructive reset, fast Next.js loop.
-- `dev:db`: explicit local Supabase/Docker reset for schema or RLS work.
-- `test:integration`: owns any required DB lifecycle.
+- Daily product work should not require Docker or a destructive database reset.
+- Schema/RLS work still needs a reproducible local Supabase path, so `dev:db`, `db:reset`, and integration infra remain.
+- Integration tests still own any required DB lifecycle instead of hiding resets inside the default dev server command.
 
 ## Verification matrix
 

@@ -5,8 +5,9 @@ This guide captures the practical day-to-day workflows for HomeMatch development
 ## Local Development
 
 ```bash
-pnpm dev                # Starts Supabase, resets DB, seeds, creates test users
-pnpm dev:integration    # Runs dev server without reset
+pnpm dev                # Fast Next.js dev loop; no Docker/DB reset
+pnpm dev:db             # Explicit local Supabase start/reset + seed + test users
+pnpm dev:integration    # Runs integration-test dev server without reset
 pnpm dev:warmup         # Warmup wrapper used by tests
 ```
 
@@ -36,7 +37,7 @@ See `docs/TESTING.md` and `docs/testing/README.md` for deeper guidance and test-
 ## Database Workflow
 
 ```bash
-pnpm db:reset           # Local Supabase start + reset (used by pnpm dev)
+pnpm db:reset           # Explicit local Supabase start + reset (also used by pnpm dev:db)
 pnpm migrate            # Run migration helper
 ```
 

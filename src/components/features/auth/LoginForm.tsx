@@ -71,12 +71,29 @@ const waitForAuthPersistence = async (storageKey: string, timeoutMs = 5000) => {
   }
 }
 
+type SupabaseResult =
+  | { client: ReturnType<typeof createClient>; error: null }
+  | { client: null; error: string }
+
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
+  const supabaseResult: SupabaseResult = (() => {
+    try {
+      return { client: createClient(), error: null }
+    } catch (clientError) {
+      return {
+        client: null,
+        error:
+          clientError instanceof Error
+            ? clientError.message
+            : 'Authentication is not configured for this environment.',
+      }
+    }
+  })()
+  const supabase = supabaseResult.client
   const isTestMode =
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
     process.env.NODE_ENV === 'test' ||
@@ -137,6 +154,11 @@ export function LoginForm() {
   }
 
   const handleEmailLogin = async (data: LoginData) => {
+    if (!supabase) {
+      setError(supabaseResult.error)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -189,6 +211,11 @@ export function LoginForm() {
   }
 
   const handleGoogleLogin = async () => {
+    if (!supabase) {
+      setError(supabaseResult.error)
+      return
+    }
+
     setLoading(true)
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -215,6 +242,16 @@ export function LoginForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {supabaseResult.error && (
+          <Alert data-testid="auth-config-alert">
+            <AlertDescription>
+              Authentication is unavailable in this environment. Configure
+              NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to sign
+              in.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {error && (
           <Alert variant="destructive" data-testid="error-alert">
             <AlertDescription>{error}</AlertDescription>
@@ -236,7 +273,7 @@ export function LoginForm() {
                     <Input
                       type="email"
                       placeholder="Email"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       data-testid="email-input"
                       {...field}
                     />
@@ -256,7 +293,7 @@ export function LoginForm() {
                     <Input
                       type="password"
                       placeholder="Password"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       data-testid="password-input"
                       {...field}
                     />
@@ -271,6 +308,7 @@ export function LoginForm() {
               className="w-full"
               disabled={
                 loading ||
+                !supabase ||
                 (!form.formState.isValid &&
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
                   !isTestMode)
@@ -301,7 +339,7 @@ export function LoginForm() {
         <Button
           variant="outline"
           onClick={handleGoogleLogin}
-          disabled={loading}
+          disabled={loading || !supabase}
           className="w-full"
           data-testid="google-signin-button"
         >
