@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { rateLimit } from '@/lib/middleware/rateLimiter'
 import type { Json } from '@/types/database'
 
@@ -57,14 +58,12 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Authenticate user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    const { user, response: unauthorizedResponse } = await requireUserFromRequest(
+      supabase,
+      request
+    )
+    if (unauthorizedResponse) {
+      return unauthorizedResponse
     }
 
     // Parse multipart form data
@@ -195,14 +194,12 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Authenticate user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    const { user, response: unauthorizedResponse } = await requireUserFromRequest(
+      supabase,
+      request
+    )
+    if (unauthorizedResponse) {
+      return unauthorizedResponse
     }
 
     // Clear avatar from preferences FIRST
