@@ -2,7 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isProtectedPath } from '@/lib/routing/protected-routes'
 import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
+import { buildSupabaseSessionCookieOptions } from '@/lib/supabase/cookie-options'
 import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
+
+export { buildSupabaseSessionCookieOptions }
 
 const SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
@@ -144,23 +147,14 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Force secure based on environment, ignoring the incoming option which might be wrong
-            const isProduction = process.env.NODE_ENV === 'production'
-            const sharedOptions = {
-              ...options,
-              maxAge: options?.maxAge ?? 60 * 60 * 24 * 7,
-              path: options?.path ?? '/',
-              sameSite: options?.sameSite ?? 'lax',
-              secure: isProduction,
-            }
-
             // Log cookie setting for debugging
             // console.log(`[Middleware] Setting cookie: ${name}, Secure: ${sharedOptions.secure}`)
 
-            supabaseResponse.cookies.set(name, value, {
-              ...sharedOptions,
-              httpOnly: false, // Allow client-side to read cookie for session hydration
-            })
+            supabaseResponse.cookies.set(
+              name,
+              value,
+              buildSupabaseSessionCookieOptions(options)
+            )
           })
         },
       },

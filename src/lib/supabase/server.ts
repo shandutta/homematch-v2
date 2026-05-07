@@ -4,6 +4,7 @@ import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { isInvalidRefreshTokenError } from './auth-helpers'
+import { buildSupabaseSessionCookieOptions } from './cookie-options'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 
 type SupabaseAuthSubset = Pick<
@@ -130,15 +131,11 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, {
-                ...options,
-                // Enhanced cookie configuration for session persistence
-                httpOnly: false, // Allow client-side access for session hydration
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax', // Better cross-browser compatibility
-                maxAge: 60 * 60 * 24 * 7, // 7 days
-                path: '/',
-              })
+              cookieStore.set(
+                name,
+                value,
+                buildSupabaseSessionCookieOptions(options)
+              )
             )
           } catch {
             // The `setAll` method was called from a Server Component.

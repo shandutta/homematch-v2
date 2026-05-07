@@ -144,7 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-07 15:26 PDT</code>. Phase 0/1 reconciliation complete before further Phase 2 work.
+        Live Kanban status. Updated: <code>2026-05-07 15:26 PDT</code>. Phase
+        0/1 reconciliation complete before further Phase 2 work.
       </p>
       <div class="grid">
         <div class="card">
@@ -157,27 +158,61 @@
         </div>
         <div class="card">
           <div class="label">Phase</div>
-          <div class="value">Phase 1.5 — Phase 0/1 reconciliation complete</div>
+          <div class="value">Phase 1 remediation — auth cookie hardening started</div>
         </div>
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 20 · running 0 · blocked 6 · ready 0 · todo 2
+            done 21 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
 
 
       <section>
-        <h2>Phase 0/1 reconciliation gate — COMPLETE</h2>
+        <h2>Phase 1 remediation — in progress</h2>
         <p>
-          <span class="pill good">RECONCILED</span> Shan asked to verify we were not running ahead. The gate is now explicit in the source plan and tracked as an artifact before further Phase 2 work.
+          <span class="pill good">TESTED FIX</span> Started turning Phase 1 audit findings into code before returning to Phase 2. First bounded remediation addresses the auth audit P0 finding that refreshed Supabase session cookies were writable from client JavaScript.
         </p>
         <ul>
-          <li><strong>Phase 0:</strong> baseline artifacts are present and complete enough to proceed, but coverage gaps remain documented: partial browser traversal, conservative API probing, and skipped integration tests.</li>
-          <li><strong>Phase 1:</strong> audit synthesis and repair gates are complete. Remediation is <strong>not</strong> complete; DB/security/performance findings remain backlog items.</li>
-          <li><strong>DB raw sub-audits:</strong> recovered worker scratch outputs into the repo report directory: <code>schema-column-audit.md</code>, <code>rls-security-audit.md</code>, and <code>migration-health-audit.md</code>.</li>
-          <li><strong>New artifact:</strong> <code>reports/home-match-revival/phase0-phase1-reconciliation.json</code>.</li>
+          <li>Added shared <code>buildSupabaseSessionCookieOptions()</code> helper that defaults session cookies to <code>httpOnly: true</code>.</li>
+          <li>Updated middleware and server Supabase cookie refresh paths to use the shared hardened options.</li>
+          <li>Added middleware regression coverage and verified the test failed before the helper existed, then passed after implementation.</li>
+          <li>Verification: targeted Jest passed; resource-limited <code>pnpm type-check</code> passed.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Phase 0/1 reconciliation gate — COMPLETE</h2>
+        <p>
+          <span class="pill good">RECONCILED</span> Shan asked to verify we were
+          not running ahead. The gate is now explicit in the source plan and
+          tracked as an artifact before further Phase 2 work.
+        </p>
+        <ul>
+          <li>
+            <strong>Phase 0:</strong> baseline artifacts are present and
+            complete enough to proceed, but coverage gaps remain documented:
+            partial browser traversal, conservative API probing, and skipped
+            integration tests.
+          </li>
+          <li>
+            <strong>Phase 1:</strong> audit synthesis and repair gates are
+            complete. Remediation is <strong>not</strong> complete;
+            DB/security/performance findings remain backlog items.
+          </li>
+          <li>
+            <strong>DB raw sub-audits:</strong> recovered worker scratch outputs
+            into the repo report directory: <code>schema-column-audit.md</code>,
+            <code>rls-security-audit.md</code>, and
+            <code>migration-health-audit.md</code>.
+          </li>
+          <li>
+            <strong>New artifact:</strong>
+            <code
+              >reports/home-match-revival/phase0-phase1-reconciliation.json</code
+            >.
+          </li>
         </ul>
       </section>
 
