@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-07 23:11 UTC</code>. Phase
-        0/1 reconciliation complete; bounded Phase 2 SEO and auth-cookie
-        hardening slices verified.
+        Live Kanban status. Updated: <code>2026-05-07 23:31 UTC</code>. Phase
+        0/1 reconciliation complete; bounded Phase 1 DB/security and Phase 2
+        SEO/auth-cookie hardening slices verified.
       </p>
       <div class="grid">
         <div class="card">
@@ -160,13 +160,13 @@
         <div class="card">
           <div class="label">Phase</div>
           <div class="value">
-            Phase 2 remediation — metadata/SEO and cookie hardening verified
+            Phase 1 remediation — DB/security hardening in progress
           </div>
         </div>
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 24 · running 0 · blocked 6 · ready 0 · todo 2
+            done 25 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
@@ -245,6 +245,20 @@
             <strong>Verification:</strong> middleware regression test failed
             before implementation, then passed; resource-limited type-check
             passed.
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <strong>SECURITY DEFINER search paths:</strong> Added repo-only
+            migration
+            <code>20260508001000_harden_security_definer_search_paths.sql</code>
+            to set <code>pg_catalog</code> first for the 13 audited elevated
+            functions while preserving existing function bodies and grants.
+          </li>
+          <li>
+            <strong>Verification:</strong> added static migration regression
+            test; targeted Jest and resource-limited type-check passed.
           </li>
         </ul>
       </section>
@@ -516,6 +530,12 @@
               <td><span class="pill good">done</span></td>
             </tr>
             <tr>
+              <td><code>t_dbp02</code></td>
+              <td>P1 remediation: harden SECURITY DEFINER search_path</td>
+              <td>backend-eng</td>
+              <td><span class="pill good">done</span></td>
+            </tr>
+            <tr>
               <td><code>t_4d997654</code></td>
               <td>P2 frontend design refinement pass</td>
               <td>frontend-eng</td>
@@ -577,10 +597,13 @@
         <h2>What changed in this run</h2>
         <ul>
           <li>
-            ✅ Extended Supabase auth-cookie hardening through the legacy
-            <code>SupabaseClientFactory</code> server-cookie path and added
-            focused regression coverage for the shared cookie options helper,
-            server client, and factory path.
+            ✅ Added a repo-only search_path hardening migration for 13 audited
+            <code>SECURITY DEFINER</code> functions and static Jest coverage
+            that failed before the migration existed and now passes.
+          </li>
+          <li>
+            ✅ Verification: resource-limited targeted Jest and
+            <code>pnpm type-check</code> passed under <code>systemd-run</code>.
           </li>
           <li>
             ✅ Added <code>SKIP_SUPABASE_GUARD=true</code> bypass to
@@ -628,9 +651,6 @@
           <li>
             Convert DB audit recommendations into small TDD-backed migration
             tasks before applying any DB changes
-          </li>
-          <li>
-            Apply search_path hardening to 13 SECURITY DEFINER functions (P0.2)
           </li>
           <li>Fix RLS policy overlap on properties table (P0.1)</li>
           <li>
