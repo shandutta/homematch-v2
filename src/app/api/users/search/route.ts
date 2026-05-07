@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
@@ -7,18 +8,12 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user (authenticate first)
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const auth = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!auth.user) return auth.response
 
     // Rate limiting
-    const rateLimitResult = await apiRateLimiter.check(user.id)
+    const rateLimitResult = await apiRateLimiter.check(auth.user.id)
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
@@ -46,7 +41,7 @@ export async function GET(request: NextRequest) {
     const { data: users, error } = await serviceClient
       .from('user_profiles')
       .select('id, email, display_name, household_id')
-      .neq('id', user.id)
+      .neq('id', auth.user.id)
       .eq('onboarding_completed', true)
       .ilike('email', `${query}%`)
       .limit(10)

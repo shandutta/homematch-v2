@@ -1,6 +1,17 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { AppDatabase } from '@/types/app-database'
-import type { NextRequest } from 'next/server'
+import type { User } from '@supabase/supabase-js'
+import type { NextRequest, NextResponse } from 'next/server'
+import { ApiErrorHandler } from '@/lib/api/errors'
+
+type AuthUserResult = {
+  data: { user: User | null }
+  error: Error | null
+}
+
+type AuthUserReader = {
+  auth: {
+    getUser: (jwt?: string) => Promise<AuthUserResult>
+  }
+}
 
 /**
  * Extracts the authenticated user from a request using either the bearer token
@@ -8,7 +19,7 @@ import type { NextRequest } from 'next/server'
  * the first lookup fails to smooth over occasional header parsing issues.
  */
 export async function getUserFromRequest(
-  supabase: SupabaseClient<AppDatabase>,
+  supabase: AuthUserReader,
   request: NextRequest
 ) {
   const authHeader = request.headers.get('authorization') || ''
@@ -21,4 +32,29 @@ export async function getUserFromRequest(
   }
 
   return result
+}
+
+export type RequireUserResult =
+  | { user: User; response: null }
+  | { user: null; response: NextResponse }
+
+/**
+ * Standard API auth boundary. Route handlers should call this instead of
+ * open-coding `supabase.auth.getUser()` so bearer-token fallback and the 401
+ * response shape stay consistent across app APIs.
+ */
+export async function requireUserFromRequest(
+  supabase: AuthUserReader,
+  request: NextRequest
+): Promise<RequireUserResult> {
+  const {
+    data: { user },
+    error,
+  } = await getUserFromRequest(supabase, request)
+
+  if (error || !user) {
+    return { user: null, response: ApiErrorHandler.unauthorized() }
+  }
+
+  return { user, response: null }
 }

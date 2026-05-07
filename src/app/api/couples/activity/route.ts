@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
@@ -31,15 +32,9 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createApiClient(request)
 
-      // Get the current user
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
+      const auth = await requireUserFromRequest(supabase, request)
 
-      if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+      if (!auth.user) return auth.response
 
       // Parse query parameters
       const searchParams = request.nextUrl.searchParams
@@ -68,7 +63,7 @@ export async function GET(request: NextRequest) {
       // Add timeout to prevent hanging
       const activityPromise = CouplesService.getHouseholdActivity(
         supabase,
-        user.id,
+        auth.user.id,
         limit,
         offset
       )

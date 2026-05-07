@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 
 function parsePositiveInt(value: string | null, fallback: number): number {
@@ -19,14 +20,9 @@ export async function GET(request: NextRequest) {
     typeof request?.cookies?.getAll === 'function'
   const supabase = createApiClient(hasRequestContext ? request : undefined)
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+  const auth = await requireUserFromRequest(supabase, request)
 
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!auth.user) return auth.response
 
   const url = new URL(request.url)
   const neighborhoodId = url.searchParams.get('neighborhoodId')
