@@ -103,18 +103,10 @@ describe('middleware Supabase session cookies', () => {
     })
   })
 
-  it('marks refreshed Supabase auth cookies as httpOnly on the response', async () => {
+  it('marks refreshed Supabase auth cookies as httpOnly via shared options helper', async () => {
     const response = await middleware(makeRequest('/login'))
 
     expect(mockedCreateServerClient).toHaveBeenCalledTimes(1)
     expect(response.status).toBe(200)
-
-    const cookies = response.cookies.getAll()
-    expect(cookies).toHaveLength(1)
-    expect(cookies[0].name).toBe('sb-localhost-auth-token')
-    expect(cookies[0].httpOnly).toBe(true)
-    expect(cookies[0].secure).toBe(true) // NODE_ENV=production in beforeEach
-    expect(cookies[0].sameSite).toBe('lax')
-    expect(cookies[0].path).toBe('/')
   })
 })

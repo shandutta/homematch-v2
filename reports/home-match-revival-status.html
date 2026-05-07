@@ -144,8 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-07 15:26 PDT</code>. Phase
-        0/1 reconciliation complete before further Phase 2 work.
+        Live Kanban status. Updated: <code>2026-05-07 23:11 UTC</code>. Phase
+        0/1 reconciliation complete; bounded Phase 2 SEO and auth-cookie
+        hardening slices verified.
       </p>
       <div class="grid">
         <div class="card">
@@ -159,7 +160,7 @@
         <div class="card">
           <div class="label">Phase</div>
           <div class="value">
-            Phase 1 remediation — auth cookie hardening started
+            Phase 2 remediation — metadata/SEO and cookie hardening verified
           </div>
         </div>
         <div class="card">
@@ -512,49 +513,49 @@
               <td><code>t_124c4ac0</code></td>
               <td>P1 middleware/API speed and dead-code audit</td>
               <td>backend-eng</td>
-              <td><span class="pill bad">blocked</span></td>
+              <td><span class="pill good">done</span></td>
             </tr>
             <tr>
               <td><code>t_4d997654</code></td>
               <td>P2 frontend design refinement pass</td>
               <td>frontend-eng</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill good">done</span></td>
             </tr>
             <tr>
               <td><code>t_ff763f6d</code></td>
               <td>P2 couples/matching UX upgrade</td>
               <td>frontend-eng</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_1009b931</code></td>
               <td>P2 maps/images/metadata/SEO fixes</td>
               <td>frontend-eng</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_11342c3d</code></td>
               <td>P3 LLM/matching prompt hardening</td>
               <td>backend-eng</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_4b4d5b96</code></td>
               <td>P3 ingest pipeline review</td>
               <td>backend-eng</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_acd542ca</code></td>
               <td>P4 test suite triage and TDD lane</td>
               <td>reviewer</td>
-              <td><span class="pill warn">ready</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_eface8fd</code></td>
               <td>P5 compliance/analytics/AdSense/Stripe plan</td>
               <td>researcher</td>
-              <td><span class="pill warn">todo</span></td>
+              <td><span class="pill bad">blocked</span></td>
             </tr>
             <tr>
               <td><code>t_fd311981</code></td>
@@ -575,6 +576,12 @@
       <section>
         <h2>What changed in this run</h2>
         <ul>
+          <li>
+            ✅ Extended Supabase auth-cookie hardening through the legacy
+            <code>SupabaseClientFactory</code> server-cookie path and added
+            focused regression coverage for the shared cookie options helper,
+            server client, and factory path.
+          </li>
           <li>
             ✅ Added <code>SKIP_SUPABASE_GUARD=true</code> bypass to
             <code>scripts/guard-supabase-env.js</code>

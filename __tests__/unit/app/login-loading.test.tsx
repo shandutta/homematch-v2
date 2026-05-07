@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import LoginLoading from '@/app/login/loading'
 
 describe('login loading', () => {

@@ -15,6 +15,7 @@ import {
   ClientConfig,
   ISupabaseClientFactory,
 } from '@/lib/services/interfaces'
+import { buildSupabaseSessionCookieOptions } from './cookie-options'
 
 /**
  * Unified factory for creating Supabase clients with environment detection
@@ -118,14 +119,11 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
           setAll(cookiesToSet) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, {
-                  ...options,
-                  httpOnly: true,
-                  secure: process.env.NODE_ENV === 'production',
-                  sameSite: 'lax',
-                  maxAge: 60 * 60 * 24 * 7, // 7 days
-                  path: '/',
-                })
+                cookieStore.set(
+                  name,
+                  value,
+                  buildSupabaseSessionCookieOptions(options)
+                )
               )
             } catch {
               // Ignore setAll errors from Server Components

@@ -12,6 +12,9 @@ import { ClientContext } from '@/lib/services/interfaces'
 
 const createBrowserClientMock = jest.fn()
 const createServerClientMock = jest.fn()
+const mockCookieSet = jest.fn<
+  (name: string, value: string, options: Record<string, unknown>) => void
+>()
 const cookiesMock = jest.fn()
 const headersMock = jest.fn()
 
@@ -37,7 +40,7 @@ describe('SupabaseClientFactory', () => {
     resetEnv()
     cookiesMock.mockReturnValue({
       getAll: () => [],
-      set: jest.fn(),
+      set: mockCookieSet,
     })
     headersMock.mockReturnValue({
       get: () => null,
@@ -48,10 +51,26 @@ describe('SupabaseClientFactory', () => {
         _url: string,
         _key: string,
         options?: { cookies?: { getAll: () => unknown[] }; global?: unknown }
-      ) => ({
-        client: 'server',
-        options,
-      })
+      ) => {
+        // Simulate Supabase SSR calling setAll
+        options?.cookies?.setAll([
+          {
+            name: 'sb-test-auth-token',
+            value: 'mock-token',
+            options: { path: '/', sameSite: 'lax' },
+          },
+          {
+            name: 'sb-test-auth-token-code-verifier',
+            value: 'mock-verifier',
+            options: {},
+          },
+        ])
+
+        return {
+          client: 'server',
+          options,
+        }
+      }
     )
   })
 
@@ -115,5 +134,30 @@ describe('SupabaseClientFactory', () => {
   test('compat helper createClient uses factory detection', async () => {
     const client = await createClient()
     expect(client.client).toBe('browser')
+  })
+
+  test('server client sets cookies with httpOnly: true', async () => {
+    const factory = SupabaseClientFactory.getInstance()
+    await factory.createClient({ context: ClientContext.SERVER })
+
+    expect(mockCookieSet).toHaveBeenCalledTimes(2)
+
+    const setCalls = mockCookieSet.mock.calls
+    for (const [_name, _value, options] of setCalls) {
+      expect(options.httpOnly).toBe(true)
+    }
+  })
+
+  test('server client sets cookies with secure and sameSite defaults', async () => {
+    process.env.NODE_ENV = 'production'
+    const factory = SupabaseClientFactory.getInstance()
+    await factory.createClient({ context: ClientContext.SERVER })
+
+    const setCalls = mockCookieSet.mock.calls
+    for (const [_name, _value, options] of setCalls) {
+      expect(options.secure).toBe(true)
+      expect(options.sameSite).toBe('lax')
+      expect(options.path).toBe('/')
+    }
   })
 })
