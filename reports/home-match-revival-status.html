@@ -144,8 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-07 23:31 UTC</code>. Phase
-        0/1 reconciliation complete; bounded Phase 1 DB/security and Phase 2
+        Live Kanban status. Updated: <code>2026-05-07 23:46 UTC</code>. Phase
+        0/1 reconciliation complete; bounded Phase 1 DB/RLS/security and Phase 2
         SEO/auth-cookie hardening slices verified.
       </p>
       <div class="grid">
@@ -259,6 +259,20 @@
           <li>
             <strong>Verification:</strong> added static migration regression
             test; targeted Jest and resource-limited type-check passed.
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <strong>Properties RLS overlap:</strong> Added repo-only migration
+            <code>20260508003500_fix_properties_public_select_policy.sql</code>
+            to replace the broad public SELECT policy so readable properties
+            must have <code>listing_status = 'active'</code> and an active flag.
+          </li>
+          <li>
+            <strong>Verification:</strong> static migration test failed first
+            with missing migration, then passed; resource-limited type-check
+            passed.
           </li>
         </ul>
       </section>
@@ -536,6 +550,12 @@
               <td><span class="pill good">done</span></td>
             </tr>
             <tr>
+              <td><code>t_dd446a18</code></td>
+              <td>P1.R6 properties RLS policy overlap hardening</td>
+              <td>backend-eng</td>
+              <td><span class="pill good">done</span></td>
+            </tr>
+            <tr>
               <td><code>t_4d997654</code></td>
               <td>P2 frontend design refinement pass</td>
               <td>frontend-eng</td>
@@ -597,6 +617,17 @@
         <h2>What changed in this run</h2>
         <ul>
           <li>
+            ✅ Added repo-only properties RLS policy hardening migration and
+            static Jest coverage that failed before the migration existed and
+            now passes; public property reads now require
+            <code>listing_status = 'active'</code> plus an active flag.
+          </li>
+          <li>
+            ✅ Verification: resource-limited targeted Jest, Prettier check for
+            the touched TS test, and <code>pnpm type-check</code> passed under
+            <code>systemd-run</code>.
+          </li>
+          <li>
             ✅ Added a repo-only search_path hardening migration for 13 audited
             <code>SECURITY DEFINER</code> functions and static Jest coverage
             that failed before the migration existed and now passes.
@@ -649,10 +680,13 @@
         <h2>Next actions</h2>
         <ol>
           <li>
-            Convert DB audit recommendations into small TDD-backed migration
-            tasks before applying any DB changes
+            Continue converting DB audit recommendations into small TDD-backed
+            migration tasks before applying any DB changes
           </li>
-          <li>Fix RLS policy overlap on properties table (P0.1)</li>
+          <li>
+            Add user_profiles self-delete policy if product confirms account
+            deletion flow
+          </li>
           <li>
             Keep one blocked P1 middleware audit as incident record; continue
             with smaller targeted tasks instead of broad respawn
