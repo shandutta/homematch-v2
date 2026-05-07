@@ -27,7 +27,22 @@ import {
 import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 export function VerifyEmailForm() {
-  const supabase = createClient()
+  const { client: supabase, error: configError } = useMemo<{
+    client: ReturnType<typeof createClient> | null
+    error: string | null
+  }>(() => {
+    try {
+      return { client: createClient(), error: null }
+    } catch (clientError) {
+      return {
+        client: null,
+        error:
+          clientError instanceof Error
+            ? clientError.message
+            : 'Authentication is not configured for this environment.',
+      }
+    }
+  }, [])
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -47,6 +62,11 @@ export function VerifyEmailForm() {
   })
 
   const handleVerify = async (values: VerifyEmailData) => {
+    if (!supabase) {
+      setError(configError ?? 'Authentication is not configured.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -97,9 +117,9 @@ export function VerifyEmailForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
+        {(configError || error) && (
           <Alert variant="destructive" data-testid="verify-error">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{configError ?? error}</AlertDescription>
           </Alert>
         )}
         {success && (
@@ -124,7 +144,7 @@ export function VerifyEmailForm() {
                       type="email"
                       placeholder="Email you used to sign up"
                       autoComplete="email"
-                      disabled={loading}
+                      disabled={loading || Boolean(configError)}
                       data-testid="verify-email-input"
                       {...field}
                     />
@@ -147,7 +167,7 @@ export function VerifyEmailForm() {
                       autoComplete="one-time-code"
                       maxLength={6}
                       placeholder="6-digit code"
-                      disabled={loading}
+                      disabled={loading || Boolean(configError)}
                       data-testid="verify-code-input"
                       {...field}
                     />
@@ -162,6 +182,7 @@ export function VerifyEmailForm() {
               className="w-full"
               disabled={
                 loading ||
+                Boolean(configError) ||
                 (!form.formState.isValid &&
                   process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
               }

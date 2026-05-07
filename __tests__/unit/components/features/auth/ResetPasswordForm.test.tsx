@@ -29,8 +29,13 @@ const supabaseMock = {
   },
 }
 
+let createClientError: Error | null = null
+
 jest.mock('@/lib/supabase/client', () => ({
-  createClient: () => supabaseMock,
+  createClient: () => {
+    if (createClientError) throw createClientError
+    return supabaseMock
+  },
 }))
 
 const push = jest.fn()
@@ -50,6 +55,7 @@ describe('ResetPasswordForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    createClientError = null
     resetPasswordForEmail.mockResolvedValue({ error: null })
     verifyOtp.mockResolvedValue({ error: null })
     updateUser.mockResolvedValue({ error: null })
@@ -138,5 +144,18 @@ describe('ResetPasswordForm', () => {
       })
       expect(push).toHaveBeenCalledWith('/login')
     })
+  })
+
+  test('shows disabled configuration notice when Supabase browser config is missing', () => {
+    createClientError = new Error('Missing Supabase browser configuration')
+
+    render(<ResetPasswordForm />)
+
+    expect(screen.getByTestId('reset-error')).toHaveTextContent(
+      'Missing Supabase browser configuration'
+    )
+    expect(screen.getByTestId('reset-email-input')).toBeDisabled()
+    expect(screen.getByTestId('reset-submit')).toBeDisabled()
+    expect(screen.getByTestId('reset-enter-code')).toBeDisabled()
   })
 })

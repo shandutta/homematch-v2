@@ -58,7 +58,22 @@ const parseFragmentTokens = () => {
 }
 
 export function ResetPasswordForm() {
-  const supabase = useMemo(() => createClient(), [])
+  const { client: supabase, error: configError } = useMemo<{
+    client: ReturnType<typeof createClient> | null
+    error: string | null
+  }>(() => {
+    try {
+      return { client: createClient(), error: null }
+    } catch (clientError) {
+      return {
+        client: null,
+        error:
+          clientError instanceof Error
+            ? clientError.message
+            : 'Authentication is not configured for this environment.',
+      }
+    }
+  }, [])
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -97,6 +112,11 @@ export function ResetPasswordForm() {
       setNeedsCodeEntry(false)
 
       try {
+        if (!supabase) {
+          setError(configError ?? 'Authentication is not configured.')
+          return
+        }
+
         if (maybeCode) {
           const { error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(maybeCode)
@@ -158,9 +178,14 @@ export function ResetPasswordForm() {
     }
 
     void hydrateSession()
-  }, [searchParams, supabase, verifyForm])
+  }, [configError, searchParams, supabase, verifyForm])
 
   const handleSendLink = async (values: z.infer<typeof RequestSchema>) => {
+    if (!supabase) {
+      setError(configError ?? 'Authentication is not configured.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -190,6 +215,11 @@ export function ResetPasswordForm() {
   }
 
   const handleVerifyCode = async (values: z.infer<typeof VerifySchema>) => {
+    if (!supabase) {
+      setError(configError ?? 'Authentication is not configured.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -219,6 +249,11 @@ export function ResetPasswordForm() {
   }
 
   const handleUpdatePassword = async (values: z.infer<typeof UpdateSchema>) => {
+    if (!supabase) {
+      setError(configError ?? 'Authentication is not configured.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -253,9 +288,9 @@ export function ResetPasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
+        {(configError || error) && (
           <Alert variant="destructive" data-testid="reset-error">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{configError ?? error}</AlertDescription>
           </Alert>
         )}
         {success && (
@@ -280,7 +315,7 @@ export function ResetPasswordForm() {
                       <Input
                         type="email"
                         placeholder="you@example.com"
-                        disabled={loading}
+                        disabled={loading || Boolean(configError)}
                         data-testid="reset-email-input"
                         {...field}
                       />
@@ -295,6 +330,7 @@ export function ResetPasswordForm() {
                 className="w-full"
                 disabled={
                   loading ||
+                  Boolean(configError) ||
                   (!requestForm.formState.isValid &&
                     process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
                 }
@@ -309,7 +345,7 @@ export function ResetPasswordForm() {
                 variant="outline"
                 className="w-full"
                 onClick={startManualCodeEntry}
-                disabled={loading}
+                disabled={loading || Boolean(configError)}
                 data-testid="reset-enter-code"
               >
                 Already have a code? Enter it manually
@@ -342,7 +378,7 @@ export function ResetPasswordForm() {
                           <Input
                             type="email"
                             placeholder="you@example.com"
-                            disabled={loading}
+                            disabled={loading || Boolean(configError)}
                             data-testid="reset-verify-email"
                             {...field}
                           />
@@ -362,7 +398,7 @@ export function ResetPasswordForm() {
                           <Input
                             type="text"
                             placeholder="Enter the code from your email"
-                            disabled={loading}
+                            disabled={loading || Boolean(configError)}
                             data-testid="reset-verify-code"
                             {...field}
                           />
@@ -377,6 +413,7 @@ export function ResetPasswordForm() {
                     className="w-full"
                     disabled={
                       loading ||
+                      Boolean(configError) ||
                       (!verifyForm.formState.isValid &&
                         process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
                     }
@@ -407,7 +444,7 @@ export function ResetPasswordForm() {
                           <Input
                             type="password"
                             placeholder="Enter a new password"
-                            disabled={loading}
+                            disabled={loading || Boolean(configError)}
                             data-testid="reset-password-input"
                             {...field}
                           />
@@ -422,6 +459,7 @@ export function ResetPasswordForm() {
                     className="w-full"
                     disabled={
                       loading ||
+                      Boolean(configError) ||
                       (!updateForm.formState.isValid &&
                         process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
                     }

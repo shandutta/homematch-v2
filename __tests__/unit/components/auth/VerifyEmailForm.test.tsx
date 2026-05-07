@@ -18,8 +18,13 @@ const refresh = jest.fn()
 let prefillEmail: string | null = 'newuser@example.com'
 let nextParam: string | null = null
 
+let createClientError: Error | null = null
+
 jest.mock('@/lib/supabase/client', () => ({
-  createClient: () => supabaseMock,
+  createClient: () => {
+    if (createClientError) throw createClientError
+    return supabaseMock
+  },
 }))
 
 jest.mock('next/navigation', () => ({
@@ -42,6 +47,7 @@ describe('VerifyEmailForm', () => {
     jest.clearAllMocks()
     prefillEmail = 'newuser@example.com'
     nextParam = null
+    createClientError = null
     verifyOtp.mockResolvedValue({
       data: { session: { access_token: 't1' } },
       error: null,
@@ -126,5 +132,18 @@ describe('VerifyEmailForm', () => {
       )
     })
     expect(replace).not.toHaveBeenCalled()
+  })
+
+  test('shows disabled configuration notice when Supabase browser config is missing', () => {
+    createClientError = new Error('Missing Supabase browser configuration')
+
+    render(<VerifyEmailForm />)
+
+    expect(screen.getByTestId('verify-error')).toHaveTextContent(
+      'Missing Supabase browser configuration'
+    )
+    expect(screen.getByTestId('verify-email-input')).toBeDisabled()
+    expect(screen.getByTestId('verify-code-input')).toBeDisabled()
+    expect(screen.getByTestId('verify-submit')).toBeDisabled()
   })
 })
