@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home Match Revival Status</title>
+  <style>
+    :root { color-scheme: dark; --bg:#08111f; --panel:#0f1b2d; --text:#e8eef8; --muted:#95a3b8; --accent:#7dd3fc; --good:#34d399; --warn:#fbbf24; --bad:#fb7185; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: radial-gradient(circle at top left,#173258 0,#08111f 45%,#050914 100%); color:var(--text); line-height:1.45; }
+    main { max-width:1120px; margin:0 auto; padding:28px 18px 56px; }
+    h1 { margin:0 0 8px; font-size:clamp(28px,4vw,48px); letter-spacing:-.04em; }
+    h2 { margin:0 0 12px; font-size:22px; }
+    p { margin:8px 0; }
+    .meta { color:var(--muted); margin-bottom:22px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:18px 0; }
+    .card, section { background:linear-gradient(180deg,rgba(15,27,45,.94),rgba(11,20,34,.94)); border:1px solid rgba(148,163,184,.18); border-radius:18px; padding:18px; box-shadow:0 18px 50px rgba(0,0,0,.28); }
+    .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.09em; }
+    .value { font-size:18px; font-weight:700; margin-top:4px; }
+    code { background:rgba(148,163,184,.12); color:#bae6fd; border-radius:7px; padding:2px 6px; }
+    ul, ol { padding-left:20px; }
+    li { margin:6px 0; }
+    .pill { display:inline-block; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:700; margin-right:6px; }
+    .good { background:rgba(52,211,153,.16); color:var(--good); }
+    .warn { background:rgba(251,191,36,.16); color:var(--warn); }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:left; border-bottom:1px solid rgba(148,163,184,.16); padding:9px 7px; vertical-align:top; }
+    th { color:#c7d2fe; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    footer { color:var(--muted); margin-top:24px; font-size:13px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Home Match Revival</h1>
+  <p class="meta">Live Kanban control report. Source-of-truth plan: <code>/home/shan/.hermes/plans/home-match-kanban-goal-template.md</code>.</p>
+
+  <div class="grid">
+    <div class="card"><div class="label">Board</div><div class="value">home-match-revival</div></div>
+    <div class="card"><div class="label">Tenant</div><div class="value">home-match-revival</div></div>
+    <div class="card"><div class="label">Repo</div><div class="value">/home/shan/projects/homematch-v2</div></div>
+    <div class="card"><div class="label">Current phase</div><div class="value">Phase 0, baseline verification and Kanban decomposition</div></div>
+  </div>
+
+  <section>
+    <h2>Initial repo snapshot</h2>
+    <ul>
+      <li><strong>Working directory:</strong> <code>/home/shan/projects/homematch-v2</code></li>
+      <li><strong>Branch:</strong> <code>autonomy/6h-business-hardening</code>, ahead of origin by 2 at inspection time.</li>
+      <li><strong>Stack:</strong> Next.js 15.5.9 App Router, React 19.1.1, TypeScript 5.8, Tailwind 4, Supabase SSR/client, Jest, Vitest, Playwright scripts.</li>
+      <li><strong>Route inventory:</strong> 29 page routes and 28 API routes found under <code>src/app</code>.</li>
+      <li><strong>Disk note:</strong> root was full; cleared stale HomeMatch build artifacts and temp read cache. No source or secrets removed.</li>
+      <li><strong>Guardrail:</strong> no deploys, paid services, Stripe, AdSense, legal publication, emails, or real customer/user data changes without Shan approval.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Kanban decomposition</h2>
+    <p>Tasks are being created on the dedicated board with phase dependencies. Code-changing work goes through specialist worktrees where possible. Research/compliance work starts in scratch space and feeds implementation tasks.</p>
+    <table id="task-table">
+      <thead><tr><th>Phase</th><th>Task</th><th>Assignee</th><th>Depends on</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>Baseline local run, route crawl, endpoint matrix</td><td>ops</td><td>none</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>0</td><td>Full frontend traversal and UX/perf baseline</td><td>frontend-eng</td><td>baseline run</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>1</td><td>Auth replacement audit and deletion plan</td><td>analyst</td><td>baseline + traversal</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>1</td><td>DB architecture audit</td><td>backend-eng</td><td>baseline</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>1</td><td>Middleware/API speed and dead-code audit</td><td>backend-eng</td><td>endpoint matrix</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>1</td><td>Vercel, local dev, and Docker decision</td><td>ops</td><td>baseline</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>2</td><td>Design refinement implementation</td><td>frontend-eng</td><td>UX baseline</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>2</td><td>Couples/matching UX implementation</td><td>frontend-eng</td><td>UX baseline + DB audit</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>3</td><td>LLM prompt/matching taste hardening</td><td>backend-eng</td><td>couples UX + API audit</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>4</td><td>Test suite triage and TDD lane</td><td>reviewer</td><td>baseline</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>5</td><td>Compliance, consent, analytics, AdSense, Stripe plan</td><td>researcher</td><td>baseline</td><td><span class="pill warn">queued</span></td></tr>
+        <tr><td>6</td><td>Docs rewrite and final business-grade report</td><td>writer</td><td>all audits</td><td><span class="pill warn">queued</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Live log</h2>
+    <ul>
+      <li><strong>Created:</strong> initial report and Kanban board setup.</li>
+      <li><strong>2026-05-07 16:16 PT:</strong> Cron tick. Spawned: <code>none</code>. Git: <code>## autonomy/6h-business-hardening...origin/autonomy/6h-business-hardening [ahead 2]</code>.</li>
+    </ul>
+  </section>
+
+  <footer>Updated by Hermes. Secret values, env dumps, and customer data are intentionally excluded.</footer>
+</main>
+</body>
+</html>
