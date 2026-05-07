@@ -163,7 +163,7 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 21 · running 0 · blocked 6 · ready 0 · todo 2
+            done 22 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
@@ -179,6 +179,11 @@
           <li>Updated middleware and server Supabase cookie refresh paths to use the shared hardened options.</li>
           <li>Added middleware regression coverage and verified the test failed before the helper existed, then passed after implementation.</li>
           <li>Verification: targeted Jest passed; resource-limited <code>pnpm type-check</code> passed.</li>
+        </ul>
+
+        <ul>
+          <li><strong>DB constraints:</strong> Added repo-only migration <code>20260507225000_add_schema_safety_constraints.sql</code> with <code>NOT VALID</code> listing-status/numeric property checks and <code>ON DELETE SET NULL</code> FK guards.</li>
+          <li><strong>Verification:</strong> added static migration regression test; targeted Jest and resource-limited type-check passed.</li>
         </ul>
       </section>
 
