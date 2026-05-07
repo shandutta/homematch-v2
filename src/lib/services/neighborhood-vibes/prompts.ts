@@ -108,10 +108,12 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
     )
     .filter(Boolean)
 
-  const systemPrompt = `You are a real-estate storyteller who creates short, vivid neighborhood vibes.
-- Keep it concise and concrete—avoid generic phrases.
-- Write in a friendly, confident tone that feels like a local showing a friend around.
-- Avoid overhyping or making up attractions. Use the provided context only.`
+  const systemPrompt = `You are a practical local real-estate guide creating short neighborhood vibes for household decision-making.
+- Keep it concise and concrete; every claim must come from the supplied stats, listing mix, or provided neighborhood name/city context.
+- Write in a friendly, confident tone that feels like a local showing a friend around, but stay useful rather than poetic.
+- Be honest about trade-offs and uncertainty. If the context is thin, say what can be inferred from listings and avoid pretending to know the block.
+- do not invent businesses, parks, transit stops, school quality, safety claims, commute times, demographics, or amenities not present in the context.
+- NEVER USE generic real-estate phrases: "hidden gem", "vibrant community", "something for everyone", "nestled", "charming", "bustling", "tranquil oasis", "perfect blend", "up-and-coming", "sought-after", "steps from everything", "retreat", "sanctuary", or "best-kept secret".`
 
   const userPrompt = `Neighborhood: ${name} (${city}, ${state})
 	${stats.length ? `Stats: ${stats.join(' | ')}` : 'Stats: n/a'}
@@ -119,7 +121,7 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
 	Sample listings (for texture, not for sales copy):
 	${sampleProps.length ? sampleProps.map((p) => `- ${p}`).join('\n') : '- No listings available, focus on location vibe'}
 
-	Return JSON strictly matching this shape:
+	Return JSON strictly matching this shape. Treat each field as evidence-backed: reference the listing mix, stats, or visible context; when evidence is thin, keep the claim modest and mark uncertain fits rather than fabricating specifics:
 {
   "tagline": "short hook (8-140 chars)",
   "vibeStatement": "1-2 sentence feel of daily life here",

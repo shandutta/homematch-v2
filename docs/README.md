@@ -48,19 +48,17 @@ This folder is the documentation hub for HomeMatch. Start here, then jump into t
 ### Refactoring
 
 - Refactoring architecture: `docs/REFACTORING_ARCHITECTURE.md`
-- Refactoring summary: `docs/REFACTORING_SUMMARY.md`
 
 ### Testing Appendix
 
 - Testing appendix index: `docs/testing/README.md`
 
-### Analysis and Reports
+## Removed Historical Docs
 
-- Project analysis (historical report): `docs/PROJECT_ANALYSIS.md`
-
-### Tasks and Tracking
-
-- Task index: `docs/tasks/README.md`
+During the business-hardening pass we deleted stale January-era task lists,
+refactoring summaries, and testing status reports that contradicted current CI
+and product status. Use `docs/BUSINESS_HARDENING_REVIEW.md` for active product
+readiness work and git history for old reports.
 
 ### Marketing Assets
 
