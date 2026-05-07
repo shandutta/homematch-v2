@@ -194,7 +194,7 @@ export function FeatureGrid() {
             Make home search feel clear, shared, and even fun.
           </h2>
           <p
-            className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
+            className="mt-4 text-lg text-gray-700 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Turn scattered listing opinions into a shared shortlist everyone can
@@ -294,7 +294,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
             </h3>
 
             <p
-              className="text-sm text-gray-600 sm:text-base"
+              className="text-sm text-gray-700 sm:text-base"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {feature.description}

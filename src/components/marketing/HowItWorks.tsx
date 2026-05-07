@@ -203,7 +203,7 @@ function StepCard({
           </h3>
 
           <motion.p
-            className="mt-1.5 text-gray-600"
+            className="mt-1.5 text-gray-700"
             style={{ fontFamily: 'var(--font-body)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: isActive ? 1 : 0.6 }}

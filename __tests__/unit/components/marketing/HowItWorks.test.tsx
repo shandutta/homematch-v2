@@ -190,7 +190,7 @@ describe('HowItWorks', () => {
 
     descriptions.forEach((desc) => {
       const element = screen.getByText(desc)
-      expect(element).toHaveClass('text-gray-600')
+      expect(element).toHaveClass('text-gray-700')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-body)' })
     })
   })
