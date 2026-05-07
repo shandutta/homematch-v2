@@ -32,7 +32,14 @@ export function useCurrentUserAvatar(): UserAvatarState {
   })
 
   useEffect(() => {
-    const supabase = createClient()
+    let supabase: ReturnType<typeof createClient>
+    try {
+      supabase = createClient()
+    } catch (error) {
+      console.error('Failed to initialize Supabase avatar client:', error)
+      setState((prev) => ({ ...prev, isLoading: false }))
+      return
+    }
 
     async function fetchUserAvatar() {
       try {

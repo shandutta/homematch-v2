@@ -16,17 +16,18 @@ const mockEq = jest.fn()
 const mockSingle = jest.fn()
 const mockOnAuthStateChange = jest.fn()
 const mockUnsubscribe = jest.fn()
+const mockCreateClient = jest.fn(() => ({
+  auth: {
+    getUser: mockGetUser,
+    onAuthStateChange: mockOnAuthStateChange,
+  },
+  from: () => ({
+    select: mockSelect,
+  }),
+}))
 
 jest.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      getUser: mockGetUser,
-      onAuthStateChange: mockOnAuthStateChange,
-    },
-    from: () => ({
-      select: mockSelect,
-    }),
-  }),
+  createClient: () => mockCreateClient(),
 }))
 
 describe('useCurrentUserAvatar', () => {
@@ -41,6 +42,15 @@ describe('useCurrentUserAvatar', () => {
     mockOnAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: mockUnsubscribe } },
     })
+    mockCreateClient.mockImplementation(() => ({
+      auth: {
+        getUser: mockGetUser,
+        onAuthStateChange: mockOnAuthStateChange,
+      },
+      from: () => ({
+        select: mockSelect,
+      }),
+    }))
   })
 
   afterEach(() => {
@@ -378,6 +388,31 @@ describe('useCurrentUserAvatar', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
+      expect(consoleSpy).toHaveBeenCalled()
+
+      consoleSpy.mockRestore()
+    })
+
+    test('handles missing Supabase browser config without crashing protected shells', async () => {
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+      mockCreateClient.mockImplementation(() => {
+        throw new Error(
+          'Missing Supabase browser configuration (NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY)'
+        )
+      })
+
+      const { result } = renderHook(() => useCurrentUserAvatar())
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      expect(result.current.displayName).toBeNull()
+      expect(result.current.email).toBeNull()
+      expect(result.current.avatar).toBeNull()
+      expect(mockOnAuthStateChange).not.toHaveBeenCalled()
       expect(consoleSpy).toHaveBeenCalled()
 
       consoleSpy.mockRestore()

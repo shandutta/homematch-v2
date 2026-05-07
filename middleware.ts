@@ -19,6 +19,12 @@ const SUPABASE_TIMEOUT_MS = parseInt(
   10
 )
 
+const hasSupabasePublicConfig = () =>
+  Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+
 const getSafeRedirectPath = (value: string | null) => {
   if (!value) return null
 
@@ -95,6 +101,21 @@ export async function middleware(request: NextRequest) {
     process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
 
   if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
+    return applySecurityHeaders(supabaseResponse)
+  }
+
+  if (!hasSupabasePublicConfig()) {
+    if (isProtectedPath(pathname) && !isApiRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.search = ''
+      url.searchParams.set(
+        'redirectTo',
+        `${request.nextUrl.pathname}${request.nextUrl.search}`
+      )
+      return NextResponse.redirect(url)
+    }
+
     return applySecurityHeaders(supabaseResponse)
   }
 
@@ -255,6 +276,7 @@ export async function middleware(request: NextRequest) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    url.search = ''
     url.searchParams.set(
       'redirectTo',
       `${request.nextUrl.pathname}${request.nextUrl.search}`
