@@ -5,10 +5,11 @@ This folder is the documentation hub for HomeMatch. Start here, then jump into t
 ## Start Here
 
 1. Setup: `docs/SETUP_GUIDE.md`
-2. Architecture: `docs/ARCHITECTURE.md`
-3. Testing: `docs/TESTING.md`
-4. Workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
-5. Style guide: `docs/STYLE_GUIDE.md`
+2. Current business hardening review: `docs/BUSINESS_HARDENING_REVIEW.md`
+3. Architecture: `docs/ARCHITECTURE.md`
+4. Testing: `docs/TESTING.md`
+5. Workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
+6. Style guide: `docs/STYLE_GUIDE.md`
 
 ## Sources of Truth
 
@@ -29,8 +30,9 @@ This folder is the documentation hub for HomeMatch. Start here, then jump into t
 - Auth troubleshooting: `docs/TROUBLESHOOTING_AUTH.md`
 - Project brief (short context): `docs/CONTEXT.md`
 
-### Product and Feature Specs
+### Product, Business, and Feature Specs
 
+- Current business hardening review: `docs/BUSINESS_HARDENING_REVIEW.md`
 - Couples matching flow: `docs/COUPLES_MATCH_PLAN.md`
 
 ### Integrations

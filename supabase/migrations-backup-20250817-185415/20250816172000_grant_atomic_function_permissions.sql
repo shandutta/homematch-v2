@@ -1,1 +1,0 @@
-GRANT EXECUTE ON FUNCTION public.ensure_user_exists_atomic(uuid) TO service_role;

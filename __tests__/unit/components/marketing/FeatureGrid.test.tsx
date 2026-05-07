@@ -25,15 +25,16 @@ describe('FeatureGrid', () => {
   test('renders section heading', () => {
     render(<FeatureGrid />)
 
-    expect(screen.getByText('House Hunting, But Make It')).toBeInTheDocument()
-    expect(screen.getByText('Actually Fun')).toBeInTheDocument()
+    expect(
+      screen.getByText('Make home search feel clear, shared, and even fun.')
+    ).toBeInTheDocument()
   })
 
   test('renders section description', () => {
     render(<FeatureGrid />)
     expect(
       screen.getByText(
-        'We turned the most stressful part of adulting into a shared game'
+        'Turn scattered listing opinions into a shared shortlist everyone can understand.'
       )
     ).toBeInTheDocument()
   })

@@ -191,23 +191,14 @@ export function FeatureGrid() {
             className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            House Hunting, But Make It{' '}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Actually Fun
-            </span>
+            Make home search feel clear, shared, and even fun.
           </h2>
           <p
             className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            We turned the most stressful part of adulting into a shared game
+            Turn scattered listing opinions into a shared shortlist everyone can
+            understand.
           </p>
         </MotionDiv>
 

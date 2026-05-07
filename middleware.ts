@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isProtectedPath } from '@/lib/routing/protected-routes'
 import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
 import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
 
@@ -250,20 +251,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = [
-    '/dashboard',
-    '/profile',
-    '/households',
-    '/helloworld_notes',
-    '/validation',
-    '/couples',
-    '/properties',
-  ]
-  const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isProtectedPath && !user) {
+  if (isProtectedPath(request.nextUrl.pathname) && !user) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
