@@ -59,6 +59,12 @@ describe('middleware auth configuration guard', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+    expect(response.headers.get('Cross-Origin-Opener-Policy')).toBe(
+      'same-origin'
+    )
+    expect(response.headers.get('Cross-Origin-Resource-Policy')).toBe(
+      'same-origin'
+    )
   })
 
   it('lets API handlers own missing-env errors instead of crashing middleware', async () => {
@@ -97,10 +103,18 @@ describe('middleware Supabase session cookies', () => {
     })
   })
 
-  it('marks refreshed Supabase auth cookies as httpOnly', async () => {
+  it('marks refreshed Supabase auth cookies as httpOnly on the response', async () => {
     const response = await middleware(makeRequest('/login'))
 
     expect(mockedCreateServerClient).toHaveBeenCalledTimes(1)
     expect(response.status).toBe(200)
+
+    const cookies = response.cookies.getAll()
+    expect(cookies).toHaveLength(1)
+    expect(cookies[0].name).toBe('sb-localhost-auth-token')
+    expect(cookies[0].httpOnly).toBe(true)
+    expect(cookies[0].secure).toBe(true) // NODE_ENV=production in beforeEach
+    expect(cookies[0].sameSite).toBe('lax')
+    expect(cookies[0].path).toBe('/')
   })
 })

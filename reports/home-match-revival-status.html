@@ -158,32 +158,70 @@
         </div>
         <div class="card">
           <div class="label">Phase</div>
-          <div class="value">Phase 1 remediation — auth cookie hardening started</div>
+          <div class="value">
+            Phase 1 remediation — auth cookie hardening started
+          </div>
         </div>
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 22 · running 0 · blocked 6 · ready 0 · todo 2
+            done 23 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
 
-
       <section>
         <h2>Phase 1 remediation — in progress</h2>
         <p>
-          <span class="pill good">TESTED FIX</span> Started turning Phase 1 audit findings into code before returning to Phase 2. First bounded remediation addresses the auth audit P0 finding that refreshed Supabase session cookies were writable from client JavaScript.
+          <span class="pill good">TESTED FIX</span> Started turning Phase 1
+          audit findings into code before returning to Phase 2. First bounded
+          remediation addresses the auth audit P0 finding that refreshed
+          Supabase session cookies were writable from client JavaScript.
         </p>
         <ul>
-          <li>Added shared <code>buildSupabaseSessionCookieOptions()</code> helper that defaults session cookies to <code>httpOnly: true</code>.</li>
-          <li>Updated middleware and server Supabase cookie refresh paths to use the shared hardened options.</li>
-          <li>Added middleware regression coverage and verified the test failed before the helper existed, then passed after implementation.</li>
-          <li>Verification: targeted Jest passed; resource-limited <code>pnpm type-check</code> passed.</li>
+          <li>
+            Added shared <code>buildSupabaseSessionCookieOptions()</code> helper
+            that defaults session cookies to <code>httpOnly: true</code>.
+          </li>
+          <li>
+            Updated middleware and server Supabase cookie refresh paths to use
+            the shared hardened options.
+          </li>
+          <li>
+            Added middleware regression coverage and verified the test failed
+            before the helper existed, then passed after implementation.
+          </li>
+          <li>
+            Verification: targeted Jest passed; resource-limited
+            <code>pnpm type-check</code> passed.
+          </li>
         </ul>
 
         <ul>
-          <li><strong>DB constraints:</strong> Added repo-only migration <code>20260507225000_add_schema_safety_constraints.sql</code> with <code>NOT VALID</code> listing-status/numeric property checks and <code>ON DELETE SET NULL</code> FK guards.</li>
-          <li><strong>Verification:</strong> added static migration regression test; targeted Jest and resource-limited type-check passed.</li>
+          <li>
+            <strong>DB constraints:</strong> Added repo-only migration
+            <code>20260507225000_add_schema_safety_constraints.sql</code> with
+            <code>NOT VALID</code> listing-status/numeric property checks and
+            <code>ON DELETE SET NULL</code> FK guards.
+          </li>
+          <li>
+            <strong>Verification:</strong> added static migration regression
+            test; targeted Jest and resource-limited type-check passed.
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <strong>Security headers:</strong> Added
+            <code>Cross-Origin-Opener-Policy: same-origin</code> and
+            <code>Cross-Origin-Resource-Policy: same-origin</code> to middleware
+            security headers.
+          </li>
+          <li>
+            <strong>Verification:</strong> middleware regression test failed
+            before implementation, then passed; resource-limited type-check
+            passed.
+          </li>
         </ul>
       </section>
 
