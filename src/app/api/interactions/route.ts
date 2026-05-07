@@ -19,24 +19,15 @@ import {
 } from '@/lib/utils/interaction-type'
 import { CouplesService } from '@/lib/services/couples'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { requireUserFromRequest } from '@/lib/api/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const hasRequestContext =
-      typeof request?.headers?.get === 'function' &&
-      typeof request?.cookies?.getAll === 'function'
-    const supabase = createApiClient(hasRequestContext ? request : undefined)
-    const authHeader = hasRequestContext
-      ? request.headers.get('authorization')
-      : null
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = data?.user
+    const supabase = createApiClient(request)
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
 
     // Rate limiting
@@ -213,21 +204,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const hasRequestContext =
-      typeof request?.headers?.get === 'function' &&
-      typeof request?.cookies?.getAll === 'function'
-    const supabase = createApiClient(hasRequestContext ? request : undefined)
-    const authHeader = hasRequestContext
-      ? request.headers.get('authorization')
-      : null
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data: authData, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = authData?.user
+    const supabase = createApiClient(request)
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
 
     const { searchParams } = new URL(request.url)
@@ -428,15 +409,10 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
-    const authHeader = request.headers.get('authorization')
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = data?.user
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
 
     let body: unknown
