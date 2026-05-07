@@ -35,6 +35,15 @@ jest.mock('@/lib/utils/rate-limit', () => ({
   },
 }))
 
+const mockCreateApiClient = jest.fn()
+const mockRequireUserFromRequest = jest.fn()
+jest.mock('@/lib/supabase/server', () => ({
+  createApiClient: mockCreateApiClient,
+}))
+jest.mock('@/lib/api/auth', () => ({
+  requireUserFromRequest: mockRequireUserFromRequest,
+}))
+
 // Mock fetch globally
 const mockFetch: jest.MockedFunction<FetchFn> = jest.fn()
 global.fetch = mockFetch
@@ -48,6 +57,11 @@ describe('/api/maps/geocode route', () => {
     jest.clearAllMocks()
     process.env = { ...originalEnv, GOOGLE_MAPS_SERVER_API_KEY: 'test-api-key' }
     mockRateLimiterCheck.mockResolvedValue({ success: true })
+    mockCreateApiClient.mockReturnValue({ auth: { getUser: jest.fn() } })
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
+    })
   })
 
   afterAll(() => {
@@ -68,6 +82,22 @@ describe('/api/maps/geocode route', () => {
     })
 
   describe('POST', () => {
+    it('returns 401 and does not call Google when unauthenticated', async () => {
+      mockRequireUserFromRequest.mockResolvedValue({
+        user: null,
+        response: {
+          status: 401,
+          json: async () => ({ error: 'Unauthorized' }),
+        },
+      })
+
+      const request = createRequest({ address: '123 Main St' })
+      const response = await geocodeRoute.POST(request)
+
+      expect(response.status).toBe(401)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
     it('returns 429 when rate limited', async () => {
       mockRateLimiterCheck.mockResolvedValue({ success: false })
 
@@ -250,7 +280,7 @@ describe('/api/maps/geocode route', () => {
       expect(body.error).toBe('Internal server error')
     })
 
-    it('uses client IP for rate limiting', async () => {
+    it('uses authenticated user id for rate limiting', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.resolve({ status: 'OK', results: [] }),
       })
@@ -262,10 +292,10 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockRateLimiterCheck).toHaveBeenCalledWith('192.168.1.100')
+      expect(mockRateLimiterCheck).toHaveBeenCalledWith('user-1')
     })
 
-    it('uses "unknown" for rate limiting when no IP header', async () => {
+    it('does not fall back to anonymous IP rate limiting when no IP header', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.resolve({ status: 'OK', results: [] }),
       })
@@ -274,7 +304,7 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockRateLimiterCheck).toHaveBeenCalledWith('unknown')
+      expect(mockRateLimiterCheck).toHaveBeenCalledWith('user-1')
     })
   })
 })

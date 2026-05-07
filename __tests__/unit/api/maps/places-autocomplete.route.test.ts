@@ -35,6 +35,15 @@ jest.mock('@/lib/utils/rate-limit', () => ({
   },
 }))
 
+const mockCreateApiClient = jest.fn()
+const mockRequireUserFromRequest = jest.fn()
+jest.mock('@/lib/supabase/server', () => ({
+  createApiClient: mockCreateApiClient,
+}))
+jest.mock('@/lib/api/auth', () => ({
+  requireUserFromRequest: mockRequireUserFromRequest,
+}))
+
 // Mock fetch globally
 const mockFetch: jest.MockedFunction<FetchFn> = jest.fn()
 global.fetch = mockFetch
@@ -48,6 +57,11 @@ describe('/api/maps/places/autocomplete route', () => {
     jest.clearAllMocks()
     process.env = { ...originalEnv, GOOGLE_MAPS_SERVER_API_KEY: 'test-api-key' }
     mockRateLimiterCheck.mockResolvedValue({ success: true })
+    mockCreateApiClient.mockReturnValue({ auth: { getUser: jest.fn() } })
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
+    })
   })
 
   afterAll(() => {
@@ -68,6 +82,22 @@ describe('/api/maps/places/autocomplete route', () => {
     })
 
   describe('POST', () => {
+    it('returns 401 and does not call Google when unauthenticated', async () => {
+      mockRequireUserFromRequest.mockResolvedValue({
+        user: null,
+        response: {
+          status: 401,
+          json: async () => ({ error: 'Unauthorized' }),
+        },
+      })
+
+      const request = createRequest({ input: 'san fran' })
+      const response = await autocompleteRoute.POST(request)
+
+      expect(response.status).toBe(401)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
     it('returns 429 when rate limited', async () => {
       mockRateLimiterCheck.mockResolvedValue({ success: false })
 
@@ -306,7 +336,7 @@ describe('/api/maps/places/autocomplete route', () => {
       expect(body.error).toBe('Internal server error')
     })
 
-    it('uses client IP for rate limiting', async () => {
+    it('uses authenticated user id for rate limiting', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.resolve({ status: 'OK', predictions: [] }),
       })
@@ -318,7 +348,7 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      expect(mockRateLimiterCheck).toHaveBeenCalledWith('10.0.0.1')
+      expect(mockRateLimiterCheck).toHaveBeenCalledWith('user-1')
     })
   })
 })

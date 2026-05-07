@@ -1,0 +1,274 @@
+{
+  "captured_at": "2026-05-07T10:38:00-07:00",
+  "source": "kanban-task-t_8ed3dc91",
+  "repo": {
+    "path": "/home/shan/projects/homematch-v2",
+    "remote": "https://github.com/shandutta/homematch-v2.git",
+    "branch": "autonomy/6h-business-hardening",
+    "latest_commit": "c3c0b2c",
+    "latest_commits": [
+      "c3c0b2c docs: add Home Match revival kanban status report",
+      "483a150 fix: harden auth recovery form config states",
+      "2a1bfb7 fix: harden missing auth config boundaries",
+      "015c9a2 fix: harden signup auth config state",
+      "8739a1f fix: make local dev fast and auth config tolerant"
+    ],
+    "git_status": {
+      "modified": ["reports/home-match-revival-status.html"],
+      "untracked": ["reports/home-match-revival/"]
+    },
+    "file_counts": {
+      "total_tracked": 890,
+      "src": 300,
+      "tests": 368,
+      "scripts": 74
+    }
+  },
+  "runtime": {
+    "node": "v24.15.0",
+    "node_required": "24.x",
+    "package_manager": "pnpm@10.25.0",
+    "lock_file": "pnpm-lock.yaml"
+  },
+  "stack": {
+    "framework": "Next.js 15.5.9 (App Router)",
+    "language": "TypeScript 5.8.3",
+    "frontend": {
+      "react": "19.1.1",
+      "styling": ["Tailwind CSS 4", "Radix UI primitives", "shadcn/ui"],
+      "animation": "Framer Motion 12.23.12",
+      "icons": "Lucide React 0.525.0",
+      "theming": "next-themes 0.4.6",
+      "forms": "React Hook Form 7.61.1 + Zod 3.25.76"
+    },
+    "backend": {
+      "database": "Supabase (PostgreSQL 17)",
+      "supabase_client": "@supabase/supabase-js 2.52.1",
+      "supabase_ssr": "@supabase/ssr 0.6.1",
+      "ai_sdk": "Vercel AI SDK 5.0.101, @ai-sdk/openai 1.3.23",
+      "llm_provider": "OpenRouter (OPENROUTER_API_KEY)",
+      "rate_limiting": [
+        "rate-limiter-flexible 7.2.0",
+        "express-rate-limit 8.0.1"
+      ],
+      "caching": "lru-cache 11.1.0"
+    },
+    "state_management": {
+      "server": "TanStack Query 5.83.0",
+      "client": "Zustand 5.0.6"
+    },
+    "monitoring": {
+      "error_tracking": "Sentry (@sentry/nextjs 9.42.0)",
+      "analytics": "PostHog (posthog-js 1.258.2, posthog-node 5.6.0)",
+      "performance": "Vercel Speed Insights 1.3.1",
+      "background_jobs": "Inngest 3.54.2"
+    },
+    "maps": "Google Maps (server + client keys)",
+    "ads": "Google AdSense (src/lib/adsense.ts)",
+    "other_deps": [
+      "csv-parse 6.1.0",
+      "date-fns 4.1.0",
+      "polygon-clipping 0.15.7",
+      "web-vitals 4.2.1",
+      "clsx 2.1.1",
+      "tailwind-merge 3.3.1"
+    ]
+  },
+  "testing": {
+    "unit": "Jest 30.0.5 (__tests__/unit/)",
+    "integration": "Vitest 3.2.4 (__tests__/integration/)",
+    "e2e": "Playwright 1.56.1 (__tests__/e2e/)",
+    "test_commands": {
+      "all": "pnpm test",
+      "unit": "pnpm test:unit",
+      "integration": "pnpm test:integration",
+      "e2e": "pnpm test:e2e",
+      "coverage": "pnpm test:coverage",
+      "lint": "pnpm lint",
+      "type_check": "pnpm type-check"
+    },
+    "test_file_count": 368
+  },
+  "dev_commands": {
+    "dev": "pnpm dev",
+    "dev_with_db_reset": "pnpm dev:db",
+    "build": "pnpm build",
+    "analyze": "pnpm analyze",
+    "clean": "pnpm clean",
+    "format": "pnpm format",
+    "lint_fix": "pnpm lint:fix"
+  },
+  "deployment": {
+    "platform": "Vercel",
+    "config": "vercel.json",
+    "timeouts": { "pages": "30s", "api": "300s" },
+    "docker": {
+      "has_compose": false,
+      "usage": "Local Supabase CLI (uses Docker for local Supabase)",
+      "ensure_script": "scripts/ensure-docker.js"
+    }
+  },
+  "env_vars": {
+    "required": [
+      "GOOGLE_MAPS_SERVER_API_KEY",
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "NEXT_PUBLIC_APP_URL",
+      "OPENROUTER_API_KEY",
+      "POSTGRES_DATABASE",
+      "POSTGRES_HOST",
+      "POSTGRES_PASSWORD",
+      "POSTGRES_URL",
+      "POSTGRES_URL_NON_POOLING",
+      "POSTGRES_USER",
+      "RAPIDAPI_KEY",
+      "RAPIDAPI_HOST",
+      "GEMINI_API_KEY",
+      "ZILLOW_CRON_SECRET",
+      "STATUS_REFRESH_CRON_SECRET",
+      "ZILLOW_LOCATIONS",
+      "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"
+    ],
+    "optional": [
+      "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID",
+      "NEXT_PUBLIC_ENABLE_LOCATION_MAP_VIEW",
+      "SUPABASE_LOCAL_PROXY",
+      "SUPABASE_LOCAL_PROXY_TARGET",
+      "OPENROUTER_MODEL",
+      "VIBES_CRON_SECRET",
+      "NEXT_PUBLIC_ALLOWED_DEV_ORIGINS"
+    ],
+    "has_env_local": true,
+    "has_env_example": true
+  },
+  "key_config_files": {
+    "next_config": "next.config.ts",
+    "tsconfig": "tsconfig.json",
+    "supabase_config": "supabase/config.toml",
+    "vercel": "vercel.json",
+    "eslint": "eslint.config.mjs",
+    "prettier": ".prettierrc",
+    "vitest_config": "vitest.config.ts",
+    "vitest_ci_config": "vitest.ci.config.ts",
+    "package_json": "package.json"
+  },
+  "src_structure": {
+    "app_pages": [
+      "about",
+      "auth/auth-code-error",
+      "contact",
+      "cookies",
+      "couples",
+      "couples/decisions",
+      "dashboard",
+      "dashboard/activity",
+      "dashboard/liked",
+      "dashboard/mutual-likes",
+      "dashboard/passed",
+      "dashboard/viewed",
+      "dashboard/vibes-test",
+      "demo/ads",
+      "household/create",
+      "household/join",
+      "invite/[token]",
+      "login",
+      "privacy",
+      "profile",
+      "properties/[id]",
+      "reset-password",
+      "settings",
+      "signup",
+      "sponsor-mockups",
+      "terms",
+      "validation",
+      "verify-email"
+    ],
+    "api_routes": [
+      "admin/generate-neighborhood-vibes",
+      "admin/generate-vibes",
+      "admin/generate-vibes-zillow",
+      "admin/ingest/zillow",
+      "admin/status-refresh",
+      "couples/activity",
+      "couples/check-mutual",
+      "couples/disputed",
+      "couples/mutual-likes",
+      "couples/notify",
+      "couples/stats",
+      "health",
+      "interactions",
+      "interactions/reset",
+      "maps/geocode",
+      "maps/metro-boundaries",
+      "maps/places/autocomplete",
+      "maps/proxy-script",
+      "maps/script",
+      "neighborhoods/vibes",
+      "performance/metrics",
+      "properties/marketing",
+      "properties/vibes",
+      "users/avatar",
+      "users/search",
+      "zillow/random-image"
+    ],
+    "component_dirs": [
+      "ads",
+      "couples",
+      "dashboard",
+      "features",
+      "layouts",
+      "legal",
+      "marketing",
+      "profile",
+      "properties",
+      "property",
+      "providers",
+      "settings",
+      "shared",
+      "ui"
+    ],
+    "lib_modules": [
+      "api",
+      "auth",
+      "constants",
+      "cookies",
+      "data",
+      "ingestion",
+      "maps",
+      "middleware",
+      "migration",
+      "performance",
+      "query",
+      "realtime",
+      "routing",
+      "schemas",
+      "services",
+      "storytelling",
+      "styles",
+      "supabase",
+      "utils"
+    ]
+  },
+  "supabase_config": {
+    "project_id": "homematch-v2",
+    "api_port": 54200,
+    "db_port": 54201,
+    "db_major_version": 17,
+    "schemas": ["public", "graphql_public"],
+    "pooler_enabled": false
+  },
+  "security_headers": {
+    "x_frame_options": "DENY",
+    "x_content_type_options": "nosniff",
+    "referrer_policy": "strict-origin-when-cross-origin",
+    "permissions_policy": "camera=(), microphone=(), geolocation=()",
+    "powered_by_header_disabled": true
+  },
+  "pre_existing_build": {
+    ".next_present": true,
+    "build_type": "production (client-production webpack cache present)"
+  }
+}

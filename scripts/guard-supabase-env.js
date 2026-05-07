@@ -1,3 +1,11 @@
+// Allow developers to bypass this guard when intentionally using a
+// production/remote Supabase instance for local development. Set
+// SKIP_SUPABASE_GUARD=true in your environment or .env.local.
+if (process.env.SKIP_SUPABASE_GUARD === 'true') {
+  console.log('⏩ Skipping Supabase env guard (SKIP_SUPABASE_GUARD=true)')
+  process.exit(0)
+}
+
 const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')

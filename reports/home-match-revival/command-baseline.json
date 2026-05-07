@@ -1,0 +1,79 @@
+{
+  "report": "P0.3 local command baseline",
+  "generated_at": "2026-05-07T18:10:00-07:00",
+  "workspace": "/home/shan/projects/homematch-v2",
+  "branch": "autonomy/6h-business-hardening",
+  "stack": {
+    "framework": "Next.js 15.5.9 (App Router)",
+    "react": "19.1.1",
+    "typescript": "5.8",
+    "package_manager": "pnpm 10.25.0",
+    "css": "Tailwind 4",
+    "testing": ["Jest 30", "Vitest", "Playwright"]
+  },
+  "checks": [
+    {
+      "step": 1,
+      "name": "package_install",
+      "command": "pnpm install --frozen-lockfile",
+      "status": "pass",
+      "details": "Lockfile up to date, all dependencies installed, git hooks configured (pre-commit, commit-msg). Completed in 9.4s.",
+      "exit_code": 0
+    },
+    {
+      "step": 2,
+      "name": "lint",
+      "command": "pnpm lint",
+      "status": "pass",
+      "details": "ESLint clean — zero warnings, zero errors.",
+      "exit_code": 0
+    },
+    {
+      "step": 3,
+      "name": "type_check",
+      "command": "pnpm type-check",
+      "status": "pass",
+      "details": "tsc --noEmit passed with zero type errors.",
+      "exit_code": 0
+    },
+    {
+      "step": 4,
+      "name": "unit_tests",
+      "command": "pnpm test:unit",
+      "status": "pass",
+      "details": "138 test suites, 1541 tests — all passed. Completed in 95s.",
+      "exit_code": 0,
+      "suites": 138,
+      "tests": 1541
+    },
+    {
+      "step": 4,
+      "name": "integration_tests",
+      "command": "pnpm test:integration",
+      "status": "skip",
+      "details": "Requires local Supabase instance (http://127.0.0.1:54200). Current SUPABASE_URL points to production cloud. Set ALLOW_REMOTE_SUPABASE=true or run `supabase start`.",
+      "exit_code": 1,
+      "first_failure": "Integration tests expect a local Supabase instance. Detected SUPABASE_URL = https://lpwlbbowavozpywnpamn.supabase.co"
+    },
+    {
+      "step": 5,
+      "name": "build",
+      "command": "pnpm build",
+      "status": "pass",
+      "details": "Next.js production build succeeded. 29 page routes + 28 API routes compiled. 51 static pages generated. Build output written to .next-build (safe-build script to avoid contention with dev server on port 3000). Completed in ~60s.",
+      "exit_code": 0,
+      "routes": {
+        "page_routes": 29,
+        "api_routes": 28,
+        "static_pages": 51
+      }
+    }
+  ],
+  "summary": {
+    "total_checks": 6,
+    "passed": 5,
+    "skipped": 1,
+    "failed": 0,
+    "verdict": "HEALTHY — all local commands pass. Integration tests need either a local Supabase or ALLOW_REMOTE_SUPABASE=true. No regressions detected from previous baseline."
+  }
+}

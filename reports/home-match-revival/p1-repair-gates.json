@@ -1,0 +1,55 @@
+{
+  "generated_at_utc": "2026-05-07T20:08:34Z",
+  "phase": "Phase 1 repair gate",
+  "completed_repairs": [
+    {
+      "gate": "local dev guard bypass",
+      "files": ["scripts/guard-supabase-env.js", "AGENTS.md"],
+      "verification": "SKIP_SUPABASE_GUARD=true pnpm run guard:supabase exited 0"
+    },
+    {
+      "gate": "Maps paid API auth hardening",
+      "files": [
+        "src/app/api/maps/geocode/route.ts",
+        "src/app/api/maps/places/autocomplete/route.ts",
+        "__tests__/unit/api/maps/geocode.route.test.ts",
+        "__tests__/unit/api/maps/places-autocomplete.route.test.ts",
+        "__tests__/unit/app/api/maps/places-autocomplete/route.test.ts"
+      ],
+      "behavior": "Geocode and Places autocomplete now require authenticated Supabase user before Google fetch; rate limit key is authenticated user id, not anonymous IP."
+    },
+    {
+      "gate": "stale worker cleanup",
+      "files": [],
+      "behavior": "Removed stale detached .worktrees for blocked P1 workers so Jest no longer scans duplicate mocks."
+    }
+  ],
+  "verification": [
+    {
+      "command": "SKIP_SUPABASE_GUARD=true pnpm run guard:supabase",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm exec jest --runTestsByPath __tests__/unit/api/maps/geocode.route.test.ts __tests__/unit/api/maps/places-autocomplete.route.test.ts __tests__/unit/app/api/maps/places-autocomplete/route.test.ts --runInBand",
+      "status": "pass",
+      "tests": "33/33"
+    },
+    {
+      "command": "pnpm type-check && pnpm lint",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm run build",
+      "status": "pass"
+    },
+    {
+      "command": "pnpm test:unit -- --runInBand",
+      "status": "pass",
+      "tests": "1547/1547"
+    }
+  ],
+  "external_side_effects": "none; no deploy, paid API probe, dashboard change, email, or real user data access",
+  "remaining_blockers": [
+    "Original broad P1 audit tasks remain blocked as incident records; do not respawn them unchanged. Continue with small artifact-bound tasks."
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "report": "P0.4 local app startup baseline",
+  "generated_at": "2026-05-07T11:07:19.456994",
+  "workspace": "/home/shan/projects/homematch-v2",
+  "finding": "pnpm dev guard blocks because .env.local points at production Supabase and guard-supabase-env.js has no bypass; direct Next.js dev server is running on port 3000 and responds healthy.",
+  "startup": {
+    "documented_command": "pnpm dev",
+    "documented_command_result": "blocked by scripts/guard-supabase-env.js when production Supabase credentials are present",
+    "fallback_command": "next dev --hostname 0.0.0.0 --port 3000",
+    "port": 3000,
+    "server_state": "running/responding",
+    "process_excerpt": [
+      "shan       86021   86020  0 17:57 ?        00:00:01 node /home/shan/projects/homematch-v2/node_modules/.bin/../next/dist/bin/next dev --hostname 0.0.0.0 --port 3000",
+      "shan       86040   86021 12 17:57 ?        00:01:11 next-server (v15.5.9)",
+      "shan       87979   61172 10 18:07 ?        00:00:00 /usr/bin/bash -c source /tmp/hermes-snap-7b303f7cfb80.sh >/dev/null 2>&1 || true builtin cd -- /home/shan/projects/homematch-v2 || exit 126 eval 'python3 - <<'\\''PY'\\'' import subprocess out=subprocess.check_output(['\\''ps'\\'','\\''-ef'\\''], text=True) for line in out.splitlines():     if '\\''/next/dist/bin/next'\\'' in line or '\\''next-server'\\''"
+    ]
+  },
+  "probes": [
+    {
+      "url": "http://127.0.0.1:3000/",
+      "status": "pass",
+      "http_status": 200,
+      "latency_ms": 912,
+      "body_excerpt": "<!DOCTYPE html><html lang=\"en\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes\"/><link rel=\"prel"
+    },
+    {
+      "url": "http://127.0.0.1:3000/api/health",
+      "status": "pass",
+      "http_status": 200,
+      "latency_ms": 902,
+      "body_excerpt": "{\"status\":\"healthy\",\"timestamp\":\"2026-05-07T18:07:17.976Z\",\"service\":\"HomeMatch V2\",\"version\":\"2.0.0\",\"database\":\"connected\"}"
+    }
+  ],
+  "next_action": "Use current local server for browser traversal and API probe; create follow-up in Phase 1 devops task to fix guard to honor a safe local override or documented direct dev path."
+}

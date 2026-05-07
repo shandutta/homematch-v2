@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { requireUserFromRequest } from '@/lib/api/auth'
+import { createApiClient } from '@/lib/supabase/server'
 import { isValidLatLng } from '@/lib/utils/coordinates'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
@@ -50,11 +52,17 @@ interface GooglePlacePrediction {
  * Secure Places Autocomplete API Proxy
  * Rate-limited server-side proxy for Google Maps Places Autocomplete API
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Rate limiting by IP (more restrictive for Places API due to cost)
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
-    const rateLimitResult = await apiRateLimiter.check(clientIP)
+    const supabase = createApiClient(request)
+    const auth = await requireUserFromRequest(supabase, request)
+
+    if (auth.response) {
+      return auth.response
+    }
+
+    // Rate limiting by authenticated user to avoid exposing paid Places usage to anonymous callers
+    const rateLimitResult = await apiRateLimiter.check(auth.user.id)
 
     if (!rateLimitResult.success) {
       return NextResponse.json(

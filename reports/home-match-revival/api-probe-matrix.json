@@ -1,0 +1,268 @@
+{
+  "report": "P0.6 API endpoint probe baseline",
+  "generated_at": "2026-05-07T18:58:35.368650Z",
+  "summary": {
+    "total_api_routes": 28,
+    "safe_local_live_candidates": 4,
+    "code_expectation_only": 24,
+    "notes": [
+      "Worker read middleware/auth/rate-limit code and started constructing matrix, then exceeded artifact SLA.",
+      "Orchestrator completed a conservative API matrix from route inventory to avoid mutation endpoints, cron/admin endpoints, real customer data, and paid/external APIs.",
+      "Full live API probing should run after explicit local-only probe harness is in place."
+    ]
+  },
+  "endpoints": [
+    {
+      "path": "/api/admin/generate-neighborhood-vibes",
+      "file": "src/app/api/admin/generate-neighborhood-vibes/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/admin/generate-vibes",
+      "file": "src/app/api/admin/generate-vibes/route.ts",
+      "methods": ["GET", "POST"],
+      "auth": "cron-secret",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/admin/generate-vibes-zillow",
+      "file": "src/app/api/admin/generate-vibes-zillow/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/admin/ingest/zillow",
+      "file": "src/app/api/admin/ingest/zillow/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/admin/status-refresh",
+      "file": "src/app/api/admin/status-refresh/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/activity",
+      "file": "src/app/api/couples/activity/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/check-mutual",
+      "file": "src/app/api/couples/check-mutual/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/disputed",
+      "file": "src/app/api/couples/disputed/route.ts",
+      "methods": ["GET", "PATCH"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/mutual-likes",
+      "file": "src/app/api/couples/mutual-likes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/notify",
+      "file": "src/app/api/couples/notify/route.ts",
+      "methods": ["POST"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/couples/stats",
+      "file": "src/app/api/couples/stats/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/health",
+      "file": "src/app/api/health/route.ts",
+      "methods": ["GET"],
+      "auth": "public",
+      "phase0_probe_mode": "safe-local-live-candidate",
+      "expected_unauthenticated_behavior": "public/safe",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/interactions",
+      "file": "src/app/api/interactions/route.ts",
+      "methods": ["GET", "POST", "DELETE"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/interactions/reset",
+      "file": "src/app/api/interactions/reset/route.ts",
+      "methods": ["DELETE"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/maps/geocode",
+      "file": "src/app/api/maps/geocode/route.ts",
+      "methods": ["POST"],
+      "auth": "rate-limited (no user auth)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/maps/metro-boundaries",
+      "file": "src/app/api/maps/metro-boundaries/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/maps/places/autocomplete",
+      "file": "src/app/api/maps/places/autocomplete/route.ts",
+      "methods": ["POST"],
+      "auth": "rate-limited (no user auth)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/maps/proxy-script",
+      "file": "src/app/api/maps/proxy-script/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/maps/script",
+      "file": "src/app/api/maps/script/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/neighborhoods/vibes",
+      "file": "src/app/api/neighborhoods/vibes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "safe-local-live-candidate",
+      "expected_unauthenticated_behavior": "public/safe",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/performance/metrics",
+      "file": "src/app/api/performance/metrics/route.ts",
+      "methods": ["POST"],
+      "auth": "public",
+      "phase0_probe_mode": "safe-local-live-candidate",
+      "expected_unauthenticated_behavior": "public/safe",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/properties/marketing",
+      "file": "src/app/api/properties/marketing/route.ts",
+      "methods": ["GET"],
+      "auth": "none",
+      "phase0_probe_mode": "safe-local-live-candidate",
+      "expected_unauthenticated_behavior": "public/safe",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/properties/vibes",
+      "file": "src/app/api/properties/vibes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/users/avatar",
+      "file": "src/app/api/users/avatar/route.ts",
+      "methods": ["POST", "DELETE"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/users/search",
+      "file": "src/app/api/users/search/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/api/zillow/random-image",
+      "file": "src/app/api/zillow/random-image/route.ts",
+      "methods": ["GET"],
+      "auth": "public (API proxy)",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/auth/callback",
+      "file": "src/app/auth/callback/route.ts",
+      "methods": ["GET"],
+      "auth": "none",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    },
+    {
+      "path": "/supabase/:...path",
+      "file": "src/app/supabase/[...path]/route.ts",
+      "methods": ["GET"],
+      "auth": "none",
+      "phase0_probe_mode": "code-expectation-only",
+      "expected_unauthenticated_behavior": "requires auth/secret or skipped to avoid side effects",
+      "side_effect_guard": "not probed if mutation/admin/cron/external-paid/API-risk"
+    }
+  ]
+}

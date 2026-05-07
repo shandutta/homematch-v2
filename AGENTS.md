@@ -2,12 +2,16 @@
 
 ## Commands
 
+- **Dev (fast)**: `SKIP_SUPABASE_GUARD=true pnpm dev` — uses production Supabase, no Docker needed
+- **Dev (local DB)**: `SKIP_SUPABASE_GUARD=true pnpm dev:db` — needs Docker + local Supabase
 - **Build**: `pnpm build`
 - **Lint/Format**: `pnpm lint:fix && pnpm format`
 - **Test (All)**: `pnpm test`
 - **Test (Single Unit)**: `pnpm exec jest -t 'test name'`
 - **Test (Single Integration)**: `pnpm exec vitest -t 'test name'`
 - **Type Check**: `pnpm type-check`
+
+Docker is optional — only needed for `pnpm dev:db` and `pnpm test:integration`. Use `SKIP_DOCKER=1` to bypass Docker checks.
 
 ## Code Style & Conventions
 
