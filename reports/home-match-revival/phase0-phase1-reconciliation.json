@@ -1,0 +1,49 @@
+{
+  "generated_at_utc": "2026-05-07T22:30:22Z",
+  "phase_gate": "Phase 0/1 reconciliation before Phase 2",
+  "verdict": "Phase 0 complete with documented coverage gaps; Phase 1 audit and repair gates complete, remediation backlog remains.",
+  "phase0": {
+    "status": "complete_with_caveats",
+    "artifacts": [
+      "reports/home-match-revival/repo-snapshot.json",
+      "reports/home-match-revival/routes-and-endpoints.json",
+      "reports/home-match-revival/command-baseline.json",
+      "reports/home-match-revival/startup-baseline.json",
+      "reports/home-match-revival/browser-traversal.json",
+      "reports/home-match-revival/api-probe-matrix.json",
+      "reports/home-match-revival/phase0-synthesis.md"
+    ],
+    "known_gaps": [
+      "Browser traversal baseline covered only a small subset of pages; full traversal remains Phase 2 work.",
+      "API probe baseline was conservative; many auth/side-effect endpoints were code-reviewed rather than live-probed.",
+      "Integration tests were skipped because local Supabase/Docker was unavailable."
+    ]
+  },
+  "phase1": {
+    "status": "audit_complete_repair_gates_complete_remediation_incomplete",
+    "artifacts": [
+      "reports/home-match-revival/auth-audit.md",
+      "reports/home-match-revival/schema-column-audit.md",
+      "reports/home-match-revival/rls-security-audit.md",
+      "reports/home-match-revival/migration-health-audit.md",
+      "reports/home-match-revival/service-layer-audit.md",
+      "reports/home-match-revival/db-architecture-recommendation.md",
+      "reports/home-match-revival/p1-middleware-api-audit.json",
+      "reports/home-match-revival/vercel-localdev-docker-decision.md",
+      "reports/home-match-revival/p1-repair-gates.json"
+    ],
+    "reconciled_raw_subaudits": [
+      "reports/home-match-revival/schema-column-audit.md",
+      "reports/home-match-revival/rls-security-audit.md",
+      "reports/home-match-revival/migration-health-audit.md"
+    ],
+    "remediation_backlog_examples": [
+      "DB P0 hardening items from db-architecture-recommendation.md are not yet implemented.",
+      "Auth audit P0/P1 recommendations beyond Maps auth are not all implemented.",
+      "Middleware/API audit contains many follow-up fixes not yet implemented."
+    ]
+  },
+  "missing_expected_artifacts_after_reconciliation": [],
+  "external_side_effects": "none",
+  "next_gate": "Do not advance substantive Phase 2 work until this reconciliation artifact and report update are committed."
+}
