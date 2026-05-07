@@ -292,6 +292,30 @@ describe('SignupForm', () => {
     expect(screen.getByText('Or continue with')).toBeInTheDocument()
   })
 
+  test('shows a configuration notice instead of throwing when Supabase browser env is missing', () => {
+    jest.mocked(createClient).mockImplementation(() => {
+      throw new Error(
+        'Missing Supabase browser configuration (NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY)'
+      )
+    })
+
+    render(<SignupForm />)
+
+    expect(
+      screen.getByText(/Authentication is unavailable in this environment/)
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(
+      screen.getByPlaceholderText('Enter your display name')
+    ).toBeDisabled()
+    expect(screen.getByLabelText('Password')).toBeDisabled()
+    expect(screen.getByLabelText('Confirm Password')).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /create account/i })
+    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: /google/i })).toBeDisabled()
+  })
+
   test('handles successful signup', async () => {
     mockSignUp.mockResolvedValueOnce({ error: null })
     mockResend.mockResolvedValue({ error: null })

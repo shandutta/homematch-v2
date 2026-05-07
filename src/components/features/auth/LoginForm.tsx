@@ -71,16 +71,15 @@ const waitForAuthPersistence = async (storageKey: string, timeoutMs = 5000) => {
   }
 }
 
-type SupabaseResult =
-  | { client: ReturnType<typeof createClient>; error: null }
-  | { client: null; error: string }
-
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabaseResult: SupabaseResult = (() => {
+  const supabaseResult: {
+    client: ReturnType<typeof createClient> | null
+    error: string | null
+  } = (() => {
     try {
       return { client: createClient(), error: null }
     } catch (clientError) {

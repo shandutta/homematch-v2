@@ -29,7 +29,23 @@ export function SignupForm() {
     'idle'
   )
   const [resendError, setResendError] = useState<string | null>(null)
-  const supabase = createClient()
+  const supabaseResult: {
+    client: ReturnType<typeof createClient> | null
+    error: string | null
+  } = (() => {
+    try {
+      return { client: createClient(), error: null }
+    } catch (clientError) {
+      return {
+        client: null,
+        error:
+          clientError instanceof Error
+            ? clientError.message
+            : 'Authentication is not configured for this environment.',
+      }
+    }
+  })()
+  const supabase = supabaseResult.client
 
   const form = useValidatedForm(SignupSchema, {
     email: '',
@@ -39,6 +55,11 @@ export function SignupForm() {
   })
 
   const handleSignup = async (data: SignupData) => {
+    if (!supabase) {
+      setError(supabaseResult.error)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -66,6 +87,11 @@ export function SignupForm() {
   }
 
   const handleGoogleSignup = async () => {
+    if (!supabase) {
+      setError(supabaseResult.error)
+      return
+    }
+
     setLoading(true)
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -82,8 +108,10 @@ export function SignupForm() {
   }
 
   const handleResendVerification = async () => {
-    if (!lastEmail) {
-      setResendError('Enter your email above first.')
+    if (!lastEmail || !supabase) {
+      setResendError(
+        !supabase ? supabaseResult.error : 'Enter your email above first.'
+      )
       return
     }
 
@@ -173,6 +201,16 @@ export function SignupForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {supabaseResult.error && (
+          <Alert data-testid="auth-config-alert">
+            <AlertDescription>
+              Authentication is unavailable in this environment. Configure
+              NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to sign
+              up.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -194,7 +232,7 @@ export function SignupForm() {
                     <Input
                       type="email"
                       placeholder="Enter your email"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       {...field}
                     />
                   </FormControl>
@@ -213,7 +251,7 @@ export function SignupForm() {
                     <Input
                       type="text"
                       placeholder="Enter your display name"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       {...field}
                     />
                   </FormControl>
@@ -232,7 +270,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Enter your password"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       {...field}
                     />
                   </FormControl>
@@ -251,7 +289,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Confirm your password"
-                      disabled={loading}
+                      disabled={loading || !supabase}
                       {...field}
                     />
                   </FormControl>
@@ -265,6 +303,7 @@ export function SignupForm() {
               className="w-full"
               disabled={
                 loading ||
+                !supabase ||
                 (!form.formState.isValid &&
                   // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
                   process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
@@ -290,7 +329,7 @@ export function SignupForm() {
         <Button
           variant="outline"
           onClick={handleGoogleSignup}
-          disabled={loading}
+          disabled={loading || !supabase}
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
