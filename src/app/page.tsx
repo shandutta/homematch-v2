@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/marketing/Header'
 import { HeroSection } from '@/components/marketing/HeroSection'
-import { createClient } from '@/lib/supabase/server'
+import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
@@ -49,10 +49,7 @@ export default async function LandingPage() {
     },
   }
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getOptionalServerUser()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
   const [{ FeatureGrid }, { Footer }, { HowItWorks }, { CtaBand }] =

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isValidLatLng } from '@/lib/utils/coordinates'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
 const placesAutocompleteSchema = z.object({
@@ -9,6 +10,7 @@ const placesAutocompleteSchema = z.object({
       lat: z.number(),
       lng: z.number(),
     })
+    .refine(isValidLatLng, 'location must contain valid coordinates')
     .optional(),
   radius: z.number().min(1).max(50000).optional(),
   types: z.array(z.string()).optional(),
