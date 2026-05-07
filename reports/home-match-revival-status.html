@@ -165,10 +165,33 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 23 · running 0 · blocked 6 · ready 0 · todo 2
+            done 24 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
+
+      <section>
+        <h2>Phase 2 — metadata/SEO slice complete</h2>
+        <p>
+          <span class="pill good">TESTED FIX</span> Completed a bounded Phase 2
+          SEO slice after Phase 0/1 reconciliation and Phase 1 remediation work.
+        </p>
+        <ul>
+          <li>
+            <strong>Robots:</strong> disallows
+            private/API/auth/dashboard/account/admin/invite surfaces while
+            allowing public pages.
+          </li>
+          <li>
+            <strong>Sitemap:</strong> includes canonical acquisition/legal pages
+            only; login is no longer published as an SEO landing page.
+          </li>
+          <li>
+            <strong>Verification:</strong> added metadata route unit tests;
+            targeted Jest and resource-limited type-check passed.
+          </li>
+        </ul>
+      </section>
 
       <section>
         <h2>Phase 1 remediation — in progress</h2>
