@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
@@ -12,15 +13,9 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
     // Parse and validate request body
     const body = await request.json()

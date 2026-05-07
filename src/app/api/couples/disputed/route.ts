@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
@@ -89,15 +90,9 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
     // Get user's household
     const { data: userProfile, error: profileError } = await supabase
@@ -366,15 +361,9 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
     const body = await request.json()
     const { property_id, resolution_type } = body
