@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 function parsePositiveInt(value: string | null, fallback: number): number {
   const parsed = Number.parseInt(value ?? '', 10)
@@ -54,19 +55,15 @@ export async function GET(request: NextRequest) {
   if (error) {
     const errorCode = error.code
     if (errorCode === '42P01') {
-      return NextResponse.json(
-        {
-          error:
-            'Neighborhood vibes not initialized. Run the neighborhood_vibes migration first.',
-        },
-        { status: 503 }
+      return ApiErrorHandler.serviceUnavailable(
+        'Neighborhood vibes not initialized. Run the neighborhood_vibes migration first.'
       )
     }
 
     console.error('[neighborhood-vibes API] Error fetching vibes:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch neighborhood vibes' },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      'Failed to fetch neighborhood vibes',
+      error
     )
   }
 

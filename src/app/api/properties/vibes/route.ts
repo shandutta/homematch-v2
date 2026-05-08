@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 /**
  * GET /api/properties/vibes
@@ -59,10 +60,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[vibes API] Error fetching vibes:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch vibes' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to fetch vibes', error)
   }
 
   return noStoreJson({ data })

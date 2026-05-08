@@ -55,4 +55,19 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('status: 204')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
+
+  it.each([
+    'src/app/api/couples/check-mutual/route.ts',
+    'src/app/api/couples/stats/route.ts',
+    'src/app/api/couples/mutual-likes/route.ts',
+    'src/app/api/neighborhoods/vibes/route.ts',
+    'src/app/api/properties/vibes/route.ts',
+  ])('%s standardizes auth/client/server route errors', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('ApiErrorHandler')
+    expect(source).not.toContain("NextResponse.json({ error: 'Unauthorized' }")
+    expect(source).not.toContain('NextResponse.json(\n        { error:')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+  })
 })

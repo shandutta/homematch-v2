@@ -3,6 +3,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,25 +16,24 @@ export async function GET(request: NextRequest) {
     } = await getUserFromRequest(supabase, request)
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return ApiErrorHandler.unauthorized()
     }
 
     // Get household statistics
     const stats = await CouplesService.getHouseholdStats(supabase, user.id)
 
     if (!stats) {
-      return NextResponse.json(
-        { error: 'Household not found or no statistics available' },
-        { status: 404 }
+      return ApiErrorHandler.notFound(
+        'Household not found or no statistics available'
       )
     }
 
     return noStoreJson({ stats })
   } catch (error) {
     console.error('Error in couples stats API:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch household statistics' },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      'Failed to fetch household statistics',
+      error
     )
   }
 }

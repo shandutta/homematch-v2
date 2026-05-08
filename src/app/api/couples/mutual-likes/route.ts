@@ -10,6 +10,7 @@ import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 /**
  * GET /api/couples/mutual-likes
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
       } = await getUserFromRequest(supabase, request)
 
       if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        return ApiErrorHandler.unauthorized()
       }
 
       // Parse query parameters
@@ -157,10 +158,7 @@ export async function GET(request: NextRequest) {
       })
     } catch (error) {
       console.error('Error in mutual-likes API:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch mutual likes' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Failed to fetch mutual likes', error)
     }
   })
 }
