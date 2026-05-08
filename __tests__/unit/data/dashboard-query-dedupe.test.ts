@@ -114,4 +114,87 @@ describe('dashboard query dedupe', () => {
 
     expect(searchPropertiesMock).toHaveBeenCalledTimes(2)
   })
+
+  it('does not dedupe concurrent dashboard searches with distinct service-boundary parameters', async () => {
+    const baseOptions = {
+      limit: 12,
+      offset: 0,
+      includeNeighborhoods: false,
+      includeCount: false,
+      propertySelect: 'id,address',
+    }
+
+    await Promise.all([
+      loadDashboardData({
+        ...baseOptions,
+        userPreferences: {
+          allCities: false,
+          cities: [{ city: 'Austin', state: 'TX' }],
+        },
+      }),
+      loadDashboardData({
+        ...baseOptions,
+        userPreferences: {
+          allCities: false,
+          cities: [{ city: 'Dallas', state: 'TX' }],
+        },
+      }),
+      loadDashboardData({
+        ...baseOptions,
+        limit: 24,
+        userPreferences: {
+          allCities: false,
+          cities: [{ city: 'Austin', state: 'TX' }],
+        },
+      }),
+      loadDashboardData({
+        ...baseOptions,
+        propertySelect: 'id,price',
+        userPreferences: {
+          allCities: false,
+          cities: [{ city: 'Austin', state: 'TX' }],
+        },
+      }),
+    ])
+
+    expect(searchPropertiesMock).toHaveBeenCalledTimes(4)
+    const callCities = (
+      searchPropertiesMock.mock.calls as Array<
+        [PropertySearch, { select?: string }]
+      >
+    ).map(([params, options]) => ({
+      cities: params.filters?.cities,
+      limit: params.pagination?.limit,
+      select: options?.select,
+    }))
+    expect(callCities).toEqual([
+      {
+        cities: [{ city: 'Austin', state: 'TX' }],
+        limit: 12,
+        select: 'id,address',
+      },
+      {
+        cities: [{ city: 'Dallas', state: 'TX' }],
+        limit: 12,
+        select: 'id,address',
+      },
+      {
+        cities: [{ city: 'Austin', state: 'TX' }],
+        limit: 24,
+        select: 'id,address',
+      },
+      {
+        cities: [{ city: 'Austin', state: 'TX' }],
+        limit: 12,
+        select: 'id,price',
+      },
+    ])
+  })
+
+  it('clears resolved in-flight entries so sequential identical calls issue fresh searches', async () => {
+    await loadDashboardData({ includeNeighborhoods: false })
+    await loadDashboardData({ includeNeighborhoods: false })
+
+    expect(searchPropertiesMock).toHaveBeenCalledTimes(2)
+  })
 })
