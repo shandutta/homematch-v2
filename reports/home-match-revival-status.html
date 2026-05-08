@@ -936,6 +936,16 @@
     <li><strong>Remaining:</strong> maps/admin/remaining raw error route families plus non-route Phase 0/1 blockers.</li>
   </ul>
 </section>
+
+<section id="phase0-phase1-auth-boundary-2026-05-08">
+  <h2>Phase 0/1 remediation — auth boundary consolidation</h2>
+  <p><strong>Status:</strong> auth cleanup partial. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted <code>couples/check-mutual</code>, <code>couples/stats</code>, and <code>couples/mutual-likes</code> to <code>requireUserFromRequest</code>.</li>
+    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
+    <li><strong>Remaining:</strong> broader auth client consolidation and server monkey-patch cleanup require dedicated slice.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

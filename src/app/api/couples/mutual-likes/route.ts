@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
-import { getUserFromRequest } from '@/lib/api/auth'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
@@ -69,15 +69,9 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createApiClient(request)
 
-      // Get the current user
-      const {
-        data: { user },
-        error: authError,
-      } = await getUserFromRequest(supabase, request)
-
-      if (authError || !user) {
-        return ApiErrorHandler.unauthorized()
-      }
+      const auth = await requireUserFromRequest(supabase, request)
+      if (!auth.user) return auth.response
+      const { user } = auth
 
       // Parse query parameters
       const searchParams = request.nextUrl.searchParams
