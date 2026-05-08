@@ -76,6 +76,35 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 - Phase 1: **not 100% complete**. Repo-local remediations are broad, but owner decisions and environment-backed integration/E2E proof remain open.
 - Phase 2/3/4/5/6: **held** until the open/block items are resolved or Shan explicitly approves a written gate exception.
 
+## 2026-05-08 closure-matrix evidence audit
+
+Audited: 2026-05-08 (worktree `d111-phase-closure-matrix-audit-2022`). Scope: read-only audit of `reports/home-match-revival/` against the artifacts already listed below. No closure claim; the Verdict and Gate decision sections above are unchanged. The following 2026-05-08 evidence/index/taxonomy/freshness artifacts now exist in repo and are referenced here as ancillary evidence pointers only:
+
+- `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md`
+- `reports/home-match-revival/p0-p1-remaining-blocker-taxonomy-2026-05-08.md`
+- `reports/home-match-revival/p0-p1-credentialless-auth-lifecycle-verification-plan-2026-05-08.md`
+- `reports/home-match-revival/p0-p1-csp-and-external-origin-policy-inventory-2026-05-08.md`
+- `reports/home-match-revival/p0-auth-credential-recovery-and-tiny-probe-plan-2026-05-08.md`
+- `reports/home-match-revival/p1-decision-needed-register-freshness-2026-05-08.md`
+- `reports/home-match-revival/d22-migration-rollback-evidence-index-2026-05-08.md`
+- `reports/home-match-revival/d2-rate-limit-provider-readiness-map-2026-05-08.md`
+- `reports/home-match-revival/d79-cookie-session-security-index-2026-05-08.md`
+- `reports/home-match-revival/security-evidence-index-2026-05-08.md`
+- `reports/home-match-revival/no-credential-accessibility-route-taxonomy-2026-05-08.md`
+- `reports/home-match-revival/test-suite-taxonomy-2026-05-08.md`
+- `reports/home-match-revival/admin-tooling-gap-index-2026-05-08.md`
+- `reports/home-match-revival/auth-boundary-consolidation-2026-05-08.md`
+- `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md`
+- `reports/home-match-revival/og-business-readiness-backlog-2026-05-08.md`
+- `reports/home-match-revival/phase0-phase1-remediation-progress-2026-05-08.md`
+- `reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md`
+- `reports/home-match-revival/public-demo-listing-fixture-boundary-2026-05-08.md`
+- `reports/home-match-revival/p1-property-card-trust-copy-audit-2026-05-08.md`
+- `reports/home-match-revival/claude-p0-noauth-probe-164859-reconcile-2026-05-08.md`
+- `reports/home-match-revival/shan-approval-and-test-credential-update-2026-05-08.md`
+
+These are evidence/index documents only. They do not advance the Phase 0/1 gate verdict above, do not change any blocker status, and do not authorize Phase 2+ work, deploys, paid APIs, browser swarms, secrets, or external dashboards.
+
 ## Source artifacts
 
 - `reports/home-match-revival/phase0-closure-scout.md`
