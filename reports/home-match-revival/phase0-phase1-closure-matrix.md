@@ -42,8 +42,8 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 ## Internal/demo surface disposition packet
 
 - Repo-side decision evidence added: `reports/home-match-revival/p1-internal-demo-surface-disposition-2026-05-08.md` inventories `/dashboard/vibes-test`, `/validation`, `/demo/ads`, `/sponsor-mockups`, and directly related route/component/API/test files.
-- Recommendation: restrict/replace `/dashboard/vibes-test` after D1 admin RBAC is resolved; delete or admin-restrict `/validation` after useful checks are moved to tests/reports; hide `/demo/ads` and `/sponsor-mockups` from production launch unless Shan explicitly wants public sponsor-sales collateral.
-- Closure status: the repo-side decision packet is complete, but the launch blocker remains owner-decision-gated until Shan approves/overrides the per-route policy and an implementation slice applies guards/deletions plus route/metadata tests. No Phase 2+ product work is authorized by this packet.
+- Repo-side implementation closed 2026-05-08: `/dashboard/vibes-test`, `/validation`, `/demo/ads`, and `/sponsor-mockups` are now gated behind `requireInternalPreviewAccess()` with default production behavior returning 404 unless `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true`. Targeted demo-surface and SEO route policy Jest guards pass, and resource-limited type-check passes after integration commit `3e5f510`.
+- Remaining external/product question: whether Shan wants any of these hidden surfaces reintroduced later as public sponsor-sales collateral or admin-only tooling. No Phase 2+ product work is authorized by this packet.
 
 ## Decision-needed register
 
@@ -64,8 +64,8 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 1. Approve a safe local/test DB reset, lint, rollback, and integration-test path. Without this, DB/RLS/migration closure remains code/static only (D6).
 2. Choose and provision the durable production rate-limit storage provider, or explicitly accept the in-memory-only launch risk (D2).
 3. Confirm production signup verification policy in the external Supabase/project settings: email confirmation and CAPTCHA must not launch in a disabled/absent state unless Shan approves the exception (D3).
-- D1 (service-role RBAC) is now repo-side closed: `admin_role_assignments` migration + `checkServiceRoleAuthorization()` replacement + 11/11 Jest guards pass. Live DB integration execution remains D6-gated.
-5. Approve or override the internal/demo surface disposition packet: restrict/replace `/dashboard/vibes-test`, delete or admin-restrict `/validation`, and hide `/demo/ads` plus `/sponsor-mockups` from production launch unless public sponsor-sales collateral is explicitly desired. Evidence: `reports/home-match-revival/p1-internal-demo-surface-disposition-2026-05-08.md`.
+4. D1 (service-role RBAC) is now repo-side closed: `admin_role_assignments` migration + `checkServiceRoleAuthorization()` replacement + 11/11 Jest guards pass. Live DB integration execution remains D6-gated.
+5. Internal/demo surfaces are now repo-side hidden by default behind `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true`; future public sponsor-sales collateral or admin-only tooling remains a product decision, not a Phase 0/1 launch blocker.
 6. Approve or mock any paid/external route checks before execution: Google Maps, Zillow/RapidAPI, OpenRouter/LLM, email/notification side effects, cron/admin ingestion or generation endpoints.
 
 ## Gate decision
