@@ -1,0 +1,58 @@
+# P0/P1 Canonical Blocker Name Dictionary — 2026-05-08
+
+Generated: 2026-05-08T20:30Z (worktree `d129-phase0-1-closure-noise-dedupe-2026`).
+Scope: strict Phase 0/1 closure-gate noise reduction. This file deduplicates the recurring blocker label variants used across the closure matrix, the blocker evidence index, the decision register (and its freshness snapshot), and the blocker reconciliation/taxonomy, into a single set of canonical blocker names. It is a label index only — it does not change classification, evidence, ordering, or closure status, and it does not authorize Phase 2+, deploys, secrets, paid APIs, production dashboards, browser swarms, real users, or customer data. No app code changed in this slice.
+
+## Gate position (no change)
+
+Phase 2/3/4/5/6 remain **held**. Phase 0 and Phase 1 are still **not 100% closed**. The strict OG gate stays active per `phase0-phase1-strict-closure-gate.md` and `phase0-phase1-closure-matrix.md` lines 5-7 and 73-76. This dictionary cannot move the gate.
+
+## How to use this dictionary
+
+- Pick the canonical name from column 1 when authoring new Phase 0/1 reports, Kanban cards, or commit messages so reviewers stop having to mentally normalize the variants.
+- Column 2 lists the evidence-index row number where that blocker's latest proof artifact, unresolved decision, and classification live. That row remains canonical for evidence; this file is only canonical for the **name**.
+- Column 3 records the variant strings already in the repo so search across older artifacts still works without rewriting them.
+- Closure status and approval lanes follow the canonical artifacts; do not re-derive them from this file.
+
+## Canonical names
+
+| Canonical blocker name | Evidence-index row | Known label variants in repo | Canonical evidence anchors (do not re-derive) |
+| --- | --- | --- | --- |
+| Authenticated protected-page browser/API traversal | 1 (and tied: 11, 12) | `Authenticated browser traversal for protected pages`; `Authenticated browser/API execution for protected pages and user APIs`; `authenticated browser/API probes`; `authenticated traversal lane`; `protected positive accessibility traversal` (when conflated with the same auth lane) | `p0-p1-blocker-evidence-index-2026-05-08.md` row 1; `phase0-phase1-closure-matrix.md` lines 23, 26-29, 35-36; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 72-91 and 133-176; `remote-supabase-test-seed-and-auth-probe-2026-05-08.md`; `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md` |
+| E2E auth lifecycle (signup/login/verify/logout/session-clearing + redirectTo round-trip) | 2 | `E2E auth lifecycle: signup/login/verify/logout/session clearing and redirect return`; `E2E auth lifecycle`; `local auth lifecycle E2E`; `D3 local signup verification E2E` (when scoped only to the verify leg) | `p0-p1-blocker-evidence-index-2026-05-08.md` row 2; `d3-signup-verification-policy-decision-2026-05-08.md`; `d3-signup-verification-repo-invariant-guard-2026-05-08.md`; `config/signup-verification-launch-policy.json`; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 146-152 |
+| API auth smoke live execution (token + local server) | 3 | `API auth smoke live token + server`; `API auth smoke live token/server`; `API auth smoke live execution`; `P0/P1 API auth smoke live execution` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 3; `p0-p1-api-auth-smoke-matrix-2026-05-08.md` lines 9-12, 13-19, 22-35, 47-71; `__tests__/integration/api/auth-smoke-matrix.spec.ts` |
+| D1 service-role RBAC authority | 4 | `D1 service-role RBAC authority`; `Service-role RBAC authority`; `D1 RBAC authority`; `RBAC authority` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 4; `phase0-phase1-closure-matrix.md` lines 39, 53; `d1-service-role-rbac-authority-implementation-packet-2026-05-08.md`; `supabase/migrations/20260508024000_create_admin_role_assignments.sql`; `src/lib/supabase/server.ts` |
+| D2 durable production rate-limiter provider | 5 | `D2 durable production rate limiter`; `Durable production rate limiter`; `durable rate-limiter provider`; `D2 durable rate-limiter provider adapter` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 5; `phase0-phase1-closure-matrix.md` lines 41 and source line; `d2-durable-rate-limiter-approval-gate-guard-2026-05-08.md`; `p1-route-scoped-limiter-key-closure-2026-05-08.md`; `src/lib/middleware/rateLimiter.ts` |
+| D3 production email confirmation + CAPTCHA execution | 6 | `D3 production email confirmation + CAPTCHA execution`; `D3 production email confirmation/CAPTCHA config execution`; `D3 production email confirmation and CAPTCHA execution`; `Production email confirmation/CAPTCHA policy`; `Production email confirmation and signup CAPTCHA implementation`; `D3 production auth config runbook/execution` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 6; `d3-signup-verification-policy-decision-2026-05-08.md`; `d3-signup-verification-repo-invariant-guard-2026-05-08.md`; `config/signup-verification-launch-policy.json` |
+| D6 DB reset/lint/rollback/integration validation | 7 | `D6 DB reset/lint/rollback/integration validation`; `D6 DB reset/lint/integration validation environment`; `DB reset/lint/integration environment`; `D6 DB reset/lint/integration validation` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 7; `phase0-phase1-closure-matrix.md` lines 40 and 58; `d6-db-static-reset-readiness-closure-2026-05-08.md`; `__tests__/unit/database/migration-reset-readiness.test.ts` |
+| Public no-credential traversal local execution | 8 | `Final public no-credential traversal artifact`; `Final public no-credential traversal artifact (Playwright/local-smoke)`; `P0 public no-credential Playwright smoke matrix`; `Public page direct e2e coverage gaps` (sub-item); `Metadata and missing-route public checks` (sub-item); `Safe API/code-only denial gaps` (sub-item) | `p0-p1-blocker-evidence-index-2026-05-08.md` row 8; `p0-no-auth-traversal-smoke-guard-2026-05-08.md`; `p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md`; `__tests__/unit/routing/no-auth-traversal-smoke-guard.test.ts`; `scripts/run-no-auth-live-probes.js`; `__tests__/integration/routing/no-auth-live-probe.spec.ts` |
+| Internal/demo surface disposition (`/dashboard/vibes-test`, `/validation`, `/demo/ads`, `/sponsor-mockups`) | 9 | `Internal/demo surface disposition`; `internal/demo surface disposition packet`; `internal preview gating` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 9; `phase0-phase1-closure-matrix.md` lines 43-47; `p1-internal-demo-surface-disposition-2026-05-08.md` |
+| Paid/external route checks (Maps/Zillow/RapidAPI/OpenRouter/LLM, email/notifications, cron/admin ingestion or generation) | 10 | `Paid/external route checks`; `Paid/external surfaces`; `External dashboards/accounts` (when scoped only to the dashboard leg) | `p0-p1-blocker-evidence-index-2026-05-08.md` row 10; `phase0-phase1-closure-matrix.md` lines 64-65 and 70; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 41-45 and 102-131; `zillow-provider-production-grade-evaluation-2026-05-08.md` |
+| Authenticated mutation/storage/invite/account positive flows | 11 | `Authenticated mutation/storage/invite/account positive flows`; `Positive mutation/storage/invite/account flows` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 11; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 85-91, 121-125, 140-152 |
+| Protected positive accessibility traversal | 12 | `Protected positive accessibility traversal`; `protected accessibility positive traversal` | `p0-p1-blocker-evidence-index-2026-05-08.md` row 12; `accessibility-core-flow-matrix.md`; `__tests__/unit/accessibility/core-flow-matrix.test.ts` |
+
+## Already-closed decisions (kept here for label consistency only)
+
+These remain repo-side closed for Phase 0/1 under their current contracts. They are listed so authors do not accidentally reintroduce them as "blockers" using stale labels.
+
+| Canonical name | Status | Variants seen | Authoritative artifact |
+| --- | --- | --- | --- |
+| D4 `.env.prod` handling model | Closed repo-side for Phase 0/1 | `D4 .env.prod handling model`; `env-prod handling`; `env prod local dev closure` | `p0-p1-env-prod-local-dev-closure-2026-05-08.md`; `config/supabase-production-hosts.json` |
+| D5 numeric constraint semantics (bedrooms/bathrooms) | Closed repo-side for Phase 0/1 | `D5 numeric constraint semantics`; `numeric constraint semantics`; `bedrooms/bathrooms zero semantics` | `d5-numeric-constraint-semantics-closure-2026-05-08.md` |
+| D7 disputed-route email/profile field exposure | Closed repo-side for Phase 0/1 | `D7 disputed-route email/profile exposure`; `disputed-route email/profile field exposure`; `disputed route email exposure` | `d7-disputed-route-exposure-closure-2026-05-08.md` |
+
+## What this dictionary does NOT do
+
+- Does not move any blocker's classification (`repo-side`, `live-evidenced`, `external-approval-gated`).
+- Does not advance Phase 0/1 closure or relax the Phase 2 hold.
+- Does not replace `phase0-phase1-closure-matrix.md`, `p0-p1-blocker-evidence-index-2026-05-08.md`, `p1-decision-needed-register-2026-05-08.md`, `p1-decision-needed-register-freshness-2026-05-08.md`, `p0-p1-blocker-reconciliation-2026-05-08.md`, or `p0-p1-remaining-blocker-taxonomy-2026-05-08.md`. Those remain canonical for evidence, decisions, ordering, and gate verdict; this file is canonical only for the **labels** used to refer to each blocker.
+- Does not retitle any existing artifact. Existing variant labels in older reports are preserved exactly so historical links and search keep working.
+
+## Source artifacts read for this dictionary
+
+- `reports/home-match-revival/phase0-phase1-closure-matrix.md`
+- `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md`
+- `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md`
+- `reports/home-match-revival/p1-decision-needed-register-freshness-2026-05-08.md`
+- `reports/home-match-revival/p0-p1-blocker-reconciliation-2026-05-08.md`
+- `reports/home-match-revival/p0-p1-remaining-blocker-taxonomy-2026-05-08.md`
