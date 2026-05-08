@@ -31,7 +31,7 @@ const SERVICE_KEY_VARS = ['RAPIDAPI_KEY', 'OPENROUTER_API_KEY'] as const
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 type RouteModule = {
-  POST: (req: Request) => Promise<Response | { status?: number }>
+  POST: (req: Request) => Promise<Response>
 }
 
 const containsEnvName = (text: string) =>
@@ -151,9 +151,9 @@ describe('cron/admin secret opacity (unit guards)', () => {
     return { supabaseClient }
   }
 
-  const expectOpaque401 = async (res: Response | { status?: number }) => {
+  const expectOpaque401 = async (res: Response) => {
     expect(res.status).toBe(401)
-    const text = await (res as Response).text()
+    const text = await res.text()
     expect(text.length).toBeGreaterThan(0)
     const leaked = containsEnvName(text)
     expect(leaked ?? null).toBeNull()
@@ -169,7 +169,9 @@ describe('cron/admin secret opacity (unit guards)', () => {
       const guards = sideEffectGuards()
 
       const importPath = path.replace(/^src\//, '@/').replace(/\.ts$/, '')
-      const mod = (await import(importPath)) as RouteModule
+      // Variable annotation, not a type assertion: dynamic import returns
+      // Promise<any>, which is assignable to RouteModule.
+      const mod: RouteModule = await import(importPath)
 
       const res = await mod.POST(
         new Request(`http://localhost/${path}`, {
@@ -179,7 +181,7 @@ describe('cron/admin secret opacity (unit guards)', () => {
         })
       )
 
-      await expectOpaque401(res as Response)
+      await expectOpaque401(res)
       expect(guards.supabaseClient.from).not.toHaveBeenCalled()
     }
   )
@@ -197,7 +199,7 @@ describe('cron/admin secret opacity (unit guards)', () => {
       const guards = sideEffectGuards()
 
       const importPath = path.replace(/^src\//, '@/').replace(/\.ts$/, '')
-      const mod = (await import(importPath)) as RouteModule
+      const mod: RouteModule = await import(importPath)
 
       const res = await mod.POST(
         new Request(`http://localhost/${path}`, {
@@ -210,7 +212,7 @@ describe('cron/admin secret opacity (unit guards)', () => {
         })
       )
 
-      await expectOpaque401(res as Response)
+      await expectOpaque401(res)
       expect(guards.supabaseClient.from).not.toHaveBeenCalled()
     }
   )

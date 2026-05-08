@@ -1,25 +1,37 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
 
-const jsonMock = jest.fn((body: any, init?: any) => ({
-  status: init?.status ?? 200,
-  body,
-  headers: init?.headers,
-}))
+const jsonMock = jest.fn(
+  (body: unknown, init?: ResponseInit) => ({
+    status: init?.status ?? 200,
+    body,
+    headers: init?.headers,
+  })
+)
 
-const getServiceRoleClientMock = jest.fn<any>()
-const createApiClientMock = jest.fn<any>()
-const fromMock = jest.fn<any>()
-const selectMock = jest.fn<any>()
-const eqMock = jest.fn<any>()
-const orderMock = jest.fn<any>()
-const buildMeceNeighborhoodsMock = jest.fn<any>()
+type QueryResult = { data: unknown; error: unknown }
+type OrderFn = (column: string) => Promise<QueryResult>
+type EqFn = (column: string, value: unknown) => { order: OrderFn }
+type SelectFn = (columns: string) => { eq: EqFn }
+type FromFn = (table: string) => { select: SelectFn }
+type ApiClient = { from: FromFn }
+
+const getServiceRoleClientMock = jest.fn<() => Promise<ApiClient>>()
+const createApiClientMock = jest.fn<() => ApiClient>()
+const fromMock = jest.fn<FromFn>()
+const selectMock = jest.fn<SelectFn>()
+const eqMock = jest.fn<EqFn>()
+const orderMock = jest.fn<OrderFn>()
+const buildMeceNeighborhoodsMock = jest.fn<
+  (input: unknown) => { items: unknown[]; debug: unknown }
+>()
 
 jest.mock('next/server', () => {
-  const actual = jest.requireActual('next/server') as Record<string, unknown>
+  const actual =
+    jest.requireActual<typeof import('next/server')>('next/server')
   return {
     ...actual,
     NextResponse: {
-      json: (body: any, init?: any) => jsonMock(body, init),
+      json: (body: unknown, init?: ResponseInit) => jsonMock(body, init),
     },
   }
 })

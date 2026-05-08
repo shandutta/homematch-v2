@@ -58,9 +58,13 @@ import * as geocodeRoute from '@/app/api/maps/geocode/route'
 import * as autocompleteRoute from '@/app/api/maps/places/autocomplete/route'
 import { FetchTimeoutError } from '@/lib/api/fetch-timeout'
 
+// Both routes share the same handler shape; use one as the canonical type so
+// we can store handlers in an array without assertions.
+type RouteHandler = typeof geocodeRoute.POST
+
 type MapsRoute = {
   name: string
-  POST: (req: Request) => Promise<{ status: number; json: () => Promise<unknown> }>
+  POST: RouteHandler
   url: string
   validBody: Record<string, unknown>
   expectedFailureMessage: string
@@ -69,14 +73,14 @@ type MapsRoute = {
 const routes: MapsRoute[] = [
   {
     name: 'geocode',
-    POST: geocodeRoute.POST as MapsRoute['POST'],
+    POST: geocodeRoute.POST,
     url: 'http://localhost/api/maps/geocode',
     validBody: { address: '123 Main St' },
     expectedFailureMessage: 'Geocoding failed',
   },
   {
     name: 'places-autocomplete',
-    POST: autocompleteRoute.POST as MapsRoute['POST'],
+    POST: autocompleteRoute.POST,
     url: 'http://localhost/api/maps/places/autocomplete',
     validBody: { input: 'san fran' },
     expectedFailureMessage: 'Places autocomplete failed',
@@ -145,7 +149,7 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(503)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       // Envelope shape: error message + code only, no details payload
       expect(body).toMatchObject({ error: expect.any(String) })
       expect(body).not.toHaveProperty('details')
@@ -157,12 +161,12 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
     it('400 envelope on Google non-OK status surfaces only status, never key', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.resolve({ status: 'REQUEST_DENIED' }),
-      } as unknown as Response)
+      })
 
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(400)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       expect(body.error).toBe(route.expectedFailureMessage)
       expect(body.details).toEqual({ status: 'REQUEST_DENIED' })
       assertNoSecret(body)
@@ -172,12 +176,12 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
     it('400 envelope on OVER_QUERY_LIMIT does not echo back any url params', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.resolve({ status: 'OVER_QUERY_LIMIT' }),
-      } as unknown as Response)
+      })
 
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(400)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       assertNoSecret(body)
       assertNoSecretInLogs()
     })
@@ -193,7 +197,7 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(500)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       expect(body).toEqual({
         error: 'Internal server error',
         code: 'SERVER_ERROR',
@@ -216,7 +220,7 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(500)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       expect(body).toEqual({
         error: 'Internal server error',
         code: 'SERVER_ERROR',
@@ -227,12 +231,12 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
     it('500 envelope on malformed JSON from Google has no key', async () => {
       mockFetch.mockResolvedValue({
         json: () => Promise.reject(new SyntaxError('Unexpected token <')),
-      } as unknown as Response)
+      })
 
       const response = await route.POST(buildRequest(route))
 
       expect(response.status).toBe(500)
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       expect(body.code).toBe('SERVER_ERROR')
       assertNoSecret(body)
     })
@@ -250,7 +254,7 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
 
       expect(response.status).toBe(400)
       expect(mockFetch).not.toHaveBeenCalled()
-      const body = (await response.json()) as Record<string, unknown>
+      const body = await response.json()
       assertNoSecret(body)
     })
   })
