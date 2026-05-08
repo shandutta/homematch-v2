@@ -106,6 +106,7 @@ v1-reference/
 # Log files from scripts
 logs/
 *.log
+*.jsonl
 npm-debug.log*
 
 # Build artifacts
