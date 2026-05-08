@@ -51,3 +51,8 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_property_stats() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_property_stats() TO service_role;
+
+-- DOWN:
+-- REVOKE EXECUTE ON FUNCTION public.get_property_stats() FROM service_role;
+-- REVOKE EXECUTE ON FUNCTION public.get_property_stats() FROM authenticated;
+-- DROP FUNCTION IF EXISTS public.get_property_stats();

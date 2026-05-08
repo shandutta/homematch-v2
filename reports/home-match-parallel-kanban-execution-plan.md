@@ -20,14 +20,18 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integration HEAD seen: `ede6a83 fix: close auth client cleanup slice`
+- Latest integrated HEAD seen by control plane: `f5aea01 fix: consolidate API rate limiting`
+- Current working tree note: active worker `t_54000dda` is using the project dir and has in-progress DB/perf edits; do not stage or overwrite its files until it completes.
 - Board: `home-match-revival`
-- Board state after auth worker reconciliation: `todo=2, ready=0, running=0, blocked=10, done=29`
-- Latest completed worker: `t_42e0d08a` (`P1 auth/client cleanup`) merged into main at `ede6a83`.
-- Important interpretation: the small board counts are **gate counts**, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.
+- Board state after full-plan expansion dispatch: `todo=17, ready=0, running=1, blocked=10, done=31`
+- Active workers:
+  - `t_54000dda` — backend writer, Phase 1 DB/perf cleanup, project dir workspace.
+- Just completed scout: `t_29d2185c` — analyst roadmap expansion scout, scratch workspace, read-only; recommended running `t_113bb9c0` fan-in verifier after `t_54000dda`, then `t_d60106b6` if verifier agrees.
+- Latest completed integration slice: `t_f75b8af5` (`M10 rate limiter consolidation`) merged into main at `f5aea01`.
+- Important interpretation: expanded `todo` now includes held dependency-gated roadmap tasks, not authorization to implement Phase 2+.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
-- Phase 2+: **held**
+- Phase 2+: **held for implementation** until the closure matrix proves Phase 0/1 clean or Shan approves a written exception.
 
 ### Latest control-plane reconciliation — 2026-05-08T06:05Z
 
@@ -88,6 +92,8 @@ Use these as source of truth instead of relying on Telegram history.
 
 ### Supporting audit/remediation artifacts
 
+- `reports/home-match-revival/phase2-phase6-execution-roadmap.md`
+  - Full downstream Phase 2–6 task graph, acceptance criteria, verification plan, and external-side-effect gates. Held for implementation until Phase 0/1 closure is clean.
 - `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md`
 - `reports/home-match-revival/auth-boundary-consolidation-2026-05-08.md`
 - `reports/home-match-revival/api-error-standardization-scout.md`
@@ -216,6 +222,57 @@ Operational rules:
 - worker prompts should reference paths and task IDs, not full thread summaries
 - tool outputs should be targeted, not broad dumps
 - after any huge report/status, manually compress or move execution into workers
+
+## Expanded executable Kanban graph — 2026-05-08T06:45Z
+
+Shan approved developing the rest of the plan and starting Kanban execution. Control-plane interpretation: build the full graph now, but keep Phase 2+ implementation dependency-gated until Phase 0/1 closure is clean. The graph below is now represented on board `home-match-revival`.
+
+### Currently running
+
+- `t_54000dda` — **P1 DB/perf cleanup explicit project workspace** (`backend-eng`, project dir). Scope: query dedupe, CouplesRealtime N+1, inline DB typing cleanup, rollback/DOWN coverage.
+- `t_29d2185c` — **Control-plane roadmap expansion scout** (`analyst`, scratch). Completed read-only: recommended `t_113bb9c0` fan-in verifier immediately after `t_54000dda`, then `t_d60106b6` if the verifier agrees.
+
+### Phase 0/1 closure path
+
+- `t_113bb9c0` — **P1 fan-in verifier after DB/perf cleanup** (`reviewer`, parent `t_54000dda`). Reconcile DB/perf results, closure matrix, and decide whether to release P0 live probes plus decision register.
+- `t_d60106b6` — **P0 close: live probes, browser/auth traversal, cron/.env opacity** (`ops`). Held until current DB/perf slice and fan-in verifier say it is safe.
+- `t_efb13943` — **P1 decision register** (`reviewer`). Held until DB/perf and P0 probe evidence are available, unless Shan asks for an earlier decision-only pass.
+
+### Phase 2 held graph — product UX / couples / maps / SEO
+
+- `t_eab22374` — UX spec: couples review, saved-search, compare acceptance criteria (`pm`, parent `t_ff763f6d`).
+- `t_7dd78d5d` — Couples workflow implementation slice (`frontend-eng`, parent `t_ff763f6d`).
+- `t_aa04c086` — Maps/images/metadata/SEO implementation slice (`frontend-eng`, parent `t_1009b931`).
+- `t_d258ca31` — Production-safe UX/browser acceptance pass (`reviewer`, parent `t_1009b931`).
+
+### Phase 3 held graph — matching/LLM/ingest
+
+- `t_498768f2` — Matching eval plan and safety constraints (`researcher`, parent `t_11342c3d`).
+- `t_35ef5d03` — LLM prompt/ranking hardening implementation (`backend-eng`, parent `t_11342c3d`).
+- `t_3a7a7be2` — Ingest idempotency/source freshness implementation (`backend-eng`, parent `t_4b4d5b96`).
+- `t_377fda7d` — Matching/ingest fan-in review (`reviewer`, parent `t_4b4d5b96`).
+
+### Phase 4 held graph — tests/TDD
+
+- `t_af0f0dc4` — Test-suite inventory and flake taxonomy (`reviewer`, parent `t_acd542ca`).
+- `t_d0b4cbb0` — TDD harness and regression cleanup (`backend-eng`, parent `t_acd542ca`).
+
+### Phase 5 held graph — compliance/analytics/AdSense/Stripe
+
+- `t_65920da3` — Compliance/analytics/payments approval checklist (`researcher`, parent `t_eface8fd`).
+- `t_8ba987bd` — Approved analytics/AdSense/Stripe setup execution (`ops`, parent `t_eface8fd`, additionally requires explicit Shan approval before any external mutation).
+
+### Phase 6 held graph — docs/final readiness
+
+- `t_d7d36f14` — Final documentation rewrite (`writer`, parent `t_fd311981`).
+- `t_771292b6` — Final launch/merge readiness gate (`reviewer`, parent `t_aeba612c`).
+
+### Dispatch policy from here
+
+- Keep `t_54000dda` as the only active project-dir writer.
+- Allow one scratch/read-only planning or reviewer worker in parallel when RAM is green.
+- Do not unblock Phase 2+ anchors (`t_ff763f6d`, `t_1009b931`, `t_11342c3d`, `t_4b4d5b96`, `t_acd542ca`, `t_eface8fd`, `t_fd311981`, `t_aeba612c`) until the closure matrix is clean or a written gate exception is approved.
+- After `t_54000dda` completes, run `t_113bb9c0`; then release either `t_d60106b6` or `t_efb13943`, not both, unless resource headroom is explicitly rechecked.
 
 ## Later-phase held backlog skeleton
 

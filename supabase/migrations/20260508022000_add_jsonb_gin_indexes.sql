@@ -12,3 +12,8 @@ CREATE INDEX IF NOT EXISTS idx_user_property_interactions_score_data_gin
 CREATE INDEX IF NOT EXISTS idx_saved_searches_filters_gin
   ON public.saved_searches
   USING gin (filters);
+
+-- DOWN:
+-- DROP INDEX IF EXISTS public.idx_saved_searches_filters_gin;
+-- DROP INDEX IF EXISTS public.idx_user_property_interactions_score_data_gin;
+-- DROP INDEX IF EXISTS public.idx_user_profiles_preferences_gin;

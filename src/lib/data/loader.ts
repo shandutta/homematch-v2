@@ -18,6 +18,38 @@ import {
 
 const DASHBOARD_PROPERTY_CACHE_TTL_SECONDS = 60
 
+type DashboardPropertySelectColumn =
+  keyof AppDatabase['public']['Tables']['properties']['Row']
+
+export const DASHBOARD_PROPERTY_SELECT_COLUMNS = [
+  'id',
+  'address',
+  'city',
+  'state',
+  'zip_code',
+  'price',
+  'bedrooms',
+  'bathrooms',
+  'square_feet',
+  'property_type',
+  'images',
+  'description',
+  'amenities',
+  'lot_size_sqft',
+  'parking_spots',
+  'neighborhood_id',
+  'zpid',
+  'year_built',
+  'coordinates',
+  'listing_status',
+  'property_hash',
+  'is_active',
+  'created_at',
+  'updated_at',
+] satisfies readonly DashboardPropertySelectColumn[]
+
+const inFlightDashboardSearches = new Map<string, Promise<unknown>>()
+
 class StaticSupabaseClientFactory implements ISupabaseClientFactory {
   private readonly client: SupabaseClient<AppDatabase>
 
@@ -96,32 +128,7 @@ export interface DashboardPreferences {
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
 
-export const DASHBOARD_PROPERTY_SELECT = `
-  id,
-  address,
-  city,
-  state,
-  zip_code,
-  price,
-  bedrooms,
-  bathrooms,
-  square_feet,
-  property_type,
-  images,
-  description,
-  amenities,
-  lot_size_sqft,
-  parking_spots,
-  neighborhood_id,
-  zpid,
-  year_built,
-  coordinates,
-  listing_status,
-  property_hash,
-  is_active,
-  created_at,
-  updated_at
-`
+export const DASHBOARD_PROPERTY_SELECT = DASHBOARD_PROPERTY_SELECT_COLUMNS.join(',')
 
 const shouldTreatAsAllCities = (
   prefs?: DashboardPreferences | null
@@ -205,6 +212,35 @@ export function buildPropertyFiltersFromPreferences(
   return filters
 }
 
+const getDashboardSearchDedupeKey = (
+  searchParams: PropertySearch,
+  options: {
+    select?: string
+    includeCount?: boolean
+    includeNeighborhoods?: boolean
+  }
+): string =>
+  JSON.stringify({
+    searchParams,
+    options,
+  })
+
+const runDedupedDashboardSearch = <T>(
+  key: string,
+  search: () => Promise<T>
+): Promise<T> => {
+  const existing = inFlightDashboardSearches.get(key) as Promise<T> | undefined
+  if (existing) {
+    return existing
+  }
+
+  const promise = search().finally(() => {
+    inFlightDashboardSearches.delete(key)
+  })
+  inFlightDashboardSearches.set(key, promise)
+  return promise
+}
+
 export async function loadDashboardData(
   options: {
     limit?: number
@@ -272,21 +308,27 @@ export async function loadDashboardData(
       includeNeighborhoods,
     }
     const shouldUseCache = useCache && !isTestMode && cachedSearchProperties
-    const searchPromise = shouldUseCache
-      ? cachedSearchProperties(
-          [
-            cacheKey || 'dashboard',
-            JSON.stringify(filters),
-            limit,
-            offset,
-            includeNeighborhoods ? '1' : '0',
-            includeCount ? '1' : '0',
-            propertySelect || '',
-          ].join('|'),
-          searchParams,
-          searchOptions
-        )
-      : propertyService.searchProperties(searchParams, searchOptions)
+    const searchDedupeKey = getDashboardSearchDedupeKey(
+      searchParams,
+      searchOptions
+    )
+    const searchPromise = runDedupedDashboardSearch(searchDedupeKey, () =>
+      shouldUseCache
+        ? cachedSearchProperties(
+            [
+              cacheKey || 'dashboard',
+              JSON.stringify(filters),
+              limit,
+              offset,
+              includeNeighborhoods ? '1' : '0',
+              includeCount ? '1' : '0',
+              propertySelect || '',
+            ].join('|'),
+            searchParams,
+            searchOptions
+          )
+        : propertyService.searchProperties(searchParams, searchOptions)
+    )
 
     const [{ properties, total }, neighborhoods] = await Promise.all([
       searchPromise,

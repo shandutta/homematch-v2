@@ -87,3 +87,18 @@ alter function public.backfill_property_coordinates_city_centroid(
 ) set search_path = pg_catalog, public, extensions;
 
 commit;
+
+-- DOWN:
+-- ALTER FUNCTION public.handle_new_user() RESET search_path;
+-- ALTER FUNCTION public.get_properties_in_bounds(double precision, double precision, double precision, double precision, integer) RESET search_path;
+-- ALTER FUNCTION public.get_walkability_score(double precision, double precision) RESET search_path;
+-- ALTER FUNCTION public.get_transit_score(double precision, double precision) RESET search_path;
+-- ALTER FUNCTION public.get_properties_by_distance(double precision, double precision, double precision, integer) RESET search_path;
+-- ALTER FUNCTION public.get_neighborhoods_in_bounds(double precision, double precision, double precision, double precision) RESET search_path;
+-- ALTER FUNCTION public.get_property_clusters(double precision, double precision, double precision, double precision, integer) RESET search_path;
+-- ALTER FUNCTION public.get_properties_in_polygon(jsonb, integer) RESET search_path;
+-- ALTER FUNCTION public.get_properties_along_route(jsonb, double precision) RESET search_path;
+-- ALTER FUNCTION public.get_geographic_density(double precision, double precision, double precision, double precision, double precision) RESET search_path;
+-- ALTER FUNCTION public.get_nearest_amenities(double precision, double precision, text[], double precision) RESET search_path;
+-- ALTER FUNCTION public.backfill_property_neighborhoods(text[], uuid[], integer) RESET search_path;
+-- ALTER FUNCTION public.backfill_property_coordinates_city_centroid(integer) RESET search_path;

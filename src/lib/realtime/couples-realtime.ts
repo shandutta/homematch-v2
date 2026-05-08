@@ -1,16 +1,14 @@
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-// import type { Database } from '@/types/supabase'
+import type { AppDatabase } from '@/types/app-database'
 
-// type PropertyInteractionPayload = Database['public']['Tables']['user_property_interactions']['Row']
-type PropertyInteractionPayload = {
-  id: string
-  user_id: string
-  property_id: string
-  household_id: string
-  interaction_type: string
-  score_data: Record<string, unknown> | null
-  created_at: string
+type PropertyInteractionPayload =
+  AppDatabase['public']['Tables']['user_property_interactions']['Row']
+
+type RealtimeMutualLikePayload = {
+  has_mutual_like: boolean | null
+  partner_name: string | null
+  property_address: string | null
 }
 
 interface CouplesRealtimeCallbacks {
@@ -152,7 +150,7 @@ export class CouplesRealtime {
           userName: userDisplayName,
           propertyId: interaction.property_id,
           interactionType: interaction.interaction_type,
-          timestamp: interaction.created_at,
+          timestamp: interaction.created_at ?? new Date().toISOString(),
         })
       }
 
@@ -161,35 +159,24 @@ export class CouplesRealtime {
         interaction.interaction_type === 'like' &&
         this.callbacks.onMutualLike
       ) {
-        const { data: myLike } = await this.supabase
-          .from('user_property_interactions')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('property_id', interaction.property_id)
-          .eq('interaction_type', 'like')
-          .single()
+        const { data: mutualPayload } = await this.supabase.rpc(
+          'get_realtime_mutual_like_payload',
+          {
+            p_current_user_id: user.id,
+            p_partner_user_id: interaction.user_id,
+            p_property_id: interaction.property_id,
+          }
+        )
+        const enriched = Array.isArray(mutualPayload)
+          ? (mutualPayload[0] as RealtimeMutualLikePayload | undefined)
+          : (mutualPayload as RealtimeMutualLikePayload | null)
 
-        if (myLike) {
-          // This creates a mutual like!
-          const { data: profile } = await this.supabase
-            .from('user_profiles')
-            .select('display_name, email')
-            .eq('id', interaction.user_id)
-            .single()
-          const userDisplayName =
-            profile?.display_name || profile?.email || 'Household member'
-
-          const { data: property } = await this.supabase
-            .from('properties')
-            .select('address')
-            .eq('id', interaction.property_id)
-            .single()
-
+        if (enriched?.has_mutual_like) {
           this.callbacks.onMutualLike({
             propertyId: interaction.property_id,
             partnerUserId: interaction.user_id,
-            partnerName: userDisplayName,
-            propertyAddress: property?.address || 'Unknown property',
+            partnerName: enriched.partner_name || 'Household member',
+            propertyAddress: enriched.property_address || 'Unknown property',
           })
         }
       }

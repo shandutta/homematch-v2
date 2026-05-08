@@ -30,3 +30,11 @@ ALTER TABLE public.user_property_interactions
   UNIQUE (user_id, property_id);
 
 COMMIT;
+
+-- DOWN:
+-- ALTER TABLE public.user_property_interactions
+--   DROP CONSTRAINT IF EXISTS user_property_interactions_user_id_property_id_key;
+-- ALTER TABLE public.user_property_interactions
+--   ADD CONSTRAINT user_property_interactions_user_id_property_id_interaction_type_key
+--   UNIQUE (user_id, property_id, interaction_type);
+-- NOTE: rows deleted during duplicate compaction require point-in-time recovery; the old uniqueness shape can be restored but deleted duplicate rows cannot be reconstructed from this migration alone.

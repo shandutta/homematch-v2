@@ -19,3 +19,10 @@ CREATE POLICY "Anyone can view active properties"
   );
 
 COMMIT;
+
+-- DOWN:
+-- DROP POLICY IF EXISTS "Anyone can view active properties" ON public.properties;
+-- CREATE POLICY "Anyone can view active properties"
+--   ON public.properties
+--   FOR SELECT
+--   USING (coalesce(is_active, true) = true);

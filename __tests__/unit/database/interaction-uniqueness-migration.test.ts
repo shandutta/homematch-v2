@@ -24,11 +24,13 @@ describe('interaction uniqueness migration', () => {
   it('replaces per-interaction-type uniqueness with one interaction per user/property', () => {
     const sql = migration()
 
-    expect(sql).toContain(
+    const upSql = sql.split(/--\s*DOWN:/i)[0]
+
+    expect(upSql).toContain(
       'DROP CONSTRAINT IF EXISTS user_property_interactions_user_id_property_id_interaction_type_key'
     )
-    expect(sql).toContain('user_property_interactions_user_id_property_id_key')
-    expect(sql).toContain('UNIQUE (user_id, property_id)')
-    expect(sql).not.toContain('UNIQUE (user_id, property_id, interaction_type)')
+    expect(upSql).toContain('user_property_interactions_user_id_property_id_key')
+    expect(upSql).toContain('UNIQUE (user_id, property_id)')
+    expect(upSql).not.toContain('UNIQUE (user_id, property_id, interaction_type)')
   })
 })

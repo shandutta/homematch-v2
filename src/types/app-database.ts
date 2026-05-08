@@ -16,6 +16,18 @@ type AdditionalFunctions = {
       property_type_distribution: Record<string, number>
     }
   }
+  get_realtime_mutual_like_payload: {
+    Args: {
+      p_current_user_id: string
+      p_partner_user_id: string
+      p_property_id: string
+    }
+    Returns: Array<{
+      has_mutual_like: boolean
+      partner_name: string | null
+      property_address: string | null
+    }>
+  }
   create_household_for_user: {
     Args: {
       p_name: string | null
