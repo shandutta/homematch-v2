@@ -132,19 +132,6 @@ export function createApiClient(request?: NextRequest) {
 
   withRefreshRecovery(supabase, { logPrefix: '[Supabase][Server]', context: 'api' })
 
-  // Monkey-patch getUser to automatically use the bearer token if available and no token is provided
-  // This ensures that client.auth.getUser() works as expected in API routes even without session persistence
-  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  const getUserWithBearer: typeof supabase.auth.getUser = async (
-    token?: string
-  ) => {
-    if (!token && bearerToken) {
-      return originalGetUser(bearerToken)
-    }
-    return originalGetUser(token)
-  }
-  supabase.auth.getUser = getUserWithBearer
-
   return supabase
 }
 
