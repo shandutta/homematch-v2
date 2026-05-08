@@ -57,7 +57,7 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 
 ## Next blocker / approval list
 
-2026-05-08 update: Shan approved tiny live probes; Shan explicitly approved remote Supabase test-user creation/seeding and later approved deleting existing HomeMatch Supabase users if helpful because they are all trash/test data. Replace with clean documented seed fixtures. Local test-user credentials should be sourced from repo docs/scripts or 1Password/helpers. Blanket approval covers autonomous HomeMatch work except spending money or paid-resource/subscription changes, which still require explicit approval.
+2026-05-08 update: Shan approved tiny live probes; Shan explicitly approved remote Supabase test-user creation/seeding and later approved deleting existing HomeMatch Supabase users if helpful because they are all trash/test data. Shan clarified the only real-looking Gmail-created Supabase account is also test/disposable. Replace with clean documented seed fixtures. Local test-user credentials should be sourced from repo docs/scripts or 1Password/helpers. Blanket approval covers autonomous HomeMatch work except spending money or paid-resource/subscription changes, which still require explicit approval.
 
 
 1. Non-production/remote Supabase seeded auth/session path is now approved, including deletion of stale/test HomeMatch Supabase users if helpful. Execute bounded cleanup + disposable test-user/fixture setup, then authenticated browser traversal and API auth smoke execution; preserve the seed contract, cleanup/reseed instructions, and never print credentials.

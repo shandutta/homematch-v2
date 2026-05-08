@@ -106,4 +106,7 @@ Operational constraints for workers:
 - Prefer clearly named disposable users/fixtures and document their non-secret identifiers, purpose, and cleanup/reseed command.
 - If any account appears plausibly real/non-test despite this guidance, pause and report before deletion.
 - Still ask before spending money, paid plan changes, broad production deploys, or billing-impacting provider changes.
+## 2026-05-08 Gmail-created Supabase account clarification
+
+Shan clarified that the only real-looking Supabase account is the Gmail account he created, and that account is also test/disposable for HomeMatch recovery. Workers may include it in cleanup/reseed planning, while still avoiding printed credentials and documenting any non-secret identifiers/fixtures used.
 

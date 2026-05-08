@@ -35,7 +35,7 @@ Shan approved use of 1Password and remote Supabase test-user creation/seeding. T
 
 ## 2026-05-08 remote Supabase deletion/reseed approval
 
-Shan approved removing existing HomeMatch Supabase users if helpful, because the current population should be treated as trash/test data. Workers may delete stale/test users and replace them with a clean documented seed set for remote auth/API/browser probes. Record the seed fixture contract in docs/artifacts, avoid printing credentials/secrets, and pause only if an account looks plausibly real/non-test or if an action would spend money/change paid resources.
+Shan approved removing existing HomeMatch Supabase users if helpful, because the current population should be treated as trash/test data. Workers may delete stale/test users and replace them with a clean documented seed set for remote auth/API/browser probes. Shan clarified that the only real-looking Gmail-created Supabase account is also test/disposable for this HomeMatch recovery. Record the seed fixture contract in docs/artifacts, avoid printing credentials/secrets, and pause only if an account looks outside the HomeMatch test/dev context or if an action would spend money/change paid resources.
 
 ## Current gate
 
