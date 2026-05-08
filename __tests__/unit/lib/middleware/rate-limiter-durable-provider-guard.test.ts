@@ -21,15 +21,24 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { NextRequest, type NextResponse } from 'next/server'
 import {
+  authRateLimit,
+  checkRateLimit,
   getConfiguredRateLimitStorageProvider,
+  rateLimit,
   resetRateLimiters,
+  withRateLimit,
 } from '@/lib/middleware/rateLimiter'
 
 const RATE_LIMITER_SOURCE_PATH = 'src/lib/middleware/rateLimiter.ts'
 const PACKAGE_JSON_PATH = 'package.json'
 const CLOSURE_MATRIX_PATH =
   'reports/home-match-revival/phase0-phase1-closure-matrix.md'
+const DECISION_REGISTER_PATH =
+  'reports/home-match-revival/p1-decision-needed-register-2026-05-08.md'
+const D2_REPORT_PATH =
+  'reports/home-match-revival/d2-durable-rate-limiter-approval-gate-guard-2026-05-08.md'
 
 const readRepoFile = (relativePath: string) =>
   readFileSync(join(process.cwd(), relativePath), 'utf8')
@@ -200,5 +209,114 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
     expect(closureMatrix).toContain(
       'd2-durable-rate-limiter-approval-gate-guard-2026-05-08.md'
     )
+  })
+
+  it('keeps D2 recorded with explicit owner/ops gating in the decision-needed register', () => {
+    const decisionRegister = readRepoFile(DECISION_REGISTER_PATH)
+
+    expect(decisionRegister).toContain('Durable production rate limiter')
+    expect(decisionRegister).toContain(
+      'non-memory provider names fail with an explicit approval-required adapter error'
+    )
+    expect(decisionRegister).toContain(
+      'still keep provider choice/provisioning as an unresolved production decision'
+    )
+    expect(decisionRegister).toContain('require Shan/product/security/ops decisions')
+    expect(decisionRegister).toContain(
+      'd2-durable-rate-limiter-approval-gate-guard-2026-05-08.md'
+    )
+    expect(decisionRegister).toContain(
+      'rate-limiter-durable-provider-guard.test.ts'
+    )
+  })
+
+  it('keeps the D2 evidence report scoped to repo-local approval gating only', () => {
+    const d2Report = readRepoFile(D2_REPORT_PATH)
+
+    expect(d2Report).toContain(
+      'No durable provider was selected, no external/paid store was provisioned'
+    )
+    expect(d2Report).toContain(
+      'Shan/ops explicitly approves a durable production provider'
+    )
+    expect(d2Report).toContain('fail closed with an approval-required adapter error')
+    expect(d2Report).toContain('does not choose Redis, Upstash, Vercel KV')
+  })
+
+  describe('runtime call path fails closed under approval-gated provider names', () => {
+    const RUNTIME_BLOCKED_PROVIDERS = [
+      'redis',
+      'upstash',
+      'vercel-kv',
+      'kv',
+      'postgres',
+      'supabase',
+      'edge-config',
+      'cloudflare-kv',
+    ] as const
+
+    const makeRequest = () =>
+      new NextRequest(new URL('/api/test', 'http://localhost:3000'), {
+        headers: { 'x-forwarded-for': '203.0.113.99' },
+      })
+
+    const expectFailClosed = async (response: NextResponse | null) => {
+      expect(response).not.toBeNull()
+      expect(response?.status).toBe(429)
+      const body = (await response?.json()) as
+        | { code?: string }
+        | undefined
+      expect(body?.code).toBe('RATE_LIMITED')
+    }
+
+    beforeEach(() => {
+      // Approval-gated provider names must fail closed even when test-mode
+      // bypass would otherwise apply, so explicitly enforce here.
+      process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
+    })
+
+    it.each(RUNTIME_BLOCKED_PROVIDERS)(
+      'checkRateLimit returns a 429 (fail closed) when RATE_LIMIT_STORAGE_PROVIDER="%s"',
+      async (providerName) => {
+        process.env.RATE_LIMIT_STORAGE_PROVIDER = providerName
+        const response = await checkRateLimit(
+          `runtime-${providerName}`,
+          'strict'
+        )
+        await expectFailClosed(response)
+      }
+    )
+
+    it.each(RUNTIME_BLOCKED_PROVIDERS)(
+      'rateLimit (request-derived identifier) fails closed when RATE_LIMIT_STORAGE_PROVIDER="%s"',
+      async (providerName) => {
+        process.env.RATE_LIMIT_STORAGE_PROVIDER = providerName
+        const response = await rateLimit(makeRequest(), 'standard')
+        await expectFailClosed(response)
+      }
+    )
+
+    it('withRateLimit refuses to invoke the wrapped handler when an approval-gated provider is configured', async () => {
+      process.env.RATE_LIMIT_STORAGE_PROVIDER = 'redis'
+      const handler = jest.fn(async () =>
+        // The handler must never be reached while the approval gate is active.
+        new Response(null, { status: 200 }) as unknown as NextResponse
+      )
+
+      const response = await withRateLimit(
+        makeRequest(),
+        handler,
+        'standard'
+      )
+
+      expect(handler).not.toHaveBeenCalled()
+      expect(response.status).toBe(429)
+    })
+
+    it('authRateLimit returns a 429 (fail closed) when an approval-gated provider is configured', async () => {
+      process.env.RATE_LIMIT_STORAGE_PROVIDER = 'upstash'
+      const response = await authRateLimit(makeRequest(), 'auth-runtime')
+      await expectFailClosed(response)
+    })
   })
 })
