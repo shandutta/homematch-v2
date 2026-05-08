@@ -3,6 +3,8 @@
  */
 
 import { createServerClient } from '@supabase/ssr'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { NextRequest } from 'next/server'
 import {
   middleware,
@@ -91,6 +93,19 @@ describe('middleware matcher exclusions', () => {
     expect(matcher).toContain('xml')
     expect(matcher).toContain('txt')
     expect(matcher).toContain('woff2')
+  })
+})
+
+describe('middleware Supabase auth timeout cleanup', () => {
+  it('uses AbortController-backed Supabase fetch timeouts instead of orphaning Promise.race work', () => {
+    const source = readFileSync(join(process.cwd(), 'middleware.ts'), 'utf8')
+
+    expect(source).not.toContain('Promise.race')
+    expect(source).toContain('AbortController')
+    expect(source).toContain('createSupabaseTimeoutFetch')
+    expect(source).toContain(
+      'createSupabaseTimeoutFetch(supabaseTimeoutController.signal)'
+    )
   })
 })
 

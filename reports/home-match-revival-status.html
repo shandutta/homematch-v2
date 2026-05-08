@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:24 UTC</code>. Strict
-        Phase 0/1 closure mode: factory async-stub removal and service-client
-        cache/key-rotation hardening closed repo-side; Phase 2+ remains held.
+        Live Kanban status. Updated: <code>2026-05-08 03:34 UTC</code>. Strict
+        Phase 0/1 closure mode: M7 middleware auth timeout cleanup closed
+        repo-side; continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
         <div class="card">
@@ -996,6 +996,17 @@
     <li>Changed factory caching so only browser clients are cached; service-role clients are fresh on repeated calls to avoid pinning rotated keys in memory.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-a5-a14-factory-red-1778210643.service</code>; targeted Jest passed in <code>hm-a5-a14-factory-green-1778210686.service</code>; resource-limited type-check passed in <code>hm-a5-a14-factory-typecheck-1778210691.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, timeout cleanup, dead code/dependency cleanup, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m7-timeout-2026-05-08">
+  <h2>Phase 0/1 remediation — M7 middleware timeout cleanup</h2>
+  <p><strong>Status:</strong> M7 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Removed middleware <code>Promise.race</code> timeout logic that could leave Supabase auth work running after timeout.</li>
+    <li>Added an <code>AbortController</code>-backed Supabase fetch override and clears the timeout after <code>supabase.auth.getUser()</code> resolves.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m7-timeout-red-1778211076.service</code>; targeted Jest passed in <code>hm-m7-timeout-green2-1778211243.service</code>; resource-limited type-check passed in <code>hm-m7-timeout-typecheck2-1778211248.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, dead code/dependency cleanup, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>

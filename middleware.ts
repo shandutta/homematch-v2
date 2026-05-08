@@ -74,24 +74,23 @@ const applySecurityHeaders = (response: NextResponse) => {
   return response
 }
 
-const withTimeout = async <T>(
-  promise: Promise<T>,
-  timeoutMs: number
-): Promise<T> => {
-  let timeoutId: NodeJS.Timeout
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error('Supabase auth timeout')),
-          timeoutMs
-        )
-      }),
-    ])
-  } finally {
-    clearTimeout(timeoutId!)
+const createSupabaseTimeoutFetch = (signal: AbortSignal): typeof fetch => {
+  return (input, init) =>
+    fetch(input, {
+      ...init,
+      signal,
+    })
+}
+
+const isSupabaseAuthTimeoutError = (error: unknown) => {
+  if (error instanceof Error) {
+    return (
+      error.message.toLowerCase().includes('timeout') ||
+      error.name === 'AbortError'
+    )
   }
+
+  return String(error).toLowerCase().includes('timeout')
 }
 
 export async function middleware(request: NextRequest) {
@@ -127,6 +126,8 @@ export async function middleware(request: NextRequest) {
   // Dynamic cookie name based on hostname
   const hostname = request.nextUrl.hostname
   const cookieName = getSupabaseAuthStorageKey(hostname)
+
+  const supabaseTimeoutController = new AbortController()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -166,6 +167,9 @@ export async function middleware(request: NextRequest) {
         persistSession: true,
         detectSessionInUrl: true,
       },
+      global: {
+        fetch: createSupabaseTimeoutFetch(supabaseTimeoutController.signal),
+      },
     }
   )
 
@@ -196,12 +200,17 @@ export async function middleware(request: NextRequest) {
       }
       // user remains null, which is fine as API routes extract token from headers
     } else {
-      const result = await withTimeout(
-        supabase.auth.getUser(),
-        SUPABASE_TIMEOUT_MS
-      )
-      user = result.data.user
-      authError = result.error
+      const authTimeout = setTimeout(() => {
+        supabaseTimeoutController.abort(new Error('Supabase auth timeout'))
+      }, SUPABASE_TIMEOUT_MS)
+
+      try {
+        const result = await supabase.auth.getUser()
+        user = result.data.user
+        authError = result.error
+      } finally {
+        clearTimeout(authTimeout)
+      }
     }
 
     // Handle invalid refresh token errors gracefully
@@ -241,7 +250,7 @@ export async function middleware(request: NextRequest) {
           supabaseResponse.cookies.delete(cookie.name)
         }
       })
-    } else if (message.toLowerCase().includes('timeout')) {
+    } else if (isSupabaseAuthTimeoutError(e)) {
       console.warn(
         '[Middleware] Supabase auth timed out - continuing as unauthenticated'
       )
