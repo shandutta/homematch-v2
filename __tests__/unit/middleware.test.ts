@@ -93,7 +93,7 @@ describe('middleware auth configuration guard', () => {
   })
 })
 
-describe('middleware API fast path', () => {
+describe('middleware API and anonymous public-page fast paths', () => {
   const originalEnv = { ...process.env }
 
   beforeEach(() => {
@@ -127,6 +127,61 @@ describe('middleware API fast path', () => {
     )
     expect(mockedCreateServerClient).not.toHaveBeenCalled()
     expect(mockGetUser).not.toHaveBeenCalled()
+  })
+
+  it('lets anonymous public marketing pages render without creating a Supabase middleware client', async () => {
+    const response = await middleware(makeRequest('/about'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+    expect(response.headers.get('Cross-Origin-Opener-Policy')).toBe(
+      'same-origin'
+    )
+    expect(mockedCreateServerClient).not.toHaveBeenCalled()
+    expect(mockGetUser).not.toHaveBeenCalled()
+  })
+
+  it('redirects anonymous protected pages without creating a Supabase middleware client', async () => {
+    const response = await middleware(makeRequest('/dashboard?tab=liked'))
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/login?redirectTo=%2Fdashboard%3Ftab%3Dliked'
+    )
+    expect(mockedCreateServerClient).not.toHaveBeenCalled()
+    expect(mockGetUser).not.toHaveBeenCalled()
+  })
+
+  it('lets anonymous auth pages render without creating a Supabase middleware client', async () => {
+    const response = await middleware(makeRequest('/login'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+    expect(mockedCreateServerClient).not.toHaveBeenCalled()
+    expect(mockGetUser).not.toHaveBeenCalled()
+  })
+
+  it('still redirects authenticated auth pages through Supabase auth', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'user-1' } },
+      error: null,
+    })
+
+    const response = await middleware(
+      makeRequest('/login', {
+        headers: {
+          cookie:
+            'sb-localhost-example-supabase-co-anon-key-auth-token=mock-session',
+        },
+      })
+    )
+
+    expect(mockedCreateServerClient).toHaveBeenCalledTimes(1)
+    expect(mockGetUser).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/dashboard'
+    )
   })
 
   it('still redirects protected pages through Supabase auth when no user is present', async () => {
@@ -205,7 +260,14 @@ describe('middleware Supabase session cookies', () => {
   })
 
   it('marks refreshed Supabase auth cookies as httpOnly via shared options helper', async () => {
-    const response = await middleware(makeRequest('/login'))
+    const response = await middleware(
+      makeRequest('/login', {
+        headers: {
+          cookie:
+            'sb-localhost-example-supabase-co-anon-key-auth-token=mock-session',
+        },
+      })
+    )
 
     expect(mockedCreateServerClient).toHaveBeenCalledTimes(1)
     expect(response.status).toBe(200)

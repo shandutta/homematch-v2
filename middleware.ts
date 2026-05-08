@@ -112,16 +112,20 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(supabaseResponse)
   }
 
+  const redirectAnonymousProtectedPage = () => {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.search = ''
+    url.searchParams.set(
+      'redirectTo',
+      `${request.nextUrl.pathname}${request.nextUrl.search}`
+    )
+    return NextResponse.redirect(url)
+  }
+
   if (!hasSupabasePublicConfig()) {
     if (isProtectedPath(pathname) && !isApiRoute) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      url.search = ''
-      url.searchParams.set(
-        'redirectTo',
-        `${request.nextUrl.pathname}${request.nextUrl.search}`
-      )
-      return NextResponse.redirect(url)
+      return redirectAnonymousProtectedPage()
     }
 
     return applySecurityHeaders(supabaseResponse)
@@ -130,6 +134,15 @@ export async function middleware(request: NextRequest) {
   // Dynamic cookie name based on hostname
   const hostname = request.nextUrl.hostname
   const cookieName = getSupabaseAuthStorageKey(hostname)
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name === cookieName)
+
+  if (!hasAuthCookie) {
+    if (isProtectedPath(pathname)) {
+      return redirectAnonymousProtectedPage()
+    }
+
+    return applySecurityHeaders(supabaseResponse)
+  }
 
   const supabaseTimeoutController = new AbortController()
 
