@@ -1,5 +1,6 @@
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
 type ZillowCard = {
   zpid: string
@@ -19,6 +20,7 @@ type ZillowCard = {
 
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_QUERY = 'San Francisco, CA'
+const ZILLOW_FETCH_TIMEOUT_MS = 10_000
 
 type ZillowSearchResult = {
   zpid?: number | string
@@ -84,12 +86,14 @@ export async function GET() {
   const searchUrl = `https://${RAPIDAPI_HOST}/propertyExtendedSearch?location=${encodeURIComponent(
     DEFAULT_QUERY
   )}&status_type=ForSale&home_type=Houses&page=1&pageSize=3`
-  const searchRes = await fetch(searchUrl, {
+  const searchRes = await fetchWithTimeout(searchUrl, {
     headers: {
       'X-RapidAPI-Key': RAPIDAPI_KEY,
       'X-RapidAPI-Host': RAPIDAPI_HOST,
     },
     cache: 'no-store',
+    timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+    timeoutMessage: 'Zillow search fetch timed out',
   })
 
   if (!searchRes.ok) {
@@ -127,12 +131,14 @@ export async function GET() {
     const zpid = String(item.zpid)
     const url = `https://${RAPIDAPI_HOST}/images?zpid=${encodeURIComponent(zpid)}`
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
           'X-RapidAPI-Host': RAPIDAPI_HOST,
         },
         cache: 'no-store',
+        timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+        timeoutMessage: 'Zillow image fetch timed out',
       })
       if (!res.ok) {
         continue

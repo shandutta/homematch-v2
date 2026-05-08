@@ -3,6 +3,7 @@ import { createStandaloneClient } from '@/lib/supabase/standalone'
 import type { PropertyInsert } from '@/types/database'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -15,6 +16,8 @@ const DEFAULT_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 350
 const DEFAULT_MAX_ITEMS = Number(process.env.STATUS_REFRESH_MAX_ITEMS) || 600
 const DEFAULT_MAX_RUNTIME_MS =
   Number(process.env.STATUS_REFRESH_MAX_RUNTIME_MS) || 280_000
+const STATUS_DETAIL_FETCH_TIMEOUT_MS =
+  Number(process.env.STATUS_DETAIL_FETCH_TIMEOUT_MS) || 10_000
 const DEADLINE_BUFFER_MS = Number(
   process.env.STATUS_REFRESH_DEADLINE_BUFFER_MS || 5_000
 )
@@ -77,11 +80,13 @@ async function fetchDetails(zpid: string) {
   const url = `https://${RAPIDAPI_HOST}/property?zpid=${encodeURIComponent(zpid)}`
   let attempt = 0
   while (attempt < 3) {
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       headers: {
         'X-RapidAPI-Key': RAPIDAPI_KEY!,
         'X-RapidAPI-Host': RAPIDAPI_HOST,
       },
+      timeoutMs: STATUS_DETAIL_FETCH_TIMEOUT_MS,
+      timeoutMessage: 'Zillow status detail fetch timed out',
     })
     if (res.status === 404) return { homeStatus: 'off_market' }
     if (res.status === 429) {

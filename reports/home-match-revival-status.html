@@ -145,7 +145,7 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08 control-plane refresh</code>. Strict Phase 0/1 closure
+        <code>2026-05-08T05:55Z M8 bounded slice</code>. Strict Phase 0/1 closure
         mode remains active. This status page now points to the canonical
         control-plane plan and treats older later-phase sections below as
         historical, not active authorization.
@@ -172,6 +172,22 @@
           </div>
         </div>
       </div>
+
+
+      <section>
+        <h2>Latest bounded Phase 0/1 slice — M8 external timeouts</h2>
+        <p>
+          <span class="pill good">TESTED FIX</span> Closed M8 repo-side by wrapping all direct outbound
+          <code>fetch(</code> calls in <code>src/app/api/**/route.ts</code> with
+          <code>fetchWithTimeout()</code>.
+        </p>
+        <ul>
+          <li>Covered Maps, maps proxy-script, admin Zillow vibe generation, admin status refresh, and Zillow random-image routes.</li>
+          <li>Verification: focused Jest passed 6/6; <code>pnpm type-check</code> passed.</li>
+          <li><code>pnpm lint</code> still fails on pre-existing unrelated lint debt; no new touched-file lint issue was surfaced.</li>
+          <li>Phase 1 is still not 100% closed; Phase 2+ remains held.</li>
+        </ul>
+      </section>
 
       <section>
         <h2>Canonical control-plane plan</h2>

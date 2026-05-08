@@ -20,13 +20,23 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integration HEAD seen: `8e185ca docs: refresh HomeMatch control-plane plan`
+- Latest integration HEAD seen: `901bb44 docs: expand HomeMatch held-phase plan`
 - Board: `home-match-revival`
-- Board state at last reconciliation: `todo=7`, `ready=0`, `running=0`, `blocked=7`, `done=27`
+- Board state at last reconciliation: `todo=7, ready=0, running=0, blocked=7, done=27`, `ready=0`, `running=0`, `blocked=7`, `done=27`
 - Important interpretation: the small board counts are **gate counts**, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
 - Phase 2+: **held**
+
+
+### Latest control-plane reconciliation — 2026-05-08T05:40Z
+
+- Verified from repo + Kanban before dispatch: integration branch is `autonomy/6h-business-hardening`; HEAD is current local control-plane docs commit.
+- RAM is green for one bounded Phase 0/1 slice (`available≈2378MiB`, `swap_used≈615MiB` at check).
+- Board has no running workers; Phase 2+ anchors remain blocked/held.
+- Current repo-local Phase 0/1 closures since the original matrix include README local-dev guidance, M8 external-call timeout coverage for all Next.js API route outbound fetches, Supabase password-policy alignment, user-profile delete RLS policy, and JSONB GIN indexes.
+- Still not clean: Phase 0 live/auth/browser/integration/probe gaps remain; Phase 1 still has repo-open auth/client cleanup, service-role fallback/RBAC decisions, query/realtime/dedupe/rollback/type cleanup, rate-limiter consolidation/durability, `.env.prod`/secret-handling decisions, and DB integration reset/lint blockers.
+- Next safe execution shape: one repo-local Phase 0/1 writer or read-only scout only; no Phase 2+ implementation.
 
 ## Strict gates
 
@@ -72,6 +82,7 @@ Use these as source of truth instead of relying on Telegram history.
 - `reports/home-match-revival/phase0-phase1-strict-closure-gate.md`
   - Strict gate correction and allowed next wave.
 - `reports/home-match-revival/phase1-remediation-closure-scout.md`
+- `reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md`
   - Detailed Phase 1 remediation inventory.
 - `reports/home-match-revival/phase0-closure-scout.md`
   - Detailed Phase 0 closure caveats.

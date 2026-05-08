@@ -1,7 +1,6 @@
-<!doctype html><html><head><meta charset="utf-8"><title>HomeMatch Canonical Control-Plane Plan</title><style>
-body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980px;margin:40px auto;padding:0 24px;line-height:1.55;color:#18202a;background:#f8fafc}h1{font-size:34px}h2{margin-top:34px;border-top:1px solid #d8dee9;padding-top:22px}h3{margin-top:24px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(15,23,42,.06)}code{background:#eef2f7;padding:2px 5px;border-radius:5px}pre{background:#0f172a;color:#e5e7eb;padding:18px;border-radius:12px;overflow:auto}li{margin:5px 0}strong{color:#8a3412}</style></head><body><div class="card"><h1>HomeMatch Canonical Control-Plane Plan</h1>
+<!doctype html><html><head><meta charset="utf-8"><title>HomeMatch Canonical Control-Plane Plan</title><style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980px;margin:40px auto;padding:0 24px;line-height:1.55;color:#18202a;background:#f8fafc}h1{font-size:34px}h2{margin-top:34px;border-top:1px solid #d8dee9;padding-top:22px}h3{margin-top:24px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(15,23,42,.06)}code{background:#eef2f7;padding:2px 5px;border-radius:5px}pre{background:#0f172a;color:#e5e7eb;padding:18px;border-radius:12px;overflow:auto}li{margin:5px 0}strong{color:#8a3412}</style></head><body><div class="card"><h1>HomeMatch Canonical Control-Plane Plan</h1>
 
-<p>Status: <strong>canonical Phase 0/1 control-plane artifact</strong>. This file is the single planning surface for the Telegram control-plane, Kanban board, worker archetypes, phase gates, and artifact map.</p>
+<p>Status: canonical Phase 0/1 control-plane artifact. This file is the single planning surface for the Telegram control-plane, Kanban board, worker archetypes, phase gates, and artifact map.</p>
 
 <p>Generated/updated: 2026-05-08</p>
 
@@ -9,25 +8,35 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <h2>Operating agreement — condensed</h2>
 
-<li>This Telegram thread is the <strong>control plane</strong>, not the execution container.</li>
-<li>Work execution happens in <strong>bounded Kanban workers / worktrees / resource-limited runs</strong> with small prompts and narrow toolsets.</li>
+<li>This Telegram thread is the control plane, not the execution container.</li>
+<li>Work execution happens in bounded Kanban workers / worktrees / resource-limited runs with small prompts and narrow toolsets.</li>
 <li>Artifacts and commits are the durable memory; Telegram receives short deltas and links.</li>
 <li><code>/goal</code> is a mission monitor/continuation loop, not a substitute for Kanban decomposition.</li>
 <li>A single <code>/goal</code> turn may consume up to <code>agent.max_turns = 150</code>; the mission-level <code>/goal</code> chain is governed by <code>goals.max_turns = 80</code>.</li>
-<li>Explicit incomplete status such as “Phase 0/1 not 100% complete” must <strong>not</strong> be judged as achieved.</li>
-<li>Correct project shape: <strong>one strict Phase 0/1 gate + multiple child workers + fan-in decision register + no Phase 2+ until the closure matrix is clean</strong>.</li>
+<li>Explicit incomplete status such as “Phase 0/1 not 100% complete” must not be judged as achieved.</li>
+<li>Correct project shape: one strict Phase 0/1 gate + multiple child workers + fan-in decision register + no Phase 2+ until the closure matrix is clean.</li>
 
 <h2>Current truth</h2>
 
 <li>Repo: <code>/home/shan/projects/homematch-v2</code></li>
 <li>Branch: <code>autonomy/6h-business-hardening</code></li>
-<li>Latest integration HEAD seen: <code>8e185ca docs: refresh HomeMatch control-plane plan</code></li>
+<li>Latest integration HEAD seen: <code>901bb44 docs: expand HomeMatch held-phase plan</code></li>
 <li>Board: <code>home-match-revival</code></li>
-<li>Board state at last reconciliation: <code>todo=7</code>, <code>ready=0</code>, <code>running=0</code>, <code>blocked=7</code>, <code>done=27</code></li>
-<li>Important interpretation: the small board counts are <strong>gate counts</strong>, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.</li>
-<li>Phase 0: <strong>not 100% complete</strong></li>
-<li>Phase 1: <strong>not 100% complete</strong></li>
-<li>Phase 2+: <strong>held</strong></li>
+<li>Board state at last reconciliation: <code>todo=7, ready=0, running=0, blocked=7, done=27</code>, <code>ready=0</code>, <code>running=0</code>, <code>blocked=7</code>, <code>done=27</code></li>
+<li>Important interpretation: the small board counts are gate counts, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.</li>
+<li>Phase 0: not 100% complete</li>
+<li>Phase 1: not 100% complete</li>
+<li>Phase 2+: held</li>
+
+
+<h3>Latest control-plane reconciliation — 2026-05-08T05:40Z</h3>
+
+<li>Verified from repo + Kanban before dispatch: integration branch is <code>autonomy/6h-business-hardening</code>; HEAD is current local control-plane docs commit.</li>
+<li>RAM is green for one bounded Phase 0/1 slice (<code>available≈2378MiB</code>, <code>swap_used≈615MiB</code> at check).</li>
+<li>Board has no running workers; Phase 2+ anchors remain blocked/held.</li>
+<li>Current repo-local Phase 0/1 closures since the original matrix include README local-dev guidance, M8 external-call timeout coverage for all Next.js API route outbound fetches, Supabase password-policy alignment, user-profile delete RLS policy, and JSONB GIN indexes.</li>
+<li>Still not clean: Phase 0 live/auth/browser/integration/probe gaps remain; Phase 1 still has repo-open auth/client cleanup, service-role fallback/RBAC decisions, query/realtime/dedupe/rollback/type cleanup, rate-limiter consolidation/durability, <code>.env.prod</code>/secret-handling decisions, and DB integration reset/lint blockers.</li>
+<li>Next safe execution shape: one repo-local Phase 0/1 writer or read-only scout only; no Phase 2+ implementation.</li>
 
 <h2>Strict gates</h2>
 
@@ -73,6 +82,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 <li><code>reports/home-match-revival/phase0-phase1-strict-closure-gate.md</code></li>
 <p>  - Strict gate correction and allowed next wave.</p>
 <li><code>reports/home-match-revival/phase1-remediation-closure-scout.md</code></li>
+<li><code>reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md</code></li>
 <p>  - Detailed Phase 1 remediation inventory.</p>
 <li><code>reports/home-match-revival/phase0-closure-scout.md</code></li>
 <p>  - Detailed Phase 0 closure caveats.</p>
@@ -209,7 +219,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <h2>Later-phase held backlog skeleton</h2>
 
-<p>These phases should be visible in the plan so we do not lose roadmap shape, but they are <strong>not dispatchable</strong> until Phase 0/1 closure is clean. Expanding this backlog into more granular issue/task specs is allowed as Phase 0/1 planning/decision-register work only if it does not implement later-phase product code.</p>
+<p>These phases should be visible in the plan so we do not lose roadmap shape, but they are not dispatchable until Phase 0/1 closure is clean. Expanding this backlog into more granular issue/task specs is allowed as Phase 0/1 planning/decision-register work only if it does not implement later-phase product code.</p>
 
 <h3>Phase 2 — product UX, couples workflow, maps/images/SEO</h3>
 
@@ -297,11 +307,11 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <p>Recommended update posture:</p>
 
-<li>Do not blindly overwrite the local Hermes checkout.</li>
-<li>Before <code>hermes update</code>, preserve the patch file above and inspect <code>git status</code>.</li>
-<li>Fetch/rebase upstream, then re-apply/cherry-pick <code>65e21d69c</code> if upstream has not fixed equivalent semantics.</li>
-<li>If upstream already fixed it, drop the local patch after verifying the regression test or equivalent behavior.</li>
-<li>File upstream issue/PR with the regression test; do not rely on a long-lived local fork forever.</li>
+<p>1. Do not blindly overwrite the local Hermes checkout.</p>
+<p>2. Before <code>hermes update</code>, preserve the patch file above and inspect <code>git status</code>.</p>
+<p>3. Fetch/rebase upstream, then re-apply/cherry-pick <code>65e21d69c</code> if upstream has not fixed equivalent semantics.</p>
+<p>4. If upstream already fixed it, drop the local patch after verifying the regression test or equivalent behavior.</p>
+<p>5. File upstream issue/PR with the regression test; do not rely on a long-lived local fork forever.</p>
 
 <p>Unrelated local Hermes state to preserve:</p>
 
@@ -311,16 +321,16 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <p>After a <code>/compress</code> or gateway restart, use this short command to resume HomeMatch efficiently without rehydrating the whole Telegram history:</p>
 
-<pre><code>
+<pre>
 /goal Use this Telegram thread only as the HomeMatch control plane. Treat reports/home-match-parallel-kanban-execution-plan.md as canonical, with live HTML at http://100.79.222.28:8767/home-match-parallel-kanban-execution-plan.html and status at http://100.79.222.28:8767/home-match-revival-status.html. Keep Phase 0/1 strict gate active: do not dispatch or implement Phase 2+ until reports/home-match-revival/phase0-phase1-closure-matrix.md proves both Phase 0 and Phase 1 are 100% clean. Continue by updating artifacts/Kanban first, then run bounded worker/worktree slices only when safe and necessary. Use concise Telegram deltas, no giant pasted logs, no secrets, no external side effects without approval.
-</code></pre>
+</pre>
 
 <p>Context-overhang procedure:</p>
 
-<li>Update/commit artifacts first.</li>
-<li>Run <code>/compress</code> in Telegram.</li>
-<li>Use the saved <code>/goal</code> command above.</li>
-<li>Workers get only path/task packets, not the whole chat.</li>
+<p>1. Update/commit artifacts first.</p>
+<p>2. Run <code>/compress</code> in Telegram.</p>
+<p>3. Use the saved <code>/goal</code> command above.</p>
+<p>4. Workers get only path/task packets, not the whole chat.</p>
 
 <h2>Execution sequence from here</h2>
 
@@ -339,9 +349,9 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <h3>Step C — First worker wave</h3>
 
-<li>P0 ops/probe close-block matrix — <code>t_d60106b</code></li>
-<li>P1 backend auth/client cleanup — <code>t_42e0d08a</code></li>
-<li>P1 reviewer decision register — <code>t_efb13943</code></li>
+<p>1. P0 ops/probe close-block matrix — <code>t_d60106b</code></p>
+<p>2. P1 backend auth/client cleanup — <code>t_42e0d08a</code></p>
+<p>3. P1 reviewer decision register — <code>t_efb13943</code></p>
 
 <p>Optional read-only scout only if RAM is green.</p>
 
@@ -356,14 +366,14 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;max-width:980
 
 <h3>Correct compact `/goal`</h3>
 
-<pre><code>
+<pre>
 /goal Use board home-match-revival and canonical plan reports/home-match-parallel-kanban-execution-plan.md. Treat this Telegram thread as control plane only. Continue Phase 0/1 closure via bounded Kanban/worktree workers, keep Phase 2+ held until reports/home-match-revival/phase0-phase1-closure-matrix.md proves both phases 100%, update artifacts/Kanban after each slice, and never mark explicit incomplete/blocker status as achieved.
-</code></pre>
+</pre>
 
 <h3>Gate-opening approval phrase</h3>
 
-<pre><code>
+<pre>
 Approve bounded Phase 0/1 Kanban worker window
-</code></pre>
+</pre>
 
 <p>Default interpretation: max two resource-limited workers, one writer at a time unless separate worktrees are confirmed clean, no external side effects, no Phase 2+.</p></div></body></html>

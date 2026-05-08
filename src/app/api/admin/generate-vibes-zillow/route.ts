@@ -3,8 +3,10 @@ import { createVibesService } from '@/lib/services/vibes'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
 const isDev = process.env.NODE_ENV === 'development'
+const ZILLOW_FETCH_TIMEOUT_MS = 10_000
 
 type PropertyType = NonNullable<Property['property_type']>
 
@@ -94,11 +96,13 @@ async function fetchZillowProperty(
 ): Promise<ZillowPropertyResponse> {
   const url = `https://${host}/property?zpid=${zpid}`
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: {
       'X-RapidAPI-Key': rapidApiKey,
       'X-RapidAPI-Host': host,
     },
+    timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+    timeoutMessage: 'Zillow property fetch timed out',
   })
 
   if (!response.ok) {
@@ -123,11 +127,13 @@ async function fetchZillowImages(
   const url = `https://${host}/images?zpid=${zpid}`
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         'X-RapidAPI-Key': rapidApiKey,
         'X-RapidAPI-Host': host,
       },
+      timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+      timeoutMessage: 'Zillow image fetch timed out',
     })
 
     if (!response.ok) {
