@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 import { isValidLatLng, boundingBoxSchema } from '@/lib/utils/coordinates'
 
 const geocodeRequestSchema = z.object({
@@ -54,29 +55,20 @@ export async function POST(request: NextRequest) {
     const rateLimitResult = await apiRateLimiter.check(auth.user.id)
 
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
 
     if (!serverApiKey) {
-      return NextResponse.json(
-        { error: 'Geocoding service unavailable' },
-        { status: 503 }
-      )
+      return ApiErrorHandler.serviceUnavailable('Geocoding service unavailable')
     }
 
     const body = await request.json()
     const parsed = geocodeRequestSchema.safeParse(body)
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters', details: parsed.error.issues },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(parsed.error)
     }
 
     const { address, bounds } = parsed.data
@@ -115,10 +107,7 @@ export async function POST(request: NextRequest) {
     const status = isRecord(data) ? data.status : undefined
 
     if (status !== 'OK') {
-      return NextResponse.json(
-        { error: 'Geocoding failed', status },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Geocoding failed', { status })
     }
 
     // Return sanitized results with coordinate validation
@@ -148,9 +137,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ results })
   } catch (error) {
     console.error('Geocoding API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Internal server error', error)
   }
 }

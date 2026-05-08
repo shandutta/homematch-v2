@@ -4,6 +4,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { isValidLatLng } from '@/lib/utils/coordinates'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const placesAutocompleteSchema = z.object({
   input: z.string().min(1).max(100),
@@ -65,29 +66,20 @@ export async function POST(request: NextRequest) {
     const rateLimitResult = await apiRateLimiter.check(auth.user.id)
 
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
 
     if (!serverApiKey) {
-      return NextResponse.json(
-        { error: 'Places service unavailable' },
-        { status: 503 }
-      )
+      return ApiErrorHandler.serviceUnavailable('Places service unavailable')
     }
 
     const body = await request.json()
     const parsed = placesAutocompleteSchema.safeParse(body)
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters', details: parsed.error.issues },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(parsed.error)
     }
 
     const { input, location, radius, types, strictbounds } = parsed.data
@@ -127,10 +119,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ predictions: [] })
       }
 
-      return NextResponse.json(
-        { error: 'Places autocomplete failed', status: data?.status },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Places autocomplete failed', {
+        status: data.status,
+      })
     }
 
     // Return sanitized predictions
@@ -160,9 +151,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ predictions })
   } catch (error) {
     console.error('Places Autocomplete API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Internal server error', error)
   }
 }

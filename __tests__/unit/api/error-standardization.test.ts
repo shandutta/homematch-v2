@@ -70,4 +70,22 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
+
+  it.each([
+    'src/app/api/maps/geocode/route.ts',
+    'src/app/api/maps/places/autocomplete/route.ts',
+  ])('%s standardizes paid Google Maps proxy errors', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('ApiErrorHandler.tooManyRequests')
+    expect(source).toContain('ApiErrorHandler.serviceUnavailable')
+    expect(source).toContain('ApiErrorHandler.badRequest')
+    expect(source).toContain('ApiErrorHandler.serverError')
+    expect(source).not.toContain(
+      "NextResponse.json(\n        { error: 'Too many requests"
+    )
+    expect(source).not.toContain(
+      "NextResponse.json(\n        { error: 'Invalid request parameters"
+    )
+  })
 })

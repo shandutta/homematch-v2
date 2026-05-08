@@ -946,6 +946,16 @@
     <li><strong>Remaining:</strong> broader auth client consolidation and server monkey-patch cleanup require dedicated slice.</li>
   </ul>
 </section>
+
+<section id="phase0-phase1-m6-maps-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 paid Maps proxy conversion</h2>
+  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted <code>maps/geocode</code> and <code>maps/places/autocomplete</code> to <code>ApiErrorHandler</code> for rate-limit, config, validation, upstream, and internal errors.</li>
+    <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites; resource-limited type-check passed.</li>
+    <li><strong>Remaining:</strong> admin/remaining route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>
