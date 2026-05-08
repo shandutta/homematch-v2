@@ -1,105 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
-import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
-import { isInvalidRefreshTokenError } from './auth-helpers'
 import { buildSupabaseSessionCookieOptions } from './cookie-options'
 import { getSupabaseAuthStorageKey } from './storage-keys'
-
-type SupabaseAuthSubset = Pick<
-  SupabaseClient<AppDatabase>['auth'],
-  'getSession' | 'getUser' | 'signOut'
->
-
-type SupabaseAuthClient = {
-  auth: SupabaseAuthSubset
-}
-
-const clearStaleSession = async (supabase: SupabaseAuthClient) => {
-  try {
-    await supabase.auth.signOut({ scope: 'local' })
-  } catch (err) {
-    console.warn('[Supabase][Server] Failed to clear stale session', err)
-  }
-}
-
-const withRefreshRecovery = (
-  supabase: SupabaseAuthClient,
-  context: 'server' | 'api' = 'server'
-) => {
-  const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null
-
-  const describe = (error: unknown): { code?: string; message?: string } => {
-    if (error instanceof AuthApiError) {
-      return { code: error.code, message: error.message }
-    }
-    if (isRecord(error)) {
-      return {
-        code: typeof error.code === 'string' ? error.code : undefined,
-        message: typeof error.message === 'string' ? error.message : undefined,
-      }
-    }
-    return {}
-  }
-
-  const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
-  const getSessionWithRecovery: typeof supabase.auth.getSession = async () => {
-    try {
-      const result = await originalGetSession()
-      if (result.error && isInvalidRefreshTokenError(result.error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
-          describe(result.error)
-        )
-        await clearStaleSession(supabase)
-        return { data: { session: null }, error: null }
-      }
-      return result
-    } catch (error) {
-      if (isInvalidRefreshTokenError(error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
-          describe(error)
-        )
-        await clearStaleSession(supabase)
-        return { data: { session: null }, error: null }
-      }
-      throw error
-    }
-  }
-  supabase.auth.getSession = getSessionWithRecovery
-
-  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  const getUserWithRecovery: typeof supabase.auth.getUser = async () => {
-    try {
-      const result = await originalGetUser()
-      if (result.error && isInvalidRefreshTokenError(result.error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
-          describe(result.error)
-        )
-        await clearStaleSession(supabase)
-        return originalGetUser()
-      }
-      return result
-    } catch (error) {
-      if (isInvalidRefreshTokenError(error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
-          describe(error)
-        )
-        await clearStaleSession(supabase)
-        return originalGetUser()
-      }
-      throw error
-    }
-  }
-  supabase.auth.getUser = getUserWithRecovery
-}
-
-export const __withRefreshRecovery = withRefreshRecovery
+import { withRefreshRecovery } from './refresh-recovery'
+import { isInvalidRefreshTokenError } from './auth-helpers'
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
@@ -162,7 +68,7 @@ export async function createClient() {
     }
   )
 
-  withRefreshRecovery(supabase)
+  withRefreshRecovery(supabase, { logPrefix: '[Supabase][Server]', context: 'server' })
 
   return supabase
 }
@@ -224,7 +130,7 @@ export function createApiClient(request?: NextRequest) {
     }
   )
 
-  withRefreshRecovery(supabase, 'api')
+  withRefreshRecovery(supabase, { logPrefix: '[Supabase][Server]', context: 'api' })
 
   // Monkey-patch getUser to automatically use the bearer token if available and no token is provided
   // This ensures that client.auth.getUser() works as expected in API routes even without session persistence

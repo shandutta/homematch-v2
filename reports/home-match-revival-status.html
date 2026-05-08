@@ -144,8 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:52 UTC</code>. Strict
-        Phase 0/1 closure mode: M7, M9, M11-partial, M12, M13, and M14 advanced repo-side in this run;
+        Live Kanban status. Updated: <code>2026-05-08 03:57 UTC</code>. Strict
+        Phase 0/1 closure mode: M7, M9, M11, M12, M13, and M14 closed repo-side in this run;
         continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
@@ -1062,6 +1062,17 @@
     <li>Reworked tests to validate behavior through public <code>getOptionalServerUser</code> plus a static no-<code>__</code> export guard.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m11-optional-red-1778212210.service</code>; targeted Jest passed in <code>hm-m11-optional-green-1778212243.service</code>; resource-limited type-check passed in <code>hm-m11-optional-typecheck-1778212248.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> M11 still has <code>__withRefreshRecovery</code> exports in Supabase client/server that require a separate shared-helper refactor; Phase 0/1 also retain auth consolidation, service-role/RBAC, DB/RLS/migration, timeout, rate-limit, README/local-dev, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m11-refresh-recovery-2026-05-08">
+  <h2>Phase 0/1 remediation — M11 refresh recovery export cleanup</h2>
+  <p><strong>Status:</strong> M11 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Extracted duplicated Supabase refresh-token recovery monkey-patch logic into <code>src/lib/supabase/refresh-recovery.ts</code>.</li>
+    <li>Removed the test-only <code>__withRefreshRecovery</code> exports from browser and server Supabase client modules.</li>
+    <li><strong>Verification:</strong> refresh recovery Jest passed in <code>hm-m11-refresh-green2-1778212536.service</code>; resource-limited type-check passed in <code>hm-m11-refresh-typecheck2-1778212541.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>
