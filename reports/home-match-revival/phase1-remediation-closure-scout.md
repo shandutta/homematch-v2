@@ -1,6 +1,6 @@
 # Phase 1 Remediation Closure Scout
 
-Generated: 2026-05-08T01:39:45Z
+Generated: 2026-05-08T01:42:20Z
 Lane: `/home/shan/projects/homematch-v2.worktrees/p3-backend`  
 Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-code changes in this scout.
 
@@ -93,14 +93,14 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | V1: Vercel config requires no change | `vercel-localdev-docker-decision.md` says ZERO changes; no conflicting evidence. | closed | None. |
 | V2: Add `SKIP_SUPABASE_GUARD=true` bypass | `p1-repair-gates.json`; `AGENTS.md` documents commands; guard verification passed. | closed | None. |
 | V3: Create sanitized `.env.prod` | Recommended in audit; no tracked evidence expected/found. | block | Create sanitized local/secret-handled `.env.prod` through approved secrets process; do not commit secrets. |
-| V4: README documents Docker optional / default fast dev | Audit recommended README; `AGENTS.md` updated, README closure not evidenced. | open | Update README in docs phase/closure lane and verify no secret leakage. |
+| V4: README documents Docker optional / default fast dev | Audit recommended README; `AGENTS.md` updated, remaining local-dev validation blockers not evidenced. | open | Update README in docs phase/closure lane and verify no secret leakage. |
 | V5: Verify `ALLOW_REMOTE_SUPABASE` integration-runner path | Audit marked future/P2/P3; no Phase 1 closure evidence. | block | Keep held until Phase 1 blockers are resolved; if needed for Phase 0/1 test closure, create a scoped test-infra task. |
 | V6: Docker optional, no Dockerfile/docker-compose needed | Audit says optional; no Docker app deployment files needed. | closed | None. |
 
 ## Closure rollup
 
 - Closed: Auth cookie hardening, Maps auth hardening, Vercel no-op, local dev guard bypass, Docker optional decision, CORP/COOP headers, DB RLS policy overlap migration, SECURITY DEFINER search-path migration, property stats RPC, service-role-client bypass gate, part/all of schema safety constraints.
-- Open: Most middleware/API hardening and dead-code cleanup; auth client consolidation; auth config hardening; DB P1/P2 performance/RLS/migration cleanup; README closure.
+- Open: Most middleware/API hardening and dead-code cleanup; auth client consolidation; auth config hardening; DB P1/P2 performance/RLS/migration cleanup; remaining local-dev validation blockers.
 - Blocked: True service-role RBAC model, production auth policy choices (email/CAPTCHA), durable rate-limiter decision, `.env.prod` secret handling, DB numeric-constraint semantics, and integration DB reset/lint environment.
 
 ## Final Phase 1 gate answer

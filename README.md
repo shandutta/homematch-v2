@@ -17,18 +17,21 @@ HomeMatch is an AI-assisted home discovery app that helps households shortlist p
 pnpm install
 cp .env.example .env.local
 
-# Start the fast local Next.js loop against the env you configured
-pnpm dev
+# Fast local Next.js loop; no Docker or local Supabase reset required
+SKIP_SUPABASE_GUARD=true pnpm dev
 ```
 
 Visit http://localhost:3000.
 
-Optional:
+Docker is optional for the default development loop. Use it only for local database or integration-test work:
 
-- Use `pnpm dev:db` when you explicitly want to start/reset local Supabase, seed data, and create test users.
+- Use `pnpm dev:db` when you explicitly want to start/reset local Supabase, seed data, and create test users. This path requires Docker.
 - Use `pnpm dev:integration` if Supabase is already running and you want the same Next.js command used by integration tests.
+- Use `SKIP_DOCKER=1` only when intentionally bypassing Docker-dependent checks in a non-Docker environment.
 - If you want to start Supabase manually, run:
   `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`
+
+Secrets: keep real credentials in local/untracked env files or an approved secrets manager. Never commit secrets, production env values, API keys, service-role keys, or database URLs. See `docs/secrets.md` for scanning and handling guidance.
 
 ## Essential Commands
 

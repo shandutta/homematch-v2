@@ -828,7 +828,7 @@
   <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
   <ul>
     <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
-    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency cleanup decision, README/local-dev closure.</li>
+    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency cleanup decision, remaining local-dev validation blockers.</li>
     <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
   </ul>
 </section>
@@ -1082,7 +1082,17 @@
     <li>Converted stale production TODO markers in <code>src/lib/services/properties/neighborhood.ts</code> into explicit intentional-fallback comments with migration-coverage criteria.</li>
     <li>Added <code>__tests__/unit/services/properties-neighborhood-cleanup.test.ts</code> to guard against reintroducing stale TODO markers in that production service.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m15-neighborhood-red-1778213946.service</code>; targeted Jest passed in <code>hm-m15-neighborhood-green-1778213981.service</code>; resource-limited type-check passed in <code>hm-m15-neighborhood-typecheck-1778213988.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, README/local-dev closure, and validation blockers.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, remaining local-dev validation blockers, and validation blockers.</li>
+  </ul>
+</section>
+<section id="phase0-phase1-v4-readme-local-dev-2026-05-08">
+  <h2>Phase 0/1 remediation — V4 README local-dev closure</h2>
+  <p><strong>Status:</strong> V4 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>README Quick Start now makes the fast local loop explicit: <code>SKIP_SUPABASE_GUARD=true pnpm dev</code>.</li>
+    <li>Documented Docker as optional for default dev, Docker-required paths for <code>pnpm dev:db</code>, intentional <code>SKIP_DOCKER=1</code>, and no-secret handling.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-v4-readme-red-1778214105.service</code>; targeted README Jest passed in <code>hm-v4-readme-green-1778214126.service</code>; resource-limited type-check passed in <code>hm-v4-readme-typecheck-1778214129.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, and validation blockers.</li>
   </ul>
 </section>
 </main>
