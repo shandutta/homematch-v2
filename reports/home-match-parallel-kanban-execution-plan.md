@@ -20,24 +20,22 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integration HEAD seen: `cee25c5 fix: close api external fetch timeout coverage`
+- Latest integration HEAD seen: `ede6a83 fix: close auth client cleanup slice`
 - Board: `home-match-revival`
-- Board state after `/goal`→Kanban repair: `todo=2, ready=0, running=1, blocked=10, done=28`
-- Active worker: `t_42e0d08a` (`P1 auth/client cleanup`) running in `.worktrees/t_42e0d08a`.
+- Board state after auth worker reconciliation: `todo=2, ready=0, running=0, blocked=10, done=29`
+- Latest completed worker: `t_42e0d08a` (`P1 auth/client cleanup`) merged into main at `ede6a83`.
 - Important interpretation: the small board counts are **gate counts**, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
 - Phase 2+: **held**
 
-### Latest control-plane repair — 2026-05-08T05:50Z
+### Latest control-plane reconciliation — 2026-05-08T06:05Z
 
-- Shan correctly flagged that `/goal` stopped after a control-plane/status turn instead of leaving runnable Kanban work.
-- Root cause: `t_114ade2b` dispatch gate was still blocked, so dispatcher saw `ready=0`; the previous in-chat bounded slice also violated the “Telegram is control plane, workers execute” operating agreement.
-- Repair applied: completed `t_114ade2b`, immediately blocked sibling children to prevent a fleet, and dispatched exactly one bounded Kanban worker: `t_42e0d08a` (`P1 auth/client cleanup`).
-- Current worker workspace: `.worktrees/t_42e0d08a`; sibling Phase 0/1 tasks remain held for sequential release after this worker reports back.
-- Current repo-local Phase 0/1 closures since the original matrix include README local-dev guidance, M8 external-call timeout coverage for all Next.js API route outbound fetches, Supabase password-policy alignment, user-profile delete RLS policy, and JSONB GIN indexes.
-- Still not clean: Phase 0 live/auth/browser/integration/probe gaps remain; Phase 1 still has repo-open auth/client cleanup, service-role fallback/RBAC decisions, query/realtime/dedupe/rollback/type cleanup, rate-limiter consolidation/durability, `.env.prod`/secret-handling decisions, and DB integration reset/lint blockers.
-- Next safe execution shape after `t_42e0d08a`: release one additional Phase 0/1 child at a time, or a read-only scout, never Phase 2+ implementation.
+- `t_42e0d08a` completed and was integrated into main as `ede6a83 fix: close auth client cleanup slice`.
+- Closed in that slice: removed duplicate `createApiClient()` `auth.getUser` monkey-patch, removed user-scoped interactions POST service-role fallback/backfill, added static regression coverage, and updated the auth-boundary report.
+- Verification rerun in main: targeted auth/interactions/error-standardization Jest passed 3 suites / 37 tests when `.worktrees/` is ignored; `pnpm type-check` passed; `git diff --check` passed.
+- Closure matrix updated: the auth client consolidation slice, interactions service-role fallback removal, and duplicate getUser monkey-patch removal moved from open to closed. Phase 0/1 still not 100%.
+- Next safe execution shape: release one additional Phase 0/1 child at a time, or a read-only scout, never Phase 2+ implementation.
 
 ## Strict gates
 
@@ -117,7 +115,8 @@ Use these as source of truth instead of relying on Telegram history.
 - `t_42e0d08a` — `P1 auth/client cleanup: consolidation, getUser patch, service-role fallback`
   - Assignee: `backend-eng`
   - Workspace: worktree
-  - Mode: bounded code remediation with targeted tests.
+  - Status: done and merged into main at `ede6a83`.
+  - Closed: auth client consolidation slice, duplicate getUser monkey-patch removal, and user-scoped interactions service-role fallback removal.
 - `t_62707f69` — `P1 API hardening: remaining external timeouts and limiter dedupe`
   - Assignee: `backend-eng`
   - Workspace: worktree
