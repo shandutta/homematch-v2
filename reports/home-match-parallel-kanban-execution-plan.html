@@ -11,56 +11,53 @@
     pre { padding: 14px; overflow-x: auto; }
     .card { background: #fff; border: 1px solid #eadfd2; border-radius: 14px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
     .status { font-weight: 700; color: #8a4b16; }
+    .danger { background: #fff6f0; border-color: #e2a070; }
     li { margin: 6px 0; }
   </style>
 </head>
 <body>
   <h1>HomeMatch Parallel Kanban Execution Plan</h1>
-  <p class="status">Status: setup/check-in only. No implementation workers start until Shan approves.</p>
+  <p class="status">Status: setup complete; dispatch not started.</p>
 
-  <div class="card">
-    <h2>Short /goal command</h2>
-    <pre>/goal Load skill homematch-parallel-kanban-execution. Use board home-match-revival and plan reports/home-match-parallel-kanban-execution-plan.md. Setup separate git worktrees + 1-min RAM monitor only, then check in before dispatch.</pre>
+  <div class="card danger">
+    <h2>Corrected non-negotiable gate</h2>
+    <p><strong>Phase 2 must not dispatch until Phase 0 and Phase 1 are 100% closed.</strong></p>
+    <p>“Complete with caveats,” “audit complete,” or “remediation incomplete” means the next wave is Phase 0/1 closure only.</p>
   </div>
 
   <div class="card">
-    <h2>Execution model</h2>
-    <ul>
-      <li>Main worktree stays the integration lane.</li>
-      <li>Parallel writers use separate git worktrees and branches.</li>
-      <li>RAM watchdog samples every minute and slows/prunes lanes under pressure.</li>
-      <li>GStack is used intentionally: health/review always, browse/qa-only only for tiny green-zone checks.</li>
-      <li>No production deploys, paid APIs, dashboards, legal publication, emails, or real user data without separate approval.</li>
-    </ul>
+    <h2>Correct short /goal command</h2>
+    <pre>/goal Load homematch-parallel-kanban-execution. Strict OG-plan gate: dispatch Phase 0/1 closure only using existing worktrees + RAM watchdog. Do not dispatch P2/P3/P4/P5. Produce a close/block matrix for Phase 0 caveats and Phase 1 remediation backlog, update Kanban/report, then check in before any later phase.</pre>
   </div>
 
   <div class="card">
-    <h2>Planned lanes</h2>
+    <h2>Allowed Wave 1 after approval</h2>
+    <ol>
+      <li><strong>Phase 0 closure scout:</strong> revisit browser traversal coverage, API probe coverage, auth-flow verification, and skipped integration tests; produce a close/block matrix.</li>
+      <li><strong>Phase 1 remediation closure:</strong> enumerate all P1 audit recommendations and map each to implemented commit/test/artifact or concrete child remediation task.</li>
+      <li><strong>Read-only OG-plan scout:</strong> verify whether Phase 0 and Phase 1 can honestly be marked 100% complete.</li>
+    </ol>
+    <p><strong>Hold:</strong> P2 couples UX, P2 maps/images/SEO, P3 backend, P4/P5 quality/compliance.</p>
+  </div>
+
+  <div class="card">
+    <h2>Worktrees already available</h2>
     <ul>
       <li><strong>Integration:</strong> <code>/home/shan/projects/homematch-v2</code>, branch <code>autonomy/6h-business-hardening</code></li>
-      <li><strong>P2 frontend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p2-frontend</code>, branch <code>autonomy/hm-p2-frontend</code></li>
-      <li><strong>P3 backend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p3-backend</code>, branch <code>autonomy/hm-p3-backend</code></li>
-      <li><strong>P4/P5 quality-compliance:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p4-quality-compliance</code>, branch <code>autonomy/hm-p4-quality-compliance</code></li>
+      <li><strong>P2 frontend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p2-frontend</code>, branch <code>autonomy/hm-p2-frontend</code> — held until Phase 0/1 close.</li>
+      <li><strong>P3 backend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p3-backend</code>, branch <code>autonomy/hm-p3-backend</code> — held until Phase 0/1 and P2 gate.</li>
+      <li><strong>P4/P5 quality-compliance:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p4-quality-compliance</code>, branch <code>autonomy/hm-p4-quality-compliance</code> — held.</li>
     </ul>
   </div>
 
   <div class="card">
     <h2>RAM policy</h2>
     <ul>
-      <li><strong>Green:</strong> available RAM ≥ 1.6 GiB and swap used &lt; 1.2 GiB. Allow 2 writers + 1 scout.</li>
-      <li><strong>Yellow:</strong> available RAM 1.0-1.6 GiB or swap 1.2-1.6 GiB. Pause new writers.</li>
+      <li><strong>Green:</strong> available RAM ≥ 1.6 GiB and swap used &lt; 1.2 GiB.</li>
+      <li><strong>Yellow:</strong> available RAM 1.0-1.6 GiB or swap 1.2-1.6 GiB. Pause new starts.</li>
       <li><strong>Red:</strong> available RAM &lt; 1.0 GiB or swap &gt; 1.6 GiB. Prune to integration lane.</li>
       <li><strong>Critical:</strong> available RAM &lt; 700 MiB or load avg &gt; 3.0 for 5 minutes. Stop active worker services.</li>
     </ul>
-  </div>
-
-  <div class="card">
-    <h2>First wave after approval</h2>
-    <ol>
-      <li>P2 frontend: bounded couples/matching UX slice from <code>t_ff763f6d</code>.</li>
-      <li>P3 backend: bounded prompt/response-shape hardening from <code>t_11342c3d</code>.</li>
-      <li>Read-only scout: compare outputs to OG phases and final-docs blockers.</li>
-    </ol>
   </div>
 
   <p>Markdown source: <code>reports/home-match-parallel-kanban-execution-plan.md</code></p>

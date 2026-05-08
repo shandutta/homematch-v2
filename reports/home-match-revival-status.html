@@ -812,6 +812,16 @@
   </ul>
   <p>Setup artifact: <code>reports/home-match-revival/parallel-worktree-setup-2026-05-07.md</code></p>
 </section>
+
+<section id="strict-phase-gate-correction">
+  <h2>Strict Phase 0/1 gate correction</h2>
+  <p><strong>Status:</strong> Phase 2/3/4/5 dispatch is held.</p>
+  <p>The previous parallel plan was too loose. Phase 0 is not 100% closed while baseline caveats remain, and Phase 1 is not 100% closed while remediation backlog remains. The allowed next wave is Phase 0/1 closure only.</p>
+  <ul>
+    <li>Artifact: <code>reports/home-match-revival/phase0-phase1-strict-closure-gate.md</code></li>
+    <li>Correct command: <code>/goal Load homematch-parallel-kanban-execution. Strict OG-plan gate: dispatch Phase 0/1 closure only using existing worktrees + RAM watchdog. Do not dispatch P2/P3/P4/P5.</code></li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

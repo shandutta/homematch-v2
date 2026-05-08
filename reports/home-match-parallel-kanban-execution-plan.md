@@ -17,6 +17,7 @@ New model: use **separate git worktrees** for true parallel writers, plus a main
 ## Non-negotiable gates
 
 - Do not start implementation workers until Shan approves after the setup check-in.
+- **Strict OG phase order:** Phase 2 must not dispatch until Phase 0 and Phase 1 are 100% closed. "Complete with caveats," "audit complete," or "remediation incomplete" means the next wave is Phase 0/1 closure only.
 - No production deploys, paid API calls, external dashboard changes, legal publication, emails, or real customer/user data without separate approval.
 - No same-worktree parallel writers.
 - Each writer must own one branch/worktree and produce one artifact per run: commit, report artifact, Kanban completion/comment, or explicit blocked reason.
@@ -117,13 +118,15 @@ Use gstack deliberately:
 
 ## Execution after approval
 
+Current allowed execution is **Phase 0/1 closure only** until the closure gate proves both phases are 100% complete.
+
 Start with max concurrency 2:
 
-- P2 frontend writer
-- P3 backend writer
-- one read-only scout if RAM remains green
+- Phase 0 closure scout: verify every baseline gap and either close it with artifact evidence or create a concrete blocker.
+- Phase 1 closure/remediation writer: resolve remaining P1 remediation backlog items or produce exact child tasks with tests/artifacts.
+- Optional read-only scout if RAM remains green: compare closure evidence against OG plan and report gaps.
 
-Hold P4/P5 until one of P2/P3 finishes or RAM stays green for 10 minutes.
+Hold P2/P3/P4/P5 until Phase 0/1 closure is explicitly marked complete in the report and Kanban.
 
 Each worker must:
 
@@ -144,17 +147,17 @@ Integrator must:
 
 ## First proposed task wave
 
-Wave 1, after approval:
+Wave 1, after approval — **strict Phase 0/1 closure only**:
+
+1. Phase 0 closure scout: revisit baseline caveats — browser traversal coverage, API probe coverage, auth flow verification, and skipped integration tests — and produce a close/block matrix.
+2. Phase 1 remediation closure: enumerate all remaining P1 audit recommendations, map each to an implemented commit/test/artifact or create a concrete child remediation task.
+3. Read-only OG-plan alignment scout: verify whether Phase 0 and Phase 1 can honestly be marked 100% complete.
+
+Wave 2, only after Wave 1 closes Phase 0/1:
 
 1. P2 frontend: bounded couples/matching UX slice from `t_ff763f6d`.
-2. P3 backend: bounded prompt/response-shape hardening from `t_11342c3d`.
-3. Read-only scout: compare both lane outputs against OG phases and final docs blockers.
-
-Wave 2:
-
-1. P2 frontend: maps/images/social-card slice from `t_1009b931`.
-2. P3 backend: ingest architecture artifact from `t_4b4d5b96`.
-3. P4/P5 quality lane starts only if RAM remains green.
+2. P2 frontend: maps/images/social-card slice from `t_1009b931`.
+3. P3 remains held until P2 is explicitly closed or Shan approves overlap.
 
 ## Check-in required
 
