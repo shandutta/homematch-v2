@@ -234,6 +234,75 @@ describe('middleware matcher exclusions', () => {
     expect(matcher).toContain('txt')
     expect(matcher).toContain('woff2')
   })
+
+  describe('matcher regex registration for Next 15 proxy interception', () => {
+    // The matcher string is compiled by Next.js as a regex. We anchor it here
+    // to assert which request paths the proxy/middleware actually intercepts
+    // versus which it lets through untouched. A regression that loosens the
+    // negative lookahead (e.g. dropping a protected prefix) or tightens the
+    // asset extension list (e.g. accidentally matching protected pages as
+    // assets) would silently break auth gating, so this test guards both.
+    const matcherRegex = new RegExp(`^${matcher}$`)
+
+    it.each([
+      '/dashboard',
+      '/dashboard/liked',
+      '/dashboard/properties/123',
+      '/couples',
+      '/couples/invite',
+      '/settings',
+      '/settings/profile',
+      '/profile',
+      '/profile/edit',
+    ])(
+      'intercepts protected path %s so the auth guard runs before the page renders',
+      (path) => {
+        expect(matcherRegex.test(path)).toBe(true)
+      }
+    )
+
+    it.each([
+      '/',
+      '/login',
+      '/signup',
+      '/about',
+      '/api/couples/stats',
+      '/api/health',
+    ])(
+      'still intercepts public/API path %s because the middleware itself owns the public-page fast path',
+      (path) => {
+        expect(matcherRegex.test(path)).toBe(true)
+      }
+    )
+
+    it.each([
+      '/_next/static/chunks/main.js',
+      '/_next/image/foo.png',
+      '/_next/data/build-id/dashboard.json',
+      '/favicon.ico',
+      '/logo.svg',
+      '/hero.png',
+      '/photo.jpg',
+      '/photo.jpeg',
+      '/animation.gif',
+      '/banner.webp',
+      '/bundle.js',
+      '/styles.css',
+      '/manifest.json',
+      '/sitemap.xml',
+      '/robots.txt',
+      '/source.map',
+      '/font.woff',
+      '/font.woff2',
+      '/font.ttf',
+      '/font.otf',
+    ])(
+      'lets static asset path %s bypass the middleware entirely',
+      (path) => {
+        expect(matcherRegex.test(path)).toBe(false)
+      }
+    )
+  })
 })
 
 describe('middleware Supabase auth timeout cleanup', () => {
