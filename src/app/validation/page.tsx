@@ -1,3 +1,4 @@
+import { requireInternalPreviewAccess } from '@/lib/routing/internal-preview'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
@@ -28,6 +29,8 @@ interface DatabaseStats {
 type ExtensionRow = Database['public']['Views']['pg_extension']['Row']
 
 export default async function ValidationPage() {
+  requireInternalPreviewAccess()
+
   const supabase = await createClient()
   const propertyService = new PropertyService()
   const userService = new UserService()

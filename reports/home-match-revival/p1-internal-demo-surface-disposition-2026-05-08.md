@@ -1,12 +1,13 @@
 # P1 Internal/Demo Surface Disposition Decision Packet
 
 Generated: 2026-05-08T12:48Z
+Updated: 2026-05-08T17:10Z
 Task: t_8f622c6b
 Mode: strict Phase 0/1 decision packet only. Static file reads/searches only; no route deletions, no deploys, no external calls, no browser swarm, no production data.
 
 ## Verdict
 
-The repo-side inventory and PM recommendation are complete, but launch disposition is still owner-decision-gated until Shan approves the route policy and an implementation worker hides/restricts/deletes the surfaces.
+**IMPLEMENTATION SLICE CLOSED** (2026-05-08): All four surfaces are now gated behind `requireInternalPreviewAccess()` (env var `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true`). Default production behavior returns HTTP 404 for all surfaces. Eight targeted Jest tests cover the gate across all surfaces and are passing. TypeScript is clean.
 
 Recommended default: hide public demo/monetization previews from launch, restrict internal operational tooling behind an admin-only area after the D1 RBAC authority decision, and delete stale validation/dashboard debug pages only after replacement acceptance tests exist.
 
