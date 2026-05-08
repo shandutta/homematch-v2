@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, readdirSync, statSync } from 'fs'
+import { join, posix, relative, sep } from 'path'
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
@@ -177,4 +177,101 @@ describe('Phase 1 M6 route error standardization', () => {
       expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
     }
   )
+})
+
+// Routes whose response body is intentionally NOT JSON (they cannot return a
+// JSON error envelope without breaking the caller contract). Errors are still
+// shaped as the appropriate non-JSON content for the medium — for example,
+// /api/maps/proxy-script is loaded via <script src="..."> and returns
+// application/javascript stubs so the browser doesn't choke trying to execute
+// a JSON body. Any addition to this set must come with a comment explaining
+// why JSON is not viable.
+const NON_JSON_DELIVERY_ROUTES = new Set<string>(['maps/proxy-script/route.ts'])
+
+const API_ROOT = join(process.cwd(), 'src/app/api')
+
+function listRouteFiles(dir: string): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(dir)) {
+    const absolute = join(dir, entry)
+    if (statSync(absolute).isDirectory()) {
+      out.push(...listRouteFiles(absolute))
+    } else if (entry === 'route.ts' || entry === 'route.tsx') {
+      out.push(absolute)
+    }
+  }
+  return out
+}
+
+function relativePosix(absolute: string): string {
+  return relative(API_ROOT, absolute).split(sep).join(posix.sep)
+}
+
+function stripComments(source: string): string {
+  // Remove block comments first, then line comments. The line-comment guard
+  // skips `://` and similar inside string literals (best-effort — false
+  // positives hurt more than false negatives in a static linter).
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1')
+}
+
+// Match a NextResponse.json or noStoreJson call whose argument list contains
+// an explicit 4xx/5xx status: token. `[^()]{0,1500}` keeps the match inside a
+// single call (parentheses bound the call args), and 1500 is generous enough
+// to span any realistic response body.
+const JSON_ERROR_STATUS_PATTERN =
+  /(?:NextResponse\.json|noStoreJson)\s*\([^()]{0,1500}status:\s*[45]\d{2}/
+
+const RAW_RESPONSE_ERROR_STATUS_PATTERN =
+  /new\s+NextResponse\s*\([^()]{0,1500}status:\s*[45]\d{2}/
+
+const ROUTE_FILES = listRouteFiles(API_ROOT)
+
+describe('Phase 1 D17 raw JSON error envelope scanner (src/app/api)', () => {
+  it('discovers every route handler under src/app/api', () => {
+    expect(ROUTE_FILES.length).toBeGreaterThan(0)
+    // Sanity: every documented non-JSON exception must actually exist on disk.
+    for (const exception of NON_JSON_DELIVERY_ROUTES) {
+      expect(ROUTE_FILES.map(relativePosix)).toContain(exception)
+    }
+  })
+
+  it.each(ROUTE_FILES.map((absolute) => [relativePosix(absolute), absolute]))(
+    '%s routes 4xx/5xx JSON responses through ApiErrorHandler',
+    (_rel, absolute) => {
+      const source = stripComments(readFileSync(absolute, 'utf8'))
+      // Raw JSON error envelopes must go through ApiErrorHandler.* helpers so
+      // every JSON API responds with the standard `{ error, code }` shape on
+      // 400/401/403/404/413/429/500/502/503/504.
+      expect(source).not.toMatch(JSON_ERROR_STATUS_PATTERN)
+    }
+  )
+
+  it.each(
+    ROUTE_FILES.map((absolute) => [relativePosix(absolute), absolute]).filter(
+      ([rel]) => !NON_JSON_DELIVERY_ROUTES.has(rel)
+    )
+  )(
+    '%s does not bypass JSON envelopes via raw new NextResponse(...) error responses',
+    (_rel, absolute) => {
+      const source = stripComments(readFileSync(absolute, 'utf8'))
+      // Raw `new NextResponse(body, { status })` with a 4xx/5xx status would
+      // skip the JSON envelope entirely. Only routes in
+      // NON_JSON_DELIVERY_ROUTES are allowed to do this, and they must serve
+      // an alternate content type (asserted below).
+      expect(source).not.toMatch(RAW_RESPONSE_ERROR_STATUS_PATTERN)
+    }
+  )
+
+  it('documented non-JSON delivery routes declare an alternate content type', () => {
+    for (const rel of NON_JSON_DELIVERY_ROUTES) {
+      const source = readFileSync(join(API_ROOT, rel), 'utf8')
+      // The exception is justified only if the route really does serve a
+      // non-JSON content type; otherwise the carve-out should be removed.
+      expect(source).toMatch(
+        /['"]Content-Type['"]\s*:\s*['"](?!application\/json)[^'"\s]+/
+      )
+    }
+  })
 })
