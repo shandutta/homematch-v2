@@ -1,6 +1,6 @@
 # Phase 0/1 Closure Matrix — Strict OG Gate
 
-Generated: 2026-05-08T06:59Z
+Generated: 2026-05-08T07:19Z
 
 ## Verdict
 
@@ -8,15 +8,28 @@ Generated: 2026-05-08T06:59Z
 
 ## Phase 0 closure rollup
 
-- Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction.
-- Open: API live probe coverage; browser traversal; authenticated flow verification; test-suite quality triage; cron-secret endpoint opacity; `.env.prod` guard precision.
-- Blocked: integration-test execution until local Supabase/Docker or a safeguarded remote-test path is available and approved.
+- Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction; cron-secret endpoint opacity for missing-secret route behavior.
+- Partial / not closed: API live probe coverage; browser traversal; test-suite quality triage; `.env.prod` guard precision.
+- Open/blocking evidence from 2026-05-08 live slice: `/api/maps/metro-boundaries?metro=bay-area` returns 500 because the public route calls a service-role client outside an authorized context; authenticated browser/API probes remain blocked by missing approved test credentials/session; `.env.prod` remains absent; targeted API quality triage has 1 failing suite (`error-standardization.test.ts`) out of 8.
+- Blocked: authenticated flow verification and integration-test execution until approved test credentials/session plus local Supabase/Docker or a safeguarded remote-test path are available.
 
 ## Phase 1 closure rollup
 
 - Closed: httpOnly Supabase cookies; Maps auth hardening; local dev guard bypass; Docker optional decision; COOP/CORP; properties RLS read-policy hardening; SECURITY DEFINER search-path hardening; property stats RPC; interaction uniqueness migration; middleware matcher exclusions; successful GET route cache-policy classification; M5 route-scoped limiter coverage for identified mutating/admin gaps; M6 JSON API error standardization route conversion; M7 middleware AbortController timeout cleanup; M8 external-call timeout coverage for all Next.js API route outbound fetches; M9 dead server-action cleanup; M10 duplicate rate-limit system consolidation; M11 test-only export cleanup; M12 duplicate RPC wrapper cleanup; M13 dead Zillow factory cleanup; M14 unused CouplesMiddleware cleanup; M15 stale neighborhood TODO cleanup; service-role-client bypass gate; factory async-stub removal; service-client cache/key-rotation hardening; Supabase password policy alignment; user-profile delete RLS policy; JSONB GIN indexes; partial schema safety constraints; auth client consolidation slice; interactions service-role fallback removal; duplicate auth getUser monkey-patch removal; DB P1.2 dashboard query in-flight dedupe; DB P1.3 CouplesRealtime mutual-like RPC enrichment; DB P1.4 Phase 1 rollback/DOWN static coverage; DB P2.3/P2.4 inline DB typing cleanup for realtime payloads and dashboard select columns.
 - Open: E2E auth lifecycle; remaining dependency cleanup decision; duplicate Supabase factory consolidation; pg_trgm text-search index if still required; README/local-dev validation cleanup.
-- Blocked/decision-needed: real service-role RBAC model; durable rate-limiter decision; production email confirmation/CAPTCHA policy; `.env.prod` secret handling; numeric constraint semantics; DB reset/lint/integration environment; disputed-route email/profile field exposure decision.
+- Blocked/decision-needed: real service-role RBAC model; durable rate-limiter decision; production email confirmation/CAPTCHA policy; `.env.prod` secret handling; numeric constraint semantics; DB reset/lint/integration environment; disputed-route email/profile field exposure decision. See `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md` for the concise owner-decision register.
+
+## Decision-needed register
+
+| ID | Decision | Current block |
+| --- | --- | --- |
+| D1 | Service-role RBAC authority | `user_profiles.role === 'admin'` remains placeholder-grade authority for service-role access. |
+| D2 | Durable production rate limiter | Repo coverage is consolidated, but limiter storage is still in-process memory. |
+| D3 | Production email confirmation/CAPTCHA policy | Supabase email confirmations remain disabled and CAPTCHA remains unconfigured. |
+| D4 | `.env.prod` handling model | `.env.prod` remains absent; guard relies on fallback host-pattern detection unless an accepted policy says otherwise. |
+| D5 | Numeric constraint semantics | Bedrooms/bathrooms allow zero despite the original `1-50` audit target. |
+| D6 | DB reset/lint/integration environment | DB reset/lint/rollback/integration validation lack an approved local Supabase/Docker or safeguarded remote-test path. |
+| D7 | Disputed-route email/profile exposure | `/api/couples/disputed` still exposes partner email/profile fields pending product/security decision. |
 
 ## Gate decision
 
@@ -29,3 +42,5 @@ Generated: 2026-05-08T06:59Z
 - `reports/home-match-revival/phase0-closure-scout.md`
 - `reports/home-match-revival/phase1-remediation-closure-scout.md`
 - `reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md`
+- `reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md`
+- `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md`

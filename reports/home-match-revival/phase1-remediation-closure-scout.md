@@ -101,7 +101,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 
 - Closed: Auth cookie hardening, Maps auth hardening, Vercel no-op, local dev guard bypass, Docker optional decision, CORP/COOP headers, DB RLS policy overlap migration, SECURITY DEFINER search-path migration, property stats RPC, service-role-client bypass gate, part/all of schema safety constraints.
 - Open: E2E auth lifecycle; remaining dependency cleanup decision; duplicate Supabase factories; pg_trgm text-search index if still required; remaining local-dev validation blockers.
-- Blocked: True service-role RBAC model, production auth policy choices (email/CAPTCHA), durable rate-limiter decision, `.env.prod` secret handling, DB numeric-constraint semantics, and integration DB reset/lint environment.
+- Blocked: True service-role RBAC model, production auth policy choices (email/CAPTCHA), durable rate-limiter decision, `.env.prod` secret handling, DB numeric-constraint semantics, integration DB reset/lint environment, and disputed-route email/profile field exposure. Concise owner decisions are captured in `p1-decision-needed-register-2026-05-08.md`.
 
 ## Final Phase 1 gate answer
 

@@ -145,7 +145,7 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08T06:50Z full graph expanded + one writer running</code>. Strict Phase 0/1 closure
+        <code>2026-05-08T07:44Z steward reconciliation + Phase 0 evidence committed</code>. Strict Phase 0/1 closure
         mode remains active. This status page now points to the canonical
         control-plane plan and treats older later-phase sections below as
         historical, not active authorization.
@@ -168,23 +168,23 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 31 · running 1 · blocked 10 · ready 0 · todo 17
+            done 37 · running 0 · blocked 8 · ready 0 · todo 16
           </div>
         </div>
       </div>
 
 
       <section>
-        <h2>Latest control-plane action — full graph expanded and execution started</h2>
+        <h2>Latest control-plane action — Phase 0 evidence fan-in and decision register</h2>
         <p>
-          <span class="pill warn">ACTIVE</span> Expanded the canonical Kanban graph through Phase 6 while keeping implementation of Phase 2+ dependency-gated behind the Phase 0/1 closure matrix.
+          <span class="pill warn">ACTIVE GATE</span> The steward reconciled completed Phase 0/1 evidence, kept Phase 2+ held, and identified the next safe repo-local slice.
         </p>
         <ul>
-          <li>Running writer: <code>t_54000dda</code> — Phase 1 DB/perf cleanup in the project dir.</li>
-          <li>Completed scout: <code>t_29d2185c</code> — scratch analyst roadmap expansion, read-only against repo; recommended fan-in verifier before P0 probes.</li>
-          <li>New fan-in verifier: <code>t_113bb9c0</code> — starts after DB/perf completes and decides the next Phase 0/1 release.</li>
-          <li>Held roadmap tasks now cover Phase 2 UX/maps, Phase 3 LLM/ingest, Phase 4 tests, Phase 5 compliance/analytics/payments, and Phase 6 docs/readiness.</li>
-          <li>Full downstream roadmap: <code>reports/home-match-revival/phase2-phase6-execution-roadmap.md</code>.</li>
+          <li>New artifacts: <code>reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md</code> and <code>reports/home-match-revival/p1-decision-needed-register-2026-05-08.md</code>.</li>
+          <li>Board now has no running or ready tasks; stale later-phase roadmap tasks remain dependency-gated, not active authorization.</li>
+          <li>Phase 0 remains open on authenticated probes, metro-boundaries public-route behavior, test-quality triage, and env-prod policy.</li>
+          <li>Phase 1 remains open/blocked on E2E auth, dependency cleanup, duplicate Supabase factory consolidation, pg_trgm decision, README/local-dev validation cleanup, and named owner decisions.</li>
+          <li>Next safe repo-local action: classify/fix the <code>error-standardization.test.ts</code> 429 guard without deploys, paid APIs, browser swarms, or broad installs.</li>
           <li>Phase 2+ implementation remains held until Phase 0/1 are 100% clean or Shan approves a written gate exception.</li>
         </ul>
       </section>
