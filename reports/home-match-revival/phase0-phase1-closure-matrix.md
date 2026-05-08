@@ -112,3 +112,5 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 - `reports/home-match-revival/p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`
 - `reports/home-match-revival/p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`
 - `reports/home-match-revival/zillow-provider-production-grade-evaluation-2026-05-08.md`
+- `reports/home-match-revival/d6-db-execution-evidence-plan-2026-05-08.md`
+- `reports/home-match-revival/d121-signup-verification-prod-checklist-2026-05-08.md`
