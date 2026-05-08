@@ -4,22 +4,23 @@ import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 // Explicitly reject unsupported methods to avoid hanging requests in tests
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PATCH() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function OPTIONS() {
@@ -87,9 +88,9 @@ export async function GET(request: NextRequest) {
       })
     } catch (error) {
       console.error('Error in activity API:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch household activity' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to fetch household activity',
+        error
       )
     }
   })

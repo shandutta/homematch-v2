@@ -4,6 +4,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const notificationSchema = z.object({
   propertyId: z.string().uuid(),
@@ -22,10 +23,7 @@ export async function POST(request: NextRequest) {
       `couples:notify:${user.id}`
     )
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     // Parse and validate request body
@@ -93,15 +91,9 @@ export async function POST(request: NextRequest) {
     console.error('Error in couples notification API:', error)
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(error)
     }
 
-    return NextResponse.json(
-      { error: 'Failed to process notification' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to process notification', error)
   }
 }

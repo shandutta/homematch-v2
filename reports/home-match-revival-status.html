@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 00:19 UTC</code>. Phase
-        0/1 reconciliation complete; bounded Phase 1 DB/RLS/security and Phase 2
-        SEO/auth-cookie hardening slices verified.
+        Live Kanban status. Updated: <code>2026-05-08 03:08 UTC</code>. Strict
+        Phase 0/1 closure mode: M6 API error standardization advanced through
+        remaining couples route-family conversion; Phase 2+ remains held.
       </p>
       <div class="grid">
         <div class="card">
@@ -160,7 +160,7 @@
         <div class="card">
           <div class="label">Phase</div>
           <div class="value">
-            Phase 1 remediation — DB/security hardening in progress
+            Phase 0/1 closure — M6 API error standardization in progress
           </div>
         </div>
         <div class="card">
@@ -828,7 +828,7 @@
   <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
   <ul>
     <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
-    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, interaction uniqueness, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency/dead-code cleanup, README/local-dev closure.</li>
+    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency/dead-code cleanup, README/local-dev closure.</li>
     <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
   </ul>
 </section>
@@ -954,6 +954,16 @@
     <li>Converted <code>maps/geocode</code> and <code>maps/places/autocomplete</code> to <code>ApiErrorHandler</code> for rate-limit, config, validation, upstream, and internal errors.</li>
     <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites; resource-limited type-check passed.</li>
     <li><strong>Remaining:</strong> admin/remaining route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m6-remaining-couples-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 remaining couples route-family conversion</h2>
+  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted <code>couples/activity</code>, <code>couples/notify</code>, and <code>couples/disputed</code> raw method-not-allowed, validation, rate-limit, not-found, and server errors to <code>ApiErrorHandler</code>.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m6-couples-red-1778209561.service</code>; final targeted Jest passed in <code>hm-m6-couples-green-1778209630.service</code>; resource-limited type-check passed in <code>hm-m6-couples-typecheck-1778209637.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> admin/health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
   </ul>
 </section>
 </main>

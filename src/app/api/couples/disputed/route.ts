@@ -4,6 +4,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 export interface DisputedProperty {
   property_id: string
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (profileError || !userProfile?.household_id) {
-      return NextResponse.json({ error: 'No household found' }, { status: 404 })
+      return ApiErrorHandler.notFound('No household found')
     }
 
     const serviceClient = await getServiceRoleClient()
@@ -121,9 +122,9 @@ export async function GET(request: NextRequest) {
         '[Disputed API] Error fetching household members:',
         householdMembersError
       )
-      return NextResponse.json(
-        { error: 'Failed to fetch household members' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to fetch household members',
+        householdMembersError
       )
     }
 
@@ -187,9 +188,9 @@ export async function GET(request: NextRequest) {
         '[Disputed API] Error fetching interactions:',
         interactionsError
       )
-      return NextResponse.json(
-        { error: 'Failed to fetch property interactions' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to fetch property interactions',
+        interactionsError
       )
     }
 
@@ -352,9 +353,9 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error in disputed properties API:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch disputed properties' },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      'Failed to fetch disputed properties',
+      error
     )
   }
 }
@@ -371,19 +372,15 @@ export async function PATCH(request: NextRequest) {
       `couples:disputed:${user.id}`
     )
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     const body = await request.json()
     const { property_id, resolution_type } = body
 
     if (!property_id || !resolution_type) {
-      return NextResponse.json(
-        { error: 'Property ID and resolution type are required' },
-        { status: 400 }
+      return ApiErrorHandler.badRequest(
+        'Property ID and resolution type are required'
       )
     }
 
@@ -395,10 +392,7 @@ export async function PATCH(request: NextRequest) {
     ])
 
     if (!allowedResolutionTypes.has(resolution_type)) {
-      return NextResponse.json(
-        { error: 'Invalid resolution type' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Invalid resolution type')
     }
 
     const { data: userProfile, error: profileError } = await supabase
@@ -408,7 +402,7 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (profileError || !userProfile?.household_id) {
-      return NextResponse.json({ error: 'No household found' }, { status: 404 })
+      return ApiErrorHandler.notFound('No household found')
     }
 
     const now = new Date().toISOString()
@@ -432,10 +426,7 @@ export async function PATCH(request: NextRequest) {
         '[Disputed API] Error saving resolution:',
         upsertError.message
       )
-      return NextResponse.json(
-        { error: 'Failed to save resolution' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Failed to save resolution', upsertError)
     }
 
     return NextResponse.json({
@@ -446,9 +437,6 @@ export async function PATCH(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error updating disputed property resolution:', error)
-    return NextResponse.json(
-      { error: 'Failed to update resolution' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to update resolution', error)
   }
 }

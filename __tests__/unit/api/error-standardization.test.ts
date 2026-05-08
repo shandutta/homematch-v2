@@ -88,4 +88,20 @@ describe('Phase 1 M6 route error standardization', () => {
       "NextResponse.json(\n        { error: 'Invalid request parameters"
     )
   })
+
+  it.each([
+    'src/app/api/couples/activity/route.ts',
+    'src/app/api/couples/notify/route.ts',
+    'src/app/api/couples/disputed/route.ts',
+  ])('%s standardizes remaining couples route-family errors', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('@/lib/api/errors')
+    expect(source).toContain('ApiErrorHandler')
+    expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
+    expect(source).not.toContain("NextResponse.json({ error: 'No household found' }")
+    expect(source).not.toContain("{ error: 'Too many requests. Please try again later.' }")
+    expect(source).not.toContain('NextResponse.json(\n        { error:')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+  })
 })
