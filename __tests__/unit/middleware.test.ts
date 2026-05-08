@@ -11,6 +11,10 @@ import {
   config,
   buildSupabaseSessionCookieOptions,
 } from '../../middleware'
+import {
+  middleware as srcMiddleware,
+  config as srcConfig,
+} from '../../src/middleware'
 
 const mockGetUser = jest.fn()
 
@@ -200,6 +204,20 @@ describe('middleware API and anonymous public-page fast paths', () => {
     expect(response.headers.get('location')).toBe(
       'http://localhost:3000/login?redirectTo=%2Fdashboard%3Ftab%3Dliked'
     )
+  })
+})
+
+describe('Next src-directory middleware entrypoint', () => {
+  it('exposes the protected-route guard at src/middleware.ts so Next intercepts src/app routes before rendering', async () => {
+    expect(srcConfig).toBe(config)
+
+    const response = await srcMiddleware(makeRequest('/couples'))
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/login?redirectTo=%2Fcouples'
+    )
+    expect(mockedCreateServerClient).not.toHaveBeenCalled()
   })
 })
 

@@ -67,18 +67,47 @@ curl -sS -D /tmp/hm-strict-anon-couples.headers -o /tmp/hm-strict-anon-couples.b
 
 ## Results
 
-| Route | Expected closure-grade result | Observed HTTP result | Redirect evidence in body | Verdict |
-| --- | --- | --- | --- | --- |
+| Route        | Expected closure-grade result                            | Observed HTTP result                    | Redirect evidence in body                                                                                                                                                                  | Verdict                                        |
+| ------------ | -------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
 | `/dashboard` | HTTP 302/303/307/308 to `/login?redirectTo=%2Fdashboard` | `HTTP/1.1 200 OK`, no `Location` header | RSC body contained `NEXT_REDIRECT;replace;/login?redirectTo=%2Fdashboard;307;` and `<meta id="__next-page-redirect" http-equiv="refresh" content="1;url=/login?redirectTo=%2Fdashboard"/>` | Failed closure-grade HTTP redirect requirement |
-| `/couples` | HTTP 302/303/307/308 to `/login?redirectTo=%2Fcouples` | `HTTP/1.1 200 OK`, no `Location` header | RSC body contained `NEXT_REDIRECT;replace;/login?redirectTo=%2Fcouples;307;` and `<meta id="__next-page-redirect" http-equiv="refresh" content="1;url=/login?redirectTo=%2Fcouples"/>` | Failed closure-grade HTTP redirect requirement |
+| `/couples`   | HTTP 302/303/307/308 to `/login?redirectTo=%2Fcouples`   | `HTTP/1.1 200 OK`, no `Location` header | RSC body contained `NEXT_REDIRECT;replace;/login?redirectTo=%2Fcouples;307;` and `<meta id="__next-page-redirect" http-equiv="refresh" content="1;url=/login?redirectTo=%2Fcouples"/>`     | Failed closure-grade HTTP redirect requirement |
 
 Additional signal: local HomeMatch responses did not include the middleware-applied `X-Frame-Options` security header during this dev-server run, including `/api/health`. That is consistent with the HTTP probe not being intercepted before page rendering, but this report does not claim root cause beyond the observed live evidence.
 
+## Follow-up repo-local fix and rerun — 2026-05-08T16:28:04Z
+
+Root cause: the app uses `src/app`, but the protected-route middleware lived only at repo root (`middleware.ts`). Local Next 15.5 dev did not discover that root file for the `src/app` tree, which is why the original rerun saw no middleware security headers and fell through to page-rendered RSC/meta redirects.
+
+Smallest repo-local fix: add `src/middleware.ts` as a thin re-export of the existing root middleware implementation/config so the existing protected-route guard runs before `src/app` page rendering without broadening auth behavior.
+
+Targeted RED/GREEN test evidence:
+
+```text
+RED  NODE_ENV=test pnpm exec jest __tests__/unit/middleware.test.ts -t 'Next src-directory middleware entrypoint' --runInBand
+     failed: Cannot find module '../../src/middleware'
+
+GREEN NODE_ENV=test pnpm exec jest __tests__/unit/middleware.test.ts -t 'Next src-directory middleware entrypoint' --runInBand
+      passed: 1/1 targeted test
+
+GREEN NODE_ENV=test pnpm exec jest __tests__/unit/middleware.test.ts --runInBand
+      passed: 14/14 middleware tests
+```
+
+Local live rerun evidence after restarting HomeMatch dev on `127.0.0.1:3101` with `SKIP_SUPABASE_GUARD=true NEXT_TELEMETRY_DISABLED=1 pnpm exec next dev --hostname 127.0.0.1 --port 3101`:
+
+| Route                  | Expected closure-grade result                                          | Observed HTTP result                                                                                             | Verdict |
+| ---------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
+| `/dashboard`           | HTTP 302/303/307/308 to `/login?redirectTo=%2Fdashboard`               | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard`               | Pass    |
+| `/couples`             | HTTP 302/303/307/308 to `/login?redirectTo=%2Fcouples`                 | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fcouples`                 | Pass    |
+| `/dashboard?tab=liked` | HTTP 302/303/307/308 to `/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | Pass    |
+
+Additional middleware-discovery signal after the fix: `/api/health` included middleware-applied headers including `x-frame-options: DENY`, `cross-origin-opener-policy: same-origin`, and `cross-origin-resource-policy: same-origin`.
+
 ## Conclusion
 
-The rerun produced real local-live evidence, but it does **not** close the strict anonymous protected-route live evidence gap. Both scoped routes preserved `redirectTo` inside the rendered RSC redirect payload/meta refresh, but neither route returned a closure-grade HTTP redirect status or `Location` header to an anonymous no-cookie request.
+Original rerun result: failed closure-grade HTTP redirect requirement because anonymous `/dashboard` and `/couples` returned `200 OK` RSC/meta redirects.
 
-The Phase 0/1 closure matrix should continue to require a follow-up fix or approved server/deployment rerun that proves HTTP-level redirects for `/dashboard` and `/couples`.
+Follow-up fix/rerun result: closure-grade local HTTP redirect evidence now passes for anonymous no-cookie `/dashboard` and `/couples`, with `redirectTo` preserved before page rendering.
 
 ## Verification / artifacts
 
