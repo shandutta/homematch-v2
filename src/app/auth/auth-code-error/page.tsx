@@ -1,9 +1,15 @@
 export const dynamic = 'force-dynamic'
 
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import {
   AuthLink,
   AuthPageShell,
 } from '@/components/features/auth/AuthPageShell'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Authentication Error | HomeMatch',
+  description: 'Authentication failed. Request a new HomeMatch sign-in link.',
+})
 
 export default function AuthCodeError() {
   return (

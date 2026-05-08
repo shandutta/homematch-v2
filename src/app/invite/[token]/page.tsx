@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,11 @@ import type {
 } from '@/types/database'
 import { Users, ShieldCheck, Clock4 } from 'lucide-react'
 import { AcceptInviteForm } from './AcceptInviteForm'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Household Invite | HomeMatch',
+  description: 'Open your private HomeMatch household invitation.',
+})
 
 type InviteRecord = HouseholdInvitation & {
   household?: Pick<Household, 'id' | 'name' | 'collaboration_mode'> | null

@@ -1,54 +1,27 @@
-import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/marketing/Header'
 import { HeroSection } from '@/components/marketing/HeroSection'
+import {
+  createPublicRouteMetadata,
+  createWebsiteJsonLd,
+} from '@/lib/seo/route-metadata'
 import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
-  'https://homematch.pro'
-
-export const metadata: Metadata = {
-  title: 'HomeMatch - Swipe. Match. Move In.',
-  description:
-    'House hunting just became your favorite shared activity. Find a home that works for your household with AI that learns what you care about.',
+export const metadata = {
+  ...createPublicRouteMetadata({
+    title: 'HomeMatch - Swipe. Match. Move In.',
+    description:
+      'House hunting just became your favorite shared activity. Find a home that works for your household with AI that learns what you care about.',
+  }),
   keywords:
     'house hunting, real estate, roommates, household, AI matching, property search, home finding',
-  openGraph: {
-    title: 'HomeMatch - Swipeable Home Search',
-    description: 'The modern way for households to find a home together',
-    images: [`${siteUrl}/og-image.jpg`],
-    type: 'website',
-    url: siteUrl,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'HomeMatch - Swipe to Find Your Next Home',
-    description: 'House hunting for modern households',
-    images: [`${siteUrl}/twitter-image.jpg`],
-  },
-  alternates: {
-    canonical: siteUrl,
-  },
 }
+
+export const websiteJsonLd = createWebsiteJsonLd()
 
 export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    url: siteUrl,
-    name: 'HomeMatch',
-    description:
-      'HomeMatch helps households swipe, match, and find a home together with collaborative search.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${siteUrl}/search?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
-  }
-
   const user = await getOptionalServerUser()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
@@ -70,7 +43,7 @@ export default async function LandingPage() {
       <Header />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
       <HeroSection />
 

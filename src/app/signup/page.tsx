@@ -1,11 +1,19 @@
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
 
+import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 import {
   AuthLink,
   AuthPageShell,
 } from '@/components/features/auth/AuthPageShell'
 import { SignupForm } from '@/components/features/auth/SignupForm'
+
+export const metadata = createPublicRouteMetadata({
+  title: 'Sign Up | HomeMatch',
+  description:
+    'Create a HomeMatch account to save homes, invite your household, and decide together.',
+  path: '/signup',
+})
 
 export default function SignupPage() {
   return (

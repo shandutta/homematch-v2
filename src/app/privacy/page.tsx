@@ -1,11 +1,12 @@
-import { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 
-export const metadata: Metadata = {
+export const metadata = createPublicRouteMetadata({
   title: 'Privacy Policy | HomeMatch',
   description:
     'Learn how HomeMatch collects, uses, and protects your data while helping you find the right home together.',
-}
+  path: '/privacy',
+})
 
 export default function PrivacyPage() {
   return (

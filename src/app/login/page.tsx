@@ -1,11 +1,17 @@
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
 
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import {
   AuthLink,
   AuthPageShell,
 } from '@/components/features/auth/AuthPageShell'
 import { LoginForm } from '@/components/features/auth/LoginForm'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Log In | HomeMatch',
+  description: 'Sign in to your HomeMatch account.',
+})
 
 export default function LoginPage() {
   return (
