@@ -19,10 +19,21 @@ describe('D3 signup verification repo-side invariants', () => {
       'reports/home-match-revival/d3-signup-verification-repo-invariant-guard-2026-05-08.md'
     )
   )
+  const readinessChecklist = normalize(
+    readRepoFile(
+      'reports/home-match-revival/d3-signup-verification-launch-policy-readiness-2026-05-08.md'
+    )
+  )
   const launchPolicy = readRepoJson(
     'config/signup-verification-launch-policy.json'
   )
   const supabaseConfig = readRepoFile('supabase/config.toml')
+  const signupForm = readRepoFile(
+    'src/components/features/auth/SignupForm.tsx'
+  )
+  const verifyEmailForm = readRepoFile(
+    'src/components/features/auth/VerifyEmailForm.tsx'
+  )
 
   it('keeps production email confirmation and CAPTCHA distinct from local/E2E bypasses', () => {
     expect(policy).toContain(
@@ -68,5 +79,59 @@ describe('D3 signup verification repo-side invariants', () => {
       expect.arrayContaining(['inbucket', 'mailpit'])
     )
     expect(launchPolicy.localAndE2E.externalCaptchaCallsAllowed).toBe(false)
+  })
+
+  it('preserves the launch-policy non-goals against external execution', () => {
+    expect(Array.isArray(launchPolicy.nonGoals)).toBe(true)
+    expect(launchPolicy.nonGoals).toEqual(
+      expect.arrayContaining([
+        'No Supabase dashboard mutation',
+        'No CAPTCHA provider provisioning',
+        'No production secret or environment mutation',
+        'No live signup or real email execution',
+      ])
+    )
+  })
+
+  it('keeps the launch-policy readiness checklist consistent with the production invariants', () => {
+    expect(readinessChecklist).toContain(
+      'Email confirmation is required for public production email/password signup'
+    )
+    expect(readinessChecklist).toContain(
+      'CAPTCHA is required for public production email/password signup, with Cloudflare Turnstile as the preferred provider'
+    )
+    expect(readinessChecklist).toContain(
+      'A pre-verification app session is not allowed'
+    )
+    expect(readinessChecklist).toContain(
+      'Local and E2E bypasses are valid only for local Supabase plus local email capture (Inbucket or Mailpit) and must never call an external CAPTCHA provider'
+    )
+    expect(readinessChecklist).toContain(
+      'External execution (Supabase dashboard mutation, CAPTCHA provider provisioning, real email, paid API, production env, real user data) remains approval-gated'
+    )
+    expect(readinessChecklist).toContain(
+      'External Supabase dashboard / project settings: email confirmation enabled. (owner/ops, approval-gated)'
+    )
+    expect(readinessChecklist).toContain(
+      'External CAPTCHA provider provisioned and enabled for public email/password signup. (owner/ops, approval-gated)'
+    )
+  })
+
+  it('keeps SignupForm.tsx aligned with the no-pre-verification-session invariant', () => {
+    expect(signupForm).toContain("supabase.auth.signUp")
+    expect(signupForm).toContain('setSuccess(true)')
+    expect(signupForm).toContain('/verify-email')
+    expect(signupForm).not.toMatch(/router\.(push|replace)\(/)
+  })
+
+  it('keeps VerifyEmailForm.tsx gating the post-verification redirect on a Supabase session', () => {
+    expect(verifyEmailForm).toContain("type: 'signup'")
+    expect(verifyEmailForm).toContain('supabase.auth.verifyOtp')
+    expect(verifyEmailForm).toContain('supabase.auth.getSession()')
+    expect(verifyEmailForm).toContain('if (session) {')
+    expect(verifyEmailForm).toContain('router.replace(nextPath)')
+    expect(verifyEmailForm).toContain(
+      'Email verified. You can now sign in with your password.'
+    )
   })
 })
