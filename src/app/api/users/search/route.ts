@@ -4,6 +4,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,10 +17,7 @@ export async function GET(request: NextRequest) {
     // Rate limiting
     const rateLimitResult = await apiRateLimiter.check(auth.user.id)
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     // Get search query
@@ -27,9 +25,8 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q')?.trim()
 
     if (!query || query.length < 3) {
-      return NextResponse.json(
-        { error: 'Search query must be at least 3 characters' },
-        { status: 400 }
+      return ApiErrorHandler.badRequest(
+        'Search query must be at least 3 characters'
       )
     }
 
@@ -49,10 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error searching users:', error)
-      return NextResponse.json(
-        { error: 'Failed to search users' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Failed to search users', error)
     }
 
     // Return sanitized user data (minimal info for privacy)
@@ -67,9 +61,6 @@ export async function GET(request: NextRequest) {
     return noStoreJson({ users: sanitizedUsers })
   } catch (error) {
     console.error('Error in user search API:', error)
-    return NextResponse.json(
-      { error: 'Failed to search users' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to search users', error)
   }
 }

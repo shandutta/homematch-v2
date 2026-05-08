@@ -123,4 +123,22 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('NextResponse.json(\n      { error:')
     expect(source).not.toContain('NextResponse.json(\n      {\n        ok: false,')
   })
+
+  it.each([
+    'src/app/api/health/route.ts',
+    'src/app/api/users/search/route.ts',
+    'src/app/api/properties/marketing/route.ts',
+    'src/app/api/performance/metrics/route.ts',
+    'src/app/api/maps/script/route.ts',
+    'src/app/api/maps/metro-boundaries/route.ts',
+  ])('%s standardizes final JSON route-family errors', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('@/lib/api/errors')
+    expect(source).toContain('ApiErrorHandler')
+    expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
+    expect(source).not.toContain("{ error: 'Too many requests. Please try again later.' }")
+    expect(source).not.toContain('NextResponse.json(\n        { error:')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+  })
 })

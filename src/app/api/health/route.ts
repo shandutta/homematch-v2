@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface HealthResponse {
   status: string
@@ -16,19 +17,19 @@ export async function OPTIONS() {
 }
 
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PATCH() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function GET(request: NextRequest) {
@@ -48,22 +49,7 @@ export async function GET(request: NextRequest) {
     process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 
   if (expectTestMode && !isTestMode) {
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        service: 'HomeMatch V2',
-        version: '2.0.0',
-        error: 'Test mode expected',
-      },
-      {
-        status: 503,
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Content-Type': 'application/json',
-        },
-      }
-    )
+    return ApiErrorHandler.serviceUnavailable('Test mode expected')
   }
 
   try {
@@ -115,20 +101,8 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    return NextResponse.json(
-      {
-        status: 'error',
-        timestamp: new Date().toISOString(),
-        service: 'HomeMatch V2',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      {
-        status: 503,
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Content-Type': 'application/json',
-        },
-      }
+    return ApiErrorHandler.serviceUnavailable(
+      error instanceof Error ? error.message : 'Unknown error'
     )
   }
 }

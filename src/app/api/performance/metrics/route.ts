@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface MetricsStoreEntry {
   metrics: Array<{
@@ -84,10 +85,7 @@ export async function POST(request: NextRequest) {
       `performance:metrics:${ip}`
     )
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     const body = await request.json()
@@ -144,10 +142,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Failed to process performance metrics:', error)
-    return NextResponse.json(
-      { error: 'Invalid metrics payload' },
-      { status: 400 }
-    )
+    return ApiErrorHandler.badRequest('Invalid metrics payload')
   }
 }
 

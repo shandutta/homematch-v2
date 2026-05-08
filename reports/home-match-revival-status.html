@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:12 UTC</code>. Strict
-        Phase 0/1 closure mode: M6 API error standardization advanced through
-        admin route-family conversion; Phase 2+ remains held.
+        Live Kanban status. Updated: <code>2026-05-08 03:17 UTC</code>. Strict
+        Phase 0/1 closure mode: M6 JSON API error standardization closed
+        repo-side; Phase 2+ remains held.
       </p>
       <div class="grid">
         <div class="card">
@@ -974,6 +974,17 @@
     <li>Converted <code>admin/status-refresh</code>, <code>admin/ingest/zillow</code>, <code>admin/generate-vibes</code>, <code>admin/generate-neighborhood-vibes</code>, and <code>admin/generate-vibes-zillow</code> raw unauthorized/config/bad-request/server errors to <code>ApiErrorHandler</code>.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m6-admin-red-1778209853.service</code>; final targeted Jest passed in <code>hm-m6-admin-green-1778209911.service</code>; resource-limited type-check passed in <code>hm-m6-admin-typecheck-1778209919.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m6-final-json-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 JSON API error conversion closed</h2>
+  <p><strong>Status:</strong> M6 closed repo-side for JSON API route families. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted raw JSON errors in <code>health</code>, <code>users/search</code>, <code>properties/marketing</code>, <code>performance/metrics</code>, <code>maps/script</code>, and <code>maps/metro-boundaries</code> to <code>ApiErrorHandler</code>.</li>
+    <li><code>maps/proxy-script</code> remains intentionally non-JSON because it is a JavaScript script endpoint returning JavaScript comment bodies for failures.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m6-final-json-red-1778210127.service</code>; final targeted Jest passed in <code>hm-m6-final-json-green-1778210177.service</code>; resource-limited type-check passed in <code>hm-m6-final-json-typecheck-1778210186.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> non-M6 Phase 0/1 blockers: auth consolidation, DB/RLS cleanup, timeout cleanup, dead-code/dependency cleanup, README/local-dev closure, and integration/browser validation blockers.</li>
   </ul>
 </section>
 </main>
