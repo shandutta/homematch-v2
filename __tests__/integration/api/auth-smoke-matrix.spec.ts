@@ -1,9 +1,17 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, test } from 'vitest'
 
 const RUN_AUTH_SMOKE = process.env.API_AUTH_SMOKE_RUN === '1'
 const TEST_API_URL = process.env.TEST_API_URL || 'http://127.0.0.1:3000'
 const APPROVED_TEST_TOKEN = process.env.API_AUTH_SMOKE_TOKEN
 const ALLOW_REMOTE = process.env.ALLOW_REMOTE_API_AUTH_SMOKE === '1'
+
+const SPEC_SOURCE_PATH = path.resolve(
+  __dirname,
+  'auth-smoke-matrix.spec.ts'
+)
+const SPEC_SOURCE = readFileSync(SPEC_SOURCE_PATH, 'utf8')
 
 type ExpectedStatus = number | readonly number[]
 
@@ -140,6 +148,91 @@ describe('P0/P1 API auth smoke matrix', () => {
       ])
     )
   })
+
+  describe('static token/session safety guards', () => {
+    test('refuses the live probe unless API_AUTH_SMOKE_RUN=1 is explicitly set', () => {
+      expect(SPEC_SOURCE).toMatch(
+        /process\.env\.API_AUTH_SMOKE_RUN\s*===\s*'1'/
+      )
+      expect(SPEC_SOURCE).toMatch(/test\.runIf\(RUN_AUTH_SMOKE\)/)
+    })
+
+    test('requires an explicit non-production bearer token via API_AUTH_SMOKE_TOKEN', () => {
+      expect(SPEC_SOURCE).toMatch(/process\.env\.API_AUTH_SMOKE_TOKEN/)
+      expect(SPEC_SOURCE).toMatch(
+        /API_AUTH_SMOKE_TOKEN is required\. Use only an approved local seeded\/non-production test-user bearer token\./
+      )
+      expect(SPEC_SOURCE).toMatch(/if\s*\(\s*!APPROVED_TEST_TOKEN\s*\)/)
+    })
+
+    test('refuses non-local TEST_API_URL targets unless ALLOW_REMOTE is explicitly opted in', () => {
+      expect(SPEC_SOURCE).toMatch(/assertLocalOrApprovedRemote\(TEST_API_URL\)/)
+      expect(SPEC_SOURCE).toMatch(
+        /Refusing API auth smoke against non-local TEST_API_URL/
+      )
+      expect(SPEC_SOURCE).toMatch(
+        /Set ALLOW_REMOTE_API_AUTH_SMOKE=1 only for an explicitly approved non-production target/
+      )
+    })
+
+    test('never logs the bearer token or the authorization header', () => {
+      const consoleCalls =
+        SPEC_SOURCE.match(/console\.[a-z]+\([^)]*\)/g) || []
+      const tokenSurfaces = [
+        'APPROVED_TEST_TOKEN',
+        'API_AUTH_SMOKE_TOKEN',
+        'process.env.API_AUTH_SMOKE_TOKEN',
+        'authorization',
+        'Authorization',
+        'Bearer ',
+        'access_token',
+        'accessToken',
+        'session.access_token',
+      ]
+
+      for (const call of consoleCalls) {
+        for (const surface of tokenSurfaces) {
+          expect(
+            call,
+            `console call must not reference ${surface}: ${call}`
+          ).not.toContain(surface)
+        }
+      }
+    })
+
+    test('only attaches the bearer token to the outgoing fetch authorization header', () => {
+      // The token must reach the wire only through the request() helper's
+      // authorization header — never via a logger, error message, or response
+      // body assertion.
+      expect(SPEC_SOURCE).toMatch(
+        /token\s*\?\s*\{\s*authorization:\s*`Bearer\s*\$\{token\}`\s*\}\s*:\s*undefined/
+      )
+      const requestCalls =
+        SPEC_SOURCE.match(/request\([^)]*APPROVED_TEST_TOKEN[^)]*\)/g) || []
+      expect(requestCalls).toHaveLength(1)
+    })
+
+    test('aggregates only path, anonymous status, authenticated status, and reason — never the token', () => {
+      const resultsBlock = SPEC_SOURCE.match(
+        /results\.push\(\{[\s\S]*?\}\)/
+      )
+      expect(resultsBlock).not.toBeNull()
+      expect(resultsBlock![0]).toContain('path: route.path')
+      expect(resultsBlock![0]).toContain('anonymous: anonymous.status')
+      expect(resultsBlock![0]).toContain('authenticated: authenticated.status')
+      expect(resultsBlock![0]).toContain('reason: route.reason')
+      expect(resultsBlock![0]).not.toMatch(/token/i)
+      expect(resultsBlock![0]).not.toMatch(/authorization/i)
+      expect(resultsBlock![0]).not.toMatch(/bearer/i)
+    })
+  })
+
+  test.skipIf(RUN_AUTH_SMOKE)(
+    'skips the live probe by default so absent token/session inputs cannot trigger network calls',
+    () => {
+      expect(RUN_AUTH_SMOKE).toBe(false)
+    }
+  )
 
   test.runIf(RUN_AUTH_SMOKE)(
     'returns anonymous 401 and authenticated expected status for safe protected handlers',

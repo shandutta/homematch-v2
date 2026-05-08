@@ -17,13 +17,13 @@ import {
   slideInRight,
   fastTransition,
 } from '@/components/ui/motion-components'
-import { signOut } from '@/lib/supabase/actions'
 import { useState, useEffect, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 import { ProfileMenu } from '@/components/shared/ProfileMenu'
 import { useCurrentUserAvatar } from '@/hooks/useCurrentUserAvatar'
-import { usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { usePathname, useRouter } from 'next/navigation'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -31,11 +31,16 @@ export function Header() {
   const [isSigningOut, startTransition] = useTransition()
   const pathname = usePathname() ?? ''
   const { displayName, email, avatar, isLoading } = useCurrentUserAvatar()
+  const router = useRouter()
 
   const handleSignOut = () => {
     startTransition(async () => {
       try {
-        await signOut()
+        const supabase = createClient()
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+        router.refresh()
+        router.push('/')
       } catch (error) {
         console.error('Sign out failed', error)
       }
