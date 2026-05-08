@@ -1,65 +1,549 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HomeMatch Parallel Kanban Execution Plan</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.45; max-width: 920px; margin: 32px auto; padding: 0 20px; color: #18202f; background: #faf7f2; }
-    h1, h2 { color: #3b2f2a; }
-    pre, code { background: #fff; border: 1px solid #eadfd2; border-radius: 8px; padding: 2px 5px; }
-    pre { padding: 14px; overflow-x: auto; }
-    .card { background: #fff; border: 1px solid #eadfd2; border-radius: 14px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
-    .status { font-weight: 700; color: #8a4b16; }
-    .danger { background: #fff6f0; border-color: #e2a070; }
-    li { margin: 6px 0; }
-  </style>
-</head>
-<body>
-  <h1>HomeMatch Parallel Kanban Execution Plan</h1>
-  <p class="status">Status: setup complete; dispatch not started.</p>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>HomeMatch Canonical Control-Plane Plan</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 980px;
+        margin: 40px auto;
+        padding: 0 24px;
+        line-height: 1.5;
+        color: #172033;
+        background: #fbfbfd;
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+      code {
+        background: #eef1f6;
+        padding: 2px 5px;
+        border-radius: 5px;
+      }
+      pre {
+        background: #111827;
+        color: #f9fafb;
+        padding: 16px;
+        border-radius: 10px;
+        overflow: auto;
+      }
+      li {
+        margin: 5px 0;
+      }
+      h1 {
+        border-bottom: 2px solid #d8dee9;
+        padding-bottom: 12px;
+      }
+      h2 {
+        margin-top: 34px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 22px;
+      }
+      .stamp {
+        color: #64748b;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stamp">
+      Canonical artifact generated from
+      reports/home-match-parallel-kanban-execution-plan.md
+    </div>
+    <h1>HomeMatch Canonical Control-Plane Plan</h1>
 
-  <div class="card danger">
-    <h2>Corrected non-negotiable gate</h2>
-    <p><strong>Phase 2 must not dispatch until Phase 0 and Phase 1 are 100% closed.</strong></p>
-    <p>“Complete with caveats,” “audit complete,” or “remediation incomplete” means the next wave is Phase 0/1 closure only.</p>
-  </div>
+    <p>
+      Status: canonical Phase 0/1 control-plane artifact. This file is the
+      single planning surface for the Telegram control-plane, Kanban board,
+      worker archetypes, phase gates, and artifact map.
+    </p>
 
-  <div class="card">
-    <h2>Correct short /goal command</h2>
-    <pre>/goal Load homematch-parallel-kanban-execution. Strict OG-plan gate: dispatch Phase 0/1 closure only using existing worktrees + RAM watchdog. Do not dispatch P2/P3/P4/P5. Produce a close/block matrix for Phase 0 caveats and Phase 1 remediation backlog, update Kanban/report, then check in before any later phase.</pre>
-  </div>
+    <p>Generated/updated: 2026-05-08</p>
 
-  <div class="card">
-    <h2>Allowed Wave 1 after approval</h2>
-    <ol>
-      <li><strong>Phase 0 closure scout:</strong> revisit browser traversal coverage, API probe coverage, auth-flow verification, and skipped integration tests; produce a close/block matrix.</li>
-      <li><strong>Phase 1 remediation closure:</strong> enumerate all P1 audit recommendations and map each to implemented commit/test/artifact or concrete child remediation task.</li>
-      <li><strong>Read-only OG-plan scout:</strong> verify whether Phase 0 and Phase 1 can honestly be marked 100% complete.</li>
-    </ol>
-    <p><strong>Hold:</strong> P2 couples UX, P2 maps/images/SEO, P3 backend, P4/P5 quality/compliance.</p>
-  </div>
+    <p>
+      Public HTML mirror:
+      <code>reports/home-match-parallel-kanban-execution-plan.html</code>
+    </p>
 
-  <div class="card">
-    <h2>Worktrees already available</h2>
-    <ul>
-      <li><strong>Integration:</strong> <code>/home/shan/projects/homematch-v2</code>, branch <code>autonomy/6h-business-hardening</code></li>
-      <li><strong>P2 frontend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p2-frontend</code>, branch <code>autonomy/hm-p2-frontend</code> — held until Phase 0/1 close.</li>
-      <li><strong>P3 backend:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p3-backend</code>, branch <code>autonomy/hm-p3-backend</code> — held until Phase 0/1 and P2 gate.</li>
-      <li><strong>P4/P5 quality-compliance:</strong> <code>/home/shan/projects/homematch-v2.worktrees/p4-quality-compliance</code>, branch <code>autonomy/hm-p4-quality-compliance</code> — held.</li>
-    </ul>
-  </div>
+    <h2>Operating agreement — condensed</h2>
 
-  <div class="card">
-    <h2>RAM policy</h2>
-    <ul>
-      <li><strong>Green:</strong> available RAM ≥ 1.6 GiB and swap used &lt; 1.2 GiB.</li>
-      <li><strong>Yellow:</strong> available RAM 1.0-1.6 GiB or swap 1.2-1.6 GiB. Pause new starts.</li>
-      <li><strong>Red:</strong> available RAM &lt; 1.0 GiB or swap &gt; 1.6 GiB. Prune to integration lane.</li>
-      <li><strong>Critical:</strong> available RAM &lt; 700 MiB or load avg &gt; 3.0 for 5 minutes. Stop active worker services.</li>
-    </ul>
-  </div>
+    <li>
+      This Telegram thread is the control plane, not the execution container.
+    </li>
+    <li>
+      Work execution happens in bounded Kanban workers / worktrees /
+      resource-limited runs with small prompts and narrow toolsets.
+    </li>
+    <li>
+      Artifacts and commits are the durable memory; Telegram receives short
+      deltas and links.
+    </li>
+    <li>
+      <code>/goal</code> is a mission monitor/continuation loop, not a
+      substitute for Kanban decomposition.
+    </li>
+    <li>
+      A single <code>/goal</code> turn may consume up to
+      <code>agent.max_turns = 150</code>; the mission-level
+      <code>/goal</code> chain is governed by <code>goals.max_turns = 80</code>.
+    </li>
+    <li>
+      Explicit incomplete status such as “Phase 0/1 not 100% complete” must not
+      be judged as achieved.
+    </li>
+    <li>
+      Correct project shape: one strict Phase 0/1 gate + multiple child workers
+      + fan-in decision register + no Phase 2+ until the closure matrix is
+      clean.
+    </li>
 
-  <p>Markdown source: <code>reports/home-match-parallel-kanban-execution-plan.md</code></p>
-</body>
+    <h2>Current truth</h2>
+
+    <li>Repo: <code>/home/shan/projects/homematch-v2</code></li>
+    <li>Branch: <code>autonomy/6h-business-hardening</code></li>
+    <li>
+      Latest integration HEAD seen:
+      <code>ba647e9 fix: add JSONB GIN indexes</code>
+    </li>
+    <li>Board: <code>home-match-revival</code></li>
+    <li>
+      Board state at last reconciliation: <code>todo=7</code>,
+      <code>ready=0</code>, <code>running=0</code>, <code>blocked=7</code>,
+      <code>done=27</code>
+    </li>
+    <li>Phase 0: not 100% complete</li>
+    <li>Phase 1: not 100% complete</li>
+    <li>Phase 2+: held</li>
+
+    <h2>Strict gates</h2>
+
+    <h3>Phase gate</h3>
+
+    <p>
+      Phase 2/3/4/5/6 work must not dispatch until both Phase 0 and Phase 1 are
+      proven 100% closed in the closure matrix.
+    </p>
+
+    <p>
+      “Complete with caveats,” “audit complete,” “remediation incomplete,” or
+      “blocked/decision-needed” means the next work is still Phase 0/1 closure
+      only.
+    </p>
+
+    <h3>External side-effect gate</h3>
+
+    <p>
+      No production deploys, paid API calls, external dashboard changes, legal
+      publication, outreach/emails, or real customer/user data without separate
+      explicit approval.
+    </p>
+
+    <h3>Telegram/gateway safety gate</h3>
+
+    <p>From this Telegram lane:</p>
+
+    <li>no worker fleets directly inside the gateway context</li>
+    <li>no broad installs/builds/browser swarms</li>
+    <li>no same-worktree parallel writers</li>
+    <li>
+      safe default is one writer plus read-only scouts, or Kanban dispatch
+      outside the gateway with resource caps
+    </li>
+
+    <h2>Canonical artifacts</h2>
+
+    <p>Use these as source of truth instead of relying on Telegram history.</p>
+
+    <h3>Main control-plane artifact</h3>
+
+    <li>
+      Markdown:
+      <code>reports/home-match-parallel-kanban-execution-plan.md</code>
+    </li>
+    <li>
+      HTML: <code>reports/home-match-parallel-kanban-execution-plan.html</code>
+    </li>
+    <li>
+      Role: canonical plan, gates, worker archetypes, artifact map, current
+      board graph, and operating agreement.
+    </li>
+
+    <h3>Live status artifact</h3>
+
+    <li>HTML: <code>reports/home-match-revival-status.html</code></li>
+    <li>
+      URL: <code>http://100.79.222.28:8767/home-match-revival-status.html</code>
+    </li>
+    <li>Role: Shan-facing current status / latest proof / links.</li>
+
+    <h3>Phase gate artifacts</h3>
+
+    <li>
+      <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code>
+    </li>
+    <p>- Current verdict: Phase 0/1 not 100%; Phase 2+ held.</p>
+    <li>
+      <code
+        >reports/home-match-revival/phase0-phase1-strict-closure-gate.md</code
+      >
+    </li>
+    <p>- Strict gate correction and allowed next wave.</p>
+    <li>
+      <code
+        >reports/home-match-revival/phase1-remediation-closure-scout.md</code
+      >
+    </li>
+    <p>- Detailed Phase 1 remediation inventory.</p>
+    <li><code>reports/home-match-revival/phase0-closure-scout.md</code></li>
+    <p>- Detailed Phase 0 closure caveats.</p>
+
+    <h3>Supporting audit/remediation artifacts</h3>
+
+    <li>
+      <code
+        >reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md</code
+      >
+    </li>
+    <li>
+      <code
+        >reports/home-match-revival/auth-boundary-consolidation-2026-05-08.md</code
+      >
+    </li>
+    <li>
+      <code>reports/home-match-revival/api-error-standardization-scout.md</code>
+    </li>
+    <li><code>reports/home-match-revival/rate-limit-gap-scout.md</code></li>
+    <li>
+      <code
+        >reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code
+      >
+    </li>
+    <li>
+      <code
+        >reports/home-match-revival/phase0-phase1-remediation-progress-2026-05-08.md</code
+      >
+    </li>
+    <li>
+      <code
+        >reports/home-match-revival/execution-optimization-2026-05-07.md</code
+      >
+    </li>
+    <li>
+      <code
+        >reports/home-match-revival/parallel-worktree-setup-2026-05-07.md</code
+      >
+    </li>
+    <li>
+      baseline JSON artifacts: <code>repo-snapshot.json</code>,
+      <code>routes-and-endpoints.json</code>,
+      <code>command-baseline.json</code>, <code>startup-baseline.json</code>,
+      <code>browser-traversal.json</code>, <code>api-probe-matrix.json</code>,
+      <code>phase0-phase1-reconciliation.json</code>
+    </li>
+
+    <h2>Kanban graph to build from</h2>
+
+    <h3>Manual dispatch gate</h3>
+
+    <li>
+      <code>t_114ade2b</code> —
+      <code>Phase 0/1 parallel remediation dispatch gate</code>
+    </li>
+    <p>- Status: blocked</p>
+    <p>
+      - Reason: waiting for explicit dispatch/resource window before spawning
+      workers from Telegram Home Purchase lane.
+    </p>
+
+    <h3>Phase 0/1 child tasks under gate</h3>
+
+    <li>
+      <code>t_d60106b</code> —
+      <code
+        >P0 close: live probes, browser/auth traversal, cron/.env opacity</code
+      >
+    </li>
+    <p>- Assignee: <code>ops</code></p>
+    <p>- Workspace: main repo dir</p>
+    <p>- Mode: read/probe/report first; external side effects gated.</p>
+    <li>
+      <code>t_42e0d08a</code> —
+      <code
+        >P1 auth/client cleanup: consolidation, getUser patch, service-role
+        fallback</code
+      >
+    </li>
+    <p>- Assignee: <code>backend-eng</code></p>
+    <p>- Workspace: worktree</p>
+    <p>- Mode: bounded code remediation with targeted tests.</p>
+    <li>
+      <code>t_62707f69</code> —
+      <code
+        >P1 API hardening: remaining external timeouts and limiter dedupe</code
+      >
+    </li>
+    <p>- Assignee: <code>backend-eng</code></p>
+    <p>- Workspace: worktree</p>
+    <p>- Mode: bounded code remediation with route-family tests.</p>
+    <li>
+      <code>t_67a26aa7</code> —
+      <code
+        >P1 DB/perf cleanup: query dedupe, realtime N+1, inline DB typing,
+        rollback plan</code
+      >
+    </li>
+    <p>- Assignee: <code>backend-eng</code></p>
+    <p>- Workspace: worktree</p>
+    <p>- Mode: bounded code/remediation/report split as needed.</p>
+    <li>
+      <code>t_efb13943</code> —
+      <code
+        >P1 decision register: RBAC, auth policy, rate limiter, env, numeric
+        semantics, DB env</code
+      >
+    </li>
+    <p>- Assignee: <code>reviewer</code></p>
+    <p>- Workspace: main repo dir</p>
+    <p>
+      - Mode: fan-in decision register; separates repo-closeable work from
+      Shan/cloud approval decisions.
+    </p>
+
+    <h3>Later-phase tasks remain blocked/held</h3>
+
+    <li><code>t_ff763f6d</code> — P2 couples/matching UX upgrade</li>
+    <li><code>t_1009b931</code> — P2 maps/images/metadata/SEO fixes</li>
+    <li><code>t_11342c3d</code> — P3 LLM/matching prompt hardening</li>
+    <li><code>t_4b4d5b96</code> — P3 ingest pipeline review</li>
+    <li><code>t_acd542ca</code> — P4 test suite triage and TDD lane</li>
+    <li>
+      <code>t_eface8fd</code> — P5 compliance/analytics/AdSense/Stripe plan
+    </li>
+    <li><code>t_fd311981</code> — P6 docs rewrite and final report</li>
+    <li><code>t_aeba612c</code> — final merge readiness review</li>
+
+    <h2>Worker archetypes</h2>
+
+    <p>
+      Each worker must have a narrow prompt, small tool context, and a hard
+      artifact. Do not load the whole Telegram transcript.
+    </p>
+
+    <h3>1. Control-plane orchestrator</h3>
+
+    <li>Runs in this Telegram thread.</li>
+    <li>
+      Tools: Kanban CLI/status, small file reads/writes, config checks, no heavy
+      builds.
+    </li>
+    <li>Output: terse status, gate decisions, artifact links.</li>
+    <li>Never claims 100% closure without closure-matrix evidence.</li>
+
+    <h3>2. Integration lane</h3>
+
+    <li>Path: <code>/home/shan/projects/homematch-v2</code></li>
+    <li>Branch: <code>autonomy/6h-business-hardening</code></li>
+    <li>Role: merge/review/report only.</li>
+    <li>Actions:</li>
+    <p>- inspect worker diffs</p>
+    <p>- merge/cherry-pick one lane at a time</p>
+    <p>- run resource-limited targeted tests/type-check</p>
+    <p>- update canonical artifacts</p>
+    <p>- commit integration result</p>
+
+    <h3>3. Backend writer worker</h3>
+
+    <li>Workspace: dedicated git worktree.</li>
+    <li>
+      Toolsets: terminal/file/search only; add web/browser only if task requires
+      it.
+    </li>
+    <li>Max scope: one child task / one commit.</li>
+    <li>Required verification:</li>
+    <p>- targeted RED where practical</p>
+    <p>- targeted GREEN/final test</p>
+    <p>- <code>pnpm type-check</code> when TypeScript changed</p>
+    <p>- <code>git diff --check</code></p>
+    <p>- update report + Kanban</p>
+
+    <h3>4. Ops/probe worker</h3>
+
+    <li>Workspace: repo dir or scratch, usually read-only.</li>
+    <li>
+      Scope: live probes, env-opacity checks, browser/auth traversal inventory.
+    </li>
+    <li>
+      Must not deploy, mutate dashboards, call paid APIs beyond approved minimal
+      probes, or touch real user data.
+    </li>
+    <li>Output: close/block matrix with exact evidence and blockers.</li>
+
+    <h3>5. Reviewer / decision-register worker</h3>
+
+    <li>Workspace: repo dir or scratch.</li>
+    <li>Scope: fan-in all Phase 0/1 outputs.</li>
+    <li>Output:</li>
+    <p>
+      - decision register for RBAC, auth policy, rate limiter, env, numeric
+      semantics, DB env
+    </p>
+    <p>
+      - exact classification: repo-closed, code-remediation-needed,
+      ops-approval-needed, blocked
+    </p>
+
+    <h3>6. Read-only scout</h3>
+
+    <li>Workspace: scratch or repo dir.</li>
+    <li>No writes except report artifact if explicitly assigned.</li>
+    <li>
+      Purpose: compare OG plan, board, commits, and closure matrix for
+      contradictions.
+    </li>
+
+    <h2>Compression/context policy</h2>
+
+    <p>Hermes config changed to compress earlier:</p>
+
+    <li><code>compression.threshold = 0.5</code></li>
+    <li><code>compression.protect_last_n = 12</code></li>
+    <li><code>compression.target_ratio = 0.2</code></li>
+    <li><code>goals.max_turns = 80</code></li>
+    <li><code>agent.max_turns = 150</code></li>
+
+    <p>
+      Gateway restart is required before Telegram definitely uses the changed
+      config/code.
+    </p>
+
+    <p>Operational rules:</p>
+
+    <li>use artifacts as memory, not Telegram history</li>
+    <li>avoid pasting long report bodies into Telegram</li>
+    <li>
+      worker prompts should reference paths and task IDs, not full thread
+      summaries
+    </li>
+    <li>tool outputs should be targeted, not broad dumps</li>
+    <li>
+      after any huge report/status, manually compress or move execution into
+      workers
+    </li>
+
+    <h2>Hermes `/goal` patch status</h2>
+
+    <p>Local patch committed in Hermes Agent repo:</p>
+
+    <li>Commit: <code>65e21d69c fix: keep incomplete goals active</code></li>
+    <li>Files:</li>
+    <p>- <code>/home/shan/.hermes/hermes-agent/hermes_cli/goals.py</code></p>
+    <p>
+      -
+      <code
+        >/home/shan/.hermes/hermes-agent/tests/hermes_cli/test_goals.py</code
+      >
+    </p>
+    <li>Test evidence: <code>27 passed in 2.00s</code> for goal tests.</li>
+    <li>
+      Durable patch copy:
+      <code
+        >/home/shan/.hermes/patches/hermes-goal-incomplete-override-65e21d69c.patch</code
+      >
+    </li>
+
+    <p>
+      Risk: <code>/home/shan/.hermes/hermes-agent</code> is currently
+      <code>ahead 1, behind 457</code>, so a normal upstream update/rebase may
+      conflict. A clean upstream PR/issue is warranted because this is a real
+      bug: an explicit incomplete/blocker report should not be judged as mission
+      achieved.
+    </p>
+
+    <p>Recommended update posture:</p>
+
+    <li>Do not blindly overwrite the local Hermes checkout.</li>
+    <li>
+      Before <code>hermes update</code>, preserve the patch file above and
+      inspect <code>git status</code>.
+    </li>
+    <li>
+      Fetch/rebase upstream, then re-apply/cherry-pick <code>65e21d69c</code> if
+      upstream has not fixed equivalent semantics.
+    </li>
+    <li>
+      If upstream already fixed it, drop the local patch after verifying the
+      regression test or equivalent behavior.
+    </li>
+    <li>
+      File upstream issue/PR with the regression test; do not rely on a
+      long-lived local fork forever.
+    </li>
+
+    <p>Unrelated local Hermes state to preserve:</p>
+
+    <li>
+      <code>/home/shan/.hermes/hermes-agent/hermes_cli/profiles.py</code> is
+      modified but not part of the <code>/goal</code> fix. Do not accidentally
+      overwrite or commit it without inspecting ownership.
+    </li>
+
+    <h2>Execution sequence from here</h2>
+
+    <h3>Step A — Control-plane stabilization</h3>
+
+    <li>Keep this artifact canonical.</li>
+    <li>Keep Telegram updates brief.</li>
+    <li>
+      Restart gateway at a safe point so compression and
+      <code>/goal</code> code/config changes apply.
+    </li>
+
+    <h3>Step B — Open or selectively run the Phase 0/1 gate</h3>
+
+    <p>Only after explicit resource-window approval:</p>
+
+    <li>unblock/advance <code>t_114ade2b</code>, or</li>
+    <li>
+      selectively run one child worker at a time if using a safer incremental
+      mode.
+    </li>
+
+    <h3>Step C — First worker wave</h3>
+
+    <li>P0 ops/probe close-block matrix — <code>t_d60106b</code></li>
+    <li>P1 backend auth/client cleanup — <code>t_42e0d08a</code></li>
+    <li>P1 reviewer decision register — <code>t_efb13943</code></li>
+
+    <p>Optional read-only scout only if RAM is green.</p>
+
+    <h3>Step D — Fan-in</h3>
+
+    <li>Update closure matrix.</li>
+    <li>Update live status HTML.</li>
+    <li>Complete/comment Kanban tasks with evidence.</li>
+    <li>Keep Phase 2+ held unless closure matrix is clean.</li>
+
+    <h2>Short commands</h2>
+
+    <h3>Correct compact `/goal`</h3>
+
+    <pre><code>
+/goal Use board home-match-revival and canonical plan reports/home-match-parallel-kanban-execution-plan.md. Treat this Telegram thread as control plane only. Continue Phase 0/1 closure via bounded Kanban/worktree workers, keep Phase 2+ held until reports/home-match-revival/phase0-phase1-closure-matrix.md proves both phases 100%, update artifacts/Kanban after each slice, and never mark explicit incomplete/blocker status as achieved.
+</code></pre>
+
+    <h3>Gate-opening approval phrase</h3>
+
+    <pre><code>
+Approve bounded Phase 0/1 Kanban worker window
+</code></pre>
+
+    <p>
+      Default interpretation: max two resource-limited workers, one writer at a
+      time unless separate worktrees are confirmed clean, no external side
+      effects, no Phase 2+.
+    </p>
+  </body>
 </html>

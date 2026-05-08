@@ -144,9 +144,11 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:57 UTC</code>. Strict
-        Phase 0/1 closure mode: M7, M9, M11, M12, M13, and M14 closed repo-side in this run;
-        continuing until Phase 0/1 are 100% closed or blocked.
+        Live Kanban status. Updated:
+        <code>2026-05-08 control-plane refresh</code>. Strict Phase 0/1 closure
+        mode remains active. This status page now points to the canonical
+        control-plane plan and treats older later-phase sections below as
+        historical, not active authorization.
       </p>
       <div class="grid">
         <div class="card">
@@ -166,13 +168,44 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 27 · running 0 · blocked 6 · ready 0 · todo 2
+            done 27 · running 0 · blocked 7 · ready 0 · todo 7
           </div>
         </div>
       </div>
 
       <section>
-        <h2>Phase 2 — metadata/SEO slice complete</h2>
+        <h2>Canonical control-plane plan</h2>
+        <p>
+          <span class="pill warn">ACTIVE GATE</span> The canonical artifact for
+          current execution is
+          <a href="home-match-parallel-kanban-execution-plan.html"
+            >home-match-parallel-kanban-execution-plan.html</a
+          >. It supersedes stale later-phase language in older sections of this
+          status page.
+        </p>
+        <ul>
+          <li>
+            Telegram thread is the control plane; Kanban/worktree workers do
+            execution.
+          </li>
+          <li>
+            Phase 0 and Phase 1 are not 100% closed; Phase 2+ remains held.
+          </li>
+          <li>
+            Gate task: <code>t_114ade2b</code>; Phase 0/1 child tasks:
+            <code>t_d60106b</code>, <code>t_42e0d08a</code>,
+            <code>t_62707f69</code>, <code>t_67a26aa7</code>,
+            <code>t_efb13943</code>.
+          </li>
+          <li>
+            Hermes compression now triggers earlier; gateway restart is needed
+            for Telegram to pick up config/code changes.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Historical section — Phase 2 metadata/SEO slice</h2>
         <p>
           <span class="pill good">TESTED FIX</span> Completed a bounded Phase 2
           SEO slice after Phase 0/1 reconciliation and Phase 1 remediation work.
@@ -666,8 +699,8 @@
         <ul>
           <li>
             ✅ Routed <code>getServiceRoleClient()</code> through the shared
-            gated <code>createServiceClient()</code> path, closing the standalone
-            service-role factory bypass identified as P1.8.
+            gated <code>createServiceClient()</code> path, closing the
+            standalone service-role factory bypass identified as P1.8.
           </li>
           <li>
             ✅ Added TDD coverage that failed first against the bypass and now
@@ -775,365 +808,992 @@
         <code>/home/shan/.hermes/plans/home-match-kanban-goal-template.md</code>
       </footer>
 
-<section id="execution-optimization">
-  <h2>Execution optimization</h2>
-  <p><strong>Status:</strong> Replanned after Shan challenged speed, stale blockers, gstack usage, and /goal execution.</p>
-  <ul>
-    <li>Writer cron tightened from every 10 minutes to every 5 minutes.</li>
-    <li>Added read-only scout cron to run in parallel without touching git state.</li>
-    <li>Writer now consumes scout output via scheduler context.</li>
-    <li>gstack/review/health skills are explicitly loaded for the writer; gstack is installed and available.</li>
-    <li>Repo-wide pre-commit hook is now treated as unsafe for this Telegram lane; use targeted verification plus no-verify commits for bounded slices.</li>
-    <li>Blocked 6 are original macro tasks paused/superseded by bounded slices; todo 2 are final docs/review tasks dependency-gated behind those macro phases.</li>
-  </ul>
-  <p>Artifact: <code>reports/home-match-revival/execution-optimization-2026-05-07.md</code></p>
-</section>
+      <section id="execution-optimization">
+        <h2>Execution optimization</h2>
+        <p>
+          <strong>Status:</strong> Replanned after Shan challenged speed, stale
+          blockers, gstack usage, and /goal execution.
+        </p>
+        <ul>
+          <li>
+            Writer cron tightened from every 10 minutes to every 5 minutes.
+          </li>
+          <li>
+            Added read-only scout cron to run in parallel without touching git
+            state.
+          </li>
+          <li>Writer now consumes scout output via scheduler context.</li>
+          <li>
+            gstack/review/health skills are explicitly loaded for the writer;
+            gstack is installed and available.
+          </li>
+          <li>
+            Repo-wide pre-commit hook is now treated as unsafe for this Telegram
+            lane; use targeted verification plus no-verify commits for bounded
+            slices.
+          </li>
+          <li>
+            Blocked 6 are original macro tasks paused/superseded by bounded
+            slices; todo 2 are final docs/review tasks dependency-gated behind
+            those macro phases.
+          </li>
+        </ul>
+        <p>
+          Artifact:
+          <code
+            >reports/home-match-revival/execution-optimization-2026-05-07.md</code
+          >
+        </p>
+      </section>
 
-<section id="parallel-worktree-plan">
-  <h2>Parallel worktree execution plan</h2>
-  <p><strong>Status:</strong> setup/check-in only. Writer/scout crons are paused until Shan approves the guarded parallel setup.</p>
-  <ul>
-    <li>Plan: <a href="/home-match-parallel-kanban-execution-plan.html">HomeMatch Parallel Kanban Execution Plan</a></li>
-    <li>Skill: <code>homematch-parallel-kanban-execution</code></li>
-    <li>Model: separate git worktrees for P2 frontend, P3 backend, and P4/P5 quality-compliance; main worktree remains integration lane.</li>
-    <li>RAM watchdog: 1-minute samples with green/yellow/red/critical thresholds.</li>
-  </ul>
-</section>
+      <section id="parallel-worktree-plan">
+        <h2>Parallel worktree execution plan</h2>
+        <p>
+          <strong>Status:</strong> setup/check-in only. Writer/scout crons are
+          paused until Shan approves the guarded parallel setup.
+        </p>
+        <ul>
+          <li>
+            Plan:
+            <a href="/home-match-parallel-kanban-execution-plan.html"
+              >HomeMatch Parallel Kanban Execution Plan</a
+            >
+          </li>
+          <li>Skill: <code>homematch-parallel-kanban-execution</code></li>
+          <li>
+            Model: separate git worktrees for P2 frontend, P3 backend, and P4/P5
+            quality-compliance; main worktree remains integration lane.
+          </li>
+          <li>
+            RAM watchdog: 1-minute samples with green/yellow/red/critical
+            thresholds.
+          </li>
+        </ul>
+      </section>
 
-<section id="parallel-worktree-setup">
-  <h2>Parallel worktree setup check-in</h2>
-  <p><strong>Status:</strong> setup complete; dispatch not started.</p>
-  <ul>
-    <li>Worktrees created for P2 frontend, P3 backend, and P4/P5 quality-compliance.</li>
-    <li>1-minute RAM watchdog installed and running via <code>hm-ram-watchdog.timer</code>.</li>
-    <li>Current RAM zone at setup: green.</li>
-    <li>Kanban macro blockers commented with worktree-lane tracking notes.</li>
-    <li>Next step requires Shan approval before dispatching workers.</li>
-  </ul>
-  <p>Setup artifact: <code>reports/home-match-revival/parallel-worktree-setup-2026-05-07.md</code></p>
-</section>
+      <section id="parallel-worktree-setup">
+        <h2>Parallel worktree setup check-in</h2>
+        <p><strong>Status:</strong> setup complete; dispatch not started.</p>
+        <ul>
+          <li>
+            Worktrees created for P2 frontend, P3 backend, and P4/P5
+            quality-compliance.
+          </li>
+          <li>
+            1-minute RAM watchdog installed and running via
+            <code>hm-ram-watchdog.timer</code>.
+          </li>
+          <li>Current RAM zone at setup: green.</li>
+          <li>
+            Kanban macro blockers commented with worktree-lane tracking notes.
+          </li>
+          <li>Next step requires Shan approval before dispatching workers.</li>
+        </ul>
+        <p>
+          Setup artifact:
+          <code
+            >reports/home-match-revival/parallel-worktree-setup-2026-05-07.md</code
+          >
+        </p>
+      </section>
 
-<section id="strict-phase-gate-correction">
-  <h2>Strict Phase 0/1 gate correction</h2>
-  <p><strong>Status:</strong> Phase 2/3/4/5 dispatch is held.</p>
-  <p>The previous parallel plan was too loose. Phase 0 is not 100% closed while baseline caveats remain, and Phase 1 is not 100% closed while remediation backlog remains. The allowed next wave is Phase 0/1 closure only.</p>
-  <ul>
-    <li>Artifact: <code>reports/home-match-revival/phase0-phase1-strict-closure-gate.md</code></li>
-    <li>Correct command: <code>/goal Load homematch-parallel-kanban-execution. Strict OG-plan gate: dispatch Phase 0/1 closure only using existing worktrees + RAM watchdog. Do not dispatch P2/P3/P4/P5.</code></li>
-  </ul>
-</section>
+      <section id="strict-phase-gate-correction">
+        <h2>Strict Phase 0/1 gate correction</h2>
+        <p><strong>Status:</strong> Phase 2/3/4/5 dispatch is held.</p>
+        <p>
+          The previous parallel plan was too loose. Phase 0 is not 100% closed
+          while baseline caveats remain, and Phase 1 is not 100% closed while
+          remediation backlog remains. The allowed next wave is Phase 0/1
+          closure only.
+        </p>
+        <ul>
+          <li>
+            Artifact:
+            <code
+              >reports/home-match-revival/phase0-phase1-strict-closure-gate.md</code
+            >
+          </li>
+          <li>
+            Correct command:
+            <code
+              >/goal Load homematch-parallel-kanban-execution. Strict OG-plan
+              gate: dispatch Phase 0/1 closure only using existing worktrees +
+              RAM watchdog. Do not dispatch P2/P3/P4/P5.</code
+            >
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-closure-matrix">
-  <h2>Phase 0/1 strict closure matrix</h2>
-  <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
-  <ul>
-    <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
-    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth policy decisions, dependency cleanup decision, remaining local-dev validation blockers.</li>
-    <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
-  </ul>
-</section>
+      <section id="phase0-phase1-closure-matrix">
+        <h2>Phase 0/1 strict closure matrix</h2>
+        <p>
+          <strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and
+          Phase 1 are not 100% complete.
+        </p>
+        <ul>
+          <li>
+            <strong>Phase 0 open/block:</strong> integration tests, API live
+            probe coverage, browser/auth traversal, cron-secret endpoint policy,
+            .env.prod guard precision, test-suite quality triage.
+          </li>
+          <li>
+            <strong>Phase 1 open/block:</strong> real service-role RBAC,
+            DB/RLS/migration cleanup, middleware/API hardening, auth policy
+            decisions, dependency cleanup decision, remaining local-dev
+            validation blockers.
+          </li>
+          <li>
+            <strong>Artifacts:</strong>
+            <code>reports/home-match-revival/phase0-closure-scout.md</code>,
+            <code
+              >reports/home-match-revival/phase1-remediation-closure-scout.md</code
+            >,
+            <code
+              >reports/home-match-revival/phase0-phase1-closure-matrix.md</code
+            >
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-remediation-progress-2026-05-08">
-  <h2>Phase 0/1 remediation progress — 2026-05-08</h2>
-  <p><strong>Status:</strong> Phase 1 partially remediated; Phase 0/1 still not closed. Phase 2+ remains held.</p>
-  <ul>
-    <li><strong>Closed:</strong> DB interaction uniqueness now enforces one current interaction per user/property via migration <code>20260508015000_fix_interaction_uniqueness.sql</code>.</li>
-    <li><strong>Closed:</strong> middleware matcher now skips <code>_next/data</code> and common static/metadata assets.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest passed; resource-limited type-check passed; diff check passed.</li>
-    <li><strong>Artifact:</strong> <code>reports/home-match-revival/phase0-phase1-remediation-progress-2026-05-08.md</code></li>
-  </ul>
-</section>
+      <section id="phase0-phase1-remediation-progress-2026-05-08">
+        <h2>Phase 0/1 remediation progress — 2026-05-08</h2>
+        <p>
+          <strong>Status:</strong> Phase 1 partially remediated; Phase 0/1 still
+          not closed. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            <strong>Closed:</strong> DB interaction uniqueness now enforces one
+            current interaction per user/property via migration
+            <code>20260508015000_fix_interaction_uniqueness.sql</code>.
+          </li>
+          <li>
+            <strong>Closed:</strong> middleware matcher now skips
+            <code>_next/data</code> and common static/metadata assets.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest passed;
+            resource-limited type-check passed; diff check passed.
+          </li>
+          <li>
+            <strong>Artifact:</strong>
+            <code
+              >reports/home-match-revival/phase0-phase1-remediation-progress-2026-05-08.md</code
+            >
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-cache-control-2026-05-08">
-  <h2>Phase 0/1 remediation progress — cache-control slice</h2>
-  <p><strong>Status:</strong> Phase 1 partially remediated; Phase 0/1 still not closed. Phase 2+ remains held.</p>
-  <ul>
-    <li><strong>Advanced:</strong> added <code>src/lib/api/cache-control.ts</code> with user-specific no-store JSON helpers.</li>
-    <li><strong>Applied:</strong> <code>/api/couples/activity</code> and <code>/api/couples/mutual-likes</code> successful GET responses now set <code>private, no-store, no-cache, must-revalidate, max-age=0</code>.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest passed; resource-limited type-check passed; diff check passed.</li>
-    <li><strong>Artifact:</strong> <code>reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code></li>
-  </ul>
-</section>
+      <section id="phase0-phase1-cache-control-2026-05-08">
+        <h2>Phase 0/1 remediation progress — cache-control slice</h2>
+        <p>
+          <strong>Status:</strong> Phase 1 partially remediated; Phase 0/1 still
+          not closed. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            <strong>Advanced:</strong> added
+            <code>src/lib/api/cache-control.ts</code> with user-specific
+            no-store JSON helpers.
+          </li>
+          <li>
+            <strong>Applied:</strong> <code>/api/couples/activity</code> and
+            <code>/api/couples/mutual-likes</code> successful GET responses now
+            set
+            <code>private, no-store, no-cache, must-revalidate, max-age=0</code
+            >.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest passed;
+            resource-limited type-check passed; diff check passed.
+          </li>
+          <li>
+            <strong>Artifact:</strong>
+            <code
+              >reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code
+            >
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-cache-control-expanded-2026-05-08">
-  <h2>Phase 0/1 remediation progress — expanded authenticated GET cache policy</h2>
-  <p><strong>Status:</strong> Phase 1 M3 advanced; Phase 0/1 still not closed. Phase 2+ remains held.</p>
-  <ul>
-    <li><strong>Applied:</strong> <code>noStoreJson</code> now covers successful authenticated/user-specific GET responses across couples, interactions, vibes, and user search routes.</li>
-    <li><strong>Verification:</strong> RED observed for expanded route matrix; targeted Jest passed; resource-limited type-check passed; diff check passed.</li>
-    <li><strong>Remaining M3:</strong> unauthenticated/public/admin/metrics route classification plus error response cache policy.</li>
-    <li><strong>Artifact:</strong> <code>reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code></li>
-  </ul>
-</section>
+      <section id="phase0-phase1-cache-control-expanded-2026-05-08">
+        <h2>
+          Phase 0/1 remediation progress — expanded authenticated GET cache
+          policy
+        </h2>
+        <p>
+          <strong>Status:</strong> Phase 1 M3 advanced; Phase 0/1 still not
+          closed. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            <strong>Applied:</strong> <code>noStoreJson</code> now covers
+            successful authenticated/user-specific GET responses across couples,
+            interactions, vibes, and user search routes.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed for expanded route
+            matrix; targeted Jest passed; resource-limited type-check passed;
+            diff check passed.
+          </li>
+          <li>
+            <strong>Remaining M3:</strong> unauthenticated/public/admin/metrics
+            route classification plus error response cache policy.
+          </li>
+          <li>
+            <strong>Artifact:</strong>
+            <code
+              >reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code
+            >
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-cache-control-closed-2026-05-08">
-  <h2>Phase 0/1 remediation — GET cache policy closed</h2>
-  <p><strong>Status:</strong> Phase 1 M3 closed for successful GET route classification. Phase 0/1 still not fully closed because M5/M6/auth/DB/test blockers remain.</p>
-  <ul>
-    <li><strong>Closed:</strong> dynamic JSON GET routes use <code>noStoreJson</code>; health has explicit no-store; public map assets have explicit public cache.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
-    <li><strong>Scout added:</strong> <code>reports/home-match-revival/rate-limit-gap-scout.md</code> inventories M5 rate-limit gaps for the next slice.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-cache-control-closed-2026-05-08">
+        <h2>Phase 0/1 remediation — GET cache policy closed</h2>
+        <p>
+          <strong>Status:</strong> Phase 1 M3 closed for successful GET route
+          classification. Phase 0/1 still not fully closed because
+          M5/M6/auth/DB/test blockers remain.
+        </p>
+        <ul>
+          <li>
+            <strong>Closed:</strong> dynamic JSON GET routes use
+            <code>noStoreJson</code>; health has explicit no-store; public map
+            assets have explicit public cache.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest and
+            resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Scout added:</strong>
+            <code>reports/home-match-revival/rate-limit-gap-scout.md</code>
+            inventories M5 rate-limit gaps for the next slice.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-rate-limit-partial-2026-05-08">
-  <h2>Phase 0/1 remediation — rate-limit slice advanced</h2>
-  <p><strong>Status:</strong> Phase 1 M5 partially closed. Phase 2+ remains held.</p>
-  <ul>
-    <li><strong>Closed:</strong> route-scoped limiter coverage for couples notify, couples disputed PATCH, interactions DELETE, and performance metrics POST.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
-    <li><strong>Remaining M5:</strong> admin cron-secret endpoints.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-rate-limit-partial-2026-05-08">
+        <h2>Phase 0/1 remediation — rate-limit slice advanced</h2>
+        <p>
+          <strong>Status:</strong> Phase 1 M5 partially closed. Phase 2+ remains
+          held.
+        </p>
+        <ul>
+          <li>
+            <strong>Closed:</strong> route-scoped limiter coverage for couples
+            notify, couples disputed PATCH, interactions DELETE, and performance
+            metrics POST.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest and
+            resource-limited type-check passed.
+          </li>
+          <li><strong>Remaining M5:</strong> admin cron-secret endpoints.</li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-rate-limit-closed-2026-05-08">
-  <h2>Phase 0/1 remediation — M5 rate-limit route coverage closed</h2>
-  <p><strong>Status:</strong> M5 closed for repo-code route coverage. Phase 0/1 still not fully closed because M6/auth/DB/test blockers remain.</p>
-  <ul>
-    <li><strong>Closed:</strong> user mutation, performance ingestion, and admin cron-secret route limit checks.</li>
-    <li><strong>New helper:</strong> <code>src/lib/api/admin-rate-limit.ts</code> avoids raw secret-derived limiter keys.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-rate-limit-closed-2026-05-08">
+        <h2>Phase 0/1 remediation — M5 rate-limit route coverage closed</h2>
+        <p>
+          <strong>Status:</strong> M5 closed for repo-code route coverage. Phase
+          0/1 still not fully closed because M6/auth/DB/test blockers remain.
+        </p>
+        <ul>
+          <li>
+            <strong>Closed:</strong> user mutation, performance ingestion, and
+            admin cron-secret route limit checks.
+          </li>
+          <li>
+            <strong>New helper:</strong>
+            <code>src/lib/api/admin-rate-limit.ts</code> avoids raw
+            secret-derived limiter keys.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest and
+            resource-limited type-check passed.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-shared-errors-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 shared error standardization advanced</h2>
-  <p><strong>Status:</strong> M6 partial. Phase 2+ remains held.</p>
-  <ul>
-    <li><strong>Closed:</strong> ApiErrorHandler now covers 405/429/502/503/504 and shared rate-limit helpers use standardized responses.</li>
-    <li><strong>Scout preserved:</strong> <code>reports/home-match-revival/api-error-standardization-scout.md</code>.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
-    <li><strong>Next:</strong> convert mixed interactions route and zillow 204-with-error-body cases.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-shared-errors-2026-05-08">
+        <h2>
+          Phase 0/1 remediation — M6 shared error standardization advanced
+        </h2>
+        <p><strong>Status:</strong> M6 partial. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            <strong>Closed:</strong> ApiErrorHandler now covers
+            405/429/502/503/504 and shared rate-limit helpers use standardized
+            responses.
+          </li>
+          <li>
+            <strong>Scout preserved:</strong>
+            <code
+              >reports/home-match-revival/api-error-standardization-scout.md</code
+            >.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest and
+            resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Next:</strong> convert mixed interactions route and zillow
+            204-with-error-body cases.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-interactions-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 interactions route converted</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li><code>src/app/api/interactions/route.ts</code> now uses <code>ApiErrorHandler</code> for prior raw 400/429/500/504 error paths.</li>
-    <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites / 27 tests; resource-limited type-check passed.</li>
-    <li><strong>Remaining:</strong> zillow 204-with-body cleanup and remaining route-family error conversions.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-interactions-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 interactions route converted</h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            <code>src/app/api/interactions/route.ts</code> now uses
+            <code>ApiErrorHandler</code> for prior raw 400/429/500/504 error
+            paths.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; final targeted Jest
+            passed 3 suites / 27 tests; resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> zillow 204-with-body cleanup and
+            remaining route-family error conversions.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-zillow-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 Zillow random-image cleanup</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li><code>src/app/api/zillow/random-image/route.ts</code> no longer emits JSON bodies with 204 responses.</li>
-    <li>Production/config/upstream failures use <code>ApiErrorHandler</code>; empty demo results return no-store 200 payloads.</li>
-    <li><strong>Verification:</strong> RED observed; final targeted Jest passed; resource-limited type-check passed.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-zillow-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 Zillow random-image cleanup</h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            <code>src/app/api/zillow/random-image/route.ts</code> no longer
+            emits JSON bodies with 204 responses.
+          </li>
+          <li>
+            Production/config/upstream failures use
+            <code>ApiErrorHandler</code>; empty demo results return no-store 200
+            payloads.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; final targeted Jest
+            passed; resource-limited type-check passed.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-family-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 route-family conversion</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted error helpers in <code>couples/check-mutual</code>, <code>couples/stats</code>, <code>couples/mutual-likes</code>, <code>neighborhoods/vibes</code>, and <code>properties/vibes</code>.</li>
-    <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites; resource-limited type-check passed.</li>
-    <li><strong>Remaining:</strong> maps/admin/remaining raw error route families plus non-route Phase 0/1 blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-family-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 route-family conversion</h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            Converted error helpers in <code>couples/check-mutual</code>,
+            <code>couples/stats</code>, <code>couples/mutual-likes</code>,
+            <code>neighborhoods/vibes</code>, and <code>properties/vibes</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; final targeted Jest
+            passed 3 suites; resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> maps/admin/remaining raw error route
+            families plus non-route Phase 0/1 blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-auth-boundary-2026-05-08">
-  <h2>Phase 0/1 remediation — auth boundary consolidation</h2>
-  <p><strong>Status:</strong> auth cleanup partial. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted <code>couples/check-mutual</code>, <code>couples/stats</code>, and <code>couples/mutual-likes</code> to <code>requireUserFromRequest</code>.</li>
-    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
-    <li><strong>Remaining:</strong> broader auth client consolidation and server monkey-patch cleanup require dedicated slice.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-auth-boundary-2026-05-08">
+        <h2>Phase 0/1 remediation — auth boundary consolidation</h2>
+        <p>
+          <strong>Status:</strong> auth cleanup partial. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Converted <code>couples/check-mutual</code>,
+            <code>couples/stats</code>, and <code>couples/mutual-likes</code> to
+            <code>requireUserFromRequest</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; targeted Jest and
+            resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> broader auth client consolidation and
+            server monkey-patch cleanup require dedicated slice.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-maps-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 paid Maps proxy conversion</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted <code>maps/geocode</code> and <code>maps/places/autocomplete</code> to <code>ApiErrorHandler</code> for rate-limit, config, validation, upstream, and internal errors.</li>
-    <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites; resource-limited type-check passed.</li>
-    <li><strong>Remaining:</strong> admin/remaining route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-maps-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 paid Maps proxy conversion</h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            Converted <code>maps/geocode</code> and
+            <code>maps/places/autocomplete</code> to
+            <code>ApiErrorHandler</code> for rate-limit, config, validation,
+            upstream, and internal errors.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed; final targeted Jest
+            passed 3 suites; resource-limited type-check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> admin/remaining route-family errors plus
+            broader non-M6 Phase 0/1 blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-remaining-couples-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 remaining couples route-family conversion</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted <code>couples/activity</code>, <code>couples/notify</code>, and <code>couples/disputed</code> raw method-not-allowed, validation, rate-limit, not-found, and server errors to <code>ApiErrorHandler</code>.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m6-couples-red-1778209561.service</code>; final targeted Jest passed in <code>hm-m6-couples-green-1778209630.service</code>; resource-limited type-check passed in <code>hm-m6-couples-typecheck-1778209637.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> admin/health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-remaining-couples-2026-05-08">
+        <h2>
+          Phase 0/1 remediation — M6 remaining couples route-family conversion
+        </h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            Converted <code>couples/activity</code>,
+            <code>couples/notify</code>, and <code>couples/disputed</code> raw
+            method-not-allowed, validation, rate-limit, not-found, and server
+            errors to <code>ApiErrorHandler</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m6-couples-red-1778209561.service</code>; final targeted
+            Jest passed in <code>hm-m6-couples-green-1778209630.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m6-couples-typecheck-1778209637.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong>
+            admin/health/performance/maps-script/properties-marketing
+            route-family errors plus broader non-M6 Phase 0/1 blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-admin-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 admin route-family conversion</h2>
-  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted <code>admin/status-refresh</code>, <code>admin/ingest/zillow</code>, <code>admin/generate-vibes</code>, <code>admin/generate-neighborhood-vibes</code>, and <code>admin/generate-vibes-zillow</code> raw unauthorized/config/bad-request/server errors to <code>ApiErrorHandler</code>.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m6-admin-red-1778209853.service</code>; final targeted Jest passed in <code>hm-m6-admin-green-1778209911.service</code>; resource-limited type-check passed in <code>hm-m6-admin-typecheck-1778209919.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-admin-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 admin route-family conversion</h2>
+        <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+        <ul>
+          <li>
+            Converted <code>admin/status-refresh</code>,
+            <code>admin/ingest/zillow</code>, <code>admin/generate-vibes</code>,
+            <code>admin/generate-neighborhood-vibes</code>, and
+            <code>admin/generate-vibes-zillow</code> raw
+            unauthorized/config/bad-request/server errors to
+            <code>ApiErrorHandler</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m6-admin-red-1778209853.service</code>; final targeted Jest
+            passed in <code>hm-m6-admin-green-1778209911.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m6-admin-typecheck-1778209919.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong>
+            health/performance/maps-script/properties-marketing route-family
+            errors plus broader non-M6 Phase 0/1 blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m6-final-json-2026-05-08">
-  <h2>Phase 0/1 remediation — M6 JSON API error conversion closed</h2>
-  <p><strong>Status:</strong> M6 closed repo-side for JSON API route families. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted raw JSON errors in <code>health</code>, <code>users/search</code>, <code>properties/marketing</code>, <code>performance/metrics</code>, <code>maps/script</code>, and <code>maps/metro-boundaries</code> to <code>ApiErrorHandler</code>.</li>
-    <li><code>maps/proxy-script</code> remains intentionally non-JSON because it is a JavaScript script endpoint returning JavaScript comment bodies for failures.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m6-final-json-red-1778210127.service</code>; final targeted Jest passed in <code>hm-m6-final-json-green-1778210177.service</code>; resource-limited type-check passed in <code>hm-m6-final-json-typecheck-1778210186.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> non-M6 Phase 0/1 blockers: auth consolidation, DB/RLS cleanup, timeout cleanup, dead-code/dependency cleanup, README/local-dev closure, and integration/browser validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m6-final-json-2026-05-08">
+        <h2>Phase 0/1 remediation — M6 JSON API error conversion closed</h2>
+        <p>
+          <strong>Status:</strong> M6 closed repo-side for JSON API route
+          families. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Converted raw JSON errors in <code>health</code>,
+            <code>users/search</code>, <code>properties/marketing</code>,
+            <code>performance/metrics</code>, <code>maps/script</code>, and
+            <code>maps/metro-boundaries</code> to <code>ApiErrorHandler</code>.
+          </li>
+          <li>
+            <code>maps/proxy-script</code> remains intentionally non-JSON
+            because it is a JavaScript script endpoint returning JavaScript
+            comment bodies for failures.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m6-final-json-red-1778210127.service</code>; final targeted
+            Jest passed in
+            <code>hm-m6-final-json-green-1778210177.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m6-final-json-typecheck-1778210186.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> non-M6 Phase 0/1 blockers: auth
+            consolidation, DB/RLS cleanup, timeout cleanup, dead-code/dependency
+            cleanup, README/local-dev closure, and integration/browser
+            validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-factory-auth-cleanup-2026-05-08">
-  <h2>Phase 0/1 remediation — Supabase factory cleanup</h2>
-  <p><strong>Status:</strong> A5 and A14 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed the dead throwing <code>createServerClientAsync()</code> stub from <code>src/lib/supabase/factory.ts</code>.</li>
-    <li>Changed factory caching so only browser clients are cached; service-role clients are fresh on repeated calls to avoid pinning rotated keys in memory.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-a5-a14-factory-red-1778210643.service</code>; targeted Jest passed in <code>hm-a5-a14-factory-green-1778210686.service</code>; resource-limited type-check passed in <code>hm-a5-a14-factory-typecheck-1778210691.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, timeout cleanup, dead code/dependency cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-factory-auth-cleanup-2026-05-08">
+        <h2>Phase 0/1 remediation — Supabase factory cleanup</h2>
+        <p>
+          <strong>Status:</strong> A5 and A14 closed repo-side. Phase 2+ remains
+          held.
+        </p>
+        <ul>
+          <li>
+            Removed the dead throwing
+            <code>createServerClientAsync()</code> stub from
+            <code>src/lib/supabase/factory.ts</code>.
+          </li>
+          <li>
+            Changed factory caching so only browser clients are cached;
+            service-role clients are fresh on repeated calls to avoid pinning
+            rotated keys in memory.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-a5-a14-factory-red-1778210643.service</code>; targeted Jest
+            passed in <code>hm-a5-a14-factory-green-1778210686.service</code>;
+            resource-limited type-check passed in
+            <code>hm-a5-a14-factory-typecheck-1778210691.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work, timeout
+            cleanup, dead code/dependency cleanup, README/local-dev closure, and
+            validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m7-timeout-2026-05-08">
-  <h2>Phase 0/1 remediation — M7 middleware timeout cleanup</h2>
-  <p><strong>Status:</strong> M7 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed middleware <code>Promise.race</code> timeout logic that could leave Supabase auth work running after timeout.</li>
-    <li>Added an <code>AbortController</code>-backed Supabase fetch override and clears the timeout after <code>supabase.auth.getUser()</code> resolves.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m7-timeout-red-1778211076.service</code>; targeted Jest passed in <code>hm-m7-timeout-green2-1778211243.service</code>; resource-limited type-check passed in <code>hm-m7-timeout-typecheck2-1778211248.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, dead code/dependency cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m7-timeout-2026-05-08">
+        <h2>Phase 0/1 remediation — M7 middleware timeout cleanup</h2>
+        <p>
+          <strong>Status:</strong> M7 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Removed middleware <code>Promise.race</code> timeout logic that
+            could leave Supabase auth work running after timeout.
+          </li>
+          <li>
+            Added an <code>AbortController</code>-backed Supabase fetch override
+            and clears the timeout after
+            <code>supabase.auth.getUser()</code> resolves.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m7-timeout-red-1778211076.service</code>; targeted Jest
+            passed in <code>hm-m7-timeout-green2-1778211243.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m7-timeout-typecheck2-1778211248.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work,
+            external-call timeouts, dead code/dependency cleanup,
+            README/local-dev closure, and validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m9-actions-2026-05-08">
-  <h2>Phase 0/1 remediation — M9 dead server-action cleanup</h2>
-  <p><strong>Status:</strong> M9 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed unused login, signup, and Google OAuth server actions from <code>src/lib/supabase/actions.ts</code>.</li>
-    <li>Kept the wired <code>signOut</code> action used by existing UI surfaces.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m9-actions-red-1778211419.service</code>; targeted Jest passed in <code>hm-m9-actions-green-1778211490.service</code>; resource-limited type-check passed in <code>hm-m9-actions-typecheck-1778211495.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m9-actions-2026-05-08">
+        <h2>Phase 0/1 remediation — M9 dead server-action cleanup</h2>
+        <p>
+          <strong>Status:</strong> M9 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Removed unused login, signup, and Google OAuth server actions from
+            <code>src/lib/supabase/actions.ts</code>.
+          </li>
+          <li>
+            Kept the wired <code>signOut</code> action used by existing UI
+            surfaces.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m9-actions-red-1778211419.service</code>; targeted Jest
+            passed in <code>hm-m9-actions-green-1778211490.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m9-actions-typecheck-1778211495.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work,
+            external-call timeouts, rate-limit consolidation, other dead-code
+            cleanup, README/local-dev closure, and validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m13-zillow-2026-05-08">
-  <h2>Phase 0/1 remediation — M13 Zillow factory cleanup</h2>
-  <p><strong>Status:</strong> M13 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed the unused <code>createZillowClient</code> export from <code>src/lib/api/zillow-client.ts</code>.</li>
-    <li>Retained the used <code>ZillowUtils</code> export consumed by Zillow ingestion.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m13-zillow-red-1778211731.service</code>; targeted Zillow Jest passed in <code>hm-m13-zillow-green-1778211761.service</code>; resource-limited type-check passed in <code>hm-m13-zillow-typecheck-1778211766.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, CouplesMiddleware cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m13-zillow-2026-05-08">
+        <h2>Phase 0/1 remediation — M13 Zillow factory cleanup</h2>
+        <p>
+          <strong>Status:</strong> M13 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Removed the unused <code>createZillowClient</code> export from
+            <code>src/lib/api/zillow-client.ts</code>.
+          </li>
+          <li>
+            Retained the used <code>ZillowUtils</code> export consumed by Zillow
+            ingestion.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m13-zillow-red-1778211731.service</code>; targeted Zillow
+            Jest passed in <code>hm-m13-zillow-green-1778211761.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m13-zillow-typecheck-1778211766.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work,
+            external-call timeouts, rate-limit consolidation, RPC wrapper
+            cleanup, CouplesMiddleware cleanup, other dead-code cleanup,
+            README/local-dev closure, and validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m14-couples-middleware-2026-05-08">
-  <h2>Phase 0/1 remediation — M14 CouplesMiddleware cleanup</h2>
-  <p><strong>Status:</strong> M14 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Source scan showed <code>CouplesMiddleware</code> had no production import sites outside its own module.</li>
-    <li>Removed <code>src/lib/services/couples-middleware.ts</code> and its dedicated unit test, preserving direct <code>CouplesService</code> coverage.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m14-couples-red-1778211904.service</code>; targeted couples Jest passed in <code>hm-m14-couples-green-1778211926.service</code>; resource-limited type-check passed in <code>hm-m14-couples-typecheck-1778211931.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m14-couples-middleware-2026-05-08">
+        <h2>Phase 0/1 remediation — M14 CouplesMiddleware cleanup</h2>
+        <p>
+          <strong>Status:</strong> M14 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Source scan showed <code>CouplesMiddleware</code> had no production
+            import sites outside its own module.
+          </li>
+          <li>
+            Removed <code>src/lib/services/couples-middleware.ts</code> and its
+            dedicated unit test, preserving direct
+            <code>CouplesService</code> coverage.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m14-couples-red-1778211904.service</code>; targeted couples
+            Jest passed in <code>hm-m14-couples-green-1778211926.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m14-couples-typecheck-1778211931.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work,
+            external-call timeouts, rate-limit consolidation, RPC wrapper
+            cleanup, other dead-code cleanup, README/local-dev closure, and
+            validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m12-rpc-wrapper-2026-05-08">
-  <h2>Phase 0/1 remediation — M12 duplicate RPC wrapper cleanup</h2>
-  <p><strong>Status:</strong> M12 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed the duplicate exported <code>callRPC</code> helper from <code>src/lib/services/supabase-rpc-types.ts</code>.</li>
-    <li>Preserved typed RPC creation/introspection and the canonical wrapper utilities in <code>src/lib/services/utils/rpc-wrapper.ts</code>.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m12-rpc-red-1778212026.service</code>; targeted static Jest passed in <code>hm-m12-rpc-green-1778212063.service</code>; resource-limited type-check passed in <code>hm-m12-rpc-typecheck-1778212067.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, test-only export cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m12-rpc-wrapper-2026-05-08">
+        <h2>Phase 0/1 remediation — M12 duplicate RPC wrapper cleanup</h2>
+        <p>
+          <strong>Status:</strong> M12 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Removed the duplicate exported <code>callRPC</code> helper from
+            <code>src/lib/services/supabase-rpc-types.ts</code>.
+          </li>
+          <li>
+            Preserved typed RPC creation/introspection and the canonical wrapper
+            utilities in <code>src/lib/services/utils/rpc-wrapper.ts</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m12-rpc-red-1778212026.service</code>; targeted static Jest
+            passed in <code>hm-m12-rpc-green-1778212063.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m12-rpc-typecheck-1778212067.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, auth monkey-patch cleanup, DB/RLS/migration work,
+            external-call timeouts, rate-limit consolidation, test-only export
+            cleanup, other dead-code cleanup, README/local-dev closure, and
+            validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m11-optional-user-2026-05-08">
-  <h2>Phase 0/1 remediation — M11 optional-user test export cleanup</h2>
-  <p><strong>Status:</strong> M11 partially advanced repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Removed the test-only <code>__isMissingSupabaseConfigError</code> export from <code>src/lib/supabase/optional-user.ts</code>.</li>
-    <li>Reworked tests to validate behavior through public <code>getOptionalServerUser</code> plus a static no-<code>__</code> export guard.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m11-optional-red-1778212210.service</code>; targeted Jest passed in <code>hm-m11-optional-green-1778212243.service</code>; resource-limited type-check passed in <code>hm-m11-optional-typecheck-1778212248.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> M11 still has <code>__withRefreshRecovery</code> exports in Supabase client/server that require a separate shared-helper refactor; Phase 0/1 also retain auth consolidation, service-role/RBAC, DB/RLS/migration, timeout, rate-limit, README/local-dev, and validation blockers.</li>
-  </ul>
-</section>
+      <section id="phase0-phase1-m11-optional-user-2026-05-08">
+        <h2>Phase 0/1 remediation — M11 optional-user test export cleanup</h2>
+        <p>
+          <strong>Status:</strong> M11 partially advanced repo-side. Phase 2+
+          remains held.
+        </p>
+        <ul>
+          <li>
+            Removed the test-only
+            <code>__isMissingSupabaseConfigError</code> export from
+            <code>src/lib/supabase/optional-user.ts</code>.
+          </li>
+          <li>
+            Reworked tests to validate behavior through public
+            <code>getOptionalServerUser</code> plus a static no-<code>__</code>
+            export guard.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m11-optional-red-1778212210.service</code>; targeted Jest
+            passed in <code>hm-m11-optional-green-1778212243.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m11-optional-typecheck-1778212248.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> M11 still has
+            <code>__withRefreshRecovery</code> exports in Supabase client/server
+            that require a separate shared-helper refactor; Phase 0/1 also
+            retain auth consolidation, service-role/RBAC, DB/RLS/migration,
+            timeout, rate-limit, README/local-dev, and validation blockers.
+          </li>
+        </ul>
+      </section>
 
-<section id="phase0-phase1-m11-refresh-recovery-2026-05-08">
-  <h2>Phase 0/1 remediation — M11 refresh recovery export cleanup</h2>
-  <p><strong>Status:</strong> M11 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Extracted duplicated Supabase refresh-token recovery monkey-patch logic into <code>src/lib/supabase/refresh-recovery.ts</code>.</li>
-    <li>Removed the test-only <code>__withRefreshRecovery</code> exports from browser and server Supabase client modules.</li>
-    <li><strong>Verification:</strong> refresh recovery Jest passed in <code>hm-m11-refresh-green2-1778212536.service</code>; resource-limited type-check passed in <code>hm-m11-refresh-typecheck2-1778212541.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, README/local-dev closure, and validation blockers.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-m15-neighborhood-cleanup-2026-05-08">
-  <h2>Phase 0/1 remediation — M15 stale production TODO cleanup</h2>
-  <p><strong>Status:</strong> M15 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Converted stale production TODO markers in <code>src/lib/services/properties/neighborhood.ts</code> into explicit intentional-fallback comments with migration-coverage criteria.</li>
-    <li>Added <code>__tests__/unit/services/properties-neighborhood-cleanup.test.ts</code> to guard against reintroducing stale TODO markers in that production service.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m15-neighborhood-red-1778213946.service</code>; targeted Jest passed in <code>hm-m15-neighborhood-green-1778213981.service</code>; resource-limited type-check passed in <code>hm-m15-neighborhood-typecheck-1778213988.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, remaining local-dev validation blockers, and validation blockers.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-v4-readme-local-dev-2026-05-08">
-  <h2>Phase 0/1 remediation — V4 README local-dev closure</h2>
-  <p><strong>Status:</strong> V4 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>README Quick Start now makes the fast local loop explicit: <code>SKIP_SUPABASE_GUARD=true pnpm dev</code>.</li>
-    <li>Documented Docker as optional for default dev, Docker-required paths for <code>pnpm dev:db</code>, intentional <code>SKIP_DOCKER=1</code>, and no-secret handling.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-v4-readme-red-1778214105.service</code>; targeted README Jest passed in <code>hm-v4-readme-green-1778214126.service</code>; resource-limited type-check passed in <code>hm-v4-readme-typecheck-1778214129.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, and validation blockers.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-m8-maps-timeouts-2026-05-08">
-  <h2>Phase 0/1 remediation — M8 Maps external-call timeouts</h2>
-  <p><strong>Status:</strong> M8 advanced but not closed. Phase 2+ remains held.</p>
-  <ul>
-    <li>Added shared <code>src/lib/api/fetch-timeout.ts</code> for AbortController-backed fetch timeouts.</li>
-    <li>Adopted it in Google Maps outbound fetches: geocode, places autocomplete, and maps script proxy.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-m8-maps-red-1778214203.service</code>; targeted static Jest passed in <code>hm-m8-maps-green-1778214314.service</code>; resource-limited type-check passed in <code>hm-m8-maps-typecheck-1778214317.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> M8 still needs remaining admin/Zillow/OpenAI/neighborhood/property vibe external calls wrapped; broader Phase 0/1 blockers remain.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-a11-password-config-2026-05-08">
-  <h2>Phase 0/1 remediation — A11 password config alignment</h2>
-  <p><strong>Status:</strong> A11 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li><code>supabase/config.toml</code> now matches the app signup/reset schema: minimum 8 characters plus lowercase, uppercase, and digit requirements.</li>
-    <li>Added <code>__tests__/unit/auth/password-config-alignment.test.ts</code> to guard Supabase config drift.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-a11-password-red-1778214395.service</code>; targeted Jest passed in <code>hm-a11-password-green-1778214410.service</code>; resource-limited type-check passed in <code>hm-a11-password-typecheck-1778214414.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> production email/CAPTCHA auth policy decisions remain blocked; broader Phase 0/1 blockers remain.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-db-rls-policy-closure-2026-05-08">
-  <h2>Phase 0/1 remediation — DB RLS policy closure</h2>
-  <p><strong>Status:</strong> DB P1.5 and P1.7 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Added migration <code>20260508021000_add_user_profiles_delete_policy.sql</code> for authenticated self-delete on <code>user_profiles</code>.</li>
-    <li>Re-scouted and guarded the existing households INSERT policy in <code>20251130200000_consolidated_pending_features.sql</code>.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-db-rls-policy-red-1778214498.service</code>; targeted Jest passed in <code>hm-db-rls-policy-green-1778214516.service</code>; resource-limited type-check passed in <code>hm-db-rls-policy-typecheck-1778214518.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> DB reset/lint/integration validation remains blocked by local Supabase/Docker or approved remote-test path; other DB performance/migration blockers remain.</li>
-  </ul>
-</section>
-<section id="phase0-phase1-db-jsonb-indexes-2026-05-08">
-  <h2>Phase 0/1 remediation — DB JSONB GIN indexes</h2>
-  <p><strong>Status:</strong> DB P2.2 closed repo-side. Phase 2+ remains held.</p>
-  <ul>
-    <li>Added migration <code>20260508022000_add_jsonb_gin_indexes.sql</code> for <code>user_profiles.preferences</code>, <code>user_property_interactions.score_data</code>, and <code>saved_searches.filters</code>.</li>
-    <li><strong>Verification:</strong> RED observed in <code>hm-jsonb-indexes-red-1778214603.service</code>; targeted Jest passed in <code>hm-jsonb-indexes-green-1778214619.service</code>; resource-limited type-check passed in <code>hm-jsonb-indexes-typecheck-1778214622.service</code>; diff check passed.</li>
-    <li><strong>Remaining:</strong> DB reset/lint/integration validation remains blocked by local Supabase/Docker or approved remote-test path; query dedupe, realtime N+1, rollback/DOWN, and typing cleanup remain open.</li>
-  </ul>
-</section>
-</main>
+      <section id="phase0-phase1-m11-refresh-recovery-2026-05-08">
+        <h2>Phase 0/1 remediation — M11 refresh recovery export cleanup</h2>
+        <p>
+          <strong>Status:</strong> M11 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Extracted duplicated Supabase refresh-token recovery monkey-patch
+            logic into <code>src/lib/supabase/refresh-recovery.ts</code>.
+          </li>
+          <li>
+            Removed the test-only <code>__withRefreshRecovery</code> exports
+            from browser and server Supabase client modules.
+          </li>
+          <li>
+            <strong>Verification:</strong> refresh recovery Jest passed in
+            <code>hm-m11-refresh-green2-1778212536.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m11-refresh-typecheck2-1778212541.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, DB/RLS/migration work, external-call timeouts, rate-limit
+            consolidation, README/local-dev closure, and validation blockers.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-m15-neighborhood-cleanup-2026-05-08">
+        <h2>Phase 0/1 remediation — M15 stale production TODO cleanup</h2>
+        <p>
+          <strong>Status:</strong> M15 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            Converted stale production TODO markers in
+            <code>src/lib/services/properties/neighborhood.ts</code> into
+            explicit intentional-fallback comments with migration-coverage
+            criteria.
+          </li>
+          <li>
+            Added
+            <code
+              >__tests__/unit/services/properties-neighborhood-cleanup.test.ts</code
+            >
+            to guard against reintroducing stale TODO markers in that production
+            service.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m15-neighborhood-red-1778213946.service</code>; targeted
+            Jest passed in
+            <code>hm-m15-neighborhood-green-1778213981.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m15-neighborhood-typecheck-1778213988.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, DB/RLS/migration work, external-call timeouts, rate-limit
+            consolidation, dependency decision, remaining local-dev validation
+            blockers, and validation blockers.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-v4-readme-local-dev-2026-05-08">
+        <h2>Phase 0/1 remediation — V4 README local-dev closure</h2>
+        <p>
+          <strong>Status:</strong> V4 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            README Quick Start now makes the fast local loop explicit:
+            <code>SKIP_SUPABASE_GUARD=true pnpm dev</code>.
+          </li>
+          <li>
+            Documented Docker as optional for default dev, Docker-required paths
+            for <code>pnpm dev:db</code>, intentional
+            <code>SKIP_DOCKER=1</code>, and no-secret handling.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-v4-readme-red-1778214105.service</code>; targeted README
+            Jest passed in <code>hm-v4-readme-green-1778214126.service</code>;
+            resource-limited type-check passed in
+            <code>hm-v4-readme-typecheck-1778214129.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> Phase 0/1 still not fully closed: auth
+            client consolidation, service-role/RBAC decisions, interactions
+            fallback, DB/RLS/migration work, external-call timeouts, rate-limit
+            consolidation, dependency decision, and validation blockers.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-m8-maps-timeouts-2026-05-08">
+        <h2>Phase 0/1 remediation — M8 Maps external-call timeouts</h2>
+        <p>
+          <strong>Status:</strong> M8 advanced but not closed. Phase 2+ remains
+          held.
+        </p>
+        <ul>
+          <li>
+            Added shared <code>src/lib/api/fetch-timeout.ts</code> for
+            AbortController-backed fetch timeouts.
+          </li>
+          <li>
+            Adopted it in Google Maps outbound fetches: geocode, places
+            autocomplete, and maps script proxy.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-m8-maps-red-1778214203.service</code>; targeted static Jest
+            passed in <code>hm-m8-maps-green-1778214314.service</code>;
+            resource-limited type-check passed in
+            <code>hm-m8-maps-typecheck-1778214317.service</code>; diff check
+            passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> M8 still needs remaining
+            admin/Zillow/OpenAI/neighborhood/property vibe external calls
+            wrapped; broader Phase 0/1 blockers remain.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-a11-password-config-2026-05-08">
+        <h2>Phase 0/1 remediation — A11 password config alignment</h2>
+        <p>
+          <strong>Status:</strong> A11 closed repo-side. Phase 2+ remains held.
+        </p>
+        <ul>
+          <li>
+            <code>supabase/config.toml</code> now matches the app signup/reset
+            schema: minimum 8 characters plus lowercase, uppercase, and digit
+            requirements.
+          </li>
+          <li>
+            Added
+            <code>__tests__/unit/auth/password-config-alignment.test.ts</code>
+            to guard Supabase config drift.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-a11-password-red-1778214395.service</code>; targeted Jest
+            passed in <code>hm-a11-password-green-1778214410.service</code>;
+            resource-limited type-check passed in
+            <code>hm-a11-password-typecheck-1778214414.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> production email/CAPTCHA auth policy
+            decisions remain blocked; broader Phase 0/1 blockers remain.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-db-rls-policy-closure-2026-05-08">
+        <h2>Phase 0/1 remediation — DB RLS policy closure</h2>
+        <p>
+          <strong>Status:</strong> DB P1.5 and P1.7 closed repo-side. Phase 2+
+          remains held.
+        </p>
+        <ul>
+          <li>
+            Added migration
+            <code>20260508021000_add_user_profiles_delete_policy.sql</code> for
+            authenticated self-delete on <code>user_profiles</code>.
+          </li>
+          <li>
+            Re-scouted and guarded the existing households INSERT policy in
+            <code>20251130200000_consolidated_pending_features.sql</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-db-rls-policy-red-1778214498.service</code>; targeted Jest
+            passed in <code>hm-db-rls-policy-green-1778214516.service</code>;
+            resource-limited type-check passed in
+            <code>hm-db-rls-policy-typecheck-1778214518.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> DB reset/lint/integration validation
+            remains blocked by local Supabase/Docker or approved remote-test
+            path; other DB performance/migration blockers remain.
+          </li>
+        </ul>
+      </section>
+      <section id="phase0-phase1-db-jsonb-indexes-2026-05-08">
+        <h2>Phase 0/1 remediation — DB JSONB GIN indexes</h2>
+        <p>
+          <strong>Status:</strong> DB P2.2 closed repo-side. Phase 2+ remains
+          held.
+        </p>
+        <ul>
+          <li>
+            Added migration
+            <code>20260508022000_add_jsonb_gin_indexes.sql</code> for
+            <code>user_profiles.preferences</code>,
+            <code>user_property_interactions.score_data</code>, and
+            <code>saved_searches.filters</code>.
+          </li>
+          <li>
+            <strong>Verification:</strong> RED observed in
+            <code>hm-jsonb-indexes-red-1778214603.service</code>; targeted Jest
+            passed in <code>hm-jsonb-indexes-green-1778214619.service</code>;
+            resource-limited type-check passed in
+            <code>hm-jsonb-indexes-typecheck-1778214622.service</code>; diff
+            check passed.
+          </li>
+          <li>
+            <strong>Remaining:</strong> DB reset/lint/integration validation
+            remains blocked by local Supabase/Docker or approved remote-test
+            path; query dedupe, realtime N+1, rollback/DOWN, and typing cleanup
+            remain open.
+          </li>
+        </ul>
+      </section>
+    </main>
   </body>
 </html>
