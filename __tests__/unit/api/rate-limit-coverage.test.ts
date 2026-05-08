@@ -8,10 +8,14 @@ import { join } from 'path'
 const route = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 const functionBody = (source: string, name: string) => {
-  const marker = `export async function ${name}`
+  const markers = [`export async function ${name}`, `export const ${name}`]
+  const marker = markers.find((candidate) => source.includes(candidate))
+  if (!marker) throw new Error(`Missing function ${name}`)
   const start = source.indexOf(marker)
-  if (start === -1) throw new Error(`Missing function ${name}`)
-  const next = source.indexOf('export async function ', start + marker.length)
+  const nextFunction = source.indexOf('export async function ', start + marker.length)
+  const nextConst = source.indexOf('export const ', start + marker.length)
+  const candidates = [nextFunction, nextConst].filter((idx) => idx !== -1)
+  const next = candidates.length ? Math.min(...candidates) : -1
   return source.slice(start, next === -1 ? undefined : next)
 }
 

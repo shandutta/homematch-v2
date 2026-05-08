@@ -31,6 +31,14 @@ const getUserFromRequestMock = jest.fn()
 jest.mock('@/lib/api/auth', () => ({
   __esModule: true,
   getUserFromRequest: (...args: unknown[]) => getUserFromRequestMock(...args),
+  requireUserFromRequest: async (...args: unknown[]) => {
+    const result = await getUserFromRequestMock(...args)
+    const user = result?.user ?? result?.data?.user ?? null
+    return {
+      user,
+      response: user ? null : jsonMock({ error: 'Unauthorized' }, { status: 401 }),
+    }
+  },
 }))
 
 const getHouseholdStatsMock = jest.fn()

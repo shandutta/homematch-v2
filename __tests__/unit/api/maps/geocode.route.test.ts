@@ -31,6 +31,7 @@ jest.mock('next/server', () => {
 const mockCheckRateLimit = jest.fn()
 jest.mock('@/lib/middleware/rateLimiter', () => ({
   checkRateLimit: mockCheckRateLimit,
+  rateLimitKey: (scope: string, identifier: string) => `${scope}:${identifier}`,
 }))
 
 const mockCreateApiClient = jest.fn()
@@ -298,7 +299,7 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockCheckRateLimit).toHaveBeenCalledWith('user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith('maps:geocode:user-1')
     })
 
     it('does not fall back to anonymous IP rate limiting when no IP header', async () => {
@@ -310,7 +311,7 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockCheckRateLimit).toHaveBeenCalledWith('user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith('maps:geocode:user-1')
     })
   })
 })

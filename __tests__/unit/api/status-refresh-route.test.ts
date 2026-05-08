@@ -60,6 +60,7 @@ describe('POST /api/admin/status-refresh', () => {
   test('rejects missing or invalid secret', async () => {
     process.env.STATUS_REFRESH_CRON_SECRET = 'secret'
     process.env.RAPIDAPI_KEY = 'key'
+    process.env.HOMEMATCH_ALLOW_PAID_RAPIDAPI = 'true'
     process.env.RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
 
     const { POST } = await import('@/app/api/admin/status-refresh/route')
@@ -108,6 +109,7 @@ describe('POST /api/admin/status-refresh', () => {
 
     process.env.STATUS_REFRESH_CRON_SECRET = 'secret'
     process.env.RAPIDAPI_KEY = 'key'
+    process.env.HOMEMATCH_ALLOW_PAID_RAPIDAPI = 'true'
     process.env.RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
 
     const fetchMock = jest.fn(async (url: RequestInfo | URL) => {

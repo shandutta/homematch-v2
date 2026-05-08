@@ -42,8 +42,8 @@ describe('D1 service-role RBAC authority packet', () => {
     expect(matrix).toContain(
       'd1-service-role-rbac-authority-implementation-packet-2026-05-08.md'
     )
-    expect(matrix).toContain('Phase 1 remains open')
-    expect(matrix).toContain('Approve dedicated `admin_role_assignments` table')
+    expect(matrix).toContain('Live DB integration execution remains D6-gated')
+    expect(matrix).toContain('admin_role_assignments')
     expect(matrix).toContain('Do not advance to Phase 2')
   })
 })

@@ -108,7 +108,7 @@ describe('places autocomplete API route', () => {
     expect(response.status).toBe(400)
     expect(fetchedUrls).toHaveLength(0)
     await expect(response.json()).resolves.toMatchObject({
-      error: 'Invalid request parameters',
+      error: 'Validation failed',
     })
   })
 

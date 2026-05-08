@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const contentLength = request.headers.get('content-length')
     const contentLengthBytes = contentLength ? Number.parseInt(contentLength, 10) : 0
     if (Number.isFinite(contentLengthBytes) && contentLengthBytes > MAX_PAYLOAD_BYTES) {
-      return ApiErrorHandler.badRequest('Metrics payload too large')
+      return ApiErrorHandler.payloadTooLarge('Metrics payload too large')
     }
 
     const forwardedFor = request.headers.get('x-forwarded-for')

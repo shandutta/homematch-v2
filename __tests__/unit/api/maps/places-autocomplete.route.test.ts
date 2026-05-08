@@ -31,6 +31,7 @@ jest.mock('next/server', () => {
 const mockCheckRateLimit = jest.fn()
 jest.mock('@/lib/middleware/rateLimiter', () => ({
   checkRateLimit: mockCheckRateLimit,
+  rateLimitKey: (scope: string, identifier: string) => `${scope}:${identifier}`,
 }))
 
 const mockCreateApiClient = jest.fn()
@@ -354,7 +355,7 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      expect(mockCheckRateLimit).toHaveBeenCalledWith('user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith('maps:places:autocomplete:user-1')
     })
   })
 })

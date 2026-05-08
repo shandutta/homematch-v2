@@ -127,7 +127,7 @@ describe('couples notify API route', () => {
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(400)
-    expect(body.error).toBe('Invalid request data')
+    expect(body.error).toBe('Validation failed')
     expect(body.details).toBeDefined()
   })
 

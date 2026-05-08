@@ -26,6 +26,7 @@ const mockCheckRateLimit = jest.fn()
 jest.mock('@/lib/middleware/rateLimiter', () => ({
   __esModule: true,
   checkRateLimit: mockCheckRateLimit,
+  rateLimitKey: (scope: string, identifier: string) => `${scope}:${identifier}`,
 }))
 
 const clearHouseholdCacheMock = jest.fn()

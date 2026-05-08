@@ -80,6 +80,10 @@ export class ApiErrorHandler {
     return this.jsonError(message, 'BAD_GATEWAY', 502)
   }
 
+  static payloadTooLarge(message = 'Payload too large'): NextResponse {
+    return this.jsonError(message, 'PAYLOAD_TOO_LARGE', 413)
+  }
+
   static serviceUnavailable(message = 'Service unavailable'): NextResponse {
     return this.jsonError(message, 'SERVICE_UNAVAILABLE', 503)
   }
