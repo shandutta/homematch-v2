@@ -3,6 +3,8 @@
 Generated: 2026-05-08T11:17Z
 Scope: strict Phase 0/1 gate fan-in. This register tracks remaining owner decisions; D4 was updated after the repo-local env/local-dev closure slice, D5 was closed repo-side by documenting and guarding intentional zero bedroom/bathroom semantics, and D7 was closed repo-side by restricting the disputed route to the current no-email UX contract.
 
+> Freshness snapshot mapping each D1–D7 to current status, latest proof artifact, and exact external approval still needed: see `reports/home-match-revival/p1-decision-needed-register-freshness-2026-05-08.md`. That snapshot does not close Phase 0/1.
+
 ## Gate position
 
 Phase 2+ remains held. Repo-side Phase 0/1 closure has advanced, but the open items below require Shan/product/security/ops decisions or an approved execution environment before Phase 0/1 can honestly be called 100% closed.
