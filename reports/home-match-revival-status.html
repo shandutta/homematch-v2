@@ -1115,6 +1115,16 @@
     <li><strong>Remaining:</strong> production email/CAPTCHA auth policy decisions remain blocked; broader Phase 0/1 blockers remain.</li>
   </ul>
 </section>
+<section id="phase0-phase1-db-rls-policy-closure-2026-05-08">
+  <h2>Phase 0/1 remediation — DB RLS policy closure</h2>
+  <p><strong>Status:</strong> DB P1.5 and P1.7 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Added migration <code>20260508021000_add_user_profiles_delete_policy.sql</code> for authenticated self-delete on <code>user_profiles</code>.</li>
+    <li>Re-scouted and guarded the existing households INSERT policy in <code>20251130200000_consolidated_pending_features.sql</code>.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-db-rls-policy-red-1778214498.service</code>; targeted Jest passed in <code>hm-db-rls-policy-green-1778214516.service</code>; resource-limited type-check passed in <code>hm-db-rls-policy-typecheck-1778214518.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> DB reset/lint/integration validation remains blocked by local Supabase/Docker or approved remote-test path; other DB performance/migration blockers remain.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

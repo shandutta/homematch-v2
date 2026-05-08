@@ -1,6 +1,6 @@
 # Phase 1 Remediation Closure Scout
 
-Generated: 2026-05-08T01:47:10Z
+Generated: 2026-05-08T01:49:15Z
 Lane: `/home/shan/projects/homematch-v2.worktrees/p3-backend`  
 Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-code changes in this scout.
 
@@ -55,9 +55,9 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | DB P1.2: Add query deduplication for duplicate searches | `db-architecture-recommendation.md`; no closure evidence found. | open | Add service-boundary request dedupe and tests around dashboard duplicate calls. |
 | DB P1.3: Fix CouplesRealtime N+1 via server-side RPC | `db-architecture-recommendation.md`; `couples-realtime.ts` still performs per-event profile/property lookups. | open | Create RPC/payload shape to send enriched mutual-like data; update realtime tests. |
 | DB P1.4: Add DOWN scripts/rollback coverage | Audit says 0/40 have rollback; new migrations do not include complete DOWN blocks. | open | Add/squash migration rollback blocks and verify reset/rollback plan. |
-| DB P1.5: Add DELETE policy on `user_profiles` | Migration search found no `FOR DELETE` policy on `user_profiles`. | open | Add self-delete RLS policy and test with `auth.uid()`. |
+| DB P1.5: Add DELETE policy on `user_profiles` | Closed repo-side: migration `20260508021000_add_user_profiles_delete_policy.sql` adds self-delete RLS using `auth.uid() = id`; regression `__tests__/unit/database/rls-policy-closure.test.ts`; RED `hm-db-rls-policy-red-1778214498.service`; GREEN `hm-db-rls-policy-green-1778214516.service`; type-check `hm-db-rls-policy-typecheck-1778214518.service`. | closed | Run DB reset/lint in integration environment before production deploy. |
 | DB P1.6: Restrict `/api/couples/disputed` service-role profile fields | Code spot-check still selects `id, display_name, email` and returns `user_email`. | block | Decide whether email is truly required in disputed UX; otherwise restrict to id/display name or RPC-filtered output. |
-| DB P1.7: Add INSERT policy on `households` | Migration search found no direct households INSERT policy closure. | open | Add `households` INSERT policy fallback and test. |
+| DB P1.7: Add INSERT policy on `households` | Closed repo-side after re-scout: `20251130200000_consolidated_pending_features.sql` already contains `CREATE POLICY "Users can create households" ON households FOR INSERT WITH CHECK (auth.uid() = created_by);`; regression `rls-policy-closure.test.ts` now guards it. | closed | Keep policy guard; run DB reset/lint in integration environment before production deploy. |
 | DB P1.8: Gate or remove standalone `service-role-client.ts` bypass | Commit `cad54c9`; file now delegates to `createServiceClient()`; test `service-role-client.test.ts`. | closed | Still complete RBAC hardening under A3. |
 | DB P2.1: Migration squash/consolidation | Audit checklist remains unchecked; no squash commit. | block | Defer until P0/P1 DB fixes are fully landed and DB reset is green. |
 | DB P2.2: Add JSONB GIN indexes | Generated recommendation exists; no applied migration found for `20260507220300...`. | open | Add GIN indexes on `preferences`, `score_data`, and `filters`; run migration test. |
