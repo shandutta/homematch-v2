@@ -441,20 +441,6 @@ export class ZillowAPIError extends Error {
   }
 }
 
-/**
- * Create a Zillow API client instance
- */
-export function createZillowClient(apiKey?: string): ZillowAPIClient {
-  const key = apiKey || process.env.RAPIDAPI_KEY
-
-  if (!key) {
-    throw new Error(
-      'Zillow API key is required. Set RAPIDAPI_KEY environment variable.'
-    )
-  }
-
-  return new ZillowAPIClient(key)
-}
 
 /**
  * Utility functions for working with Zillow data

@@ -1,5 +1,8 @@
 /** @jest-environment node */
 
+import { readFileSync } from 'fs'
+import { join } from 'path'
+
 import {
   buildSearchUrl,
   fetchZillowSearchPage,
@@ -15,6 +18,16 @@ type FetchFn = (
 ) => Promise<Response>
 
 describe('zillow ingestion helpers', () => {
+  test('keeps Zillow API module limited to used exports', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/api/zillow-client.ts'),
+      'utf8'
+    )
+
+    expect(source).toContain('export const ZillowUtils')
+    expect(source).not.toContain('export function createZillowClient')
+  })
+
   test('buildSearchUrl encodes location and params', () => {
     const url = buildSearchUrl({
       location: 'San Francisco, CA',

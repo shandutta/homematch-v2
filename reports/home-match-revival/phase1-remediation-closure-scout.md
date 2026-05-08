@@ -82,7 +82,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | M10: Consolidate duplicate rate-limit systems | Both `withRateLimit` and `apiRateLimiter` are still imported by production routes. | open | Pick one limiter abstraction and migrate all routes/tests. |
 | M11: Move/guard test-only exports in production code | Audit item; no closure evidence found. | open | Move `__*` and reset helpers to test utilities or guard by NODE_ENV. |
 | M12: Remove dead RPC wrapper `callRPC` | Audit item; no closure evidence found. | open | Delete duplicate wrapper or prove usage; run type-check. |
-| M13: Remove/wire dead `createZillowClient` factory | Audit item; no closure evidence found. | open | Delete factory or switch routes to it; run Zillow unit tests. |
+| M13: Remove/wire dead `createZillowClient` factory | Commit pending in this closure wave; `src/lib/api/zillow-client.ts` no longer exports the unused `createZillowClient` factory while retaining used `ZillowUtils`; regression coverage in `__tests__/unit/ingestion/zillow-ingest.test.ts`; RED `hm-m13-zillow-red-1778211731.service`; GREEN `hm-m13-zillow-green-1778211761.service`; type-check `hm-m13-zillow-typecheck-1778211766.service`. | closed | Reintroduce a factory only when production routes wire to it with tests. |
 | M14: Remove/wire `CouplesMiddleware` unused class | Audit item; no closure evidence found. | open | Delete or wire into couples routes with tests. |
 | M15: Resolve test-only geo utilities / unused coordinate utilities / stale TODOs | Audit item; no closure evidence found. | open | Move test-only utilities or delete stale exports/TODOs in scoped cleanup. |
 

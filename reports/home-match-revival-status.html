@@ -144,8 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:39 UTC</code>. Strict
-        Phase 0/1 closure mode: M7 and M9 closed repo-side in this run;
+        Live Kanban status. Updated: <code>2026-05-08 03:43 UTC</code>. Strict
+        Phase 0/1 closure mode: M7, M9, and M13 closed repo-side in this run;
         continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
@@ -160,7 +160,7 @@
         <div class="card">
           <div class="label">Phase</div>
           <div class="value">
-            Phase 0/1 closure — M6 API error standardization in progress
+            Phase 0/1 closure — repo-local remediation continuing
           </div>
         </div>
         <div class="card">
@@ -1018,6 +1018,17 @@
     <li>Kept the wired <code>signOut</code> action used by existing UI surfaces.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m9-actions-red-1778211419.service</code>; targeted Jest passed in <code>hm-m9-actions-green-1778211490.service</code>; resource-limited type-check passed in <code>hm-m9-actions-typecheck-1778211495.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m13-zillow-2026-05-08">
+  <h2>Phase 0/1 remediation — M13 Zillow factory cleanup</h2>
+  <p><strong>Status:</strong> M13 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Removed the unused <code>createZillowClient</code> export from <code>src/lib/api/zillow-client.ts</code>.</li>
+    <li>Retained the used <code>ZillowUtils</code> export consumed by Zillow ingestion.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m13-zillow-red-1778211731.service</code>; targeted Zillow Jest passed in <code>hm-m13-zillow-green-1778211761.service</code>; resource-limited type-check passed in <code>hm-m13-zillow-typecheck-1778211766.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, CouplesMiddleware cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>
