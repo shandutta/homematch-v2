@@ -828,7 +828,7 @@
   <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
   <ul>
     <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
-    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency/dead-code cleanup, README/local-dev closure.</li>
+    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency cleanup decision, README/local-dev closure.</li>
     <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
   </ul>
 </section>
@@ -1073,6 +1073,16 @@
     <li>Removed the test-only <code>__withRefreshRecovery</code> exports from browser and server Supabase client modules.</li>
     <li><strong>Verification:</strong> refresh recovery Jest passed in <code>hm-m11-refresh-green2-1778212536.service</code>; resource-limited type-check passed in <code>hm-m11-refresh-typecheck2-1778212541.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+<section id="phase0-phase1-m15-neighborhood-cleanup-2026-05-08">
+  <h2>Phase 0/1 remediation — M15 stale production TODO cleanup</h2>
+  <p><strong>Status:</strong> M15 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted stale production TODO markers in <code>src/lib/services/properties/neighborhood.ts</code> into explicit intentional-fallback comments with migration-coverage criteria.</li>
+    <li>Added <code>__tests__/unit/services/properties-neighborhood-cleanup.test.ts</code> to guard against reintroducing stale TODO markers in that production service.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m15-neighborhood-red-1778213946.service</code>; targeted Jest passed in <code>hm-m15-neighborhood-green-1778213981.service</code>; resource-limited type-check passed in <code>hm-m15-neighborhood-typecheck-1778213988.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>

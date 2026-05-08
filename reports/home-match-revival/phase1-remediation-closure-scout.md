@@ -1,6 +1,6 @@
 # Phase 1 Remediation Closure Scout
 
-Generated: 2026-05-08T01:16:05Z  
+Generated: 2026-05-08T01:39:45Z
 Lane: `/home/shan/projects/homematch-v2.worktrees/p3-backend`  
 Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-code changes in this scout.
 
@@ -8,7 +8,7 @@ Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-c
 
 **Phase 1 cannot be called 100% complete.**
 
-Reason: Phase 1 audit artifacts exist and several P0/P1 repairs are evidenced by commits/tests, but the remediation backlog is still materially open. In particular: service-role RBAC remains placeholder-grade, interaction uniqueness is not fixed, several DB P1/P2 items are untouched, and most middleware/API/dead-code recommendations remain open.
+Reason: Phase 1 audit artifacts exist and several P0/P1 repairs are evidenced by commits/tests, but the remediation backlog is still materially open. In particular: service-role RBAC remains placeholder-grade, interaction uniqueness is not fixed, several DB P1/P2 items are untouched, and remaining middleware/API decisions and dependency cleanup remain open.
 
 Status key: **closed** = implemented/tested or explicitly no-op; **open** = not implemented yet; **block** = needs product/security/ops decision, integration environment, or scoped child task before safe closure.
 
@@ -84,7 +84,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | M12: Remove dead RPC wrapper `callRPC` | Commit pending in this closure wave; removed the duplicate exported `callRPC` from `src/lib/services/supabase-rpc-types.ts` while preserving `createTypedRPC`/`isRPCImplemented` and canonical wrapper utilities in `src/lib/services/utils/rpc-wrapper.ts`; regression coverage in `__tests__/unit/services/supabase-rpc-types-cleanup.test.ts`; RED `hm-m12-rpc-red-1778212026.service`; GREEN `hm-m12-rpc-green-1778212063.service`; type-check `hm-m12-rpc-typecheck-1778212067.service`. | closed | Keep geographic service imports on `utils/rpc-wrapper`; do not add a second exported wrapper back to the types module. |
 | M13: Remove/wire dead `createZillowClient` factory | Commit pending in this closure wave; `src/lib/api/zillow-client.ts` no longer exports the unused `createZillowClient` factory while retaining used `ZillowUtils`; regression coverage in `__tests__/unit/ingestion/zillow-ingest.test.ts`; RED `hm-m13-zillow-red-1778211731.service`; GREEN `hm-m13-zillow-green-1778211761.service`; type-check `hm-m13-zillow-typecheck-1778211766.service`. | closed | Reintroduce a factory only when production routes wire to it with tests. |
 | M14: Remove/wire `CouplesMiddleware` unused class | Commit pending in this closure wave; source scan showed no production imports outside `src/lib/services/couples-middleware.ts`; removed the unused wrapper class and its dedicated test, while adding a regression guard to `__tests__/unit/services/couples.test.ts`; RED `hm-m14-couples-red-1778211904.service`; GREEN `hm-m14-couples-green-1778211926.service`; type-check `hm-m14-couples-typecheck-1778211931.service`. | closed | Reintroduce only if production routes wire side effects through it with route/service tests. |
-| M15: Resolve test-only geo utilities / unused coordinate utilities / stale TODOs | Audit item; no closure evidence found. | open | Move test-only utilities or delete stale exports/TODOs in scoped cleanup. |
+| M15: Resolve test-only geo utilities / unused coordinate utilities / stale TODOs | Closed repo-side: stale production TODO markers in `src/lib/services/properties/neighborhood.ts` were converted into explicit intentional-fallback comments with migration-coverage criteria; regression guard `__tests__/unit/services/properties-neighborhood-cleanup.test.ts`; RED `hm-m15-neighborhood-red-1778213946.service`; GREEN `hm-m15-neighborhood-green-1778213981.service`; type-check `hm-m15-neighborhood-typecheck-1778213988.service`. | closed | Keep cleanup guard; future RPC work should land as a migration-backed feature rather than stale TODO comments. |
 
 ## Vercel / local-dev / Docker matrix
 

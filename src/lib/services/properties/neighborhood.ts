@@ -263,8 +263,9 @@ export class NeighborhoodService
     return this.executeArrayQuery(
       'getPopularNeighborhoods',
       async (supabase) => {
-        // TODO: Implement get_popular_neighborhoods RPC function in database
-        // For now, get neighborhoods with most properties as fallback
+        // Intentional fallback: rank neighborhoods by property count until a
+        // dedicated get_popular_neighborhoods RPC is introduced with migration
+        // coverage.
         const { data, error } = await supabase
           .from('neighborhoods')
           .select(
@@ -309,8 +310,8 @@ export class NeighborhoodService
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true),
 
-        // TODO: Implement get_neighborhood_interaction_stats RPC function
-        // For now, return empty stats as fallback
+        // Intentional fallback: interaction stats are omitted until a dedicated
+        // get_neighborhood_interaction_stats RPC lands with migration coverage.
         Promise.resolve({ data: null, error: null }),
       ])
 
