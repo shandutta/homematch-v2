@@ -4,7 +4,11 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest } from 'next/server'
-import { middleware, buildSupabaseSessionCookieOptions } from '../../middleware'
+import {
+  middleware,
+  config,
+  buildSupabaseSessionCookieOptions,
+} from '../../middleware'
 
 jest.mock('@supabase/ssr', () => ({
   createServerClient: jest.fn((_url, _key, options) => {
@@ -72,6 +76,21 @@ describe('middleware auth configuration guard', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+  })
+})
+
+describe('middleware matcher exclusions', () => {
+  const matcher = config.matcher[0]
+
+  it('skips Next.js data, static assets, and metadata files that do not need auth middleware', () => {
+    expect(matcher).toContain('_next/data')
+    expect(matcher).toContain('.*\\.(?:')
+    expect(matcher).toContain('js')
+    expect(matcher).toContain('css')
+    expect(matcher).toContain('json')
+    expect(matcher).toContain('xml')
+    expect(matcher).toContain('txt')
+    expect(matcher).toContain('woff2')
   })
 })
 
