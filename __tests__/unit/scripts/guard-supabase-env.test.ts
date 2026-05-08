@@ -89,4 +89,79 @@ describe('Supabase env guard precision', () => {
 
     expect(result.blocked).toBe(false)
   })
+
+  it('emits offender categories only and never raw env values when secrets look like production', () => {
+    const root = createRoot()
+
+    // Synthetic non-real secret-shaped values. They must never reach logger output.
+    const fakeAnonKey =
+      'sb_anon_REDACTION_TEST_VALUE_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    const fakeServiceRoleKey =
+      'sb_service_role_REDACTION_TEST_VALUE_bbbbbbbbbbbbbbbbbbbbbbbb'
+    const fakePostgresPassword =
+      'pg_password_REDACTION_TEST_VALUE_cccccccccccccccccccccccc'
+    const productionHost = 'lpwlbbowavozpywnpamn.supabase.co'
+
+    writeFileSync(
+      path.join(root, '.env.prod'),
+      [
+        `SUPABASE_URL=https://${productionHost}`,
+        `NEXT_PUBLIC_SUPABASE_URL=https://${productionHost}`,
+        `SUPABASE_ANON_KEY=${fakeAnonKey}`,
+        `NEXT_PUBLIC_SUPABASE_ANON_KEY=${fakeAnonKey}`,
+        `SUPABASE_SERVICE_ROLE_KEY=${fakeServiceRoleKey}`,
+        `POSTGRES_HOST=${productionHost}`,
+        '',
+      ].join('\n')
+    )
+
+    const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() }
+    const exit = jest.fn()
+
+    runGuard({
+      env: {
+        SUPABASE_URL: `https://${productionHost}`,
+        NEXT_PUBLIC_SUPABASE_URL: `https://${productionHost}`,
+        SUPABASE_ANON_KEY: fakeAnonKey,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: fakeAnonKey,
+        SUPABASE_SERVICE_ROLE_KEY: fakeServiceRoleKey,
+        POSTGRES_HOST: productionHost,
+        POSTGRES_URL: `postgresql://postgres:${fakePostgresPassword}@${productionHost}:5432/postgres`,
+      },
+      root,
+      logger,
+      exit,
+    })
+
+    expect(exit).toHaveBeenCalledWith(1)
+
+    const allOutput = [
+      ...logger.error.mock.calls,
+      ...logger.warn.mock.calls,
+      ...logger.log.mock.calls,
+    ]
+      .flat()
+      .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+      .join('\n')
+
+    // Category-style offenders (key names + synthetic categories) ARE emitted.
+    expect(allOutput).toContain('SUPABASE_ANON_KEY')
+    expect(allOutput).toContain('SUPABASE_SERVICE_ROLE_KEY')
+    expect(allOutput).toContain('SUPABASE_URL_HOST')
+    expect(allOutput).toContain('SUPABASE_HOST_PATTERN')
+
+    // Raw secret values, passwords, and full URLs MUST NEVER appear in diagnostics.
+    expect(allOutput).not.toContain(fakeAnonKey)
+    expect(allOutput).not.toContain(fakeServiceRoleKey)
+    expect(allOutput).not.toContain(fakePostgresPassword)
+    expect(allOutput).not.toContain(`postgresql://postgres:`)
+    expect(allOutput).not.toContain(`https://${productionHost}`)
+    // The bare hostname is permitted only via category labels; the guard must
+    // not echo it as a standalone diagnostic value.
+    expect(allOutput).not.toMatch(
+      new RegExp(`(^|[^A-Z_])${productionHost.replace(/\./g, '\\.')}`)
+    )
+
+    rmSync(root, { recursive: true, force: true })
+  })
 })
