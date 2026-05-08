@@ -44,38 +44,55 @@ interface Aggregates {
 }
 
 // Performance metric schema
+const MAX_PAYLOAD_BYTES = 64 * 1024
+const MAX_METRICS_PER_PAYLOAD = 100
+const MAX_CUSTOM_METRICS_PER_PAYLOAD = 100
+const MAX_STORED_METRIC_BATCHES = 1000
+
 const PerformanceMetricSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).max(100),
   value: z.number(),
   rating: z.enum(['good', 'needs-improvement', 'poor']),
   delta: z.number().optional(),
-  id: z.string(),
-  navigationType: z.string().optional(),
+  id: z.string().min(1).max(128),
+  navigationType: z.string().max(100).optional(),
   timestamp: z.number(),
 })
 
 const CustomMetricSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).max(100),
   value: z.number(),
-  unit: z.string().optional(),
-  tags: z.record(z.string()).optional(),
+  unit: z.string().max(32).optional(),
+  tags: z.record(z.string().max(100)).optional(),
   timestamp: z.number(),
 })
 
 const MetricsPayloadSchema = z.object({
-  metrics: z.array(PerformanceMetricSchema),
-  customMetrics: z.array(CustomMetricSchema).optional(),
-  url: z.string().url(),
-  userAgent: z.string(),
+  metrics: z.array(PerformanceMetricSchema).max(MAX_METRICS_PER_PAYLOAD),
+  customMetrics: z
+    .array(CustomMetricSchema)
+    .max(MAX_CUSTOM_METRICS_PER_PAYLOAD)
+    .optional(),
+  url: z.string().url().max(2048),
+  userAgent: z.string().max(512),
   timestamp: z.number(),
 })
 
 // In-memory storage for demo (replace with database in production)
 const metricsStore: MetricsStoreEntry[] = []
-const MAX_METRICS = 1000
+const MAX_METRICS = MAX_STORED_METRIC_BATCHES
 
 export async function POST(request: NextRequest) {
   try {
+    const contentLength = request.headers.get('content-length')
+    const contentLengthBytes = contentLength ? Number.parseInt(contentLength, 10) : 0
+    if (Number.isFinite(contentLengthBytes) && contentLengthBytes > MAX_PAYLOAD_BYTES) {
+      return NextResponse.json(
+        { error: 'Metrics payload too large', code: 'PAYLOAD_TOO_LARGE' },
+        { status: 413 }
+      )
+    }
+
     const forwardedFor = request.headers.get('x-forwarded-for')
     const realIp = request.headers.get('x-real-ip')
     const ip = forwardedFor

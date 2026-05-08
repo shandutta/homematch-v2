@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server'
 const jsonMock = jest.fn((body, init) => ({
   status: init?.status ?? 200,
   body,
+  headers: new Headers(init?.headers),
 }))
 
 jest.mock('next/server', () => ({
@@ -15,13 +16,17 @@ jest.mock('next/server', () => ({
     jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
-const createPostRequest = (body: unknown) =>
+const createPostRequest = (
+  body: unknown,
+  headers: Record<string, string> = {}
+) =>
   new NextRequest('http://localhost/api/performance/metrics', {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
       'content-type': 'application/json',
       'x-forwarded-for': '127.0.0.1',
+      ...headers,
     },
   })
 
@@ -30,6 +35,11 @@ const createGetRequest = (url: string) => new NextRequest(url)
 describe('performance metrics API route', () => {
   beforeEach(() => {
     jest.resetModules()
+    jsonMock.mockImplementation((body, init) => ({
+      status: init?.status ?? 200,
+      body,
+      headers: new Headers(init?.headers),
+    }))
     jsonMock.mockClear()
   })
 
@@ -66,6 +76,37 @@ describe('performance metrics API route', () => {
     expect(warnSpy).toHaveBeenCalled()
 
     warnSpy.mockRestore()
+  })
+
+  test('rejects metrics payloads over the route payload size cap before parsing', async () => {
+    const route = await import('@/app/api/performance/metrics/route')
+
+    await route.POST(
+      createPostRequest(
+        {
+          metrics: [
+            {
+              name: 'lcp',
+              value: 120,
+              rating: 'good',
+              id: 'metric-oversize',
+              timestamp: 1,
+            },
+          ],
+          url: 'https://example.com/dashboard',
+          userAgent: 'jest',
+          timestamp: 1,
+        },
+        { 'content-length': '65537' }
+      )
+    )
+
+    const [body, init] = jsonMock.mock.calls.at(-1)!
+    expect(init?.status).toBe(413)
+    expect(body).toEqual({
+      error: 'Metrics payload too large',
+      code: 'PAYLOAD_TOO_LARGE',
+    })
   })
 
   test('returns 400 for invalid payloads', async () => {
