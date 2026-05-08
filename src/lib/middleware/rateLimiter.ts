@@ -89,6 +89,9 @@ const shouldBypassRateLimit = () => {
 
 export const resetRateLimiters = () => rateLimiters.clear()
 
+export const rateLimitKey = (scope: string, identifier: string) =>
+  `${scope}:${identifier}`
+
 const rateLimitExceededResponse = (
   tier: RateLimitTier,
   rateLimiterRes: unknown,

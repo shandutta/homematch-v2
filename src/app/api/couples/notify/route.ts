@@ -3,7 +3,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
 const notificationSchema = z.object({
@@ -19,7 +19,9 @@ export async function POST(request: NextRequest) {
     if (!auth.user) return auth.response
     const { user } = auth
 
-    const rateLimitResponse = await checkRateLimit(`couples:notify:${user.id}`)
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('couples:notify', user.id)
+    )
     if (rateLimitResponse) return rateLimitResponse
 
     // Parse and validate request body

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 import { isValidLatLng, boundingBoxSchema } from '@/lib/utils/coordinates'
@@ -53,7 +53,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting by authenticated user to avoid exposing paid Maps usage to anonymous callers
-    const rateLimitResponse = await checkRateLimit(auth.user.id)
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('maps:geocode', auth.user.id)
+    )
 
     if (rateLimitResponse) {
       return rateLimitResponse

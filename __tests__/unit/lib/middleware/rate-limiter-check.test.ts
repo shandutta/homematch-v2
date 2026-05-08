@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import {
   checkRateLimit,
   rateLimit,
+  rateLimitKey,
   resetRateLimiters,
 } from '@/lib/middleware/rateLimiter'
 
@@ -57,6 +58,22 @@ describe('consolidated middleware rate limiter', () => {
     )
 
     expect(blocked?.status).toBe(429)
+  })
+
+  it('isolates an authenticated identifier across route-scoped keys', async () => {
+    const searchKey = rateLimitKey('users:search', 'user-1')
+    const geocodeKey = rateLimitKey('maps:geocode', 'user-1')
+
+    expect(searchKey).toBe('users:search:user-1')
+    expect(geocodeKey).toBe('maps:geocode:user-1')
+
+    for (let i = 0; i < 10; i += 1) {
+      await expect(checkRateLimit(searchKey, 'strict')).resolves.toBeNull()
+    }
+
+    const blockedOnSearch = await checkRateLimit(searchKey, 'strict')
+    expect(blockedOnSearch?.status).toBe(429)
+    await expect(checkRateLimit(geocodeKey, 'strict')).resolves.toBeNull()
   })
 
   it('bypasses checks in tests unless enforcement is explicitly enabled', async () => {

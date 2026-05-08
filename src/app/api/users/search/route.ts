@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
     if (!auth.user) return auth.response
 
     // Rate limiting
-    const rateLimitResponse = await checkRateLimit(auth.user.id)
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('users:search', auth.user.id)
+    )
     if (rateLimitResponse) return rateLimitResponse
 
     // Get search query

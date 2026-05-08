@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 
 const getRequestIp = (request: Request) => {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -11,5 +11,5 @@ export async function rateLimitAdminRoute(
   request: Request,
   routeKey: string
 ): Promise<NextResponse | null> {
-  return checkRateLimit(`${routeKey}:${getRequestIp(request)}`)
+  return checkRateLimit(rateLimitKey(routeKey, getRequestIp(request)))
 }

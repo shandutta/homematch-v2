@@ -9,7 +9,7 @@ import {
   interactionSummarySchema,
   paginationQuerySchema,
 } from '@/lib/schemas/api'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import {
   getDbFiltersForInteractionType,
   mapInteractionTypeToDb,
@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const rateLimitResponse = await checkRateLimit(user.id)
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('interactions:create', user.id)
+    )
     if (rateLimitResponse) return rateLimitResponse
 
     let body: unknown
@@ -325,7 +327,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const rateLimitResponse = await checkRateLimit(
-      `interactions:delete:${user.id}`
+      rateLimitKey('interactions:delete', user.id)
     )
     if (rateLimitResponse) return rateLimitResponse
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import { checkRateLimit } from '@/lib/middleware/rateLimiter'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
@@ -369,7 +369,7 @@ export async function PATCH(request: NextRequest) {
     const { user } = auth
 
     const rateLimitResponse = await checkRateLimit(
-      `couples:disputed:${user.id}`
+      rateLimitKey('couples:disputed', user.id)
     )
     if (rateLimitResponse) return rateLimitResponse
 
