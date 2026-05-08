@@ -1,0 +1,98 @@
+# P0/P1 CSP & External-Origin Policy Inventory — 2026-05-08
+
+**Lane:** d57-csp-policy-inventory · branch `autonomy/hm-csp-policy-inventory-1748` · base HEAD `e63b596`
+**Method:** static read-only inventory of the three policy surfaces (Next middleware, `vercel.json`, `next.config.ts`) plus a grep sweep for external origins under `src/`. No network calls, no runtime probes.
+**Scope:** P0/P1 — surfaces and gaps that a) silently weaken policy in some envs, b) drift between policy docs, or c) leave externally-reachable scripts/connections unconstrained.
+
+## 1. Policy surfaces (where headers are emitted)
+
+| # | Surface | File / Line | Applies to |
+| - | ------- | ----------- | ---------- |
+| S1 | Runtime middleware security headers | `middleware.ts:10-19` (`SECURITY_HEADERS`), applied via `applySecurityHeaders()` `middleware.ts:50-75` | Every response that flows through `middleware` (matcher at `middleware.ts:341-352` excludes `_next/static`, `_next/image`, common static assets) |
+| S2 | Runtime middleware CSP + HSTS | `middleware.ts:55-72` | **Production-only** (gated by `NODE_ENV === 'production'`); same matcher as S1 |
+| S3 | Edge / CDN headers | `vercel.json:10-32` | All paths (`source: "/(.*)"`) — applied at Vercel edge; reaches static assets that bypass middleware |
+| S4 | next/image SVG sandbox CSP | `next.config.ts:101-102` | SVGs served through next/image (`dangerouslyAllowSVG: false`, sandbox CSP `default-src 'self'; script-src 'none'; sandbox;`) |
+| S5 | next/image remote host allowlist | `next.config.ts:70-92` (`images.remotePatterns`) | Hosts permitted for next/image optimization (`photos.zillowstatic.com`, `images.zillowstatic.com`, `images.unsplash.com`, `loremflickr.com`) |
+| S6 | Dev-origin allowlist | `next.config.ts:38-47, 61-65` (`allowedDevOrigins`) | Next dev-server CSRF allowlist; sourced from `NEXT_PUBLIC_APP_URL` + `NEXT_PUBLIC_ALLOWED_DEV_ORIGINS` |
+| S7 | Public bypass paths | `middleware.ts:21` (`PUBLIC_BYPASS_PATHS = ['/api/performance/metrics', '/api/health']`) | These still receive S1 headers but bypass auth/Supabase logic |
+
+## 2. Header inventory (what is emitted, by env)
+
+| Header | Production | Non-production (dev/preview without `NODE_ENV=production`) | Static assets (excluded from middleware matcher) |
+| ------ | ---------- | --- | --- |
+| `X-Frame-Options: DENY` | middleware S1 + edge S3 | middleware S1 only | edge S3 |
+| `X-Content-Type-Options: nosniff` | S1 + S3 | S1 | S3 |
+| `X-XSS-Protection: 1; mode=block` | S1 | S1 | — |
+| `Referrer-Policy: strict-origin-when-cross-origin` | S1 + S3 | S1 | S3 |
+| `Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()` | S1 | S1 | edge S3 emits **without** `interest-cohort=()` |
+| `Cross-Origin-Opener-Policy: same-origin` | S1 | S1 | — |
+| `Cross-Origin-Resource-Policy: same-origin` | S1 | S1 | — |
+| `Content-Security-Policy` | S2 (production gate) | **NOT EMITTED** | — |
+| `Strict-Transport-Security` | S2 (production gate) | **NOT EMITTED** | — |
+| `Cache-Control` | route-by-route via `src/lib/api/cache-control.ts` | same | — |
+
+## 3. CSP directive map (production only — middleware.ts:55-66)
+
+| Directive | Sources |
+| --------- | ------- |
+| `default-src` | `'self'` |
+| `script-src` | `'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com` |
+| `style-src` | `'self' 'unsafe-inline' https://fonts.googleapis.com` |
+| `font-src` | `'self' https://fonts.gstatic.com` |
+| `img-src` | `'self' data: https: blob:` |
+| `connect-src` | `'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com` |
+| `frame-src` | `'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com` |
+| `frame-ancestors` | `'none'` |
+| Missing/unset | `base-uri`, `form-action`, `object-src`, `media-src`, `worker-src`, `manifest-src`, `report-uri`/`report-to`, `upgrade-insecure-requests`, `block-all-mixed-content` |
+
+## 4. External origins referenced in code (cross-checked vs CSP)
+
+| Origin | Where used | Direction | In CSP? |
+| ------ | ---------- | --------- | ------- |
+| `*.supabase.co` (https + wss) | `middleware.ts`, Supabase clients | client + server | yes (`script-src`, `connect-src`) |
+| `maps.googleapis.com` | `src/app/api/maps/{geocode,places/autocomplete,proxy-script,script}/route.ts` | server (proxied to client via `/api/maps/*`) | yes (`script-src`, `connect-src`) |
+| `pagead2.googlesyndication.com` (+ adsense kin) | `src/lib/adsense.ts:6`, `src/components/legal/AdSenseGate.tsx` | client `<Script>` | yes (`script-src`, `connect-src`, `frame-src`) |
+| `fonts.googleapis.com`, `fonts.gstatic.com` | `next/font/google` in `src/app/layout.tsx:7` | client (CSS + font fetch) | yes (`style-src`, `font-src`); Next inlines fonts so this is defense-in-depth |
+| `openrouter.ai/api/v1` | `src/lib/services/vibes/openrouter-client.ts:96,182` | **server-side only** | not in `connect-src` — correct (server fetch is exempt) |
+| `*.p.rapidapi.com` (RAPIDAPI_HOST) | `src/app/api/admin/{ingest/zillow,status-refresh,generate-vibes-zillow}/route.ts`, `src/app/api/zillow/random-image/route.ts`, `src/lib/api/zillow-client.ts:160`, `src/lib/ingestion/zillow*.ts` | **server-side only** | not in `connect-src` — correct |
+| `photos.zillowstatic.com`, `images.zillowstatic.com`, `images.unsplash.com`, `loremflickr.com` | `next.config.ts:70-92` remotePatterns | client (next/image) | covered by CSP `img-src https:` (broader than the allowlist) |
+| `www.zillow.com`, `www.google.com/maps` | `src/components/property/PropertyDetailModal.tsx:47-59`, `PropertyCardUI.tsx:38-43` | rendered as `<a href>` outbound link only | n/a |
+| `twitter.com`, `instagram.com` | `src/components/marketing/Footer.tsx:163,175` | rendered as `<a href>` only | n/a |
+| `adssettings.google.com` | `src/app/cookies/page.tsx:65` | `<a href>` only | n/a |
+| Sentry (`window.Sentry`) | `src/components/shared/PropertyErrorBoundary.tsx:48-50` | client, only invoked if globally present; no `<Script>` loader in repo | **no `script-src`/`connect-src` entry** — silently fails if Sentry is later loaded externally |
+| PostHog (`window.posthog`) | `src/lib/utils/performance-tracker.ts:511-513`, `src/types/global.d.ts:29` | client, only invoked if globally present; no loader in repo | **no `script-src`/`connect-src` entry** — same as above |
+
+## 5. Gaps (P0/P1 candidates, ordered by blast radius)
+
+| ID | Severity | Surface | Gap | Evidence | Why it matters |
+| -- | -------- | ------- | --- | -------- | -------------- |
+| G1 | P1 | S2 | CSP and HSTS emit **only** when `NODE_ENV === 'production'`. Vercel preview deploys do run as production, but any non-prod surface (Docker preview, self-hosted staging, local production-like QA) ships with **no CSP and no HSTS**. | `middleware.ts:55` (`if (process.env.NODE_ENV === 'production')`) | Easy to QA a build that "looks shipped" without realising the strongest two headers are off. Mismatch with our anonymous-traversal & probe matrices that assert prod-shape headers. |
+| G2 | P1 | S3 vs S2 | `vercel.json` sets only 4 headers and **does not set CSP or HSTS**. Static assets served by Vercel that bypass the middleware matcher (`_next/static`, `_next/image`, fonts, images, JS/CSS bundles per `middleware.ts:350`) therefore receive no CSP, no HSTS, no COOP/CORP, no XSS-Protection, no `interest-cohort=()`. | `middleware.ts:341-352` matcher exclusions; `vercel.json:10-32` | HSTS ought to be edge-set for first-byte coverage on every asset. CSP not strictly required on static assets, but COOP/CORP gaps on bundles are documented in `p1-middleware-api-audit.json:47` (already partly fixed in middleware but still missing at edge). |
+| G3 | P1 | S1 vs S3 | `Permissions-Policy` differs between surfaces: middleware adds `interest-cohort=()`, edge does not. | `middleware.ts:15-16` vs `vercel.json:27-29` | Drift; first-byte/static-asset responses leak FLoC opt-out only on dynamic responses. |
+| G4 | P1 | S2 | `script-src` includes both `'unsafe-inline'` **and** `'unsafe-eval'` and no `nonce`/`'strict-dynamic'`. | `middleware.ts:59` | Materially weakens script-src; flagged in `p1-middleware-api-audit.json:47` ("required for Next.js but worth documenting"). Documented as accepted today; not yet decided whether to migrate to nonce strategy under Next 15.5. |
+| G5 | P1 | S2 | No `base-uri`, no `form-action`, no `object-src`, no `report-uri`/`report-to`. | `middleware.ts:55-66` | `default-src 'self'` does **not** cover `base-uri` or `form-action`; both are independent directives. Without them, base-tag injection can re-target relative URLs and a compromised form can post off-site. No reporting endpoint → CSP violations are silent. |
+| G6 | P2→P1 | S2 | `img-src 'self' data: https: blob:` is materially broader than `images.remotePatterns` (S5). | `middleware.ts:62` vs `next.config.ts:70-92` | CSP and the next/image allowlist disagree on what counts as a trusted image origin; downgrades CSP value for image exfiltration / pixel-tracking attacks via injected `<img>`. |
+| G7 | P1 | (no surface) | No CORS / `Access-Control-Allow-Origin` policy is configured anywhere; public bypass paths `/api/health` and `/api/performance/metrics` (`middleware.ts:21`) have no explicit CORS allowlist. | grep: no `Access-Control-Allow` in `src/`, no `cors` middleware | Today browsers default to same-origin, but this is implicit. If a future client/origin (e.g. mobile app, status page) is added, behaviour will be silently inconsistent. |
+| G8 | P2 | S2 | `Sentry` and `PostHog` are referenced on `window` but no `script-src`/`connect-src` entry exists for `*.sentry.io`, `*.ingest.sentry.io`, or `*.posthog.com`. | `src/components/shared/PropertyErrorBoundary.tsx:48-50`, `src/lib/utils/performance-tracker.ts:511-513`; CSP at `middleware.ts:59,63` | No loader is present in the repo today, so this is dormant. If observability is wired later via `<Script>` or `<script src=>`, it will fail closed silently in prod. Worth a tracked decision before the integration lands. |
+| G9 | P2 | S2 | `connect-src` lists every adsense/doubleclick host individually; would not survive AdSense expanding to `*.googlesyndication.com` subdomains. | `middleware.ts:63` | Maintainability; not exploitable but produces silent ad failures on AdSense host changes. |
+| G10 | P2 | S6 | `allowedDevOrigins` is sourced from public env vars (`NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_ALLOWED_DEV_ORIGINS`); `normalizeOriginHost` falls through to a regex parse on malformed input. | `next.config.ts:23-47` | Dev-only; document, don't fix. |
+
+## 6. Already-tracked items (do not re-open)
+
+- `p1-middleware-api-audit.json:45-49` (line_refs: `middleware.ts:7-14`) flagged missing COOP / CORP / Cache-Control and `unsafe-eval`/`unsafe-inline`. COOP and CORP are now present (`middleware.ts:17-18`); `unsafe-*` retained as documented Next.js requirement (G4).
+- `auth-audit.md:33` claims "comprehensive defense-in-depth" for security headers; this inventory shows that claim holds only when `NODE_ENV === 'production'` (G1).
+
+## 7. Recommended next slices (not done in this lane)
+
+1. Decide whether CSP+HSTS should emit unconditionally (drop the `NODE_ENV === 'production'` gate) or be replicated at the edge in `vercel.json`. (G1, G2)
+2. Add `base-uri 'none'` and `form-action 'self'` to CSP — both are zero-risk additions on Next 15.5. (G5)
+3. Add a `report-to` / `report-uri` endpoint (could route through `/api/csp-report` or a third-party) so CSP violations aren't silent. (G5)
+4. Reconcile `img-src` with `images.remotePatterns` — either tighten CSP to the four hosts or document the divergence as intentional. (G6)
+5. Lift `Permissions-Policy` `interest-cohort=()` into `vercel.json` so it covers static asset responses. (G3)
+6. Add an explicit CORS posture (deny-by-default + allowlist for `/api/health`, `/api/performance/metrics`). (G7)
+
+## 8. Verification
+
+- No code changes in this lane; this is a docs-only inventory.
+- No `pnpm type-check` run because no source files were modified.
+- No external network calls were made.
