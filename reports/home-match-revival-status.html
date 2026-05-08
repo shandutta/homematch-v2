@@ -1125,6 +1125,15 @@
     <li><strong>Remaining:</strong> DB reset/lint/integration validation remains blocked by local Supabase/Docker or approved remote-test path; other DB performance/migration blockers remain.</li>
   </ul>
 </section>
+<section id="phase0-phase1-db-jsonb-indexes-2026-05-08">
+  <h2>Phase 0/1 remediation — DB JSONB GIN indexes</h2>
+  <p><strong>Status:</strong> DB P2.2 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Added migration <code>20260508022000_add_jsonb_gin_indexes.sql</code> for <code>user_profiles.preferences</code>, <code>user_property_interactions.score_data</code>, and <code>saved_searches.filters</code>.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-jsonb-indexes-red-1778214603.service</code>; targeted Jest passed in <code>hm-jsonb-indexes-green-1778214619.service</code>; resource-limited type-check passed in <code>hm-jsonb-indexes-typecheck-1778214622.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> DB reset/lint/integration validation remains blocked by local Supabase/Docker or approved remote-test path; query dedupe, realtime N+1, rollback/DOWN, and typing cleanup remain open.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

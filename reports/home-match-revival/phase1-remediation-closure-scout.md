@@ -1,6 +1,6 @@
 # Phase 1 Remediation Closure Scout
 
-Generated: 2026-05-08T01:49:15Z
+Generated: 2026-05-08T01:50:25Z
 Lane: `/home/shan/projects/homematch-v2.worktrees/p3-backend`  
 Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-code changes in this scout.
 
@@ -60,7 +60,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | DB P1.7: Add INSERT policy on `households` | Closed repo-side after re-scout: `20251130200000_consolidated_pending_features.sql` already contains `CREATE POLICY "Users can create households" ON households FOR INSERT WITH CHECK (auth.uid() = created_by);`; regression `rls-policy-closure.test.ts` now guards it. | closed | Keep policy guard; run DB reset/lint in integration environment before production deploy. |
 | DB P1.8: Gate or remove standalone `service-role-client.ts` bypass | Commit `cad54c9`; file now delegates to `createServiceClient()`; test `service-role-client.test.ts`. | closed | Still complete RBAC hardening under A3. |
 | DB P2.1: Migration squash/consolidation | Audit checklist remains unchecked; no squash commit. | block | Defer until P0/P1 DB fixes are fully landed and DB reset is green. |
-| DB P2.2: Add JSONB GIN indexes | Generated recommendation exists; no applied migration found for `20260507220300...`. | open | Add GIN indexes on `preferences`, `score_data`, and `filters`; run migration test. |
+| DB P2.2: Add JSONB GIN indexes | Closed repo-side: migration `20260508022000_add_jsonb_gin_indexes.sql` adds GIN indexes for `user_profiles.preferences`, `user_property_interactions.score_data`, and `saved_searches.filters`; regression `jsonb-gin-indexes-migration.test.ts`; RED `hm-jsonb-indexes-red-1778214603.service`; GREEN `hm-jsonb-indexes-green-1778214619.service`; type-check `hm-jsonb-indexes-typecheck-1778214622.service`. | closed | Run DB reset/lint in integration environment before production deploy. |
 | DB P2.3: Replace inline CouplesRealtime types | `couples-realtime.ts` still defines inline payload shape. | open | Replace with generated DB row/select types and run type-check. |
 | DB P2.4: Type `DASHBOARD_PROPERTY_SELECT` | Audit item; no closure evidence found. | open | Replace raw select string with typed/select helper or generated-field coverage. |
 | DB P2.5: Consolidate duplicate Supabase factories | Same as auth A4; no closure evidence. | open | Canonicalize clients and delete stale factory path. |
