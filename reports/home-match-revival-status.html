@@ -885,6 +885,16 @@
     <li><strong>Remaining M5:</strong> admin cron-secret endpoints.</li>
   </ul>
 </section>
+
+<section id="phase0-phase1-rate-limit-closed-2026-05-08">
+  <h2>Phase 0/1 remediation — M5 rate-limit route coverage closed</h2>
+  <p><strong>Status:</strong> M5 closed for repo-code route coverage. Phase 0/1 still not fully closed because M6/auth/DB/test blockers remain.</p>
+  <ul>
+    <li><strong>Closed:</strong> user mutation, performance ingestion, and admin cron-secret route limit checks.</li>
+    <li><strong>New helper:</strong> <code>src/lib/api/admin-rate-limit.ts</code> avoids raw secret-derived limiter keys.</li>
+    <li><strong>Verification:</strong> RED observed; targeted Jest and resource-limited type-check passed.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

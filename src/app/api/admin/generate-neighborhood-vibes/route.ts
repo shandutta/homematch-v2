@@ -6,6 +6,7 @@ import {
   type NeighborhoodContext,
 } from '@/lib/services/neighborhood-vibes'
 import { type NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 
 interface GenerateNeighborhoodVibesRequest {
   neighborhoodIds?: string[]
@@ -26,6 +27,12 @@ export async function POST(req: Request) {
       { status: 401 }
     )
   }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-neighborhood-vibes'
+  )
+  if (rateLimitResponse) return rateLimitResponse
 
   if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json(

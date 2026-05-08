@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createVibesService } from '@/lib/services/vibes'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -297,6 +298,12 @@ export async function POST(req: Request): Promise<NextResponse> {
       { status: 401 }
     )
   }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-vibes-zillow'
+  )
+  if (rateLimitResponse) return rateLimitResponse
 
   // Check for required API keys
   const rapidApiKey = process.env.RAPIDAPI_KEY

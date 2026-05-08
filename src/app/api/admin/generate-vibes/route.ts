@@ -3,6 +3,7 @@ import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
 import type { Property, PropertyType } from '@/lib/schemas/property'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 
 interface GenerateVibesRequest {
   propertyIds?: string[]
@@ -62,6 +63,14 @@ export async function POST(
       { ok: false, error: 'Unauthorized' },
       { status: 401 }
     )
+  }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-vibes'
+  )
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse<GenerateVibesResponse>
   }
 
   // Check for OpenRouter API key
@@ -366,6 +375,14 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   if (!secret || querySecret !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-vibes'
+  )
+  if (rateLimitResponse) {
+    return rateLimitResponse as NextResponse<GenerateVibesResponse>
   }
 
   const supabase = createStandaloneClient()

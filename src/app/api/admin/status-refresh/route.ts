@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import type { PropertyInsert } from '@/types/database'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -151,6 +152,12 @@ export async function POST(req: Request) {
     if (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET) {
       return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
     }
+
+    const rateLimitResponse = await rateLimitAdminRoute(
+      req,
+      'admin:status-refresh'
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     const supabase = createStandaloneClient()
     const { data, error } = await supabase

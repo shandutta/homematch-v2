@@ -56,3 +56,34 @@ describe('Phase 1 M5 route rate-limit coverage', () => {
     expect(body).toContain('status: 429')
   })
 })
+
+describe('Phase 1 M5 admin cron route rate-limit coverage', () => {
+  it.each([
+    {
+      path: 'src/app/api/admin/status-refresh/route.ts',
+      key: 'admin:status-refresh',
+    },
+    {
+      path: 'src/app/api/admin/ingest/zillow/route.ts',
+      key: 'admin:ingest-zillow',
+    },
+    {
+      path: 'src/app/api/admin/generate-vibes/route.ts',
+      key: 'admin:generate-vibes',
+    },
+    {
+      path: 'src/app/api/admin/generate-neighborhood-vibes/route.ts',
+      key: 'admin:generate-neighborhood-vibes',
+    },
+    {
+      path: 'src/app/api/admin/generate-vibes-zillow/route.ts',
+      key: 'admin:generate-vibes-zillow',
+    },
+  ])('$path applies route-scoped admin cron limiter', ({ path, key }) => {
+    const source = route(path)
+
+    expect(source).toContain('@/lib/api/admin-rate-limit')
+    expect(source).toContain('rateLimitAdminRoute(')
+    expect(source).toContain(key)
+  })
+})

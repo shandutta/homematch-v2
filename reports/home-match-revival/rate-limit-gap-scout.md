@@ -92,3 +92,27 @@ Remaining M5 gaps are concentrated in admin cron-secret routes:
 4. `GET /api/admin/generate-vibes`
 5. `POST /api/admin/generate-neighborhood-vibes`
 6. `POST /api/admin/generate-vibes-zillow`
+
+
+## Remediation slice — admin cron route limits
+
+Status: **M5 closed for repo-code route coverage**.
+
+Closed in this slice:
+
+- Added `src/lib/api/admin-rate-limit.ts` with `rateLimitAdminRoute(request, routeKey)` using route + IP keys and no secret-derived/logged key material.
+- `POST /api/admin/status-refresh` now uses `admin:status-refresh`.
+- `POST /api/admin/ingest/zillow` now uses `admin:ingest-zillow`.
+- `POST` and `GET /api/admin/generate-vibes` now use `admin:generate-vibes`.
+- `POST /api/admin/generate-neighborhood-vibes` now uses `admin:generate-neighborhood-vibes`.
+- `POST /api/admin/generate-vibes-zillow` now uses `admin:generate-vibes-zillow`.
+
+Verification:
+
+- RED: `hm-admin-rate-red-1778206764.service` failed before admin helper adoption.
+- GREEN: `hm-admin-rate-green-1778206860.service` passed admin coverage.
+- Final targeted: `hm-admin-rate-test-final2-1778206953.service` passed rate-limit + cache-control tests.
+- Type-check: `hm-admin-rate-typecheck2-1778206957.service` passed.
+- Diff check: passed.
+
+Remaining note: the limiter is still in-process memory backed, matching existing project primitives. Durable production storage is tracked separately as an ops/architecture decision, not an M5 route-coverage gap.

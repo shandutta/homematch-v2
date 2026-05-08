@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 
 const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Newest',
@@ -112,6 +113,12 @@ export async function POST(req: Request) {
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
     return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
   }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:ingest-zillow'
+  )
+  if (rateLimitResponse) return rateLimitResponse
 
   const rapidApiKey = process.env.RAPIDAPI_KEY
   const rapidApiHost =
