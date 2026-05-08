@@ -24,7 +24,9 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    const params = new URLSearchParams()
+    params.set('redirectTo', buildDashboardRedirectTo(await _searchParams))
+    redirect(`/login?${params.toString()}`)
   }
 
   try {
@@ -95,6 +97,25 @@ export default async function DashboardPage({
     // For non-database errors, redirect to login as before
     redirect('/login')
   }
+}
+
+const buildDashboardRedirectTo = (
+  searchParams: { [key: string]: string | string[] | undefined } | undefined
+) => {
+  const redirectParams = new URLSearchParams()
+  Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      redirectParams.set(key, value)
+      return
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => redirectParams.append(key, item))
+    }
+  })
+
+  const query = redirectParams.toString()
+  return query ? `/dashboard?${query}` : '/dashboard'
 }
 
 const isRecord = (value: unknown): value is Record<string, Json> =>
