@@ -3,6 +3,10 @@ import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
 
 const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Newest',
@@ -127,6 +131,12 @@ export async function POST(req: Request) {
 
   if (!rapidApiKey) {
     return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY missing')
+  }
+
+  if (!isPaidRapidApiApproved()) {
+    return ApiErrorHandler.serviceUnavailable(
+      RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
+    )
   }
 
   // Parse optional query parameters

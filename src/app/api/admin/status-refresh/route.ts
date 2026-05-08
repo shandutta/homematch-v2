@@ -4,6 +4,10 @@ import type { PropertyInsert } from '@/types/database'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -116,6 +120,11 @@ export async function POST(req: Request) {
 
     if (!RAPIDAPI_KEY) {
       return ApiErrorHandler.serviceUnavailable('upstream unavailable')
+    }
+    if (!isPaidRapidApiApproved()) {
+      return ApiErrorHandler.serviceUnavailable(
+        RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
+      )
     }
 
     const maxItemsInput = Number(url.searchParams.get('limit'))

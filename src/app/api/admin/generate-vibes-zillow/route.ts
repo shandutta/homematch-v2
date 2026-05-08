@@ -4,6 +4,10 @@ import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
 
 const isDev = process.env.NODE_ENV === 'development'
 const ZILLOW_FETCH_TIMEOUT_MS = 10_000
@@ -313,6 +317,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   const rapidApiKey = process.env.RAPIDAPI_KEY
   if (!rapidApiKey) {
     return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY not configured')
+  }
+
+  if (!isPaidRapidApiApproved()) {
+    return ApiErrorHandler.serviceUnavailable(
+      RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
+    )
   }
 
   if (!process.env.OPENROUTER_API_KEY) {

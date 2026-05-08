@@ -1,6 +1,10 @@
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
 
 type ZillowCard = {
   zpid: string
@@ -79,6 +83,12 @@ export async function GET() {
     console.error('RAPIDAPI_KEY not configured')
     return ApiErrorHandler.serviceUnavailable(
       'Application is not configured for Zillow API access.'
+    )
+  }
+
+  if (!isPaidRapidApiApproved()) {
+    return ApiErrorHandler.serviceUnavailable(
+      RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
     )
   }
 
