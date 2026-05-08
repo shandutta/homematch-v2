@@ -21,7 +21,6 @@ export interface DisputedProperty {
   partner1: {
     user_id: string
     user_name: string
-    user_email: string
     interaction_type: 'like' | 'dislike' | 'skip'
     created_at: string
     score_data?: Record<string, unknown>
@@ -30,7 +29,6 @@ export interface DisputedProperty {
   partner2: {
     user_id: string
     user_name: string
-    user_email: string
     interaction_type: 'like' | 'dislike' | 'skip'
     created_at: string
     score_data?: Record<string, unknown>
@@ -104,7 +102,7 @@ export const GET = withRouteDeadline(
       // Get user's household
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('household_id, display_name, email')
+        .select('household_id')
         .eq('id', user.id)
         .single()
 
@@ -118,7 +116,7 @@ export const GET = withRouteDeadline(
       const { data: householdMembers, error: householdMembersError } =
         await serviceClient
           .from('user_profiles')
-          .select('id, display_name, email')
+          .select('id, display_name')
           .eq('household_id', userProfile.household_id)
 
       if (householdMembersError) {
@@ -308,10 +306,7 @@ export const GET = withRouteDeadline(
                   partner1: {
                     user_id: partner1Profile.id,
                     user_name:
-                      partner1Profile.display_name ||
-                      partner1Profile.email ||
-                      'Household member',
-                    user_email: partner1Profile.email || '',
+                      partner1Profile.display_name || 'Household member',
                     interaction_type: partner1Interaction.interaction_type,
                     created_at: partner1Interaction.created_at,
                     score_data: partner1Interaction.score_data,
@@ -320,10 +315,7 @@ export const GET = withRouteDeadline(
                   partner2: {
                     user_id: partner2Profile.id,
                     user_name:
-                      partner2Profile.display_name ||
-                      partner2Profile.email ||
-                      'Household member',
-                    user_email: partner2Profile.email || '',
+                      partner2Profile.display_name || 'Household member',
                     interaction_type: partner2Interaction.interaction_type,
                     created_at: partner2Interaction.created_at,
                     score_data: partner2Interaction.score_data,

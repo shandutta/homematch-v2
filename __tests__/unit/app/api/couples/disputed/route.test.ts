@@ -200,27 +200,25 @@ describe('couples disputed API route', () => {
       },
     ]
 
-    supabaseMock.from.mockReturnValueOnce(
-      createChainMock({
-        data: {
-          household_id: 'household-1',
-          display_name: 'User 1',
-          email: 'u1@test',
-        },
-        error: null,
-      })
-    )
+    const userProfileChain = createChainMock({
+      data: {
+        household_id: 'household-1',
+        display_name: 'User 1',
+        email: 'u1@test',
+      },
+      error: null,
+    })
+    supabaseMock.from.mockReturnValueOnce(userProfileChain)
 
+    const householdMembersChain = createChainMock({
+      data: [
+        { id: 'user-1', display_name: 'User 1', email: 'u1@test' },
+        { id: 'user-2', display_name: 'User 2', email: 'u2@test' },
+      ],
+      error: null,
+    })
     serviceClientMock.from
-      .mockReturnValueOnce(
-        createChainMock({
-          data: [
-            { id: 'user-1', display_name: 'User 1', email: 'u1@test' },
-            { id: 'user-2', display_name: 'User 2', email: 'u2@test' },
-          ],
-          error: null,
-        })
-      )
+      .mockReturnValueOnce(householdMembersChain)
       .mockReturnValueOnce(createChainMock({ data: [], error: null }))
       .mockReturnValueOnce(createChainMock({ data: interactions, error: null }))
 
@@ -237,11 +235,21 @@ describe('couples disputed API route', () => {
     expect(disputed.status).toBe('pending')
     expect(disputed.property.address).toBe('123 Main St')
     expect(disputed.partner1.user_id).toBe('user-1')
+    expect(disputed.partner1.user_name).toBe('User 1')
+    expect(disputed.partner1).not.toHaveProperty('user_email')
     expect(disputed.partner1.interaction_type).toBe('like')
     expect(disputed.partner1.notes).toBe('Love it')
     expect(disputed.partner2.user_id).toBe('user-2')
+    expect(disputed.partner2.user_name).toBe('User 2')
+    expect(disputed.partner2).not.toHaveProperty('user_email')
     expect(disputed.partner2.interaction_type).toBe('dislike')
     expect(disputed.partner2.notes).toBe('Not for me')
+    expect(JSON.stringify(body)).not.toContain('u1@test')
+    expect(JSON.stringify(body)).not.toContain('u2@test')
+    expect(userProfileChain.select).toHaveBeenCalledWith('household_id')
+    expect(householdMembersChain.select).toHaveBeenCalledWith(
+      'id, display_name'
+    )
   })
 
   test('PATCH returns 401 when user is not authenticated', async () => {
