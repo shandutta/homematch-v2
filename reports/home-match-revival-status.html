@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:34 UTC</code>. Strict
-        Phase 0/1 closure mode: M7 middleware auth timeout cleanup closed
-        repo-side; continuing until Phase 0/1 are 100% closed or blocked.
+        Live Kanban status. Updated: <code>2026-05-08 03:39 UTC</code>. Strict
+        Phase 0/1 closure mode: M7 and M9 closed repo-side in this run;
+        continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
         <div class="card">
@@ -1007,6 +1007,17 @@
     <li>Added an <code>AbortController</code>-backed Supabase fetch override and clears the timeout after <code>supabase.auth.getUser()</code> resolves.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m7-timeout-red-1778211076.service</code>; targeted Jest passed in <code>hm-m7-timeout-green2-1778211243.service</code>; resource-limited type-check passed in <code>hm-m7-timeout-typecheck2-1778211248.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, dead code/dependency cleanup, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m9-actions-2026-05-08">
+  <h2>Phase 0/1 remediation — M9 dead server-action cleanup</h2>
+  <p><strong>Status:</strong> M9 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Removed unused login, signup, and Google OAuth server actions from <code>src/lib/supabase/actions.ts</code>.</li>
+    <li>Kept the wired <code>signOut</code> action used by existing UI surfaces.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m9-actions-red-1778211419.service</code>; targeted Jest passed in <code>hm-m9-actions-green-1778211490.service</code>; resource-limited type-check passed in <code>hm-m9-actions-typecheck-1778211495.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>
