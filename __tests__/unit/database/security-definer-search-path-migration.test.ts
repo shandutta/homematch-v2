@@ -44,12 +44,19 @@ describe('SECURITY DEFINER search_path hardening migration', () => {
 
   it('does not rely on destructive function replacement for metadata-only hardening', () => {
     const sql = migration()
-    const alterFunctionCount = (sql.match(/ALTER FUNCTION/gi) ?? []).length
+    const executableSql = sql
+      .split('\n')
+      .filter((line) => !line.trimStart().startsWith('--'))
+      .join('\n')
+    const alterFunctionCount = (executableSql.match(/ALTER FUNCTION/gi) ?? [])
+      .length
     const createOrReplaceCount = (
-      sql.match(/CREATE OR REPLACE FUNCTION/gi) ?? []
+      executableSql.match(/CREATE OR REPLACE FUNCTION/gi) ?? []
     ).length
     const hardenedSearchPathCount = (
-      sql.match(/SET search_path = pg_catalog, public/gi) ?? []
+      executableSql.match(
+        /SET search_path = pg_catalog, public, extensions/gi
+      ) ?? []
     ).length
 
     expect(createOrReplaceCount).toBe(0)

@@ -87,3 +87,18 @@ ALTER TABLE public.user_profiles
   NOT VALID;
 
 COMMIT;
+
+-- DOWN:
+-- BEGIN;
+-- ALTER TABLE public.user_profiles
+--   DROP CONSTRAINT IF EXISTS user_profiles_household_id_fkey;
+-- ALTER TABLE public.properties
+--   DROP CONSTRAINT IF EXISTS properties_neighborhood_id_fkey;
+-- ALTER TABLE public.properties
+--   DROP CONSTRAINT IF EXISTS chk_properties_year_built_reasonable,
+--   DROP CONSTRAINT IF EXISTS chk_properties_square_feet_positive,
+--   DROP CONSTRAINT IF EXISTS chk_properties_bathrooms_non_negative,
+--   DROP CONSTRAINT IF EXISTS chk_properties_bedrooms_non_negative,
+--   DROP CONSTRAINT IF EXISTS chk_properties_price_positive,
+--   DROP CONSTRAINT IF EXISTS chk_properties_listing_status;
+-- COMMIT;
