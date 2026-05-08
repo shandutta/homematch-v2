@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { ApiErrorHandler } from '@/lib/api/errors'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
 const getRequestIp = (request: Request) => {
@@ -17,8 +18,5 @@ export async function rateLimitAdminRoute(
 
   if (result.success) return null
 
-  return NextResponse.json(
-    { error: 'Too many requests. Please try again later.' },
-    { status: 429 }
-  )
+  return ApiErrorHandler.tooManyRequests()
 }

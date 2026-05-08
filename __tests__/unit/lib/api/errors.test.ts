@@ -88,6 +88,33 @@ describe('ApiErrorHandler', () => {
     expect(body.details).toBeDefined()
   })
 
+  it.each([
+    ['methodNotAllowed', 'METHOD_NOT_ALLOWED', 405],
+    ['tooManyRequests', 'RATE_LIMITED', 429],
+    ['serviceUnavailable', 'SERVICE_UNAVAILABLE', 503],
+    ['badGateway', 'BAD_GATEWAY', 502],
+    ['gatewayTimeout', 'GATEWAY_TIMEOUT', 504],
+  ] as const)('builds %s responses', (method, code, status) => {
+    ApiErrorHandler[method]('Standardized error')
+
+    const [body, init] = jsonMock.mock.calls.at(-1)!
+    expect(init?.status).toBe(status)
+    expect(body).toEqual({ error: 'Standardized error', code })
+  })
+
+  it('preserves headers for rate-limit responses', () => {
+    ApiErrorHandler.tooManyRequests('Slow down', {
+      'Retry-After': '60',
+    })
+
+    const [body, init] = jsonMock.mock.calls.at(-1)!
+    expect(init).toEqual({
+      status: 429,
+      headers: { 'Retry-After': '60' },
+    })
+    expect(body).toEqual({ error: 'Slow down', code: 'RATE_LIMITED' })
+  })
+
   it('wraps success payloads', () => {
     ApiErrorHandler.success({ ok: true })
 

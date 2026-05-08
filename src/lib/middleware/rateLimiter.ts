@@ -1,3 +1,4 @@
+import { ApiErrorHandler } from '@/lib/api/errors'
 import type { RateLimiterMemory as RateLimiterMemoryType } from 'rate-limiter-flexible'
 import RateLimiterMemory from 'rate-limiter-flexible/lib/RateLimiterMemory'
 import { NextRequest, NextResponse } from 'next/server'
@@ -123,22 +124,13 @@ export async function rateLimit(
       typeof res.remainingPoints === 'number' ? res.remainingPoints : 0
     const retryAfter = Math.round(msBeforeNext / 1000) || 60
 
-    return NextResponse.json(
+    return ApiErrorHandler.tooManyRequests(
+      'Rate limit exceeded. Please try again later.',
       {
-        error: 'Too Many Requests',
-        message: 'Rate limit exceeded. Please try again later.',
-        retryAfter,
-      },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfter),
-          'X-RateLimit-Limit': String(RATE_LIMIT_TIERS[tier].points),
-          'X-RateLimit-Remaining': String(remainingPoints),
-          'X-RateLimit-Reset': new Date(
-            Date.now() + msBeforeNext
-          ).toISOString(),
-        },
+        'Retry-After': String(retryAfter),
+        'X-RateLimit-Limit': String(RATE_LIMIT_TIERS[tier].points),
+        'X-RateLimit-Remaining': String(remainingPoints),
+        'X-RateLimit-Reset': new Date(Date.now() + msBeforeNext).toISOString(),
       }
     )
   }
@@ -169,15 +161,12 @@ export async function withRateLimit(
           handlerError.message.includes('auth') ||
           handlerError.message.includes('token')
         ) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+          return ApiErrorHandler.unauthorized()
         }
       }
 
       // Return generic 500 for other errors
-      return NextResponse.json(
-        { error: 'Internal Server Error' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Internal Server Error', handlerError)
     }
   } catch (rateLimitError) {
     console.error('[withRateLimit] Rate limit error:', rateLimitError)
@@ -190,10 +179,7 @@ export async function withRateLimit(
         '[withRateLimit] Handler error after rate limit failure:',
         handlerError
       )
-      return NextResponse.json(
-        { error: 'Internal Server Error' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Internal Server Error', handlerError)
     }
   }
 }
@@ -228,23 +214,13 @@ export async function authRateLimit(
       msBeforeNext,
     })
 
-    return NextResponse.json(
+    return ApiErrorHandler.tooManyRequests(
+      'Too many authentication attempts. Your account has been temporarily locked for security.',
       {
-        error: 'Too Many Authentication Attempts',
-        message:
-          'Too many authentication attempts. Your account has been temporarily locked for security.',
-        retryAfter,
-      },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfter),
-          'X-RateLimit-Limit': String(RATE_LIMIT_TIERS.auth.points),
-          'X-RateLimit-Remaining': String(remainingPoints),
-          'X-RateLimit-Reset': new Date(
-            Date.now() + msBeforeNext
-          ).toISOString(),
-        },
+        'Retry-After': String(retryAfter),
+        'X-RateLimit-Limit': String(RATE_LIMIT_TIERS.auth.points),
+        'X-RateLimit-Remaining': String(remainingPoints),
+        'X-RateLimit-Reset': new Date(Date.now() + msBeforeNext).toISOString(),
       }
     )
   }
