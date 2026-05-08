@@ -18,37 +18,49 @@ import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
 import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
-type PropertyStatsRpcRow = {
-  total_properties: number | string | null
-  avg_price: number | string | null
-  median_price: number | string | null
-  avg_bedrooms: number | string | null
-  avg_bathrooms: number | string | null
-  avg_square_feet: number | string | null
-  property_type_distribution: Record<string, number> | null
-}
-
-const toRoundedNumber = (value: number | string | null): number => {
+const toRoundedNumber = (value: unknown): number => {
   const numeric = Number(value ?? 0)
   return Number.isFinite(numeric) ? Math.round(numeric) : 0
 }
 
-const toRoundedTenth = (value: number | string | null): number => {
+const toRoundedTenth = (value: unknown): number => {
   const numeric = Number(value ?? 0)
   return Number.isFinite(numeric) ? Math.round(numeric * 10) / 10 : 0
 }
 
-const normalizePropertyStatsRpcRow = (
-  row: PropertyStatsRpcRow | null | undefined
-): PropertyStats => ({
-  total_properties: toRoundedNumber(row?.total_properties ?? null),
-  avg_price: toRoundedNumber(row?.avg_price ?? null),
-  median_price: toRoundedNumber(row?.median_price ?? null),
-  avg_bedrooms: toRoundedTenth(row?.avg_bedrooms ?? null),
-  avg_bathrooms: toRoundedTenth(row?.avg_bathrooms ?? null),
-  avg_square_feet: toRoundedNumber(row?.avg_square_feet ?? null),
-  property_type_distribution: row?.property_type_distribution ?? {},
-})
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizePropertyStatsRpcRow = (row: unknown): PropertyStats => {
+  if (!isRecord(row)) {
+    return {
+      total_properties: 0,
+      avg_price: 0,
+      median_price: 0,
+      avg_bedrooms: 0,
+      avg_bathrooms: 0,
+      avg_square_feet: 0,
+      property_type_distribution: {},
+    }
+  }
+
+  const distribution = row.property_type_distribution
+  return {
+    total_properties: toRoundedNumber(row.total_properties),
+    avg_price: toRoundedNumber(row.avg_price),
+    median_price: toRoundedNumber(row.median_price),
+    avg_bedrooms: toRoundedTenth(row.avg_bedrooms),
+    avg_bathrooms: toRoundedTenth(row.avg_bathrooms),
+    avg_square_feet: toRoundedNumber(row.avg_square_feet),
+    property_type_distribution: isRecord(distribution)
+      ? Object.fromEntries(
+          Object.entries(distribution).filter(
+            (entry): entry is [string, number] => typeof entry[1] === 'number'
+          )
+        )
+      : {},
+  }
+}
 
 export class PropertySearchService
   extends BaseService
@@ -285,7 +297,7 @@ export class PropertySearchService
           this.handleSupabaseError(error, 'getPropertyStats', {})
         }
 
-        return normalizePropertyStatsRpcRow(data as PropertyStatsRpcRow | null)
+        return normalizePropertyStatsRpcRow(data)
       }
     )
 

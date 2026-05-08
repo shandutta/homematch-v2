@@ -10,16 +10,17 @@ import {
   copyFileSync,
   existsSync,
   readdirSync,
+  readFileSync,
 } from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 
-const {
+import {
   PHASE1_MIGRATIONS,
   classifyTarget,
   findPhase1Migrations,
   run,
-} = require('../../../scripts/db-validation-evidence-runner.js')
+} from '../../../scripts/db-validation-evidence-runner.js'
 
 const PRODUCTION_HOST = 'lpwlbbowavozpywnpamn.supabase.co'
 
@@ -353,10 +354,10 @@ describe('D6 db-validation-evidence-runner', () => {
 
     it('does not register a remote db reset or remote db query in package scripts', () => {
       const repoRoot = path.join(__dirname, '..', '..', '..')
-      const packageJson = JSON.parse(
-        require('fs').readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
+      const packageJson: { scripts: Record<string, string> } = JSON.parse(
+        readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
       )
-      const scriptsText = Object.entries(packageJson.scripts as Record<string, string>)
+      const scriptsText = Object.entries(packageJson.scripts)
         .map(([name, cmd]) => `${name}: ${cmd}`)
         .join('\n')
 

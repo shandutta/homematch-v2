@@ -2,10 +2,10 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 
-const {
+import {
   evaluateSupabaseGuard,
   runGuard,
-} = require('../../../scripts/guard-supabase-env.js')
+} from '../../../scripts/guard-supabase-env.js'
 
 const createRoot = () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'homematch-guard-'))

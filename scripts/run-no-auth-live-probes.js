@@ -30,7 +30,7 @@ async function isLocalServerReady(
       headers: { accept: 'application/json' },
     })
     return response.status < 500
-  } catch (error) {
+  } catch {
     return false
   } finally {
     clearTimeout(timeout)

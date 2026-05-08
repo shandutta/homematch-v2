@@ -171,7 +171,7 @@ describe('metadata routes', () => {
   it.each(publicMetadataCases)(
     'publishes canonical OpenGraph and Twitter metadata for $route',
     async ({ importPath, title, description, canonical }) => {
-      const mod = (await import(importPath)) as RouteMetadataModule
+      const mod: RouteMetadataModule = await import(importPath)
 
       expect(mod.metadata).toMatchObject({
         title,
@@ -199,7 +199,7 @@ describe('metadata routes', () => {
   it.each(noindexMetadataCases)(
     'marks auth and token route $route as noindex with token-safe metadata',
     async ({ importPath, title, description }) => {
-      const mod = (await import(importPath)) as RouteMetadataModule
+      const mod: RouteMetadataModule = await import(importPath)
 
       expect(mod.metadata).toMatchObject({
         title,

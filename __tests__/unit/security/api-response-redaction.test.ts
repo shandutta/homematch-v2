@@ -121,7 +121,7 @@ describe('ApiErrorHandler redaction contract', () => {
     (method) => {
       ApiErrorHandler[method]('Standardized error')
 
-      const body = lastBody() as Record<string, unknown>
+      const body = lastBody()
       expect(body).not.toHaveProperty('details')
       expect(body).not.toHaveProperty('stack')
       expect(body).not.toHaveProperty('env')

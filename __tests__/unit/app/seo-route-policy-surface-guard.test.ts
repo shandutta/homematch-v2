@@ -99,14 +99,14 @@ describe('SEO route policy — per-surface guard', () => {
   })
 
   it('keeps robots.txt rules anchored to the shared disallow list', () => {
-    const rules = robots().rules as { disallow?: string[] }
+    const rules: { disallow?: string[] } = robots().rules
     expect(rules.disallow).toEqual(ROBOTS_DISALLOW_PATHS)
   })
 
   it.each(INTERNAL_PREVIEW_PAGE_IMPORTS)(
     'marks internal preview page $route as noindex via page metadata',
     async ({ importPath }) => {
-      const mod = (await import(importPath)) as { metadata: Metadata }
+      const mod: { metadata: Metadata } = await import(importPath)
 
       expect(mod.metadata.robots).toMatchObject({
         index: false,

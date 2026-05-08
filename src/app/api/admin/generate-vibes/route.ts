@@ -13,30 +13,6 @@ interface GenerateVibesRequest {
   force?: boolean
 }
 
-interface GenerateVibesResponse {
-  ok: boolean
-  summary?: {
-    total: number
-    success: number
-    failed: number
-    skipped: number
-    totalCostUsd: number
-    totalTimeMs: number
-  }
-  results?: Array<{
-    propertyId: string
-    tagline: string
-    vibeStatement: string
-    suggestedTags: string[]
-    costUsd: number
-  }>
-  errors?: Array<{
-    propertyId: string
-    error: string
-  }>
-  error?: string
-}
-
 /**
  * POST /api/admin/generate-vibes
  *
@@ -49,9 +25,7 @@ interface GenerateVibesResponse {
  * Body (optional):
  * - propertyIds: Specific property IDs to process
  */
-export async function POST(
-  req: Request
-): Promise<NextResponse<GenerateVibesResponse>> {
+export async function POST(req: Request): Promise<Response> {
   // Authenticate - require cron secret for admin endpoints
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
   const isDev = process.env.NODE_ENV === 'development'
@@ -60,7 +34,7 @@ export async function POST(
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return ApiErrorHandler.unauthorized('Unauthorized') as NextResponse<GenerateVibesResponse>
+    return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(
@@ -68,14 +42,14 @@ export async function POST(
     'admin:generate-vibes'
   )
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse<GenerateVibesResponse>
+    return rateLimitResponse
   }
 
   // Check for OpenRouter API key
   if (!process.env.OPENROUTER_API_KEY) {
     return ApiErrorHandler.serviceUnavailable(
       'OPENROUTER_API_KEY not configured'
-    ) as NextResponse<GenerateVibesResponse>
+    )
   }
 
   // Parse request
@@ -312,7 +286,7 @@ export async function POST(
     return ApiErrorHandler.serverError(
       error instanceof Error ? error.message : 'Unknown error',
       error
-    ) as NextResponse<GenerateVibesResponse>
+    )
   }
 }
 
@@ -362,7 +336,7 @@ async function selectDiverseProperties(
  *
  * Get vibes generation status and existing vibes count
  */
-export async function GET(req: Request): Promise<NextResponse> {
+export async function GET(req: Request): Promise<Response> {
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
   const url = new URL(req.url)
   const querySecret = url.searchParams.get('cron_secret')
@@ -376,7 +350,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     'admin:generate-vibes'
   )
   if (rateLimitResponse) {
-    return rateLimitResponse as NextResponse<GenerateVibesResponse>
+    return rateLimitResponse
   }
 
   const supabase = createStandaloneClient()

@@ -249,8 +249,6 @@ export async function middleware(request: NextRequest) {
       })
     }
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e)
-
     // Handle thrown exceptions for invalid refresh tokens
     if (isInvalidRefreshTokenError(e)) {
       console.warn(

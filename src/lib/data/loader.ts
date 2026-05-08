@@ -48,7 +48,9 @@ export const DASHBOARD_PROPERTY_SELECT_COLUMNS = [
   'updated_at',
 ] satisfies readonly DashboardPropertySelectColumn[]
 
-const inFlightDashboardSearches = new Map<string, Promise<unknown>>()
+type DashboardSearchResult = Awaited<ReturnType<PropertyService['searchProperties']>>
+
+const inFlightDashboardSearches = new Map<string, Promise<DashboardSearchResult>>()
 
 class StaticSupabaseClientFactory implements ISupabaseClientFactory {
   private readonly client: SupabaseClient<AppDatabase>
@@ -225,11 +227,11 @@ const getDashboardSearchDedupeKey = (
     options,
   })
 
-const runDedupedDashboardSearch = <T>(
+const runDedupedDashboardSearch = (
   key: string,
-  search: () => Promise<T>
-): Promise<T> => {
-  const existing = inFlightDashboardSearches.get(key) as Promise<T> | undefined
+  search: () => Promise<DashboardSearchResult>
+): Promise<DashboardSearchResult> => {
+  const existing = inFlightDashboardSearches.get(key)
   if (existing) {
     return existing
   }

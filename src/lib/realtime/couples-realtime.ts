@@ -8,6 +8,25 @@ type PropertyInteractionPayload =
 type RealtimeMutualLikePayload =
   AppDatabase['public']['Functions']['get_realtime_mutual_like_payload']['Returns'][number]
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const toRealtimeMutualLikePayload = (
+  value: unknown
+): RealtimeMutualLikePayload | null => {
+  if (!isRecord(value) || typeof value.has_mutual_like !== 'boolean') {
+    return null
+  }
+
+  return {
+    has_mutual_like: value.has_mutual_like,
+    partner_name:
+      typeof value.partner_name === 'string' ? value.partner_name : null,
+    property_address:
+      typeof value.property_address === 'string' ? value.property_address : null,
+  }
+}
+
 interface CouplesRealtimeCallbacks {
   onMutualLike?: (data: {
     propertyId: string
@@ -165,8 +184,8 @@ export class CouplesRealtime {
           }
         )
         const enriched = Array.isArray(mutualPayload)
-          ? (mutualPayload[0] as RealtimeMutualLikePayload | undefined)
-          : (mutualPayload as RealtimeMutualLikePayload | null)
+          ? toRealtimeMutualLikePayload(mutualPayload[0])
+          : toRealtimeMutualLikePayload(mutualPayload)
 
         if (enriched?.has_mutual_like) {
           this.callbacks.onMutualLike({

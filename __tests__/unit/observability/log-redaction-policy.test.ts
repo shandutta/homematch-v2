@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
+import { describe, it, expect, beforeAll, beforeEach, jest } from '@jest/globals'
 import { readFileSync } from 'fs'
 import * as path from 'path'
+
+type ApiErrorHandlerModule = typeof import('@/lib/api/errors')
 
 // NextResponse.json shim — captures the JSON body so we can inspect what
 // would actually be sent to the client.
@@ -16,8 +18,11 @@ jest.mock('next/server', () => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { ApiErrorHandler } = require('@/lib/api/errors')
+let ApiErrorHandler: ApiErrorHandlerModule['ApiErrorHandler']
+
+beforeAll(async () => {
+  ;({ ApiErrorHandler } = await import('@/lib/api/errors'))
+})
 
 const FAKE_SERVICE_ROLE_KEY =
   'sb_service_role_REDACTION_POLICY_TEST_zzzzzzzzzzzzzzzzzzzzzzzz'
@@ -37,9 +42,17 @@ describe('observability log redaction policy', () => {
     // body sent to the client. Callers may pass details for server logs, but
     // the client-visible shape must stay `{error, code}` so secrets attached
     // to details cannot leak through the response surface.
-    const nonValidationResponders: Array<
-      [keyof typeof ApiErrorHandler, string, number]
-    > = [
+    type NonValidationMethod =
+      | 'unauthorized'
+      | 'forbidden'
+      | 'notFound'
+      | 'methodNotAllowed'
+      | 'tooManyRequests'
+      | 'badGateway'
+      | 'serviceUnavailable'
+      | 'gatewayTimeout'
+
+    const nonValidationResponders: Array<[NonValidationMethod, string, number]> = [
       ['unauthorized', 'UNAUTHORIZED', 401],
       ['forbidden', 'FORBIDDEN', 403],
       ['notFound', 'NOT_FOUND', 404],
@@ -50,24 +63,37 @@ describe('observability log redaction policy', () => {
       ['gatewayTimeout', 'GATEWAY_TIMEOUT', 504],
     ]
 
+    const callResponder = (method: NonValidationMethod, message: string) => {
+      switch (method) {
+        case 'unauthorized':
+          return ApiErrorHandler.unauthorized(message)
+        case 'forbidden':
+          return ApiErrorHandler.forbidden(message)
+        case 'notFound':
+          return ApiErrorHandler.notFound(message)
+        case 'methodNotAllowed':
+          return ApiErrorHandler.methodNotAllowed(message)
+        case 'tooManyRequests':
+          return ApiErrorHandler.tooManyRequests(message)
+        case 'badGateway':
+          return ApiErrorHandler.badGateway(message)
+        case 'serviceUnavailable':
+          return ApiErrorHandler.serviceUnavailable(message)
+        case 'gatewayTimeout':
+          return ApiErrorHandler.gatewayTimeout(message)
+      }
+    }
+
     it.each(nonValidationResponders)(
       '%s emits only {error, code} in the response body',
       (method, expectedCode, expectedStatus) => {
-        const fn = ApiErrorHandler[method] as (
-          message?: string
-        ) => unknown
-        fn.call(ApiErrorHandler, 'Standardized message')
+        callResponder(method, 'Standardized message')
 
-        const [body, init] = jsonMock.mock.calls.at(-1) as [
-          Record<string, unknown>,
-          ResponseInit | undefined,
-        ]
+        const lastCall = jsonMock.mock.calls.at(-1)
+        if (!lastCall) throw new Error('expected jsonMock to be called')
+        const [body, init] = lastCall
         expect(init?.status).toBe(expectedStatus)
-        expect(Object.keys(body).sort()).toEqual(['code', 'error'])
-        expect(body.code).toBe(expectedCode)
-        expect(body).not.toHaveProperty('details')
-        expect(body).not.toHaveProperty('stack')
-        expect(body).not.toHaveProperty('context')
+        expect(body).toEqual({ error: 'Standardized message', code: expectedCode })
       }
     )
 
@@ -84,15 +110,11 @@ describe('observability log redaction policy', () => {
         rawEnv: FAKE_ENV_VALUE,
       })
 
-      const [body, init] = jsonMock.mock.calls.at(-1) as [
-        Record<string, unknown>,
-        ResponseInit | undefined,
-      ]
+      const lastCall = jsonMock.mock.calls.at(-1)
+      if (!lastCall) throw new Error('expected jsonMock to be called')
+      const [body, init] = lastCall
       expect(init?.status).toBe(500)
-      expect(Object.keys(body).sort()).toEqual(['code', 'error'])
-      expect(body.code).toBe('SERVER_ERROR')
-      expect(body.error).toBe('Internal failure')
-      expect(body).not.toHaveProperty('details')
+      expect(body).toEqual({ error: 'Internal failure', code: 'SERVER_ERROR' })
 
       // The serialized JSON body must contain none of the secret-shaped
       // values, even transitively.

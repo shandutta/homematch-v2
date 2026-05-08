@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'

@@ -94,10 +94,10 @@ describe('dashboard query dedupe', () => {
     ])
 
     expect(searchPropertiesMock).toHaveBeenCalledTimes(1)
-    const [searchParams, searchOptions] = searchPropertiesMock.mock.calls[0] as [
+    const [searchParams, searchOptions]: [
       PropertySearch,
       { select?: string; includeCount?: boolean; includeNeighborhoods?: boolean },
-    ]
+    ] = searchPropertiesMock.mock.calls[0]
     expect(searchParams.filters?.cities).toEqual([{ city: 'Austin', state: 'TX' }])
     expect(searchOptions).toEqual({
       select: 'id,address',
@@ -158,11 +158,9 @@ describe('dashboard query dedupe', () => {
     ])
 
     expect(searchPropertiesMock).toHaveBeenCalledTimes(4)
-    const callCities = (
-      searchPropertiesMock.mock.calls as Array<
-        [PropertySearch, { select?: string }]
-      >
-    ).map(([params, options]) => ({
+    const calls: Array<[PropertySearch, { select?: string }]> =
+      searchPropertiesMock.mock.calls
+    const callCities = calls.map(([params, options]) => ({
       cities: params.filters?.cities,
       limit: params.pagination?.limit,
       select: options?.select,

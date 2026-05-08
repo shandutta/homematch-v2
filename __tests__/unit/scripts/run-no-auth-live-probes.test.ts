@@ -1,10 +1,10 @@
-const {
+import {
   DEFAULT_BASE_URL,
   ALLOWED_LOCAL_HOSTS,
   assertLocalBaseUrl,
   isLocalServerReady,
   runMain,
-} = require('../../../scripts/run-no-auth-live-probes.js')
+} from '../../../scripts/run-no-auth-live-probes.js'
 
 describe('run-no-auth-live-probes wrapper readiness', () => {
   describe('assertLocalBaseUrl', () => {

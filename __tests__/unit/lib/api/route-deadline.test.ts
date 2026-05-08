@@ -40,7 +40,7 @@ describe('route deadline helper', () => {
     )
     const guarded = withRouteDeadline('users:search', 50, handler)
 
-    const responsePromise = guarded('request' as never)
+    const responsePromise = guarded()
     await jest.advanceTimersByTimeAsync(50)
     const response = await responsePromise
 
@@ -57,7 +57,7 @@ describe('route deadline helper', () => {
   test('passes through successful route responses before the deadline', async () => {
     jest.useFakeTimers()
     const { withRouteDeadline } = await import('@/lib/api/route-deadline')
-    const expected = { status: 200, body: { ok: true } } as unknown as Response
+    const expected = new Response(JSON.stringify({ ok: true }), { status: 200 })
     const guarded = withRouteDeadline(
       'couples:disputed',
       1000,

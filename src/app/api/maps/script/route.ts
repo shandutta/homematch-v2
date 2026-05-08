@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 

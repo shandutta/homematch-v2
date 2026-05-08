@@ -21,7 +21,7 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { NextRequest, type NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import {
   authRateLimit,
   checkRateLimit,
@@ -168,11 +168,11 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
   })
 
   it('does not list any paid/external limiter SDK as a dependency in package.json', () => {
-    const pkg = JSON.parse(readRepoFile(PACKAGE_JSON_PATH)) as {
+    const pkg: {
       dependencies?: Record<string, string>
       devDependencies?: Record<string, string>
       optionalDependencies?: Record<string, string>
-    }
+    } = JSON.parse(readRepoFile(PACKAGE_JSON_PATH))
 
     const declared = new Set([
       ...Object.keys(pkg.dependencies ?? {}),
@@ -263,9 +263,7 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
     const expectFailClosed = async (response: NextResponse | null) => {
       expect(response).not.toBeNull()
       expect(response?.status).toBe(429)
-      const body = (await response?.json()) as
-        | { code?: string }
-        | undefined
+      const body: { code?: string } | undefined = await response?.json()
       expect(body?.code).toBe('RATE_LIMITED')
     }
 
@@ -298,9 +296,10 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
 
     it('withRateLimit refuses to invoke the wrapped handler when an approval-gated provider is configured', async () => {
       process.env.RATE_LIMIT_STORAGE_PROVIDER = 'redis'
-      const handler = jest.fn(async () =>
-        // The handler must never be reached while the approval gate is active.
-        new Response(null, { status: 200 }) as unknown as NextResponse
+      const handler = jest.fn(
+        async (): Promise<NextResponse> =>
+          // The handler must never be reached while the approval gate is active.
+          NextResponse.json(null, { status: 200 })
       )
 
       const response = await withRateLimit(

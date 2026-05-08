@@ -11,16 +11,18 @@ export type SupabaseAuthRecoveryClient = {
   auth: SupabaseAuthSubset
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
 const describeAuthError = (error: unknown): { code?: string; message?: string } => {
   if (error instanceof AuthApiError) {
     return { code: error.code, message: error.message }
   }
 
-  if (typeof error === 'object' && error !== null) {
-    const record = error as Record<string, unknown>
+  if (isRecord(error)) {
     return {
-      code: typeof record.code === 'string' ? record.code : undefined,
-      message: typeof record.message === 'string' ? record.message : undefined,
+      code: typeof error.code === 'string' ? error.code : undefined,
+      message: typeof error.message === 'string' ? error.message : undefined,
     }
   }
 
