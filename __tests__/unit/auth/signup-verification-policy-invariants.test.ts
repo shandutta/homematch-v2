@@ -4,6 +4,8 @@ import * as path from 'path'
 const readRepoFile = (relativePath: string) =>
   readFileSync(path.join(process.cwd(), relativePath), 'utf8')
 
+const readRepoJson = (relativePath: string) => JSON.parse(readRepoFile(relativePath))
+
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim()
 
 describe('D3 signup verification repo-side invariants', () => {
@@ -16,6 +18,9 @@ describe('D3 signup verification repo-side invariants', () => {
     readRepoFile(
       'reports/home-match-revival/d3-signup-verification-repo-invariant-guard-2026-05-08.md'
     )
+  )
+  const launchPolicy = readRepoJson(
+    'config/signup-verification-launch-policy.json'
   )
   const supabaseConfig = readRepoFile('supabase/config.toml')
 
@@ -47,5 +52,21 @@ describe('D3 signup verification repo-side invariants', () => {
     expect(repoGuard).toContain(
       'Closure-grade E2E execution requires an approved local Supabase/Inbucket or safeguarded non-production test path before any live signup verification flow runs'
     )
+  })
+
+  it('keeps the machine-readable launch policy fail-closed for production signup', () => {
+    expect(launchPolicy.scope).toBe('repo-local-launch-policy-guard')
+    expect(launchPolicy.externalExecutionApprovalRequired).toBe(true)
+    expect(launchPolicy.production.emailPasswordSignup).toEqual({
+      emailConfirmationRequired: true,
+      captchaRequired: true,
+      preferredCaptchaProvider: 'turnstile',
+      preVerificationSessionAllowed: false,
+    })
+    expect(launchPolicy.localAndE2E.bypassAllowed).toBe(true)
+    expect(launchPolicy.localAndE2E.allowedEmailCapture).toEqual(
+      expect.arrayContaining(['inbucket', 'mailpit'])
+    )
+    expect(launchPolicy.localAndE2E.externalCaptchaCallsAllowed).toBe(false)
   })
 })
