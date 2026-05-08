@@ -163,6 +163,11 @@ const protectedPageRoutes: ProbeCase[] = [
     expectedStatuses: [302, 303, 307, 308],
     reason: 'protected route with query preservation check',
   },
+  {
+    path: '/dashboard?tab=liked',
+    expectedStatuses: [302, 303, 307, 308],
+    reason: 'protected dashboard tab query preservation check',
+  },
 ]
 
 const publicApiRoutes: ProbeCase[] = [
@@ -176,6 +181,57 @@ const publicApiRoutes: ProbeCase[] = [
     expectedStatuses: [405],
     reason:
       'safe public API method-boundary check with GET only; no metric submission',
+  },
+  {
+    path: '/api/properties/marketing',
+    expectedStatuses: [200],
+    reason:
+      'safe public marketing endpoint returning a static mock card list; no auth, no external API call',
+  },
+]
+
+const methodNotAllowedRoutes: ProbeCase[] = [
+  {
+    path: '/api/admin/generate-neighborhood-vibes',
+    expectedStatuses: [405],
+    reason:
+      'POST-only admin route; GET hits the framework method boundary before any handler/secret/provider work',
+  },
+  {
+    path: '/api/admin/generate-vibes-zillow',
+    expectedStatuses: [405],
+    reason:
+      'POST-only admin route; GET hits the framework method boundary before any handler/secret/provider work',
+  },
+  {
+    path: '/api/admin/status-refresh',
+    expectedStatuses: [405],
+    reason:
+      'POST-only admin route; GET hits the framework method boundary before any handler/secret/provider work',
+  },
+  {
+    path: '/api/admin/ingest/zillow',
+    expectedStatuses: [405],
+    reason:
+      'POST-only admin route; GET hits the framework method boundary before any handler/secret/provider work',
+  },
+  {
+    path: '/api/couples/notify',
+    expectedStatuses: [405],
+    reason:
+      'POST-only user route; GET hits the framework method boundary before any handler work',
+  },
+  {
+    path: '/api/interactions/reset',
+    expectedStatuses: [405],
+    reason:
+      'DELETE-only user route; GET hits the framework method boundary before any handler work',
+  },
+  {
+    path: '/api/users/avatar',
+    expectedStatuses: [405],
+    reason:
+      'POST/DELETE-only user route; GET hits the framework method boundary before any handler work',
   },
 ]
 
@@ -224,6 +280,12 @@ const protectedApiDenyRoutes: ProbeCase[] = [
     path: '/api/users/search?q=synthetic',
     expectedStatuses: [401],
     reason: 'user search API should reject anonymous requests',
+  },
+  {
+    path: '/api/admin/generate-vibes',
+    expectedStatuses: [401],
+    reason:
+      'admin GET status route gates on cron secret before any DB/provider call; anonymous probe omits the secret',
   },
 ]
 
@@ -284,6 +346,16 @@ describe.skipIf(!RUN_LIVE_PROBES)('P0 no-auth local live probe harness', () => {
 
   test.each(protectedApiDenyRoutes)(
     'denies anonymous protected API $path: $reason',
+    async ({ path, expectedStatuses }) => {
+      const response = await probe(path, {
+        headers: { accept: 'application/json' },
+      })
+      expect(expectedStatuses).toContain(response.status)
+    }
+  )
+
+  test.each(methodNotAllowedRoutes)(
+    'enforces method-not-allowed boundary on $path: $reason',
     async ({ path, expectedStatuses }) => {
       const response = await probe(path, {
         headers: { accept: 'application/json' },
