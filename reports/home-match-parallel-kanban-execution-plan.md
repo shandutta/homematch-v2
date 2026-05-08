@@ -20,9 +20,10 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integration HEAD seen: `ba647e9 fix: add JSONB GIN indexes`
+- Latest integration HEAD seen: `8e185ca docs: refresh HomeMatch control-plane plan`
 - Board: `home-match-revival`
 - Board state at last reconciliation: `todo=7`, `ready=0`, `running=0`, `blocked=7`, `done=27`
+- Important interpretation: the small board counts are **gate counts**, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
 - Phase 2+: **held**
@@ -205,18 +206,93 @@ Operational rules:
 - tool outputs should be targeted, not broad dumps
 - after any huge report/status, manually compress or move execution into workers
 
+## Later-phase held backlog skeleton
+
+These phases should be visible in the plan so we do not lose roadmap shape, but they are **not dispatchable** until Phase 0/1 closure is clean. Expanding this backlog into more granular issue/task specs is allowed as Phase 0/1 planning/decision-register work only if it does not implement later-phase product code.
+
+### Phase 2 — product UX, couples workflow, maps/images/SEO
+
+- Board anchors: `t_ff763f6d`, `t_1009b931`.
+- Intended scope after gate opens:
+  - couples/matching workflow UX upgrades
+  - saved-search / compare / partner review flows
+  - map pins, neighborhood imagery, listing metadata, OpenGraph/SEO quality
+  - production-safe UX QA and acceptance criteria
+- Pre-gate allowed work:
+  - write acceptance criteria
+  - classify dependencies on Phase 0/1 auth/API/DB stability
+  - identify tests needed later
+- Pre-gate forbidden work:
+  - implementing new UX features
+  - deploying metadata/SEO changes
+  - touching external dashboards or paid APIs without approval
+
+### Phase 3 — LLM/matching and ingest pipeline hardening
+
+- Board anchors: `t_11342c3d`, `t_4b4d5b96`.
+- Intended scope after gate opens:
+  - prompt and ranking robustness
+  - confidence/explainability guardrails
+  - ingest pipeline idempotency, source freshness, backfill safety
+  - evaluation dataset and regression checks
+- Pre-gate allowed work:
+  - document target eval plan and data-safety constraints
+  - list external integrations requiring approval
+- Pre-gate forbidden work:
+  - new LLM calls at scale
+  - data ingest/backfills against real external systems
+
+### Phase 4 — test suite/TDD lane
+
+- Board anchor: `t_acd542ca`.
+- Intended scope after gate opens:
+  - test-suite triage and flake classification
+  - TDD harness improvements
+  - Playwright/browser coverage expansion once Phase 0/1 auth/API surfaces are stable
+- Pre-gate allowed work:
+  - inventory current test gaps discovered during Phase 0/1 closure
+  - add regression tests directly tied to Phase 0/1 fixes
+
+### Phase 5 — compliance, analytics, AdSense, Stripe plan
+
+- Board anchor: `t_eface8fd`.
+- Intended scope after gate opens:
+  - compliance/legal review checklist
+  - analytics instrumentation plan
+  - AdSense/Stripe gating, pricing, and dashboard work
+- Pre-gate allowed work:
+  - write decision register entries and approval checklist
+- Pre-gate forbidden work:
+  - dashboard mutations, legal publication, payments, paid-service changes, outreach
+
+### Phase 6 — docs rewrite, launch readiness, final merge review
+
+- Board anchors: `t_fd311981`, `t_aeba612c`.
+- Intended scope after gate opens:
+  - docs rewrite
+  - final report and launch checklist
+  - merge readiness review
+- Pre-gate allowed work:
+  - capture current artifacts and contradictions
+  - define final evidence requirements
+
 ## Hermes `/goal` patch status
 
-Local patch committed in Hermes Agent repo:
+Local/upstream patch state after careful update:
 
-- Commit: `65e21d69c fix: keep incomplete goals active`
+- Local rebased commit: `1a074c8b2 fix: keep incomplete goals active`
+- Upstream base checked: `origin/main` at `faa13e49f docs(web): fix SearXNG env configuration`
+- Upstream equivalent behavior search: no equivalent `explicit_incomplete` / incomplete-response override found before rebase.
+- Upstream PR opened: `https://github.com/NousResearch/hermes-agent/pull/21689`
 - Files:
   - `/home/shan/.hermes/hermes-agent/hermes_cli/goals.py`
   - `/home/shan/.hermes/hermes-agent/tests/hermes_cli/test_goals.py`
-- Test evidence: `27 passed in 2.00s` for goal tests.
-- Durable patch copy: `/home/shan/.hermes/patches/hermes-goal-incomplete-override-65e21d69c.patch`
+- Test evidence after rebase: `python -m pytest tests/hermes_cli/test_goals.py -o 'addopts=' -q` → `36 passed`; `python -m compileall -q hermes_cli/goals.py` passed.
+- Durable patch copies:
+  - `/home/shan/.hermes/patches/hermes-goal-incomplete-override-65e21d69c.patch`
+  - `/home/shan/.hermes/patches/hermes-goal-incomplete-override-rebased-*.patch`
 
-Risk: `/home/shan/.hermes/hermes-agent` is currently `ahead 1, behind 457`, so a normal upstream update/rebase may conflict. A clean upstream PR/issue is warranted because this is a real bug: an explicit incomplete/blocker report should not be judged as mission achieved.
+Risk is reduced but not eliminated: the local checkout is now current with upstream plus one PR branch commit. If upstream merges equivalent behavior later, drop the local patch after verifying the regression test/behavior.
 
 Recommended update posture:
 
@@ -229,6 +305,21 @@ Recommended update posture:
 Unrelated local Hermes state to preserve:
 
 - `/home/shan/.hermes/hermes-agent/hermes_cli/profiles.py` is modified but not part of the `/goal` fix. Do not accidentally overwrite or commit it without inspecting ownership.
+
+## Saved `/goal` command for this control-plane thread
+
+After a `/compress` or gateway restart, use this short command to resume HomeMatch efficiently without rehydrating the whole Telegram history:
+
+```text
+/goal Use this Telegram thread only as the HomeMatch control plane. Treat reports/home-match-parallel-kanban-execution-plan.md as canonical, with live HTML at http://100.79.222.28:8767/home-match-parallel-kanban-execution-plan.html and status at http://100.79.222.28:8767/home-match-revival-status.html. Keep Phase 0/1 strict gate active: do not dispatch or implement Phase 2+ until reports/home-match-revival/phase0-phase1-closure-matrix.md proves both Phase 0 and Phase 1 are 100% clean. Continue by updating artifacts/Kanban first, then run bounded worker/worktree slices only when safe and necessary. Use concise Telegram deltas, no giant pasted logs, no secrets, no external side effects without approval.
+```
+
+Context-overhang procedure:
+
+1. Update/commit artifacts first.
+2. Run `/compress` in Telegram.
+3. Use the saved `/goal` command above.
+4. Workers get only path/task packets, not the whole chat.
 
 ## Execution sequence from here
 
