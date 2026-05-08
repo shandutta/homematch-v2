@@ -1,18 +1,9 @@
 import { describe, beforeEach, expect, jest, test } from '@jest/globals'
 
 const createServiceClientMock = jest.fn()
-const factoryCreateClientMock = jest.fn()
 
 jest.mock('@/lib/supabase/server', () => ({
   createServiceClient: (...args: unknown[]) => createServiceClientMock(...args),
-}))
-
-jest.mock('@/lib/supabase/factory', () => ({
-  SupabaseClientFactory: {
-    getInstance: () => ({
-      createClient: (...args: unknown[]) => factoryCreateClientMock(...args),
-    }),
-  },
 }))
 
 describe('getServiceRoleClient', () => {
@@ -20,7 +11,7 @@ describe('getServiceRoleClient', () => {
     jest.clearAllMocks()
   })
 
-  test('uses the gated server service client instead of the standalone factory path', async () => {
+  test('uses the gated server service client', async () => {
     const gatedClient = { client: 'gated-service-role' }
     createServiceClientMock.mockResolvedValue(gatedClient)
 
@@ -30,7 +21,6 @@ describe('getServiceRoleClient', () => {
 
     await expect(getServiceRoleClient()).resolves.toBe(gatedClient)
     expect(createServiceClientMock).toHaveBeenCalledTimes(1)
-    expect(factoryCreateClientMock).not.toHaveBeenCalled()
   })
 
   test('propagates auth-gate errors so callers see Unauthorized', async () => {

@@ -1,6 +1,6 @@
 # Phase 0/1 Closure Matrix — Strict OG Gate
 
-Generated: 2026-05-08T07:50Z
+Generated: 2026-05-08T07:57Z
 
 ## Verdict
 
@@ -16,8 +16,8 @@ Generated: 2026-05-08T07:50Z
 
 ## Phase 1 closure rollup
 
-- Closed: httpOnly Supabase cookies; Maps auth hardening; local dev guard bypass; Docker optional decision; COOP/CORP; properties RLS read-policy hardening; SECURITY DEFINER search-path hardening; property stats RPC; interaction uniqueness migration; middleware matcher exclusions; successful GET route cache-policy classification; M5 route-scoped limiter coverage for identified mutating/admin gaps; M6 JSON API error standardization route conversion; M6/M10 429 guard reconciliation; M7 middleware AbortController timeout cleanup; M8 external-call timeout coverage for all Next.js API route outbound fetches; M9 dead server-action cleanup; M10 duplicate rate-limit system consolidation; M11 test-only export cleanup; M12 duplicate RPC wrapper cleanup; M13 dead Zillow factory cleanup; M14 unused CouplesMiddleware cleanup; M15 stale neighborhood TODO cleanup; service-role-client bypass gate; factory async-stub removal; service-client cache/key-rotation hardening; Supabase password policy alignment; user-profile delete RLS policy; JSONB GIN indexes; partial schema safety constraints; auth client consolidation slice; interactions service-role fallback removal; duplicate auth getUser monkey-patch removal; DB P1.2 dashboard query in-flight dedupe; DB P1.3 CouplesRealtime mutual-like RPC enrichment; DB P1.4 Phase 1 rollback/DOWN static coverage; DB P2.3/P2.4 inline DB typing cleanup for realtime payloads and dashboard select columns.
-- Open: E2E auth lifecycle; remaining dependency cleanup decision; duplicate Supabase factory consolidation; pg_trgm text-search index if still required; README/local-dev validation cleanup.
+- Closed: httpOnly Supabase cookies; Maps auth hardening; local dev guard bypass; Docker optional decision; COOP/CORP; properties RLS read-policy hardening; SECURITY DEFINER search-path hardening; property stats RPC; interaction uniqueness migration; middleware matcher exclusions; successful GET route cache-policy classification; M5 route-scoped limiter coverage for identified mutating/admin gaps; M6 JSON API error standardization route conversion; M6/M10 429 guard reconciliation; M7 middleware AbortController timeout cleanup; M8 external-call timeout coverage for all Next.js API route outbound fetches; M9 dead server-action cleanup; M10 duplicate rate-limit system consolidation; M11 test-only export cleanup; M12 duplicate RPC wrapper cleanup; M13 dead Zillow factory cleanup; M14 unused CouplesMiddleware cleanup; M15 stale neighborhood TODO cleanup; service-role-client bypass gate; factory async-stub removal; service-client cache/key-rotation hardening; Supabase password policy alignment; user-profile delete RLS policy; JSONB GIN indexes; partial schema safety constraints; auth client consolidation slice; interactions service-role fallback removal; duplicate auth getUser monkey-patch removal; DB P1.2 dashboard query in-flight dedupe; DB P1.3 CouplesRealtime mutual-like RPC enrichment; DB P1.4 Phase 1 rollback/DOWN static coverage; DB P2.3/P2.4 inline DB typing cleanup for realtime payloads and dashboard select columns; duplicate Supabase factory consolidation.
+- Open: E2E auth lifecycle; remaining dependency cleanup decision; pg_trgm text-search index if still required; README/local-dev validation cleanup.
 - Blocked/decision-needed: real service-role RBAC model; durable rate-limiter decision; production email confirmation/CAPTCHA policy; `.env.prod` secret handling; numeric constraint semantics; DB reset/lint/integration environment; disputed-route email/profile field exposure decision. See `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md` for the concise owner-decision register.
 
 ## Decision-needed register
@@ -45,3 +45,4 @@ Generated: 2026-05-08T07:50Z
 - `reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md`
 - `reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md`
 - `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md`
+- `reports/home-match-revival/p1-duplicate-supabase-factory-closure-2026-05-08.md`
