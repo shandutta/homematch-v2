@@ -144,7 +144,7 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 00:00 UTC</code>. Phase
+        Live Kanban status. Updated: <code>2026-05-08 00:19 UTC</code>. Phase
         0/1 reconciliation complete; bounded Phase 1 DB/RLS/security and Phase 2
         SEO/auth-cookie hardening slices verified.
       </p>
@@ -166,7 +166,7 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 26 · running 0 · blocked 6 · ready 0 · todo 2
+            done 27 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
@@ -294,6 +294,21 @@
             against the row-loading implementation; static migration test failed
             first with missing migration; both now pass with resource-limited
             type-check.
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <strong>Service-role client gate:</strong> Routed
+            <code>getServiceRoleClient()</code> through the shared
+            <code>createServiceClient()</code> path so standalone service-role
+            usage now goes through the existing authorization check instead of
+            the factory bypass.
+          </li>
+          <li>
+            <strong>Verification:</strong> targeted unit test failed first
+            against the factory path, then passed after the gate was wired;
+            resource-limited type-check passed.
           </li>
         </ul>
       </section>
@@ -583,6 +598,12 @@
               <td><span class="pill good">done</span></td>
             </tr>
             <tr>
+              <td><code>t_bd7dd02f</code></td>
+              <td>P1.R8 service role client auth gate</td>
+              <td>backend-eng</td>
+              <td><span class="pill good">done</span></td>
+            </tr>
+            <tr>
               <td><code>t_4d997654</code></td>
               <td>P2 frontend design refinement pass</td>
               <td>frontend-eng</td>
@@ -643,6 +664,16 @@
       <section>
         <h2>What changed in this run</h2>
         <ul>
+          <li>
+            ✅ Routed <code>getServiceRoleClient()</code> through the shared
+            gated <code>createServiceClient()</code> path, closing the standalone
+            service-role factory bypass identified as P1.8.
+          </li>
+          <li>
+            ✅ Added TDD coverage that failed first against the bypass and now
+            confirms the gated path is used; targeted Jest, Prettier check, and
+            resource-limited <code>pnpm type-check</code> passed.
+          </li>
           <li>
             ✅ Added repo-only <code>get_property_stats()</code> SQL aggregation
             RPC and switched
