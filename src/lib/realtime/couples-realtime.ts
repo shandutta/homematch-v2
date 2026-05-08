@@ -5,11 +5,8 @@ import type { AppDatabase } from '@/types/app-database'
 type PropertyInteractionPayload =
   AppDatabase['public']['Tables']['user_property_interactions']['Row']
 
-type RealtimeMutualLikePayload = {
-  has_mutual_like: boolean | null
-  partner_name: string | null
-  property_address: string | null
-}
+type RealtimeMutualLikePayload =
+  AppDatabase['public']['Functions']['get_realtime_mutual_like_payload']['Returns'][number]
 
 interface CouplesRealtimeCallbacks {
   onMutualLike?: (data: {
