@@ -145,7 +145,7 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08T07:50Z M6/M10 429 guard reconciled</code>. Strict Phase 0/1 closure
+        <code>2026-05-08T12:34Z P0 inventory/traversal fan-in reconciled</code>. Strict Phase 0/1 closure
         mode remains active. This status page now points to the canonical
         control-plane plan and treats older later-phase sections below as
         historical, not active authorization.
@@ -175,18 +175,16 @@
 
 
       <section>
-        <h2>Latest control-plane action — M6/M10 429 guard reconciliation</h2>
+        <h2>Latest control-plane action - P0 inventory/traversal fan-in</h2>
         <p>
-          <span class="pill good">TESTED FIX</span> The failing <code>error-standardization.test.ts</code> guard was classified as stale after M10 consolidation and updated to verify the shared standardized 429 path.
+          <span class="pill warn">ACTIVE GATE</span> Reconciled the recovered static route/API inventory and site traversal acceptance matrix into the canonical Phase 0/1 closure posture.
         </p>
         <ul>
-          <li>Classification: no production 429 regression found; the four flagged callers now delegate to <code>checkRateLimit(...)</code>.</li>
-          <li>Shared implementation evidence: <code>src/lib/middleware/rateLimiter.ts</code> returns <code>ApiErrorHandler.tooManyRequests(...)</code> with rate-limit headers.</li>
-          <li>Test update: <code>__tests__/unit/api/error-standardization.test.ts</code> now guards both the shared helper and the route/admin delegation path.</li>
-          <li>Verification: resource-limited targeted Jest passed 30/30 for <code>__tests__/unit/api/error-standardization.test.ts</code>.</li>
-          <li>Phase 0 remains open on authenticated probes, metro-boundaries public-route behavior, and env-prod policy.</li>
-          <li>Phase 1 remains open/blocked on E2E auth, dependency cleanup, duplicate Supabase factory consolidation, pg_trgm decision, README/local-dev validation cleanup, and named owner decisions.</li>
-          <li>Phase 2+ implementation remains held until Phase 0/1 are 100% clean or Shan approves a written gate exception.</li>
+          <li>Inventory artifact: <code>reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md</code> records 28 route-handler files, 26 API route handlers, 29 page routes, 2 metadata routes, 1 server-action file, middleware, and 288 scanned tests.</li>
+          <li>Traversal artifact: <code>reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md</code> splits public, protected-redirect, authenticated, and API probe acceptance classes.</li>
+          <li>Gate verdict: Phase 0/1 are still not closed. The artifacts clarify acceptance scope but do not replace authenticated live/browser probes, full public traversal, protected redirect checks, safe API probes, or owner decisions.</li>
+          <li>Next approvals: seeded non-production auth/session, local/test DB reset and integration path, service-role RBAC authority, durable rate-limit storage, production signup verification settings, demo/internal surface disposition, and mocked or approved paid/external endpoint checks.</li>
+          <li>Canonical matrix: <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code>.</li>
         </ul>
       </section>
 
@@ -976,21 +974,29 @@
         </p>
         <ul>
           <li>
-            <strong>Phase 0 open/block:</strong> integration tests, API live
-            probe coverage, browser/auth traversal, cron-secret endpoint policy,
-            .env.prod guard precision, test-suite quality triage.
+            <strong>Phase 0 open/block:</strong> full public traversal, protected
+            redirect traversal, authenticated browser traversal, API live probe
+            execution, and paid/external/admin endpoint checks that need mocks or
+            explicit approval. Static inventory and traversal criteria are now
+            materialized, not closure-grade execution evidence.
           </li>
           <li>
-            <strong>Phase 1 open/block:</strong> real service-role RBAC,
-            DB/RLS/migration cleanup, middleware/API hardening, auth policy
-            decisions, dependency cleanup decision, remaining local-dev
-            validation blockers.
+            <strong>Phase 1 open/block:</strong> real service-role RBAC, durable
+            rate-limit storage, production signup verification settings,
+            DB/RLS/migration integration environment, and demo/internal surface
+            keep/hide/delete decisions.
           </li>
           <li>
             <strong>Artifacts:</strong>
             <code>reports/home-match-revival/phase0-closure-scout.md</code>,
             <code
               >reports/home-match-revival/phase1-remediation-closure-scout.md</code
+            >,
+            <code
+              >reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md</code
+            >,
+            <code
+              >reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md</code
             >,
             <code
               >reports/home-match-revival/phase0-phase1-closure-matrix.md</code

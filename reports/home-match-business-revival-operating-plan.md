@@ -1,6 +1,6 @@
 # HomeMatch Business Revival Operating Plan
 
-Updated: 2026-05-08T07:57Z
+Updated: 2026-05-08T12:34Z
 
 ## Executive intent
 
@@ -22,9 +22,11 @@ This plan expands the original scope beyond the current visible Kanban count. Th
 
 Phase 0 and Phase 1 still gate implementation-heavy later work. That does not mean the broader plan waits. It means later-phase implementation is held while scouts can safely plan, audit, and create acceptance criteria.
 
-- Phase 0: prove the app works end-to-end, all routes/endpoints known, site traversed, live/local gaps explicit.
-- Phase 1: clean architecture, auth boundary, API/middleware performance, DB shape, local dev, test harness, and dead code.
+- Phase 0: prove the app works end-to-end, all routes/endpoints known, site traversed, live/local gaps explicit. The current static inputs are `reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` and `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md`. They clarify the surface area but do not close the gate without public traversal, protected redirects, authenticated traversal, and safe API probe evidence.
+- Phase 1: clean architecture, auth boundary, API/middleware performance, DB shape, local dev, test harness, and dead code. Repo-local remediations are broad, but owner decisions and environment-backed integration/E2E proof remain open.
 - Phase 2+: UX/product/business upgrades, gated until Phase 0/1 are clean or Shan approves a written exception.
+
+Current approval blockers: non-production seeded auth/session, local/test DB reset and integration path, service-role RBAC authority, durable rate-limit storage, production signup verification settings, keep/hide/delete decisions for demo/internal surfaces, and mocked or approved paid/external endpoint checks.
 
 ## Full workstreams from the original instruction
 

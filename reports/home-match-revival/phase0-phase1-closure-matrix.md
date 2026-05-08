@@ -1,15 +1,23 @@
 # Phase 0/1 Closure Matrix — Strict OG Gate
 
-Generated: 2026-05-08T11:17Z
+Generated: 2026-05-08T12:34Z
 
 ## Verdict
 
 **Do not advance to Phase 2.** Phase 0 and Phase 1 are both still short of 100% closure.
 
+## 2026-05-08 P0 inventory/traversal fan-in
+
+Newly recovered P0 artifacts are reconciled here as closure evidence, not as a gate pass:
+
+- `reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` is the current static route/API inventory. It records 28 route-handler files, 26 API route handlers, 29 page routes, 2 metadata routes, 1 server-action file, middleware, and 288 scanned tests. It preserves action labels for every route/API and flags paid/external/admin surfaces that must stay approval-gated.
+- `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md` is the current traversal acceptance matrix. It separates public no-credential checks, protected unauthenticated redirect checks, authenticated seeded-session checks, and API probe classes. It records that only `/` and `/cookies` had prior real local browser evidence; the full public matrix, protected redirect matrix, authenticated traversal, and API live probes remain incomplete.
+- These artifacts make the P0 surface area materially clearer, but they do not close P0 because the missing evidence is execution evidence: authenticated live/browser probes, complete public traversal, protected redirect traversal, safe API probes, and owner-approved seeded auth/session decisions.
+
 ## Phase 0 closure rollup
 
 - Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction; cron-secret endpoint opacity for missing-secret route behavior; local Supabase proxy disabled-by-default and loopback-target allowlist guard; `.env.prod` guard precision via tracked non-secret production-host config plus no-secret local-dev documentation.
-- Newly materialized: full static route/API inventory matrix and site traversal acceptance matrix are preserved in repo reports from Kanban tasks `t_84ff95e6` and `t_5379ec6b`.
+- Reconciled fan-in: full static route/API inventory matrix and site traversal acceptance matrix are preserved in repo reports from Kanban tasks `t_84ff95e6` and `t_5379ec6b`; they are canonical P0 acceptance inputs but not closure-grade live evidence.
 - Partial / not closed: API live probe execution; browser traversal execution.
 - Closed in follow-up P0 metro-boundaries no-credential slice: `/api/maps/metro-boundaries?metro=bay-area` no longer calls the service-role client and instead uses the public anon API client path for the read-only neighborhoods query, preventing service-role authorization failures for no-credential public requests. Evidence: RED `systemd-run --user --scope -p MemoryMax=2G -p CPUQuota=200% pnpm exec jest __tests__/unit/app/api/maps/metro-boundaries/route.test.ts --runInBand` failed with `Unauthorized access to service role client`; GREEN same command passed 1/1; resource-limited `systemd-run --user --scope -p MemoryMax=3G -p CPUQuota=200% pnpm type-check` passed.
 - Remaining open/blocking evidence from 2026-05-08 live slice: authenticated browser/API probes remain blocked by missing approved test credentials/session. `.env.prod` remains intentionally absent/untracked for local dev, and guard precision now comes from `config/supabase-production-hosts.json` plus `supabase.*` host-pattern checks.
@@ -39,10 +47,20 @@ Generated: 2026-05-08T11:17Z
 | D6  | DB reset/lint/integration environment        | DB reset/lint/rollback/integration validation lack an approved local Supabase/Docker or safeguarded remote-test path.                                                                                    |
 | D7  | Disputed-route email/profile exposure        | Closed repo-side for Phase 0/1: `/api/couples/disputed` no longer selects or returns partner email, and keeps only partner id/display name plus interaction metadata needed by the current UX.           |
 
+## Next blocker / approval list
+
+1. Approve a non-production seeded auth/session path for authenticated browser traversal and API auth smoke execution. Preferred order: local Supabase/test DB seeded users, disposable preview/local test account, or temporary browser session cookie for a test-only account.
+2. Approve a safe local/test DB reset, lint, rollback, and integration-test path. Without this, DB/RLS/migration closure remains code/static only.
+3. Decide the production service-role RBAC authority model. `user_profiles.role === 'admin'` remains placeholder-grade authority until replaced or explicitly accepted.
+4. Choose and provision the durable production rate-limit storage provider, or explicitly accept the in-memory-only launch risk.
+5. Confirm production signup verification policy in the external Supabase/project settings: email confirmation and CAPTCHA must not launch in a disabled/absent state unless Shan approves the exception.
+6. Decide keep, hide, restrict, or delete for internal/demo surfaces before launch: `/dashboard/vibes-test`, `/validation`, `/demo/ads`, and `/sponsor-mockups`.
+7. Approve or mock any paid/external route checks before execution: Google Maps, Zillow/RapidAPI, OpenRouter/LLM, email/notification side effects, cron/admin ingestion or generation endpoints.
+
 ## Gate decision
 
-- Phase 0: **not 100% complete**.
-- Phase 1: **not 100% complete**.
+- Phase 0: **not 100% complete**. Static inventory/traversal criteria are materially improved; live/browser/API execution evidence remains missing.
+- Phase 1: **not 100% complete**. Repo-local remediations are broad, but owner decisions and environment-backed integration/E2E proof remain open.
 - Phase 2/3/4/5/6: **held** until the open/block items are resolved or Shan explicitly approves a written gate exception.
 
 ## Source artifacts
