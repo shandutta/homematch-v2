@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
 import type { Property, PropertyType } from '@/lib/schemas/property'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 interface GenerateVibesRequest {
   propertyIds?: string[]
@@ -379,7 +380,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     .select('*', { count: 'exact', head: true })
     .not('images', 'is', null)
 
-  return NextResponse.json({
+  return noStoreJson({
     ok: true,
     stats: {
       totalProperties: propertiesCount || 0,

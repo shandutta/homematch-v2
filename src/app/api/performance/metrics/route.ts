@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 interface MetricsStoreEntry {
   metrics: Array<{
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     // 2. Send to monitoring service (Sentry, DataDog, etc.)
     // 3. Trigger alerts for critical performance issues
 
-    return NextResponse.json({
+    return noStoreJson({
       success: true,
       received: validatedData.metrics.length,
     })
@@ -163,7 +164,7 @@ export async function GET(request: NextRequest) {
   // Calculate aggregates
   const aggregates = calculateAggregates(filtered)
 
-  return NextResponse.json({
+  return noStoreJson({
     total: filtered.length,
     metrics: filtered.slice(-100).map(({ ip: _ip, ...rest }) => rest), // Return last 100, excluding IP
     aggregates,

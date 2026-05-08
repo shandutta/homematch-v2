@@ -41,3 +41,27 @@ M3 is **partial**, not closed globally. Authenticated/user-specific successful G
 - error responses: explicit no-store/no-cache policy where appropriate
 
 Phase 0 and Phase 1 are still not 100% closed. Continue strict Phase 0/1 remediation only; keep Phase 2+ held.
+
+
+## Expanded closure slice — public/admin/metrics GET classification
+
+Status: **M3 closed for successful GET route classification**.
+
+Additional routes covered:
+
+- `src/app/api/admin/generate-vibes/route.ts`
+- `src/app/api/maps/script/route.ts`
+- `src/app/api/performance/metrics/route.ts`
+- `src/app/api/zillow/random-image/route.ts`
+- `src/app/api/health/route.ts` explicit no-store assertion
+- `src/app/api/maps/metro-boundaries/route.ts` public cache assertion
+- `src/app/api/maps/proxy-script/route.ts` public cache assertion
+
+Verification:
+
+- RED: `hm-cache3-red-1778206342.service` failed on missing helper adoption for the remaining dynamic JSON routes.
+- GREEN: `hm-cache3-test-final2-1778206477.service` passed cache-control + middleware targeted Jest.
+- Type-check: `hm-cache3-typecheck2-1778206481.service` passed.
+- Diff check: passed.
+
+M3 no longer blocks Phase 1 for successful GET route classification. Any remaining error-response headers belong with M6 API error standardization.

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 type ZillowCard = {
   zpid: string
@@ -164,5 +165,5 @@ export async function GET() {
   }
 
   // If only one card, return single card for backward-compat; else return array
-  return NextResponse.json(cards.length === 1 ? cards[0] : cards)
+  return noStoreJson(cards.length === 1 ? cards[0] : cards)
 }
