@@ -12,8 +12,24 @@ import {
   buildSupabaseSessionCookieOptions,
 } from '../../middleware'
 
+const mockGetUser = jest.fn()
+
 jest.mock('@supabase/ssr', () => ({
-  createServerClient: jest.fn((_url, _key, options) => {
+  createServerClient: jest.fn(),
+}))
+
+const makeRequest = (path: string, init?: RequestInit) =>
+  new NextRequest(new URL(path, 'http://localhost:3000'), init)
+
+const mockedCreateServerClient = jest.mocked(createServerClient)
+
+const installDefaultSupabaseMiddlewareMock = () => {
+  mockGetUser.mockResolvedValue({
+    data: { user: null },
+    error: null,
+  })
+
+  mockedCreateServerClient.mockImplementation((_url, _key, options) => {
     options.cookies.setAll([
       {
         name: 'sb-localhost-auth-token',
@@ -24,19 +40,15 @@ jest.mock('@supabase/ssr', () => ({
 
     return {
       auth: {
-        getUser: jest.fn(async () => ({
-          data: { user: null },
-          error: null,
-        })),
+        getUser: mockGetUser,
       },
-    }
-  }),
-}))
+    } as ReturnType<typeof createServerClient>
+  })
+}
 
-const makeRequest = (path: string) =>
-  new NextRequest(new URL(path, 'http://localhost:3000'))
-
-const mockedCreateServerClient = jest.mocked(createServerClient)
+beforeEach(() => {
+  installDefaultSupabaseMiddlewareMock()
+})
 
 describe('middleware auth configuration guard', () => {
   const originalEnv = { ...process.env }
@@ -78,6 +90,61 @@ describe('middleware auth configuration guard', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+  })
+})
+
+describe('middleware API fast path', () => {
+  const originalEnv = { ...process.env }
+
+  beforeEach(() => {
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+      NODE_ENV: 'production',
+    }
+    mockedCreateServerClient.mockClear()
+    mockGetUser.mockClear()
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+  })
+
+  it('lets API handlers own auth without creating a Supabase middleware client', async () => {
+    const response = await middleware(
+      makeRequest('/api/foo', {
+        headers: {
+          cookie: 'sb-localhost-auth-token=mock-session',
+        },
+      })
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('X-Frame-Options')).toBe('DENY')
+    expect(response.headers.get('Cross-Origin-Opener-Policy')).toBe(
+      'same-origin'
+    )
+    expect(mockedCreateServerClient).not.toHaveBeenCalled()
+    expect(mockGetUser).not.toHaveBeenCalled()
+  })
+
+  it('still redirects protected pages through Supabase auth when no user is present', async () => {
+    const response = await middleware(
+      makeRequest('/dashboard?tab=liked', {
+        headers: {
+          cookie:
+            'sb-localhost-example-supabase-co-anon-key-auth-token=mock-session',
+        },
+      })
+    )
+
+    expect(mockedCreateServerClient).toHaveBeenCalledTimes(1)
+    expect(mockGetUser).toHaveBeenCalledTimes(1)
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe(
+      'http://localhost:3000/login?redirectTo=%2Fdashboard%3Ftab%3Dliked'
+    )
   })
 })
 

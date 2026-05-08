@@ -267,8 +267,19 @@ Until then, keep the in-memory limiter as a local guardrail, not a distributed a
 - src/app/api/users/avatar/route.ts
 - src/app/api/couples/disputed/route.ts
 
+## Closure evidence — API middleware fast path
+
+Task `t_1087ad80` implemented the first repo-local slice from this audit:
+
+- `middleware.ts` now returns `applySecurityHeaders(NextResponse.next({ request }))` for `/api/*` before constructing the Supabase SSR middleware client.
+- API handlers still own `requireUserFromRequest`, route rate limiting, and cache policy behavior.
+- Protected page behavior remains routed through the existing page-auth middleware path.
+- Targeted RED evidence: `systemd-run --user --scope -p MemoryMax=2G -p CPUQuota=200% pnpm exec jest __tests__/unit/middleware.test.ts --runInBand --testNamePattern='middleware API fast path'` failed because `/api/foo` still called `createServerClient`.
+- Targeted GREEN evidence: the same command passed 2/2 after the fast path.
+- Regression evidence: `systemd-run --user --scope -p MemoryMax=2G -p CPUQuota=200% pnpm exec jest __tests__/unit/middleware.test.ts --runInBand` passed 9/9, and `systemd-run --user --scope -p MemoryMax=3G -p CPUQuota=200% pnpm type-check` passed.
+
 ## Non-goals observed
 
-- No code changed.
-- No tests run, because this was an architecture audit, not an implementation task.
+- Original audit task made no code changes and ran no tests because it was an architecture audit, not an implementation task.
+- Implementation task `t_1087ad80` changed only the bounded API middleware fast-path slice.
 - No browser swarms, deploys, paid APIs, real user data, or external dashboards touched.

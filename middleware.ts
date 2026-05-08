@@ -108,6 +108,10 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(supabaseResponse)
   }
 
+  if (isApiRoute) {
+    return applySecurityHeaders(supabaseResponse)
+  }
+
   if (!hasSupabasePublicConfig()) {
     if (isProtectedPath(pathname) && !isApiRoute) {
       const url = request.nextUrl.clone()
