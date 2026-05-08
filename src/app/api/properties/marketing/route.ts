@@ -64,7 +64,10 @@ const MARKETING_CARDS: MarketingCard[] = [
 ]
 
 async function getMarketingProperties(): Promise<NextResponse> {
-  return NextResponse.json(MARKETING_CARDS, { status: 200 })
+  return NextResponse.json(MARKETING_CARDS, {
+    status: 200,
+    headers: { 'Cache-Control': 'public, max-age=3600' },
+  })
 }
 
 export const GET = withPerformanceTracking(
