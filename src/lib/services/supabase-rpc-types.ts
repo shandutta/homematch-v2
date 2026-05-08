@@ -417,45 +417,6 @@ export function createTypedRPC(
   }
 }
 
-// ============================================================================
-// RPC HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Type-safe RPC function caller with error handling
- */
-type RPCFunctionName = keyof TypedSupabaseRPC &
-  keyof AppDatabase['public']['Functions']
-type RPCReturn<TFunctionName extends RPCFunctionName> = RPCResponse<
-  FunctionReturn<TFunctionName>
->
-
-export async function callRPC<TFunctionName extends RPCFunctionName>(
-  supabase: SupabaseClient<AppDatabase>,
-  functionName: TFunctionName,
-  params: AppDatabase['public']['Functions'][TFunctionName]['Args']
-): Promise<RPCReturn<TFunctionName>> {
-  const createFallback = (details: string): RPCReturn<TFunctionName> => {
-    const fallback: RPCReturn<TFunctionName> = {
-      data: null,
-      error: {
-        message: `RPC call to ${String(functionName)} failed`,
-        details,
-      },
-    }
-    return fallback
-  }
-
-  try {
-    const { data, error } = await supabase.rpc(functionName, params)
-    return { data, error }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error'
-    return createFallback(errorMessage)
-  }
-}
-
 /**
  * Checks if an RPC function exists in the database
  * Useful for graceful degradation when functions are not yet implemented

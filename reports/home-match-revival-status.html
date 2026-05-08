@@ -144,8 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:46 UTC</code>. Strict
-        Phase 0/1 closure mode: M7, M9, M13, and M14 closed repo-side in this run;
+        Live Kanban status. Updated: <code>2026-05-08 03:49 UTC</code>. Strict
+        Phase 0/1 closure mode: M7, M9, M12, M13, and M14 closed repo-side in this run;
         continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
@@ -1040,6 +1040,17 @@
     <li>Removed <code>src/lib/services/couples-middleware.ts</code> and its dedicated unit test, preserving direct <code>CouplesService</code> coverage.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m14-couples-red-1778211904.service</code>; targeted couples Jest passed in <code>hm-m14-couples-green-1778211926.service</code>; resource-limited type-check passed in <code>hm-m14-couples-typecheck-1778211931.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m12-rpc-wrapper-2026-05-08">
+  <h2>Phase 0/1 remediation — M12 duplicate RPC wrapper cleanup</h2>
+  <p><strong>Status:</strong> M12 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Removed the duplicate exported <code>callRPC</code> helper from <code>src/lib/services/supabase-rpc-types.ts</code>.</li>
+    <li>Preserved typed RPC creation/introspection and the canonical wrapper utilities in <code>src/lib/services/utils/rpc-wrapper.ts</code>.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m12-rpc-red-1778212026.service</code>; targeted static Jest passed in <code>hm-m12-rpc-green-1778212063.service</code>; resource-limited type-check passed in <code>hm-m12-rpc-typecheck-1778212067.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, test-only export cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>
