@@ -10,8 +10,24 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
+const notFoundMock = jest.fn()
+
+jest.mock('next/navigation', () => ({
+  __esModule: true,
+  notFound: (...args: unknown[]) => notFoundMock(...args),
+}))
+
 describe('demo surface production gate', () => {
   const originalPreview = process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW
+
+  beforeEach(() => {
+    // Jest config sets resetMocks: true which restores notFoundMock to a
+    // no-op between tests, so re-establish the throwing implementation that
+    // mirrors next/navigation's real notFound() control-flow throw here.
+    notFoundMock.mockImplementation(() => {
+      throw new Error('NEXT_NOT_FOUND')
+    })
+  })
 
   afterEach(() => {
     jest.resetModules()
@@ -42,6 +58,50 @@ describe('demo surface production gate', () => {
     expect(isInternalPreviewEnabled()).toBe(true)
   })
 
+  it.each([
+    ['TRUE'],
+    ['True'],
+    ['1'],
+    ['yes'],
+    ['on'],
+    ['false'],
+    [''],
+    [' true '],
+  ])(
+    'rejects non-canonical env value %p — only the literal string "true" enables preview',
+    async (value) => {
+      process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW = value
+
+      const { isInternalPreviewEnabled } = await import(
+        '@/lib/routing/internal-preview'
+      )
+
+      expect(isInternalPreviewEnabled()).toBe(false)
+    }
+  )
+
+  it('requireInternalPreviewAccess invokes notFound() when the gate is disabled', async () => {
+    delete process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW
+
+    const { requireInternalPreviewAccess } = await import(
+      '@/lib/routing/internal-preview'
+    )
+
+    expect(() => requireInternalPreviewAccess()).toThrow('NEXT_NOT_FOUND')
+    expect(notFoundMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('requireInternalPreviewAccess is a no-op when the gate is explicitly enabled', async () => {
+    process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW = 'true'
+
+    const { requireInternalPreviewAccess } = await import(
+      '@/lib/routing/internal-preview'
+    )
+
+    expect(() => requireInternalPreviewAccess()).not.toThrow()
+    expect(notFoundMock).not.toHaveBeenCalled()
+  })
+
   it('uses notFound() in the internal preview access guard', () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), 'src/lib/routing/internal-preview.ts'),
@@ -56,20 +116,26 @@ describe('demo surface production gate', () => {
     ['src/app/demo/ads/page.tsx', '/demo/ads'],
     ['src/app/sponsor-mockups/page.tsx', '/sponsor-mockups'],
     ['src/app/validation/page.tsx', '/validation'],
-  ])('%s uses the internal preview access guard for %s', (relativePath) => {
+  ])('%s actually invokes the internal preview access guard for %s', (relativePath) => {
     const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
 
-    expect(source).toContain('requireInternalPreviewAccess')
+    expect(source).toMatch(
+      /from ['"]@\/lib\/routing\/internal-preview['"]/
+    )
+    expect(source).toMatch(/requireInternalPreviewAccess\s*\(\s*\)/)
     expect(source).not.toContain('process.env.NODE_ENV')
   })
 
-  it('src/app/dashboard/vibes-test/layout.tsx gates the /dashboard/vibes-test subtree', () => {
+  it('src/app/dashboard/vibes-test/layout.tsx invokes the gate for the /dashboard/vibes-test subtree', () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), 'src/app/dashboard/vibes-test/layout.tsx'),
       'utf8'
     )
 
-    expect(source).toContain('requireInternalPreviewAccess')
+    expect(source).toMatch(
+      /from ['"]@\/lib\/routing\/internal-preview['"]/
+    )
+    expect(source).toMatch(/requireInternalPreviewAccess\s*\(\s*\)/)
     expect(source).not.toContain('process.env.NODE_ENV')
   })
 
@@ -85,5 +151,20 @@ describe('demo surface production gate', () => {
       const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
       expect(source).not.toContain("process.env.NODE_ENV === 'production'")
     }
+  })
+
+  it.each([
+    ['src/app/demo/ads/page.tsx'],
+    ['src/app/sponsor-mockups/page.tsx'],
+  ])('%s declares noindex/nofollow metadata as defense-in-depth', (relativePath) => {
+    const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
+
+    // Page-level robots metadata is a defense-in-depth layer behind the
+    // requireInternalPreviewAccess() runtime gate so crawlers that hit the
+    // route while the env gate is open (local dev) still see noindex.
+    // /validation is already covered by middleware-protected paths and the
+    // /dashboard subtree by the /dashboard robots disallow rule.
+    expect(source).toMatch(/robots:\s*\{[^}]*index:\s*false/)
+    expect(source).toMatch(/robots:\s*\{[^}]*follow:\s*false/)
   })
 })
