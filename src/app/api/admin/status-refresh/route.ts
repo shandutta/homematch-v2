@@ -103,16 +103,21 @@ async function fetchDetails(zpid: string) {
 
 export async function POST(req: Request) {
   try {
-    if (!CRON_SECRET) {
-      return ApiErrorHandler.serverError('CRON secret not set')
-    }
-    if (!RAPIDAPI_KEY) {
-      return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY missing')
-    }
-
     const url = new URL(req.url)
     const headerSecret = req.headers.get('x-cron-secret')
     const querySecret = url.searchParams.get('cron_secret')
+
+    if (
+      !CRON_SECRET ||
+      (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET)
+    ) {
+      return ApiErrorHandler.unauthorized('unauthorized cron')
+    }
+
+    if (!RAPIDAPI_KEY) {
+      return ApiErrorHandler.serviceUnavailable('upstream unavailable')
+    }
+
     const maxItemsInput = Number(url.searchParams.get('limit'))
     const maxItems = Math.max(
       1,
@@ -148,10 +153,6 @@ export async function POST(req: Request) {
       DEADLINE_BUFFER_MS,
       Math.max(1_000, Math.floor(maxRuntimeMs * 0.05))
     )
-
-    if (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET) {
-      return ApiErrorHandler.unauthorized('unauthorized cron')
-    }
 
     const rateLimitResponse = await rateLimitAdminRoute(
       req,
