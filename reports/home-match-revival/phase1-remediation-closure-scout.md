@@ -1,6 +1,6 @@
 # Phase 1 Remediation Closure Scout
 
-Generated: 2026-05-08T01:45:30Z
+Generated: 2026-05-08T01:47:10Z
 Lane: `/home/shan/projects/homematch-v2.worktrees/p3-backend`  
 Scope: strict OG Phase 1 closure only; no P2/P3/P4/P5 dispatch; no application-code changes in this scout.
 
@@ -36,7 +36,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | A8 P1: Flatten duplicate `getUser` monkey-patching in auth server client | `auth-audit.md`; no closure evidence found. | open | Refactor patching order in `src/lib/supabase/server.ts`; rerun auth helper and middleware tests. |
 | A9 P1: Clean unused/noisy `AuthApiError` import | Search shows `AuthApiError` is used in `server.ts` and `client.ts`; no unused import remains for this item. | closed | None. |
 | A10 P2: Add E2E auth lifecycle test | `auth-audit.md`; no Playwright auth lifecycle closure evidence. | open | Add login/signup/protected-route/logout E2E using approved test-user pattern. |
-| A11 P2: Align password requirements | `supabase/config.toml` still has `minimum_password_length = 6`, `password_requirements = ""`; app schema requires stricter password. | open | Change Supabase config to match app schema, then run auth/config tests. |
+| A11 P2: Align password requirements | Closed repo-side: `supabase/config.toml` now uses `minimum_password_length = 8` and `password_requirements = "lower_upper_letters_digits"` to match the app signup/reset schema; regression guard `__tests__/unit/auth/password-config-alignment.test.ts`; RED `hm-a11-password-red-1778214395.service`; GREEN `hm-a11-password-green-1778214410.service`; type-check `hm-a11-password-typecheck-1778214414.service`. | closed | Run local Supabase auth config validation when the DB/integration environment is available. |
 | A12 P2: Enable email confirmations for production | `supabase/config.toml` still has `enable_confirmations = false`. | block | Decide launch auth policy; enable confirmations for production config or document dev-only override. |
 | A13 P2: Configure CAPTCHA for signup | `supabase/config.toml` CAPTCHA section still commented. | block | Choose Turnstile/hCaptcha provider and configure secrets through approved channel. |
 | A14 P2: Avoid cached service clients after key rotation | Commit pending in this closure wave; factory `shouldCache()` now only caches browser clients, and service-role client creation is verified to produce fresh clients on repeated calls. | closed | Keep key-rotation regression in `__tests__/unit/lib/supabase/factory.test.ts`; broader A4 client consolidation remains open. |

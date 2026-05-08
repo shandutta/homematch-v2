@@ -828,7 +828,7 @@
   <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
   <ul>
     <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
-    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency cleanup decision, remaining local-dev validation blockers.</li>
+    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, DB/RLS/migration cleanup, middleware/API hardening, auth policy decisions, dependency cleanup decision, remaining local-dev validation blockers.</li>
     <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
   </ul>
 </section>
@@ -1103,6 +1103,16 @@
     <li>Adopted it in Google Maps outbound fetches: geocode, places autocomplete, and maps script proxy.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m8-maps-red-1778214203.service</code>; targeted static Jest passed in <code>hm-m8-maps-green-1778214314.service</code>; resource-limited type-check passed in <code>hm-m8-maps-typecheck-1778214317.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> M8 still needs remaining admin/Zillow/OpenAI/neighborhood/property vibe external calls wrapped; broader Phase 0/1 blockers remain.</li>
+  </ul>
+</section>
+<section id="phase0-phase1-a11-password-config-2026-05-08">
+  <h2>Phase 0/1 remediation — A11 password config alignment</h2>
+  <p><strong>Status:</strong> A11 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li><code>supabase/config.toml</code> now matches the app signup/reset schema: minimum 8 characters plus lowercase, uppercase, and digit requirements.</li>
+    <li>Added <code>__tests__/unit/auth/password-config-alignment.test.ts</code> to guard Supabase config drift.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-a11-password-red-1778214395.service</code>; targeted Jest passed in <code>hm-a11-password-green-1778214410.service</code>; resource-limited type-check passed in <code>hm-a11-password-typecheck-1778214414.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> production email/CAPTCHA auth policy decisions remain blocked; broader Phase 0/1 blockers remain.</li>
   </ul>
 </section>
 </main>
