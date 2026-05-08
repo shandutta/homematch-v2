@@ -20,23 +20,24 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integration HEAD seen: `901bb44 docs: expand HomeMatch held-phase plan`
+- Latest integration HEAD seen: `cee25c5 fix: close api external fetch timeout coverage`
 - Board: `home-match-revival`
-- Board state at last reconciliation: `todo=7, ready=0, running=0, blocked=7, done=27`, `ready=0`, `running=0`, `blocked=7`, `done=27`
+- Board state after `/goal`→Kanban repair: `todo=2, ready=0, running=1, blocked=10, done=28`
+- Active worker: `t_42e0d08a` (`P1 auth/client cleanup`) running in `.worktrees/t_42e0d08a`.
 - Important interpretation: the small board counts are **gate counts**, not the full product roadmap. Phase 2+ decomposition belongs in the held backlog below until Phase 0/1 are proven clean.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
 - Phase 2+: **held**
 
+### Latest control-plane repair — 2026-05-08T05:50Z
 
-### Latest control-plane reconciliation — 2026-05-08T05:40Z
-
-- Verified from repo + Kanban before dispatch: integration branch is `autonomy/6h-business-hardening`; HEAD is current local control-plane docs commit.
-- RAM is green for one bounded Phase 0/1 slice (`available≈2378MiB`, `swap_used≈615MiB` at check).
-- Board has no running workers; Phase 2+ anchors remain blocked/held.
+- Shan correctly flagged that `/goal` stopped after a control-plane/status turn instead of leaving runnable Kanban work.
+- Root cause: `t_114ade2b` dispatch gate was still blocked, so dispatcher saw `ready=0`; the previous in-chat bounded slice also violated the “Telegram is control plane, workers execute” operating agreement.
+- Repair applied: completed `t_114ade2b`, immediately blocked sibling children to prevent a fleet, and dispatched exactly one bounded Kanban worker: `t_42e0d08a` (`P1 auth/client cleanup`).
+- Current worker workspace: `.worktrees/t_42e0d08a`; sibling Phase 0/1 tasks remain held for sequential release after this worker reports back.
 - Current repo-local Phase 0/1 closures since the original matrix include README local-dev guidance, M8 external-call timeout coverage for all Next.js API route outbound fetches, Supabase password-policy alignment, user-profile delete RLS policy, and JSONB GIN indexes.
 - Still not clean: Phase 0 live/auth/browser/integration/probe gaps remain; Phase 1 still has repo-open auth/client cleanup, service-role fallback/RBAC decisions, query/realtime/dedupe/rollback/type cleanup, rate-limiter consolidation/durability, `.env.prod`/secret-handling decisions, and DB integration reset/lint blockers.
-- Next safe execution shape: one repo-local Phase 0/1 writer or read-only scout only; no Phase 2+ implementation.
+- Next safe execution shape after `t_42e0d08a`: release one additional Phase 0/1 child at a time, or a read-only scout, never Phase 2+ implementation.
 
 ## Strict gates
 
@@ -104,8 +105,8 @@ Use these as source of truth instead of relying on Telegram history.
 ### Manual dispatch gate
 
 - `t_114ade2b` — `Phase 0/1 parallel remediation dispatch gate`
-  - Status: blocked
-  - Reason: waiting for explicit dispatch/resource window before spawning workers from Telegram Home Purchase lane.
+  - Status: done; repaired after Shan approval.
+  - Result: released the Kanban path but prevented a fleet by holding sibling children; exactly one Phase 0/1 child is running first (`t_42e0d08a`).
 
 ### Phase 0/1 child tasks under gate
 
