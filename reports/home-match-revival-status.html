@@ -822,6 +822,16 @@
     <li>Correct command: <code>/goal Load homematch-parallel-kanban-execution. Strict OG-plan gate: dispatch Phase 0/1 closure only using existing worktrees + RAM watchdog. Do not dispatch P2/P3/P4/P5.</code></li>
   </ul>
 </section>
+
+<section id="phase0-phase1-closure-matrix">
+  <h2>Phase 0/1 strict closure matrix</h2>
+  <p><strong>Gate verdict:</strong> do not advance to Phase 2. Phase 0 and Phase 1 are not 100% complete.</p>
+  <ul>
+    <li><strong>Phase 0 open/block:</strong> integration tests, API live probe coverage, browser/auth traversal, cron-secret endpoint policy, .env.prod guard precision, test-suite quality triage.</li>
+    <li><strong>Phase 1 open/block:</strong> real service-role RBAC, interaction uniqueness, DB/RLS/migration cleanup, middleware/API hardening, auth config policy, dependency/dead-code cleanup, README/local-dev closure.</li>
+    <li><strong>Artifacts:</strong> <code>reports/home-match-revival/phase0-closure-scout.md</code>, <code>reports/home-match-revival/phase1-remediation-closure-scout.md</code>, <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code></li>
+  </ul>
+</section>
 </main>
   </body>
 </html>
