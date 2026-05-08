@@ -1,6 +1,6 @@
 # Phase 0/1 Closure Matrix — Strict OG Gate
 
-Generated: 2026-05-08T07:57Z
+Generated: 2026-05-08T08:18Z
 
 ## Verdict
 
@@ -8,11 +8,12 @@ Generated: 2026-05-08T07:57Z
 
 ## Phase 0 closure rollup
 
-- Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction; cron-secret endpoint opacity for missing-secret route behavior.
+- Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction; cron-secret endpoint opacity for missing-secret route behavior; local Supabase proxy disabled-by-default and loopback-target allowlist guard.
 - Newly materialized: full static route/API inventory matrix and site traversal acceptance matrix are preserved in repo reports from Kanban tasks `t_84ff95e6` and `t_5379ec6b`.
 - Partial / not closed: API live probe execution; browser traversal execution; `.env.prod` guard precision.
 - Open/blocking evidence from 2026-05-08 live slice: `/api/maps/metro-boundaries?metro=bay-area` returns 500 because the public route calls a service-role client outside an authorized context; authenticated browser/API probes remain blocked by missing approved test credentials/session; `.env.prod` remains absent.
 - Closed in follow-up M6/M10 reconciliation: the `error-standardization.test.ts` 429 guard was classified as stale after M10 rate-limit consolidation because the four flagged callers now delegate to `checkRateLimit(...)`, whose shared implementation returns `ApiErrorHandler.tooManyRequests(...)`. The static guard now verifies the delegated path; resource-limited targeted Jest passed 30/30.
+- Closed in follow-up P0 no-credential guard slice: `/supabase/*path` now has unit coverage for disabled-by-default behavior, no upstream `fetch` while disabled, rejection of non-loopback enabled targets without upstream `fetch`, and allowed forwarding only to explicit loopback targets. Evidence: RED `systemd-run --user --scope -p MemoryMax=2G -p CPUQuota=200% pnpm exec jest __tests__/unit/app/supabase-proxy-route.test.ts --runInBand` failed on the missing allowlist (expected 403, received 200); GREEN same command passed 3/3; resource-limited `systemd-run --user --scope -p MemoryMax=3G -p CPUQuota=200% pnpm type-check` passed.
 - Blocked: authenticated flow verification and integration-test execution until approved test credentials/session plus local Supabase/Docker or a safeguarded remote-test path are available.
 
 ## Phase 1 closure rollup

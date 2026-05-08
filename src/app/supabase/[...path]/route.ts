@@ -3,13 +3,25 @@ import { NextRequest } from 'next/server'
 const stripTrailingSlash = (value?: string | null) =>
   value ? value.replace(/\/+$/, '') : value
 
+const isAllowedLocalProxyTarget = (target: string) => {
+  try {
+    const url = new URL(target)
+    return (
+      url.protocol === 'http:' &&
+      ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)
+    )
+  } catch {
+    return false
+  }
+}
+
 const getProxyConfig = () => {
   const enabled = process.env['SUPABASE_LOCAL_PROXY'] === 'true'
   const target =
     stripTrailingSlash(process.env['SUPABASE_LOCAL_PROXY_TARGET']) ||
     'http://127.0.0.1:54200'
 
-  return { enabled, target }
+  return { enabled, target, targetAllowed: isAllowedLocalProxyTarget(target) }
 }
 
 export const dynamic = 'force-dynamic'
@@ -18,9 +30,12 @@ const handler = async (
   req: NextRequest,
   { params }: { params: Promise<{ path?: string[] }> }
 ) => {
-  const { enabled, target } = getProxyConfig()
+  const { enabled, target, targetAllowed } = getProxyConfig()
   if (!enabled) {
     return new Response('Supabase proxy disabled', { status: 404 })
+  }
+  if (!targetAllowed) {
+    return new Response('Supabase proxy target not allowed', { status: 403 })
   }
 
   const { path: pathSegments } = await params
