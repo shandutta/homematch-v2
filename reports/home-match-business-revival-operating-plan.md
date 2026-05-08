@@ -18,6 +18,11 @@ This plan expands the original scope beyond the current visible Kanban count. Th
 - Do not deploy, spend money, change production dashboards, use real customer data, or alter external accounts while Shan is sleeping unless a task has explicit approval.
 - Third-party dashboards, email, Stripe, AdSense, and production settings can be reviewed/planned, but credentialed external changes need a separate approval checkpoint.
 
+
+## 2026-05-08 Shan approval update
+
+Shan granted blanket approval for HomeMatch recovery/hardening work except spending money or making paid-resource/subscription changes. Tiny live probes are approved. Continue using Kanban workers and autonomous execution. Test credentials should be sourced from repo docs/scripts (`scripts/setup-test-users-admin.js`, `pnpm test:setup-users`) and, if needed, 1Password/helpers without printing secrets. Add/maintain lanes for local seeded auth lifecycle verification and Zillow/RapidAPI provider evaluation.
+
 ## Current gate
 
 Phase 0 and Phase 1 still gate implementation-heavy later work. That does not mean the broader plan waits. It means later-phase implementation is held while scouts can safely plan, audit, and create acceptance criteria.

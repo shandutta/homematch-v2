@@ -57,6 +57,9 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 
 ## Next blocker / approval list
 
+2026-05-08 update: Shan approved tiny live probes and clarified that local test-user credentials should be sourced from repo docs/scripts or 1Password/helpers. Blanket approval covers autonomous HomeMatch work except spending money or paid-resource/subscription changes, which still require explicit approval.
+
+
 1. Approve a non-production seeded auth/session path for authenticated browser traversal and API auth smoke execution. Preferred order: local Supabase/test DB seeded users, disposable preview/local test account, or temporary browser session cookie for a test-only account.
 2. Approve a safe local/test DB reset, lint, rollback, and integration-test path. Without this, DB/RLS/migration closure remains code/static only.
 3. Approve dedicated `admin_role_assignments` table as the production service-role RBAC authority model, or override with custom claims / explicitly accepted `user_profiles.role`; Phase 1 remains open until the approved model is implemented and guarded.
