@@ -3,6 +3,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 // Explicitly reject unsupported methods to avoid hanging requests in tests
 export async function POST() {
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
 
       const totalTime = Date.now() - startTime
 
-      return NextResponse.json({
+      return noStoreJson({
         activity,
         performance: {
           totalTime,

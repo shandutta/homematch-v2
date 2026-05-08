@@ -9,6 +9,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 /**
  * GET /api/couples/mutual-likes
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
 
       if (mutualLikes.length === 0) {
         const totalTime = Date.now() - startTime
-        return NextResponse.json({
+        return noStoreJson({
           mutualLikes: [],
           performance: {
             totalTime,
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
 
       const totalTime = Date.now() - startTime
 
-      return NextResponse.json({
+      return noStoreJson({
         mutualLikes: enrichedLikes,
         performance: {
           totalTime,

@@ -843,6 +843,17 @@
     <li><strong>Artifact:</strong> <code>reports/home-match-revival/phase0-phase1-remediation-progress-2026-05-08.md</code></li>
   </ul>
 </section>
+
+<section id="phase0-phase1-cache-control-2026-05-08">
+  <h2>Phase 0/1 remediation progress — cache-control slice</h2>
+  <p><strong>Status:</strong> Phase 1 partially remediated; Phase 0/1 still not closed. Phase 2+ remains held.</p>
+  <ul>
+    <li><strong>Advanced:</strong> added <code>src/lib/api/cache-control.ts</code> with user-specific no-store JSON helpers.</li>
+    <li><strong>Applied:</strong> <code>/api/couples/activity</code> and <code>/api/couples/mutual-likes</code> successful GET responses now set <code>private, no-store, no-cache, must-revalidate, max-age=0</code>.</li>
+    <li><strong>Verification:</strong> RED observed; targeted Jest passed; resource-limited type-check passed; diff check passed.</li>
+    <li><strong>Artifact:</strong> <code>reports/home-match-revival/phase0-phase1-remediation-cache-control-2026-05-08.md</code></li>
+  </ul>
+</section>
 </main>
   </body>
 </html>
