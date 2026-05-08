@@ -5,6 +5,7 @@
 import { NextRequest } from 'next/server'
 import {
   checkRateLimit,
+  getConfiguredRateLimitStorageProvider,
   rateLimit,
   rateLimitKey,
   resetRateLimiters,
@@ -74,6 +75,21 @@ describe('consolidated middleware rate limiter', () => {
     const blockedOnSearch = await checkRateLimit(searchKey, 'strict')
     expect(blockedOnSearch?.status).toBe(429)
     await expect(checkRateLimit(geocodeKey, 'strict')).resolves.toBeNull()
+  })
+
+  it('defaults to the in-memory provider and requires approval for durable storage', async () => {
+    expect(getConfiguredRateLimitStorageProvider()).toEqual({
+      provider: 'memory',
+      durable: false,
+    })
+
+    await expect(checkRateLimit('memory-provider-user', 'strict')).resolves.toBeNull()
+
+    process.env.RATE_LIMIT_STORAGE_PROVIDER = 'redis'
+
+    expect(() => getConfiguredRateLimitStorageProvider()).toThrow(
+      /Durable rate limiter storage provider "redis" requires an approved adapter/
+    )
   })
 
   it('bypasses checks in tests unless enforcement is explicitly enabled', async () => {

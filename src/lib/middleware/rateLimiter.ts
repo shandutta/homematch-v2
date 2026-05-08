@@ -40,9 +40,53 @@ const RATE_LIMIT_TIERS: Record<RateLimitTierKey, RateLimitTierConfig> = {
   },
 }
 
+type RateLimiterInstance = Pick<RateLimiterMemoryType, 'consume'>
+
+type RateLimitStorageProviderConfig = {
+  provider: 'memory'
+  durable: false
+}
+
+// Durable production storage requires an owner-approved provider decision plus
+// adapter implementation. Keep the current in-memory behavior as the only
+// executable provider until that approval exists; fail closed on unknown
+// provider names instead of silently treating them as durable.
+const RATE_LIMIT_STORAGE_PROVIDER_ENV = 'RATE_LIMIT_STORAGE_PROVIDER'
+
+export const getConfiguredRateLimitStorageProvider = (): RateLimitStorageProviderConfig => {
+  const provider =
+    process.env[RATE_LIMIT_STORAGE_PROVIDER_ENV]?.trim().toLowerCase() || 'memory'
+
+  if (provider === 'memory') {
+    return { provider, durable: false }
+  }
+
+  throw new Error(
+    `Durable rate limiter storage provider "${provider}" requires an approved adapter before production use`
+  )
+}
+
+const createRateLimiter = (
+  tier: RateLimitTierKey,
+  config: RateLimitTierConfig
+): RateLimiterInstance => {
+  const storage = getConfiguredRateLimitStorageProvider()
+
+  if (storage.provider === 'memory') {
+    // Deep import to avoid pulling optional adapters (e.g. Drizzle) from the package entrypoint.
+    return new RateLimiterMemory({
+      points: config.points,
+      duration: config.duration,
+      blockDuration: config.blockDuration,
+      keyPrefix: `rl_${tier}_`,
+    })
+  }
+
+  throw new Error('Unreachable rate limiter storage provider')
+}
+
 // Create rate limiter instances
-// Deep import to avoid pulling optional adapters (e.g. Drizzle) from the package entrypoint
-const rateLimiters = new Map<string, RateLimiterMemoryType>()
+const rateLimiters = new Map<string, RateLimiterInstance>()
 
 const isRateLimiterResponse = (
   value: unknown
@@ -53,19 +97,11 @@ const isRateLimiterResponse = (
 
 function getRateLimiter(
   tier: keyof typeof RATE_LIMIT_TIERS
-): RateLimiterMemoryType {
+): RateLimiterInstance {
   const key = tier
   if (!rateLimiters.has(key)) {
     const config = RATE_LIMIT_TIERS[tier]
-    rateLimiters.set(
-      key,
-      new RateLimiterMemory({
-        points: config.points,
-        duration: config.duration,
-        blockDuration: config.blockDuration,
-        keyPrefix: `rl_${tier}_`,
-      })
-    )
+    rateLimiters.set(key, createRateLimiter(tier, config))
   }
   return rateLimiters.get(key)!
 }
