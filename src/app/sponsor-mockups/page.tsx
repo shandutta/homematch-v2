@@ -1,3 +1,4 @@
+import { requireInternalPreviewAccess } from '@/lib/routing/internal-preview'
 import { Metadata } from 'next'
 import { Header } from '@/components/marketing/Header'
 import { Footer } from '@/components/marketing/Footer'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 }
 
 export default function SponsorMockupsPage() {
+  requireInternalPreviewAccess()
   return (
     <>
       <div className="min-h-screen bg-[#f7f9fc] text-slate-900">
