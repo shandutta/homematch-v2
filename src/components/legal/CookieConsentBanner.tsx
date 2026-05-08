@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -31,6 +32,8 @@ export function CookieConsentBanner() {
   const [isOpen, setIsOpen] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [draft, setDraft] = useState<CookieConsentDraft>(getDefaultConsent())
+  const manageSettingsButtonRef = useRef<HTMLButtonElement>(null)
+  const settingsPanelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const stored = getCookieConsent()
@@ -46,6 +49,12 @@ export function CookieConsentBanner() {
     }
   }, [])
 
+  useEffect(() => {
+    if (showDetails) {
+      settingsPanelRef.current?.focus()
+    }
+  }, [showDetails])
+
   const adSenseEnabled =
     process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false' &&
     process.env.NODE_ENV === 'production'
@@ -54,6 +63,18 @@ export function CookieConsentBanner() {
     (key: keyof CookieConsentDraft) => (checked: boolean) => {
       setDraft((current) => ({ ...current, [key]: checked }))
     }
+
+  const closeDetailsAndReturnFocus = () => {
+    setShowDetails(false)
+    requestAnimationFrame(() => manageSettingsButtonRef.current?.focus())
+  }
+
+  const handleDetailsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeDetailsAndReturnFocus()
+    }
+  }
 
   const handleSave = async (nextDraft: CookieConsentDraft) => {
     saveCookieConsent(nextDraft)
@@ -125,11 +146,14 @@ export function CookieConsentBanner() {
                 Accept all
               </Button>
               <Button
+                ref={manageSettingsButtonRef}
                 type="button"
                 size="sm"
                 variant="ghost"
                 className="h-9 min-h-0 px-2 text-xs"
                 onClick={() => setShowDetails((current) => !current)}
+                aria-expanded={showDetails}
+                aria-controls="cookie-banner-settings"
               >
                 {showDetails ? 'Hide settings' : 'Manage settings'}
               </Button>
@@ -137,7 +161,15 @@ export function CookieConsentBanner() {
           </div>
 
           {showDetails ? (
-            <div className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
+            <div
+              id="cookie-banner-settings"
+              ref={settingsPanelRef}
+              role="group"
+              aria-label="Cookie settings"
+              tabIndex={-1}
+              onKeyDown={handleDetailsKeyDown}
+              className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-slate-900">
@@ -195,7 +227,7 @@ export function CookieConsentBanner() {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setShowDetails(false)}
+                  onClick={closeDetailsAndReturnFocus}
                 >
                   Cancel
                 </Button>
