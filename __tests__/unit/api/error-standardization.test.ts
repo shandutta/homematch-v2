@@ -159,4 +159,22 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
+
+  it.each([
+    'src/app/api/interactions/reset/route.ts',
+    'src/app/api/users/avatar/route.ts',
+  ])(
+    '%s keeps the user-interactions route-family on ApiErrorHandler with no raw NextResponse error envelopes',
+    (path) => {
+      const source = read(path)
+
+      expect(source).toContain('@/lib/api/errors')
+      expect(source).toContain('ApiErrorHandler')
+      expect(source).not.toMatch(/NextResponse\.json\([^)]*\berror\s*:/)
+      expect(source).not.toContain('NextResponse.json(\n        { error:')
+      expect(source).not.toContain('NextResponse.json(\n      { error:')
+      expect(source).not.toContain("NextResponse.json({ error: 'Unauthorized' }")
+      expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
+    }
+  )
 })
