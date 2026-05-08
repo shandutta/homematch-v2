@@ -4,6 +4,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 import { isValidLatLng, boundingBoxSchema } from '@/lib/utils/coordinates'
 
 const geocodeRequestSchema = z.object({
@@ -88,7 +89,10 @@ export async function POST(request: NextRequest) {
 
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${params}`
 
-    const response = await fetch(geocodeUrl)
+    const response = await fetchWithTimeout(geocodeUrl, {
+      timeoutMs: 10000,
+      timeoutMessage: 'Google geocoding request timed out',
+    })
     const data: unknown = await response.json()
 
     const isRecord = (value: unknown): value is Record<string, unknown> =>

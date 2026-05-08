@@ -5,6 +5,7 @@ import { createApiClient } from '@/lib/supabase/server'
 import { isValidLatLng } from '@/lib/utils/coordinates'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
 const placesAutocompleteSchema = z.object({
   input: z.string().min(1).max(100),
@@ -108,7 +109,10 @@ export async function POST(request: NextRequest) {
 
     const autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params}`
 
-    const response = await fetch(autocompleteUrl)
+    const response = await fetchWithTimeout(autocompleteUrl, {
+      timeoutMs: 10000,
+      timeoutMessage: 'Google places autocomplete request timed out',
+    })
     const data = await response.json()
 
     const isRecord = (value: unknown): value is Record<string, unknown> =>

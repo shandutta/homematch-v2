@@ -1095,6 +1095,16 @@
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, dependency decision, and validation blockers.</li>
   </ul>
 </section>
+<section id="phase0-phase1-m8-maps-timeouts-2026-05-08">
+  <h2>Phase 0/1 remediation — M8 Maps external-call timeouts</h2>
+  <p><strong>Status:</strong> M8 advanced but not closed. Phase 2+ remains held.</p>
+  <ul>
+    <li>Added shared <code>src/lib/api/fetch-timeout.ts</code> for AbortController-backed fetch timeouts.</li>
+    <li>Adopted it in Google Maps outbound fetches: geocode, places autocomplete, and maps script proxy.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m8-maps-red-1778214203.service</code>; targeted static Jest passed in <code>hm-m8-maps-green-1778214314.service</code>; resource-limited type-check passed in <code>hm-m8-maps-typecheck-1778214317.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> M8 still needs remaining admin/Zillow/OpenAI/neighborhood/property vibe external calls wrapped; broader Phase 0/1 blockers remain.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>
