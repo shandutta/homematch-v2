@@ -3,6 +3,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
+import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
 const notificationSchema = z.object({
   propertyId: z.string().uuid(),
@@ -16,6 +17,16 @@ export async function POST(request: NextRequest) {
     const auth = await requireUserFromRequest(supabase, request)
     if (!auth.user) return auth.response
     const { user } = auth
+
+    const rateLimitResult = await apiRateLimiter.check(
+      `couples:notify:${user.id}`
+    )
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
 
     // Parse and validate request body
     const body = await request.json()

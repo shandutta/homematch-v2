@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { apiRateLimiter } from '@/lib/utils/rate-limit'
 import { noStoreJson } from '@/lib/api/cache-control'
 
 export interface DisputedProperty {
@@ -365,6 +366,16 @@ export async function PATCH(request: NextRequest) {
     const auth = await requireUserFromRequest(supabase, request)
     if (!auth.user) return auth.response
     const { user } = auth
+
+    const rateLimitResult = await apiRateLimiter.check(
+      `couples:disputed:${user.id}`
+    )
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
 
     const body = await request.json()
     const { property_id, resolution_type } = body

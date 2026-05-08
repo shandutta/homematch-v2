@@ -63,3 +63,32 @@ M5 is still **open**. Existing rate limiting covers several user mutating/paid r
 - No code was modified in this scout.
 - No broad tests/builds were run.
 - This does not dispatch Phase 2+ or resolve the separate durable-rate-limiter production decision (M10/auth audit blocker). It only inventories M5 coverage gaps that can be closed repo-only with current primitives if approved.
+
+
+## Remediation slice — user/performance route limits
+
+Status: **M5 partial**.
+
+Closed in this slice:
+
+- `PATCH /api/couples/disputed` now checks `apiRateLimiter.check(`couples:disputed:${user.id}`)`.
+- `POST /api/couples/notify` now checks `apiRateLimiter.check(`couples:notify:${user.id}`)`.
+- `DELETE /api/interactions` now checks `apiRateLimiter.check(`interactions:delete:${user.id}`)`.
+- `POST /api/performance/metrics` now checks `apiRateLimiter.check(`performance:metrics:${ip}`)` using forwarded/real IP fallback.
+
+Verification:
+
+- RED: `hm-rate-red-1778206578.service` failed before limiter adoption.
+- GREEN: `hm-rate-green-1778206625.service` passed static coverage.
+- Final targeted: `hm-rate-test-final-1778206649.service` passed rate-limit + cache-control tests.
+- Type-check: `hm-rate-typecheck-1778206654.service` passed.
+- Diff check: passed.
+
+Remaining M5 gaps are concentrated in admin cron-secret routes:
+
+1. `POST /api/admin/status-refresh`
+2. `POST /api/admin/ingest/zillow`
+3. `POST /api/admin/generate-vibes`
+4. `GET /api/admin/generate-vibes`
+5. `POST /api/admin/generate-neighborhood-vibes`
+6. `POST /api/admin/generate-vibes-zillow`

@@ -416,6 +416,16 @@ export async function DELETE(request: NextRequest) {
       return response ?? ApiErrorHandler.unauthorized()
     }
 
+    const rateLimitResult = await apiRateLimiter.check(
+      `interactions:delete:${user.id}`
+    )
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     let body: unknown
     try {
       body = await request.json()

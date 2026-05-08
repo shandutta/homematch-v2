@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { apiRateLimiter } from '@/lib/utils/rate-limit'
 
 interface MetricsStoreEntry {
   metrics: Array<{
@@ -74,6 +75,21 @@ const MAX_METRICS = 1000
 
 export async function POST(request: NextRequest) {
   try {
+    const forwardedFor = request.headers.get('x-forwarded-for')
+    const realIp = request.headers.get('x-real-ip')
+    const ip = forwardedFor
+      ? forwardedFor.split(',')[0]?.trim()
+      : realIp || 'unknown'
+    const rateLimitResult = await apiRateLimiter.check(
+      `performance:metrics:${ip}`
+    )
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
 
     // Validate payload
