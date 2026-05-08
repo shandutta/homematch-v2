@@ -144,8 +144,8 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:43 UTC</code>. Strict
-        Phase 0/1 closure mode: M7, M9, and M13 closed repo-side in this run;
+        Live Kanban status. Updated: <code>2026-05-08 03:46 UTC</code>. Strict
+        Phase 0/1 closure mode: M7, M9, M13, and M14 closed repo-side in this run;
         continuing until Phase 0/1 are 100% closed or blocked.
       </p>
       <div class="grid">
@@ -1029,6 +1029,17 @@
     <li>Retained the used <code>ZillowUtils</code> export consumed by Zillow ingestion.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m13-zillow-red-1778211731.service</code>; targeted Zillow Jest passed in <code>hm-m13-zillow-green-1778211761.service</code>; resource-limited type-check passed in <code>hm-m13-zillow-typecheck-1778211766.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, CouplesMiddleware cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m14-couples-middleware-2026-05-08">
+  <h2>Phase 0/1 remediation — M14 CouplesMiddleware cleanup</h2>
+  <p><strong>Status:</strong> M14 closed repo-side. Phase 2+ remains held.</p>
+  <ul>
+    <li>Source scan showed <code>CouplesMiddleware</code> had no production import sites outside its own module.</li>
+    <li>Removed <code>src/lib/services/couples-middleware.ts</code> and its dedicated unit test, preserving direct <code>CouplesService</code> coverage.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m14-couples-red-1778211904.service</code>; targeted couples Jest passed in <code>hm-m14-couples-green-1778211926.service</code>; resource-limited type-check passed in <code>hm-m14-couples-typecheck-1778211931.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> Phase 0/1 still not fully closed: auth client consolidation, service-role/RBAC decisions, interactions fallback, auth monkey-patch cleanup, DB/RLS/migration work, external-call timeouts, rate-limit consolidation, RPC wrapper cleanup, other dead-code cleanup, README/local-dev closure, and validation blockers.</li>
   </ul>
 </section>
 </main>
