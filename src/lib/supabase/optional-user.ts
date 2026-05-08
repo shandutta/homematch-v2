@@ -26,5 +26,3 @@ export async function getOptionalServerUser(): Promise<User | null> {
     throw error
   }
 }
-
-export const __isMissingSupabaseConfigError = isMissingSupabaseConfigError

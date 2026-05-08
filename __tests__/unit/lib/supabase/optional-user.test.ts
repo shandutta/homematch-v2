@@ -1,8 +1,7 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
-import {
-  __isMissingSupabaseConfigError,
-  getOptionalServerUser,
-} from '@/lib/supabase/optional-user'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 import { createClient } from '@/lib/supabase/server'
 
 jest.mock('@/lib/supabase/server', () => ({
@@ -32,14 +31,12 @@ describe('getOptionalServerUser', () => {
     await expect(getOptionalServerUser()).rejects.toThrow('network exploded')
   })
 
-  test('classifies only missing Supabase URL/key errors', () => {
-    expect(
-      __isMissingSupabaseConfigError(
-        new Error('Your project URL and Key are required')
-      )
-    ).toBe(true)
-    expect(__isMissingSupabaseConfigError(new Error('Invalid API key'))).toBe(
-      false
+  test('does not export missing-config classifier as a test-only production hook', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/supabase/optional-user.ts'),
+      'utf8'
     )
+
+    expect(source).not.toContain('__isMissingSupabaseConfigError')
   })
 })
