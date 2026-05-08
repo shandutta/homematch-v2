@@ -318,6 +318,107 @@ describe('middleware Supabase auth timeout cleanup', () => {
   })
 })
 
+describe('middleware security header and cache boundary policy guard', () => {
+  const baselineSecurityHeaders: Record<string, string> = {
+    'X-Frame-Options': 'DENY',
+    'X-Content-Type-Options': 'nosniff',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy':
+      'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Resource-Policy': 'same-origin',
+  }
+
+  const originalEnv = { ...process.env }
+
+  beforeEach(() => {
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    }
+    mockedCreateServerClient.mockClear()
+    mockGetUser.mockClear()
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+  })
+
+  const expectBaselineHeaders = (response: Response) => {
+    for (const [key, value] of Object.entries(baselineSecurityHeaders)) {
+      expect(response.headers.get(key)).toBe(value)
+    }
+  }
+
+  it('applies the full baseline security header set on API responses (no header weakening)', async () => {
+    const response = await middleware(makeRequest('/api/foo'))
+    expectBaselineHeaders(response)
+  })
+
+  it('applies the full baseline security header set on the public bypass health endpoint', async () => {
+    const response = await middleware(makeRequest('/api/health'))
+    expectBaselineHeaders(response)
+  })
+
+  it('applies the full baseline security header set on anonymous public marketing pages', async () => {
+    const response = await middleware(makeRequest('/about'))
+    expectBaselineHeaders(response)
+  })
+
+  it('applies the full baseline security header set on anonymous auth pages', async () => {
+    const response = await middleware(makeRequest('/login'))
+    expectBaselineHeaders(response)
+  })
+
+  it('does not set Cache-Control on middleware-owned responses, preserving private/no-store ownership for route handlers', async () => {
+    const apiResponse = await middleware(makeRequest('/api/foo'))
+    expect(apiResponse.headers.get('Cache-Control')).toBeNull()
+
+    const bypassResponse = await middleware(makeRequest('/api/health'))
+    expect(bypassResponse.headers.get('Cache-Control')).toBeNull()
+
+    const publicPageResponse = await middleware(makeRequest('/about'))
+    expect(publicPageResponse.headers.get('Cache-Control')).toBeNull()
+  })
+
+  it('does not weaken Cache-Control on anonymous redirects from protected pages', async () => {
+    const response = await middleware(makeRequest('/dashboard?tab=liked'))
+    expect(response.status).toBe(307)
+    expect(response.headers.get('Cache-Control')).toBeNull()
+  })
+
+  it('strengthens production responses with frame-ancestors-locked CSP and HSTS preload', async () => {
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+      NODE_ENV: 'production',
+    }
+
+    const response = await middleware(makeRequest('/api/foo'))
+
+    expectBaselineHeaders(response)
+
+    const csp = response.headers.get('Content-Security-Policy')
+    expect(csp).toBeTruthy()
+    expect(csp).toContain("default-src 'self'")
+    expect(csp).toContain("frame-ancestors 'none'")
+
+    expect(response.headers.get('Strict-Transport-Security')).toBe(
+      'max-age=31536000; includeSubDomains; preload'
+    )
+  })
+
+  it('does not emit production-only CSP/HSTS in non-production environments', async () => {
+    const response = await middleware(makeRequest('/api/foo'))
+
+    expect(response.headers.get('Content-Security-Policy')).toBeNull()
+    expect(response.headers.get('Strict-Transport-Security')).toBeNull()
+  })
+})
+
 describe('middleware Supabase session cookies', () => {
   const originalEnv = { ...process.env }
 
