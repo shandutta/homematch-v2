@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
@@ -87,10 +87,7 @@ export async function POST(request: NextRequest) {
     const contentLength = request.headers.get('content-length')
     const contentLengthBytes = contentLength ? Number.parseInt(contentLength, 10) : 0
     if (Number.isFinite(contentLengthBytes) && contentLengthBytes > MAX_PAYLOAD_BYTES) {
-      return NextResponse.json(
-        { error: 'Metrics payload too large', code: 'PAYLOAD_TOO_LARGE' },
-        { status: 413 }
-      )
+      return ApiErrorHandler.badRequest('Metrics payload too large')
     }
 
     const forwardedFor = request.headers.get('x-forwarded-for')
