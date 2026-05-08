@@ -7,6 +7,9 @@ import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { withRouteDeadline } from '@/lib/api/route-deadline'
 
+// @service-role-capability: authenticated, rate-limited invite user search;
+// selects only id/email/display_name/household_id for onboarded non-self users.
+// TODO(D1 follow-up): replace with a constrained search_onboarded_users_for_invite RPC.
 export const GET = withRouteDeadline(
   'users:search',
   2000,

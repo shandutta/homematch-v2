@@ -7,6 +7,9 @@ import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { withRouteDeadline } from '@/lib/api/route-deadline'
 
+// @service-role-capability: authenticated household member dispute view/update;
+// route checks requester household membership and returns no partner emails.
+// TODO(D1 follow-up): replace with household-scoped disputed-property RPCs.
 export interface DisputedProperty {
   property_id: string
   property: {

@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
+// @service-role-capability: authenticated invite acceptance; validates token
+// status/expiry and requester identity before household/profile mutations.
+// TODO(D1 follow-up): replace with atomic accept_household_invite RPC.
 export async function acceptInviteAction(token: string) {
   const supabase = await createClient()
   const {

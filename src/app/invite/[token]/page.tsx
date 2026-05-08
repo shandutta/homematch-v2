@@ -14,6 +14,9 @@ import type {
 import { Users, ShieldCheck, Clock4 } from 'lucide-react'
 import { AcceptInviteForm } from './AcceptInviteForm'
 
+// @service-role-capability: invite landing page fetches by opaque token before
+// authentication; selected data is limited to invite/household and inviter display fields.
+// TODO(D1 follow-up): replace with constrained invite preview RPC.
 export const metadata = createNoindexRouteMetadata({
   title: 'Household Invite | HomeMatch',
   description: 'Open your private HomeMatch household invitation.',

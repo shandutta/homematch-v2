@@ -68,7 +68,10 @@ export async function createClient() {
     }
   )
 
-  withRefreshRecovery(supabase, { logPrefix: '[Supabase][Server]', context: 'server' })
+  withRefreshRecovery(supabase, {
+    logPrefix: '[Supabase][Server]',
+    context: 'server',
+  })
 
   return supabase
 }
@@ -130,18 +133,45 @@ export function createApiClient(request?: NextRequest) {
     }
   )
 
-  withRefreshRecovery(supabase, { logPrefix: '[Supabase][Server]', context: 'api' })
+  withRefreshRecovery(supabase, {
+    logPrefix: '[Supabase][Server]',
+    context: 'api',
+  })
 
   return supabase
 }
 
+export type ApprovedServiceRoleCapability =
+  | 'users-search'
+  | 'household-disputes'
+  | 'invite-acceptance'
+  | 'invite-preview'
+
+type CreateServiceClientOptions = {
+  approvedCapability?: ApprovedServiceRoleCapability
+}
+
+const APPROVED_SERVICE_ROLE_CAPABILITIES = new Set<ApprovedServiceRoleCapability>([
+  'users-search',
+  'household-disputes',
+  'invite-acceptance',
+  'invite-preview',
+])
+
 // Alternative server client with service role for administrative operations
 // WARNING: This uses the service role key which bypasses RLS
-// Only use for admin operations after proper authorization checks
-export async function createServiceClient() {
+// Only use for admin operations after proper authorization checks, or for an
+// explicit repo-approved capability with route-local auth/resource guards.
+export async function createServiceClient(
+  options: CreateServiceClientOptions = {}
+) {
+  const hasApprovedCapability =
+    options.approvedCapability !== undefined &&
+    APPROVED_SERVICE_ROLE_CAPABILITIES.has(options.approvedCapability)
+
   // Check if caller is authorized to use service role
-  // This should be enhanced based on your specific authorization requirements
-  const isAuthorized = await checkServiceRoleAuthorization()
+  const isAuthorized =
+    hasApprovedCapability || (await checkServiceRoleAuthorization())
 
   if (!isAuthorized) {
     throw new Error('Unauthorized access to service role client')
@@ -159,6 +189,8 @@ export async function createServiceClient() {
   )
 }
 
+const SERVICE_ROLE_AUTHORIZED_ROLES = new Set(['admin'])
+
 // Authorization check for service role usage
 async function checkServiceRoleAuthorization(): Promise<boolean> {
   try {
@@ -175,26 +207,23 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
       return false
     }
 
-    if (!user) return false
+    if (error || !user) return false
 
-    // Check if user has admin role
-    // This is a placeholder - implement your actual admin check logic
-    const { data: profile } = await client
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    const { data: assignment, error: assignmentError } = await client
+      .from('admin_role_assignments')
+      .select('role, enabled, expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-    // Only allow service role for admin users
-    // Adjust this based on your authorization model
-    const role =
-      profile &&
-      typeof profile === 'object' &&
-      'role' in profile &&
-      typeof profile.role === 'string'
-        ? profile.role
-        : undefined
-    return role === 'admin'
+    if (assignmentError || !assignment || !assignment.enabled) return false
+    if (!SERVICE_ROLE_AUTHORIZED_ROLES.has(assignment.role)) return false
+
+    if (assignment.expires_at) {
+      const expiresAt = Date.parse(assignment.expires_at)
+      if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return false
+    }
+
+    return true
   } catch {
     return false
   }
