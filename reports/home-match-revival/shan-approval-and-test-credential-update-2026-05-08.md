@@ -94,3 +94,16 @@ Shan explicitly approved 1Password use and reminded Hermes that the local master
 - Prefer names/metadata-only inspection unless a command needs a secret in-process.
 - Store any derived temporary secret material only under restricted local secret paths and clean up when possible.
 - External paid plan/subscription/billing changes still require explicit approval.
+## 2026-05-08 remote Supabase deletion/reseed authority update
+
+Shan further clarified that existing Supabase users may be removed if helpful because they are all trash/test data. The approved remote-auth strategy is now: delete stale/test users as needed, replace them with a clean documented seed set, and record the resulting fixture contract in repo docs/artifacts.
+
+Operational constraints for workers:
+
+- Treat this as authority for HomeMatch Supabase user cleanup/reseeding only; do not touch unrelated external systems.
+- Before destructive user cleanup, identify the target Supabase project/environment by metadata, not secret values.
+- Never print user passwords, service-role keys, access tokens, refresh tokens, cookies, or raw env values.
+- Prefer clearly named disposable users/fixtures and document their non-secret identifiers, purpose, and cleanup/reseed command.
+- If any account appears plausibly real/non-test despite this guidance, pause and report before deletion.
+- Still ask before spending money, paid plan changes, broad production deploys, or billing-impacting provider changes.
+

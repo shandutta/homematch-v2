@@ -1,4 +1,4 @@
-<!doctype html><meta charset="utf-8"><style>body{font-family:Inter,system-ui,sans-serif;max-width:920px;margin:40px auto;padding:0 20px;line-height:1.5}code{background:#f4f4f5;padding:2px 4px;border-radius:4px}h1,h2,h3{line-height:1.15}</style><h1>HomeMatch Business Revival Operating Plan</h1>
+<!doctype html><meta charset="utf-8"><style>body{font-family:Inter,system-ui,sans-serif;max-width:920px;margin:40px auto;padding:0 20px;line-height:1.5}code{background:#f4f4f5;padding:2px 4px;border-radius:4px}pre{background:#111827;color:#f9fafb;padding:12px;border-radius:8px;overflow:auto}h1,h2,h3{line-height:1.15}</style><h1>HomeMatch Business Revival Operating Plan</h1>
 <p>Updated: 2026-05-08T12:34Z</p>
 <h2>Executive intent</h2>
 <p>HomeMatch is no longer being treated as a fragile dead project. The working goal is to turn it into a credible business: fast, opinionated, shippable, legible, monetizable, and good enough that the couples flow feels obviously better than a generic property search site.</p>
@@ -19,6 +19,8 @@
 <p>Shan approved creating/seeding test users on remote Supabase with full API authority. This unblocks remote/safeguarded auth lifecycle and authenticated traversal work, bounded to disposable test users/fixtures and still excluding paid-resource changes. Workers should use secret-safe admin credentials, never print secrets, and produce cleanup/probe evidence artifacts.</p>
 <h2>2026-05-08 1Password access + remote test seeding update</h2>
 <p>Shan approved use of 1Password and remote Supabase test-user creation/seeding. The control plane verified <code>op</code> sign-in via <code>/home/shan/bin/op_auth</code> without exposing secrets. This unblocks worker execution that retrieves HomeMatch Supabase/Vercel/API secrets through 1Password/helpers and seeds disposable remote test users/fixtures for authenticated traversal/API smoke. No spending, subscriptions, paid plan changes, or broad paid usage without explicit approval.</p>
+<h2>2026-05-08 remote Supabase deletion/reseed approval</h2>
+<p>Shan approved removing existing HomeMatch Supabase users if helpful, because the current population should be treated as trash/test data. Workers may delete stale/test users and replace them with a clean documented seed set for remote auth/API/browser probes. Record the seed fixture contract in docs/artifacts, avoid printing credentials/secrets, and pause only if an account looks plausibly real/non-test or if an action would spend money/change paid resources.</p>
 <h2>Current gate</h2>
 <p>Phase 0 and Phase 1 still gate implementation-heavy later work. That does not mean the broader plan waits. It means later-phase implementation is held while scouts can safely plan, audit, and create acceptance criteria.</p>
 <ul>
@@ -26,7 +28,7 @@
 <li>Phase 1: clean architecture, auth boundary, API/middleware performance, DB shape, local dev, test harness, and dead code. Repo-local remediations are broad, but owner decisions and environment-backed integration/E2E proof remain open.</li>
 <li>Phase 2+: UX/product/business upgrades, gated until Phase 0/1 are clean or Shan approves a written exception.</li>
 </ul>
-<p>Current approval blockers: non-production seeded auth/session, local/test DB reset and integration path, service-role RBAC authority, durable rate-limit storage, production signup verification settings, keep/hide/delete decisions for demo/internal surfaces, and mocked or approved paid/external endpoint checks.</p>
+<p>Current approval blockers: local/test DB reset and integration path beyond approved remote disposable user reseeding, service-role RBAC authority, durable rate-limit storage, production signup verification settings, keep/hide/delete decisions for demo/internal surfaces, and mocked or approved paid/external endpoint checks.</p>
 <h2>Full workstreams from the original instruction</h2>
 <h3>A. Full verification and site traversal</h3>
 <p>Goal: know exactly what works, what is fake, what is slow, and what is broken.</p>

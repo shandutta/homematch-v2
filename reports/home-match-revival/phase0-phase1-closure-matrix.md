@@ -57,10 +57,10 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 
 ## Next blocker / approval list
 
-2026-05-08 update: Shan approved tiny live probes; Shan explicitly approved remote Supabase test-user creation/seeding and clarified that local test-user credentials should be sourced from repo docs/scripts or 1Password/helpers. Blanket approval covers autonomous HomeMatch work except spending money or paid-resource/subscription changes, which still require explicit approval.
+2026-05-08 update: Shan approved tiny live probes; Shan explicitly approved remote Supabase test-user creation/seeding and later approved deleting existing HomeMatch Supabase users if helpful because they are all trash/test data. Replace with clean documented seed fixtures. Local test-user credentials should be sourced from repo docs/scripts or 1Password/helpers. Blanket approval covers autonomous HomeMatch work except spending money or paid-resource/subscription changes, which still require explicit approval.
 
 
-1. Non-production/remote Supabase seeded auth/session path is now approved. Execute bounded disposable test-user/fixture setup, then authenticated browser traversal and API auth smoke execution; preserve cleanup instructions and never print credentials.
+1. Non-production/remote Supabase seeded auth/session path is now approved, including deletion of stale/test HomeMatch Supabase users if helpful. Execute bounded cleanup + disposable test-user/fixture setup, then authenticated browser traversal and API auth smoke execution; preserve the seed contract, cleanup/reseed instructions, and never print credentials.
 2. Approve a safe local/test DB reset, lint, rollback, and integration-test path. Without this, DB/RLS/migration closure remains code/static only.
 3. Approve dedicated `admin_role_assignments` table as the production service-role RBAC authority model, or override with custom claims / explicitly accepted `user_profiles.role`; Phase 1 remains open until the approved model is implemented and guarded.
 4. Choose and provision the durable production rate-limit storage provider, or explicitly accept the in-memory-only launch risk.

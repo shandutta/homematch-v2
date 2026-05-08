@@ -33,6 +33,10 @@ Shan approved creating/seeding test users on remote Supabase with full API autho
 
 Shan approved use of 1Password and remote Supabase test-user creation/seeding. The control plane verified `op` sign-in via `/home/shan/bin/op_auth` without exposing secrets. This unblocks worker execution that retrieves HomeMatch Supabase/Vercel/API secrets through 1Password/helpers and seeds disposable remote test users/fixtures for authenticated traversal/API smoke. No spending, subscriptions, paid plan changes, or broad paid usage without explicit approval.
 
+## 2026-05-08 remote Supabase deletion/reseed approval
+
+Shan approved removing existing HomeMatch Supabase users if helpful, because the current population should be treated as trash/test data. Workers may delete stale/test users and replace them with a clean documented seed set for remote auth/API/browser probes. Record the seed fixture contract in docs/artifacts, avoid printing credentials/secrets, and pause only if an account looks plausibly real/non-test or if an action would spend money/change paid resources.
+
 ## Current gate
 
 Phase 0 and Phase 1 still gate implementation-heavy later work. That does not mean the broader plan waits. It means later-phase implementation is held while scouts can safely plan, audit, and create acceptance criteria.
@@ -41,7 +45,7 @@ Phase 0 and Phase 1 still gate implementation-heavy later work. That does not me
 - Phase 1: clean architecture, auth boundary, API/middleware performance, DB shape, local dev, test harness, and dead code. Repo-local remediations are broad, but owner decisions and environment-backed integration/E2E proof remain open.
 - Phase 2+: UX/product/business upgrades, gated until Phase 0/1 are clean or Shan approves a written exception.
 
-Current approval blockers: non-production seeded auth/session, local/test DB reset and integration path, service-role RBAC authority, durable rate-limit storage, production signup verification settings, keep/hide/delete decisions for demo/internal surfaces, and mocked or approved paid/external endpoint checks.
+Current approval blockers: local/test DB reset and integration path beyond approved remote disposable user reseeding, service-role RBAC authority, durable rate-limit storage, production signup verification settings, keep/hide/delete decisions for demo/internal surfaces, and mocked or approved paid/external endpoint checks.
 
 ## Full workstreams from the original instruction
 
