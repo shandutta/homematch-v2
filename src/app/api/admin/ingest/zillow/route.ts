@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Newest',
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
+    return ApiErrorHandler.unauthorized('unauthorized cron')
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
     process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   if (!rapidApiKey) {
-    return NextResponse.json({ error: 'RAPIDAPI_KEY missing' }, { status: 503 })
+    return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY missing')
   }
 
   // Parse optional query parameters
@@ -166,6 +167,6 @@ export async function POST(req: Request) {
       error: message,
       stack: err instanceof Error ? err.stack : undefined,
     })
-    return NextResponse.json({ error: message }, { status: 500 })
+    return ApiErrorHandler.serverError(message, err)
   }
 }

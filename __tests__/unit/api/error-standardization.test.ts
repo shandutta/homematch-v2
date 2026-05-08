@@ -104,4 +104,23 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
+
+  it.each([
+    'src/app/api/admin/status-refresh/route.ts',
+    'src/app/api/admin/ingest/zillow/route.ts',
+    'src/app/api/admin/generate-vibes/route.ts',
+    'src/app/api/admin/generate-neighborhood-vibes/route.ts',
+    'src/app/api/admin/generate-vibes-zillow/route.ts',
+  ])('%s standardizes admin route-family errors', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('@/lib/api/errors')
+    expect(source).toContain('ApiErrorHandler')
+    expect(source).not.toContain("NextResponse.json({ error: 'unauthorized cron' }")
+    expect(source).not.toContain("NextResponse.json({ error: 'Unauthorized' }")
+    expect(source).not.toContain("{ ok: false, error: 'Unauthorized' }")
+    expect(source).not.toContain('NextResponse.json(\n        { error:')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+    expect(source).not.toContain('NextResponse.json(\n      {\n        ok: false,')
+  })
 })

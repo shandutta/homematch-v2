@@ -7,6 +7,7 @@ import {
 } from '@/lib/services/neighborhood-vibes'
 import { type NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface GenerateNeighborhoodVibesRequest {
   neighborhoodIds?: string[]
@@ -22,10 +23,7 @@ export async function POST(req: Request) {
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(
@@ -35,9 +33,8 @@ export async function POST(req: Request) {
   if (rateLimitResponse) return rateLimitResponse
 
   if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { ok: false, error: 'OPENROUTER_API_KEY not configured' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'OPENROUTER_API_KEY not configured'
     )
   }
 
@@ -90,9 +87,9 @@ export async function POST(req: Request) {
       '[generate-neighborhood-vibes] Failed to load neighborhoods',
       error
     )
-    return NextResponse.json(
-      { ok: false, error: 'Failed to load neighborhoods' },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      'Failed to load neighborhoods',
+      error
     )
   }
 

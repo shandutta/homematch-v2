@@ -144,9 +144,9 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-08 03:08 UTC</code>. Strict
+        Live Kanban status. Updated: <code>2026-05-08 03:12 UTC</code>. Strict
         Phase 0/1 closure mode: M6 API error standardization advanced through
-        remaining couples route-family conversion; Phase 2+ remains held.
+        admin route-family conversion; Phase 2+ remains held.
       </p>
       <div class="grid">
         <div class="card">
@@ -964,6 +964,16 @@
     <li>Converted <code>couples/activity</code>, <code>couples/notify</code>, and <code>couples/disputed</code> raw method-not-allowed, validation, rate-limit, not-found, and server errors to <code>ApiErrorHandler</code>.</li>
     <li><strong>Verification:</strong> RED observed in <code>hm-m6-couples-red-1778209561.service</code>; final targeted Jest passed in <code>hm-m6-couples-green-1778209630.service</code>; resource-limited type-check passed in <code>hm-m6-couples-typecheck-1778209637.service</code>; diff check passed.</li>
     <li><strong>Remaining:</strong> admin/health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
+  </ul>
+</section>
+
+<section id="phase0-phase1-m6-admin-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 admin route-family conversion</h2>
+  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+  <ul>
+    <li>Converted <code>admin/status-refresh</code>, <code>admin/ingest/zillow</code>, <code>admin/generate-vibes</code>, <code>admin/generate-neighborhood-vibes</code>, and <code>admin/generate-vibes-zillow</code> raw unauthorized/config/bad-request/server errors to <code>ApiErrorHandler</code>.</li>
+    <li><strong>Verification:</strong> RED observed in <code>hm-m6-admin-red-1778209853.service</code>; final targeted Jest passed in <code>hm-m6-admin-green-1778209911.service</code>; resource-limited type-check passed in <code>hm-m6-admin-typecheck-1778209919.service</code>; diff check passed.</li>
+    <li><strong>Remaining:</strong> health/performance/maps-script/properties-marketing route-family errors plus broader non-M6 Phase 0/1 blockers.</li>
   </ul>
 </section>
 </main>

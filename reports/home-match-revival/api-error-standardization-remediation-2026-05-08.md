@@ -30,7 +30,8 @@ Status: **M6 partially remediated; Phase 0/1 still not closed**.
 - Route-family targeted: `hm-m6-family-test-final-1778208941.service` passed 3 suites.
 - Maps proxy targeted: `hm-m6-maps-test-final-1778209257.service` passed 3 suites.
 - Remaining couples route-family targeted: `hm-m6-couples-green-1778209630.service` passed.
-- Type-check: `hm-m6-typecheck-1778207696.service`, `hm-m6-interactions-typecheck3-1778208190.service`, and `hm-m6-couples-typecheck-1778209637.service` passed.
+- Admin route-family targeted: `hm-m6-admin-green-1778209911.service` passed.
+- Type-check: `hm-m6-typecheck-1778207696.service`, `hm-m6-interactions-typecheck3-1778208190.service`, `hm-m6-couples-typecheck-1778209637.service`, and `hm-m6-admin-typecheck-1778209919.service` passed.
 - Diff check: passed.
 
 ## Additional M6 route conversion
@@ -40,8 +41,9 @@ Status: **M6 partially remediated; Phase 0/1 still not closed**.
 - Converted the first route family: `couples/check-mutual`, `couples/stats`, `couples/mutual-likes`, `neighborhoods/vibes`, and `properties/vibes` now use `ApiErrorHandler` for auth/client/server errors.
 - Converted paid Google Maps proxy errors in `maps/geocode` and `maps/places/autocomplete` to `ApiErrorHandler`.
 - Converted remaining couples route-family raw errors in `couples/activity`, `couples/notify`, and `couples/disputed` to `ApiErrorHandler` for method-not-allowed, validation, rate-limit, not-found, and server failures.
+- Converted admin route-family raw errors in `admin/status-refresh`, `admin/ingest/zillow`, `admin/generate-vibes`, `admin/generate-neighborhood-vibes`, and `admin/generate-vibes-zillow` to `ApiErrorHandler` for unauthorized cron, config, bad request, and server failures.
 - Regression coverage added to `__tests__/unit/api/error-standardization.test.ts`.
 
 ## Remaining M6 work
 
-- Continue route-family conversions for admin/health/performance/maps-script/properties-marketing remaining API errors.
+- Continue route-family conversions for health/performance/maps-script/properties-marketing remaining API errors.

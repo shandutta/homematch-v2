@@ -4,6 +4,7 @@ import { createVibesService, VibesService } from '@/lib/services/vibes'
 import type { Property, PropertyType } from '@/lib/schemas/property'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface GenerateVibesRequest {
   propertyIds?: string[]
@@ -59,10 +60,7 @@ export async function POST(
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return ApiErrorHandler.unauthorized('Unauthorized') as NextResponse<GenerateVibesResponse>
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(
@@ -75,10 +73,9 @@ export async function POST(
 
   // Check for OpenRouter API key
   if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { ok: false, error: 'OPENROUTER_API_KEY not configured' },
-      { status: 503 }
-    )
+    return ApiErrorHandler.serviceUnavailable(
+      'OPENROUTER_API_KEY not configured'
+    ) as NextResponse<GenerateVibesResponse>
   }
 
   // Parse request
@@ -312,13 +309,10 @@ export async function POST(
     })
   } catch (error) {
     console.error('[generate-vibes] Error:', error)
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError(
+      error instanceof Error ? error.message : 'Unknown error',
+      error
+    ) as NextResponse<GenerateVibesResponse>
   }
 }
 
@@ -374,7 +368,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || querySecret !== secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(

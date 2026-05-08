@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import type { PropertyInsert } from '@/types/database'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -98,16 +99,10 @@ async function fetchDetails(zpid: string) {
 export async function POST(req: Request) {
   try {
     if (!CRON_SECRET) {
-      return NextResponse.json(
-        { error: 'CRON secret not set' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('CRON secret not set')
     }
     if (!RAPIDAPI_KEY) {
-      return NextResponse.json(
-        { error: 'RAPIDAPI_KEY missing' },
-        { status: 503 }
-      )
+      return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY missing')
     }
 
     const url = new URL(req.url)
@@ -150,7 +145,7 @@ export async function POST(req: Request) {
     )
 
     if (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET) {
-      return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
+      return ApiErrorHandler.unauthorized('unauthorized cron')
     }
 
     const rateLimitResponse = await rateLimitAdminRoute(
@@ -174,9 +169,9 @@ export async function POST(req: Request) {
       console.error('[status-refresh] failed to load properties', {
         error: error?.message,
       })
-      return NextResponse.json(
-        { error: error?.message || 'failed to load properties' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        error?.message || 'failed to load properties',
+        error
       )
     }
 
@@ -303,16 +298,7 @@ export async function POST(req: Request) {
           error: nextError.message,
           offset,
         })
-        return NextResponse.json(
-          {
-            error: nextError.message,
-            updated: updates.length,
-            requests,
-            skipped,
-            processed,
-          },
-          { status: 500 }
-        )
+        return ApiErrorHandler.serverError(nextError.message, nextError)
       }
 
       rows = nextPage || []
@@ -330,10 +316,7 @@ export async function POST(req: Request) {
           error: upErr.message,
           updates: updates.length,
         })
-        return NextResponse.json(
-          { error: upErr.message, updated: updates.length, requests, skipped },
-          { status: 500 }
-        )
+        return ApiErrorHandler.serverError(upErr.message, upErr)
       }
     }
 
@@ -361,6 +344,6 @@ export async function POST(req: Request) {
       error: err instanceof Error ? err.message : err,
       stack: err instanceof Error ? err.stack : undefined,
     })
-    return NextResponse.json({ error: 'internal error' }, { status: 500 })
+    return ApiErrorHandler.serverError('internal error', err)
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createVibesService } from '@/lib/services/vibes'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -293,10 +294,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
   const rateLimitResponse = await rateLimitAdminRoute(
@@ -308,16 +306,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   // Check for required API keys
   const rapidApiKey = process.env.RAPIDAPI_KEY
   if (!rapidApiKey) {
-    return NextResponse.json(
-      { ok: false, error: 'RAPIDAPI_KEY not configured' },
-      { status: 503 }
-    )
+    return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY not configured')
   }
 
   if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { ok: false, error: 'OPENROUTER_API_KEY not configured' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'OPENROUTER_API_KEY not configured'
     )
   }
 
@@ -330,18 +324,16 @@ export async function POST(req: Request): Promise<NextResponse> {
       throw new Error('Missing zillowUrl or zpid')
     }
   } catch {
-    return NextResponse.json(
-      { ok: false, error: 'Invalid request body. Provide zillowUrl or zpid.' },
-      { status: 400 }
+    return ApiErrorHandler.badRequest(
+      'Invalid request body. Provide zillowUrl or zpid.'
     )
   }
 
   // Extract zpid
   const zpid = extractZpid(zillowInput)
   if (!zpid) {
-    return NextResponse.json(
-      { ok: false, error: `Could not extract zpid from: ${zillowInput}` },
-      { status: 400 }
+    return ApiErrorHandler.badRequest(
+      `Could not extract zpid from: ${zillowInput}`
     )
   }
 
@@ -389,10 +381,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
 
     if (images.length === 0) {
-      return NextResponse.json(
-        { ok: false, error: 'No images found for this property' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('No images found for this property')
     }
 
     // Build property object for vibes generation
@@ -476,12 +465,9 @@ export async function POST(req: Request): Promise<NextResponse> {
     })
   } catch (error) {
     console.error('[generate-vibes-zillow] Error:', error)
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      error instanceof Error ? error.message : 'Unknown error',
+      error
     )
   }
 }
