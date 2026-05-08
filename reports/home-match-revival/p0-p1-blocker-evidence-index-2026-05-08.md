@@ -72,4 +72,5 @@ Mirrors `p0-p1-blocker-reconciliation-2026-05-08.md` lines 40-48 and `p1-decisio
 - `reports/home-match-revival/p1-route-scoped-limiter-key-closure-2026-05-08.md`
 - `reports/home-match-revival/accessibility-core-flow-matrix.md`
 - `reports/home-match-revival/zillow-provider-production-grade-evaluation-2026-05-08.md`
+- `reports/home-match-revival/security-evidence-index-2026-05-08.md`
 - `config/signup-verification-launch-policy.json`
