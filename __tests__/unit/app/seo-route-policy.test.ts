@@ -8,6 +8,8 @@ import {
   SEO_PUBLIC_ROUTES,
   ROBOTS_DISALLOW_PATHS,
   LEGACY_PRIVATE_PREFIXES,
+  REQUIRED_LEGAL_PUBLIC_PATHS,
+  NOINDEX_PRIVATE_PATHS,
   isSeoPublicRoute,
   isRobotsDisallowedPath,
 } from '../../../src/lib/seo/route-policy'
@@ -88,5 +90,26 @@ describe('SEO route policy', () => {
       allow: '/',
       disallow: ROBOTS_DISALLOW_PATHS,
     })
+  })
+
+  it('keeps legally required public surfaces (privacy, terms, cookies) in the SEO inventory', () => {
+    const publicPaths = SEO_PUBLIC_ROUTES.map((route) => route.path)
+
+    for (const requiredPath of REQUIRED_LEGAL_PUBLIC_PATHS) {
+      expect(publicPaths).toContain(requiredPath)
+      expect(isSeoPublicRoute(requiredPath)).toBe(true)
+      expect(isRobotsDisallowedPath(requiredPath)).toBe(false)
+    }
+  })
+
+  it('keeps noindex auth/token surfaces out of the public sitemap and SEO inventory', () => {
+    const publicPaths = SEO_PUBLIC_ROUTES.map((route) => route.path)
+    const sitemapPaths = sitemap().map((entry) => pathFromUrl(entry.url))
+
+    for (const noindexPath of NOINDEX_PRIVATE_PATHS) {
+      expect(publicPaths).not.toContain(noindexPath)
+      expect(isSeoPublicRoute(noindexPath)).toBe(false)
+      expect(sitemapPaths).not.toContain(noindexPath)
+    }
   })
 })

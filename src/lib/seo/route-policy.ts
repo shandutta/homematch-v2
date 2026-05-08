@@ -21,6 +21,20 @@ export const SEO_PUBLIC_ROUTES: SeoPublicRoute[] = [
   { path: '/cookies', changeFrequency: 'yearly', priority: 0.3 },
 ]
 
+export const REQUIRED_LEGAL_PUBLIC_PATHS = [
+  '/privacy',
+  '/terms',
+  '/cookies',
+] as const
+
+export const NOINDEX_PRIVATE_PATHS = [
+  '/login',
+  '/reset-password',
+  '/verify-email',
+  '/auth/auth-code-error',
+  '/invite/[token]',
+] as const
+
 const EXACT_AND_SLASH_PRIVATE_PATHS = [
   '/api',
   '/api/',
