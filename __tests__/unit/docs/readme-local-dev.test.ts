@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import path from 'path'
+import * as path from 'path'
 
 describe('README local development closure', () => {
   const readme = readFileSync(path.join(process.cwd(), 'README.md'), 'utf8')
@@ -15,5 +15,10 @@ describe('README local development closure', () => {
     expect(readme).toContain('.env.local')
     expect(readme).toContain('Never commit secrets')
     expect(readme).toContain('docs/secrets.md')
+    expect(readme).toContain('`.env.prod` is intentionally untracked')
+    expect(readme).toContain('config/supabase-production-hosts.json')
+    expect(readme).toContain(
+      'store only hostnames there, never keys or database URLs'
+    )
   })
 })

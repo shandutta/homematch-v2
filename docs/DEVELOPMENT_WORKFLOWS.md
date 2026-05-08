@@ -11,6 +11,10 @@ pnpm dev:integration    # Runs integration-test dev server without reset
 pnpm dev:warmup         # Warmup wrapper used by tests
 ```
 
+`pnpm dev` runs the Supabase env guard before starting Next.js. For normal local-only work, keep `.env.local` pointed at localhost, `supabase.local`, or the documented dev proxy. If you intentionally use a remote Supabase project for a read-only local dev loop, run `SKIP_SUPABASE_GUARD=true pnpm dev` and do not run mutation, reset, integration, cron, or admin workflows against real production data.
+
+`.env.prod` is intentionally untracked and not required for local dev. The guard keeps precision without committing secrets by reading `config/supabase-production-hosts.json`, which may contain production hostnames only. Never put API keys, service-role keys, passwords, database URLs, or copied `.env.prod` values in tracked files.
+
 ## Code Quality
 
 ```bash

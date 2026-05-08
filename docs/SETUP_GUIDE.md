@@ -35,6 +35,8 @@ cp .env.example .env.local
 
 2. Fill in `.env.local`. `.env.example` is the source of truth.
 
+Do not create or commit `.env.prod` for routine local development. Production credentials belong in local/untracked files or an approved secrets manager only. The Supabase guard still blocks known production hosts without `.env.prod` by using the tracked non-secret host list in `config/supabase-production-hosts.json`; that file must contain hostnames only, never keys, passwords, or database URLs.
+
 ### Required for local dev
 
 - `SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_URL`
@@ -69,6 +71,7 @@ pnpm dev
 `pnpm dev` will:
 
 - Validate required Supabase env values
+- Block `.env.local` values that point at tracked production Supabase hosts or real `supabase.*` host patterns unless `SKIP_SUPABASE_GUARD=true` is set intentionally for a read-only local dev loop
 - Generate `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` if missing
 - Start the Next.js dev server on port 3000
 

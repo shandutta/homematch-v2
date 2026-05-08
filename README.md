@@ -33,10 +33,12 @@ Docker is optional for the default development loop. Use it only for local datab
 
 Secrets: keep real credentials in local/untracked env files or an approved secrets manager. Never commit secrets, production env values, API keys, service-role keys, or database URLs. See `docs/secrets.md` for scanning and handling guidance.
 
+Production env files: `.env.prod` is intentionally untracked and should not be created or committed for normal local development. The Supabase guard uses the tracked non-secret host list at `config/supabase-production-hosts.json` plus `supabase.*` host-pattern checks when `.env.prod` is absent; store only hostnames there, never keys or database URLs. If you intentionally point `.env.local` at a remote Supabase project for a read-only local dev loop, use `SKIP_SUPABASE_GUARD=true pnpm dev`; use the explicit local DB path for mutation/integration work.
+
 ## Essential Commands
 
 ```bash
-pnpm dev                # Fast local Next.js dev loop; no DB reset
+pnpm dev                # Fast local Next.js dev loop; no DB reset; guarded against production Supabase hosts
 pnpm dev:db             # Start/reset local Supabase + seed + test users
 pnpm dev:integration    # Integration-test dev server; no reset
 pnpm build              # Production build
