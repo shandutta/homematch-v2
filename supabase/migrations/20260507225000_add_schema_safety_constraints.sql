@@ -24,6 +24,11 @@ BEGIN
       NOT VALID;
   END IF;
 
+  -- Bedroom/bathroom zero is intentional, not a missed positive check:
+  -- 0 bedrooms represents studio/loft-style listings, and 0 bathrooms is
+  -- the repo's current unknown/missing-value sentinel for external ingestion
+  -- and defensive API fallbacks. Keep both fields non-negative rather than
+  -- positive until product introduces a separate unknown/nullable model.
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'chk_properties_bedrooms_non_negative'
   ) THEN

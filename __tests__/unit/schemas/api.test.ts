@@ -355,6 +355,18 @@ describe('API Schema Validation', () => {
       }
     })
 
+    test('should preserve zero bedroom and bathroom query bounds', () => {
+      const result = propertySearchQuerySchema.safeParse({
+        bedrooms_min: '0',
+        bathrooms_min: '0',
+      })
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.bedrooms_min).toBe(0)
+        expect(result.data.bathrooms_min).toBe(0)
+      }
+    })
+
     test('should split comma-separated property_types', () => {
       const result = propertySearchQuerySchema.safeParse({
         property_types: 'single_family,condo,townhome',

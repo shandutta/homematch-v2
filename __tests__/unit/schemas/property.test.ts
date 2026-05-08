@@ -46,6 +46,38 @@ describe('Property Schema Validation', () => {
       expect(result.success).toBe(true)
     })
 
+    test('should accept zero bedrooms and bathrooms for studio and unknown-value semantics', () => {
+      const studioOrUnknownProperty = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        zpid: 'zpid_0_semantics',
+        address: '0 Studio Way',
+        city: 'San Francisco',
+        state: 'CA',
+        zip_code: '94102',
+        price: 850000,
+        bedrooms: 0,
+        bathrooms: 0,
+        square_feet: null,
+        property_type: 'condo',
+        images: null,
+        description: null,
+        coordinates: null,
+        neighborhood_id: null,
+        amenities: null,
+        year_built: null,
+        lot_size_sqft: null,
+        parking_spots: null,
+        listing_status: 'active',
+        property_hash: null,
+        is_active: true,
+        created_at: '2024-01-01T00:00:00.000Z',
+        updated_at: '2024-01-01T00:00:00.000Z',
+      }
+
+      const result = propertySchema.safeParse(studioOrUnknownProperty)
+      expect(result.success).toBe(true)
+    })
+
     test('should reject invalid property data with clear error messages', () => {
       const invalidProperty = {
         id: 'invalid-uuid',

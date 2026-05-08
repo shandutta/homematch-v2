@@ -56,6 +56,8 @@ export const propertySchema = z.object({
   price: numberFromString(
     z.number().min(0, { message: 'Number must be greater than or equal to 0' })
   ),
+  // Zero is deliberate: 0 bedrooms covers studios/lofts, and 0 bathrooms is
+  // the current unknown/missing-value sentinel for external listing ingestion.
   bedrooms: numberFromString(
     z
       .number()
