@@ -16,10 +16,14 @@ const {
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
 const envTestPath = path.join(__dirname, '..', '.env.test.local')
+const preserveLocalSeededAuthEnv =
+  process.env.LOCAL_SEEDED_AUTH_LIFECYCLE === 'true'
 dotenv.config({ path: envLocalPath })
-// Let .env.test.local override .env.local for local/proxy test runs
+// Let .env.test.local override .env.local for local/proxy test runs, except
+// when the explicit local auth lifecycle wrapper has pinned Supabase to
+// loopback to prevent accidental remote/project data mutation.
 if (fs.existsSync(envTestPath)) {
-  dotenv.config({ path: envTestPath, override: true })
+  dotenv.config({ path: envTestPath, override: !preserveLocalSeededAuthEnv })
 }
 
 let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'

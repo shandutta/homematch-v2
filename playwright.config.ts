@@ -32,12 +32,17 @@ const resolveBaseUrl = () => {
 // over any shell environment variables (e.g., NEXT_PUBLIC_SUPABASE_URL)
 const envCandidates = ['.env.test.local', '.env.prod', '.env.local']
 const loadedEnvFiles: string[] = []
+const preserveLocalSeededAuthEnv =
+  process.env.LOCAL_SEEDED_AUTH_LIFECYCLE === 'true'
 
 for (const file of envCandidates) {
   const envPath = path.resolve(__dirname, file)
   if (fs.existsSync(envPath)) {
-    // Use override for .env.test.local to ensure test config takes precedence
-    const override = file === '.env.test.local'
+    // Use override for .env.test.local to ensure test config takes precedence,
+    // except for the explicit local seeded auth lifecycle wrapper. That wrapper
+    // must pin Supabase to loopback so it cannot be accidentally redirected to a
+    // real/remote project by .env.test.local.
+    const override = file === '.env.test.local' && !preserveLocalSeededAuthEnv
     dotenv.config({ path: envPath, override })
     loadedEnvFiles.push(file)
   }

@@ -35,6 +35,7 @@
     "test:e2e": "pnpm run test:e2e:ui-tests",
     "test:e2e:ui-tests": "cross-env NEXT_PUBLIC_TEST_MODE=true node scripts/playwright-wrapper.js test",
     "test:e2e:smoke": "node scripts/playwright-wrapper.js test __tests__/e2e/smoke-min.spec.ts",
+    "test:e2e:auth-lifecycle:local": "node scripts/run-local-seeded-auth-lifecycle.js",
     "test:e2e:ui": "node scripts/playwright-wrapper.js test --ui",
     "test:e2e:headed": "node scripts/playwright-wrapper.js test --headed",
     "test:e2e:validate": "node scripts/validate-e2e-setup.js",
