@@ -36,7 +36,7 @@ const EXACT_AND_SLASH_PRIVATE_PATHS = [
   '/supabase/',
 ] as const
 
-const LEGACY_PRIVATE_PREFIXES = ['/account', '/admin'] as const
+export const LEGACY_PRIVATE_PREFIXES = ['/account', '/admin'] as const
 
 export const ROBOTS_DISALLOW_PATHS: string[] = [
   ...PROTECTED_PATH_PREFIXES,

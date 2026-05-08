@@ -7,6 +7,7 @@ import sitemap from '../../../src/app/sitemap'
 import {
   SEO_PUBLIC_ROUTES,
   ROBOTS_DISALLOW_PATHS,
+  LEGACY_PRIVATE_PREFIXES,
   isSeoPublicRoute,
   isRobotsDisallowedPath,
 } from '../../../src/lib/seo/route-policy'
@@ -56,6 +57,27 @@ describe('SEO route policy', () => {
     for (const path of excludedPaths) {
       expect(isRobotsDisallowedPath(path)).toBe(true)
     }
+  })
+
+  it('keeps legacy private prefixes (/account, /admin) excluded from robots', () => {
+    for (const prefix of LEGACY_PRIVATE_PREFIXES) {
+      expect(ROBOTS_DISALLOW_PATHS).toContain(prefix)
+      expect(isRobotsDisallowedPath(prefix)).toBe(true)
+      expect(isRobotsDisallowedPath(`${prefix}/nested`)).toBe(true)
+    }
+  })
+
+  it('keeps no SEO public route inside the robots disallow list', () => {
+    for (const route of SEO_PUBLIC_ROUTES) {
+      expect(ROBOTS_DISALLOW_PATHS).not.toContain(route.path)
+      expect(isRobotsDisallowedPath(route.path)).toBe(false)
+    }
+  })
+
+  it('strips query strings and hash fragments before matching', () => {
+    expect(isRobotsDisallowedPath('/dashboard?tab=matches')).toBe(true)
+    expect(isRobotsDisallowedPath('/auth/callback#token=x')).toBe(true)
+    expect(isRobotsDisallowedPath('/?ref=google')).toBe(false)
   })
 
   it('serves robots.txt from the shared policy', () => {
