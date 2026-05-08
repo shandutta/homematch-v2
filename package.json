@@ -5,6 +5,7 @@
   "scripts": {
     "db:reset": "node scripts/dev-supabase-reset.js",
     "guard:supabase": "node scripts/guard-supabase-env.js",
+    "db:validate:plan": "node scripts/db-validation-evidence-runner.js",
     "ensure:docker": "node scripts/ensure-docker.js",
     "ensure:server-action-key": "node scripts/ensure-server-action-key.js",
     "dev": "pnpm run guard:supabase && pnpm run ensure:server-action-key && node scripts/kill-port.js 3000 && next dev --hostname 0.0.0.0 --port 3000",
