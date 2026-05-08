@@ -8,23 +8,41 @@ import { join } from 'path'
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('Phase 1 M6 shared error standardization', () => {
-  it.each([
-    'src/lib/api/admin-rate-limit.ts',
-    'src/lib/middleware/rateLimiter.ts',
-  ])('%s uses ApiErrorHandler for shared error responses', (path) => {
-    const source = read(path)
+  it('middleware rate limiter uses ApiErrorHandler for shared error responses', () => {
+    const source = read('src/lib/middleware/rateLimiter.ts')
 
     expect(source).toContain('@/lib/api/errors')
     expect(source).toContain('ApiErrorHandler')
   })
 
-  it('admin route limiter returns standardized 429 responses', () => {
+  it('admin route limiter delegates to the shared standardized limiter', () => {
     const source = read('src/lib/api/admin-rate-limit.ts')
 
-    expect(source).toContain('ApiErrorHandler.tooManyRequests')
+    expect(source).toContain('@/lib/middleware/rateLimiter')
+    expect(source).toContain('checkRateLimit')
     expect(source).not.toContain(
       "NextResponse.json(\n    { error: 'Too many requests"
     )
+  })
+
+  it.each([
+    'src/app/api/interactions/route.ts',
+    'src/app/api/maps/geocode/route.ts',
+    'src/app/api/maps/places/autocomplete/route.ts',
+  ])('%s delegates 429 responses to the shared standardized limiter', (path) => {
+    const source = read(path)
+
+    expect(source).toContain('@/lib/middleware/rateLimiter')
+    expect(source).toContain('checkRateLimit')
+    expect(source).not.toContain(
+      "NextResponse.json(\n        { error: 'Too many requests"
+    )
+  })
+
+  it('shared rate limiter returns standardized 429 responses', () => {
+    const source = read('src/lib/middleware/rateLimiter.ts')
+
+    expect(source).toContain('ApiErrorHandler.tooManyRequests')
   })
 
   it('middleware rate limiter returns standardized 429, 401, and 500 responses', () => {
@@ -40,7 +58,7 @@ describe('Phase 1 M6 route error standardization', () => {
   it('fully standardizes the mixed interactions route', () => {
     const source = read('src/app/api/interactions/route.ts')
 
-    expect(source).toContain('ApiErrorHandler.tooManyRequests')
+    expect(source).toContain('checkRateLimit')
     expect(source).toContain('ApiErrorHandler.gatewayTimeout')
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
@@ -77,7 +95,7 @@ describe('Phase 1 M6 route error standardization', () => {
   ])('%s standardizes paid Google Maps proxy errors', (path) => {
     const source = read(path)
 
-    expect(source).toContain('ApiErrorHandler.tooManyRequests')
+    expect(source).toContain('checkRateLimit')
     expect(source).toContain('ApiErrorHandler.serviceUnavailable')
     expect(source).toContain('ApiErrorHandler.badRequest')
     expect(source).toContain('ApiErrorHandler.serverError')

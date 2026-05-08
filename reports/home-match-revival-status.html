@@ -145,7 +145,7 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08T07:44Z steward reconciliation + Phase 0 evidence committed</code>. Strict Phase 0/1 closure
+        <code>2026-05-08T07:50Z M6/M10 429 guard reconciled</code>. Strict Phase 0/1 closure
         mode remains active. This status page now points to the canonical
         control-plane plan and treats older later-phase sections below as
         historical, not active authorization.
@@ -175,17 +175,31 @@
 
 
       <section>
-        <h2>Latest control-plane action — Phase 0 evidence fan-in and decision register</h2>
+        <h2>Latest control-plane action — M6/M10 429 guard reconciliation</h2>
+        <p>
+          <span class="pill good">TESTED FIX</span> The failing <code>error-standardization.test.ts</code> guard was classified as stale after M10 consolidation and updated to verify the shared standardized 429 path.
+        </p>
+        <ul>
+          <li>Classification: no production 429 regression found; the four flagged callers now delegate to <code>checkRateLimit(...)</code>.</li>
+          <li>Shared implementation evidence: <code>src/lib/middleware/rateLimiter.ts</code> returns <code>ApiErrorHandler.tooManyRequests(...)</code> with rate-limit headers.</li>
+          <li>Test update: <code>__tests__/unit/api/error-standardization.test.ts</code> now guards both the shared helper and the route/admin delegation path.</li>
+          <li>Verification: resource-limited targeted Jest passed 30/30 for <code>__tests__/unit/api/error-standardization.test.ts</code>.</li>
+          <li>Phase 0 remains open on authenticated probes, metro-boundaries public-route behavior, and env-prod policy.</li>
+          <li>Phase 1 remains open/blocked on E2E auth, dependency cleanup, duplicate Supabase factory consolidation, pg_trgm decision, README/local-dev validation cleanup, and named owner decisions.</li>
+          <li>Phase 2+ implementation remains held until Phase 0/1 are 100% clean or Shan approves a written gate exception.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Previous control-plane action — Phase 0 evidence fan-in and decision register</h2>
         <p>
           <span class="pill warn">ACTIVE GATE</span> The steward reconciled completed Phase 0/1 evidence, kept Phase 2+ held, and identified the next safe repo-local slice.
         </p>
         <ul>
           <li>New artifacts: <code>reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md</code> and <code>reports/home-match-revival/p1-decision-needed-register-2026-05-08.md</code>.</li>
-          <li>Board now has no running or ready tasks; stale later-phase roadmap tasks remain dependency-gated, not active authorization.</li>
-          <li>Phase 0 remains open on authenticated probes, metro-boundaries public-route behavior, test-quality triage, and env-prod policy.</li>
-          <li>Phase 1 remains open/blocked on E2E auth, dependency cleanup, duplicate Supabase factory consolidation, pg_trgm decision, README/local-dev validation cleanup, and named owner decisions.</li>
-          <li>Next safe repo-local action: classify/fix the <code>error-standardization.test.ts</code> 429 guard without deploys, paid APIs, browser swarms, or broad installs.</li>
-          <li>Phase 2+ implementation remains held until Phase 0/1 are 100% clean or Shan approves a written gate exception.</li>
+          <li>Board had no running or ready tasks at reconciliation time; stale later-phase roadmap tasks remain dependency-gated, not active authorization.</li>
+          <li>Phase 0 remained open on authenticated probes, metro-boundaries public-route behavior, test-quality triage, and env-prod policy.</li>
+          <li>Next safe repo-local action was to classify/fix the <code>error-standardization.test.ts</code> 429 guard without deploys, paid APIs, browser swarms, or broad installs.</li>
         </ul>
       </section>
 
