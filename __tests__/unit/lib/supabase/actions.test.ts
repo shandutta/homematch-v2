@@ -36,12 +36,6 @@ jest.mock('@/lib/utils/server-url', () => ({
 
 import { __auth as supabaseAuth, createClient } from '@/lib/supabase/server'
 
-const buildFormData = (entries: Record<string, string>) => {
-  const fd = new FormData()
-  Object.entries(entries).forEach(([k, v]) => fd.append(k, v))
-  return fd
-}
-
 describe('supabase actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()

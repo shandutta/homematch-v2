@@ -14,19 +14,17 @@
  * regression cannot ship even when the E2E gate is skipped.
  */
 
-import { createServerClient } from '@supabase/ssr'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { NextRequest } from 'next/server'
 import { middleware } from '../../../middleware'
 
 const mockGetUser = jest.fn()
+const createServerClientMock = jest.fn()
 
 jest.mock('@supabase/ssr', () => ({
-  createServerClient: jest.fn(),
+  createServerClient: (...args: unknown[]) => createServerClientMock(...args),
 }))
-
-const mockedCreateServerClient = jest.mocked(createServerClient)
 
 const AUTH_COOKIE_NAME =
   'sb-localhost-example-supabase-co-anon-key-auth-token'
@@ -37,12 +35,9 @@ const installAuthenticatedSupabaseMock = () => {
     error: null,
   })
 
-  mockedCreateServerClient.mockImplementation(
-    () =>
-      ({
-        auth: { getUser: mockGetUser },
-      }) as ReturnType<typeof createServerClient>
-  )
+  createServerClientMock.mockImplementation(() => ({
+    auth: { getUser: mockGetUser },
+  }))
 }
 
 const makeAuthedLoginRequest = (search: string) =>
@@ -69,7 +64,7 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
       NODE_ENV: 'production',
     }
-    mockedCreateServerClient.mockReset()
+    createServerClientMock.mockReset()
     mockGetUser.mockReset()
     installAuthenticatedSupabaseMock()
   })
@@ -110,7 +105,7 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
       expect(response.status).toBe(307)
       const location = response.headers.get('location')
       expect(location).not.toBeNull()
-      const parsed = new URL(location as string)
+      const parsed = new URL(location ?? '')
       // Critical: the redirect Location header must point at the local origin,
       // never at an attacker-controlled host or scheme.
       expect(parsed.origin).toBe('http://localhost:3000')
@@ -169,7 +164,7 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
     )
 
     expect(response.status).toBe(307)
-    const parsed = new URL(response.headers.get('location') as string)
+    const parsed = new URL(response.headers.get('location') ?? '')
     expect(parsed.origin).toBe('http://localhost:3000')
     expect(parsed.pathname).toBe('/dashboard')
   })
@@ -180,7 +175,7 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
     )
     expect(externalResponse.status).toBe(307)
     const externalParsed = new URL(
-      externalResponse.headers.get('location') as string
+      externalResponse.headers.get('location') ?? ''
     )
     expect(externalParsed.origin).toBe('http://localhost:3000')
     expect(externalParsed.pathname).toBe('/dashboard')

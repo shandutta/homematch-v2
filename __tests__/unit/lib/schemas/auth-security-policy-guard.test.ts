@@ -110,14 +110,14 @@ describe('auth schemas — server form validation security policy', () => {
         is_admin: true,
         household_id: 'attacker-controlled',
         role: 'service_role',
-      } as Record<string, unknown>
+      }
       const result = SignupSchema.safeParse(payload)
       expect(result.success).toBe(true)
       if (result.success) {
-        const data = result.data as Record<string, unknown>
-        expect('is_admin' in data).toBe(false)
-        expect('household_id' in data).toBe(false)
-        expect('role' in data).toBe(false)
+        const keys = Object.keys(result.data)
+        expect(keys).not.toContain('is_admin')
+        expect(keys).not.toContain('household_id')
+        expect(keys).not.toContain('role')
       }
     })
   })

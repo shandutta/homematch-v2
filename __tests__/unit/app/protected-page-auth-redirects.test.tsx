@@ -19,6 +19,7 @@ const mockUserServiceConstructor = jest.fn(() => ({
   createUserProfile: mockCreateUserProfile,
 }))
 const mockLoadDashboardData = jest.fn()
+const createClientMock = jest.fn()
 
 jest.mock('next/navigation', () => ({
   __esModule: true,
@@ -28,7 +29,7 @@ jest.mock('next/navigation', () => ({
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
-  createClient: jest.fn(),
+  createClient: (...args: unknown[]) => createClientMock(...args),
 }))
 
 jest.mock('@/lib/services/users', () => ({
@@ -84,7 +85,6 @@ jest.mock('@/app/household/join/JoinHouseholdForm', () => ({
   JoinHouseholdForm: () => React.createElement('div', null, 'join-form'),
 }))
 
-import { createClient } from '@/lib/supabase/server'
 import DashboardPage from '@/app/dashboard/page'
 import CouplesPage from '@/app/couples/page'
 import ProfilePage from '@/app/profile/page'
@@ -93,34 +93,31 @@ import CreateHouseholdPage from '@/app/household/create/page'
 import JoinHouseholdPage from '@/app/household/join/page'
 import PropertyPage from '@/app/properties/[id]/page'
 
-const mockedCreateClient = jest.mocked(createClient)
-
-const buildAnonymousSupabaseStub = () =>
-  ({
-    auth: {
-      getUser: mockGetUser,
-    },
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
+const buildAnonymousSupabaseStub = () => ({
+  auth: {
+    getUser: mockGetUser,
+  },
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
         eq: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            maybeSingle: jest.fn().mockResolvedValue({
-              data: null,
-              error: null,
-            }),
-          })),
-          single: jest.fn().mockResolvedValue({
-            data: null,
-            error: null,
-          }),
           maybeSingle: jest.fn().mockResolvedValue({
             data: null,
             error: null,
           }),
         })),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
+        maybeSingle: jest.fn().mockResolvedValue({
+          data: null,
+          error: null,
+        }),
       })),
     })),
-  }) as unknown as Awaited<ReturnType<typeof createClient>>
+  })),
+})
 
 describe('protected app pages auth redirects', () => {
   beforeEach(() => {
@@ -137,7 +134,7 @@ describe('protected app pages auth redirects', () => {
       getUserActivitySummary: mockGetUserActivitySummary,
       createUserProfile: mockCreateUserProfile,
     }))
-    mockedCreateClient.mockResolvedValue(buildAnonymousSupabaseStub())
+    createClientMock.mockResolvedValue(buildAnonymousSupabaseStub())
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null })
     mockGetUserProfile.mockResolvedValue({ preferences: null })
     mockGetUserProfileWithHousehold.mockResolvedValue(null)

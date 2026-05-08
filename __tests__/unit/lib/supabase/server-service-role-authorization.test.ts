@@ -13,9 +13,12 @@ import {
 
 jest.unmock('@/lib/supabase/server')
 
-const createServerClientMock = jest.fn<any>()
-const cookiesSetMock = jest.fn<any>()
-const headersGetMock = jest.fn<any>()
+type AnyMockFn = (...args: unknown[]) => unknown
+type AnyAsyncMockFn = (...args: unknown[]) => Promise<unknown>
+
+const createServerClientMock = jest.fn<AnyMockFn>()
+const cookiesSetMock = jest.fn<AnyMockFn>()
+const headersGetMock = jest.fn<AnyMockFn>()
 let warnSpy: jest.SpiedFunction<typeof console.warn>
 
 jest.mock('@supabase/ssr', () => ({
@@ -51,22 +54,24 @@ function createAuthorizationClient({
   assignment?: Assignment | null
   assignmentError?: unknown
 } = {}) {
-  const maybeSingleMock = jest.fn<any>().mockResolvedValue({
+  const maybeSingleMock = jest.fn<AnyAsyncMockFn>().mockResolvedValue({
     data: assignment,
     error: assignmentError,
   })
-  const eqMock = jest.fn<any>(() => ({ maybeSingle: maybeSingleMock }))
-  const selectMock = jest.fn<any>(() => ({ eq: eqMock }))
-  const fromMock = jest.fn<any>(() => ({ select: selectMock }))
-  const authGetUserMock = jest.fn<any>().mockResolvedValue({
+  const eqMock = jest.fn<AnyMockFn>(() => ({ maybeSingle: maybeSingleMock }))
+  const selectMock = jest.fn<AnyMockFn>(() => ({ eq: eqMock }))
+  const fromMock = jest.fn<AnyMockFn>(() => ({ select: selectMock }))
+  const authGetUserMock = jest.fn<AnyAsyncMockFn>().mockResolvedValue({
     data: { user: userId ? { id: userId } : null },
     error: getUserError,
   })
-  const authGetSessionMock = jest.fn<any>().mockResolvedValue({
+  const authGetSessionMock = jest.fn<AnyAsyncMockFn>().mockResolvedValue({
     data: { session: null },
     error: null,
   })
-  const authSignOutMock = jest.fn<any>().mockResolvedValue({ error: null })
+  const authSignOutMock = jest
+    .fn<AnyAsyncMockFn>()
+    .mockResolvedValue({ error: null })
 
   const client = {
     auth: {

@@ -17,15 +17,15 @@ import {
 } from '../../src/middleware'
 
 const mockGetUser = jest.fn()
+const mockedCreateServerClient =
+  jest.fn<(...args: Parameters<typeof createServerClient>) => unknown>()
 
 jest.mock('@supabase/ssr', () => ({
-  createServerClient: jest.fn(),
+  createServerClient: (...args: unknown[]) => mockedCreateServerClient(...args),
 }))
 
 const makeRequest = (path: string, init?: RequestInit) =>
   new NextRequest(new URL(path, 'http://localhost:3000'), init)
-
-const mockedCreateServerClient = jest.mocked(createServerClient)
 
 const installDefaultSupabaseMiddlewareMock = () => {
   mockGetUser.mockResolvedValue({
@@ -46,7 +46,7 @@ const installDefaultSupabaseMiddlewareMock = () => {
       auth: {
         getUser: mockGetUser,
       },
-    } as ReturnType<typeof createServerClient>
+    }
   })
 }
 
