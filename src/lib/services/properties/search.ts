@@ -18,6 +18,38 @@ import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
 import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
+type PropertyStatsRpcRow = {
+  total_properties: number | string | null
+  avg_price: number | string | null
+  median_price: number | string | null
+  avg_bedrooms: number | string | null
+  avg_bathrooms: number | string | null
+  avg_square_feet: number | string | null
+  property_type_distribution: Record<string, number> | null
+}
+
+const toRoundedNumber = (value: number | string | null): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric) : 0
+}
+
+const toRoundedTenth = (value: number | string | null): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric * 10) / 10 : 0
+}
+
+const normalizePropertyStatsRpcRow = (
+  row: PropertyStatsRpcRow | null | undefined
+): PropertyStats => ({
+  total_properties: toRoundedNumber(row?.total_properties ?? null),
+  avg_price: toRoundedNumber(row?.avg_price ?? null),
+  median_price: toRoundedNumber(row?.median_price ?? null),
+  avg_bedrooms: toRoundedTenth(row?.avg_bedrooms ?? null),
+  avg_bathrooms: toRoundedTenth(row?.avg_bathrooms ?? null),
+  avg_square_feet: toRoundedNumber(row?.avg_square_feet ?? null),
+  property_type_distribution: row?.property_type_distribution ?? {},
+})
+
 export class PropertySearchService
   extends BaseService
   implements IPropertySearchService
@@ -247,61 +279,13 @@ export class PropertySearchService
     const result = await this.executeQuery(
       'getPropertyStats',
       async (supabase) => {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('price, bedrooms, bathrooms, square_feet, property_type')
-          .eq('is_active', true)
+        const { data, error } = await supabase.rpc('get_property_stats', {})
 
         if (error) {
           this.handleSupabaseError(error, 'getPropertyStats', {})
         }
 
-        const properties = data || []
-        const totalProperties = properties.length
-
-        if (totalProperties === 0) {
-          return fallbackStats
-        }
-
-        const prices = properties.map((p) => p.price).sort((a, b) => a - b)
-        const avgPrice =
-          prices.reduce((sum, price) => sum + price, 0) / totalProperties
-        const medianPrice = prices[Math.floor(totalProperties / 2)]
-
-        const avgBedrooms =
-          properties.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
-        const avgBathrooms =
-          properties.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
-
-        const propertiesWithSquareFeet = properties.filter(
-          (p) => p.square_feet !== null
-        )
-        const avgSquareFeet =
-          propertiesWithSquareFeet.length > 0
-            ? propertiesWithSquareFeet.reduce(
-                (sum, p) => sum + (p.square_feet || 0),
-                0
-              ) / propertiesWithSquareFeet.length
-            : 0
-
-        const typeDistribution = properties.reduce<Record<string, number>>(
-          (acc, p) => {
-            const type = p.property_type || 'unknown'
-            acc[type] = (acc[type] || 0) + 1
-            return acc
-          },
-          {}
-        )
-
-        return {
-          total_properties: totalProperties,
-          avg_price: Math.round(avgPrice),
-          median_price: medianPrice,
-          avg_bedrooms: Math.round(avgBedrooms * 10) / 10,
-          avg_bathrooms: Math.round(avgBathrooms * 10) / 10,
-          avg_square_feet: Math.round(avgSquareFeet),
-          property_type_distribution: typeDistribution,
-        }
+        return normalizePropertyStatsRpcRow(data as PropertyStatsRpcRow | null)
       }
     )
 

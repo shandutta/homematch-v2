@@ -4,6 +4,18 @@ type PropertyRow = Database['public']['Tables']['properties']['Row']
 type NeighborhoodRow = Database['public']['Tables']['neighborhoods']['Row']
 
 type AdditionalFunctions = {
+  get_property_stats: {
+    Args: Record<string, never>
+    Returns: {
+      total_properties: number
+      avg_price: number
+      median_price: number
+      avg_bedrooms: number
+      avg_bathrooms: number
+      avg_square_feet: number
+      property_type_distribution: Record<string, number>
+    }
+  }
   create_household_for_user: {
     Args: {
       p_name: string | null

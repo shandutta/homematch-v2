@@ -144,7 +144,7 @@
     <main>
       <h1>Home Match Revival</h1>
       <p class="meta">
-        Live Kanban status. Updated: <code>2026-05-07 23:46 UTC</code>. Phase
+        Live Kanban status. Updated: <code>2026-05-08 00:00 UTC</code>. Phase
         0/1 reconciliation complete; bounded Phase 1 DB/RLS/security and Phase 2
         SEO/auth-cookie hardening slices verified.
       </p>
@@ -166,7 +166,7 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 25 · running 0 · blocked 6 · ready 0 · todo 2
+            done 26 · running 0 · blocked 6 · ready 0 · todo 2
           </div>
         </div>
       </div>
@@ -273,6 +273,27 @@
             <strong>Verification:</strong> static migration test failed first
             with missing migration, then passed; resource-limited type-check
             passed.
+          </li>
+        </ul>
+
+        <ul>
+          <li>
+            <strong>Property stats aggregation:</strong> Added repo-only
+            migration
+            <code>20260508000000_add_property_stats_rpc.sql</code> with
+            <code>public.get_property_stats()</code> DB-side aggregation for
+            count, averages, median, and property-type distribution.
+          </li>
+          <li>
+            <strong>Service path:</strong> Updated
+            <code>PropertySearchService.getPropertyStats()</code> to call the
+            RPC instead of loading every active property row into app memory.
+          </li>
+          <li>
+            <strong>Verification:</strong> service unit test failed first
+            against the row-loading implementation; static migration test failed
+            first with missing migration; both now pass with resource-limited
+            type-check.
           </li>
         </ul>
       </section>
@@ -556,6 +577,12 @@
               <td><span class="pill good">done</span></td>
             </tr>
             <tr>
+              <td><code>t_ee1c7827</code></td>
+              <td>P1.R7 property stats RPC aggregation</td>
+              <td>backend-eng</td>
+              <td><span class="pill good">done</span></td>
+            </tr>
+            <tr>
               <td><code>t_4d997654</code></td>
               <td>P2 frontend design refinement pass</td>
               <td>frontend-eng</td>
@@ -616,6 +643,21 @@
       <section>
         <h2>What changed in this run</h2>
         <ul>
+          <li>
+            ✅ Added repo-only <code>get_property_stats()</code> SQL aggregation
+            RPC and switched
+            <code>PropertySearchService.getPropertyStats()</code> away from the
+            unbounded active-properties row scan.
+          </li>
+          <li>
+            ✅ Added TDD coverage: service unit test confirmed RPC use/no
+            <code>from('properties')</code> scan on success; static migration
+            test confirmed DB-side aggregate invariants.
+          </li>
+          <li>
+            ✅ Verification: resource-limited targeted Jest and
+            <code>pnpm type-check</code> passed under <code>systemd-run</code>.
+          </li>
           <li>
             ✅ Added repo-only properties RLS policy hardening migration and
             static Jest coverage that failed before the migration existed and
