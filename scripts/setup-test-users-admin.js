@@ -604,14 +604,22 @@ async function setupTestUsers() {
     )
   })
 
-  // Friendly reminder for developers running pnpm dev
+  // Friendly reminder for developers running pnpm dev. Remote/CI workers can
+  // suppress passwords in logs while still listing seeded accounts by email.
   const primaryUser = testUsers[0]
   const secondaryUser = testUsers[1]
+  const redactCredentials =
+    process.env.SETUP_TEST_USERS_REDACT_OUTPUT === 'true'
   console.log('\n🔑 Test users ready for dev login:')
-  console.log(`   ${primaryUser.email} / ${primaryUser.password}`)
-  console.log(`   ${secondaryUser.email} / ${secondaryUser.password}\n`)
+  if (redactCredentials) {
+    console.log(`   ${primaryUser.email} / [redacted]`)
+    console.log(`   ${secondaryUser.email} / [redacted]\n`)
+  } else {
+    console.log(`   ${primaryUser.email} / ${primaryUser.password}`)
+    console.log(`   ${secondaryUser.email} / ${secondaryUser.password}\n`)
+  }
 
-  if (process.env.DEBUG_TEST_SETUP) {
+  if (process.env.DEBUG_TEST_SETUP && !redactCredentials) {
     console.debug('\n✨ Test user setup complete!')
     console.debug('\n📝 Test credentials for E2E tests:')
     console.debug(`   Email: ${testUsers[0].email}`)
