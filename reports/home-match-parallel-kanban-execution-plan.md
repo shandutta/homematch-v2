@@ -434,3 +434,12 @@ Approve bounded Phase 0/1 Kanban worker window
 ```
 
 Default interpretation: max two resource-limited workers, one writer at a time unless separate worktrees are confirmed clean, no external side effects, no Phase 2+.
+
+## Expanded OG Business Revival Plan
+
+Shan clarified that the visible Kanban todos are not the full plan. The expanded umbrella backlog is now canonical alongside this execution plan:
+
+- Markdown: `reports/home-match-business-revival-operating-plan.md`
+- HTML: `reports/home-match-business-revival-operating-plan.html`
+
+Use it to flesh out all workstreams from the original instruction: full endpoint/site verification, auth-provider decision and auth-code deletion, frontend design, DB architecture, API/middleware performance, Vercel/local-dev/Docker, test/TDD cleanup, docs rewrite, couples/matching/LLM taste, maps/images/metadata, ingest, legal/compliance/cookies, analytics, AdSense, Stripe, and missing business-readiness items.

@@ -9,7 +9,8 @@ Generated: 2026-05-08T07:57Z
 ## Phase 0 closure rollup
 
 - Closed: local dev guard bypass; Maps paid API auth hardening; Docker/local-Supabase documentation clarity; README fast-dev/Docker optional guidance; worker-scope process correction; cron-secret endpoint opacity for missing-secret route behavior.
-- Partial / not closed: API live probe coverage; browser traversal; `.env.prod` guard precision.
+- Newly materialized: full static route/API inventory matrix and site traversal acceptance matrix are preserved in repo reports from Kanban tasks `t_84ff95e6` and `t_5379ec6b`.
+- Partial / not closed: API live probe execution; browser traversal execution; `.env.prod` guard precision.
 - Open/blocking evidence from 2026-05-08 live slice: `/api/maps/metro-boundaries?metro=bay-area` returns 500 because the public route calls a service-role client outside an authorized context; authenticated browser/API probes remain blocked by missing approved test credentials/session; `.env.prod` remains absent.
 - Closed in follow-up M6/M10 reconciliation: the `error-standardization.test.ts` 429 guard was classified as stale after M10 rate-limit consolidation because the four flagged callers now delegate to `checkRateLimit(...)`, whose shared implementation returns `ApiErrorHandler.tooManyRequests(...)`. The static guard now verifies the delegated path; resource-limited targeted Jest passed 30/30.
 - Blocked: authenticated flow verification and integration-test execution until approved test credentials/session plus local Supabase/Docker or a safeguarded remote-test path are available.
@@ -46,3 +47,5 @@ Generated: 2026-05-08T07:57Z
 - `reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md`
 - `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md`
 - `reports/home-match-revival/p1-duplicate-supabase-factory-closure-2026-05-08.md`
+- `reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md`
+- `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md`
