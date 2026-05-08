@@ -26,15 +26,16 @@ Status: **M6 partially remediated; Phase 0/1 still not closed**.
 - GREEN: `hm-m6-green-1778207664.service` passed.
 - Final targeted: `hm-m6-test-final-1778207690.service` passed 3 suites.
 - Interactions route targeted: `hm-m6-interactions-test-final3-1778208185.service` passed 3 suites / 27 tests.
+- Zillow route targeted: `hm-m6-zillow-test-final-1778208739.service` passed 2 suites.
 - Type-check: `hm-m6-typecheck-1778207696.service` and `hm-m6-interactions-typecheck3-1778208190.service` passed.
 - Diff check: passed.
 
 ## Additional M6 route conversion
 
 - `src/app/api/interactions/route.ts` now uses `ApiErrorHandler` for raw 400/429/500/504 error responses while preserving no-store success responses.
+- `src/app/api/zillow/random-image/route.ts` no longer returns invalid JSON bodies with 204; production/config/upstream failures use `ApiErrorHandler`, and empty demo results return no-store 200 payloads.
 - Regression coverage added to `__tests__/unit/api/error-standardization.test.ts`.
 
 ## Remaining M6 work
 
-- Fix `src/app/api/zillow/random-image/route.ts` 204 responses with error bodies.
 - Continue route-family conversions for maps/couples/admin/other APIs.

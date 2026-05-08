@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 type ZillowCard = {
   zpid: string
@@ -67,7 +67,7 @@ export async function GET() {
   // This demo endpoint fetches third-party listing data/images and should not be
   // exposed on production deployments.
   if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return ApiErrorHandler.notFound('Not found')
   }
 
   const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
@@ -75,9 +75,8 @@ export async function GET() {
 
   if (!RAPIDAPI_KEY) {
     console.error('RAPIDAPI_KEY not configured')
-    return NextResponse.json(
-      { error: 'Application is not configured for Zillow API access.' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'Application is not configured for Zillow API access.'
     )
   }
 
@@ -94,11 +93,8 @@ export async function GET() {
   })
 
   if (!searchRes.ok) {
-    return NextResponse.json(
-      {
-        error: `Zillow search failed: ${searchRes.status} ${searchRes.statusText}`,
-      },
-      { status: 502 }
+    return ApiErrorHandler.badGateway(
+      `Zillow search failed: ${searchRes.status} ${searchRes.statusText}`
     )
   }
 
@@ -116,10 +112,10 @@ export async function GET() {
     return typeof p.zpid === 'number' || typeof p.zpid === 'string'
   })
   if (candidates.length === 0) {
-    return NextResponse.json(
-      { error: 'No properties found from search query' },
-      { status: 204 }
-    )
+    return noStoreJson({
+      cards: [],
+      reason: 'No properties found from search query',
+    })
   }
 
   // take up to first 3 candidates to populate 3 phone cards
@@ -158,10 +154,10 @@ export async function GET() {
   }
 
   if (cards.length === 0) {
-    return NextResponse.json(
-      { error: 'No images returned for selected properties' },
-      { status: 204 }
-    )
+    return noStoreJson({
+      cards: [],
+      reason: 'No images returned for selected properties',
+    })
   }
 
   // If only one card, return single card for backward-compat; else return array

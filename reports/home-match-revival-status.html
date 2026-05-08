@@ -916,6 +916,16 @@
     <li><strong>Remaining:</strong> zillow 204-with-body cleanup and remaining route-family error conversions.</li>
   </ul>
 </section>
+
+<section id="phase0-phase1-m6-zillow-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 Zillow random-image cleanup</h2>
+  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+  <ul>
+    <li><code>src/app/api/zillow/random-image/route.ts</code> no longer emits JSON bodies with 204 responses.</li>
+    <li>Production/config/upstream failures use <code>ApiErrorHandler</code>; empty demo results return no-store 200 payloads.</li>
+    <li><strong>Verification:</strong> RED observed; final targeted Jest passed; resource-limited type-check passed.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>

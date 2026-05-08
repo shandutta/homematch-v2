@@ -45,4 +45,14 @@ describe('Phase 1 M6 route error standardization', () => {
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
+
+  it('zillow random-image avoids invalid 204 JSON bodies and uses standard error helpers', () => {
+    const source = read('src/app/api/zillow/random-image/route.ts')
+
+    expect(source).toContain('ApiErrorHandler.notFound')
+    expect(source).toContain('ApiErrorHandler.serviceUnavailable')
+    expect(source).toContain('ApiErrorHandler.badGateway')
+    expect(source).not.toContain('status: 204')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+  })
 })
