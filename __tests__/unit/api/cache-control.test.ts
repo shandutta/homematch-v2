@@ -36,7 +36,14 @@ describe('user-specific GET routes cache policy', () => {
 
   it.each([
     'src/app/api/couples/activity/route.ts',
+    'src/app/api/couples/check-mutual/route.ts',
+    'src/app/api/couples/disputed/route.ts',
     'src/app/api/couples/mutual-likes/route.ts',
+    'src/app/api/couples/stats/route.ts',
+    'src/app/api/interactions/route.ts',
+    'src/app/api/neighborhoods/vibes/route.ts',
+    'src/app/api/properties/vibes/route.ts',
+    'src/app/api/users/search/route.ts',
   ])('%s returns successful user-specific JSON through noStoreJson', (path) => {
     const source = route(path)
 

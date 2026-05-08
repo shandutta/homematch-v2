@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export interface DisputedProperty {
   property_id: string
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!householdMembers || householdMembers.length < 2) {
-      return NextResponse.json({
+      return noStoreJson({
         disputedProperties: [],
         performance: {
           totalTime: Date.now() - startTime,
@@ -341,7 +342,7 @@ export async function GET(request: NextRequest) {
 
     const totalTime = Date.now() - startTime
 
-    return NextResponse.json({
+    return noStoreJson({
       disputedProperties,
       performance: {
         totalTime,

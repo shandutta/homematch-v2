@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 /**
  * GET /api/properties/vibes
@@ -64,5 +65,5 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  return NextResponse.json({ data })
+  return noStoreJson({ data })
 }

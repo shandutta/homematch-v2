@@ -20,6 +20,7 @@ import {
 import { CouplesService } from '@/lib/services/couples'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { requireUserFromRequest } from '@/lib/api/auth'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export async function POST(request: NextRequest) {
   try {
@@ -294,7 +295,7 @@ export async function GET(request: NextRequest) {
 
       // Validate response against schema
       const validatedSummary = interactionSummarySchema.parse(summaryData)
-      return NextResponse.json(validatedSummary)
+      return noStoreJson(validatedSummary)
     }
 
     const type = normalizeInteractionType(queryParams.type)
@@ -360,7 +361,7 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.error('Interactions list fetch timed out or failed:', e)
       // Gracefully degrade instead of propagating a 504 (which the test harness retries)
-      return NextResponse.json({ items: [], nextCursor: null }, { status: 200 })
+      return noStoreJson({ items: [], nextCursor: null }, { status: 200 })
     }
 
     const { data, error } = queryResult
@@ -396,7 +397,7 @@ export async function GET(request: NextRequest) {
         ? typedData?.[typedData.length - 1]?.created_at
         : null
 
-    return NextResponse.json({ items, nextCursor })
+    return noStoreJson({ items, nextCursor })
   } catch (err) {
     console.error('GET /api/interactions unexpected error:', err)
     return NextResponse.json(

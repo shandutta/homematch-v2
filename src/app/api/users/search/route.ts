@@ -3,6 +3,7 @@ import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
       household_id: u.household_id,
     }))
 
-    return NextResponse.json({ users: sanitizedUsers })
+    return noStoreJson({ users: sanitizedUsers })
   } catch (error) {
     console.error('Error in user search API:', error)
     return NextResponse.json(

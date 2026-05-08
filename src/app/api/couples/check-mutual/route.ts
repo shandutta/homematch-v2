@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
       )
 
     if (!wouldBeMutual || !partnerUserId) {
-      return NextResponse.json({
+      return noStoreJson({
         isMutual: false,
       })
     }
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
           : undefined,
     }
 
-    return NextResponse.json(response)
+    return noStoreJson(response)
   } catch (error) {
     console.error('Error checking mutual like:', error)
     return NextResponse.json(

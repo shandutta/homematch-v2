@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { getUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ stats })
+    return noStoreJson({ stats })
   } catch (error) {
     console.error('Error in couples stats API:', error)
     return NextResponse.json(
