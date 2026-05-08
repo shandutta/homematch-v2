@@ -35,3 +35,14 @@ describe('Phase 1 M6 shared error standardization', () => {
     expect(source).toContain('ApiErrorHandler.serverError')
   })
 })
+
+describe('Phase 1 M6 route error standardization', () => {
+  it('fully standardizes the mixed interactions route', () => {
+    const source = read('src/app/api/interactions/route.ts')
+
+    expect(source).toContain('ApiErrorHandler.tooManyRequests')
+    expect(source).toContain('ApiErrorHandler.gatewayTimeout')
+    expect(source).not.toContain('NextResponse.json(\n        { error:')
+    expect(source).not.toContain('NextResponse.json(\n      { error:')
+  })
+})

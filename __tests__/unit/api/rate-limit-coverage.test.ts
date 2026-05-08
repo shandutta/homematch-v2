@@ -41,7 +41,7 @@ describe('Phase 1 M5 route rate-limit coverage', () => {
       expect(source).toContain('@/lib/utils/rate-limit')
       expect(body).toContain('apiRateLimiter.check')
       expect(body).toContain(key)
-      expect(body).toContain('status: 429')
+      expect(body).toMatch(/status: 429|ApiErrorHandler\.tooManyRequests/)
     }
   )
 

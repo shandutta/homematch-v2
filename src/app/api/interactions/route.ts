@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DbInteractionType } from '@/types/app'
@@ -164,9 +164,9 @@ export async function POST(request: NextRequest) {
         details: insertError.details,
         hint: insertError.hint,
       })
-      return NextResponse.json(
-        { error: 'Failed to record interaction' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to record interaction',
+        insertError
       )
     }
 
@@ -220,10 +220,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!queryParams.type) {
-      return NextResponse.json(
-        { error: 'Missing type query parameter' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Missing type query parameter')
     }
 
     if (queryParams.type === 'summary') {
@@ -251,20 +248,14 @@ export async function GET(request: NextRequest) {
         rpcResult = await Promise.race([rpcPromise, timeoutPromise])
       } catch (e) {
         console.error('Summary fetch timed out or failed:', e)
-        return NextResponse.json(
-          { error: 'Failed to fetch summary' },
-          { status: 504 }
-        )
+        return ApiErrorHandler.gatewayTimeout('Failed to fetch summary')
       }
 
       const { data, error } = rpcResult
 
       if (error) {
         console.error('Summary fetch failed:', error)
-        return NextResponse.json(
-          { error: 'Failed to fetch summary' },
-          { status: 500 }
-        )
+        return ApiErrorHandler.serverError('Failed to fetch summary', error)
       }
 
       const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -301,10 +292,7 @@ export async function GET(request: NextRequest) {
     const type = normalizeInteractionType(queryParams.type)
 
     if (!type) {
-      return NextResponse.json(
-        { error: 'Invalid type parameter' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Invalid type parameter')
     }
 
     const paginationQuery = paginationQuerySchema.parse({
@@ -378,9 +366,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Interactions list failed:', error)
-      return NextResponse.json(
-        { error: `Failed to fetch ${type} properties` },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        `Failed to fetch ${type} properties`,
+        error
       )
     }
 
@@ -400,10 +388,7 @@ export async function GET(request: NextRequest) {
     return noStoreJson({ items, nextCursor })
   } catch (err) {
     console.error('GET /api/interactions unexpected error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Internal server error', err)
   }
 }
 
@@ -420,10 +405,7 @@ export async function DELETE(request: NextRequest) {
       `interactions:delete:${user.id}`
     )
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+      return ApiErrorHandler.tooManyRequests()
     }
 
     let body: unknown

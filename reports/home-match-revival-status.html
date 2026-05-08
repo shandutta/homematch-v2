@@ -906,6 +906,16 @@
     <li><strong>Next:</strong> convert mixed interactions route and zillow 204-with-error-body cases.</li>
   </ul>
 </section>
+
+<section id="phase0-phase1-m6-interactions-2026-05-08">
+  <h2>Phase 0/1 remediation — M6 interactions route converted</h2>
+  <p><strong>Status:</strong> M6 advanced. Phase 2+ remains held.</p>
+  <ul>
+    <li><code>src/app/api/interactions/route.ts</code> now uses <code>ApiErrorHandler</code> for prior raw 400/429/500/504 error paths.</li>
+    <li><strong>Verification:</strong> RED observed; final targeted Jest passed 3 suites / 27 tests; resource-limited type-check passed.</li>
+    <li><strong>Remaining:</strong> zillow 204-with-body cleanup and remaining route-family error conversions.</li>
+  </ul>
+</section>
 </main>
   </body>
 </html>
