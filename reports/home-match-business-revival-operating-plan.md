@@ -23,6 +23,16 @@ This plan expands the original scope beyond the current visible Kanban count. Th
 
 Shan granted blanket approval for HomeMatch recovery/hardening work except spending money or making paid-resource/subscription changes. Tiny live probes are approved. Continue using Kanban workers and autonomous execution. Test credentials should be sourced from repo docs/scripts (`scripts/setup-test-users-admin.js`, `pnpm test:setup-users`) and, if needed, 1Password/helpers without printing secrets. Add/maintain lanes for local seeded auth lifecycle verification and Zillow/RapidAPI provider evaluation.
 
+
+## 2026-05-08 remote Supabase test-user approval
+
+Shan approved creating/seeding test users on remote Supabase with full API authority. This unblocks remote/safeguarded auth lifecycle and authenticated traversal work, bounded to disposable test users/fixtures and still excluding paid-resource changes. Workers should use secret-safe admin credentials, never print secrets, and produce cleanup/probe evidence artifacts.
+
+
+## 2026-05-08 1Password access + remote test seeding update
+
+Shan approved use of 1Password and remote Supabase test-user creation/seeding. The control plane verified `op` sign-in via `/home/shan/bin/op_auth` without exposing secrets. This unblocks worker execution that retrieves HomeMatch Supabase/Vercel/API secrets through 1Password/helpers and seeds disposable remote test users/fixtures for authenticated traversal/API smoke. No spending, subscriptions, paid plan changes, or broad paid usage without explicit approval.
+
 ## Current gate
 
 Phase 0 and Phase 1 still gate implementation-heavy later work. That does not mean the broader plan waits. It means later-phase implementation is held while scouts can safely plan, audit, and create acceptance criteria.

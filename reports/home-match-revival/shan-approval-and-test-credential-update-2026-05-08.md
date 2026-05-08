@@ -73,3 +73,24 @@ Initial web check: RapidAPI pages were not extractable from the control-plane en
 4. Add a read-only provider-research lane for current RapidAPI/Zillow endpoint health and production-grade alternatives.
 5. Keep using the 3-worker cap: one writer plus up to two read-only scouts.
 6. Do not spend money, subscribe, upgrade, deploy paid usage, or mutate paid/provider dashboards without asking Shan first.
+
+## 2026-05-08 remote Supabase authority update
+
+Shan explicitly approved creating and seeding test users on remote Supabase and stated Hermes has full API authority to do that. This removes the previous owner-approval blocker for non-production/remote Supabase test-user setup, as long as the work remains bounded to test users/fixtures and does not spend money or change paid resources.
+
+Operational constraints for workers:
+
+- Use service-role/admin credentials only through existing secret paths, env, 1Password helpers, or Vercel/Supabase APIs; never print secret values.
+- Prefer clearly named disposable test users and fixtures.
+- Avoid destructive production-data operations outside those test users/fixtures.
+- Write a short artifact with exactly what was seeded, how to clean it up, and what probes passed/failed.
+- Use this approval to unblock authenticated browser traversal, API auth smoke, E2E auth lifecycle, and protected accessibility traversal where feasible.
+
+## 2026-05-08 1Password access update
+
+Shan explicitly approved 1Password use and reminded Hermes that the local master-password helper exists. The control plane signed into 1Password successfully through `/home/shan/bin/op_auth` without printing the password or session token. Future workers may use `op` / existing helpers to retrieve HomeMatch secrets as needed, with these constraints:
+
+- Never print secret values, tokens, passwords, cookies, service-role keys, or `.env` values.
+- Prefer names/metadata-only inspection unless a command needs a secret in-process.
+- Store any derived temporary secret material only under restricted local secret paths and clean up when possible.
+- External paid plan/subscription/billing changes still require explicit approval.
