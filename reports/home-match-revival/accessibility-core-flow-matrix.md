@@ -1,0 +1,64 @@
+# Accessibility Core-Flow Matrix
+
+Generated: 2026-05-08
+Scope: repo-local Phase 0/1 closure slice for the OG backlog P1 accessibility item. This matrix is not a browser pass and does not use external services, production data, or credentials.
+
+## Gate position
+
+- Public/no-credential routes can be statically guarded and later checked with a local browser or RTL smoke pass.
+- Protected positive traversal remains blocked until Shan approves a non-production test auth/session plus seeded non-production data. Do not use production user sessions, production household/listing data, or real invite tokens.
+- Protected redirect coverage is allowed without credentials: anonymous requests must land on login with a safe return path.
+- Browser swarms are explicitly out of scope for this slice. Violations found later should become categorized backlog items with route, criterion, severity, fixture state, and owner.
+
+## Acceptance categories
+
+| ID | Category | Launch-readiness expectation | Current local evidence path |
+| --- | --- | --- | --- |
+| A11Y-1 | Keyboard-only navigation | Primary links, forms, tabs, dialogs, and cards are reachable without a mouse; visible focus is not suppressed. | Existing component tests plus this matrix guard; full pass needs browser/RTL follow-up. |
+| A11Y-2 | Visible focus | Focus indicators remain visible against dark and light surfaces. | Static matrix acceptance; browser spot-check gated separately. |
+| A11Y-3 | Heading and landmarks | Each page has one clear h1/main or page shell equivalent; repeated sections use ordered headings. | Static page/component review; no live traversal claimed. |
+| A11Y-4 | Form labels and errors | Inputs have accessible names; errors are announced or visibly associated with controls. | Existing auth/household tests; invite/profile/settings need authenticated fixture states. |
+| A11Y-5 | Current navigation state | Active nav uses aria-current or equivalent semantic state where persistent navigation appears. | Existing targeted component coverage; route-level pass pending. |
+| A11Y-6 | Images/icons | Informative images have alt text; decorative icons are hidden or accompanied by text. | Existing component conventions and axe tests; property image fixtures need seeded non-production listing. |
+| A11Y-7 | Dialog focus management | Modal/dialog entry traps focus, Escape closes where allowed, and closing returns focus to trigger. | Property detail, invite/household, cookie preferences, and mobile nav need targeted RTL/browser checks. |
+| A11Y-8 | Color contrast | Critical text and controls meet WCAG AA contrast in light/dark contexts. | Static risk flag only; final evidence needs browser/visual contrast spot check. |
+
+## Core route matrix
+
+| Flow | Route(s) | Auth posture | Acceptance metadata | Local no-credential guard | Positive traversal gate | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| Public landing | `/` | Public no-credential | A11Y-1, A11Y-2, A11Y-3, A11Y-6, A11Y-8 | Route exists; matrix guard requires public classification and no auth fixture. | Optional authenticated landing redirect can be tested only with approved test session. | Ready for no-credential accessibility smoke. |
+| Marketing/about | `/about`, `/contact` | Public no-credential | A11Y-1, A11Y-2, A11Y-3, A11Y-6, A11Y-8 | Route files exist; no auth/session needed. | None. | Ready for no-credential accessibility smoke. |
+| Auth login | `/login` | Public no-credential auth form | A11Y-1, A11Y-2, A11Y-3, A11Y-4 | Login page/form can be rendered locally without real credentials. | Successful login traversal requires approved non-production user. | Ready for no-credential form accessibility smoke. |
+| Auth signup | `/signup` | Public no-credential auth form | A11Y-1, A11Y-2, A11Y-3, A11Y-4 | Signup page/form can be rendered locally without real credentials. | Successful signup/email verification requires approved policy and non-production auth. | Ready for no-credential form accessibility smoke. |
+| Auth support | `/verify-email`, `/reset-password`, `/auth/auth-code-error` | Public no-credential auth support | A11Y-1, A11Y-2, A11Y-3, A11Y-4 | Route files exist; submit/success paths require mocked or approved auth fixtures. | Token/code success paths require approved non-production auth fixtures. | Partial; no live token traversal claimed. |
+| Legal/privacy | `/terms`, `/privacy`, `/cookies` | Public no-credential legal | A11Y-1, A11Y-2, A11Y-3, A11Y-4, A11Y-7, A11Y-8 | Route files exist; cookie preferences panel can be RTL-tested without external services. | Optional consent analytics side effects remain approval-gated. | Ready for no-credential legal accessibility smoke; cookie dialog/panel focus needs targeted guard. |
+| Dashboard home | `/dashboard` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-5, A11Y-6 | Static guard verifies protected-route classification and redirect metadata. | Blocked until approved non-production test auth/session plus seeded dashboard data. | Redirect guardable; positive pass gated. |
+| Dashboard lists | `/dashboard/liked`, `/dashboard/passed`, `/dashboard/viewed`, `/dashboard/mutual-likes`, `/dashboard/activity` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-5, A11Y-6 | Static guard verifies protected-route classification and redirect metadata. | Blocked until approved non-production test auth/session plus seeded interactions. | Redirect guardable; positive pass gated. |
+| Property detail | `/properties/[id]` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-6, A11Y-7, A11Y-8 | Static guard verifies protected-route classification and login return-path expectation. | Blocked until approved non-production test auth/session plus seeded active property fixture. | Redirect guardable; positive modal/dialog pass gated. |
+| Couples overview | `/couples` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-5, A11Y-7 | Static guard verifies protected-route classification and redirect metadata. | Blocked until approved non-production test auth/session plus household/couple fixture states. | Redirect guardable; positive pass gated. |
+| Couples decisions | `/couples/decisions` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-5 | Static guard verifies protected-route classification. | Blocked until approved non-production test auth/session plus mutual-like/disputed fixtures. | Redirect guardable; positive pass gated. |
+| Settings | `/settings` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-4, A11Y-5 | Static guard verifies protected-route classification. | Blocked until approved non-production test auth/session plus profile/preferences fixture. | Redirect guardable; positive pass gated. |
+| Profile | `/profile` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-4, A11Y-6 | Static guard verifies protected-route classification. | Blocked until approved non-production test auth/session plus user profile fixture. | Redirect guardable; positive pass gated. |
+| Household create/join | `/household/create`, `/household/join` | Protected; anonymous redirect expected | A11Y-1, A11Y-2, A11Y-3, A11Y-4, A11Y-7 | Static guard verifies protected-route classification; existing household clipboard a11y tests cover related form behavior. | Blocked until approved non-production test auth/session plus household/no-household fixture. | Redirect guardable; positive pass gated. |
+| Invite token view/acceptance | `/invite/[token]` | Token-public invite view; acceptance is auth-gated | A11Y-1, A11Y-2, A11Y-3, A11Y-4, A11Y-7 | Route file exists; matrix guard requires explicit token-public/auth-gated classification. No real invite token may be used. | Blocked until approved non-production test auth/session plus seeded invite token fixture. | Static metadata guardable; positive pass gated. |
+
+## Minimum local guard added in this slice
+
+`__tests__/unit/accessibility/core-flow-matrix.test.ts` is a static Jest guard. It does not start a browser, call external services, or need credentials. It verifies that:
+
+1. the matrix keeps all required public and protected flows visible;
+2. no-credential public flows are classified as public/no-credential;
+3. protected dashboard/property/couples/settings/profile/household flows are covered by `isProtectedPath(...)` and name anonymous redirect evidence;
+4. invite remains explicitly token-public with auth-gated acceptance, not silently treated as a normal protected route;
+5. authenticated positive traversal stays blocked on approved non-production auth/session.
+
+## Follow-up backlog items created by this matrix, not closed here
+
+| Backlog item | Why it remains open | Approval / fixture needed |
+| --- | --- | --- |
+| Public route RTL smoke for landing/auth/legal | This slice added metadata guard only; it did not render all pages or run axe. | Local unit fixtures only; no external approval needed. |
+| Cookie preferences focus/escape/return-focus guard | Cookie page includes an interactive preferences panel that should get a focused RTL test. | Local unit fixture only. |
+| Property detail modal focus trap and image alt pass | Needs representative active property data and modal state. | Approved non-production auth/session plus seeded property fixture. |
+| Household/invite positive acceptance pass | Needs household membership states and a seeded invite token. | Approved non-production auth/session plus seeded household/invite fixtures. |
+| Full keyboard/color-contrast spot check | Requires a browser or visual tooling; browser swarms are out of scope for this slice. | Approved local browser pass plan; no production data. |
