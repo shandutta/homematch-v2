@@ -17,7 +17,12 @@ export default async function SettingsPage({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    const redirectTo = resolvedSearchParams?.tab
+      ? `/settings?tab=${encodeURIComponent(resolvedSearchParams.tab)}`
+      : '/settings'
+    const params = new URLSearchParams()
+    params.set('redirectTo', redirectTo)
+    redirect(`/login?${params.toString()}`)
   }
 
   const userService = new UserService()

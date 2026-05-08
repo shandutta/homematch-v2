@@ -9,7 +9,7 @@ export default async function CreateHouseholdPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login?redirect=/household/create')
+    redirect('/login?redirectTo=%2Fhousehold%2Fcreate')
   }
 
   // Check if user already has a household

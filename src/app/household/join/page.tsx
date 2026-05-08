@@ -9,7 +9,7 @@ export default async function JoinHouseholdPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login?redirect=/household/join')
+    redirect('/login?redirectTo=%2Fhousehold%2Fjoin')
   }
 
   // Check if user already has a household
