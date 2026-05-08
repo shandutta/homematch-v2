@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { createApiClient } from '@/lib/supabase/server'
 import type { MapNeighborhoodInput } from '@/lib/maps/geometry'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     })
   }
 
-  const supabase = await getServiceRoleClient()
+  const supabase = createApiClient()
   const { data, error } = await supabase
     .from('neighborhoods')
     .select('id,name,city,state,bounds')
