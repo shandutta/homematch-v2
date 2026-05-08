@@ -6,6 +6,8 @@ import {
   expect,
   jest,
 } from '@jest/globals'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { NextRequest } from 'next/server'
 import { SupabaseClientFactory, createClient } from '@/lib/supabase/factory'
 import { ClientContext } from '@/lib/services/interfaces'
@@ -120,15 +122,25 @@ describe('SupabaseClientFactory', () => {
     })
   })
 
-  test('creates service client and caches it', async () => {
+  test('creates fresh service clients so key rotation is not pinned in memory', async () => {
     const factory = SupabaseClientFactory.getInstance()
 
     await factory.createClient({ context: ClientContext.SERVICE })
     await factory.createClient({ context: ClientContext.SERVICE })
 
-    expect(createServerClientMock).toHaveBeenCalledTimes(1)
+    expect(createServerClientMock).toHaveBeenCalledTimes(2)
     const [, key] = createServerClientMock.mock.calls[0]
     expect(key).toBe('service-key')
+  })
+
+  test('does not retain the old createServerClientAsync dead stub', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/supabase/factory.ts'),
+      'utf8'
+    )
+
+    expect(source).not.toContain('createServerClientAsync')
+    expect(source).not.toContain('Use createServerClient() for async server contexts')
   })
 
   test('compat helper createClient uses factory detection', async () => {

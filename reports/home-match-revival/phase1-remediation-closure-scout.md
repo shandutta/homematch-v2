@@ -30,7 +30,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | A2 P0: Maps autocomplete paid API must require auth | `p1-repair-gates.json` lists Maps paid API auth hardening; files `src/app/api/maps/geocode/route.ts`, `src/app/api/maps/places/autocomplete/route.ts`; route tests passed 33/33. | closed | None for Phase 1; keep no paid live API probing without approval. |
 | A3 P0: Service role authorization placeholder must become real RBAC | `auth-audit.md`; code still checks `user_profiles.role === 'admin'` in `server.ts`; commit `cad54c9` gates `service-role-client.ts` through `createServiceClient()`, but does not replace RBAC model. | block | Define admin authority source (custom claims vs dedicated admin table), migrate/check it, then update `checkServiceRoleAuthorization()` and tests. |
 | A4 P1: Consolidate dual Supabase client creation paths | `auth-audit.md`; `factory.ts`, `server.ts`, and `client.ts` all remain present; package/code spot-check shows factory path still exists. | open | Choose canonical path and delete/deprecate the other with migration tests. |
-| A5 P1: Remove factory `createServerClientAsync()` stub | `auth-audit.md`; no closure commit found. | open | Delete the dead stub and run Supabase factory tests/type-check. |
+| A5 P1: Remove factory `createServerClientAsync()` stub | Commit pending in this closure wave; `src/lib/supabase/factory.ts` no longer contains the dead throwing stub; RED `hm-a5-a14-factory-red-1778210643.service`; GREEN `hm-a5-a14-factory-green-1778210686.service`; type-check `hm-a5-a14-factory-typecheck-1778210691.service`. | closed | Keep static regression in `__tests__/unit/lib/supabase/factory.test.ts`. |
 | A6 P1: Replace/accept in-memory rate limiter | `auth-audit.md`; `src/lib/utils/rate-limit.ts` still in use; no durable limiter evidence. | block | Decide dev-only acceptance vs Upstash/Vercel KV; if production-grade is required, implement durable store and tests. |
 | A7 P1: Remove interactions API service-role fallback | `auth-audit.md`; no closure evidence found. | open | Fix RLS/JWT household lookup and remove service-role fallback; add interaction route regression test. |
 | A8 P1: Flatten duplicate `getUser` monkey-patching in auth server client | `auth-audit.md`; no closure evidence found. | open | Refactor patching order in `src/lib/supabase/server.ts`; rerun auth helper and middleware tests. |
@@ -39,7 +39,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 | A11 P2: Align password requirements | `supabase/config.toml` still has `minimum_password_length = 6`, `password_requirements = ""`; app schema requires stricter password. | open | Change Supabase config to match app schema, then run auth/config tests. |
 | A12 P2: Enable email confirmations for production | `supabase/config.toml` still has `enable_confirmations = false`. | block | Decide launch auth policy; enable confirmations for production config or document dev-only override. |
 | A13 P2: Configure CAPTCHA for signup | `supabase/config.toml` CAPTCHA section still commented. | block | Choose Turnstile/hCaptcha provider and configure secrets through approved channel. |
-| A14 P2: Avoid cached service clients after key rotation | `auth-audit.md`; `factory.ts` still caches service clients. | open | Exclude service-role clients from factory cache or delete factory service path during consolidation. |
+| A14 P2: Avoid cached service clients after key rotation | Commit pending in this closure wave; factory `shouldCache()` now only caches browser clients, and service-role client creation is verified to produce fresh clients on repeated calls. | closed | Keep key-rotation regression in `__tests__/unit/lib/supabase/factory.test.ts`; broader A4 client consolidation remains open. |
 
 ## DB architecture/remediation matrix
 
@@ -100,7 +100,7 @@ Status key: **closed** = implemented/tested or explicitly no-op; **open** = not 
 ## Closure rollup
 
 - Closed: Auth cookie hardening, Maps auth hardening, Vercel no-op, local dev guard bypass, Docker optional decision, CORP/COOP headers, DB RLS policy overlap migration, SECURITY DEFINER search-path migration, property stats RPC, service-role-client bypass gate, part/all of schema safety constraints.
-- Open: Most middleware/API hardening and dead-code cleanup; auth client consolidation; auth config hardening; DB interaction unique constraint; DB P1/P2 performance/RLS/migration cleanup; README closure.
+- Open: Most middleware/API hardening and dead-code cleanup; auth client consolidation; auth config hardening; DB P1/P2 performance/RLS/migration cleanup; README closure.
 - Blocked: True service-role RBAC model, production auth policy choices (email/CAPTCHA), durable rate-limiter decision, `.env.prod` secret handling, DB numeric-constraint semantics, and integration DB reset/lint environment.
 
 ## Final Phase 1 gate answer

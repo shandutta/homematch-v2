@@ -87,16 +87,6 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
   }
 
   /**
-   * Server client for Server Components and server contexts
-   * Based on current server.ts createClient() implementation
-   */
-  private createServerClientAsync(): SupabaseClient<AppDatabase> {
-    // Note: This needs to be async in real implementation
-    // For now, we'll handle this in the consumer
-    throw new Error('Use createServerClient() for async server contexts')
-  }
-
-  /**
    * Async server client for Server Components
    * Handles cookies and headers properly
    */
@@ -257,9 +247,7 @@ export class SupabaseClientFactory implements ISupabaseClientFactory {
    * Determines if client should be cached
    */
   private shouldCache(context: ClientContext): boolean {
-    return (
-      context === ClientContext.BROWSER || context === ClientContext.SERVICE
-    )
+    return context === ClientContext.BROWSER
   }
 
   /**
