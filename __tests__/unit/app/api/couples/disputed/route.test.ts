@@ -2,17 +2,20 @@ import { describe, test, expect, beforeEach, jest } from '@jest/globals'
 import { NextRequest } from 'next/server'
 import { GET, PATCH } from '@/app/api/couples/disputed/route'
 
-const jsonMock = jest.fn((body, init) => ({
+const jsonMock = jest.fn()
+
+const jsonResponse = (body: unknown, init?: ResponseInit) => ({
   status: init?.status ?? 200,
   body,
-}))
+  headers: new Headers(init?.headers),
+})
 
 jest.mock('next/server', () => {
   const actual = jest.requireActual('next/server')
   return {
     ...actual,
     NextResponse: {
-      json: (...args: unknown[]) => jsonMock(...args),
+      json: (body: unknown, init?: ResponseInit) => jsonMock(body, init),
     },
   }
 })
@@ -84,7 +87,7 @@ const resetSupabase = () => {
 
 describe('couples disputed API route', () => {
   beforeEach(() => {
-    jsonMock.mockClear()
+    jsonMock.mockImplementation(jsonResponse)
     resetSupabase()
   })
 

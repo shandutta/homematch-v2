@@ -5,62 +5,67 @@ import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
+import { withRouteDeadline } from '@/lib/api/route-deadline'
 
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = createApiClient(request)
+export const GET = withRouteDeadline(
+  'users:search',
+  2000,
+  async function GET(request: NextRequest) {
+    try {
+      const supabase = createApiClient(request)
 
-    const auth = await requireUserFromRequest(supabase, request)
+      const auth = await requireUserFromRequest(supabase, request)
 
-    if (!auth.user) return auth.response
+      if (!auth.user) return auth.response
 
-    // Rate limiting
-    const rateLimitResponse = await checkRateLimit(
-      rateLimitKey('users:search', auth.user.id)
-    )
-    if (rateLimitResponse) return rateLimitResponse
-
-    // Get search query
-    const searchParams = request.nextUrl.searchParams
-    const query = searchParams.get('q')?.trim()
-
-    if (!query || query.length < 3) {
-      return ApiErrorHandler.badRequest(
-        'Search query must be at least 3 characters'
+      // Rate limiting
+      const rateLimitResponse = await checkRateLimit(
+        rateLimitKey('users:search', auth.user.id)
       )
-    }
+      if (rateLimitResponse) return rateLimitResponse
 
-    // Use service role client to bypass RLS for user search
-    // RLS only allows users to view their own profile, but search needs to see others
-    const serviceClient = await getServiceRoleClient()
+      // Get search query
+      const searchParams = request.nextUrl.searchParams
+      const query = searchParams.get('q')?.trim()
 
-    // Search for users by email (case-insensitive prefix match)
-    // Only return users who have completed onboarding and are not the current user
-    const { data: users, error } = await serviceClient
-      .from('user_profiles')
-      .select('id, email, display_name, household_id')
-      .neq('id', auth.user.id)
-      .eq('onboarding_completed', true)
-      .ilike('email', `${query}%`)
-      .limit(10)
+      if (!query || query.length < 3) {
+        return ApiErrorHandler.badRequest(
+          'Search query must be at least 3 characters'
+        )
+      }
 
-    if (error) {
-      console.error('Error searching users:', error)
+      // Use service role client to bypass RLS for user search
+      // RLS only allows users to view their own profile, but search needs to see others
+      const serviceClient = await getServiceRoleClient()
+
+      // Search for users by email (case-insensitive prefix match)
+      // Only return users who have completed onboarding and are not the current user
+      const { data: users, error } = await serviceClient
+        .from('user_profiles')
+        .select('id, email, display_name, household_id')
+        .neq('id', auth.user.id)
+        .eq('onboarding_completed', true)
+        .ilike('email', `${query}%`)
+        .limit(10)
+
+      if (error) {
+        console.error('Error searching users:', error)
+        return ApiErrorHandler.serverError('Failed to search users', error)
+      }
+
+      // Return sanitized user data (minimal info for privacy)
+      const sanitizedUsers = (users || []).map((u) => ({
+        id: u.id,
+        email: u.email,
+        display_name: u.display_name,
+        avatar_url: null, // Not stored in current schema
+        household_id: u.household_id,
+      }))
+
+      return noStoreJson({ users: sanitizedUsers })
+    } catch (error) {
+      console.error('Error in user search API:', error)
       return ApiErrorHandler.serverError('Failed to search users', error)
     }
-
-    // Return sanitized user data (minimal info for privacy)
-    const sanitizedUsers = (users || []).map((u) => ({
-      id: u.id,
-      email: u.email,
-      display_name: u.display_name,
-      avatar_url: null, // Not stored in current schema
-      household_id: u.household_id,
-    }))
-
-    return noStoreJson({ users: sanitizedUsers })
-  } catch (error) {
-    console.error('Error in user search API:', error)
-    return ApiErrorHandler.serverError('Failed to search users', error)
   }
-}
+)
