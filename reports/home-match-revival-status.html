@@ -145,7 +145,7 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08T05:55Z M8 bounded slice</code>. Strict Phase 0/1 closure
+        <code>2026-05-08T06:31Z M10 rate-limit consolidation</code>. Strict Phase 0/1 closure
         mode remains active. This status page now points to the canonical
         control-plane plan and treats older later-phase sections below as
         historical, not active authorization.
@@ -168,24 +168,24 @@
         <div class="card">
           <div class="label">Task counts</div>
           <div class="value">
-            done 27 · running 0 · blocked 7 · ready 0 · todo 7
+            done 30 · running 0 · blocked 10 · ready 0 · todo 2
           </div>
         </div>
       </div>
 
 
       <section>
-        <h2>Latest bounded Phase 0/1 slice — M8 external timeouts</h2>
+        <h2>Latest bounded Phase 0/1 slice — M10 rate-limit consolidation</h2>
         <p>
-          <span class="pill good">TESTED FIX</span> Closed M8 repo-side by wrapping all direct outbound
-          <code>fetch(</code> calls in <code>src/app/api/**/route.ts</code> with
-          <code>fetchWithTimeout()</code>.
+          <span class="pill good">TESTED FIX</span> Closed M10 repo-side by removing the duplicate
+          <code>src/lib/utils/rate-limit.ts</code> helper and routing explicit-key/admin/API callers through
+          <code>src/lib/middleware/rateLimiter.ts</code>.
         </p>
         <ul>
-          <li>Covered Maps, maps proxy-script, admin Zillow vibe generation, admin status refresh, and Zillow random-image routes.</li>
-          <li>Verification: focused Jest passed 6/6; <code>pnpm type-check</code> passed.</li>
-          <li><code>pnpm lint</code> still fails on pre-existing unrelated lint debt; no new touched-file lint issue was surfaced.</li>
-          <li>Phase 1 is still not 100% closed; Phase 2+ remains held.</li>
+          <li>Updated Maps, interactions, couples, users, admin helper, and performance metrics route-scoped checks to the single middleware limiter.</li>
+          <li>Verification: targeted Jest passed 52/52; <code>pnpm type-check</code> passed; old limiter grep returned no remaining source/test references.</li>
+          <li>Durable multi-instance limiter storage remains a separate blocked production decision, not a repo-side duplicate-limiter gap.</li>
+          <li>Phase 0/1 are still not 100% closed; Phase 2+ remains held.</li>
         </ul>
       </section>
 
@@ -208,8 +208,9 @@
             Phase 0 and Phase 1 are not 100% closed; Phase 2+ remains held.
           </li>
           <li>
-            Gate task: <code>t_114ade2b</code>; Phase 0/1 child tasks:
+            Gate task: <code>t_114ade2b</code>; completed Phase 0/1 child tasks now include
             <code>t_d60106b</code>, <code>t_42e0d08a</code>,
+            and <code>t_f75b8af5</code>. Blocked replacement/history tasks include
             <code>t_62707f69</code>, <code>t_67a26aa7</code>,
             <code>t_efb13943</code>.
           </li>

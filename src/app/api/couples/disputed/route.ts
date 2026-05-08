@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
@@ -368,12 +368,10 @@ export async function PATCH(request: NextRequest) {
     if (!auth.user) return auth.response
     const { user } = auth
 
-    const rateLimitResult = await apiRateLimiter.check(
+    const rateLimitResponse = await checkRateLimit(
       `couples:disputed:${user.id}`
     )
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.tooManyRequests()
-    }
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await request.json()
     const { property_id, resolution_type } = body
@@ -426,7 +424,10 @@ export async function PATCH(request: NextRequest) {
         '[Disputed API] Error saving resolution:',
         upsertError.message
       )
-      return ApiErrorHandler.serverError('Failed to save resolution', upsertError)
+      return ApiErrorHandler.serverError(
+        'Failed to save resolution',
+        upsertError
+      )
     }
 
     return NextResponse.json({

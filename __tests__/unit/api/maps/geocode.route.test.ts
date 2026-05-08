@@ -28,11 +28,9 @@ jest.mock('next/server', () => {
 })
 
 // Mock rate limiter - create mock function first (Jest hoisting compatible)
-const mockRateLimiterCheck = jest.fn()
-jest.mock('@/lib/utils/rate-limit', () => ({
-  apiRateLimiter: {
-    check: mockRateLimiterCheck,
-  },
+const mockCheckRateLimit = jest.fn()
+jest.mock('@/lib/middleware/rateLimiter', () => ({
+  checkRateLimit: mockCheckRateLimit,
 }))
 
 const mockCreateApiClient = jest.fn()
@@ -56,7 +54,7 @@ describe('/api/maps/geocode route', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     process.env = { ...originalEnv, GOOGLE_MAPS_SERVER_API_KEY: 'test-api-key' }
-    mockRateLimiterCheck.mockResolvedValue({ success: true })
+    mockCheckRateLimit.mockResolvedValue(null)
     mockCreateApiClient.mockReturnValue({ auth: { getUser: jest.fn() } })
     mockRequireUserFromRequest.mockResolvedValue({
       user: { id: 'user-1' },
@@ -99,14 +97,22 @@ describe('/api/maps/geocode route', () => {
     })
 
     it('returns 429 when rate limited', async () => {
-      mockRateLimiterCheck.mockResolvedValue({ success: false })
+      mockCheckRateLimit.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: 'Rate limit exceeded. Please try again later.',
+            code: 'RATE_LIMITED',
+          }),
+          { status: 429 }
+        )
+      )
 
       const request = createRequest({ address: '123 Main St' })
       const response = await geocodeRoute.POST(request)
 
       expect(response.status).toBe(429)
       const body = await response.json()
-      expect(body.error).toBe('Too many requests. Please try again later.')
+      expect(body.error).toBe('Rate limit exceeded. Please try again later.')
     })
 
     it('returns 503 when API key is not configured', async () => {
@@ -126,7 +132,7 @@ describe('/api/maps/geocode route', () => {
 
       expect(response.status).toBe(400)
       const body = await response.json()
-      expect(body.error).toBe('Invalid request parameters')
+      expect(body.error).toBe('Validation failed')
     })
 
     it('returns 400 for address too short', async () => {
@@ -188,7 +194,7 @@ describe('/api/maps/geocode route', () => {
       expect(response.status).toBe(400)
       const body = await response.json()
       expect(body.error).toBe('Geocoding failed')
-      expect(body.status).toBe('REQUEST_DENIED')
+      expect(body.details.status).toBe('REQUEST_DENIED')
     })
 
     it('filters out results with invalid coordinates', async () => {
@@ -292,7 +298,7 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockRateLimiterCheck).toHaveBeenCalledWith('user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith('user-1')
     })
 
     it('does not fall back to anonymous IP rate limiting when no IP header', async () => {
@@ -304,7 +310,7 @@ describe('/api/maps/geocode route', () => {
 
       await geocodeRoute.POST(request)
 
-      expect(mockRateLimiterCheck).toHaveBeenCalledWith('user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith('user-1')
     })
   })
 })

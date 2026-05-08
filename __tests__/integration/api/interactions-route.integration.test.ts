@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
 import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'
 import type { Database } from '@/types/database'
-import { resetRateLimitStore } from '@/lib/utils/rate-limit'
+import { resetRateLimiters } from '@/lib/middleware/rateLimiter'
 
 // Auth token stored for use in request headers - refreshed at test start
 let currentAuthToken: string | undefined
@@ -470,7 +470,7 @@ describe.sequential('Integration: /api/interactions route', () => {
   it.skip('enforces rate limiting responses', async () => {
     const originalEnforce = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
     process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
-    resetRateLimitStore()
+    resetRateLimiters()
 
     const propertyId = await createTestProperty()
     const burst = Array.from({ length: 105 }, () =>
@@ -494,7 +494,7 @@ describe.sequential('Integration: /api/interactions route', () => {
       } else {
         delete process.env.RATE_LIMIT_ENFORCE_IN_TESTS
       }
-      resetRateLimitStore()
+      resetRateLimiters()
     }
   })
 })

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ApiErrorHandler } from '@/lib/api/errors'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 
 const getRequestIp = (request: Request) => {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -12,11 +11,5 @@ export async function rateLimitAdminRoute(
   request: Request,
   routeKey: string
 ): Promise<NextResponse | null> {
-  const result = await apiRateLimiter.check(
-    `${routeKey}:${getRequestIp(request)}`
-  )
-
-  if (result.success) return null
-
-  return ApiErrorHandler.tooManyRequests()
+  return checkRateLimit(`${routeKey}:${getRequestIp(request)}`)
 }

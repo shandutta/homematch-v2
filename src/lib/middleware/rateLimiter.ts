@@ -2,7 +2,6 @@ import { ApiErrorHandler } from '@/lib/api/errors'
 import type { RateLimiterMemory as RateLimiterMemoryType } from 'rate-limiter-flexible'
 import RateLimiterMemory from 'rate-limiter-flexible/lib/RateLimiterMemory'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 
 // Different rate limit tiers
 type RateLimitTierConfig = {
@@ -71,76 +70,82 @@ function getRateLimiter(
   return rateLimiters.get(key)!
 }
 
-// Get client identifier from request
-async function getClientIdentifier(request: NextRequest): Promise<string> {
-  // Try to get user ID from auth session
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (user?.id) {
-      return `user_${user.id}`
-    }
-  } catch {
-    // Fallback to IP-based identification
+export type RateLimitTier = keyof typeof RATE_LIMIT_TIERS
+
+const shouldBypassRateLimit = () => {
+  const enforceInTest =
+    process.env.RATE_LIMIT_ENFORCE_IN_TESTS === 'true' ||
+    process.env.RATE_LIMIT_ENFORCE === 'true'
+
+  if (enforceInTest) {
+    return false
   }
 
-  // Fallback to IP address
+  return (
+    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test'
+  )
+}
+
+export const resetRateLimiters = () => rateLimiters.clear()
+
+const rateLimitExceededResponse = (
+  tier: RateLimitTier,
+  rateLimiterRes: unknown,
+  message = 'Rate limit exceeded. Please try again later.'
+) => {
+  const res = isRateLimiterResponse(rateLimiterRes) ? rateLimiterRes : {}
+  const msBeforeNext =
+    typeof res.msBeforeNext === 'number' ? res.msBeforeNext : 60000
+  const remainingPoints =
+    typeof res.remainingPoints === 'number' ? res.remainingPoints : 0
+  const retryAfter = Math.round(msBeforeNext / 1000) || 60
+
+  return ApiErrorHandler.tooManyRequests(message, {
+    'Retry-After': String(retryAfter),
+    'X-RateLimit-Limit': String(RATE_LIMIT_TIERS[tier].points),
+    'X-RateLimit-Remaining': String(remainingPoints),
+    'X-RateLimit-Reset': new Date(Date.now() + msBeforeNext).toISOString(),
+  })
+}
+
+// Get client identifier from request without touching auth/session state.
+function getClientIdentifier(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   const realIp = request.headers.get('x-real-ip')
-  const ip = forwarded ? forwarded.split(',')[0] : realIp || 'unknown'
-  return `ip_${ip}`
+  const ip = forwarded ? forwarded.split(',')[0]?.trim() : realIp || 'unknown'
+  return `ip_${ip || 'unknown'}`
+}
+
+export async function checkRateLimit(
+  identifier: string,
+  tier: RateLimitTier = 'relaxed'
+): Promise<NextResponse | null> {
+  if (shouldBypassRateLimit()) {
+    return null
+  }
+
+  try {
+    await getRateLimiter(tier).consume(identifier)
+    return null
+  } catch (rateLimiterRes: unknown) {
+    return rateLimitExceededResponse(tier, rateLimiterRes)
+  }
 }
 
 // Rate limiting middleware
 export async function rateLimit(
   request: NextRequest,
-  tier: keyof typeof RATE_LIMIT_TIERS = 'standard'
+  tier: RateLimitTier = 'standard'
 ): Promise<NextResponse | null> {
-  // Use testing tier during test mode
-  if (
-    process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
-    process.env.NODE_ENV === 'test'
-  ) {
-    // In tests, skip rate limiting altogether to avoid external calls (e.g., Supabase auth)
-    return null
-  }
-  try {
-    const clientId = await getClientIdentifier(request)
-    const rateLimiter = getRateLimiter(tier)
-
-    // Try to consume a point
-    await rateLimiter.consume(clientId)
-
-    // Request allowed
-    return null
-  } catch (rateLimiterRes: unknown) {
-    // Rate limit exceeded
-    const res = isRateLimiterResponse(rateLimiterRes) ? rateLimiterRes : {}
-    const msBeforeNext =
-      typeof res.msBeforeNext === 'number' ? res.msBeforeNext : 60000
-    const remainingPoints =
-      typeof res.remainingPoints === 'number' ? res.remainingPoints : 0
-    const retryAfter = Math.round(msBeforeNext / 1000) || 60
-
-    return ApiErrorHandler.tooManyRequests(
-      'Rate limit exceeded. Please try again later.',
-      {
-        'Retry-After': String(retryAfter),
-        'X-RateLimit-Limit': String(RATE_LIMIT_TIERS[tier].points),
-        'X-RateLimit-Remaining': String(remainingPoints),
-        'X-RateLimit-Reset': new Date(Date.now() + msBeforeNext).toISOString(),
-      }
-    )
-  }
+  return checkRateLimit(getClientIdentifier(request), tier)
 }
 
 // Utility function for API route usage
 export async function withRateLimit(
   request: NextRequest,
   handler: () => Promise<NextResponse>,
-  tier: keyof typeof RATE_LIMIT_TIERS = 'standard'
+  tier: RateLimitTier = 'standard'
 ): Promise<NextResponse> {
   try {
     const rateLimitResponse = await rateLimit(request, tier)
@@ -190,7 +195,7 @@ export async function authRateLimit(
   identifier?: string
 ): Promise<NextResponse | null> {
   try {
-    const clientId = identifier || (await getClientIdentifier(request))
+    const clientId = identifier || getClientIdentifier(request)
     const rateLimiter = getRateLimiter('auth')
 
     // Try to consume a point

@@ -29,11 +29,9 @@ jest.mock('@/lib/supabase/server', () => ({
   createApiClient: (...args: unknown[]) => createApiClientMock(...args),
 }))
 
-jest.mock('@/lib/utils/rate-limit', () => ({
+jest.mock('@/lib/middleware/rateLimiter', () => ({
   __esModule: true,
-  apiRateLimiter: {
-    check: jest.fn(async () => ({ success: true })),
-  },
+  checkRateLimit: jest.fn(async () => null),
 }))
 
 jest.mock('@/lib/services/couples', () => ({

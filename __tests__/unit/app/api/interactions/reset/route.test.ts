@@ -22,11 +22,10 @@ jest.mock('next/server', () => ({
     jest.requireActual<typeof import('next/server')>('next/server').NextRequest,
 }))
 
-const checkMock = jest.fn()
-jest.mock('@/lib/utils/rate-limit', () => ({
-  apiRateLimiter: {
-    check: (...args: unknown[]) => checkMock(...args),
-  },
+const mockCheckRateLimit = jest.fn()
+jest.mock('@/lib/middleware/rateLimiter', () => ({
+  __esModule: true,
+  checkRateLimit: mockCheckRateLimit,
 }))
 
 const clearHouseholdCacheMock = jest.fn()
@@ -39,10 +38,17 @@ jest.mock('@/lib/services/couples', () => ({
 }))
 
 const createApiClientMock = jest.fn()
+const mockRequireUserFromRequest = jest.fn()
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
   createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+jest.mock('@/lib/api/auth', () => ({
+  __esModule: true,
+  requireUserFromRequest: (...args: unknown[]) =>
+    mockRequireUserFromRequest(...args),
 }))
 
 type SupabaseMock = {
@@ -83,8 +89,13 @@ describe('interactions reset API route', () => {
   })
 
   beforeEach(() => {
-    jsonMock.mockClear()
-    checkMock.mockReset()
+    jsonMock.mockReset()
+    jsonMock.mockImplementation((body, init) => ({
+      status: init?.status ?? 200,
+      body,
+    }))
+    mockCheckRateLimit.mockReset()
+    mockRequireUserFromRequest.mockReset()
     clearHouseholdCacheMock.mockReset()
     createApiClientMock.mockReset()
     createApiClientMock.mockReturnValue(supabaseMock)
@@ -93,9 +104,12 @@ describe('interactions reset API route', () => {
   })
 
   test('returns 401 when unauthenticated', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({
-      data: { user: null },
-      error: null,
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: null,
+      response: jsonMock(
+        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      ),
     })
 
     await route.DELETE(
@@ -109,12 +123,20 @@ describe('interactions reset API route', () => {
     expect(body.code).toBe('UNAUTHORIZED')
   })
 
-  test('returns 400 when rate limit is exceeded', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({
-      data: { user: { id: 'user-1' } },
-      error: null,
+  test('returns 429 when rate limit is exceeded', async () => {
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
     })
-    checkMock.mockResolvedValue({ success: false })
+    mockCheckRateLimit.mockResolvedValue(
+      jsonMock(
+        {
+          error: 'Rate limit exceeded. Please try again later.',
+          code: 'RATE_LIMITED',
+        },
+        { status: 429 }
+      )
+    )
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -123,16 +145,16 @@ describe('interactions reset API route', () => {
     )
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
-    expect(init?.status).toBe(400)
-    expect(body.error).toBe('Too many requests. Please try again later.')
+    expect(init?.status).toBe(429)
+    expect(body.error).toBe('Rate limit exceeded. Please try again later.')
   })
 
   test('returns 500 when delete returns an error', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({
-      data: { user: { id: 'user-1' } },
-      error: null,
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
     })
-    checkMock.mockResolvedValue({ success: true })
+    mockCheckRateLimit.mockResolvedValue(null)
 
     const chain = createDeleteChain({
       data: null,
@@ -152,11 +174,11 @@ describe('interactions reset API route', () => {
   })
 
   test('returns 500 when delete throws or times out', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({
-      data: { user: { id: 'user-1' } },
-      error: null,
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
     })
-    checkMock.mockResolvedValue({ success: true })
+    mockCheckRateLimit.mockResolvedValue(null)
 
     const chain = createDeleteChain({ data: null, error: null })
     chain.select = jest.fn(() => Promise.reject(new Error('boom')))
@@ -174,11 +196,11 @@ describe('interactions reset API route', () => {
   })
 
   test('clears household cache and returns success', async () => {
-    supabaseMock.auth.getUser.mockResolvedValue({
-      data: { user: { id: 'user-1' } },
-      error: null,
+    mockRequireUserFromRequest.mockResolvedValue({
+      user: { id: 'user-1' },
+      response: null,
     })
-    checkMock.mockResolvedValue({ success: true })
+    mockCheckRateLimit.mockResolvedValue(null)
 
     const chain = createDeleteChain({
       data: [

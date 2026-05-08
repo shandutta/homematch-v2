@@ -41,21 +41,17 @@ already resolved the user).
 
 ## HIGH: Dual Incompatible Rate Limiter Systems
 
-Two completely separate rate limiter implementations with no shared state:
+Two rate-limit call styles now share one implementation/state: `withRateLimit()` for wrapper-style API routes and `checkRateLimit(identifier, tier?)` for route-scoped authenticated/IP/admin keys. Both live in `lib/middleware/rateLimiter.ts` and use `rate-limiter-flexible`.
 
-| System | File                            | Library                 | Endpoints Using It                                                              |
-| ------ | ------------------------------- | ----------------------- | ------------------------------------------------------------------------------- |
-| Tiered | `lib/middleware/rateLimiter.ts` | `rate-limiter-flexible` | couples/activity, couples/mutual-likes, users/avatar                            |
-| Simple | `lib/utils/rate-limit.ts`       | Custom Map-based        | maps/geocode, maps/autocomplete, interactions, interactions/reset, users/search |
+| System | File                            | Library                 | Endpoints Using It                                                                                                                                                             |
+| ------ | ------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tiered | `lib/middleware/rateLimiter.ts` | `rate-limiter-flexible` | couples/activity, couples/mutual-likes, users/avatar, maps/geocode, maps/autocomplete, interactions, interactions/reset, users/search, performance metrics, admin cron helpers |
 
-**Problems**:
+**Remaining limitation**:
 
-- Confusing for developers ("which one do I use?")
-- Different behavior, different headers, different error shapes
-- Neither persists across restarts or works with multiple server instances
+- The tiered limiter is still in-memory, so it does not persist across restarts or coordinate across multiple server instances.
 
-**Fix**: Migrate all endpoints to the tiered system (`lib/middleware/rateLimiter.ts`).
-Deprecate `lib/utils/rate-limit.ts`. Still in-memory, but at least consistent.
+**Closure**: The duplicate custom Map helper `lib/utils/rate-limit.ts` was removed. Durable multi-instance storage remains a separate production limiter decision.
 
 ---
 
@@ -171,7 +167,7 @@ can read to skip their own auth call when middleware already resolved the user.
 
 1. Fix `getClientIdentifier` to not call Supabase (CRITICAL speed)
 2. Add Cache-Control headers to cacheable endpoints (HIGH)
-3. Migrate maps endpoints from `utils/rate-limit.ts` to `middleware/rateLimiter.ts` (HIGH consistency)
+3. Keep the consolidated middleware rate limiter (`src/lib/middleware/rateLimiter.ts`) as the single repo-side API limiter; durable storage remains a separate production decision.
 
 ### Phase 2: Auth Hardening (next)
 
@@ -180,7 +176,7 @@ can read to skip their own auth call when middleware already resolved the user.
 
 ### Phase 3: Cleanup (later)
 
-6. Deprecate `lib/utils/rate-limit.ts`
+6. Keep `lib/utils/rate-limit.ts` removed; do not reintroduce a second API limiter helper.
 7. Remove dead `performanceMonitor` or wire it to production reporting
 8. Standardize 429 error responses
 9. Add unsupported-method stubs to routes missing them

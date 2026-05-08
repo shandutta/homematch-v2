@@ -38,10 +38,10 @@ describe('Phase 1 M5 route rate-limit coverage', () => {
       const source = route(path)
       const body = functionBody(source, method)
 
-      expect(source).toContain('@/lib/utils/rate-limit')
-      expect(body).toContain('apiRateLimiter.check')
+      expect(source).toContain('@/lib/middleware/rateLimiter')
+      expect(body).toContain('checkRateLimit')
       expect(body).toContain(key)
-      expect(body).toMatch(/status: 429|ApiErrorHandler\.tooManyRequests/)
+      expect(body).toMatch(/rateLimitResponse\) return rateLimitResponse/)
     }
   )
 
@@ -49,11 +49,11 @@ describe('Phase 1 M5 route rate-limit coverage', () => {
     const source = route('src/app/api/performance/metrics/route.ts')
     const body = functionBody(source, 'POST')
 
-    expect(source).toContain('@/lib/utils/rate-limit')
-    expect(body).toContain('apiRateLimiter.check')
+    expect(source).toContain('@/lib/middleware/rateLimiter')
+    expect(body).toContain('checkRateLimit')
     expect(body).toContain('performance:metrics:')
     expect(body).toContain('x-forwarded-for')
-    expect(body).toContain('status: 429')
+    expect(body).toMatch(/rateLimitResponse\) return rateLimitResponse/)
   })
 })
 

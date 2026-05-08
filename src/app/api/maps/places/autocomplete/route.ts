@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { isValidLatLng } from '@/lib/utils/coordinates'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
@@ -64,10 +64,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting by authenticated user to avoid exposing paid Places usage to anonymous callers
-    const rateLimitResult = await apiRateLimiter.check(auth.user.id)
+    const rateLimitResponse = await checkRateLimit(auth.user.id)
 
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.tooManyRequests()
+    if (rateLimitResponse) {
+      return rateLimitResponse
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY

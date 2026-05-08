@@ -6,36 +6,35 @@ Scope: Phase 0/1 closure scout only; read-only code inspection except this repor
 
 ## Verdict
 
-M5 is still **open**. Existing rate limiting covers several user mutating/paid routes, but remaining gaps are concentrated in cron-secret admin endpoints, one authenticated destructive interaction endpoint, one authenticated couples mutation, one authenticated service-role-backed resolution mutation, and unauthenticated performance metrics ingestion.
+M5 route coverage is **closed for repo-code coverage**, and M10 duplicate rate-limit system consolidation is now **closed repo-side**. Admin cron endpoints, user mutations, paid Maps routes, interactions reset/delete, and performance metrics ingestion all use the single `src/lib/middleware/rateLimiter.ts` implementation through `checkRateLimit`, `rateLimit`, `withRateLimit`, or the admin helper wrapper. Durable production limiter storage remains a separate blocked/decision-needed ops item.
 
 ## Existing limiter primitives observed
 
-- `src/lib/middleware/rateLimiter.ts`: `rateLimit(request, tier)` / `withRateLimit(request, handler, tier)` using `rate-limiter-flexible` memory store; identity currently resolves to `user_<id>` if session lookup succeeds, otherwise `ip_<x-forwarded-for|x-real-ip|unknown>`; tiers include `strict`, `standard`, `relaxed`, `auth`.
-- `src/lib/utils/rate-limit.ts`: `apiRateLimiter.check(identifier)` in-memory helper; current default is 100 requests/minute and routes pass authenticated `user.id` directly.
-- Phase 1 blocker still applies: durable production limiter decision is outside this repo-only scout. Repo-only remediation can still standardize coverage with the current in-repo limiter(s), but production durability remains a separate decision.
+- `src/lib/middleware/rateLimiter.ts`: single repo-side limiter after M10 consolidation. It exposes `rateLimit(request, tier)`, `withRateLimit(request, handler, tier)`, and explicit-key `checkRateLimit(identifier, tier?)`, all backed by `rate-limiter-flexible` memory store. Request identity resolves to `ip_<x-forwarded-for|x-real-ip|unknown>` without Supabase auth calls; authenticated routes pass `user.id` or route-scoped user keys explicitly.
+- Phase 1 blocker still applies: durable production limiter storage is outside this repo-only scout. Repo-only remediation can standardize coverage on the current in-repo limiter, but production durability remains a separate decision.
 
 ## Route matrix
 
-| Method/path | File | Existing limiter evidence | Recommended limiter identity/key | Safe to remediate repo-only? |
-| --- | --- | --- | --- | --- |
-| `POST /api/admin/status-refresh` | `src/app/api/admin/status-refresh/route.ts` | **Gap.** Cron-secret auth at lines 97-153; no limiter import/call. | `admin:status-refresh:{cron-secret-present}:{ip}` or preferably `admin:status-refresh:{hash(secret or configured cron id)}:{ip}`; strict/very low frequency because it triggers RapidAPI and DB upserts. | **Yes**, if using existing in-repo limiter and no secret logging. Durable backend still blocked/decision-needed. |
-| `POST /api/admin/ingest/zillow` | `src/app/api/admin/ingest/zillow/route.ts` | **Gap.** Cron-secret auth at lines 106-114; no limiter import/call. | `admin:ingest-zillow:{cron-secret-present}:{ip}`; strict/cron tier; include route-specific key to avoid consuming normal user quota. | **Yes**, repo-only limiter wrapper is safe; avoid printing/querying secrets. |
-| `POST /api/admin/generate-vibes` | `src/app/api/admin/generate-vibes/route.ts` | **Gap.** Cron-secret auth at lines 49-64; no limiter import/call; performs OpenRouter work and DB writes. | `admin:generate-vibes:{cron-secret-present}:{ip}`; strict/admin tier, low burst. | **Yes**, repo-only; should add unit/static coverage only. |
-| `GET /api/admin/generate-vibes` | `src/app/api/admin/generate-vibes/route.ts` | **Gap for admin route.** Secret query auth at lines 361-368; no limiter. Read-only but admin/status route. | `admin:generate-vibes:get:{cron-secret-present}:{ip}`; relaxed/admin-read tier. | **Yes**; lower priority than POST but within admin route hardening. |
-| `POST /api/admin/generate-neighborhood-vibes` | `src/app/api/admin/generate-neighborhood-vibes/route.ts` | **Gap.** Cron-secret auth at lines 17-28; no limiter; OpenRouter/DB upserts. | `admin:generate-neighborhood-vibes:{cron-secret-present}:{ip}`; strict/admin tier. | **Yes**, repo-only limiter call safe. |
-| `POST /api/admin/generate-vibes-zillow` | `src/app/api/admin/generate-vibes-zillow/route.ts` | **Gap.** Cron-secret auth at lines 287-299; no limiter; RapidAPI + OpenRouter preview work. | `admin:generate-vibes-zillow:{cron-secret-present}:{ip}`; strict/admin tier. | **Yes**, repo-only; route has no DB write but paid external calls warrant strict limit. |
-| `PATCH /api/couples/disputed` | `src/app/api/couples/disputed/route.ts` | **Gap.** Auth at lines 361-367; service-role upsert to `household_property_resolutions` at lines 403-417; no limiter. | Authenticated `user.id` plus route/method, e.g. `user:{id}:PATCH:/api/couples/disputed`; standard or strict. | **Yes**, repo-only. No product decision needed for adding per-user throttle. |
-| `POST /api/couples/notify` | `src/app/api/couples/notify/route.ts` | **Gap.** Auth at lines 12-18; no limiter; invokes couples notification flow. | Authenticated `user.id` plus route/method; standard tier. | **Yes**, repo-only. |
-| `DELETE /api/interactions` | `src/app/api/interactions/route.ts` | **Gap.** Auth at lines 410-417; no `apiRateLimiter.check()` in DELETE path. POST path is limited by `apiRateLimiter.check(user.id)` at lines 25-40. | Authenticated `user.id` plus route/method; strict/destructive tier. If staying with `apiRateLimiter`, key should avoid sharing quota unintentionally: `interactions:delete:{user.id}`. | **Yes**, repo-only; should align with reset route behavior. |
-| `POST /api/performance/metrics` | `src/app/api/performance/metrics/route.ts` | **Gap.** Unauthenticated ingestion at lines 74-135; in-memory store only; no limiter. | IP-based key, e.g. `ip:{x-forwarded-for|x-real-ip}:POST:/api/performance/metrics`; relaxed/standard. Optional URL-origin bucketing if spoofing is a concern. | **Yes**, for basic IP throttle. Stronger anti-spam/origin policy is a product/ops decision. |
-| `POST /api/maps/geocode` | `src/app/api/maps/geocode/route.ts` | Covered: `apiRateLimiter` import and `apiRateLimiter.check(auth.user.id)` at lines 54-56 per search results; authenticated paid API route. | Existing authenticated `user.id`; route-specific key would be better during limiter consolidation. | No gap; repo-only cleanup optional under M10, not M5 gap closure. |
-| `POST /api/maps/places/autocomplete` | `src/app/api/maps/places/autocomplete/route.ts` | Covered: `apiRateLimiter` import and `apiRateLimiter.check(auth.user.id)` at lines 65-67 per search results; authenticated paid API route. | Existing authenticated `user.id`; route-specific key preferred eventually. | No gap; repo-only cleanup optional under M10. |
-| `POST /api/interactions` | `src/app/api/interactions/route.ts` | Covered: `apiRateLimiter.check(user.id)` at lines 34-40. | Existing `user.id`; route-specific `interactions:post:{user.id}` preferred eventually. | No M5 gap. |
-| `DELETE /api/interactions/reset` | `src/app/api/interactions/reset/route.ts` | Covered: `apiRateLimiter.check(user.id)` at lines 17-23. | Existing `user.id`; destructive route-specific key preferred. | No M5 gap. |
-| `POST /api/users/avatar` | `src/app/api/users/avatar/route.ts` | Covered: `rateLimit(request, 'strict')` at lines 51-56 before upload handling. | Existing `user_<id>`/IP fallback from `rateLimiter.ts`; route-specific user key preferred after consolidation. | No M5 gap. |
-| `DELETE /api/users/avatar` | `src/app/api/users/avatar/route.ts` | Covered: `rateLimit(request, 'standard')` at lines 185-190. | Existing `user_<id>`/IP fallback; route-specific user key preferred after consolidation. | No M5 gap. |
-| `GET /api/couples/activity` | `src/app/api/couples/activity/route.ts` | Covered for GET with `withRateLimit(request, ...)` at lines 29-31; exported POST/PUT/DELETE/PATCH are 405 only. | Existing `user_<id>`/IP fallback. | No mutating gap. |
-| 405-only exported methods (`/api/health`, `/api/properties/marketing`, `/api/couples/check-mutual`, `/api/couples/activity`) | Respective route files | POST/PUT/PATCH/DELETE handlers return 405 and do not mutate; no limiter needed for M5 closure. | Not applicable. | No M5 gap; do not spend closure work here. |
+| Method/path | File | Current limiter evidence | Status |
+| --- | --- | --- | --- |
+| `POST /api/admin/status-refresh` | `src/app/api/admin/status-refresh/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:status-refresh')`, backed by `checkRateLimit`. | Closed repo-side |
+| `POST /api/admin/ingest/zillow` | `src/app/api/admin/ingest/zillow/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:ingest-zillow')`, backed by `checkRateLimit`. | Closed repo-side |
+| `POST /api/admin/generate-vibes` | `src/app/api/admin/generate-vibes/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:generate-vibes')`, backed by `checkRateLimit`. | Closed repo-side |
+| `GET /api/admin/generate-vibes` | `src/app/api/admin/generate-vibes/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:generate-vibes')`, backed by `checkRateLimit`. | Closed repo-side |
+| `POST /api/admin/generate-neighborhood-vibes` | `src/app/api/admin/generate-neighborhood-vibes/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:generate-neighborhood-vibes')`, backed by `checkRateLimit`. | Closed repo-side |
+| `POST /api/admin/generate-vibes-zillow` | `src/app/api/admin/generate-vibes-zillow/route.ts` | Uses `rateLimitAdminRoute(request, 'admin:generate-vibes-zillow')`, backed by `checkRateLimit`. | Closed repo-side |
+| `PATCH /api/couples/disputed` | `src/app/api/couples/disputed/route.ts` | Uses `checkRateLimit("couples:disputed:${user.id}")`. | Closed repo-side |
+| `POST /api/couples/notify` | `src/app/api/couples/notify/route.ts` | Uses `checkRateLimit("couples:notify:${user.id}")`. | Closed repo-side |
+| `POST /api/interactions` | `src/app/api/interactions/route.ts` | Uses `checkRateLimit(user.id)`. | Closed repo-side |
+| `DELETE /api/interactions` | `src/app/api/interactions/route.ts` | Uses `checkRateLimit("interactions:delete:${user.id}")`. | Closed repo-side |
+| `DELETE /api/interactions/reset` | `src/app/api/interactions/reset/route.ts` | Uses `checkRateLimit(user.id)`. | Closed repo-side |
+| `POST /api/performance/metrics` | `src/app/api/performance/metrics/route.ts` | Uses `checkRateLimit("performance:metrics:${ip}")` with forwarded/real IP fallback. | Closed repo-side |
+| `POST /api/maps/geocode` | `src/app/api/maps/geocode/route.ts` | Uses `checkRateLimit(auth.user.id)`. | Closed repo-side |
+| `POST /api/maps/places/autocomplete` | `src/app/api/maps/places/autocomplete/route.ts` | Uses `checkRateLimit(auth.user.id)`. | Closed repo-side |
+| `POST /api/users/avatar` | `src/app/api/users/avatar/route.ts` | Uses `rateLimit(request, 'strict')`. | Closed repo-side |
+| `DELETE /api/users/avatar` | `src/app/api/users/avatar/route.ts` | Uses `rateLimit(request, 'standard')`. | Closed repo-side |
+| `GET /api/couples/activity` | `src/app/api/couples/activity/route.ts` | Uses `withRateLimit(request, ..., 'standard')`. | Closed repo-side |
+| 405-only exported methods (`/api/health`, `/api/properties/marketing`, `/api/couples/check-mutual`, `/api/couples/activity`) | Respective route files | Handlers return 405 and do not mutate; no limiter needed for M5 closure. | No M5 gap |
 
 ## Recommended Phase 0/1 repo-only remediation shape
 
@@ -47,23 +46,12 @@ M5 is still **open**. Existing rate limiting covers several user mutating/paid r
 
 ## Remaining M5 gap list
 
-1. `POST /api/admin/status-refresh`
-2. `POST /api/admin/ingest/zillow`
-3. `POST /api/admin/generate-vibes`
-4. `GET /api/admin/generate-vibes` (admin read/status hardening)
-5. `POST /api/admin/generate-neighborhood-vibes`
-6. `POST /api/admin/generate-vibes-zillow`
-7. `PATCH /api/couples/disputed`
-8. `POST /api/couples/notify`
-9. `DELETE /api/interactions`
-10. `POST /api/performance/metrics`
+None for repo-code route coverage. Durable multi-instance limiter storage remains outside this repo-only M5/M10 closure and is tracked as a separate production decision.
 
 ## Notes / non-goals
 
-- No code was modified in this scout.
-- No broad tests/builds were run.
-- This does not dispatch Phase 2+ or resolve the separate durable-rate-limiter production decision (M10/auth audit blocker). It only inventories M5 coverage gaps that can be closed repo-only with current primitives if approved.
-
+- No external dashboards, deploys, secrets, paid API calls, or live API probing were used.
+- This does not dispatch Phase 2+ or resolve the separate durable-rate-limiter production decision (M10/auth audit blocker). It closes duplicate repo-side limiter implementation and route coverage on current primitives only.
 
 ## Remediation slice — user/performance route limits
 
@@ -71,10 +59,10 @@ Status: **M5 partial**.
 
 Closed in this slice:
 
-- `PATCH /api/couples/disputed` now checks `apiRateLimiter.check(`couples:disputed:${user.id}`)`.
-- `POST /api/couples/notify` now checks `apiRateLimiter.check(`couples:notify:${user.id}`)`.
-- `DELETE /api/interactions` now checks `apiRateLimiter.check(`interactions:delete:${user.id}`)`.
-- `POST /api/performance/metrics` now checks `apiRateLimiter.check(`performance:metrics:${ip}`)` using forwarded/real IP fallback.
+- `PATCH /api/couples/disputed` now checks `checkRateLimit(`couples:disputed:${user.id}`)`.
+- `POST /api/couples/notify` now checks `checkRateLimit(`couples:notify:${user.id}`)`.
+- `DELETE /api/interactions` now checks `checkRateLimit(`interactions:delete:${user.id}`)`.
+- `POST /api/performance/metrics` now checks `checkRateLimit(`performance:metrics:${ip}`)` using forwarded/real IP fallback.
 
 Verification:
 
@@ -92,7 +80,6 @@ Remaining M5 gaps are concentrated in admin cron-secret routes:
 4. `GET /api/admin/generate-vibes`
 5. `POST /api/admin/generate-neighborhood-vibes`
 6. `POST /api/admin/generate-vibes-zillow`
-
 
 ## Remediation slice — admin cron route limits
 
@@ -116,3 +103,20 @@ Verification:
 - Diff check: passed.
 
 Remaining note: the limiter is still in-process memory backed, matching existing project primitives. Durable production storage is tracked separately as an ops/architecture decision, not an M5 route-coverage gap.
+
+## Remediation slice — M10 duplicate limiter consolidation
+
+Status: **M10 closed repo-side**.
+
+Closed in this slice:
+
+- Removed the duplicate custom Map helper `src/lib/utils/rate-limit.ts` and its unit test.
+- Added explicit-key `checkRateLimit(identifier, tier?)` and shared test reset helper in `src/lib/middleware/rateLimiter.ts` so route-scoped keys and wrapper-style routes share one `rate-limiter-flexible` memory store.
+- Updated `src/lib/api/admin-rate-limit.ts` and route-scoped Maps/interactions/couples/performance callers to import `@/lib/middleware/rateLimiter` only.
+- Added consolidated limiter coverage in `__tests__/unit/lib/middleware/rate-limiter-check.test.ts` and updated static route coverage in `__tests__/unit/api/rate-limit-coverage.test.ts`.
+- Added Jest ignores for `<rootDir>/.worktrees/` so stale in-repo worktrees do not get discovered as duplicate tests/packages during targeted verification.
+
+Verification:
+
+- Targeted Jest: `pnpm exec jest --runTestsByPath __tests__/unit/api/maps/geocode.route.test.ts __tests__/unit/api/maps/places-autocomplete.route.test.ts __tests__/unit/app/api/interactions/reset/route.test.ts __tests__/unit/app/api/interactions/route.test.ts __tests__/unit/lib/middleware/rate-limiter-check.test.ts __tests__/unit/api/rate-limit-coverage.test.ts --runInBand --no-cache` passed 52/52.
+- Type-check: `pnpm type-check` passed.

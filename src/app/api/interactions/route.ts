@@ -9,7 +9,7 @@ import {
   interactionSummarySchema,
   paginationQuerySchema,
 } from '@/lib/schemas/api'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 import {
   getDbFiltersForInteractionType,
   mapInteractionTypeToDb,
@@ -29,12 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const rateLimitResult = await apiRateLimiter.check(user.id)
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.badRequest(
-        'Too many requests. Please try again later.'
-      )
-    }
+    const rateLimitResponse = await checkRateLimit(user.id)
+    if (rateLimitResponse) return rateLimitResponse
 
     let body: unknown
     try {
@@ -328,12 +324,10 @@ export async function DELETE(request: NextRequest) {
       return response ?? ApiErrorHandler.unauthorized()
     }
 
-    const rateLimitResult = await apiRateLimiter.check(
+    const rateLimitResponse = await checkRateLimit(
       `interactions:delete:${user.id}`
     )
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.tooManyRequests()
-    }
+    if (rateLimitResponse) return rateLimitResponse
 
     let body: unknown
     try {

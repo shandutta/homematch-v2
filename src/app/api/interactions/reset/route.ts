@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { ApiErrorHandler } from '@/lib/api/errors'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 import { CouplesService } from '@/lib/services/couples'
 import { requireUserFromRequest } from '@/lib/api/auth'
 
@@ -15,12 +15,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Rate limiting - use stricter rate limit for destructive operations
-    const rateLimitResult = await apiRateLimiter.check(user.id)
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.badRequest(
-        'Too many requests. Please try again later.'
-      )
-    }
+    const rateLimitResponse = await checkRateLimit(user.id)
+    if (rateLimitResponse) return rateLimitResponse
 
     // Delete all interactions for this user
     // Add timeout to prevent hanging

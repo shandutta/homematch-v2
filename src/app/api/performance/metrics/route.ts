@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { noStoreJson } from '@/lib/api/cache-control'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit } from '@/lib/middleware/rateLimiter'
 import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface MetricsStoreEntry {
@@ -81,12 +81,8 @@ export async function POST(request: NextRequest) {
     const ip = forwardedFor
       ? forwardedFor.split(',')[0]?.trim()
       : realIp || 'unknown'
-    const rateLimitResult = await apiRateLimiter.check(
-      `performance:metrics:${ip}`
-    )
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.tooManyRequests()
-    }
+    const rateLimitResponse = await checkRateLimit(`performance:metrics:${ip}`)
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await request.json()
 
