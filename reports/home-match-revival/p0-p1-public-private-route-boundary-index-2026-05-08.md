@@ -1,0 +1,175 @@
+# P0/P1 Public/Private Route Boundary Evidence Index — 2026-05-08
+
+Generated: 2026-05-08T17:48Z (worktree `d62-public-private-route-index-1748`).
+
+Scope: PM/reviewer index only. Maps every HomeMatch route surface to its boundary class (public page, protected page, internal preview page, public API, authenticated API, admin/cron API, OAuth callback, local-only proxy, metadata route) and to the **latest** repo-side guard test and live/local probe artifact that proves the boundary holds. Read-only; no code changed in this slice. Does **not** advance Phase 0/1 closure — those gates remain governed by `phase0-phase1-strict-closure-gate.md` and `phase0-phase1-closure-matrix.md`.
+
+## What this index is and is not
+
+- **Is**: a single sheet that links each route to the canonical artifact proving its public/private/internal classification. Useful for reviewing "for route X, where is the evidence its anonymous and/or authenticated behaviour matches policy?" without re-walking every prior report.
+- **Is not**: a closure verdict. The strict OG gate stays active per `phase0-phase1-strict-closure-gate.md` lines 14-19. Authenticated browser traversal, full E2E auth lifecycle, API auth smoke against a live token, and several external-approval rows (D2/D3/paid providers) remain open per `p0-p1-blocker-evidence-index-2026-05-08.md` rows 1-12.
+- **Is not**: an authorization to run live probes, deploy, mutate Supabase, hit paid providers, or change route policy.
+
+## Source of truth (canonical, do not duplicate here)
+
+- Route inventory: `reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md`
+- Closure matrix: `reports/home-match-revival/phase0-phase1-closure-matrix.md`
+- Strict gate: `reports/home-match-revival/phase0-phase1-strict-closure-gate.md`
+- Remaining blocker reconciliation: `reports/home-match-revival/p0-p1-blocker-reconciliation-2026-05-08.md`
+- Remaining blocker evidence index: `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md`
+- Site traversal acceptance set: `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md`
+- API auth smoke matrix: `reports/home-match-revival/p0-p1-api-auth-smoke-matrix-2026-05-08.md`
+- Decision register: `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md` and freshness snapshot `p1-decision-needed-register-freshness-2026-05-08.md`
+
+## Boundary classes used in this index
+
+- **public-page** — anonymous GET allowed; renders without session. Should never redirect to `/login`. SEO posture per `src/app/sitemap.ts`/`src/app/robots.ts`.
+- **protected-page** — anonymous GET must `307` to `/login?redirectTo=…`. Authenticated GET renders. Boundary enforced by `src/middleware.ts` + `src/lib/routing/protected-routes.ts`.
+- **internal-preview-page** — gated by `requireInternalPreviewAccess()` / `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true`. Default production behaviour: HTTP 404. See `p1-internal-demo-surface-disposition-2026-05-08.md` and commit `3e5f510`.
+- **public-api** — anonymous calls allowed; bypassed in middleware (`/api/health`, `/api/performance/metrics`) or otherwise unauthenticated by design (marketing/maps/zillow random image).
+- **authenticated-api** — calls require `requireUserFromRequest()` and return `401`/`403` for anonymous.
+- **admin-cron-api** — gated by `x-cron-secret` / `cron_secret` plus admin rate limit; positive execution is paid/external and explicitly out of scope for this index.
+- **oauth-callback** — public Supabase auth code exchange (`/auth/callback`).
+- **local-only-proxy** — disabled by default; requires `SUPABASE_LOCAL_PROXY=true` and loopback target (`/supabase/*`).
+- **metadata-route** — public, served by Next routes (`/robots.txt`, `/sitemap.xml`).
+
+## Public pages
+
+Anonymous GET expected `200` (or `307` only for already-authed redirect), no session lookup required.
+
+| Path | Class | Boundary policy source | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- | --- |
+| `/` | public-page | `src/app/page.tsx` rendered for anonymous; `sitemap.ts` lists it | `__tests__/unit/app/seo-route-policy.test.ts`; `__tests__/unit/app/metadata-routes.test.ts` | `reports/home-match-revival/p1-anonymous-public-page-fast-path-closure-2026-05-08.md`; `reports/home-match-revival/p0-no-auth-traversal-smoke-guard-2026-05-08.md`; `reports/home-match-revival/no-auth-public-accessibility-smoke.md` |
+| `/about` | public-page | `src/app/about/page.tsx`; sitemap-listed | `__tests__/unit/app/seo-route-policy.test.ts` | `reports/home-match-revival/p1-anonymous-public-page-fast-path-closure-2026-05-08.md`; `p0-no-auth-traversal-smoke-guard-2026-05-08.md` |
+| `/contact` | public-page | `src/app/contact/page.tsx`; sitemap-listed | `__tests__/unit/app/seo-route-policy.test.ts` | `p1-anonymous-public-page-fast-path-closure-2026-05-08.md` |
+| `/cookies` | public-page | `src/app/cookies/page.tsx`; sitemap-listed | `__tests__/unit/lib/cookies/consent.test.ts`; `__tests__/unit/app/seo-route-policy.test.ts` | `p1-anonymous-public-page-fast-path-closure-2026-05-08.md` |
+| `/privacy` | public-page | `src/app/privacy/page.tsx`; sitemap-listed | `__tests__/unit/app/seo-route-policy.test.ts` | `p1-anonymous-public-page-fast-path-closure-2026-05-08.md`; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 27-39 |
+| `/terms` | public-page | `src/app/terms/page.tsx`; sitemap-listed | `__tests__/unit/app/seo-route-policy.test.ts` | `p1-anonymous-public-page-fast-path-closure-2026-05-08.md`; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 27-39 |
+| `/login` | public-page | `src/app/login/page.tsx`; middleware redirects authed → `/dashboard` | `__tests__/unit/middleware.test.ts`; `__tests__/integration/auth/login-flow.integration.test.tsx`; `__tests__/unit/app/login-loading.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md` |
+| `/signup` | public-page | `src/app/signup/page.tsx`; middleware redirects authed → `/dashboard` | `__tests__/unit/middleware.test.ts`; `__tests__/unit/components/auth/SignupForm.test.tsx`; `__tests__/unit/auth/signup-verification-policy-invariants.test.ts` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md` |
+| `/verify-email` | public-page | `src/app/verify-email/page.tsx` | `__tests__/unit/components/auth/VerifyEmailForm.test.tsx` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md`; `p0-site-traversal-acceptance-matrix-2026-05-08.md` lines 27-39 |
+| `/reset-password` | public-page | `src/app/reset-password/page.tsx` | `__tests__/unit/components/features/auth/ResetPasswordForm.test.tsx` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` |
+| `/auth/auth-code-error` | public-page | `src/app/auth/auth-code-error/page.tsx` | error-handling unit/E2E coverage referenced in `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` line 79 | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` |
+| `/invite/[token]` | public-page (token-bearing) | `src/app/invite/[token]/page.tsx`; not in `PROTECTED_PATH_PREFIXES`; server actions perform their own auth checks | `__tests__/unit/app/seo-route-policy.test.ts`; invite/couples server-action coverage | none yet — anonymous invite-token handling is flagged "verify intended" in `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` line 95; live coverage is environment-gated under blocker row 11 of `p0-p1-blocker-evidence-index-2026-05-08.md` |
+
+## Protected pages
+
+Anonymous GET must `307` to `/login?redirectTo=…`. Authenticated GET renders. Boundary lives in `src/middleware.ts` + `src/lib/routing/protected-routes.ts` (`PROTECTED_PATH_PREFIXES`).
+
+| Path | Class | Boundary policy source | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- | --- |
+| `/dashboard` | protected-page | `src/middleware.ts`; `PROTECTED_PATH_PREFIXES` | `__tests__/unit/middleware.test.ts`; `__tests__/unit/lib/routing/protected-routes.test.ts`; `__tests__/unit/app/protected-page-auth-redirects.test.tsx` | Anonymous: `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. Authenticated: `remote-supabase-test-seed-and-auth-probe-2026-05-08.md` (live `/dashboard` traversal). Full matrix gated under `p0-p1-blocker-evidence-index-2026-05-08.md` row 1. |
+| `/dashboard/activity` | protected-page | middleware prefix `/dashboard` | `__tests__/integration/api/activity.spec.ts`; `__tests__/unit/app/protected-page-auth-redirects.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; positive auth traversal still gated (row 1). |
+| `/dashboard/liked` | protected-page | middleware prefix `/dashboard` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md` (`/dashboard?tab=liked` 307 + Location); positive auth gated (row 1). |
+| `/dashboard/mutual-likes` | protected-page | middleware prefix `/dashboard` | `__tests__/unit/components/dashboard/MutualLikesListPage.test.tsx`; `__tests__/unit/app/protected-page-auth-redirects.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; positive auth gated (row 1). |
+| `/dashboard/passed` | protected-page | middleware prefix `/dashboard` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; positive auth gated (row 1). |
+| `/dashboard/viewed` | protected-page | middleware prefix `/dashboard` | `__tests__/unit/components/dashboard/GroupedViewedPropertiesPage.test.tsx` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; positive auth gated (row 1). |
+| `/profile` | protected-page | middleware prefix `/profile` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx`; profile component/unit tests | Authenticated traversal: `remote-supabase-test-seed-and-auth-probe-2026-05-08.md`. Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. |
+| `/settings` | protected-page | middleware prefix `/settings` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx`; settings E2E/unit tests | Authenticated traversal: `remote-supabase-test-seed-and-auth-probe-2026-05-08.md`. Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. |
+| `/couples` | protected-page | middleware prefix `/couples` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx`; couples E2E/component tests | Authenticated traversal: `remote-supabase-test-seed-and-auth-probe-2026-05-08.md`. Anonymous: `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`. |
+| `/couples/decisions` | protected-page | middleware prefix `/couples` | `__tests__/e2e/couples-disputed-properties.spec.ts`; `d7-disputed-route-exposure-closure-2026-05-08.md` references | Anonymous: `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`. Positive auth gated (row 1). |
+| `/properties/[id]` | protected-page | middleware prefix `/properties` | `__tests__/unit/app/protected-page-auth-redirects.test.tsx`; property detail/modal tests | Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. Positive auth gated (row 1). |
+| `/household/create` | protected-page | middleware prefix `/household` | `__tests__/unit/services/users-client.createHousehold.test.ts` | Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. Positive auth gated (row 1, row 11). |
+| `/household/join` | protected-page | middleware prefix `/household` | household clipboard/join E2E referenced in `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` line 94 | Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. Positive auth gated (row 1, row 11). |
+
+## Internal preview pages
+
+Default production behaviour: HTTP 404. Enabled only when `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true`. Repo-side closed for the launch gate per `p1-internal-demo-surface-disposition-2026-05-08.md` and commit `3e5f510`.
+
+| Path | Class | Boundary policy source | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- | --- |
+| `/dashboard/vibes-test` | internal-preview-page | `requireInternalPreviewAccess()` (also still middleware-protected via `/dashboard` prefix) | `__tests__/unit/app/demo-surface-production-gate.test.ts`; property-vibes related tests | Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md` (still 307 to `/login` via middleware). Internal-preview gate execution remains environment-gated. |
+| `/validation` | internal-preview-page | `requireInternalPreviewAccess()` (middleware-protected via `/validation` prefix) | `__tests__/unit/app/demo-surface-production-gate.test.ts`; `__tests__/e2e/fixtures-validation.spec.ts` | Anonymous: `p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`. |
+| `/demo/ads` | internal-preview-page | `requireInternalPreviewAccess()`; `noindex` metadata; sitemap excludes | `__tests__/unit/app/demo-surface-production-gate.test.ts`; `__tests__/unit/components/ads/InFeedAd.test.tsx`; `__tests__/unit/app/metadata-routes.test.ts` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` (smoke guard target list). |
+| `/sponsor-mockups` | internal-preview-page | `requireInternalPreviewAccess()`; `noindex` metadata; sitemap excludes | `__tests__/unit/app/demo-surface-production-gate.test.ts`; `__tests__/unit/app/metadata-routes.test.ts` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` (smoke guard target list). |
+
+## Metadata + special-case routes
+
+| Path | Class | Boundary policy source | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- | --- |
+| `/robots.txt` | metadata-route | `src/app/robots.ts` | `__tests__/unit/app/metadata-routes.test.ts`; `__tests__/unit/app/seo-route-policy.test.ts` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` |
+| `/sitemap.xml` | metadata-route | `src/app/sitemap.ts` | `__tests__/unit/app/metadata-routes.test.ts`; `__tests__/unit/app/seo-route-policy.test.ts` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` |
+| `/auth/callback` | oauth-callback | `src/app/auth/callback/route.ts`; Supabase `exchangeCodeForSession` | none yet (gap noted in `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` line 67) | `p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md` (missing-code probe scaffold) |
+| `/supabase/[...path]` | local-only-proxy | `SUPABASE_LOCAL_PROXY=true` + loopback target allow-list | `__tests__/integration/infrastructure/supabase-proxy.integration.test.ts`; `__tests__/unit/app/supabase-proxy-route.test.ts` (3/3 passed under `systemd-run` per inventory matrix line 68) | not applicable — disabled-by-default surface. Live execution is environment-gated. |
+| `/error.tsx`, `/global-error.tsx`, `/not-found.tsx`, `/500.tsx` | error UI | Next built-in error boundaries | `__tests__/unit/app/error.test.tsx`; `__tests__/unit/app/global-error.test.tsx`; `__tests__/unit/app/not-found.test.tsx` | `p0-no-auth-traversal-smoke-guard-2026-05-08.md` (synthetic missing-route step) |
+
+## Public APIs
+
+| Path | Class | Boundary policy source | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- | --- |
+| `/api/health` | public-api (middleware bypass) | `src/middleware.ts` bypass list; `src/app/api/health/route.ts` | `__tests__/integration/api/health.spec.ts`; `__tests__/unit/app/api/health/route.test.ts` | `p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`; `p0-p1-api-auth-smoke-matrix-2026-05-08.md` lines 9-12 |
+| `/api/performance/metrics` | public-api (middleware bypass; ingest size/shape limits) | `src/middleware.ts` bypass; `src/app/api/performance/metrics/route.ts` | `__tests__/integration/api/performance-metrics.spec.ts`; `__tests__/unit/app/api/performance/metrics/route.test.ts` | `p1-performance-metrics-public-ingest-size-closure-2026-05-08.md` (targeted unit run passed 2026-05-08) |
+| `/api/properties/marketing` | public-api | `src/app/api/properties/marketing/route.ts` | `__tests__/integration/api/properties-marketing.spec.ts`; `__tests__/unit/app/api/properties/marketing/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md` (handler-level matrix); positive live execution gated (row 3 of `p0-p1-blocker-evidence-index-2026-05-08.md`) |
+| `/api/maps/metro-boundaries` | public-api (service-role read) | `src/app/api/maps/metro-boundaries/route.ts` | `__tests__/integration/api/map-boundaries.integration.test.ts`; `__tests__/integration/security/rls-boundaries.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live execution environment-gated |
+| `/api/maps/proxy-script` | public-api (paid-key proxy) | `src/app/api/maps/proxy-script/route.ts`; `fetchWithTimeout` 10s; cache headers | `__tests__/unit/api/maps-proxy-script.route.test.ts` | none — paid/external; out of scope per `p0-p1-blocker-evidence-index-2026-05-08.md` row 10 |
+| `/api/maps/script` | public-api (config/script response) | `src/app/api/maps/script/route.ts` | `__tests__/unit/app/api/maps/script/route.test.ts` | none — paid/external; out of scope per row 10 |
+| `/api/zillow/random-image` | public-api (paid upstream demo) | `src/app/api/zillow/random-image/route.ts`; `fetchWithTimeout` 10s | `__tests__/unit/app/api/zillow/random-image/route.test.ts`; `__tests__/integration/ui/property-detail-modal-images.test.tsx` | none — paid/external; out of scope per row 10 |
+
+## Authenticated APIs
+
+All require `requireUserFromRequest()`; anonymous calls return `401`/`403`. Positive live coverage is environment-gated under `p0-p1-blocker-evidence-index-2026-05-08.md` row 3 (token + server approval).
+
+| Path | Class | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- |
+| `/api/couples/activity` | authenticated-api | `__tests__/integration/api/activity.spec.ts`; `__tests__/unit/components/profile/ActivityStats.test.tsx` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md` (handler-level); live token gated |
+| `/api/couples/check-mutual` | authenticated-api | `__tests__/integration/api/couples-check-mutual.spec.ts`; `__tests__/unit/app/api/couples/check-mutual/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/couples/disputed` | authenticated-api | `__tests__/e2e/couples-disputed-properties.spec.ts`; `__tests__/unit/app/api/couples/disputed/route.test.ts`; `d7-disputed-route-exposure-closure-2026-05-08.md` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/couples/mutual-likes` | authenticated-api | `__tests__/integration/api/mutual-likes.spec.ts`; `__tests__/unit/app/api/couples/mutual-likes/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/couples/notify` | authenticated-api | `__tests__/unit/app/api/couples/notify/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/couples/stats` | authenticated-api | `__tests__/integration/api/couples-stats.spec.ts`; `__tests__/unit/app/api/couples/stats/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/interactions` | authenticated-api | `__tests__/integration/api/interactions-route.integration.test.ts`; `__tests__/unit/app/api/interactions/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/interactions/reset` | authenticated-api | `__tests__/unit/app/api/interactions/reset/route.test.ts`; `__tests__/e2e/settings-filters-reset.spec.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/maps/geocode` | authenticated-api | `__tests__/unit/api/maps/geocode.route.test.ts` | none — paid upstream (Google Maps); execution out of scope per row 10 |
+| `/api/maps/places/autocomplete` | authenticated-api | `__tests__/unit/api/maps/places-autocomplete.route.test.ts`; `__tests__/unit/app/api/maps/places-autocomplete/route.test.ts` | none — paid upstream (Google Places); execution out of scope per row 10 |
+| `/api/neighborhoods/vibes` | authenticated-api | `__tests__/integration/api/neighborhood-vibes.spec.ts`; `__tests__/unit/app/api/neighborhoods/vibes/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/properties/vibes` | authenticated-api | `__tests__/integration/api/property-vibes.spec.ts`; `__tests__/unit/app/api/properties/vibes/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+| `/api/users/avatar` | authenticated-api | `__tests__/integration/api/avatar-upload.integration.test.ts`; `__tests__/unit/app/api/users/avatar/route.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token + storage gated (rows 3, 11) |
+| `/api/users/search` | authenticated-api | `__tests__/integration/data-layer/users-search.integration.test.ts` | `p0-p1-api-auth-smoke-matrix-2026-05-08.md`; live token gated |
+
+## Admin/cron APIs
+
+Gated by `x-cron-secret` / `cron_secret` plus admin rate limit. Positive execution is paid/external (OpenRouter, Zillow/RapidAPI) and out of scope per `p0-p1-blocker-evidence-index-2026-05-08.md` row 10. Service-role authority binding lives in `d1-service-role-rbac-authority-implementation-packet-2026-05-08.md` and `__tests__/unit/app/service-role-route-capability-guard.test.ts`.
+
+| Path | Class | Latest repo-side guard | Latest live/local probe artifact |
+| --- | --- | --- | --- |
+| `/api/admin/generate-neighborhood-vibes` | admin-cron-api | `__tests__/integration/api/neighborhood-vibes.spec.ts`; `__tests__/integration/api/property-vibes.spec.ts`; `__tests__/unit/app/service-role-route-capability-guard.test.ts` | none — paid/external |
+| `/api/admin/generate-vibes` | admin-cron-api | `__tests__/unit/api/generate-vibes-route.test.ts`; `__tests__/integration/api/property-vibes.spec.ts`; `__tests__/unit/app/service-role-route-capability-guard.test.ts` | none — paid/external |
+| `/api/admin/generate-vibes-zillow` | admin-cron-api | `__tests__/unit/api/generate-vibes-route.test.ts`; `__tests__/unit/api/ingest-zillow-route.test.ts`; `__tests__/unit/app/service-role-route-capability-guard.test.ts` | none — paid/external |
+| `/api/admin/ingest/zillow` | admin-cron-api | `__tests__/unit/api/ingest-zillow-route.test.ts`; `__tests__/unit/ingestion/zillow-ingest.test.ts`; `__tests__/unit/app/service-role-route-capability-guard.test.ts` | none — paid/external |
+| `/api/admin/status-refresh` | admin-cron-api | `__tests__/unit/api/status-refresh-route.test.ts`; `__tests__/unit/app/service-role-route-capability-guard.test.ts` | none — paid/external |
+
+## Cross-cutting boundary guards (not route-specific)
+
+These guards sit beneath the route boundary and back the rows above. Listing them here so reviewers can find them without re-walking each row:
+
+- `__tests__/unit/middleware.test.ts` — middleware redirect/refresh + `redirectTo` round-trip.
+- `__tests__/unit/lib/routing/protected-routes.test.ts` — `PROTECTED_PATH_PREFIXES` boundary.
+- `__tests__/unit/app/protected-page-auth-redirects.test.tsx` — anonymous protected-page redirect shape.
+- `__tests__/unit/app/seo-route-policy.test.ts` — SEO route policy (public/internal/protected partitioning).
+- `__tests__/unit/app/metadata-routes.test.ts` — robots/sitemap exclusions for non-canonical routes.
+- `__tests__/unit/app/demo-surface-production-gate.test.ts` — internal-preview gate (default 404).
+- `__tests__/unit/app/service-role-route-capability-guard.test.ts` — service-role/admin capability whitelist.
+- `__tests__/unit/auth/d1-rbac-authority-packet.test.ts` — D1 authority table integration.
+- `__tests__/unit/auth/signup-verification-policy-invariants.test.ts` — D3 launch policy invariants.
+- `__tests__/unit/lib/middleware/rate-limiter-check.test.ts` and `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test.ts` — D2 limiter approval gate.
+- `__tests__/integration/security/rls-boundaries.test.ts` — RLS boundaries behind authenticated/admin APIs.
+- `__tests__/unit/routing/no-auth-traversal-smoke-guard.test.ts` — public-route smoke guard.
+- `__tests__/integration/routing/no-auth-live-probe.spec.ts` + `scripts/run-no-auth-live-probes.js` — local-only no-auth live probe wrapper (default-safe Vitest skipped).
+- `auth-boundary-consolidation-2026-05-08.md` — narrative consolidation of the boundary across pages, APIs, and middleware.
+
+## Open boundary gaps tracked elsewhere (do not duplicate)
+
+Each is owned by an existing artifact; this index just points at it.
+
+- Authenticated browser traversal of the full protected-page matrix → `p0-p1-blocker-evidence-index-2026-05-08.md` row 1; site traversal acceptance lines 72-91 and 133-176.
+- E2E auth lifecycle (signup/login/verify/logout/redirectTo round-trip) → `p0-p1-blocker-evidence-index-2026-05-08.md` row 2.
+- Live API auth smoke against a seeded token + approved server → `p0-p1-api-auth-smoke-matrix-2026-05-08.md` lines 47-71; `p0-p1-blocker-evidence-index-2026-05-08.md` row 3.
+- Final public no-credential traversal artifact (Playwright/local-smoke) → `p0-no-auth-traversal-smoke-guard-2026-05-08.md`; `p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md`; `p0-p1-blocker-evidence-index-2026-05-08.md` row 8.
+- `/auth/callback` missing-code probe coverage → `p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md` (harness scaffold); test gap noted in inventory matrix line 67.
+- `/invite/[token]` anonymous behaviour acceptance → inventory matrix line 95; positive flow gated under row 11.
+- D1 authority table live integration, D2 durable limiter provider, D3 production CAPTCHA/email confirmation, D6 DB reset/lint/rollback execution → `p0-p1-blocker-evidence-index-2026-05-08.md` rows 4-7.
+- Paid/external surface execution (Maps/Zillow/RapidAPI/OpenRouter) → `p0-p1-blocker-evidence-index-2026-05-08.md` row 10.
+
+## Verdict (no change)
+
+Phase 0/1 remain not 100% closed. This index is documentation only — a reviewer-facing route-class → latest-evidence map. It does not move the gate, authorize live probes, or ship code. All upstream verdicts (`phase0-phase1-strict-closure-gate.md`, `phase0-phase1-closure-matrix.md`, `p0-p1-blocker-evidence-index-2026-05-08.md`, `p1-decision-needed-register-2026-05-08.md`) remain canonical.
