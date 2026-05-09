@@ -218,6 +218,14 @@ export async function backfillVibes(
       }
 
       const imagesChangedByPropertyId = new Map<string, boolean>()
+      const imageUpdatePayloads: {
+        id: string
+        willUpdateImages: boolean
+        nextImages: string[]
+        nowIso: string
+        zillow_images_refreshed_count: number
+        zillow_images_refresh_status: 'ok' | 'no_images'
+      }[] = []
 
       const maybeRefreshImages = async (property: Property): Promise<void> => {
         if (!args.refreshImages) return
@@ -284,67 +292,28 @@ export async function backfillVibes(
           return
         }
 
-        const updatePayloadBase = {
-          updated_at: nowIso,
-          zillow_images_refreshed_at: nowIso,
+        const willUpdateImages = nextImages.length > 0 && !currentMatches
+
+        // Defer DB write — collect for batch upsert after the property loop
+        imageUpdatePayloads.push({
+          id: property.id,
+          willUpdateImages,
+          nextImages,
+          nowIso,
           zillow_images_refreshed_count: nextImages.length,
           zillow_images_refresh_status: markerStatus,
-        }
-        const willUpdateImages = nextImages.length > 0 && !currentMatches
-        const updatePayload = willUpdateImages
-          ? { ...updatePayloadBase, images: nextImages }
-          : updatePayloadBase
+        })
 
-        const { error: updateError } = await deps.supabase
-          .from('properties')
-          .update(updatePayload)
-          .eq('id', property.id)
-
-        if (updateError?.code === '42703') {
-          // Migration not applied yet; fall back to legacy update.
-          if (willUpdateImages) {
-            const { error: legacyError } = await deps.supabase
-              .from('properties')
-              .update({
-                images: nextImages,
-                updated_at: nowIso,
-              })
-              .eq('id', property.id)
-
-            if (legacyError) {
-              logger.warn(
-                `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${legacyError.message}`
-              )
-              imagesChangedByPropertyId.set(property.id, false)
-              return
-            }
-
-            property.images = nextImages
-            imagesChangedByPropertyId.set(property.id, true)
-          } else {
-            logger.warn(
-              `[backfill-vibes] [images] Marker columns missing in DB (run Supabase migration). Skipping marker update for zpid=${zpid} property=${property.id}.`
-            )
-            imagesChangedByPropertyId.set(property.id, false)
-            return
-          }
-        } else if (updateError) {
-          logger.warn(
-            `[backfill-vibes] [images] Failed to update images for zpid=${zpid} property=${property.id}: ${updateError.message}`
-          )
-          imagesChangedByPropertyId.set(property.id, false)
-          return
+        // Mutate property in-place for downstream vibes generation
+        if (willUpdateImages) {
+          property.images = nextImages
+          imagesChangedByPropertyId.set(property.id, true)
         } else {
-          if (willUpdateImages) {
-            property.images = nextImages
-            imagesChangedByPropertyId.set(property.id, true)
-          } else {
-            imagesChangedByPropertyId.set(property.id, false)
-          }
-          property.zillow_images_refreshed_at = nowIso
-          property.zillow_images_refreshed_count = nextImages.length
-          property.zillow_images_refresh_status = markerStatus
+          imagesChangedByPropertyId.set(property.id, false)
         }
+        property.zillow_images_refreshed_at = nowIso
+        property.zillow_images_refreshed_count = nextImages.length
+        property.zillow_images_refresh_status = markerStatus
 
         if (nextImages.length === 0) {
           logger.log(
@@ -416,6 +385,62 @@ export async function backfillVibes(
           `[backfill-vibes] [vibes] Generate property=${property.id} zpid=${zpid ?? 'null'}: ${reasons.join(', ') || 'unknown'}`
         )
         toGenerate.push(property)
+      }
+
+      // Batch upsert all collected image updates (one round-trip total,
+      // or one marker-only + per-row images on 42703 fallback)
+      if (imageUpdatePayloads.length > 0) {
+        const allRows = imageUpdatePayloads.map((u) => ({
+          id: u.id,
+          updated_at: u.nowIso,
+          zillow_images_refreshed_at: u.nowIso,
+          zillow_images_refreshed_count: u.zillow_images_refreshed_count,
+          zillow_images_refresh_status: u.zillow_images_refresh_status,
+          ...(u.willUpdateImages ? { images: u.nextImages } : {}),
+        }))
+        const { error: upsertErr } = await deps.supabase
+          .from('properties')
+          .upsert(allRows as any)
+
+        if (upsertErr?.code === '42703') {
+          // Migration not applied; fall back to marker-only batch + per-row images
+          const markerRows = imageUpdatePayloads
+            .filter((u) => !u.willUpdateImages)
+            .map((u) => ({
+              id: u.id,
+              updated_at: u.nowIso,
+              zillow_images_refreshed_at: u.nowIso,
+              zillow_images_refreshed_count: u.zillow_images_refreshed_count,
+              zillow_images_refresh_status: u.zillow_images_refresh_status,
+            }))
+          if (markerRows.length > 0) {
+            const { error: markerErr } = await deps.supabase
+              .from('properties')
+              .upsert(markerRows as any)
+            if (markerErr) {
+              logger.warn(
+                `[backfill-vibes] [images] Batch marker-only upsert failed: ${markerErr.message}`
+              )
+            }
+          }
+          for (const u of imageUpdatePayloads.filter(
+            (u) => u.willUpdateImages
+          )) {
+            const { error: imgErr } = await deps.supabase
+              .from('properties')
+              .update({ images: u.nextImages, updated_at: u.nowIso })
+              .eq('id', u.id)
+            if (imgErr) {
+              logger.warn(
+                `[backfill-vibes] [images] Fallback image update failed for property=${u.id}: ${imgErr.message}`
+              )
+            }
+          }
+        } else if (upsertErr) {
+          logger.warn(
+            `[backfill-vibes] [images] Batch image upsert failed: ${upsertErr.message}`
+          )
+        }
       }
 
       const batchResult = args.refreshImages
