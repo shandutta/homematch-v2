@@ -137,6 +137,14 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-select',
       '@radix-ui/react-tabs',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-label',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-slot',
     ],
     // TODO: Enable Turbopack filesystem caching once supported by this Next.js
     // version. These flags are not present in 15.5.9.
