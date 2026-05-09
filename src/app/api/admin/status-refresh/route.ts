@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
-import type { PropertyInsert } from '@/types/database'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
@@ -190,7 +189,14 @@ export async function POST(req: Request) {
       )
     }
 
-    const updates: PropertyInsert[] = []
+    const updates: {
+      id: string
+      listing_status: string
+      is_active: boolean
+      price: number
+      priceChanged: boolean
+      zpid: string
+    }[] = []
     let requests = 0
     let skipped = 0
     let rateLimitHits = 0
@@ -240,22 +246,19 @@ export async function POST(req: Request) {
           const previousActive =
             typeof row.is_active === 'boolean' ? row.is_active : null
 
+          const priceChanged =
+            typeof details.price === 'number' &&
+            Math.round(details.price) !== row.price
           const record = {
             id: row.id,
             zpid,
-            address: row.address,
-            city: row.city,
-            state: row.state,
-            zip_code: row.zip_code,
-            bedrooms: row.bedrooms,
-            bathrooms: row.bathrooms,
+            listing_status: norm.listing_status,
+            is_active: norm.is_active,
             price:
               typeof details.price === 'number'
                 ? Math.round(details.price)
                 : row.price,
-            listing_status: norm.listing_status,
-            is_active: norm.is_active,
-            updated_at: new Date().toISOString(),
+            priceChanged,
           }
 
           const statusChanged =
@@ -320,18 +323,68 @@ export async function POST(req: Request) {
       if (rows.length === 0) break
     }
 
+    // Batch write updates grouped by (listing_status, is_active) to minimize
+    // round-trips while only touching columns that may have changed.
     if (updates.length > 0) {
-      const { error: upErr } = await supabase
-        .from('properties')
-        .upsert(updates, {
-          onConflict: 'id',
-        })
-      if (upErr) {
-        console.error('[status-refresh] upsert failed', {
-          error: upErr.message,
-          updates: updates.length,
-        })
-        return ApiErrorHandler.serverError(upErr.message, upErr)
+      const nowIso = new Date().toISOString()
+
+      // Group by (listing_status, is_active)
+      const byStatus = new Map<
+        string,
+        { ids: string[]; listing_status: string; is_active: boolean }
+      >()
+      for (const u of updates) {
+        const key = `${u.listing_status}|${u.is_active}`
+        let group = byStatus.get(key)
+        if (!group) {
+          group = {
+            ids: [],
+            listing_status: u.listing_status,
+            is_active: u.is_active,
+          }
+          byStatus.set(key, group)
+        }
+        group.ids.push(u.id)
+      }
+
+      // One batched update per status group
+      const groupEntries = Array.from(byStatus.values())
+      for (const group of groupEntries) {
+        const { error: upErr } = await supabase
+          .from('properties')
+          .update({
+            listing_status: group.listing_status,
+            is_active: group.is_active,
+            updated_at: nowIso,
+          })
+          .in('id', group.ids)
+
+        if (upErr) {
+          console.error('[status-refresh] batch status update failed', {
+            error: upErr.message,
+            ids: group.ids.length,
+            listing_status: group.listing_status,
+          })
+          return ApiErrorHandler.serverError(upErr.message, upErr)
+        }
+      }
+
+      // Separate batch for price changes
+      const priceUpdates = updates.filter((u) => u.priceChanged)
+      if (priceUpdates.length > 0) {
+        for (const pu of priceUpdates) {
+          const { error: priceErr } = await supabase
+            .from('properties')
+            .update({ price: pu.price, updated_at: nowIso })
+            .eq('id', pu.id)
+
+          if (priceErr) {
+            console.error('[status-refresh] price update failed', {
+              error: priceErr.message,
+              id: pu.id,
+            })
+          }
+        }
       }
     }
 

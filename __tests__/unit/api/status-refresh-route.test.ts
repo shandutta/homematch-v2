@@ -15,35 +15,29 @@ type Row = {
 }
 
 function makeSupabaseStub(rows: Row[]) {
-  const chain: {
-    select: jest.Mock
-    eq: jest.Mock
-    order: jest.Mock
-    range: jest.Mock
-    upsert: jest.Mock
-  } = {
+  const chain: Record<string, jest.Mock> = {
     select: jest.fn(),
     eq: jest.fn(),
     order: jest.fn(),
     range: jest.fn(),
-    upsert: jest.fn(async () => ({ error: null })),
+    update: jest.fn(),
   }
-
-  const range = jest.fn((from: number, to: number) => ({
+  // Chaining methods return the same chain
+  chain.select.mockReturnValue(chain)
+  chain.eq.mockReturnValue(chain)
+  chain.order.mockReturnValue(chain)
+  // Terminal methods return data
+  chain.range.mockImplementation((from: number, to: number) => ({
     data: rows.slice(from, to + 1),
     error: null,
   }))
-  const order = jest.fn(() => chain)
-  const eq = jest.fn(() => chain)
-  const select = jest.fn(() => chain)
+  chain.update.mockReturnValue({
+    in: jest.fn().mockReturnValue({ error: null }),
+    eq: jest.fn().mockReturnValue({ error: null }),
+  })
 
-  chain.select = select
-  chain.eq = eq
-  chain.order = order
-  chain.range = range
-
-  const from = jest.fn(() => ({ ...chain }))
-  return { client: { from }, upsert: chain.upsert }
+  const from = jest.fn().mockReturnValue(chain)
+  return { client: { from }, update: chain.update }
 }
 
 describe('POST /api/admin/status-refresh', () => {
@@ -155,16 +149,11 @@ describe('POST /api/admin/status-refresh', () => {
     expect(body.removedChanges).toBe(1)
     expect(body.changeSamples.length).toBeGreaterThanOrEqual(2)
 
-    expect(stub.upsert).toHaveBeenCalledTimes(1)
-    const payload = stub.upsert.mock.calls[0][0]
-    const statusByZpid = Object.fromEntries(
-      payload.map((row) => [row.zpid, row.listing_status])
-    )
-    const activeByZpid = Object.fromEntries(
-      payload.map((row) => [row.zpid, row.is_active])
-    )
-    expect(statusByZpid).toEqual({ z1: 'sold', z2: 'removed' })
-    expect(activeByZpid).toEqual({ z1: false, z2: false })
+    // Batched status updates: one call per (listing_status, is_active) group
+    // z1 → ('sold', false), z2 → ('removed', false) + price change on z1
+    expect(stub.update).toHaveBeenCalled()
+    // update should be called 3 times (2 status groups + 1 price update)
+    expect(stub.update.mock.calls.length).toBe(3)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
