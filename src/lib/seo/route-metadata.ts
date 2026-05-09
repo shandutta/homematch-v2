@@ -11,6 +11,23 @@ const OG_IMAGE_WIDTH = 1200
 const OG_IMAGE_HEIGHT = 630
 const SITE_NAME = 'HomeMatch'
 const SITE_LOCALE = 'en_US'
+const TWITTER_HANDLE = '@homematch'
+const TWITTER_PROFILE_URL = 'https://twitter.com/homematch'
+
+export const SEO_KEYWORDS = [
+  'home search',
+  'house hunting',
+  'real estate search',
+  'collaborative home search',
+  'find a home together',
+  'couples home search',
+  'household home search',
+  'AI property matching',
+  'property recommendations',
+  'shared home shortlist',
+] as const
+
+const DEFAULT_KEYWORDS = SEO_KEYWORDS.join(', ')
 
 type PublicRouteMetadataInput = {
   title: string
@@ -19,6 +36,15 @@ type PublicRouteMetadataInput = {
   imageUrl?: string
   imageAlt?: string
   ogType?: 'website' | 'article'
+  keywords?: readonly string[]
+}
+
+function normalizeCanonicalPath(path: string): string {
+  if (!path || path === '/') {
+    return ''
+  }
+  const withLeadingSlash = path.startsWith('/') ? path : `/${path}`
+  return withLeadingSlash.replace(/\/+$/, '') || ''
 }
 
 export function createPublicRouteMetadata({
@@ -28,15 +54,18 @@ export function createPublicRouteMetadata({
   imageUrl,
   imageAlt,
   ogType = 'website',
+  keywords,
 }: PublicRouteMetadataInput): Metadata {
-  const canonical = `${siteUrl}${path}`
+  const canonical = `${siteUrl}${normalizeCanonicalPath(path)}`
   const ogImage = imageUrl ?? defaultOpenGraphImage
   const twImage = imageUrl ?? defaultTwitterImage
   const altText = imageAlt ?? `${SITE_NAME} — ${title}`
+  const keywordList = keywords ? keywords.join(', ') : DEFAULT_KEYWORDS
 
   return {
     title,
     description,
+    keywords: keywordList,
     alternates: {
       canonical,
     },
@@ -58,6 +87,8 @@ export function createPublicRouteMetadata({
     },
     twitter: {
       card: 'summary_large_image',
+      site: TWITTER_HANDLE,
+      creator: TWITTER_HANDLE,
       title,
       description,
       images: [twImage],
@@ -103,6 +134,31 @@ export function createOrganizationJsonLd() {
     name: SITE_NAME,
     url: siteUrl,
     logo: `${siteUrl}/favicon.ico`,
+    sameAs: [TWITTER_PROFILE_URL],
+  }
+}
+
+export function createWebApplicationJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: SITE_NAME,
+    url: siteUrl,
+    applicationCategory: 'LifestyleApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript and a modern browser.',
+    description:
+      'HomeMatch is a collaborative home search app that helps couples and households swipe, match, and decide on properties together with AI-powered property matching.',
+    offers: {
+      '@type': 'Offer',
+      price: 0,
+      priceCurrency: 'USD',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: siteUrl,
+    },
   }
 }
 

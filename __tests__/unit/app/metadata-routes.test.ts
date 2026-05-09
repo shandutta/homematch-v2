@@ -14,17 +14,17 @@ const publicMetadataCases = [
   {
     route: '/',
     importPath: '@/app/page',
-    title: 'HomeMatch - Swipe. Match. Move In.',
+    title: 'HomeMatch — Collaborative Home Search for Couples & Households',
     description:
-      'House hunting just became your favorite shared activity. Find a home that works for your household with AI that learns what you care about.',
+      'Collaborative home search for couples and households. Swipe, match, and decide on properties together with AI-powered home matching that learns what you care about.',
     canonical: siteUrl,
   },
   {
     route: '/about',
     importPath: '@/app/about/page',
-    title: 'About | HomeMatch',
+    title: 'About HomeMatch | Collaborative Home Search for Households',
     description:
-      'Learn what HomeMatch is building for households who want a calmer way to find a home together.',
+      'Learn how HomeMatch makes home search a calmer, collaborative experience — couples and households shortlist properties, agree faster, and find a home together with AI-powered matching.',
     canonical: `${siteUrl}/about`,
   },
   {
@@ -38,9 +38,9 @@ const publicMetadataCases = [
   {
     route: '/signup',
     importPath: '@/app/signup/page',
-    title: 'Sign Up | HomeMatch',
+    title: 'Sign Up | HomeMatch — Start Your Collaborative Home Search',
     description:
-      'Create a HomeMatch account to save homes, invite your household, and decide together.',
+      'Create a free HomeMatch account to start your collaborative home search — invite your household, save listings, and find a home everyone loves with AI-powered property matching.',
     canonical: `${siteUrl}/signup`,
   },
   {

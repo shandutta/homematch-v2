@@ -7,15 +7,11 @@ import {
 } from '@/lib/seo/route-metadata'
 import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 
-export const metadata = {
-  ...createPublicRouteMetadata({
-    title: 'HomeMatch - Swipe. Match. Move In.',
-    description:
-      'House hunting just became your favorite shared activity. Find a home that works for your household with AI that learns what you care about.',
-  }),
-  keywords:
-    'house hunting, real estate, roommates, household, AI matching, property search, home finding',
-}
+export const metadata = createPublicRouteMetadata({
+  title: 'HomeMatch — Collaborative Home Search for Couples & Households',
+  description:
+    'Collaborative home search for couples and households. Swipe, match, and decide on properties together with AI-powered home matching that learns what you care about.',
+})
 
 export const websiteJsonLd = createWebsiteJsonLd()
 

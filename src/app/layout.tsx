@@ -14,13 +14,18 @@ import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
 import { AdSenseGate } from '@/components/legal/AdSenseGate'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
 import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED } from '@/lib/adsense'
-import { createOrganizationJsonLd } from '@/lib/seo/route-metadata'
+import {
+  createOrganizationJsonLd,
+  createWebApplicationJsonLd,
+  SEO_KEYWORDS,
+} from '@/lib/seo/route-metadata'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
 
 const organizationJsonLd = createOrganizationJsonLd()
+const webApplicationJsonLd = createWebApplicationJsonLd()
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -52,6 +57,7 @@ export const metadata: Metadata = {
   title: 'HomeMatch - AI-Powered Home Search',
   description:
     'Find your perfect home with AI-powered matching and personalized recommendations',
+  keywords: SEO_KEYWORDS.join(', '),
   metadataBase: new URL(siteUrl),
   applicationName: 'HomeMatch',
   authors: [{ name: 'HomeMatch' }],
@@ -90,6 +96,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webApplicationJsonLd),
           }}
         />
         {/* 

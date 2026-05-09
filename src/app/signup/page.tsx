@@ -9,9 +9,9 @@ import {
 import { SignupForm } from '@/components/features/auth/SignupForm'
 
 export const metadata = createPublicRouteMetadata({
-  title: 'Sign Up | HomeMatch',
+  title: 'Sign Up | HomeMatch — Start Your Collaborative Home Search',
   description:
-    'Create a HomeMatch account to save homes, invite your household, and decide together.',
+    'Create a free HomeMatch account to start your collaborative home search — invite your household, save listings, and find a home everyone loves with AI-powered property matching.',
   path: '/signup',
 })
 

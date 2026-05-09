@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 
 export const metadata = createPublicRouteMetadata({
-  title: 'About | HomeMatch',
+  title: 'About HomeMatch | Collaborative Home Search for Households',
   description:
-    'Learn what HomeMatch is building for households who want a calmer way to find a home together.',
+    'Learn how HomeMatch makes home search a calmer, collaborative experience — couples and households shortlist properties, agree faster, and find a home together with AI-powered matching.',
   path: '/about',
 })
 

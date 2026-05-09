@@ -144,6 +144,7 @@ describe('route-metadata helpers', () => {
       name: 'HomeMatch',
       url: SITE_URL,
       logo: `${SITE_URL}/favicon.ico`,
+      sameAs: ['https://twitter.com/homematch'],
     })
   })
 
