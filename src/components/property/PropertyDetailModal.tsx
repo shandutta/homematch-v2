@@ -299,9 +299,9 @@ export function PropertyDetailModal({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 aria-label="Close property details"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
+                className="inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
               {hasImages && (
                 <div
@@ -311,7 +311,7 @@ export function PropertyDetailModal({
                   {normalizedIndex + 1} / {images.length}
                 </div>
               )}
-              <div className="h-9 w-9" aria-hidden="true" />
+              <div className="h-11 w-11" aria-hidden="true" />
             </div>
             <div
               className="relative aspect-video w-full touch-pan-y"
@@ -353,7 +353,7 @@ export function PropertyDetailModal({
                 href={buildZillowUrl(property)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 right-16 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white"
+                className="absolute top-4 right-16 z-20 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                 aria-label="View on Zillow"
               >
                 <ExternalLink className="h-5 w-5" />
@@ -364,7 +364,7 @@ export function PropertyDetailModal({
                   <button
                     type="button"
                     onClick={showPreviousImage}
-                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    className="pointer-events-auto inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                     aria-label="Previous image"
                     data-testid="previous-image"
                   >
@@ -373,7 +373,7 @@ export function PropertyDetailModal({
                   <button
                     type="button"
                     onClick={showNextImage}
-                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    className="pointer-events-auto inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                     aria-label="Next image"
                     data-testid="next-image"
                   >
@@ -395,7 +395,7 @@ export function PropertyDetailModal({
                           aria-current={isActive ? 'true' : undefined}
                           data-testid={`image-dot-${index}`}
                           onClick={() => setCurrentImageIndex(index)}
-                          className="group relative flex h-6 w-6 items-center justify-center rounded-full transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none"
+                          className="group relative inline-flex min-h-[44px] min-w-[28px] touch-manipulation items-center justify-center rounded-full px-1 py-1 transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none sm:min-h-0 sm:min-w-0 sm:h-6 sm:w-6 sm:px-0 sm:py-0"
                         >
                           <span
                             className={`block h-1.5 w-1.5 rounded-full bg-white/50 transition-all duration-200 ${
@@ -529,7 +529,7 @@ export function PropertyDetailModal({
                   </p>
                   <button
                     type="button"
-                    className="text-hm-stone-300 hover:text-hm-stone-200 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium transition sm:hidden"
+                    className="text-hm-stone-300 hover:text-hm-stone-200 inline-flex min-h-[44px] touch-manipulation items-center gap-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none sm:hidden"
                     onClick={() => setIsMapExpanded((prev) => !prev)}
                     aria-label={isMapExpanded ? 'Hide map' : 'Show map'}
                     data-testid="toggle-map"

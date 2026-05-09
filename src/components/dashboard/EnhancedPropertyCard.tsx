@@ -157,19 +157,19 @@ export function EnhancedPropertyCard({
           <>
             <button
               onClick={prevImage}
-              className="rounded-token-full bg-token-secondary-900/60 p-token-sm text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 left-2 -translate-y-1/2"
+              className="rounded-token-full bg-token-secondary-900/60 text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Previous image"
               data-testid="previous-image-button"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={nextImage}
-              className="rounded-token-full bg-token-secondary-900/60 p-token-sm text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 right-2 -translate-y-1/2"
+              className="rounded-token-full bg-token-secondary-900/60 text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Next image"
               data-testid="next-image-button"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </button>
 
             {/* Image Counter */}
@@ -187,18 +187,24 @@ export function EnhancedPropertyCard({
 
         {/* Image Dots */}
         {validImages.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 space-x-1">
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2">
             {validImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`rounded-token-full transition-token-all h-2 w-2 ${
-                  index === currentImageIndex
-                    ? 'bg-token-text-inverse w-4'
-                    : 'bg-token-text-inverse/50 hover:bg-token-text-inverse/75'
-                }`}
+                className="inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center px-1.5 py-1.5 focus-visible:outline-none"
                 aria-label={`Go to image ${index + 1}`}
-              />
+                aria-current={index === currentImageIndex ? 'true' : undefined}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`rounded-token-full transition-token-all block h-2 ${
+                    index === currentImageIndex
+                      ? 'bg-token-text-inverse w-4'
+                      : 'bg-token-text-inverse/50 hover:bg-token-text-inverse/75 w-2'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}

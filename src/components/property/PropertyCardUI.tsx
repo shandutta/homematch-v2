@@ -379,7 +379,7 @@ export function PropertyCardUI({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-black/50 hover:text-white"
+            className="inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-black/50 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
             aria-label="View on Zillow"
           >
             <ExternalLink className="h-4 w-4" />
@@ -411,7 +411,7 @@ export function PropertyCardUI({
           {shouldShowDetailsCta && (
             <button
               type="button"
-              className="text-hm-stone-200 hover:text-hm-stone-100 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               data-testid="details-cta"
               onClick={(event) => {
                 event.stopPropagation()

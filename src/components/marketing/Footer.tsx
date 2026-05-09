@@ -39,7 +39,7 @@ function SocialIcon({
   return (
     <motion.a
       href={href}
-      className="relative inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+      className="relative inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-lg p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
       aria-label={label}
       target="_blank"
       rel="noopener noreferrer"

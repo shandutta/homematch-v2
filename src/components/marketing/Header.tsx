@@ -39,7 +39,7 @@ export function Header() {
 
       {/* Nav content - compact when scrolled */}
       <nav
-        className={`relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 transition-all duration-300 ${
+        className={`relative mx-auto flex w-full max-w-6xl items-center justify-between px-4 transition-all duration-300 sm:px-6 ${
           hasScrolled ? 'py-2 sm:py-2.5' : 'py-4 sm:py-5'
         }`}
       >
