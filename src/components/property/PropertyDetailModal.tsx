@@ -116,6 +116,64 @@ export function PropertyDetailModal({
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
+  // Keyboard navigation: arrow keys cycle through gallery while modal is open.
+  useEffect(() => {
+    if (!open || !hasMultipleImages) return
+    if (typeof window === 'undefined') return
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return
+      const target =
+        event.target instanceof HTMLElement ? event.target : null
+      const tagName = target?.tagName
+      if (tagName === 'INPUT' || tagName === 'TEXTAREA') return
+      if (target?.isContentEditable) return
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        showNextImage()
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        showPreviousImage()
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, hasMultipleImages, images.length])
+
+  // Preload neighbouring images so swipe/keyboard navigation feels instant.
+  useEffect(() => {
+    if (!open || !hasMultipleImages) return
+    if (typeof window === 'undefined') return
+
+    const preloadIndices = [
+      (normalizedIndex + 1) % images.length,
+      (normalizedIndex - 1 + images.length) % images.length,
+    ]
+
+    const preloadedNodes: HTMLLinkElement[] = []
+    for (const index of preloadIndices) {
+      const url = images[index]
+      if (!url) continue
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = url
+      document.head.appendChild(link)
+      preloadedNodes.push(link)
+    }
+
+    return () => {
+      preloadedNodes.forEach((node) => {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node)
+        }
+      })
+    }
+  }, [open, hasMultipleImages, normalizedIndex, images])
+
   const handleImageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && 'PointerEvent' in window) return
     if (!hasMultipleImages) return
