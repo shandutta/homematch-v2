@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
 import { Heart, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Neighborhood, Property } from '@/lib/schemas/property'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -243,8 +244,9 @@ export function SwipeablePropertyCard({
   }
 
   return (
-    <div
-      className={cn(
+    <MotionMaxProvider>
+      <div
+        className={cn(
         'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-24 md:pb-16',
         className
       )}
@@ -484,5 +486,6 @@ export function SwipeablePropertyCard({
         </div>
       </div>
     </div>
+    </MotionMaxProvider>
   )
 }
