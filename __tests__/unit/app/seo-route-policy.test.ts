@@ -28,6 +28,35 @@ describe('SEO route policy', () => {
     }
   })
 
+  it('stamps legal pages with their declared lastModified date', () => {
+    const entries = sitemap()
+    const byPath = new Map(
+      entries.map((entry) => [pathFromUrl(entry.url), entry])
+    )
+
+    const expected = '2026-01-04'
+    for (const path of ['/privacy', '/terms', '/cookies']) {
+      const entry = byPath.get(path)
+      expect(entry).toBeDefined()
+      const stamp = entry!.lastModified
+      expect(stamp).toBeInstanceOf(Date)
+      expect((stamp as Date).toISOString().slice(0, 10)).toBe(expected)
+    }
+  })
+
+  it('stamps dynamic pages with a recent lastModified close to now', () => {
+    const entries = sitemap()
+    const byPath = new Map(
+      entries.map((entry) => [pathFromUrl(entry.url), entry])
+    )
+
+    const homepage = byPath.get('/')
+    expect(homepage).toBeDefined()
+    const stamp = homepage!.lastModified as Date
+    const skewMs = Math.abs(Date.now() - stamp.getTime())
+    expect(skewMs).toBeLessThan(60_000)
+  })
+
   it('keeps protected application route prefixes excluded from robots', () => {
     for (const prefix of PROTECTED_PATH_PREFIXES) {
       expect(ROBOTS_DISALLOW_PATHS).toContain(prefix)

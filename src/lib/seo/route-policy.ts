@@ -9,16 +9,37 @@ export type SeoPublicRoute = {
   path: string
   changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']
   priority: number
+  // ISO date for legal/static pages whose update cadence is anchored to a
+  // specific revision. Dynamic pages (e.g. '/') leave this undefined so the
+  // sitemap stamps them with the current build time.
+  lastModified?: string
 }
+
+const LEGAL_LAST_MODIFIED = '2026-01-04'
 
 export const SEO_PUBLIC_ROUTES: SeoPublicRoute[] = [
   { path: '/', changeFrequency: 'daily', priority: 1.0 },
   { path: '/about', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/signup', changeFrequency: 'weekly', priority: 0.8 },
-  { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
-  { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
-  { path: '/cookies', changeFrequency: 'yearly', priority: 0.3 },
+  {
+    path: '/privacy',
+    changeFrequency: 'yearly',
+    priority: 0.3,
+    lastModified: LEGAL_LAST_MODIFIED,
+  },
+  {
+    path: '/terms',
+    changeFrequency: 'yearly',
+    priority: 0.3,
+    lastModified: LEGAL_LAST_MODIFIED,
+  },
+  {
+    path: '/cookies',
+    changeFrequency: 'yearly',
+    priority: 0.3,
+    lastModified: LEGAL_LAST_MODIFIED,
+  },
 ]
 
 export const REQUIRED_LEGAL_PUBLIC_PATHS = [
