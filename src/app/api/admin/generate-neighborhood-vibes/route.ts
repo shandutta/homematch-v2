@@ -105,27 +105,17 @@ export async function POST(req: Request) {
     })
   }
 
-  const neighborhoodIds = neighborhoods.map((n) => n.id)
-
-  const { data: allListings } = await supabase
-    .from('properties')
-    .select('neighborhood_id, address, price, bedrooms, bathrooms, property_type')
-    .in('neighborhood_id', neighborhoodIds)
-
-  const listingsByNeighborhood = new Map<string, NonNullable<typeof allListings>>()
-  for (const listing of allListings ?? []) {
-    const bucket = listingsByNeighborhood.get(listing.neighborhood_id) ?? []
-    if (bucket.length < 12) {
-      bucket.push(listing)
-      listingsByNeighborhood.set(listing.neighborhood_id, bucket)
-    }
-  }
-
   const contexts: NeighborhoodContext[] = []
 
   for (const neighborhood of neighborhoods) {
-    const listingStats = await fetchNeighborhoodStats(supabase, neighborhood.id)
-    const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
+    const [{ data: listings }, listingStats] = await Promise.all([
+      supabase
+        .from('properties')
+        .select('address, price, bedrooms, bathrooms, property_type')
+        .eq('neighborhood_id', neighborhood.id)
+        .limit(12),
+      fetchNeighborhoodStats(supabase, neighborhood.id),
+    ])
 
     contexts.push({
       neighborhoodId: neighborhood.id,
@@ -137,7 +127,7 @@ export async function POST(req: Request) {
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
       listingStats,
-      sampleProperties: listings.map((p) => ({
+      sampleProperties: (listings || []).map((p) => ({
         address: p.address,
         price: p.price,
         bedrooms: p.bedrooms,
