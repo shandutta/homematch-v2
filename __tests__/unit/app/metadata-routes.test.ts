@@ -100,6 +100,13 @@ const noindexMetadataCases = [
     title: 'Household Invite | HomeMatch',
     description: 'Open your private HomeMatch household invitation.',
   },
+  {
+    route: '/properties/[id]',
+    importPath: '@/app/properties/[id]/page',
+    title: 'Property Details | HomeMatch',
+    description:
+      'View the full details of a HomeMatch property listing inside your private household workspace.',
+  },
 ]
 
 describe('metadata routes', () => {

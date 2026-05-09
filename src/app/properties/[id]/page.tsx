@@ -1,8 +1,19 @@
 import { PropertyDetailRouteModal } from '@/components/property/PropertyDetailRouteModal'
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
+import {
+  createBreadcrumbJsonLd,
+  createNoindexRouteMetadata,
+  createPropertyJsonLd,
+} from '@/lib/seo/route-metadata'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Property Details | HomeMatch',
+  description:
+    'View the full details of a HomeMatch property listing inside your private household workspace.',
+})
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>
@@ -85,10 +96,45 @@ export default async function PropertyPage({
     notFound()
   }
 
+  const propertyJsonLd = createPropertyJsonLd({
+    id: property.id,
+    address: property.address,
+    city: property.city,
+    state: property.state,
+    zipCode: property.zip_code,
+    price: property.price,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    squareFeet: property.square_feet,
+    propertyType: property.property_type,
+    description: property.description,
+    images: property.images,
+    yearBuilt: property.year_built,
+  })
+
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: 'HomeMatch', path: '/' },
+    { name: 'Properties', path: '/dashboard' },
+    {
+      name: `${property.address}, ${property.city}`,
+      path: `/properties/${property.id}`,
+    },
+  ])
+
   return (
-    <PropertyDetailRouteModal
-      property={property}
-      returnTo={returnTo ?? undefined}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(propertyJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <PropertyDetailRouteModal
+        property={property}
+        returnTo={returnTo ?? undefined}
+      />
+    </>
   )
 }
