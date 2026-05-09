@@ -145,7 +145,7 @@ export function MutualLikesListPage() {
                   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                   setSortKey(v as SortKey);
                 } else {
-                  setSortKey('updated');
+                  setSortKey('recent');
                 }
               }}
               className={SELECT_CLASS}
