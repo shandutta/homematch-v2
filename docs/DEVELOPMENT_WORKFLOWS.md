@@ -1,19 +1,17 @@
 # Development Workflows
 
-This guide captures the practical day-to-day workflows for HomeMatch development. Use `package.json` as the source of truth for scripts.
+Day-to-day commands. `package.json` is the source of truth.
 
-## Local Development
+## Dev Servers
 
 ```bash
-pnpm dev                # Fast Next.js dev loop; no Docker/DB reset
-pnpm dev:db             # Explicit local Supabase start/reset + seed + test users
-pnpm dev:integration    # Runs integration-test dev server without reset
-pnpm dev:warmup         # Warmup wrapper used by tests
+pnpm dev                 # Fast loop; no Docker, no DB reset
+pnpm dev:db              # Local Supabase start/reset + seed + test users
+pnpm dev:integration     # Integration-test config, no reset
+pnpm dev:warmup          # Warmup wrapper (used by tests)
 ```
 
-`pnpm dev` runs the Supabase env guard before starting Next.js. For normal local-only work, keep `.env.local` pointed at localhost, `supabase.local`, or the documented dev proxy. If you intentionally use a remote Supabase project for a read-only local dev loop, run `SKIP_SUPABASE_GUARD=true pnpm dev` and do not run mutation, reset, integration, cron, or admin workflows against real production data.
-
-`.env.prod` is intentionally untracked and not required for local dev. The guard keeps precision without committing secrets by reading `config/supabase-production-hosts.json`, which may contain production hostnames only. Never put API keys, service-role keys, passwords, database URLs, or copied `.env.prod` values in tracked files.
+`pnpm dev` runs the Supabase env guard. For read-only remote dev: `SKIP_SUPABASE_GUARD=true pnpm dev`. Do not run mutations, resets, or admin workflows against production data. Production hostnames (no secrets) live in `config/supabase-production-hosts.json`.
 
 ## Code Quality
 
@@ -21,11 +19,11 @@ pnpm dev:warmup         # Warmup wrapper used by tests
 pnpm lint
 pnpm lint:fix
 pnpm type-check
-pnpm check
+pnpm check               # lint + type-check
 pnpm format
 ```
 
-The repo uses simple-git-hooks with a pre-commit hook (`scripts/pre-commit-hook.js`) and commitlint for Conventional Commits.
+Pre-commit hook: `scripts/pre-commit-hook.js`. Commit messages: Conventional Commits (enforced by commitlint).
 
 ## Testing Workflow
 
@@ -36,32 +34,25 @@ pnpm test:integration
 pnpm test:e2e
 ```
 
-See `docs/TESTING.md` and `docs/testing/README.md` for deeper guidance and test-specific helpers.
+Full guidance: `docs/TESTING.md` and `docs/testing/README.md`.
 
-## Database Workflow
-
-```bash
-pnpm db:reset           # Explicit local Supabase start + reset (also used by pnpm dev:db)
-pnpm migrate            # Run migration helper
-```
-
-For raw Supabase CLI operations:
+## Database
 
 ```bash
+pnpm db:reset            # Local Supabase start + reset (also used by pnpm dev:db)
+pnpm migrate             # Migration helper
 pnpm dlx supabase@latest start
 pnpm dlx supabase@latest db reset
 ```
 
-## CI Expectations
-
-Before opening a PR:
+## Before Opening a PR
 
 1. `pnpm lint`
 2. `pnpm type-check`
 3. `pnpm test`
 4. Update docs if behavior changes
 
-## Useful Scripts
+## Utility Scripts
 
 ```bash
 pnpm validate:deployment
@@ -71,4 +62,4 @@ pnpm report:zillow-coverage
 pnpm auto:commit
 ```
 
-See `docs/auto-commit.md` and `docs/RAPIDAPI_ZILLOW.md` for details.
+See `docs/RAPIDAPI_ZILLOW.md` for Zillow ingestion details. Auto-commit docs were archived to `reports/home-match-revival/archived-docs/auto-commit.md`.

@@ -93,6 +93,4 @@ Glassmorphism utilities:
 
 `src/components/features/storytelling/StorytellingDescription.tsx` generates lifestyle tags and descriptions based on property and neighborhood data. Keep output concise and avoid overloading cards with text. Tags are capped to three.
 
-### Parallax Stars
 
-The parallax stars effect on the marketing hero is a one-off flourish. Do not reuse it in other sections.

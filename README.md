@@ -1,6 +1,6 @@
 # HomeMatch
 
-HomeMatch is an AI-assisted home discovery app that helps households shortlist properties together. The marketing site, Supabase auth, and the swipe dashboard are live; property search, ML ranking, and deeper collaboration features are still in progress.
+AI-assisted home discovery app. Households shortlist properties together. Marketing site, Supabase auth, and swipe dashboard are live; property search, ML ranking, and collaboration features are in progress.
 
 ## Tech Stack
 
@@ -17,86 +17,79 @@ HomeMatch is an AI-assisted home discovery app that helps households shortlist p
 pnpm install
 cp .env.example .env.local
 
-# Fast local Next.js loop; no Docker or local Supabase reset required
+# Fast local dev; no Docker needed
 SKIP_SUPABASE_GUARD=true pnpm dev
 ```
 
 Visit http://localhost:3000.
 
-Docker is optional for the default development loop. Use it only for local database or integration-test work:
+Docker is optional. Use it for local database or integration-test work:
 
-- Use `pnpm dev:db` when you explicitly want to start/reset local Supabase, seed data, and create test users. This path requires Docker.
-- Use `pnpm dev:integration` if Supabase is already running and you want the same Next.js command used by integration tests.
-- Use `SKIP_DOCKER=1` only when intentionally bypassing Docker-dependent checks in a non-Docker environment.
-- If you want to start Supabase manually, run:
-  `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`
+- `pnpm dev:db` — start/reset local Supabase, seed data, create test users. Requires Docker.
+- `pnpm dev:integration` — dev server without reset, matching integration-test config.
+- `SKIP_DOCKER=1` — bypass Docker checks in non-Docker environments.
+- Manual Supabase: `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime`
 
-Secrets: keep real credentials in local/untracked env files or an approved secrets manager. Never commit secrets, production env values, API keys, service-role keys, or database URLs. See `docs/secrets.md` for scanning and handling guidance.
+**Secrets**: keep real credentials in untracked local files. Never commit API keys, service-role keys, or database URLs. See `docs/secrets.md` for scanning.
 
-Production env files: `.env.prod` is intentionally untracked and should not be created or committed for normal local development. The Supabase guard uses the tracked non-secret host list at `config/supabase-production-hosts.json` plus `supabase.*` host-pattern checks when `.env.prod` is absent; store only hostnames there, never keys or database URLs. If you intentionally point `.env.local` at a remote Supabase project for a read-only local dev loop, use `SKIP_SUPABASE_GUARD=true pnpm dev`; use the explicit local DB path for mutation/integration work.
+**Production guard**: `pnpm dev` blocks `.env.local` values pointing at production Supabase hosts. Use `SKIP_SUPABASE_GUARD=true` for read-only remote dev loops. Do not run mutations, resets, or admin workflows against production data in local dev. Production hostnames live in `config/supabase-production-hosts.json` (hostnames only, no secrets).
 
-## Essential Commands
+## Commands
 
 ```bash
-pnpm dev                # Fast local Next.js dev loop; no DB reset; guarded against production Supabase hosts
-pnpm dev:db             # Start/reset local Supabase + seed + test users
-pnpm dev:integration    # Integration-test dev server; no reset
-pnpm build              # Production build
-pnpm start              # Serve production build
-pnpm lint               # ESLint
-pnpm lint:fix           # ESLint auto-fix
-pnpm format             # Prettier
-pnpm type-check         # TypeScript checks
-pnpm test               # Unit + integration + E2E wrapper
-pnpm test:unit          # Jest unit tests
-pnpm test:integration   # Vitest integration runner
-pnpm test:e2e           # Playwright E2E tests
+pnpm dev                 # Next.js dev server on port 3000
+pnpm dev:db              # Local Supabase reset + seed + test users + dev server
+pnpm dev:integration     # Dev server without reset (integration-test config)
+pnpm build               # Production build
+pnpm start               # Serve production build
+pnpm lint                # ESLint
+pnpm lint:fix            # ESLint auto-fix
+pnpm format              # Prettier
+pnpm type-check          # TypeScript check
+pnpm test                # Unit + integration (parallel) then E2E
+pnpm test:unit           # Jest unit tests
+pnpm test:integration    # Vitest integration tests
+pnpm test:e2e            # Playwright E2E tests
 ```
 
-## Documentation
+## Docs
 
-Start with `docs/README.md` for the full documentation index. Key entry points:
+Start at `docs/README.md`. Key pages:
 
 - Setup: `docs/SETUP_GUIDE.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Testing: `docs/TESTING.md`
-- Workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
 - Style guide: `docs/STYLE_GUIDE.md`
-- Secrets scanning: `docs/secrets.md` (enable with `./scripts/setup-git-secrets.sh --scan`)
+- Secrets: `docs/secrets.md`
 
 ## Project Structure
 
 ```
 ├── src/
 │   ├── app/                 # Next.js App Router
-│   ├── components/          # React components
-│   │   ├── features/        # Feature-specific components
+│   ├── components/
+│   │   ├── features/        # Feature components
 │   │   └── ui/              # shadcn/ui components
 │   ├── lib/
-│   │   ├── services/        # Business logic layer
-│   │   ├── schemas/         # Zod validation schemas
-│   │   ├── supabase/        # Database clients
-│   │   └── utils/           # Utility functions
-│   └── types/               # TypeScript definitions
+│   │   ├── services/        # Business logic
+│   │   ├── schemas/         # Zod schemas
+│   │   ├── supabase/        # DB clients
+│   │   └── utils/           # Utilities
+│   └── types/               # TypeScript types
 ├── __tests__/               # Test suites
 ├── scripts/                 # Automation scripts
-├── supabase/                # Database migrations
+├── supabase/                # Migrations and seed
 └── docs/                    # Documentation
 ```
 
 ## Contributing
 
-1. Create a feature branch (`git checkout -b feature/your-branch`)
+1. Branch: `git checkout -b feature/your-branch`
 2. Make changes
-3. Run checks (`pnpm lint && pnpm type-check && pnpm test`)
-4. Commit with Conventional Commits (`feat: ...`, `fix: ...`, etc.)
+3. Pre-PR checks: `pnpm lint && pnpm type-check && pnpm test`
+4. Commit with Conventional Commits (`feat: ...`, `fix: ...`)
 5. Push and open a PR
 
 ## License
 
-MIT - see `LICENSE`.
-
-## Links
-
-- Issues: https://github.com/shandutta/homematch-v2/issues
-- Discussions: https://github.com/shandutta/homematch-v2/discussions
+MIT — see `LICENSE`.
