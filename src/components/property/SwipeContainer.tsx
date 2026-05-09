@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { Property, Neighborhood } from '@/lib/schemas/property'
 import { PropertyCard } from './PropertyCard'
 import { useSwipePhysics, SPRING_CONFIG } from '@/hooks/useSwipePhysics'
@@ -170,6 +171,7 @@ export function SwipeContainer({
   }
 
   return (
+    <MotionMaxProvider>
     <div
       ref={containerRef}
       className="relative mx-auto h-[600px] w-full max-w-md"
@@ -386,5 +388,6 @@ export function SwipeContainer({
         </div>
       )}
     </div>
+    </MotionMaxProvider>
   )
 }

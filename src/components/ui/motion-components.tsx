@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, type Variants, type Transition } from 'framer-motion'
+import { m, type Variants, type Transition } from 'framer-motion'
 import { forwardRef } from 'react'
 
 // React 19 compatible prop filtering for motion components
@@ -18,91 +18,91 @@ const filterMotionProps = (props: Record<string, unknown>) => {
 // Enhanced motion components with React 19 optimization and performance
 export const MotionDiv = forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof motion.div>
+  React.ComponentProps<typeof m.div>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.div ref={ref} {...filteredProps} />
+  return <m.div ref={ref} {...filteredProps} />
 })
 MotionDiv.displayName = 'MotionDiv'
 
 export const MotionSpan = forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<typeof motion.span>
+  React.ComponentProps<typeof m.span>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.span ref={ref} {...filteredProps} />
+  return <m.span ref={ref} {...filteredProps} />
 })
 MotionSpan.displayName = 'MotionSpan'
 
 export const MotionSection = forwardRef<
   HTMLElement,
-  React.ComponentProps<typeof motion.section>
+  React.ComponentProps<typeof m.section>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.section ref={ref} {...filteredProps} />
+  return <m.section ref={ref} {...filteredProps} />
 })
 MotionSection.displayName = 'MotionSection'
 
 export const MotionArticle = forwardRef<
   HTMLElement,
-  React.ComponentProps<typeof motion.article>
+  React.ComponentProps<typeof m.article>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.article ref={ref} {...filteredProps} />
+  return <m.article ref={ref} {...filteredProps} />
 })
 MotionArticle.displayName = 'MotionArticle'
 
 export const MotionH1 = forwardRef<
   HTMLHeadingElement,
-  React.ComponentProps<typeof motion.h1>
+  React.ComponentProps<typeof m.h1>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.h1 ref={ref} {...filteredProps} />
+  return <m.h1 ref={ref} {...filteredProps} />
 })
 MotionH1.displayName = 'MotionH1'
 
 export const MotionH2 = forwardRef<
   HTMLHeadingElement,
-  React.ComponentProps<typeof motion.h2>
+  React.ComponentProps<typeof m.h2>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.h2 ref={ref} {...filteredProps} />
+  return <m.h2 ref={ref} {...filteredProps} />
 })
 MotionH2.displayName = 'MotionH2'
 
 export const MotionH3 = forwardRef<
   HTMLHeadingElement,
-  React.ComponentProps<typeof motion.h3>
+  React.ComponentProps<typeof m.h3>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.h3 ref={ref} {...filteredProps} />
+  return <m.h3 ref={ref} {...filteredProps} />
 })
 MotionH3.displayName = 'MotionH3'
 
 export const MotionP = forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<typeof motion.p>
+  React.ComponentProps<typeof m.p>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.p ref={ref} {...filteredProps} />
+  return <m.p ref={ref} {...filteredProps} />
 })
 MotionP.displayName = 'MotionP'
 
 export const MotionUl = forwardRef<
   HTMLUListElement,
-  React.ComponentProps<typeof motion.ul>
+  React.ComponentProps<typeof m.ul>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.ul ref={ref} {...filteredProps} />
+  return <m.ul ref={ref} {...filteredProps} />
 })
 MotionUl.displayName = 'MotionUl'
 
 export const MotionLi = forwardRef<
   HTMLLIElement,
-  React.ComponentProps<typeof motion.li>
+  React.ComponentProps<typeof m.li>
 >((props, ref) => {
   const filteredProps = filterMotionProps(props)
-  return <motion.li ref={ref} {...filteredProps} />
+  return <m.li ref={ref} {...filteredProps} />
 })
 MotionLi.displayName = 'MotionLi'
 

@@ -28,7 +28,7 @@ import { z } from 'zod'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarPicker } from '@/components/profile/AvatarPicker'
 import { AvatarData } from '@/lib/constants/avatars'
@@ -174,7 +174,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {error && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -182,7 +182,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Avatar Section */}

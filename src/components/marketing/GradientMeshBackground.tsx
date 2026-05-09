@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { m, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface GradientMeshBackgroundProps {
@@ -129,7 +129,7 @@ export function GradientMeshBackground({
       />
 
       {/* Animated gradient blobs */}
-      <motion.div
+      <m.div
         className="absolute inset-0"
         style={{
           x: shouldAnimate ? blob1X : 0,
@@ -145,9 +145,9 @@ export function GradientMeshBackground({
             opacity: intensity,
           }}
         />
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         className="absolute inset-0"
         style={{
           x: shouldAnimate ? blob2X : 0,
@@ -176,9 +176,9 @@ export function GradientMeshBackground({
             opacity: intensity * 0.8,
           }}
         />
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         className="absolute inset-0"
         style={{
           x: shouldAnimate ? blob3X : 0,
@@ -207,10 +207,10 @@ export function GradientMeshBackground({
             opacity: intensity * 0.7,
           }}
         />
-      </motion.div>
+      </m.div>
 
       {/* Fourth blob - subtle accent */}
-      <motion.div
+      <m.div
         animate={
           shouldAnimate
             ? {
@@ -234,7 +234,7 @@ export function GradientMeshBackground({
             opacity: intensity * 0.6,
           }}
         />
-      </motion.div>
+      </m.div>
 
       {/* Glow accent at top */}
       <div

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
@@ -19,7 +19,7 @@ export function Header() {
   }, [])
 
   return (
-    <motion.header
+    <m.header
       className="fixed top-0 z-50 w-full transition-shadow duration-300"
       style={{
         boxShadow: hasScrolled
@@ -28,7 +28,7 @@ export function Header() {
       }}
     >
       {/* Glassmorphism background layer */}
-      <motion.div
+      <m.div
         className="absolute inset-0 border-b border-white/0 transition-colors duration-300"
         style={{
           backgroundColor: `rgba(3, 7, 18, ${hasScrolled ? 0.8 : 0})`,
@@ -44,7 +44,7 @@ export function Header() {
         }`}
       >
         {/* Logo with entrance animation */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -55,17 +55,17 @@ export function Header() {
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >
-            <motion.div
+            <m.div
               whileHover={{ scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <HomeMatchLogo size="sm" textClassName="text-white" />
-            </motion.div>
+            </m.div>
           </Link>
-        </motion.div>
+        </m.div>
 
         {/* Nav links with staggered entrance */}
-        <motion.div
+        <m.div
           className="flex items-center gap-3 sm:gap-6"
           initial="hidden"
           animate="visible"
@@ -81,7 +81,7 @@ export function Header() {
         >
           {/* Auth buttons container - unified pill with shared animation language */}
           <div className="flex items-center gap-1 rounded-full bg-slate-800/60 p-1 ring-1 ring-white/10 backdrop-blur-md">
-            <motion.div
+            <m.div
               variants={{
                 hidden: { opacity: 0, y: -10 },
                 visible: { opacity: 1, y: 0 },
@@ -96,9 +96,9 @@ export function Header() {
                 {/* Shared glow effect on hover */}
                 <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
-            </motion.div>
+            </m.div>
 
-            <motion.div
+            <m.div
               variants={{
                 hidden: { opacity: 0, y: -10 },
                 visible: { opacity: 1, y: 0 },
@@ -113,10 +113,10 @@ export function Header() {
                 {/* Shared glow effect - slightly brighter for primary CTA */}
                 <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_12px_rgba(56,189,248,0.15)] transition-opacity duration-300 group-hover:opacity-100" />
               </Link>
-            </motion.div>
+            </m.div>
           </div>
-        </motion.div>
+        </m.div>
       </nav>
-    </motion.header>
+    </m.header>
   )
 }

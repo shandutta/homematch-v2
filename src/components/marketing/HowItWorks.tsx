@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Card } from '@/components/ui/card'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
@@ -149,7 +149,7 @@ function StepCard({
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={
         isActive
@@ -169,7 +169,7 @@ function StepCard({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Glow effect on active */}
-        <motion.div
+        <m.div
           className="pointer-events-none absolute inset-0 rounded-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: isActive ? 0.5 : 0 }}
@@ -182,7 +182,7 @@ function StepCard({
 
         <div className="relative z-10">
           {/* Icon with animation */}
-          <motion.div
+          <m.div
             className="mb-2 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_6px_18px_rgba(2,26,68,0.15)]"
             animate={
               isActive ? { scale: 1, rotate: 0 } : { scale: 0.9, rotate: -5 }
@@ -190,10 +190,10 @@ function StepCard({
             whileHover={{ scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
           >
-            <motion.div {...getIconAnimation()}>
+            <m.div {...getIconAnimation()}>
               <step.icon className="h-6 w-6" />
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           <h3
             className="text-xl font-semibold text-gray-900"
@@ -202,7 +202,7 @@ function StepCard({
             {index + 1}. {step.title}
           </h3>
 
-          <motion.p
+          <m.p
             className="mt-1.5 text-gray-700"
             style={{ fontFamily: 'var(--font-body)' }}
             initial={{ opacity: 0 }}
@@ -210,9 +210,9 @@ function StepCard({
             transition={{ duration: 0.3 }}
           >
             {step.description}
-          </motion.p>
+          </m.p>
         </div>
       </Card>
-    </motion.div>
+    </m.div>
   )
 }

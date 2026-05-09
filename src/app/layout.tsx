@@ -8,6 +8,7 @@ import {
 import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { MotionProvider } from '@/components/shared/MotionProvider'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 import { Toaster } from '@/components/ui/sonner'
 import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
@@ -114,7 +115,9 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <PerformanceProvider>
-            <main>{children}</main>
+            <MotionProvider>
+              <main>{children}</main>
+            </MotionProvider>
           </PerformanceProvider>
         </ErrorBoundary>
         <Toaster position="top-right" />

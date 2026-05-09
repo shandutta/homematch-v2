@@ -10,7 +10,7 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react'
-import { motion, type Variants } from 'framer-motion'
+import { m, type Variants } from 'framer-motion'
 
 interface ActivityStatsProps {
   summary: {
@@ -142,7 +142,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           </div>
         </div>
 
-        <motion.div
+        <m.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -151,7 +151,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           {stats.map((stat) => {
             const Icon = stat.icon
             return (
-              <motion.div
+              <m.div
                 key={stat.label}
                 variants={itemVariants}
                 whileHover={{ y: -2, transition: { duration: 0.2 } }}
@@ -178,10 +178,10 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
                     {stat.label.split(' ')[1]}
                   </p>
                 </div>
-              </motion.div>
+              </m.div>
             )
           })}
-        </motion.div>
+        </m.div>
 
         {/* Summary row */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -217,7 +217,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             </div>
             <div className="mt-3">
               <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
-                <motion.div
+                <m.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(engagementRate, 100)}%` }}
                   transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
@@ -233,7 +233,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       </div>
 
       {/* Insights Card */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
@@ -299,7 +299,7 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
             </p>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

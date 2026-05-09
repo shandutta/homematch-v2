@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import {
-  motion,
+  m,
   useMotionValue,
   useTransform,
   type MotionValue,
@@ -81,7 +81,7 @@ function SpotlightCard({
       style={styleVars}
     >
       {/* Spotlight overlay */}
-      <motion.div
+      <m.div
         className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
           background: useTransform(
@@ -143,9 +143,9 @@ function AnimatedIcon({
   }
 
   return (
-    <motion.div {...getAnimationProps()}>
+    <m.div {...getAnimationProps()}>
       <Icon className="h-6 w-6" />
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -213,7 +213,7 @@ export function FeatureGrid() {
         </MotionDiv>
 
         {/* Feature cards container with stagger */}
-        <motion.div
+        <m.div
           className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
           initial="hidden"
           whileInView="visible"
@@ -230,7 +230,7 @@ export function FeatureGrid() {
           {features.map((feature) => (
             <FeatureCard key={feature.title} feature={feature} />
           ))}
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )
@@ -240,7 +240,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <motion.div
+    <m.div
       variants={{
         hidden: { opacity: 0, y: 30, rotateX: -10 },
         visible: {
@@ -263,7 +263,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Animated border gradient on hover */}
-          <motion.div
+          <m.div
             className="pointer-events-none absolute inset-0 rounded-xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
@@ -279,7 +279,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
 
           <div className="relative z-10">
             {/* Icon with gradient background and micro-animation */}
-            <motion.div
+            <m.div
               className="mb-4 inline-flex rounded-lg p-3 text-white"
               style={{
                 background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
@@ -294,7 +294,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
                 animation={feature.iconAnimation}
                 isHovered={isHovered}
               />
-            </motion.div>
+            </m.div>
 
             <h3
               className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
@@ -312,6 +312,6 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
           </div>
         </Card>
       </SpotlightCard>
-    </motion.div>
+    </m.div>
   )
 }

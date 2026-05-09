@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 
 // Animated link with hover underline
@@ -37,7 +37,7 @@ function SocialIcon({
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <motion.a
+    <m.a
       href={href}
       className="relative inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded-lg p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
       aria-label={label}
@@ -49,7 +49,7 @@ function SocialIcon({
       whileTap={{ scale: 0.95 }}
     >
       {/* Glow effect */}
-      <motion.div
+      <m.div
         className="absolute inset-0 rounded-lg"
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
@@ -59,7 +59,7 @@ function SocialIcon({
         }}
       />
       <span className="relative z-10">{children}</span>
-    </motion.a>
+    </m.a>
   )
 }
 
@@ -89,7 +89,7 @@ function LinkColumn({
         },
       }}
     >
-      <motion.h4
+      <m.h4
         className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
         style={{ fontFamily: 'var(--font-heading)' }}
         variants={{
@@ -98,13 +98,13 @@ function LinkColumn({
         }}
       >
         {title}
-      </motion.h4>
+      </m.h4>
       <ul
         className="text-token-sm space-y-0 leading-none text-white/70 lg:space-y-3 lg:leading-normal"
         style={{ fontFamily: 'var(--font-body)' }}
       >
         {links.map((link) => (
-          <motion.li
+          <m.li
             key={link.href}
             variants={{
               hidden: { opacity: 0, x: -10 },
@@ -112,7 +112,7 @@ function LinkColumn({
             }}
           >
             <AnimatedLink href={link.href}>{link.label}</AnimatedLink>
-          </motion.li>
+          </m.li>
         ))}
       </ul>
     </MotionDiv>
@@ -150,14 +150,14 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <motion.h3
+            <m.h3
               className="text-token-3xl text-center font-bold lg:text-left"
               style={{ fontFamily: 'var(--font-heading)' }}
               whileHover={{ scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               HomeMatch
-            </motion.h3>
+            </m.h3>
             <div className="mt-1 flex gap-3">
               <SocialIcon
                 href="https://twitter.com/homematch"

@@ -47,7 +47,7 @@ import {
   Dumbbell,
   PawPrint,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
 interface PreferencesSectionProps {
@@ -1841,7 +1841,7 @@ export function PreferencesSection({
 
           <div className="space-y-2">
             {propertyTypeOptions.map(({ key, label, helper }) => (
-              <motion.div
+              <m.div
                 key={key}
                 whileHover={{ x: 2 }}
                 className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
@@ -1865,7 +1865,7 @@ export function PreferencesSection({
                   }
                   aria-label={label}
                 />
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -1888,7 +1888,7 @@ export function PreferencesSection({
 
           <div className="space-y-2">
             {mustHaveOptions.map(({ key, label, helper, icon: Icon }) => (
-              <motion.div
+              <m.div
                 key={key}
                 whileHover={{ x: 2 }}
                 className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
@@ -1915,7 +1915,7 @@ export function PreferencesSection({
                   }
                   aria-label={label}
                 />
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useMotionValue, useTransform, animate } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Heart, X, Home } from 'lucide-react'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -534,6 +535,7 @@ export function PhoneMockup() {
   }, [])
 
   return (
+    <MotionMaxProvider>
     <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
       {/* Professional Device Frame */}
       <div className="shadow-token-2xl blur-glass-md relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] ring-1 ring-white/60 ring-inset">
@@ -731,5 +733,6 @@ export function PhoneMockup() {
       {/* Camera island (single, cleaned) */}
       <div className="absolute top-[10px] left-1/2 z-30 h-6 w-40 -translate-x-1/2 rounded-full bg-zinc-900 shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/10" />
     </div>
+    </MotionMaxProvider>
   )
 }

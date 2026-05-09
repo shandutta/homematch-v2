@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
   const words = text.split(' ')
 
   return (
-    <motion.h3
+    <m.h3
       className={className}
       style={{ fontFamily: 'var(--font-heading)' }}
       initial="hidden"
@@ -27,7 +27,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
       }}
     >
       {words.map((word, i) => (
-        <motion.span
+        <m.span
           key={i}
           className="inline-block"
           variants={{
@@ -41,9 +41,9 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
         >
           {word}
           {i < words.length - 1 && '\u00A0'}
-        </motion.span>
+        </m.span>
       ))}
-    </motion.h3>
+    </m.h3>
   )
 }
 

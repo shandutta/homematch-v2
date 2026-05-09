@@ -17,7 +17,7 @@ import {
   Smartphone,
   AlertCircle,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 interface NotificationsSectionProps {
   user: User
@@ -347,7 +347,7 @@ export function NotificationsSection({
           : setSmsNotifications
 
     return (
-      <motion.div
+      <m.div
         key={`${group}-${optionKey}`}
         whileHover={{ x: 2 }}
         className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
@@ -372,7 +372,7 @@ export function NotificationsSection({
           }
           aria-label={`Toggle ${label}`}
         />
-      </motion.div>
+      </m.div>
     )
   }
 

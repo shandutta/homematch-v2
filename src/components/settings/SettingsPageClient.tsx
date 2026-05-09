@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import {
   DEFAULT_PRICE_RANGE,
@@ -286,7 +286,7 @@ export function SettingsPageClient({
   return (
     <div className="gradient-grid-bg min-h-screen pb-6 text-white">
       {/* Hero Header */}
-      <motion.section
+      <m.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -304,7 +304,7 @@ export function SettingsPageClient({
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
           {/* Back navigation */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
@@ -316,16 +316,16 @@ export function SettingsPageClient({
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
             </Link>
-          </motion.div>
+          </m.div>
 
           {/* Header content */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
           >
-            <motion.div variants={itemVariants} className="max-w-2xl space-y-4">
+            <m.div variants={itemVariants} className="max-w-2xl space-y-4">
               <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
                 Control Center
               </p>
@@ -337,9 +337,9 @@ export function SettingsPageClient({
                 Every change here immediately shapes the homes we surface for
                 you.
               </p>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Link href="/profile">
                 <Button
                   variant="outline"
@@ -349,11 +349,11 @@ export function SettingsPageClient({
                   View Profile
                 </Button>
               </Link>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Overview cards */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -362,7 +362,7 @@ export function SettingsPageClient({
             {overviewCards.map((card, index) => {
               const Icon = card.icon
               return (
-                <motion.button
+                <m.button
                   key={card.label}
                   variants={itemVariants}
                   whileHover={{ y: -2, transition: { duration: 0.2 } }}
@@ -387,16 +387,16 @@ export function SettingsPageClient({
                       {card.value}
                     </p>
                   </div>
-                </motion.button>
+                </m.button>
               )
             })}
-          </motion.div>
+          </m.div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Main content */}
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -437,7 +437,7 @@ export function SettingsPageClient({
                   value="preferences"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -449,7 +449,7 @@ export function SettingsPageClient({
                       onProfileUpdate={handleProfileUpdate}
                       onSaveStateChange={setPreferencesSaveState}
                     />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -458,7 +458,7 @@ export function SettingsPageClient({
                   value="notifications"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -470,7 +470,7 @@ export function SettingsPageClient({
                       onProfileUpdate={handleProfileUpdate}
                       onSaveStateChange={setNotificationsSaveState}
                     />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -479,14 +479,14 @@ export function SettingsPageClient({
                   value="saved-searches"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
                     <SavedSearchesSection userId={user.id} />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -495,19 +495,19 @@ export function SettingsPageClient({
                   value="account"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
                     <AccountSection user={user} />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
             </AnimatePresence>
           </Tabs>
-        </motion.div>
+        </m.div>
       </div>
 
       <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />
