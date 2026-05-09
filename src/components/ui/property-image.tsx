@@ -15,23 +15,26 @@ interface PropertyImageProps {
   sizes?: string
   onError?: () => void
   onLoad?: () => void
+  /**
+   * Show a shimmering skeleton overlay until the image fully loads.
+   * Disable for cases where the parent already provides a loading
+   * presentation or where we expect an instant local SVG.
+   */
+  showSkeleton?: boolean
 }
 
-// Working fallback images - prioritize local assets to avoid external failures
 const FALLBACK_IMAGES = [
   '/images/properties/house-1.svg',
   '/images/properties/house-2.svg',
   '/images/properties/house-3.svg',
 ]
 
-// Known broken Unsplash URLs (path patterns)
 const BROKEN_IMAGE_PATH_PATTERNS = [
-  'photo-1575517111478-7f6f2c59ebb0', // This specific image is consistently 404
+  'photo-1575517111478-7f6f2c59ebb0',
 ]
 
-// Domains that cause issues (checked via hostname, not substring)
 const BLOCKED_DOMAINS = new Set([
-  'loremflickr.com', // LoremFlickr causes Next.js optimization 500 errors in test mode
+  'loremflickr.com',
 ])
 
 const shouldBlockHostname = (hostname: string | null) =>
@@ -40,7 +43,6 @@ const shouldBlockHostname = (hostname: string | null) =>
   hostname !== '' &&
   BLOCKED_DOMAINS.has(hostname)
 
-// Safely extract hostname from URL
 const getUrlHostname = (url: string | null): string | null => {
   if (!url) return null
   try {
@@ -50,16 +52,16 @@ const getUrlHostname = (url: string | null): string | null => {
   }
 }
 
-// Check if a URL is known to be broken (via hostname or path patterns)
 const isKnownBrokenImage = (url: string): boolean => {
-  // Check blocked domains via proper hostname parsing
   const hostname = getUrlHostname(url)
   if (shouldBlockHostname(hostname)) {
     return true
   }
-  // Check path patterns (these are not domain-based)
   return BROKEN_IMAGE_PATH_PATTERNS.some((pattern) => url.includes(pattern))
 }
+
+// Local SVG fallbacks load synchronously — no need for a long skeleton fade.
+const isLocalAsset = (url: string): boolean => url.startsWith('/')
 
 export function PropertyImage({
   src,
@@ -72,10 +74,12 @@ export function PropertyImage({
   sizes,
   onError,
   onLoad,
+  showSkeleton = true,
 }: PropertyImageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
   const [allFallbacksFailed, setAllFallbacksFailed] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   const srcKey = useMemo(() => {
     if (Array.isArray(src)) return src.filter(Boolean).join('|')
@@ -86,23 +90,19 @@ export function PropertyImage({
     setCurrentImageIndex(0)
     setHasError(false)
     setAllFallbacksFailed(false)
+    setHasLoaded(false)
   }, [srcKey])
 
-  // Determine the image source to use
-  const getImageSrc = useCallback(() => {
-    // If we have a custom src and haven't encountered an error, use it
+  const resolvedSrc = useMemo(() => {
     if (src && !hasError) {
       let imageUrl: string | undefined
 
       if (Array.isArray(src) && src.length > 0) {
-        // Find first non-broken image in the array
         imageUrl = src.find((url) => !isKnownBrokenImage(url))
       } else if (typeof src === 'string') {
-        // Check if single string URL is known to be broken
         imageUrl = isKnownBrokenImage(src) ? undefined : src
       }
 
-      // Double-check: if the URL is still a loremflickr URL, force fallback
       const imageHostname = imageUrl ? getUrlHostname(imageUrl) : null
       if (shouldBlockHostname(imageHostname)) {
         console.warn(
@@ -116,18 +116,15 @@ export function PropertyImage({
       }
     }
 
-    // Use fallback images
     return FALLBACK_IMAGES[currentImageIndex] || FALLBACK_IMAGES[0]
   }, [src, hasError, currentImageIndex])
 
   const handleImageError = useCallback(() => {
     setHasError(true)
 
-    // Try next fallback image if available
     if (currentImageIndex < FALLBACK_IMAGES.length - 1) {
       setCurrentImageIndex((prev) => prev + 1)
     } else {
-      // All fallbacks failed, show placeholder
       console.warn('All image fallbacks failed for:', alt)
       setAllFallbacksFailed(true)
     }
@@ -135,27 +132,79 @@ export function PropertyImage({
     onError?.()
   }, [currentImageIndex, alt, onError])
 
+  const handleImageLoad = useCallback(() => {
+    setHasLoaded(true)
+    onLoad?.()
+  }, [onLoad])
+
+  const skeletonVisible =
+    showSkeleton &&
+    !hasLoaded &&
+    !allFallbacksFailed &&
+    !isLocalAsset(resolvedSrc!)
+
+  const fadeClass = showSkeleton
+    ? hasLoaded
+      ? 'opacity-100'
+      : 'opacity-0'
+    : 'opacity-100'
+
+  const imageClassName =
+    `transition-opacity duration-500 ${fadeClass} ${className}`.trim()
+
   const imageProps = {
-    src: getImageSrc(),
+    src: resolvedSrc!,
     alt,
-    className: `transition-opacity duration-300 ${className}`,
+    className: imageClassName,
     priority,
     sizes,
     onError: handleImageError,
-    onLoad,
+    onLoad: handleImageLoad,
     ...(fill ? { fill: true } : { width, height }),
   }
 
-  // If all images fail, show a placeholder
   if (allFallbacksFailed) {
     return (
       <div
-        className={`flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 ${className}`}
+        data-testid="property-image-placeholder"
+        className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 ${className}`}
       >
-        <Home className="h-12 w-12 text-gray-400" />
+        <Home className="h-12 w-12 text-slate-500" />
       </div>
     )
   }
 
-  return <Image {...imageProps} />
+  if (!fill) {
+    return (
+      <span className="relative inline-block align-middle">
+        <Image {...imageProps} />
+        {skeletonVisible && <ImageSkeleton />}
+      </span>
+    )
+  }
+
+  return (
+    <>
+      <Image {...imageProps} />
+      {skeletonVisible && <ImageSkeleton />}
+    </>
+  )
+}
+
+function ImageSkeleton() {
+  return (
+    <div
+      data-testid="property-image-skeleton"
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden bg-slate-900/40"
+    >
+      <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[propertyImageShimmer_1.6s_ease-in-out_infinite]" />
+      <style>{`
+        @keyframes propertyImageShimmer {
+          0% { background-position: -100% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+    </div>
+  )
 }
