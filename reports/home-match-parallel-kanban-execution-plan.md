@@ -16,18 +16,21 @@ Public HTML mirror: `reports/home-match-parallel-kanban-execution-plan.html`
 - Explicit incomplete status such as “Phase 0/1 not 100% complete” must **not** be judged as achieved.
 - Correct project shape: **one strict Phase 0/1 gate + multiple child workers + fan-in decision register + no Phase 2+ until the closure matrix is clean**.
 
-## Current truth
+## Current truth — 2026-05-09T01:30Z
 
 - Repo: `/home/shan/projects/homematch-v2`
 - Branch: `autonomy/6h-business-hardening`
-- Latest integrated HEAD seen by control plane: `f5aea01 fix: consolidate API rate limiting`
-- Current working tree note: active worker `t_54000dda` is using the project dir and has in-progress DB/perf edits; do not stage or overwrite its files until it completes.
+- PR: [#22](https://github.com/shandutta/homematch-v2/pull/22) (draft, 110+ commits, mergeable)
+- Latest integrated HEAD: `bff5576 fix: resolve consistent-type-assertions lint errors from Wave 1 integration`
 - Board: `home-match-revival`
-- Board state after full-plan expansion dispatch: `todo=17, ready=0, running=1, blocked=10, done=31`
-- Active workers:
-  - `t_54000dda` — backend writer, Phase 1 DB/perf cleanup, project dir workspace.
-- Just completed scout: `t_29d2185c` — analyst roadmap expansion scout, scratch workspace, read-only; recommended running `t_113bb9c0` fan-in verifier after `t_54000dda`, then `t_d60106b6` if verifier agrees.
-- Latest completed integration slice: `t_f75b8af5` (`M10 rate limiter consolidation`) merged into main at `f5aea01`.
+- Board state: `done=164, blocked=26, todo=22, running=0`
+- Workers: Claude CLI only (Hermes/Codex terminated). Wave 1 (P2 UX/Maps/SEO) integrated — 9 commits. Wave 2 (D2/D6 plans) completed docs-only — need implementation prompts.
+- Worker ramp: 0 active. Next: relaunch Wave 2 as implementation, then 3→6→9→15.
+- Lint: 0 errors ✅. CI: Lint & Type Check now green after `bff5576`.
+- Vercel: **all deploys failing** — `Provisioning integrations failed` (root cause: inactive Supabase project `lpwlbbowavozpywnpamn`). No preview deploy possible until Supabase restored or integration unlinked. Vercel token lost (tmpfs cleanup); need new token after Supabase fix. Strategy: fix Supabase → Vercel auto-deploys resume on PR push.
+- **Data warning**: Supabase production project `lpwlbbowavozpywnpamn` is INACTIVE. No real production data flows. Workers currently see empty/mocked data. Restoring Supabase is prerequisite for real-data work.
+- **Design/UX pipeline** (NEW): see Design & UX Scoping Pipeline below.
+- **Phase 0/1**: not 100% complete. Final OG plan cross-check pending (see Final Verification Gate below).
 - Important interpretation: expanded `todo` now includes held dependency-gated roadmap tasks, not authorization to implement Phase 2+.
 - Phase 0: **not 100% complete**
 - Phase 1: **not 100% complete**
@@ -435,7 +438,47 @@ Approve bounded Phase 0/1 Kanban worker window
 
 Default interpretation: max two resource-limited workers, one writer at a time unless separate worktrees are confirmed clean, no external side effects, no Phase 2+.
 
-## Expanded OG Business Revival Plan
+## Design & UX Scoping Pipeline (NEW — Shan 2026-05-09)
+
+### Rationale
+
+Before Phase 2+ implementation deepens the codebase, dedicated design/UX scouting workers must traverse every page and route with a professional visual-design eye — not for "vibe coding" tells but for real, grounded improvements: spacing inconsistency, responsive breakpoints, accessibility gaps, color contrast, micro-interactions, loading states, empty states, error states, and conversion-path friction.
+
+### Execution order
+
+1. **Desktop-first**: 1 Claude worker traverses all routes/pages via dev server (`SKIP_SUPABASE_GUARD=true pnpm dev`), captures screenshots, audits against real production design systems (Stripe, Linear, Vercel), and produces a prioritized audit doc.
+2. **Mobile follow-up**: same worker or a second worker repeats the traversal at 375px and 768px viewports, flagging responsive regressions, tap target sizes, form usability, and keyboard accessibility.
+3. **Output**: `reports/home-match-revival/design-ux-audit-desktop-2026-05-09.md` and `reports/home-match-revival/design-ux-audit-mobile-2026-05-09.md`.
+4. **Gate**: findings are Phase 2 implementation tasks, not blockers — they inform but don't gate Phase 2+ start.
+
+### Avoid vibe-coding tells
+
+Workers must:
+- Reference real design-system measurements (spacing scales, type ramps, color tokens)
+- Cite specific shadcn/ui and Tailwind conventions
+- Flag only concrete, fixable issues — no "could be more modern" platitudes
+- Provide before/after CSS diffs where applicable
+
+## Final Verification Gate (Phase 0/1 → Phase 2+)
+
+### Trigger
+
+When the control plane believes Phase 0/1 is 100% closed:
+
+1. Re-read the **OG Business Revival Plan** (`reports/home-match-business-revival-operating-plan.md`) — the original instruction set from earlier in this thread.
+2. Cross-check every OG requirement against the closure matrix (`reports/home-match-revival/phase0-phase1-closure-matrix.md`).
+3. Produce a one-page `reports/home-match-revival/phase0-phase1-final-crosscheck-{date}.md` listing:
+   - Every OG requirement and its closure status
+   - Any lingering gaps
+   - Explicit "Phase 2+ is cleared" or "NOT cleared — gaps remain" verdict
+4. **Notify Shan explicitly** with the verdict. Do not silently transition to Phase 2+.
+
+### Vercel preview deploy strategy
+
+- Vercel preview deploys auto-trigger on PR push once the Supabase integration is restored.
+- Target: `autonomy/6h-business-hardening` branch → PR #22 preview URL.
+- If Vercel token is needed: Shan provides token → stored in `~/.hermes/secrets/` → `npx vercel link` + `npx vercel deploy`.
+- Until Supabase is active, Vercel deploys will continue to fail with `Provisioning integrations failed`.
 
 Shan clarified that the visible Kanban todos are not the full plan. The expanded umbrella backlog is now canonical alongside this execution plan:
 
