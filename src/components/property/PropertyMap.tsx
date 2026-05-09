@@ -199,6 +199,11 @@ export function PropertyMap({
   ])
 
   useEffect(() => {
+    setError(null)
+    setIsMapInitialized(false)
+  }, [property.id])
+
+  useEffect(() => {
     return () => {
       resizeObserverRef.current?.disconnect()
     }

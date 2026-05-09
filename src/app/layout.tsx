@@ -64,6 +64,13 @@ export const metadata: Metadata = {
   authors: [{ name: 'HomeMatch' }],
   creator: 'HomeMatch',
   publisher: 'HomeMatch',
+  alternates: {
+    canonical: siteUrl,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   formatDetection: {
     email: false,
     address: false,
