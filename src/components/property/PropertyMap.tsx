@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Property } from '@/lib/schemas/property'
-import { MapPin, Loader2 } from 'lucide-react'
+import { ExternalLink, MapPin } from 'lucide-react'
 import {
   SecureMapLoader,
   useGoogleMapsLoader,
@@ -15,14 +15,70 @@ import type {
   GoogleAnyMarkerInstance,
 } from '@/types/google-maps'
 
-// Extend Window interface for Google Maps to satisfy TS during SSR/type-check.
-// The actual Google Maps script populates window.google at runtime in the browser.
-
 interface PropertyMapProps {
   property: Property
   className?: string
   zoom?: number
   showMarker?: boolean
+}
+
+const MARKER_PIN_SVG = `
+  <svg width="36" height="44" viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="marker-shadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.45"/>
+      </filter>
+      <linearGradient id="marker-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fbbf24"/>
+        <stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+    </defs>
+    <path d="M18 1 C9.16 1 2 8.16 2 17 C2 28.5 18 43 18 43 C18 43 34 28.5 34 17 C34 8.16 26.84 1 18 1 Z"
+          fill="url(#marker-fill)" stroke="#ffffff" stroke-width="1.75" filter="url(#marker-shadow)"/>
+    <circle cx="18" cy="17" r="6.5" fill="#ffffff"/>
+    <circle cx="18" cy="17" r="2.75" fill="#d97706"/>
+  </svg>
+`
+
+function buildGoogleMapsLink(property: Property): string {
+  const q = encodeURIComponent(
+    [property.address, property.city, property.state, property.zip_code]
+      .filter(Boolean)
+      .join(', ')
+  )
+  return `https://www.google.com/maps/search/?api=1&query=${q}`
+}
+
+function escapeHtml(value: string | null | undefined): string {
+  if (value == null) return ''
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function buildInfoWindowHtml(property: Property): string {
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(property.price)
+
+  const address = escapeHtml(property.address)
+  const cityState = escapeHtml(
+    [property.city, property.state].filter(Boolean).join(', ')
+  )
+  const zip = escapeHtml(property.zip_code)
+  return `
+    <div style="min-width:180px;max-width:240px;font-family:system-ui,-apple-system,sans-serif;color:#0f172a;padding:4px 6px;">
+      <div style="font-size:13px;font-weight:600;line-height:1.25;margin-bottom:2px;">${address}</div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:6px;">${cityState}${zip ? ` &middot; ${zip}` : ''}</div>
+      <div style="font-size:14px;font-weight:700;color:#b45309;">${formattedPrice}</div>
+    </div>
+  `
 }
 
 export function PropertyMap({
@@ -33,7 +89,7 @@ export function PropertyMap({
 }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isMapInitialized, setIsMapInitialized] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mapsReady, setMapsReady] = useState(false)
 
@@ -44,7 +100,6 @@ export function PropertyMap({
   const hasValidCoordinates =
     Boolean(parsedCoords) && isValidLatLng(parsedCoords!)
 
-  // Listen for global maps script load (for cases where another map loaded first)
   const { isLoaded: isGoogleLoaded, error: loaderError } = useGoogleMapsLoader()
 
   useEffect(() => {
@@ -55,7 +110,6 @@ export function PropertyMap({
     if (!mapsApiReady) return
     if (!window.google?.maps) return
 
-    setIsLoading(true)
     setError(null)
 
     try {
@@ -87,6 +141,9 @@ export function PropertyMap({
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        gestureHandling: 'cooperative',
+        clickableIcons: false,
+        backgroundColor: '#0f172a',
       })
 
       if (showMarker) {
@@ -98,13 +155,8 @@ export function PropertyMap({
         })
 
         const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div class="p-3 max-w-xs">
-              <h3 class="font-semibold text-sm mb-1">${property.address}</h3>
-              <p class="text-xs text-gray-600">${property.city}, ${property.state}</p>
-              <p class="text-xs font-bold text-blue-600 mt-1">$${property.price.toLocaleString()}</p>
-            </div>
-          `,
+          content: buildInfoWindowHtml(property),
+          maxWidth: 260,
         })
 
         marker.addListener('click', () => {
@@ -112,7 +164,7 @@ export function PropertyMap({
         })
       }
 
-      setIsLoading(false)
+      setIsMapInitialized(true)
 
       if (typeof ResizeObserver !== 'undefined') {
         resizeObserverRef.current?.disconnect()
@@ -134,17 +186,14 @@ export function PropertyMap({
       const fallbackMessage =
         err instanceof Error ? err.message : 'Failed to load map'
       setError(fallbackMessage)
-      setIsLoading(false)
+      setIsMapInitialized(false)
     }
   }, [
     hasValidCoordinates,
     isGoogleLoaded,
     mapsReady,
     parsedCoords,
-    property.address,
-    property.city,
-    property.price,
-    property.state,
+    property,
     showMarker,
     zoom,
   ])
@@ -157,18 +206,15 @@ export function PropertyMap({
 
   if (!hasValidCoordinates) {
     return (
-      <div
-        className={`relative h-32 w-full overflow-hidden rounded-lg bg-slate-800/50 ${className}`}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
-            <p className="text-xs text-slate-400">Map unavailable</p>
-          </div>
-        </div>
-      </div>
+      <MapFallback
+        className={className}
+        message="Map unavailable"
+        property={property}
+      />
     )
   }
+
+  const isInitialLoading = !isMapInitialized && !error && !loaderError
 
   return (
     <SecureMapLoader
@@ -183,43 +229,127 @@ export function PropertyMap({
             ? loadError.message
             : 'Failed to load mapping service'
         setError(message)
-        setIsLoading(false)
+        setIsMapInitialized(false)
       }}
     >
       <div
-        className={`relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
+        className={`relative h-32 w-full overflow-hidden rounded-lg border border-white/10 bg-slate-900 ${className}`}
         style={{ minHeight: '128px' }}
         data-testid="property-map"
       >
-        <div ref={mapRef} className="absolute inset-0 rounded-lg" />
+        <div
+          ref={mapRef}
+          className={`absolute inset-0 rounded-lg transition-opacity duration-500 ${
+            isMapInitialized ? 'opacity-100' : 'opacity-0'
+          }`}
+          aria-hidden={!isMapInitialized}
+        />
 
-        {(isLoading || !mapsReady) && !error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/60">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-          </div>
-        )}
+        {isInitialLoading && <MapLoadingShimmer />}
 
-        {loaderError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50">
-            <div className="text-center">
-              <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
-              <p className="text-xs text-slate-400">
-                {loaderError.message ?? 'Map unavailable'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50">
-            <div className="text-center">
-              <MapPin className="mx-auto mb-1 h-6 w-6 text-slate-500" />
-              <p className="text-xs text-slate-400">{error}</p>
-            </div>
-          </div>
+        {(loaderError || error) && (
+          <MapErrorOverlay
+            message={
+              error ?? loaderError?.message ?? 'Unable to load map'
+            }
+            property={property}
+          />
         )}
       </div>
     </SecureMapLoader>
+  )
+}
+
+function MapLoadingShimmer() {
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center overflow-hidden bg-slate-900"
+      data-testid="property-map-skeleton"
+      aria-busy="true"
+    >
+      <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.06)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer_1.6s_ease-in-out_infinite]" />
+      <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1.5 backdrop-blur-sm">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+        <span className="text-[11px] font-medium tracking-[0.18em] text-slate-300 uppercase">
+          Loading map
+        </span>
+      </div>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -100% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function MapErrorOverlay({
+  message,
+  property,
+}: {
+  message: string
+  property: Property
+}) {
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center bg-slate-900/90 px-4"
+      data-testid="property-map-error"
+    >
+      <div className="text-center">
+        <MapPin className="mx-auto mb-1.5 h-6 w-6 text-amber-400/80" />
+        <p className="text-xs font-medium text-slate-200">{message}</p>
+        <a
+          href={buildGoogleMapsLink(property)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200"
+          aria-label="Open in Google Maps"
+        >
+          Open in Google Maps
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+    </div>
+  )
+}
+
+function MapFallback({
+  className,
+  message,
+  property,
+}: {
+  className: string
+  message: string
+  property: Property
+}) {
+  const hasAddressContext = Boolean(property.address || property.city)
+  return (
+    <div
+      className={`relative h-32 w-full overflow-hidden rounded-lg border border-white/5 bg-slate-900/60 ${className}`}
+      data-testid="property-map-fallback"
+    >
+      <div className="absolute inset-0 flex items-center justify-center px-4">
+        <div className="text-center">
+          <MapPin className="mx-auto mb-1.5 h-6 w-6 text-slate-500" />
+          <p className="text-xs font-medium text-slate-300">{message}</p>
+          {hasAddressContext && (
+            <a
+              href={buildGoogleMapsLink(property)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200"
+              aria-label="Open in Google Maps"
+            >
+              Open in Google Maps
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -241,10 +371,12 @@ function createPropertyMarker({
     const mapId = getGoogleMapsMapId()
     const advancedMarkerCtor = maps.marker?.AdvancedMarkerElement
     if (mapId && advancedMarkerCtor) {
+      const pinContent = createAdvancedMarkerContent()
       return new advancedMarkerCtor({
         position: coords,
         map,
         title,
+        ...(pinContent ? { content: pinContent } : {}),
       })
     }
   } catch (error) {
@@ -258,17 +390,20 @@ function createPropertyMarker({
     position: coords,
     map,
     title,
+    animation: maps.Animation?.DROP,
     icon: {
-      url:
-        'data:image/svg+xml;charset=UTF-8,' +
-        encodeURIComponent(`
-          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="16" cy="16" r="12" fill="#3b82f6" stroke="#ffffff" stroke-width="3"/>
-            <circle cx="16" cy="16" r="6" fill="#ffffff"/>
-          </svg>
-        `),
-      scaledSize: new maps.Size(32, 32),
-      anchor: new maps.Point(16, 16),
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(MARKER_PIN_SVG),
+      scaledSize: new maps.Size(36, 44),
+      anchor: new maps.Point(18, 44),
     },
   })
+}
+
+function createAdvancedMarkerContent(): HTMLElement | null {
+  if (typeof document === 'undefined') return null
+  const wrapper = document.createElement('div')
+  wrapper.style.transform = 'translateY(-2px)'
+  wrapper.style.filter = 'drop-shadow(0 4px 6px rgba(0,0,0,0.35))'
+  wrapper.innerHTML = MARKER_PIN_SVG
+  return wrapper
 }
