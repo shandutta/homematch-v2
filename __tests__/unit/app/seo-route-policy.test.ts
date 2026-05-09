@@ -40,6 +40,7 @@ describe('SEO route policy', () => {
       expect(entry).toBeDefined()
       const stamp = entry!.lastModified
       expect(stamp).toBeInstanceOf(Date)
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       expect((stamp as Date).toISOString().slice(0, 10)).toBe(expected)
     }
   })
@@ -52,6 +53,7 @@ describe('SEO route policy', () => {
 
     const homepage = byPath.get('/')
     expect(homepage).toBeDefined()
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const stamp = homepage!.lastModified as Date
     const skewMs = Math.abs(Date.now() - stamp.getTime())
     expect(skewMs).toBeLessThan(60_000)

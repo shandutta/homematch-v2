@@ -139,7 +139,15 @@ export function MutualLikesListPage() {
               aria-label="Sort mutual likes"
               data-testid="mutual-likes-sort"
               value={sortKey}
-              onChange={(event) => setSortKey(event.target.value as SortKey)}
+              onChange={(event) => {
+                const v = event.target.value;
+                if (SORT_OPTIONS.some((o) => o.value === v)) {
+                  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                  setSortKey(v as SortKey);
+                } else {
+                  setSortKey('updated');
+                }
+              }}
               className={SELECT_CLASS}
             >
               {SORT_OPTIONS.map((option) => (
@@ -156,9 +164,15 @@ export function MutualLikesListPage() {
               aria-label="Filter mutual likes by bedrooms"
               data-testid="mutual-likes-bed-filter"
               value={bedFilter}
-              onChange={(event) =>
-                setBedFilter(event.target.value as BedFilter)
-              }
+              onChange={(event) => {
+                const v = event.target.value;
+                if (BED_FILTER_OPTIONS.some((o) => o.value === v)) {
+                  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                  setBedFilter(v as BedFilter);
+                } else {
+                  setBedFilter('any');
+                }
+              }}
               className={SELECT_CLASS}
             >
               {BED_FILTER_OPTIONS.map((option) => (

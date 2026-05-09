@@ -132,6 +132,7 @@ describe('MutualLikesListPage', () => {
 
     renderWithQuery(<MutualLikesListPage />)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const sort = screen.getByTestId('mutual-likes-sort') as HTMLSelectElement
     fireEvent.change(sort, { target: { value: 'price-desc' } })
 
@@ -154,6 +155,7 @@ describe('MutualLikesListPage', () => {
 
     renderWithQuery(<MutualLikesListPage />)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const bedFilter = screen.getByTestId(
       'mutual-likes-bed-filter'
     ) as HTMLSelectElement
@@ -176,6 +178,7 @@ describe('MutualLikesListPage', () => {
 
     renderWithQuery(<MutualLikesListPage />)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const bedFilter = screen.getByTestId(
       'mutual-likes-bed-filter'
     ) as HTMLSelectElement
@@ -197,6 +200,7 @@ describe('MutualLikesListPage', () => {
 
     renderWithQuery(<MutualLikesListPage />)
 
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const bedFilter = screen.getByTestId(
       'mutual-likes-bed-filter'
     ) as HTMLSelectElement
@@ -271,6 +275,7 @@ describe('MutualLikesListPage', () => {
       fireEvent.click(screen.getByTestId('compare-checkbox-b'))
       fireEvent.click(screen.getByTestId('compare-checkbox-c'))
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const fourthCheckbox = screen.getByTestId(
         'compare-checkbox-d'
       ) as HTMLInputElement
@@ -302,6 +307,7 @@ describe('MutualLikesListPage', () => {
       expect(screen.queryByTestId('compare-card-a')).toBeNull()
       expect(screen.getByTestId('compare-card-b')).toBeInTheDocument()
 
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const checkboxA = screen.getByTestId(
         'compare-checkbox-a'
       ) as HTMLInputElement

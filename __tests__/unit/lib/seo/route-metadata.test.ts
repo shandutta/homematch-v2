@@ -88,9 +88,12 @@ describe('route-metadata helpers', () => {
 
     expect(ld.image).toEqual([`${SITE_URL}/og-image.jpg`])
     expect(ld.description).toBe('2 bed, 1 bath home in Austin, TX.')
-    expect((ld as { floorSize?: unknown }).floorSize).toBeUndefined()
-    expect((ld as { yearBuilt?: unknown }).yearBuilt).toBeUndefined()
-    expect((ld as { additionalType?: unknown }).additionalType).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    expect((ld as Record<string, unknown>).floorSize).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    expect((ld as Record<string, unknown>).yearBuilt).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    expect((ld as Record<string, unknown>).additionalType).toBeUndefined()
   })
 
   it('emits an ordered BreadcrumbList JSON-LD anchored to siteUrl', async () => {
