@@ -7,7 +7,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PropertyImage } from '@/components/ui/property-image'
-import { Heart, Users, ChevronRight } from 'lucide-react'
+import { Heart, Users, ChevronRight, Sparkles, SearchX } from 'lucide-react'
+import { MotionDiv } from '@/components/ui/motion-components'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
 import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 import { MutualLikesComparePanel } from './MutualLikesComparePanel'
@@ -275,14 +276,32 @@ export function MutualLikesListPage() {
             backgroundColor: dashboardTokens.colors.background.cardDark,
             borderColor: dashboardTokens.colors.secondary[700],
           }}
+          data-testid="mutual-likes-empty"
         >
           <CardContent className="p-10 text-center">
-            <div className="mb-5 flex justify-center">
-              <div className="relative">
-                <Heart className="text-couples-primary/40 h-12 w-12 fill-current" />
-                <Users className="text-couples-secondary absolute -top-2 -right-2 h-5 w-5" />
+            <MotionDiv
+              className="mx-auto mb-6 flex h-24 w-24 items-center justify-center"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            >
+              <div className="from-couples-primary/20 to-couples-secondary/10 relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ring-1 ring-white/10">
+                <MotionDiv
+                  animate={{ scale: [1, 1.08, 1] }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  <Heart className="text-couples-primary h-10 w-10 fill-current drop-shadow" />
+                </MotionDiv>
+                <span className="bg-couples-secondary text-hm-obsidian-900 absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full text-xs ring-2 ring-black/40">
+                  <Users className="h-3.5 w-3.5" />
+                </span>
+                <Sparkles className="text-couples-secondary/80 absolute -bottom-1 -left-1 h-4 w-4" />
               </div>
-            </div>
+            </MotionDiv>
             <h2 className="text-hm-stone-100 text-xl font-semibold">
               No mutual likes yet
             </h2>
@@ -313,6 +332,14 @@ export function MutualLikesListPage() {
           data-testid="mutual-likes-filtered-empty"
         >
           <CardContent className="p-10 text-center">
+            <MotionDiv
+              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-white/10"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <SearchX className="text-hm-stone-400 h-7 w-7" />
+            </MotionDiv>
             <h2 className="text-hm-stone-100 text-xl font-semibold">
               No matches with current filters
             </h2>
