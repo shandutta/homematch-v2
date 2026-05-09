@@ -92,9 +92,9 @@ describe('SEO route policy — per-surface guard', () => {
     ]
     for (const blocked of blockedSurfaces) {
       expect(sitemapPaths).not.toContain(blocked)
-      expect(
-        sitemapPaths.some((path) => path.startsWith(`${blocked}/`))
-      ).toBe(false)
+      expect(sitemapPaths.some((path) => path.startsWith(`${blocked}/`))).toBe(
+        false
+      )
     }
   })
 

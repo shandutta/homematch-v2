@@ -26,7 +26,7 @@ const { searchPropertiesMock, getNeighborhoodsByCityMock } = jest.requireMock(
   '@/lib/services/properties'
 ).__mock__
 
-const deferred = <T,>() => {
+const deferred = <T>() => {
   let resolve!: (value: T) => void
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((res, rej) => {
@@ -96,9 +96,15 @@ describe('dashboard query dedupe', () => {
     expect(searchPropertiesMock).toHaveBeenCalledTimes(1)
     const [searchParams, searchOptions]: [
       PropertySearch,
-      { select?: string; includeCount?: boolean; includeNeighborhoods?: boolean },
+      {
+        select?: string
+        includeCount?: boolean
+        includeNeighborhoods?: boolean
+      },
     ] = searchPropertiesMock.mock.calls[0]
-    expect(searchParams.filters?.cities).toEqual([{ city: 'Austin', state: 'TX' }])
+    expect(searchParams.filters?.cities).toEqual([
+      { city: 'Austin', state: 'TX' },
+    ])
     expect(searchOptions).toEqual({
       select: 'id,address',
       includeCount: false,

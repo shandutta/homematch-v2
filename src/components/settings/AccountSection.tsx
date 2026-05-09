@@ -33,7 +33,6 @@ export function AccountSection({ user }: AccountSectionProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSigningOut, startTransition] = useTransition()
   const router = useRouter()
-  const supabase = createClient()
   const resetInteractions = useResetInteractions()
 
   const handleSignOut = () => {
@@ -43,6 +42,7 @@ export function AccountSection({ user }: AccountSectionProps) {
 
     startTransition(async () => {
       try {
+        const supabase = await createClient()
         const { error: signOutError } = await supabase.auth.signOut()
 
         if (signOutError) {

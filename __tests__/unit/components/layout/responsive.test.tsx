@@ -73,9 +73,9 @@ function parsePixelClass(
   if (arbitrary) return Number(arbitrary[1])
 
   // Tailwind spacing scale (h-11 => 2.75rem => 44px). 0.25rem = 4px per step.
-  const scale = new RegExp(`(?:^|\\s)${prefix}-(\\d+(?:\\.\\d+)?)(?:\\s|$)`).exec(
-    className
-  )
+  const scale = new RegExp(
+    `(?:^|\\s)${prefix}-(\\d+(?:\\.\\d+)?)(?:\\s|$)`
+  ).exec(className)
   if (scale) return Math.round(Number(scale[1]) * 4)
 
   return null
@@ -185,10 +185,7 @@ describe('responsive layout — viewport visibility classes', () => {
     let el: HTMLElement | null = viewedLink.parentElement
     let foundHiddenContainer = false
     while (el) {
-      if (
-        /\bhidden\b/.test(el.className) &&
-        /\bmd:flex\b/.test(el.className)
-      ) {
+      if (/\bhidden\b/.test(el.className) && /\bmd:flex\b/.test(el.className)) {
         foundHiddenContainer = true
         break
       }

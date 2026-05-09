@@ -7,10 +7,7 @@ const TEST_API_URL = process.env.TEST_API_URL || 'http://127.0.0.1:3000'
 const APPROVED_TEST_TOKEN = process.env.API_AUTH_SMOKE_TOKEN
 const ALLOW_REMOTE = process.env.ALLOW_REMOTE_API_AUTH_SMOKE === '1'
 
-const SPEC_SOURCE_PATH = path.resolve(
-  __dirname,
-  'auth-smoke-matrix.spec.ts'
-)
+const SPEC_SOURCE_PATH = path.resolve(__dirname, 'auth-smoke-matrix.spec.ts')
 const SPEC_SOURCE = readFileSync(SPEC_SOURCE_PATH, 'utf8')
 
 type ExpectedStatus = number | readonly number[]
@@ -176,8 +173,7 @@ describe('P0/P1 API auth smoke matrix', () => {
     })
 
     test('never logs the bearer token or the authorization header', () => {
-      const consoleCalls =
-        SPEC_SOURCE.match(/console\.[a-z]+\([^)]*\)/g) || []
+      const consoleCalls = SPEC_SOURCE.match(/console\.[a-z]+\([^)]*\)/g) || []
       const tokenSurfaces = [
         'APPROVED_TEST_TOKEN',
         'API_AUTH_SMOKE_TOKEN',
@@ -213,9 +209,7 @@ describe('P0/P1 API auth smoke matrix', () => {
     })
 
     test('aggregates only path, anonymous status, authenticated status, and reason — never the token', () => {
-      const resultsBlock = SPEC_SOURCE.match(
-        /results\.push\(\{[\s\S]*?\}\)/
-      )
+      const resultsBlock = SPEC_SOURCE.match(/results\.push\(\{[\s\S]*?\}\)/)
       expect(resultsBlock).not.toBeNull()
       expect(resultsBlock![0]).toContain('path: route.path')
       expect(resultsBlock![0]).toContain('anonymous: anonymous.status')

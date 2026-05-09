@@ -186,20 +186,28 @@ describe('no-credential accessibility probe guard', () => {
       expect(smokeReport).toContain(route.path)
     }
 
-    expect(playwrightSpec).toContain('storageState: { cookies: [], origins: [] }')
+    expect(playwrightSpec).toContain(
+      'storageState: { cookies: [], origins: [] }'
+    )
     expect(playwrightSpec).toContain('redirectTo')
-    expect(playwrightSpec).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY|service_role/i)
+    expect(playwrightSpec).not.toMatch(
+      /SUPABASE_SERVICE_ROLE_KEY|service_role/i
+    )
   })
 
   it('keeps the accessibility matrix aligned with the no-credential probe posture', () => {
     for (const route of allProbeRoutes) {
       expect(matrix).toContain(route.matrixLabel)
-      expect(matrix).toContain(route.matrixPath ?? route.path.replace('synthetic-property-id', '[id]'))
+      expect(matrix).toContain(
+        route.matrixPath ?? route.path.replace('synthetic-property-id', '[id]')
+      )
     }
 
     expect(matrix).toContain('Public no-credential')
     expect(matrix).toContain('Protected; anonymous redirect expected')
     expect(matrix).toContain('approved non-production test auth/session')
-    expect(matrix).toMatch(/Do not use production user sessions, production household\/listing data, or real invite tokens/i)
+    expect(matrix).toMatch(
+      /Do not use production user sessions, production household\/listing data, or real invite tokens/i
+    )
   })
 })

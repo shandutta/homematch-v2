@@ -152,9 +152,9 @@ describe('user schemas', () => {
     })
 
     it('insert schema accepts minimal payload', () => {
-      expect(
-        householdInsertSchema.safeParse({ name: 'Home' }).success
-      ).toBe(true)
+      expect(householdInsertSchema.safeParse({ name: 'Home' }).success).toBe(
+        true
+      )
     })
 
     it('update schema accepts empty object', () => {

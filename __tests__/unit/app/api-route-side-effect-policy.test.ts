@@ -82,7 +82,10 @@ describe('API route side-effect policy', () => {
       { path: '/api/admin/generate-vibes-zillow', category: 'paid-llm' },
       // Cron-admin gating.
       { path: '/api/admin/generate-vibes', category: 'cron-admin' },
-      { path: '/api/admin/generate-neighborhood-vibes', category: 'cron-admin' },
+      {
+        path: '/api/admin/generate-neighborhood-vibes',
+        category: 'cron-admin',
+      },
       { path: '/api/admin/generate-vibes-zillow', category: 'cron-admin' },
       { path: '/api/admin/ingest/zillow', category: 'cron-admin' },
       { path: '/api/admin/status-refresh', category: 'cron-admin' },

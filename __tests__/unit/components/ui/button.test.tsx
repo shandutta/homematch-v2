@@ -99,7 +99,7 @@ describe('Button Component', () => {
     test('renders small size correctly', () => {
       render(<Button size="sm">Small</Button>)
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('min-h-[44px]', 'h-11', 'rounded-token-md')
+      expect(button).toHaveClass('min-h-[44px]', 'h-11', 'rounded-md')
     })
 
     test('renders large size correctly', () => {

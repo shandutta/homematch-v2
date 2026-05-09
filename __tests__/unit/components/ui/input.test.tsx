@@ -128,17 +128,17 @@ describe('Input Component', () => {
     test('applies rounded corners and padding', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('rounded-token-md', 'p-token-sm')
+      expect(input).toHaveClass('rounded-md', 'p-2')
     })
 
     test('applies text and shadow styling', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
       expect(input).toHaveClass(
-        'text-token-base',
-        'shadow-token-sm',
-        'duration-token-fast',
-        'ease-token-out'
+        'text-base',
+        'shadow-sm',
+        'duration-150',
+        'ease-out'
       )
     })
 
@@ -301,7 +301,7 @@ describe('Input Component', () => {
       render(<Input type="file" />)
       const input = document.querySelector('input[type="file"]')
       expect(input).toHaveClass(
-        'file:text-token-sm',
+        'file:text-sm',
         'file:border-0',
         'file:bg-transparent'
       )

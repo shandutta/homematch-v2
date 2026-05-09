@@ -8,7 +8,8 @@ import { join } from 'path'
 const repoPath = (...parts: string[]) => join(process.cwd(), ...parts)
 const readRepoFile = (relativePath: string) =>
   readFileSync(repoPath(relativePath), 'utf8')
-const readRepoJson = (relativePath: string) => JSON.parse(readRepoFile(relativePath))
+const readRepoJson = (relativePath: string) =>
+  JSON.parse(readRepoFile(relativePath))
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim()
 
 describe('D10 DB integration execution environment policy', () => {
@@ -30,7 +31,9 @@ describe('D10 DB integration execution environment policy', () => {
     expect(policy.requiredSignals.dbReset.allowedOnlyWhen).toEqual(
       expect.arrayContaining([
         expect.stringContaining('loopback/local'),
-        expect.stringContaining('Docker/local Supabase is intentionally approved'),
+        expect.stringContaining(
+          'Docker/local Supabase is intentionally approved'
+        ),
         expect.stringContaining('scripts/dev-supabase-reset.js'),
         expect.stringContaining('no --db-url remote reset flag'),
       ])
@@ -64,8 +67,12 @@ describe('D10 DB integration execution environment policy', () => {
     expect(policy.requiredSignals.integrationSuite.allowedOnlyWhen).toEqual(
       expect.arrayContaining([
         expect.stringContaining('local Supabase plus local seeded test users'),
-        expect.stringContaining('non-production remote test path is explicitly approved'),
-        expect.stringContaining('never treated as production approval by itself'),
+        expect.stringContaining(
+          'non-production remote test path is explicitly approved'
+        ),
+        expect.stringContaining(
+          'never treated as production approval by itself'
+        ),
         expect.stringContaining('paid provider calls remain disabled'),
       ])
     )
@@ -82,7 +89,9 @@ describe('D10 DB integration execution environment policy', () => {
   it('records commands that remain deliberately unrun in this bounded slice', () => {
     expect(report).toContain('No supabase db reset')
     expect(report).toContain('No Docker/Supabase local stack startup')
-    expect(report).toContain('No live Supabase or hosted *.supabase.co mutation')
+    expect(report).toContain(
+      'No live Supabase or hosted *.supabase.co mutation'
+    )
     expect(report).toContain(
       'No remote DB URL, paid API, deploy, dependency install, secret read/write, or real-user-data action'
     )

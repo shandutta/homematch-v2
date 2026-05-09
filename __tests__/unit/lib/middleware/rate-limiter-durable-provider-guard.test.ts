@@ -221,7 +221,9 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
     expect(decisionRegister).toContain(
       'still keep provider choice/provisioning as an unresolved production decision'
     )
-    expect(decisionRegister).toContain('require Shan/product/security/ops decisions')
+    expect(decisionRegister).toContain(
+      'require Shan/product/security/ops decisions'
+    )
     expect(decisionRegister).toContain(
       'd2-durable-rate-limiter-approval-gate-guard-2026-05-08.md'
     )
@@ -239,7 +241,9 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
     expect(d2Report).toContain(
       'Shan/ops explicitly approves a durable production provider'
     )
-    expect(d2Report).toContain('fail closed with an approval-required adapter error')
+    expect(d2Report).toContain(
+      'fail closed with an approval-required adapter error'
+    )
     expect(d2Report).toContain('does not choose Redis, Upstash, Vercel KV')
   })
 
@@ -302,11 +306,7 @@ describe('D2 durable rate-limiter approval-gate guard', () => {
           NextResponse.json(null, { status: 200 })
       )
 
-      const response = await withRateLimit(
-        makeRequest(),
-        handler,
-        'standard'
-      )
+      const response = await withRateLimit(makeRequest(), handler, 'standard')
 
       expect(handler).not.toHaveBeenCalled()
       expect(response.status).toBe(429)

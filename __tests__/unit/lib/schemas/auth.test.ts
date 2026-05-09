@@ -40,9 +40,9 @@ describe('auth schemas', () => {
 
     it('rejects missing fields', () => {
       expect(LoginSchema.safeParse({}).success).toBe(false)
-      expect(
-        LoginSchema.safeParse({ email: 'user@example.com' }).success
-      ).toBe(false)
+      expect(LoginSchema.safeParse({ email: 'user@example.com' }).success).toBe(
+        false
+      )
     })
   })
 

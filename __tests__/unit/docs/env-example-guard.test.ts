@@ -31,7 +31,11 @@ const looksLikeRealSecret = (value: string) => {
   const trimmed = value.trim()
   if (!trimmed) return false
   // JWT-shaped tokens (e.g. Supabase anon/service keys)
-  if (/^ey[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$/.test(trimmed)) {
+  if (
+    /^ey[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}$/.test(
+      trimmed
+    )
+  ) {
     return true
   }
   // sb_/sk_/pk_-prefixed tokens (Stripe-like, Supabase publishable, etc.)
@@ -67,8 +71,12 @@ describe('.env.example local-dev guard', () => {
     // .env.example itself is a guidance file: it should not opt agents into
     // auto-skipping guards or Docker. Those flags must be set deliberately by
     // the developer in their own .env.local or shell, per README guidance.
-    expect(Object.prototype.hasOwnProperty.call(envExample, 'SKIP_SUPABASE_GUARD')).toBe(false)
-    expect(Object.prototype.hasOwnProperty.call(envExample, 'SKIP_DOCKER')).toBe(false)
+    expect(
+      Object.prototype.hasOwnProperty.call(envExample, 'SKIP_SUPABASE_GUARD')
+    ).toBe(false)
+    expect(
+      Object.prototype.hasOwnProperty.call(envExample, 'SKIP_DOCKER')
+    ).toBe(false)
   })
 
   it('does not print or commit a real .env.prod path or production database URL', () => {

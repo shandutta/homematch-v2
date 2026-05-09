@@ -95,7 +95,10 @@ const DATA_SOURCE_TOKENS: ReadonlyArray<{
   { label: 'rapidapi', pattern: /rapidapi/i },
   { label: 'zillow api host', pattern: /zillow.*\.com/i },
   { label: 'process.env.* secret', pattern: /process\.env\.[A-Z0-9_]*KEY/ },
-  { label: 'process.env.* secret (TOKEN)', pattern: /process\.env\.[A-Z0-9_]*TOKEN/ },
+  {
+    label: 'process.env.* secret (TOKEN)',
+    pattern: /process\.env\.[A-Z0-9_]*TOKEN/,
+  },
 ]
 
 describe('public demo listing fixture boundary', () => {
@@ -139,7 +142,9 @@ describe('public demo listing fixture boundary', () => {
 
       // The route must declare an inline array constant, not import or
       // fetch listings from anywhere else.
-      expect(source).toMatch(/const\s+MARKETING_CARDS\s*:\s*MarketingCard\[\]\s*=\s*\[/)
+      expect(source).toMatch(
+        /const\s+MARKETING_CARDS\s*:\s*MarketingCard\[\]\s*=\s*\[/
+      )
       expect(source).not.toMatch(/\bawait\s+fetch\s*\(/)
       expect(source).not.toMatch(/\bawait\s+supabase\b/)
       expect(source).not.toMatch(/from\s+['"]@\/lib\/services/)

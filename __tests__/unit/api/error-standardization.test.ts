@@ -29,15 +29,18 @@ describe('Phase 1 M6 shared error standardization', () => {
     'src/app/api/interactions/route.ts',
     'src/app/api/maps/geocode/route.ts',
     'src/app/api/maps/places/autocomplete/route.ts',
-  ])('%s delegates 429 responses to the shared standardized limiter', (path) => {
-    const source = read(path)
+  ])(
+    '%s delegates 429 responses to the shared standardized limiter',
+    (path) => {
+      const source = read(path)
 
-    expect(source).toContain('@/lib/middleware/rateLimiter')
-    expect(source).toContain('checkRateLimit')
-    expect(source).not.toContain(
-      "NextResponse.json(\n        { error: 'Too many requests"
-    )
-  })
+      expect(source).toContain('@/lib/middleware/rateLimiter')
+      expect(source).toContain('checkRateLimit')
+      expect(source).not.toContain(
+        "NextResponse.json(\n        { error: 'Too many requests"
+      )
+    }
+  )
 
   it('shared rate limiter returns standardized 429 responses', () => {
     const source = read('src/lib/middleware/rateLimiter.ts')
@@ -116,9 +119,15 @@ describe('Phase 1 M6 route error standardization', () => {
 
     expect(source).toContain('@/lib/api/errors')
     expect(source).toContain('ApiErrorHandler')
-    expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
-    expect(source).not.toContain("NextResponse.json({ error: 'No household found' }")
-    expect(source).not.toContain("{ error: 'Too many requests. Please try again later.' }")
+    expect(source).not.toContain(
+      "NextResponse.json({ error: 'Method not allowed' }"
+    )
+    expect(source).not.toContain(
+      "NextResponse.json({ error: 'No household found' }"
+    )
+    expect(source).not.toContain(
+      "{ error: 'Too many requests. Please try again later.' }"
+    )
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
@@ -134,12 +143,16 @@ describe('Phase 1 M6 route error standardization', () => {
 
     expect(source).toContain('@/lib/api/errors')
     expect(source).toContain('ApiErrorHandler')
-    expect(source).not.toContain("NextResponse.json({ error: 'unauthorized cron' }")
+    expect(source).not.toContain(
+      "NextResponse.json({ error: 'unauthorized cron' }"
+    )
     expect(source).not.toContain("NextResponse.json({ error: 'Unauthorized' }")
     expect(source).not.toContain("{ ok: false, error: 'Unauthorized' }")
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
-    expect(source).not.toContain('NextResponse.json(\n      {\n        ok: false,')
+    expect(source).not.toContain(
+      'NextResponse.json(\n      {\n        ok: false,'
+    )
   })
 
   it.each([
@@ -154,8 +167,12 @@ describe('Phase 1 M6 route error standardization', () => {
 
     expect(source).toContain('@/lib/api/errors')
     expect(source).toContain('ApiErrorHandler')
-    expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
-    expect(source).not.toContain("{ error: 'Too many requests. Please try again later.' }")
+    expect(source).not.toContain(
+      "NextResponse.json({ error: 'Method not allowed' }"
+    )
+    expect(source).not.toContain(
+      "{ error: 'Too many requests. Please try again later.' }"
+    )
     expect(source).not.toContain('NextResponse.json(\n        { error:')
     expect(source).not.toContain('NextResponse.json(\n      { error:')
   })
@@ -173,8 +190,12 @@ describe('Phase 1 M6 route error standardization', () => {
       expect(source).not.toMatch(/NextResponse\.json\([^)]*\berror\s*:/)
       expect(source).not.toContain('NextResponse.json(\n        { error:')
       expect(source).not.toContain('NextResponse.json(\n      { error:')
-      expect(source).not.toContain("NextResponse.json({ error: 'Unauthorized' }")
-      expect(source).not.toContain("NextResponse.json({ error: 'Method not allowed' }")
+      expect(source).not.toContain(
+        "NextResponse.json({ error: 'Unauthorized' }"
+      )
+      expect(source).not.toContain(
+        "NextResponse.json({ error: 'Method not allowed' }"
+      )
     }
   )
 })

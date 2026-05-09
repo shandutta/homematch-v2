@@ -45,7 +45,11 @@ describe('zillow random image API route', () => {
   })
 
   beforeEach(() => {
-    process.env = { ...originalEnv, HOMEMATCH_ALLOW_PAID_RAPIDAPI: 'true', RAPIDAPI_KEY: 'key' }
+    process.env = {
+      ...originalEnv,
+      HOMEMATCH_ALLOW_PAID_RAPIDAPI: 'true',
+      RAPIDAPI_KEY: 'key',
+    }
     jsonMock.mockClear()
     fetchMock.mockReset()
   })
@@ -100,7 +104,10 @@ describe('zillow random image API route', () => {
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
-    expect(body).toEqual({ cards: [], reason: 'No properties found from search query' })
+    expect(body).toEqual({
+      cards: [],
+      reason: 'No properties found from search query',
+    })
   })
 
   test('returns 204 when images are missing', async () => {
@@ -113,7 +120,10 @@ describe('zillow random image API route', () => {
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
-    expect(body).toEqual({ cards: [], reason: 'No images returned for selected properties' })
+    expect(body).toEqual({
+      cards: [],
+      reason: 'No images returned for selected properties',
+    })
   })
 
   test('returns a single card when only one candidate succeeds', async () => {

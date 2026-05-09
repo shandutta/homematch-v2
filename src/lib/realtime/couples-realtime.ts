@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 
 type PropertyInteractionPayload =
@@ -45,7 +45,14 @@ interface CouplesRealtimeCallbacks {
 }
 
 export class CouplesRealtime {
-  private supabase = createClient()
+  private supabasePromise: Promise<SupabaseClient<AppDatabase>> | null = null
+
+  private async _getSupabase(): Promise<SupabaseClient<AppDatabase>> {
+    if (!this.supabasePromise) {
+      this.supabasePromise = createClient()
+    }
+    return this.supabasePromise
+  }
   private channel: RealtimeChannel | null = null
   private householdId: string | null = null
   private callbacks: CouplesRealtimeCallbacks = {}
@@ -65,7 +72,8 @@ export class CouplesRealtime {
       await this.unsubscribe()
 
       // Create a new channel for the household
-      this.channel = this.supabase.channel(`couples:${householdId}`)
+      const supabase = await this._getSupabase()
+      this.channel = supabase.channel(`couples:${householdId}`)
       const channel = this.channel
 
       // Listen for property interactions in this household
@@ -108,7 +116,8 @@ export class CouplesRealtime {
    */
   async unsubscribe(): Promise<void> {
     if (this.channel) {
-      await this.supabase.removeChannel(this.channel)
+      const supabase = await this._getSupabase()
+      await supabase.removeChannel(this.channel)
       this.channel = null
     }
     this.householdId = null
@@ -142,10 +151,12 @@ export class CouplesRealtime {
       if (!isInteractionPayload(payload.new)) return
       const interaction = payload.new
 
+      const supabase = await this._getSupabase()
+
       // Get current user ID to check if this interaction is from partner
       const {
         data: { user },
-      } = await this.supabase.auth.getUser()
+      } = await supabase.auth.getUser()
       if (!user || interaction.user_id === user.id) {
         // Don't process our own interactions
         return
@@ -153,7 +164,7 @@ export class CouplesRealtime {
 
       // Notify about partner activity
       if (this.callbacks.onPartnerActivity) {
-        const { data: profile } = await this.supabase
+        const { data: profile } = await supabase
           .from('user_profiles')
           .select('display_name, email')
           .eq('id', interaction.user_id)
@@ -175,7 +186,7 @@ export class CouplesRealtime {
         interaction.interaction_type === 'like' &&
         this.callbacks.onMutualLike
       ) {
-        const { data: mutualPayload } = await this.supabase.rpc(
+        const { data: mutualPayload } = await supabase.rpc(
           'get_realtime_mutual_like_payload',
           {
             p_current_user_id: user.id,

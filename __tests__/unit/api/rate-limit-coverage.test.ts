@@ -12,7 +12,10 @@ const functionBody = (source: string, name: string) => {
   const marker = markers.find((candidate) => source.includes(candidate))
   if (!marker) throw new Error(`Missing function ${name}`)
   const start = source.indexOf(marker)
-  const nextFunction = source.indexOf('export async function ', start + marker.length)
+  const nextFunction = source.indexOf(
+    'export async function ',
+    start + marker.length
+  )
   const nextConst = source.indexOf('export const ', start + marker.length)
   const candidates = [nextFunction, nextConst].filter((idx) => idx !== -1)
   const next = candidates.length ? Math.min(...candidates) : -1

@@ -46,7 +46,9 @@ export const ingestRecordSchema = z.object({
   zip_code: z
     .string()
     .transform((value) => value.trim())
-    .pipe(z.string().regex(/^\d{5}(-\d{4})?$/, 'zip_code must be 5 or 9 digit')),
+    .pipe(
+      z.string().regex(/^\d{5}(-\d{4})?$/, 'zip_code must be 5 or 9 digit')
+    ),
   price: z.number().min(0),
   bedrooms: z.number().min(0),
   bathrooms: z.number().min(0),
@@ -150,7 +152,7 @@ function canonicalJson(value: unknown): string {
     return `[${value.map(canonicalJson).join(',')}]`
   }
   // value is a non-null, non-array object at this point
-  const entries = Object.entries(value as Record<string, unknown>).sort(
+  const entries = Object.entries(value).sort(
     ([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)
   )
   return `{${entries

@@ -71,9 +71,7 @@ describe('cron/admin secret opacity (static guards)', () => {
       expect(postIdx).toBeGreaterThan(-1)
       const body = source.slice(postIdx)
 
-      const unauthorizedIdx = body.search(
-        /ApiErrorHandler\.unauthorized\s*\(/
-      )
+      const unauthorizedIdx = body.search(/ApiErrorHandler\.unauthorized\s*\(/)
       expect(unauthorizedIdx).toBeGreaterThan(-1)
 
       // Any service-config presence checks (RAPIDAPI_KEY, OPENROUTER_API_KEY)

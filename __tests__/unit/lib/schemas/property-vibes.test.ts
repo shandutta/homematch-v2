@@ -252,7 +252,11 @@ describe('property-vibes schemas', () => {
           overallCondition: 'pristine',
         },
         emotionalHooks: [],
-        suggestedTags: ['Coastal Casual', 'Bright & Airy', 'Walkable Neighborhood'],
+        suggestedTags: [
+          'Coastal Casual',
+          'Bright & Airy',
+          'Walkable Neighborhood',
+        ],
       })
       expect(result.success).toBe(true)
     })

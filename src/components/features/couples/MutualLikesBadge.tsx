@@ -18,9 +18,9 @@ export function MutualLikesBadge({
   if (likedByCount < 2) return null
 
   const sizeClasses = {
-    compact: 'text-token-xs p-token-xs',
-    default: 'text-token-sm p-token-sm',
-    large: 'text-token-base p-token-md',
+    compact: 'text-xs p-1',
+    default: 'text-sm p-2',
+    large: 'text-base p-4',
   }
 
   const iconSizes = {
@@ -34,13 +34,13 @@ export function MutualLikesBadge({
       className={`bg-gradient-mutual-likes backdrop-blur-sm ${sizeClasses[variant]} `}
       data-testid="mutual-likes-badge"
     >
-      <div className="gap-token-xs flex items-center">
+      <div className="gap-1 flex items-center">
         <div className="relative">
           <Heart
             className={`${iconSizes[variant]} fill-pink-400 text-pink-400`}
           />
           {likedByCount > 2 && (
-            <span className="text-token-xs absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-purple-500 font-bold text-white">
+            <span className="text-xs absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-purple-500 font-bold text-white">
               {likedByCount}
             </span>
           )}

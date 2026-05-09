@@ -24,10 +24,10 @@ describe('Card Components', () => {
       expect(card).toHaveClass(
         'bg-card',
         'text-card-foreground',
-        'gap-token-lg',
-        'rounded-token-xl',
-        'p-token-lg',
-        'shadow-token-sm',
+        'gap-6',
+        'rounded-xl',
+        'p-6',
+        'shadow-sm',
         'flex',
         'flex-col',
         'border'
@@ -63,8 +63,8 @@ describe('Card Components', () => {
       render(<CardHeader>Test</CardHeader>)
       const header = screen.getByText('Test')
       expect(header).toHaveClass(
-        'gap-token-xs',
-        'p-token-lg',
+        'gap-1',
+        'p-6',
         '@container/card-header',
         'grid',
         'auto-rows-min',
@@ -119,7 +119,7 @@ describe('Card Components', () => {
     test('applies muted text styling', () => {
       render(<CardDescription>Test description</CardDescription>)
       const description = screen.getByText('Test description')
-      expect(description).toHaveClass('text-token-sm')
+      expect(description).toHaveClass('text-sm')
       // Note: text-muted-foreground may not be available in test environment
     })
   })
@@ -156,7 +156,7 @@ describe('Card Components', () => {
     test('applies padding classes', () => {
       render(<CardContent>Test content</CardContent>)
       const content = screen.getByText('Test content')
-      expect(content).toHaveClass('p-token-lg')
+      expect(content).toHaveClass('p-6')
     })
   })
 
@@ -171,7 +171,7 @@ describe('Card Components', () => {
     test('applies flex layout classes', () => {
       render(<CardFooter>Test footer</CardFooter>)
       const footer = screen.getByText('Test footer')
-      expect(footer).toHaveClass('p-token-lg', 'flex', 'items-center')
+      expect(footer).toHaveClass('p-6', 'flex', 'items-center')
     })
 
     test('handles border-top conditional padding', () => {

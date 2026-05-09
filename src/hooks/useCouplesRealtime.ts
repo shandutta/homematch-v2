@@ -77,7 +77,7 @@ export function useCouplesRealtime(options: UseCouplesRealtimeOptions = {}) {
       try {
         setState((prev) => ({ ...prev, connectionStatus: 'connecting' }))
 
-        const supabase = createClient()
+        const supabase = await createClient()
         const {
           data: { user },
         } = await supabase.auth.getUser()

@@ -1,9 +1,20 @@
-import { createBrowserClient } from '@supabase/ssr'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
-import { getSupabaseAuthStorageKey } from './storage-keys'
-import { withRefreshRecovery } from './refresh-recovery'
 
-export function createClient() {
+// Lazy-loading Supabase browser client: @supabase/ssr + realtime-js are
+// bundled into a separate async chunk. Routes that never call createClient()
+// (landing / static pages) never download the realtime payload.
+
+let _clientPromise: Promise<SupabaseClient<AppDatabase>> | null = null
+
+async function _createRealClient(): Promise<SupabaseClient<AppDatabase>> {
+  const [{ createBrowserClient }, { getSupabaseAuthStorageKey }, { withRefreshRecovery }] =
+    await Promise.all([
+      import('@supabase/ssr'),
+      import('./storage-keys'),
+      import('./refresh-recovery'),
+    ])
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -17,7 +28,6 @@ export function createClient() {
     typeof window !== 'undefined' && window.location?.hostname
       ? window.location.hostname
       : 'localhost'
-  // Keep cookie/storage key aligned with middleware expectations and Supabase project fingerprint
   const storageKey = getSupabaseAuthStorageKey(hostname)
 
   const supabase = createBrowserClient<AppDatabase>(
@@ -39,13 +49,25 @@ export function createClient() {
   )
 
   withRefreshRecovery(supabase)
-
   return supabase
+}
+
+export function preloadSupabaseClient(): void {
+  if (!_clientPromise) {
+    _clientPromise = _createRealClient()
+  }
+}
+
+export async function createClient(): Promise<SupabaseClient<AppDatabase>> {
+  if (!_clientPromise) {
+    _clientPromise = _createRealClient()
+  }
+  return _clientPromise
 }
 
 declare global {
   interface Window {
-    createSupabaseClient?: typeof createClient
+    createSupabaseClient?: () => Promise<SupabaseClient<AppDatabase>>
   }
 }
 

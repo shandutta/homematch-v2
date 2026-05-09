@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { m, useInView } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
 import { Card } from '@/components/ui/card'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
 
@@ -62,7 +63,8 @@ export function HowItWorks() {
   }, [isInView, steps])
 
   return (
-    <section
+    <MotionMaxProvider>
+      <section
       ref={sectionRef}
       className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
       id="how-it-works"
@@ -102,6 +104,7 @@ export function HowItWorks() {
         </div>
       </div>
     </section>
+    </MotionMaxProvider>
   )
 }
 

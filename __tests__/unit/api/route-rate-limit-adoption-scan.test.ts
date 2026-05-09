@@ -102,13 +102,11 @@ const extractHandlerBody = (
 
   // Find the next exported handler so that body extraction is bounded.
   const remaining = source.slice(start + 1)
-  const nextHeader = /\n(?:export\s+(?:async\s+function|const)\s+(?:GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\b)/.exec(
-    remaining
-  )
-  return remaining.slice(
-    0,
-    nextHeader ? nextHeader.index : remaining.length
-  )
+  const nextHeader =
+    /\n(?:export\s+(?:async\s+function|const)\s+(?:GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\b)/.exec(
+      remaining
+    )
+  return remaining.slice(0, nextHeader ? nextHeader.index : remaining.length)
 }
 
 const STUB_PATTERN = /return\s+ApiErrorHandler\.methodNotAllowed\(/

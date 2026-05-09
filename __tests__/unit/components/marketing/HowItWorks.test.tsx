@@ -120,7 +120,7 @@ describe('HowItWorks', () => {
       'bg-white',
       'p-5',
       'sm:p-6',
-      'rounded-token-xl',
+      'rounded-xl',
       'transition-all'
     )
   })

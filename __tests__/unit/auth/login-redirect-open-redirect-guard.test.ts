@@ -26,8 +26,7 @@ jest.mock('@supabase/ssr', () => ({
   createServerClient: (...args: unknown[]) => createServerClientMock(...args),
 }))
 
-const AUTH_COOKIE_NAME =
-  'sb-localhost-example-supabase-co-anon-key-auth-token'
+const AUTH_COOKIE_NAME = 'sb-localhost-example-supabase-co-anon-key-auth-token'
 
 const installAuthenticatedSupabaseMock = () => {
   mockGetUser.mockResolvedValue({
@@ -83,7 +82,10 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
     ['javascript scheme', '?redirectTo=javascript:alert(1)'],
     ['data scheme', '?redirectTo=data:text/html,<script>1</script>'],
     ['mailto scheme', '?redirectTo=mailto:phish@example.com'],
-    ['scheme-relative w/ encoded colon', '?redirectTo=https%3A%2F%2Fevil.example.com'],
+    [
+      'scheme-relative w/ encoded colon',
+      '?redirectTo=https%3A%2F%2Fevil.example.com',
+    ],
     [
       'malformed percent-encoded path that decodeURIComponent rejects',
       '?redirectTo=%E0%A4%A',
@@ -147,7 +149,9 @@ describe('auth redirect open-redirect guard (authenticated /login & /signup)', (
 
   it('prefers redirectTo over legacy redirect when both are supplied', async () => {
     const response = await middleware(
-      makeAuthedLoginRequest('?redirectTo=%2Fdashboard%2Fliked&redirect=%2Fcouples')
+      makeAuthedLoginRequest(
+        '?redirectTo=%2Fdashboard%2Fliked&redirect=%2Fcouples'
+      )
     )
 
     expect(response.status).toBe(307)

@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,22 +58,7 @@ const parseFragmentTokens = () => {
 }
 
 export function ResetPasswordForm() {
-  const { client: supabase, error: configError } = useMemo<{
-    client: ReturnType<typeof createClient> | null
-    error: string | null
-  }>(() => {
-    try {
-      return { client: createClient(), error: null }
-    } catch (clientError) {
-      return {
-        client: null,
-        error:
-          clientError instanceof Error
-            ? clientError.message
-            : 'Authentication is not configured for this environment.',
-      }
-    }
-  }, [])
+  const { client: supabase, error: configError } = useSupabaseClient()
   const searchParams = useSearchParams()
   const router = useRouter()
 

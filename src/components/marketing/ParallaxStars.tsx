@@ -3,6 +3,7 @@
 import { useScroll, useTransform, MotionValue } from 'framer-motion'
 import { useEffect, useState, useMemo } from 'react'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
 
 /**
  * Deterministic PRNG (Mulberry32) to ensure SSR/CSR parity for star field
@@ -101,7 +102,8 @@ export function ParallaxStars() {
   }, [])
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <MotionMaxProvider>
+      <div className="absolute inset-0 overflow-hidden">
       {stars.map((star, index) => (
         <StarComponent
           key={star.id}
@@ -112,5 +114,6 @@ export function ParallaxStars() {
         />
       ))}
     </div>
+    </MotionMaxProvider>
   )
 }

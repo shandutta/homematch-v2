@@ -2,7 +2,10 @@ import { readFileSync } from 'fs'
 import * as path from 'path'
 
 const migration = (fileName: string) =>
-  readFileSync(path.join(process.cwd(), 'supabase/migrations', fileName), 'utf8')
+  readFileSync(
+    path.join(process.cwd(), 'supabase/migrations', fileName),
+    'utf8'
+  )
 
 describe('DB rollback/DOWN coverage for Phase 1 DB cleanup migrations', () => {
   const phase1Migrations = [
@@ -15,24 +18,41 @@ describe('DB rollback/DOWN coverage for Phase 1 DB cleanup migrations', () => {
     '20260508023000_add_realtime_mutual_like_payload_rpc.sql',
   ]
 
-  it.each(phase1Migrations)('%s contains an explicit DOWN rollback block', (fileName) => {
-    const sql = migration(fileName)
-    expect(sql).toMatch(/--\s*DOWN:/i)
-  })
+  it.each(phase1Migrations)(
+    '%s contains an explicit DOWN rollback block',
+    (fileName) => {
+      const sql = migration(fileName)
+      expect(sql).toMatch(/--\s*DOWN:/i)
+    }
+  )
 
   it('defines the realtime mutual-like RPC with auth and household-member guards', () => {
-    const sql = migration('20260508023000_add_realtime_mutual_like_payload_rpc.sql')
+    const sql = migration(
+      '20260508023000_add_realtime_mutual_like_payload_rpc.sql'
+    )
 
-    expect(sql).toMatch(/create\s+or\s+replace\s+function\s+public\.get_realtime_mutual_like_payload/i)
+    expect(sql).toMatch(
+      /create\s+or\s+replace\s+function\s+public\.get_realtime_mutual_like_payload/i
+    )
     expect(sql).toMatch(/security\s+definer/i)
     expect(sql).toMatch(/where\s+auth\.uid\(\)\s*=\s*p_current_user_id/i)
-    expect(sql).toMatch(/current_profile\.household_id\s*=\s*partner\.household_id/i)
-    expect(sql).toMatch(/grant\s+execute\s+on\s+function\s+public\.get_realtime_mutual_like_payload\(uuid,\s*uuid,\s*uuid\)\s+to\s+authenticated/i)
+    expect(sql).toMatch(
+      /current_profile\.household_id\s*=\s*partner\.household_id/i
+    )
+    expect(sql).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.get_realtime_mutual_like_payload\(uuid,\s*uuid,\s*uuid\)\s+to\s+authenticated/i
+    )
   })
 
   it('documents rollback for the realtime mutual-like payload RPC', () => {
-    const sql = migration('20260508023000_add_realtime_mutual_like_payload_rpc.sql')
-    expect(sql).toMatch(/drop\s+function\s+if\s+exists\s+public\.get_realtime_mutual_like_payload/i)
-    expect(sql).toMatch(/--\s*DOWN:[\s\S]*drop\s+function\s+if\s+exists\s+public\.get_realtime_mutual_like_payload/i)
+    const sql = migration(
+      '20260508023000_add_realtime_mutual_like_payload_rpc.sql'
+    )
+    expect(sql).toMatch(
+      /drop\s+function\s+if\s+exists\s+public\.get_realtime_mutual_like_payload/i
+    )
+    expect(sql).toMatch(
+      /--\s*DOWN:[\s\S]*drop\s+function\s+if\s+exists\s+public\.get_realtime_mutual_like_payload/i
+    )
   })
 })

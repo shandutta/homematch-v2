@@ -1,4 +1,11 @@
-import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals'
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from '@jest/globals'
 
 /**
  * Failure-envelope guard for Maps/Places proxy routes.
@@ -95,13 +102,24 @@ const buildRequest = (route: MapsRoute) =>
   })
 
 const stringifyAllArgs = (calls: unknown[][]) =>
-  calls.map((args) => args.map((a) => {
-    if (a instanceof Error) return `${a.name}: ${a.message}\n${a.stack ?? ''}`
-    if (typeof a === 'object' && a !== null) {
-      try { return JSON.stringify(a) } catch { return String(a) }
-    }
-    return String(a)
-  }).join(' ')).join('\n')
+  calls
+    .map((args) =>
+      args
+        .map((a) => {
+          if (a instanceof Error)
+            return `${a.name}: ${a.message}\n${a.stack ?? ''}`
+          if (typeof a === 'object' && a !== null) {
+            try {
+              return JSON.stringify(a)
+            } catch {
+              return String(a)
+            }
+          }
+          return String(a)
+        })
+        .join(' ')
+    )
+    .join('\n')
 
 describe('Maps/Places failure envelope + secret-safe logging', () => {
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
@@ -243,7 +261,8 @@ describe('Maps/Places failure envelope + secret-safe logging', () => {
 
     it('400 envelope on validation failure does not call Google and has no key', async () => {
       // Send a body that fails Zod validation for both routes (empty input/address).
-      const invalidBody = route.name === 'geocode' ? { address: '' } : { input: '' }
+      const invalidBody =
+        route.name === 'geocode' ? { address: '' } : { input: '' }
       const request = new Request(route.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

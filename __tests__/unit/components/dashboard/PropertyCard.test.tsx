@@ -125,7 +125,10 @@ describe('PropertyCard polish — dashboard', () => {
       tagline: 'Walkable, leafy, friendly',
       vibe_statement: 'A family-first neighborhood with a strong community.',
       neighborhood_themes: [
-        { name: 'Family-friendly', whyItMatters: 'Schools rated top in district' },
+        {
+          name: 'Family-friendly',
+          whyItMatters: 'Schools rated top in district',
+        },
       ],
       local_highlights: [],
       resident_fits: [],

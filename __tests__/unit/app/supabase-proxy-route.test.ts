@@ -3,8 +3,8 @@
 import { NextRequest } from 'next/server'
 
 const installFetchMock = () => {
-  const fetchMock = jest.fn(async () =>
-    new Response('upstream-should-not-be-reached', { status: 200 })
+  const fetchMock = jest.fn(
+    async () => new Response('upstream-should-not-be-reached', { status: 200 })
   )
   Object.defineProperty(globalThis, 'fetch', {
     value: fetchMock,
@@ -14,7 +14,9 @@ const installFetchMock = () => {
   return fetchMock
 }
 
-const invokeGet = async (url = 'http://localhost/supabase/rest/v1/properties') => {
+const invokeGet = async (
+  url = 'http://localhost/supabase/rest/v1/properties'
+) => {
   const route = await import('@/app/supabase/[...path]/route')
   return route.GET(new NextRequest(url), {
     params: Promise.resolve({ path: ['rest', 'v1', 'properties'] }),
@@ -87,11 +89,12 @@ describe('/supabase local proxy route', () => {
   it('allows explicit loopback targets when the local proxy is enabled', async () => {
     process.env.SUPABASE_LOCAL_PROXY = 'true'
     process.env.SUPABASE_LOCAL_PROXY_TARGET = 'http://127.0.0.1:54321/'
-    const fetchMock = jest.fn(async () =>
-      new Response('ok', {
-        status: 200,
-        headers: { 'content-type': 'text/plain' },
-      })
+    const fetchMock = jest.fn(
+      async () =>
+        new Response('ok', {
+          status: 200,
+          headers: { 'content-type': 'text/plain' },
+        })
     )
     Object.defineProperty(globalThis, 'fetch', {
       value: fetchMock,
@@ -168,36 +171,33 @@ describe('/supabase local proxy route', () => {
       ['credential-stuffed external host', 'http://127.0.0.1@evil.com/'],
       ['malformed URL', 'not-a-url'],
       ['empty string target', ''],
-    ])(
-      'rejects %s with 403 and never fetches',
-      async (_label, target) => {
-        process.env.SUPABASE_LOCAL_PROXY = 'true'
-        // Explicit empty must override the default — set after assigning to
-        // exercise the falsy branch through the same code path the operator
-        // would hit if they cleared the variable in their .env.
-        if (target === '') {
-          process.env.SUPABASE_LOCAL_PROXY_TARGET = ''
-        } else {
-          process.env.SUPABASE_LOCAL_PROXY_TARGET = target
-        }
-        const fetchMock = installFetchMock()
-
-        const res = await invokeGet()
-
-        // Empty target falls back to the default loopback, so it should
-        // succeed rather than 403; everything else must be rejected.
-        if (target === '') {
-          expect(fetchMock).toHaveBeenCalledTimes(1)
-          const [calledUrl] = fetchMock.mock.calls[0]!
-          expect(calledUrl).toMatch(/^http:\/\/127\.0\.0\.1:54200\//)
-          return
-        }
-
-        expect(res.status).toBe(403)
-        expect(await res.text()).toBe('Supabase proxy target not allowed')
-        expect(fetchMock).not.toHaveBeenCalled()
+    ])('rejects %s with 403 and never fetches', async (_label, target) => {
+      process.env.SUPABASE_LOCAL_PROXY = 'true'
+      // Explicit empty must override the default — set after assigning to
+      // exercise the falsy branch through the same code path the operator
+      // would hit if they cleared the variable in their .env.
+      if (target === '') {
+        process.env.SUPABASE_LOCAL_PROXY_TARGET = ''
+      } else {
+        process.env.SUPABASE_LOCAL_PROXY_TARGET = target
       }
-    )
+      const fetchMock = installFetchMock()
+
+      const res = await invokeGet()
+
+      // Empty target falls back to the default loopback, so it should
+      // succeed rather than 403; everything else must be rejected.
+      if (target === '') {
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+        const [calledUrl] = fetchMock.mock.calls[0]!
+        expect(calledUrl).toMatch(/^http:\/\/127\.0\.0\.1:54200\//)
+        return
+      }
+
+      expect(res.status).toBe(403)
+      expect(await res.text()).toBe('Supabase proxy target not allowed')
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
 
     it.each([
       ['127.0.0.1', 'http://127.0.0.1:54321', 'http://127.0.0.1:54321'],
@@ -208,8 +208,8 @@ describe('/supabase local proxy route', () => {
       async (_label, target, normalized) => {
         process.env.SUPABASE_LOCAL_PROXY = 'true'
         process.env.SUPABASE_LOCAL_PROXY_TARGET = target
-        const fetchMock = jest.fn(async () =>
-          new Response('ok', { status: 200 })
+        const fetchMock = jest.fn(
+          async () => new Response('ok', { status: 200 })
         )
         Object.defineProperty(globalThis, 'fetch', {
           value: fetchMock,

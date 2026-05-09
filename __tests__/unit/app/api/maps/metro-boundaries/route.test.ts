@@ -1,12 +1,10 @@
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
 
-const jsonMock = jest.fn(
-  (body: unknown, init?: ResponseInit) => ({
-    status: init?.status ?? 200,
-    body,
-    headers: init?.headers,
-  })
-)
+const jsonMock = jest.fn((body: unknown, init?: ResponseInit) => ({
+  status: init?.status ?? 200,
+  body,
+  headers: init?.headers,
+}))
 
 type QueryResult = { data: unknown; error: unknown }
 type OrderFn = (column: string) => Promise<QueryResult>
@@ -21,13 +19,11 @@ const fromMock = jest.fn<FromFn>()
 const selectMock = jest.fn<SelectFn>()
 const eqMock = jest.fn<EqFn>()
 const orderMock = jest.fn<OrderFn>()
-const buildMeceNeighborhoodsMock = jest.fn<
-  (input: unknown) => { items: unknown[]; debug: unknown }
->()
+const buildMeceNeighborhoodsMock =
+  jest.fn<(input: unknown) => { items: unknown[]; debug: unknown }>()
 
 jest.mock('next/server', () => {
-  const actual =
-    jest.requireActual<typeof import('next/server')>('next/server')
+  const actual = jest.requireActual<typeof import('next/server')>('next/server')
   return {
     ...actual,
     NextResponse: {
@@ -37,7 +33,8 @@ jest.mock('next/server', () => {
 })
 
 jest.mock('@/lib/supabase/service-role-client', () => ({
-  getServiceRoleClient: (...args: unknown[]) => getServiceRoleClientMock(...args),
+  getServiceRoleClient: (...args: unknown[]) =>
+    getServiceRoleClientMock(...args),
 }))
 
 jest.mock('@/lib/supabase/server', () => ({

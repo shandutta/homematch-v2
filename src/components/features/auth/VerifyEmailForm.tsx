@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { VerifyEmailSchema, type VerifyEmailData } from '@/lib/schemas/auth'
 import { Button } from '@/components/ui/button'
@@ -27,22 +27,7 @@ import {
 import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 export function VerifyEmailForm() {
-  const { client: supabase, error: configError } = useMemo<{
-    client: ReturnType<typeof createClient> | null
-    error: string | null
-  }>(() => {
-    try {
-      return { client: createClient(), error: null }
-    } catch (clientError) {
-      return {
-        client: null,
-        error:
-          clientError instanceof Error
-            ? clientError.message
-            : 'Authentication is not configured for this environment.',
-      }
-    }
-  }, [])
+  const { client: supabase, error: configError } = useSupabaseClient()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)

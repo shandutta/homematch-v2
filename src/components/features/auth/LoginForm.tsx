@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { LoginSchema, type LoginData } from '@/lib/schemas/auth'
 import { Button } from '@/components/ui/button'
@@ -76,23 +76,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabaseResult: {
-    client: ReturnType<typeof createClient> | null
-    error: string | null
-  } = (() => {
-    try {
-      return { client: createClient(), error: null }
-    } catch (clientError) {
-      return {
-        client: null,
-        error:
-          clientError instanceof Error
-            ? clientError.message
-            : 'Authentication is not configured for this environment.',
-      }
-    }
-  })()
-  const supabase = supabaseResult.client
+  const { client: supabase, error: configError } = useSupabaseClient()
   const isTestMode =
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
     process.env.NODE_ENV === 'test' ||
@@ -154,7 +138,7 @@ export function LoginForm() {
 
   const handleEmailLogin = async (data: LoginData) => {
     if (!supabase) {
-      setError(supabaseResult.error)
+      setError(configError)
       return
     }
 
@@ -211,7 +195,7 @@ export function LoginForm() {
 
   const handleGoogleLogin = async () => {
     if (!supabase) {
-      setError(supabaseResult.error)
+      setError(configError)
       return
     }
 
@@ -241,7 +225,7 @@ export function LoginForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {supabaseResult.error && (
+        {configError && (
           <Alert data-testid="auth-config-alert">
             <AlertDescription>
               Authentication is unavailable in this environment. Configure

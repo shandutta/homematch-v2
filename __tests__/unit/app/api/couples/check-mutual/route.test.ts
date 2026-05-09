@@ -31,7 +31,9 @@ jest.mock('@/lib/api/auth', () => ({
     const user = result?.user ?? result?.data?.user ?? null
     return {
       user,
-      response: user ? null : jsonMock({ error: 'Unauthorized' }, { status: 401 }),
+      response: user
+        ? null
+        : jsonMock({ error: 'Unauthorized' }, { status: 401 }),
     }
   },
 }))

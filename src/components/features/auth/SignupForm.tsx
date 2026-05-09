@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { SignupSchema, type SignupData } from '@/lib/schemas/auth'
 import { Button } from '@/components/ui/button'
@@ -29,23 +29,7 @@ export function SignupForm() {
     'idle'
   )
   const [resendError, setResendError] = useState<string | null>(null)
-  const supabaseResult: {
-    client: ReturnType<typeof createClient> | null
-    error: string | null
-  } = (() => {
-    try {
-      return { client: createClient(), error: null }
-    } catch (clientError) {
-      return {
-        client: null,
-        error:
-          clientError instanceof Error
-            ? clientError.message
-            : 'Authentication is not configured for this environment.',
-      }
-    }
-  })()
-  const supabase = supabaseResult.client
+  const { client: supabase, error: configError } = useSupabaseClient()
 
   const form = useValidatedForm(SignupSchema, {
     email: '',
@@ -56,7 +40,7 @@ export function SignupForm() {
 
   const handleSignup = async (data: SignupData) => {
     if (!supabase) {
-      setError(supabaseResult.error)
+      setError(configError)
       return
     }
 
@@ -88,7 +72,7 @@ export function SignupForm() {
 
   const handleGoogleSignup = async () => {
     if (!supabase) {
-      setError(supabaseResult.error)
+      setError(configError)
       return
     }
 
@@ -110,7 +94,7 @@ export function SignupForm() {
   const handleResendVerification = async () => {
     if (!lastEmail || !supabase) {
       setResendError(
-        !supabase ? supabaseResult.error : 'Enter your email above first.'
+        !supabase ? configError : 'Enter your email above first.'
       )
       return
     }
@@ -201,7 +185,7 @@ export function SignupForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {supabaseResult.error && (
+        {configError && (
           <Alert data-testid="auth-config-alert">
             <AlertDescription>
               Authentication is unavailable in this environment. Configure

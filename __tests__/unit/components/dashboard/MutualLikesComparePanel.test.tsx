@@ -19,7 +19,9 @@ jest.mock('@/components/ui/property-image', () => ({
   ),
 }))
 
-const buildLike = (overrides: Partial<CompareLike> & { id: string }): CompareLike => ({
+const buildLike = (
+  overrides: Partial<CompareLike> & { id: string }
+): CompareLike => ({
   property_id: overrides.id,
   liked_by_count: overrides.liked_by_count ?? 2,
   last_liked_at: overrides.last_liked_at ?? '2024-01-02T00:00:00.000Z',

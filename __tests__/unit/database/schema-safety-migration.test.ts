@@ -17,7 +17,9 @@ describe('schema safety constraints migration', () => {
     const sql = migration()
 
     expect(sql).toContain('chk_properties_listing_status')
-    expect(sql).toContain("listing_status IN ('active', 'pending', 'sold', 'off_market', 'new_listing')")
+    expect(sql).toContain(
+      "listing_status IN ('active', 'pending', 'sold', 'off_market', 'new_listing')"
+    )
     expect(sql).toContain('chk_properties_price_positive')
     expect(sql).toContain('chk_properties_bedrooms_non_negative')
     expect(sql).toContain('chk_properties_bathrooms_non_negative')
@@ -37,7 +39,9 @@ describe('schema safety constraints migration', () => {
     const sql = migration()
 
     expect(sql).toContain('properties_neighborhood_id_fkey')
-    expect(sql).toContain('REFERENCES public.neighborhoods(id) ON DELETE SET NULL')
+    expect(sql).toContain(
+      'REFERENCES public.neighborhoods(id) ON DELETE SET NULL'
+    )
     expect(sql).toContain('user_profiles_household_id_fkey')
     expect(sql).toContain('REFERENCES public.households(id) ON DELETE SET NULL')
   })

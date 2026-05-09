@@ -355,7 +355,9 @@ describe('/api/maps/places/autocomplete route', () => {
 
       await autocompleteRoute.POST(request)
 
-      expect(mockCheckRateLimit).toHaveBeenCalledWith('maps:places:autocomplete:user-1')
+      expect(mockCheckRateLimit).toHaveBeenCalledWith(
+        'maps:places:autocomplete:user-1'
+      )
     })
   })
 })

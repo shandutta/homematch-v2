@@ -4,7 +4,8 @@ import * as path from 'path'
 const readRepoFile = (relativePath: string) =>
   readFileSync(path.join(process.cwd(), relativePath), 'utf8')
 
-const readRepoJson = (relativePath: string) => JSON.parse(readRepoFile(relativePath))
+const readRepoJson = (relativePath: string) =>
+  JSON.parse(readRepoFile(relativePath))
 
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim()
 
@@ -28,9 +29,7 @@ describe('D3 signup verification repo-side invariants', () => {
     'config/signup-verification-launch-policy.json'
   )
   const supabaseConfig = readRepoFile('supabase/config.toml')
-  const signupForm = readRepoFile(
-    'src/components/features/auth/SignupForm.tsx'
-  )
+  const signupForm = readRepoFile('src/components/features/auth/SignupForm.tsx')
   const verifyEmailForm = readRepoFile(
     'src/components/features/auth/VerifyEmailForm.tsx'
   )
@@ -118,7 +117,7 @@ describe('D3 signup verification repo-side invariants', () => {
   })
 
   it('keeps SignupForm.tsx aligned with the no-pre-verification-session invariant', () => {
-    expect(signupForm).toContain("supabase.auth.signUp")
+    expect(signupForm).toContain('supabase.auth.signUp')
     expect(signupForm).toContain('setSuccess(true)')
     expect(signupForm).toContain('/verify-email')
     expect(signupForm).not.toMatch(/router\.(push|replace)\(/)

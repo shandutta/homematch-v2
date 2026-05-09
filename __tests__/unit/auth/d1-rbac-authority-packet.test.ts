@@ -35,7 +35,9 @@ describe('D1 service-role RBAC authority packet', () => {
     expect(packet).toContain('src/app/invite/[token]/actions.ts')
     expect(packet).toContain('constrained RPCs or capability-specific helpers')
     expect(packet).toContain('no partner email')
-    expect(packet).toContain('Ordinary application users cannot create or modify their own admin assignment')
+    expect(packet).toContain(
+      'Ordinary application users cannot create or modify their own admin assignment'
+    )
   })
 
   it('preserves owner approval and non-closure status in the closure matrix', () => {

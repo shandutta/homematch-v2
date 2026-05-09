@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { MotionDiv, MotionH2, MotionP } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
 import { Badge } from '@/components/ui/badge'
 import { Heart, ShieldCheck } from 'lucide-react'
 import { MarketingPreviewCard } from './MarketingPreviewCard'
@@ -39,7 +40,8 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
   const progress = useTransform(scrollYProgress, [0, 1], ['20%', '100%'])
 
   return (
-    <section
+    <MotionMaxProvider>
+      <section
       ref={sectionRef}
       className={cn(
         'relative isolate overflow-hidden bg-slate-50 py-20 text-slate-900 sm:py-24 lg:py-28',
@@ -137,5 +139,6 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
         </div>
       </div>
     </section>
+    </MotionMaxProvider>
   )
 }

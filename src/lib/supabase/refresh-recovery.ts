@@ -1,4 +1,4 @@
-import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 import { isInvalidRefreshTokenError } from './auth-helpers'
 
@@ -15,15 +15,10 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 const describeAuthError = (error: unknown): { code?: string; message?: string } => {
-  if (error instanceof AuthApiError) {
-    return { code: error.code, message: error.message }
-  }
-
-  if (isRecord(error)) {
-    return {
-      code: typeof error.code === 'string' ? error.code : undefined,
-      message: typeof error.message === 'string' ? error.message : undefined,
-    }
+  // Duck-type AuthApiError without importing the class (avoids bundling @supabase/supabase-js
+  // including realtime-js into the refresh-recovery chunk)
+  if (isRecord(error) && typeof error.message === 'string') {
+    return { code: typeof error.code === 'string' ? error.code : undefined, message: error.message }
   }
 
   return {}

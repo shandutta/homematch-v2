@@ -141,11 +141,15 @@ export async function backfillVibes(
     const { data, error } = args.propertyIds
       ? await deps.supabase
           .from('properties')
-          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+          .select(
+            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+          )
           .in('id', args.propertyIds)
       : await deps.supabase
           .from('properties')
-          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+          .select(
+            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+          )
           .not('zpid', 'is', null)
           .gte('price', minPrice)
           .order('created_at', { ascending: false })
@@ -400,7 +404,8 @@ export async function backfillVibes(
         }))
         const { error: upsertErr } = await deps.supabase
           .from('properties')
-          .upsert(allRows as any)
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          .upsert(allRows as Record<string, unknown>[])
 
         if (upsertErr?.code === '42703') {
           // Migration not applied; fall back to marker-only batch + per-row images
@@ -416,7 +421,8 @@ export async function backfillVibes(
           if (markerRows.length > 0) {
             const { error: markerErr } = await deps.supabase
               .from('properties')
-              .upsert(markerRows as any)
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              .upsert(markerRows as Record<string, unknown>[])
             if (markerErr) {
               logger.warn(
                 `[backfill-vibes] [images] Batch marker-only upsert failed: ${markerErr.message}`

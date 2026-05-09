@@ -45,7 +45,8 @@ jest.mock('@/lib/data/loader', () => ({
 
 jest.mock('@/components/dashboard/EnhancedDashboardPageImpl', () => ({
   __esModule: true,
-  EnhancedDashboardPageImpl: () => React.createElement('div', null, 'dashboard'),
+  EnhancedDashboardPageImpl: () =>
+    React.createElement('div', null, 'dashboard'),
 }))
 
 jest.mock('@/components/dashboard/DashboardErrorBoundary', () => ({
@@ -148,7 +149,9 @@ describe('protected app pages auth redirects', () => {
       DashboardPage({
         searchParams: Promise.resolve({ tab: 'liked' }),
       })
-    ).rejects.toThrow('NEXT_REDIRECT:/login?redirectTo=%2Fdashboard%3Ftab%3Dliked')
+    ).rejects.toThrow(
+      'NEXT_REDIRECT:/login?redirectTo=%2Fdashboard%3Ftab%3Dliked'
+    )
 
     expect(redirectMock).toHaveBeenCalledWith(
       '/login?redirectTo=%2Fdashboard%3Ftab%3Dliked'
@@ -161,7 +164,9 @@ describe('protected app pages auth redirects', () => {
       CouplesPage({
         searchParams: Promise.resolve({ tab: 'activity' }),
       })
-    ).rejects.toThrow('NEXT_REDIRECT:/login?redirectTo=%2Fcouples%3Ftab%3Dactivity')
+    ).rejects.toThrow(
+      'NEXT_REDIRECT:/login?redirectTo=%2Fcouples%3Ftab%3Dactivity'
+    )
 
     expect(redirectMock).toHaveBeenCalledWith(
       '/login?redirectTo=%2Fcouples%3Ftab%3Dactivity'

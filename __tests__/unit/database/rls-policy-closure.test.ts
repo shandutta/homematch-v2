@@ -28,6 +28,8 @@ describe('Phase 1 RLS policy closure', () => {
     const sql = readFileSync(consolidatedPolicyPath, 'utf8')
     const normalized = sql.replace(/\s+/g, ' ')
 
-    expect(normalized).toContain('CREATE POLICY "Users can create households" ON households FOR INSERT WITH CHECK (auth.uid() = created_by);')
+    expect(normalized).toContain(
+      'CREATE POLICY "Users can create households" ON households FOR INSERT WITH CHECK (auth.uid() = created_by);'
+    )
   })
 })

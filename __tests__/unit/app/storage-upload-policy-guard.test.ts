@@ -60,9 +60,7 @@ describe('storage upload policy guard', () => {
     )
 
     test('enforces the auth boundary on every storage-touching method', () => {
-      expect(avatarSource).toContain(
-        "from '@/lib/api/auth'"
-      )
+      expect(avatarSource).toContain("from '@/lib/api/auth'")
       expect(avatarSource).toMatch(/requireUserFromRequest\s*\(/)
       const requireCalls = avatarSource.match(/requireUserFromRequest\s*\(/g)
       // POST and DELETE both gate on auth before touching storage.
@@ -70,10 +68,10 @@ describe('storage upload policy guard', () => {
     })
 
     test('applies strict-tier rate limiting before parsing multipart bodies', () => {
-      expect(avatarSource).toContain(
-        "from '@/lib/middleware/rateLimiter'"
+      expect(avatarSource).toContain("from '@/lib/middleware/rateLimiter'")
+      expect(avatarSource).toMatch(
+        /rateLimit\s*\(\s*request\s*,\s*'strict'\s*\)/
       )
-      expect(avatarSource).toMatch(/rateLimit\s*\(\s*request\s*,\s*'strict'\s*\)/)
       const formDataIndex = avatarSource.indexOf('request.formData(')
       const strictRateLimitIndex = avatarSource.search(
         /rateLimit\s*\(\s*request\s*,\s*'strict'\s*\)/
@@ -95,7 +93,9 @@ describe('storage upload policy guard', () => {
       )
       expect(avatarSource).toMatch(/file\.size\s*>\s*MAX_FILE_SIZE/)
 
-      const sizeCheckIndex = avatarSource.search(/file\.size\s*>\s*MAX_FILE_SIZE/)
+      const sizeCheckIndex = avatarSource.search(
+        /file\.size\s*>\s*MAX_FILE_SIZE/
+      )
       const typeCheckIndex = avatarSource.search(
         /ALLOWED_MIME_TYPES\.includes\s*\(\s*file\.type\s*\)/
       )

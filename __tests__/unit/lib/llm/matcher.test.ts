@@ -45,9 +45,7 @@ const basePrefs = (
   ...overrides,
 })
 
-const validRequest = (
-  overrides: Partial<MatchRequest> = {}
-): MatchRequest => ({
+const validRequest = (overrides: Partial<MatchRequest> = {}): MatchRequest => ({
   preferences: basePrefs(),
   candidates: [baseCandidate()],
   top_k: 5,
@@ -121,12 +119,17 @@ describe('mockRank', () => {
     }
     // Over-budget candidate should rank last and carry a price concern.
     const overBudget = ranked.find((r) => r.property_id === ID_C)!
-    expect(overBudget.concerns.some((c) => c.includes('exceeds max'))).toBe(true)
+    expect(overBudget.concerns.some((c) => c.includes('exceeds max'))).toBe(
+      true
+    )
   })
 
   it('respects top_k', () => {
     const candidates = Array.from({ length: 10 }, (_, i) =>
-      baseCandidate({ id: ID_A.replace(/1/g, String(i % 9 || 1)), price: 800000 + i * 1000 })
+      baseCandidate({
+        id: ID_A.replace(/1/g, String(i % 9 || 1)),
+        price: 800000 + i * 1000,
+      })
     )
     const ranked = mockRank(basePrefs(), candidates, 3)
     expect(ranked).toHaveLength(3)
@@ -172,9 +175,9 @@ describe('match (mock mode)', () => {
 
 describe('match (LLM mode)', () => {
   it('throws when LLM mode is enabled but no client is provided', async () => {
-    await expect(
-      match(validRequest(), { llmEnabled: true })
-    ).rejects.toThrow(/no llmClient/)
+    await expect(match(validRequest(), { llmEnabled: true })).rejects.toThrow(
+      /no llmClient/
+    )
   })
 
   it('calls the injected LLM client and parses its JSON response', async () => {
@@ -262,19 +265,18 @@ describe('match (LLM mode)', () => {
   })
 
   it('throws on non-JSON LLM output', () => {
-    expect(() => parseLLMResponse('not json at all', [], 5)).toThrow(
-      /non-JSON/
-    )
+    expect(() => parseLLMResponse('not json at all', [], 5)).toThrow(/non-JSON/)
   })
 
   it('throws when "ranked" is missing or not an array', () => {
-    expect(() => parseLLMResponse('{"foo": "bar"}', [], 5)).toThrow(
-      /ranked/
-    )
+    expect(() => parseLLMResponse('{"foo": "bar"}', [], 5)).toThrow(/ranked/)
   })
 
   it('drops entries that fail schema validation but keeps valid ones', () => {
-    const candidates = [baseCandidate({ id: ID_A }), baseCandidate({ id: ID_B })]
+    const candidates = [
+      baseCandidate({ id: ID_A }),
+      baseCandidate({ id: ID_B }),
+    ]
     const raw = JSON.stringify({
       ranked: [
         {

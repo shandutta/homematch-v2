@@ -278,9 +278,7 @@ describe('api schemas', () => {
     })
 
     it('marketingPropertiesResponseSchema accepts an empty array', () => {
-      expect(marketingPropertiesResponseSchema.safeParse([]).success).toBe(
-        true
-      )
+      expect(marketingPropertiesResponseSchema.safeParse([]).success).toBe(true)
     })
   })
 

@@ -29,8 +29,12 @@ describe('interaction uniqueness migration', () => {
     expect(upSql).toContain(
       'DROP CONSTRAINT IF EXISTS user_property_interactions_user_id_property_id_interaction_type_key'
     )
-    expect(upSql).toContain('user_property_interactions_user_id_property_id_key')
+    expect(upSql).toContain(
+      'user_property_interactions_user_id_property_id_key'
+    )
     expect(upSql).toContain('UNIQUE (user_id, property_id)')
-    expect(upSql).not.toContain('UNIQUE (user_id, property_id, interaction_type)')
+    expect(upSql).not.toContain(
+      'UNIQUE (user_id, property_id, interaction_type)'
+    )
   })
 })

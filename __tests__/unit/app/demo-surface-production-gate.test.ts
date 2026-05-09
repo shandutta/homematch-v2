@@ -116,15 +116,19 @@ describe('demo surface production gate', () => {
     ['src/app/demo/ads/page.tsx', '/demo/ads'],
     ['src/app/sponsor-mockups/page.tsx', '/sponsor-mockups'],
     ['src/app/validation/page.tsx', '/validation'],
-  ])('%s actually invokes the internal preview access guard for %s', (relativePath) => {
-    const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
+  ])(
+    '%s actually invokes the internal preview access guard for %s',
+    (relativePath) => {
+      const source = fs.readFileSync(
+        path.join(process.cwd(), relativePath),
+        'utf8'
+      )
 
-    expect(source).toMatch(
-      /from ['"]@\/lib\/routing\/internal-preview['"]/
-    )
-    expect(source).toMatch(/requireInternalPreviewAccess\s*\(\s*\)/)
-    expect(source).not.toContain('process.env.NODE_ENV')
-  })
+      expect(source).toMatch(/from ['"]@\/lib\/routing\/internal-preview['"]/)
+      expect(source).toMatch(/requireInternalPreviewAccess\s*\(\s*\)/)
+      expect(source).not.toContain('process.env.NODE_ENV')
+    }
+  )
 
   it('src/app/dashboard/vibes-test/layout.tsx invokes the gate for the /dashboard/vibes-test subtree', () => {
     const source = fs.readFileSync(
@@ -132,9 +136,7 @@ describe('demo surface production gate', () => {
       'utf8'
     )
 
-    expect(source).toMatch(
-      /from ['"]@\/lib\/routing\/internal-preview['"]/
-    )
+    expect(source).toMatch(/from ['"]@\/lib\/routing\/internal-preview['"]/)
     expect(source).toMatch(/requireInternalPreviewAccess\s*\(\s*\)/)
     expect(source).not.toContain('process.env.NODE_ENV')
   })
@@ -148,7 +150,10 @@ describe('demo surface production gate', () => {
     ]
 
     for (const relativePath of gateSurfaces) {
-      const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
+      const source = fs.readFileSync(
+        path.join(process.cwd(), relativePath),
+        'utf8'
+      )
       expect(source).not.toContain("process.env.NODE_ENV === 'production'")
     }
   })
@@ -156,15 +161,21 @@ describe('demo surface production gate', () => {
   it.each([
     ['src/app/demo/ads/page.tsx'],
     ['src/app/sponsor-mockups/page.tsx'],
-  ])('%s declares noindex/nofollow metadata as defense-in-depth', (relativePath) => {
-    const source = fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8')
+  ])(
+    '%s declares noindex/nofollow metadata as defense-in-depth',
+    (relativePath) => {
+      const source = fs.readFileSync(
+        path.join(process.cwd(), relativePath),
+        'utf8'
+      )
 
-    // Page-level robots metadata is a defense-in-depth layer behind the
-    // requireInternalPreviewAccess() runtime gate so crawlers that hit the
-    // route while the env gate is open (local dev) still see noindex.
-    // /validation is already covered by middleware-protected paths and the
-    // /dashboard subtree by the /dashboard robots disallow rule.
-    expect(source).toMatch(/robots:\s*\{[^}]*index:\s*false/)
-    expect(source).toMatch(/robots:\s*\{[^}]*follow:\s*false/)
-  })
+      // Page-level robots metadata is a defense-in-depth layer behind the
+      // requireInternalPreviewAccess() runtime gate so crawlers that hit the
+      // route while the env gate is open (local dev) still see noindex.
+      // /validation is already covered by middleware-protected paths and the
+      // /dashboard subtree by the /dashboard robots disallow rule.
+      expect(source).toMatch(/robots:\s*\{[^}]*index:\s*false/)
+      expect(source).toMatch(/robots:\s*\{[^}]*follow:\s*false/)
+    }
+  )
 })

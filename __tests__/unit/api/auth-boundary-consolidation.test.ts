@@ -111,7 +111,8 @@ describe('Phase 1 auth boundary consolidation', () => {
         if (!source.includes('requireUserFromRequest')) {
           offenders.push({
             path,
-            reason: 'imports auth helper but does not use requireUserFromRequest',
+            reason:
+              'imports auth helper but does not use requireUserFromRequest',
           })
         }
       }

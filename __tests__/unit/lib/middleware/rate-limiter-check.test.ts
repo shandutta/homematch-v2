@@ -83,7 +83,9 @@ describe('consolidated middleware rate limiter', () => {
       durable: false,
     })
 
-    await expect(checkRateLimit('memory-provider-user', 'strict')).resolves.toBeNull()
+    await expect(
+      checkRateLimit('memory-provider-user', 'strict')
+    ).resolves.toBeNull()
 
     process.env.RATE_LIMIT_STORAGE_PROVIDER = 'redis'
 

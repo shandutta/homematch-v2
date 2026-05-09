@@ -74,9 +74,9 @@ describe('ttlConfigSchema', () => {
 
 describe('computeStaleness', () => {
   it('treats never-refreshed records as expired', () => {
-    expect(
-      computeStaleness(recordRefreshedAt(null), { now: fixedClock })
-    ).toBe('expired')
+    expect(computeStaleness(recordRefreshedAt(null), { now: fixedClock })).toBe(
+      'expired'
+    )
   })
 
   it('returns fresh when within stale TTL', () => {
@@ -170,8 +170,7 @@ describe('nextRefreshAt', () => {
   it('returns refresh time + stale TTL for fresh records', () => {
     const oneHourAgo = new Date(NOW.getTime() - 1 * HOUR_MS).toISOString()
     const expected = new Date(
-      new Date(oneHourAgo).getTime() +
-        DEFAULT_TTL_BY_SOURCE.zillow.staleAfterMs
+      new Date(oneHourAgo).getTime() + DEFAULT_TTL_BY_SOURCE.zillow.staleAfterMs
     )
     expect(
       nextRefreshAt(recordRefreshedAt(oneHourAgo), { now: fixedClock })
@@ -180,9 +179,9 @@ describe('nextRefreshAt', () => {
 
   it('clamps to now when already past stale boundary', () => {
     const aDayAgo = new Date(NOW.getTime() - 1 * DAY_MS).toISOString()
-    expect(nextRefreshAt(recordRefreshedAt(aDayAgo), { now: fixedClock })).toEqual(
-      NOW
-    )
+    expect(
+      nextRefreshAt(recordRefreshedAt(aDayAgo), { now: fixedClock })
+    ).toEqual(NOW)
   })
 })
 
@@ -210,9 +209,7 @@ describe('selectRefreshTargets', () => {
       { now: fixedClock }
     )
     expect(result.toRefresh).toHaveLength(0)
-    expect(result.skipped).toEqual([
-      { record: records[0], reason: 'fresh' },
-    ])
+    expect(result.skipped).toEqual([{ record: records[0], reason: 'fresh' }])
   })
 
   it('prefers expired over stale and oldest first', () => {
@@ -234,10 +231,7 @@ describe('selectRefreshTargets', () => {
   })
 
   it('null last_refreshed_at sorts before any timestamped expired record', () => {
-    const records = [
-      make('seen-once', olderExpired),
-      make('never-seen', null),
-    ]
+    const records = [make('seen-once', olderExpired), make('never-seen', null)]
     const result = selectRefreshTargets(
       records,
       { maxRecords: 10 },

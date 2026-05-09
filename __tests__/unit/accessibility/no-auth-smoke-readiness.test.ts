@@ -82,7 +82,7 @@ describe('no-credential accessibility smoke readiness', () => {
   it('keeps the Playwright config locked to local loopback with non-production placeholder credentials', () => {
     expect(playwrightConfig).toContain('127.0.0.1')
     expect(playwrightConfig).toContain('NEXT_PUBLIC_TEST_MODE')
-    expect(playwrightConfig).toContain("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    expect(playwrightConfig).toContain('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     expect(playwrightConfig).toContain('no-credential-smoke-key')
     expect(playwrightConfig).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY/)
     expect(playwrightConfig).not.toMatch(/sk_live_/)
@@ -90,7 +90,9 @@ describe('no-credential accessibility smoke readiness', () => {
   })
 
   it('keeps live/browser execution evidence explicitly gated and skippable in the reconciliation report', () => {
-    expect(reconciliationReport).toMatch(/Live browser run blocked|browser cache|playwright install/i)
+    expect(reconciliationReport).toMatch(
+      /Live browser run blocked|browser cache|playwright install/i
+    )
     expect(reconciliationReport).toContain('No credentials')
     expect(reconciliationReport).toMatch(
       /verified fallback is config\/list\/lint only|Harness is ready/i

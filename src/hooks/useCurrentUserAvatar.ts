@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AppDatabase } from '@/types/app-database'
 import { createClient } from '@/lib/supabase/client'
 import { AvatarData } from '@/lib/constants/avatars'
 
@@ -32,16 +34,19 @@ export function useCurrentUserAvatar(): UserAvatarState {
   })
 
   useEffect(() => {
-    let supabase: ReturnType<typeof createClient>
-    try {
-      supabase = createClient()
-    } catch (error) {
-      console.error('Failed to initialize Supabase avatar client:', error)
-      setState((prev) => ({ ...prev, isLoading: false }))
-      return
-    }
+    let cancelled = false
 
-    async function fetchUserAvatar() {
+    async function initClient() {
+      let supabase: SupabaseClient<AppDatabase>
+      try {
+        supabase = await createClient()
+      } catch (error) {
+        console.error('Failed to initialize Supabase avatar client:', error)
+        if (!cancelled) setState((prev) => ({ ...prev, isLoading: false }))
+        return
+      }
+
+      async function fetchUserAvatar() {
       try {
         const {
           data: { user },
@@ -91,17 +96,30 @@ export function useCurrentUserAvatar(): UserAvatarState {
       }
     }
 
-    fetchUserAvatar()
-
-    // Subscribe to auth changes to refresh avatar data
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
       fetchUserAvatar()
-    })
+
+      // Subscribe to auth changes to refresh avatar data
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange(() => {
+        fetchUserAvatar()
+      })
+
+      if (cancelled) {
+        sub.unsubscribe()
+        return
+      }
+
+      subscription = sub
+    }
+
+    let subscription: { unsubscribe: () => void } | null = null
+
+    initClient()
 
     return () => {
-      subscription.unsubscribe()
+      cancelled = true
+      subscription?.unsubscribe()
     }
   }, [])
 

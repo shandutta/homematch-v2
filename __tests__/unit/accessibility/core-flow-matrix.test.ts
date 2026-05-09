@@ -108,7 +108,9 @@ describe('accessibility core-flow matrix', () => {
 
   it('treats invite as token-public with auth-gated acceptance, not as a normal protected route', () => {
     expect(matrix).toContain('`/invite/[token]`')
-    expect(matrix).toContain('Token-public invite view; acceptance is auth-gated')
+    expect(matrix).toContain(
+      'Token-public invite view; acceptance is auth-gated'
+    )
     expect(isProtectedPath('/invite/test-token')).toBe(false)
   })
 })

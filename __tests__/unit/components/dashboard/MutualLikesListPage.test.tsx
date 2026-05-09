@@ -187,7 +187,9 @@ describe('MutualLikesListPage', () => {
     expect(
       screen.getByTestId('mutual-likes-filtered-empty')
     ).toBeInTheDocument()
-    expect(screen.getByText(/No matches with current filters/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/No matches with current filters/i)
+    ).toBeInTheDocument()
   })
 
   test('"Clear filters" button restores defaults', () => {
@@ -253,7 +255,9 @@ describe('MutualLikesListPage', () => {
       fireEvent.click(screen.getByTestId('mutual-likes-compare-toggle'))
 
       fireEvent.click(screen.getByTestId('compare-checkbox-a'))
-      expect(screen.getByTestId('mutual-likes-compare-panel')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('mutual-likes-compare-panel')
+      ).toBeInTheDocument()
       expect(screen.getByTestId('compare-card-a')).toBeInTheDocument()
 
       fireEvent.click(screen.getByTestId('compare-checkbox-b'))
@@ -323,7 +327,9 @@ describe('MutualLikesListPage', () => {
       const toggle = screen.getByTestId('mutual-likes-compare-toggle')
       fireEvent.click(toggle)
       fireEvent.click(screen.getByTestId('compare-checkbox-a'))
-      expect(screen.getByTestId('mutual-likes-compare-panel')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('mutual-likes-compare-panel')
+      ).toBeInTheDocument()
 
       fireEvent.click(toggle)
 

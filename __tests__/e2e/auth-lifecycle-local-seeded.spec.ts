@@ -17,7 +17,12 @@ const LOCAL_ONLY_SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
   'http://127.0.0.1:54200'
 
-const PROTECTED_SMOKE_PATHS = ['/dashboard', '/couples', '/settings', '/profile']
+const PROTECTED_SMOKE_PATHS = [
+  '/dashboard',
+  '/couples',
+  '/settings',
+  '/profile',
+]
 const OPTIONAL_SEEDED_PROPERTY_ID = process.env.E2E_SEEDED_PROPERTY_ID
 
 const isLocalUrl = (rawUrl: string) => {
@@ -98,7 +103,9 @@ test.describe('local seeded auth lifecycle smoke', () => {
         testUser.password
       )
       await Promise.all([
-        page.waitForURL('**/couples', { timeout: TEST_TIMEOUTS.authentication }),
+        page.waitForURL('**/couples', {
+          timeout: TEST_TIMEOUTS.authentication,
+        }),
         submitButton.click(),
       ])
 

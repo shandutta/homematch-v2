@@ -99,7 +99,7 @@ function PropertySection({
           type="button"
           aria-label="Remove from likes"
           data-testid={`remove-like-${property.id}`}
-          className="group shadow-token-lg relative flex h-12 w-12 scale-110 items-center justify-center overflow-hidden rounded-full border border-rose-300 bg-rose-600 text-white ring-2 ring-rose-300/50 transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+          className="group shadow-lg relative flex h-12 w-12 scale-110 items-center justify-center overflow-hidden rounded-full border border-rose-300 bg-rose-600 text-white ring-2 ring-rose-300/50 transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
           disabled={isRemoving}
           onClick={(e) => {
             e.stopPropagation()
@@ -137,7 +137,7 @@ function PropertySection({
           type="button"
           aria-label="Like this home"
           data-testid={`like-${property.id}`}
-          className="group shadow-token-lg relative flex h-12 w-12 scale-110 items-center justify-center overflow-hidden rounded-full border border-emerald-300 bg-emerald-600 text-white ring-2 ring-emerald-300/50 transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
+          className="group shadow-lg relative flex h-12 w-12 scale-110 items-center justify-center overflow-hidden rounded-full border border-emerald-300 bg-emerald-600 text-white ring-2 ring-emerald-300/50 transition-[width,background-color] duration-200 ease-out hover:w-[10.5rem] focus-visible:w-[10.5rem] focus-visible:outline-none disabled:opacity-60"
           disabled={isMutatingDecision}
           onClick={(e) => {
             e.stopPropagation()
@@ -166,7 +166,7 @@ function PropertySection({
             type="button"
             aria-label="Pass on this home"
             data-testid={`pass-${property.id}`}
-            className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+            className={`group shadow-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
               isPassSelected
                 ? 'scale-110 border-rose-300 bg-rose-600 ring-2 ring-rose-300/50'
                 : isLikeSelected
@@ -194,7 +194,7 @@ function PropertySection({
             type="button"
             aria-label="Like this home"
             data-testid={`like-${property.id}`}
-            className={`group shadow-token-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
+            className={`group shadow-lg relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border transition-all duration-200 ease-out focus-visible:outline-none disabled:opacity-60 ${
               isLikeSelected
                 ? 'scale-110 border-emerald-300 bg-emerald-600 ring-2 ring-emerald-300/50'
                 : isPassSelected

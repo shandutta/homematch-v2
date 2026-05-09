@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -27,30 +31,35 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/__tests__/*": ["./__tests__/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/__tests__/*": [
+        "./__tests__/*"
+      ]
     }
   },
   "include": [
+    ".next-build/types/**/*.ts",
     ".next-run-local-api/types/**/*.ts",
     ".next/types/**/*.ts",
+    "jest.preload.ts",
+    "jest.setup.ts",
+    // ensure ESLint project parsing can find these top-level TS files
     "middleware.ts",
     "next-env.d.ts",
     "next.config.ts",
-    // ensure ESLint project parsing can find these top-level TS files
     "playwright.config.ts",
     "playwright.remote.config.ts",
-    "jest.setup.ts",
-    "jest.preload.ts",
     "scripts/**/*.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "types/**/*.d.ts",
     // scripts
-    "vitest.config.ts",
+    "types/**/*.d.ts",
     "vitest.ci.config.ts",
+    "vitest.config.ts",
     "vitest.setup.ts",
-    ".next-build/types/**/*.ts"
+    ".next-scan/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

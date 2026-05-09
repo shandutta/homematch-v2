@@ -19,7 +19,7 @@ export class UserServiceClient {
     userId: string,
     updates: UserProfileUpdate
   ): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -36,7 +36,7 @@ export class UserServiceClient {
   }
 
   static async getProfile(userId: string): Promise<UserProfile | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -55,7 +55,7 @@ export class UserServiceClient {
   }
 
   static async createProfile(profile: UserProfileInsert): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -77,7 +77,7 @@ export class UserServiceClient {
    * No need to call joinHousehold() after - the RPC handles that.
    */
   static async createHousehold(household: HouseholdInsert): Promise<Household> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Use the RPC function which handles RLS via SECURITY DEFINER
     // and atomically links the user profile to the household
@@ -115,7 +115,7 @@ export class UserServiceClient {
     userId: string,
     householdId: string
   ): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: existingProfile, error: existingProfileError } =
       await supabase
@@ -159,7 +159,7 @@ export class UserServiceClient {
   }
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: existingProfile, error: existingProfileError } =
       await supabase
@@ -203,7 +203,7 @@ export class UserServiceClient {
   static async getHouseholdInvitations(
     householdId: string
   ): Promise<HouseholdInvitation[]> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('household_invitations')
       .select('accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at')
@@ -223,7 +223,7 @@ export class UserServiceClient {
       'status' | 'token' | 'created_at' | 'expires_at' | 'id' | 'created_by'
     >
   ): Promise<HouseholdInvitation> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const {
       data: { session },
@@ -289,7 +289,7 @@ export class UserServiceClient {
   static async revokeHouseholdInvitation(
     inviteId: string
   ): Promise<HouseholdInvitation> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('household_invitations')
       .update({ status: 'revoked' })
@@ -316,7 +316,7 @@ export class UserServiceClient {
   static async createSavedSearch(
     search: SavedSearchInsert
   ): Promise<SavedSearch | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .insert(search)
@@ -332,7 +332,7 @@ export class UserServiceClient {
   }
 
   static async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .select('created_at, filters, household_id, id, is_active, name, user_id')
@@ -352,7 +352,7 @@ export class UserServiceClient {
     searchId: string,
     updates: SavedSearchUpdate
   ): Promise<SavedSearch | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .update(updates)
@@ -369,7 +369,7 @@ export class UserServiceClient {
   }
 
   static async deleteSavedSearch(searchId: string): Promise<boolean> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase
       .from('saved_searches')
       .update({ is_active: false })

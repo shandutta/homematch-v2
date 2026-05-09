@@ -318,9 +318,9 @@ describe('property schemas', () => {
     })
 
     it('rejects invalid sort field', () => {
-      expect(
-        propertySortSchema.safeParse({ field: 'random' }).success
-      ).toBe(false)
+      expect(propertySortSchema.safeParse({ field: 'random' }).success).toBe(
+        false
+      )
     })
   })
 

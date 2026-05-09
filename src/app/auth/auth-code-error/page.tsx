@@ -18,7 +18,7 @@ export default function AuthCodeError() {
       subtitle="We couldn’t authenticate you. Please try again."
       maxWidthClassName="max-w-md"
     >
-      <div className="bg-card/80 rounded-token-xl border-border/60 p-token-lg text-center shadow-lg backdrop-blur">
+      <div className="bg-card/80 rounded-xl border-border/60 p-6 text-center shadow-lg backdrop-blur">
         <h2 className="text-2xl font-semibold tracking-tight">
           Authentication error
         </h2>
