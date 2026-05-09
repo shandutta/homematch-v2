@@ -15,6 +15,7 @@
  * so that relaxing them requires an explicit, reviewable diff against this
  * file alongside the schema change.
  */
+// Phase 0/1 closure: P1-interaction-uniqueness
 
 import {
   LoginSchema,

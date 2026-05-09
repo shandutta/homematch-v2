@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-auth-client-consolidation
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative, sep } from 'path'

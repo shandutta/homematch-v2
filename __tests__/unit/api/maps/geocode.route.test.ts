@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-maps-auth-hardening
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 
 // Store original env

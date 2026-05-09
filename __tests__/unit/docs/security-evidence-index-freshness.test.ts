@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-env-prod-guard
 import { existsSync, readFileSync } from 'fs'
 import * as path from 'path'
 

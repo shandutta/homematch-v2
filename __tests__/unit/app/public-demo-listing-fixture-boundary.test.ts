@@ -25,6 +25,7 @@
  * If a future change tries to wire the public landing pages to a real
  * data source, this test fails before that change ships.
  */
+// Phase 0/1 closure: P1-internal-demo-gate
 
 import { readFileSync } from 'fs'
 import { join } from 'path'

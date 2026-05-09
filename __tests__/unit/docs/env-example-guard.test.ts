@@ -1,3 +1,5 @@
+// Phase 0/1 closure: P0-env-prod-guard
+// Phase 0/1 closure: D4-env-prod-handling
 import { readFileSync } from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'

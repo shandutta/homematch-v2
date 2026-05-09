@@ -6,6 +6,7 @@
  * The routes stay unavailable by default and require an explicit local
  * HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true override to render preview content.
  */
+// Phase 0/1 closure: P1-internal-demo-gate
 
 import * as fs from 'node:fs'
 import * as path from 'node:path'

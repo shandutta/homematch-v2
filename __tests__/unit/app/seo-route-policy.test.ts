@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P0-accessibility-core-flow
 
 import robots from '../../../src/app/robots'
 import sitemap from '../../../src/app/sitemap'

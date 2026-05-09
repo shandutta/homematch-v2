@@ -7,6 +7,7 @@
  * Uses jest.unmock pattern matching server-refresh-recovery.test.ts.
  * Sets mockImplementation in beforeEach to survive resetMocks: true.
  */
+// Phase 0/1 closure: P1-cookie-httpOnly
 import {
   describe,
   beforeEach,

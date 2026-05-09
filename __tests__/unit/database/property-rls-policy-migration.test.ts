@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-properties-rls
 
 import { readFileSync } from 'fs'
 import { join } from 'path'

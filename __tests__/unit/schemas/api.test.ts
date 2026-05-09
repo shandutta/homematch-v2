@@ -1,3 +1,4 @@
+// Phase 0/1 closure: M6-error-standardization
 import {
   apiSuccessSchema,
   apiErrorSchema,

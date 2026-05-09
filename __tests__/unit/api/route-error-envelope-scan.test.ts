@@ -21,6 +21,7 @@
  * `error-standardization.test.ts` by providing a route-family-wide guard
  * that catches NEW routes which forget to adopt the helper.
  */
+// Phase 0/1 closure: M6-error-standardization
 
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

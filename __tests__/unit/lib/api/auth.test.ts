@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-auth-client-consolidation
 import { beforeAll, describe, expect, jest, test } from '@jest/globals'
 import { NextRequest } from 'next/server'
 import { getUserFromRequest, requireUserFromRequest } from '@/lib/api/auth'

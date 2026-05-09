@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: M6-error-standardization
 
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, posix, relative, sep } from 'path'

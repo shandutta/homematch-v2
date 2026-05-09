@@ -1,6 +1,12 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-anon-public-fast-path
+// Phase 0/1 closure: P1-api-fast-path
+// Phase 0/1 closure: P1-middleware-matchers
+// Phase 0/1 closure: P1-coop-corp
+// Phase 0/1 closure: M9-dead-server-actions
+// Phase 0/1 closure: M7-middleware-timeouts
 
 import { createServerClient } from '@supabase/ssr'
 import { readFileSync } from 'fs'

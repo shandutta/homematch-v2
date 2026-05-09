@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-cache-policy-classification
 
 import { describe, it, expect } from '@jest/globals'
 

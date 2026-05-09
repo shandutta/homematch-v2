@@ -1,3 +1,4 @@
+// Phase 0/1 closure: DB-P1.2-dashboard-dedupe
 import type { PropertySearch } from '@/lib/schemas/property'
 
 type LoaderModule = typeof import('@/lib/data/loader')

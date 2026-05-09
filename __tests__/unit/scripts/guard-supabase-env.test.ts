@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-local-dev-guard-bypass
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import * as os from 'os'
 import * as path from 'path'

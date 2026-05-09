@@ -1,3 +1,4 @@
+// Phase 0/1 closure: M6-error-standardization
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { z } from 'zod'
 import { ApiErrorHandler } from '@/lib/api/errors'

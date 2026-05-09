@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: D6-db-reset-readiness
 
 import {
   mkdtempSync,

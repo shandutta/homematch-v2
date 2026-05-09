@@ -19,6 +19,7 @@
  * adoption decisions reviewable in code rather than scattered across
  * tickets.
  */
+// Phase 0/1 closure: M5-route-limiter
 
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

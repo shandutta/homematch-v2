@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-strict-anon-protected
 import React from 'react'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 

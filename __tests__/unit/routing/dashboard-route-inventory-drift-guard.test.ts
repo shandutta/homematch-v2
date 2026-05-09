@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P0-accessibility-core-flow
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, posix, sep } from 'node:path'

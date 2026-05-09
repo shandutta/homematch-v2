@@ -16,6 +16,7 @@
  * If a new upload route is added, this test fails and forces an explicit
  * audit instead of silently widening the upload surface.
  */
+// Phase 0/1 closure: P1-security-definer-paths
 
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

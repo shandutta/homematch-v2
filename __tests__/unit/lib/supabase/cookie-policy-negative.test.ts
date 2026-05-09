@@ -12,6 +12,7 @@
  * including 'test' and 'development' — required so local HTTP dev sessions
  * work without TLS).
  */
+// Phase 0/1 closure: P1-cookie-httpOnly
 import { buildSupabaseSessionCookieOptions } from '@/lib/supabase/cookie-options'
 
 describe('Supabase session cookie policy — negative guards', () => {

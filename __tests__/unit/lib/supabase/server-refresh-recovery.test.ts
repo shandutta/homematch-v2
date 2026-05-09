@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-cookie-httpOnly
 import { describe, beforeEach, test, expect, jest } from '@jest/globals'
 import type { AppDatabase } from '@/types/app-database'
 import { withRefreshRecovery } from '@/lib/supabase/refresh-recovery'

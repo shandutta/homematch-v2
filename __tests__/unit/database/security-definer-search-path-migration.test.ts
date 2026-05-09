@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-security-definer-paths
 
 import { readFileSync } from 'fs'
 import { join } from 'path'

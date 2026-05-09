@@ -16,6 +16,7 @@
  *   4. Only the gated wrapper `src/lib/supabase/service-role-client.ts` may
  *      import `createServiceClient` from `@/lib/supabase/server`.
  */
+// Phase 0/1 closure: D1-service-role-rbac
 
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'

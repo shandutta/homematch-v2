@@ -1,3 +1,5 @@
+// Phase 0/1 closure: P0-maps-auth-hardening
+// Phase 0/1 closure: P0-metro-boundaries-anon
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
 
 const jsonMock = jest.fn((body: unknown, init?: ResponseInit) => ({

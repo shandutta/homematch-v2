@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-auth-client-consolidation
 
 import { readdirSync, readFileSync } from 'fs'
 import { join, posix, relative, sep } from 'path'

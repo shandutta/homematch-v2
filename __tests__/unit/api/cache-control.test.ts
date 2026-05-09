@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-cache-policy-classification
 
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, relative, sep, posix } from 'path'

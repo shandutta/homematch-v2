@@ -19,6 +19,7 @@
  * Non-goals: this guard does NOT call RapidAPI, mock fetch, or assert any
  * runtime route behavior. It only verifies the gate seam stays in place.
  */
+// Phase 0/1 closure: M8-external-timeouts
 
 import { readFileSync } from 'fs'
 import { join } from 'path'

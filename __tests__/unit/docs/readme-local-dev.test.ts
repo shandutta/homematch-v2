@@ -1,3 +1,5 @@
+// Phase 0/1 closure: P0-docker-doc-clarity
+// Phase 0/1 closure: P0-readme-fast-dev
 import { readFileSync } from 'fs'
 import * as path from 'path'
 

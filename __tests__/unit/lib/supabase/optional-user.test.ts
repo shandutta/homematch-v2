@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-anon-public-fast-path
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { readFileSync } from 'fs'
 import { join } from 'path'

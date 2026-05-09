@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-accessibility-core-flow
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { isProtectedPath } from '../../../src/lib/routing/protected-routes'

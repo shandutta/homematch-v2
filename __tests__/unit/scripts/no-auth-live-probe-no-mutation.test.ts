@@ -12,6 +12,7 @@
  * host allowlist, or add a credential/secret dependency without tripping a
  * fast unit-level guard.
  */
+// Phase 0/1 closure: P0-noauth-live-probe-expand
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'

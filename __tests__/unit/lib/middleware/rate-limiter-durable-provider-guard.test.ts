@@ -18,6 +18,7 @@
  * external/paid limiter store. It only verifies that the repo continues
  * to fail closed and that no paid limiter SDK has been pulled in.
  */
+// Phase 0/1 closure: D2-durable-rate-limiter
 
 import { readFileSync } from 'fs'
 import { join } from 'path'

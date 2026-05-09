@@ -11,6 +11,7 @@
  *   - Not reference SUPABASE_SERVICE_ROLE_KEY
  *   - Not import server-only Next.js primitives (next/headers, next/cookies)
  */
+// Phase 0/1 closure: P1-auth-client-consolidation
 
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'

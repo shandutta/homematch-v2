@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: D1-service-role-rbac
 
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'

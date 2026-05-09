@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P0-noauth-traversal-guard
 
 import { createServerClient } from '@supabase/ssr'
 import { readFileSync } from 'node:fs'

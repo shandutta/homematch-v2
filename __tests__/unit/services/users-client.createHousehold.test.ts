@@ -1,3 +1,4 @@
+// Phase 0/1 closure: D1-service-role-rbac
 import { UserServiceClient } from '@/lib/services/users-client'
 
 const rpcMock = jest.fn()

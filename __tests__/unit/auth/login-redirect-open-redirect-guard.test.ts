@@ -13,6 +13,7 @@
  * decision at the middleware layer with a mocked Supabase auth client so the
  * regression cannot ship even when the E2E gate is skipped.
  */
+// Phase 0/1 closure: P0-auth-redirect-guards
 
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'

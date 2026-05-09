@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-supabase-proxy-off
 /** @jest-environment node */
 
 import { NextRequest } from 'next/server'

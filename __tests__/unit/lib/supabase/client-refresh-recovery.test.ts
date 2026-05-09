@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-cookie-httpOnly
 import {
   describe,
   beforeEach,

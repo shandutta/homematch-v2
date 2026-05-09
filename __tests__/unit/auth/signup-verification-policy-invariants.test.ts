@@ -1,3 +1,4 @@
+// Phase 0/1 closure: D3-signup-verification
 import { readFileSync } from 'fs'
 import * as path from 'path'
 

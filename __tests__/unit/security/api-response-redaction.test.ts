@@ -10,6 +10,7 @@
  * - Static: scans `src/app/api/** /route.ts` for known response-leak shapes
  *   (process.env in response bodies, Error.stack echoed back, etc.).
  */
+// Phase 0/1 closure: D7-disputed-route-exposure
 
 import {
   describe,

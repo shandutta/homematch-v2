@@ -1,3 +1,4 @@
+// Phase 0/1 closure: D1-service-role-rbac
 import { describe, beforeEach, expect, jest, test } from '@jest/globals'
 
 const createServiceClientMock = jest.fn()

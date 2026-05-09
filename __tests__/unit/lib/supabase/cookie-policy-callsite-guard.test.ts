@@ -7,6 +7,7 @@
  * exists so a future refactor that reintroduces a manual cookies.set() does
  * not silently bypass the helper.
  */
+// Phase 0/1 closure: P1-cookie-httpOnly
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

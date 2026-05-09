@@ -9,6 +9,7 @@
  * This file enumerates the authenticated surfaces and internal preview
  * surfaces by name so a regression on any single one fails the suite.
  */
+// Phase 0/1 closure: P0-accessibility-core-flow
 
 import type { Metadata } from 'next'
 

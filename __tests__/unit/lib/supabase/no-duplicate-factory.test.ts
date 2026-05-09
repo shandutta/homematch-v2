@@ -1,3 +1,5 @@
+// Phase 0/1 closure: M11-test-only-exports
+// Phase 0/1 closure: P1-supabase-factory-consolidation
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

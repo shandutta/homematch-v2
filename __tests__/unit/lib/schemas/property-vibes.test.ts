@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-property-stats-rpc
 import {
   aestheticsSchema,
   ALL_PROPERTY_TAGS,

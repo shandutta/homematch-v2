@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: P1-property-stats-rpc
 
 import { PropertySearchService } from '@/lib/services/properties/search'
 

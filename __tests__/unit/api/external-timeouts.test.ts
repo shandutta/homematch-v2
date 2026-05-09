@@ -20,6 +20,8 @@
  *      trips the scan.
  *   2. The auto-scan itself, which catches new routes added after Phase 1.
  */
+// Phase 0/1 closure: M13-dead-zillow-factory
+// Phase 0/1 closure: M8-external-timeouts
 
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'

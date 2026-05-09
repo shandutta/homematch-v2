@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+// Phase 0/1 closure: M10-rate-limit-consolidation
 
 import { NextRequest } from 'next/server'
 import {

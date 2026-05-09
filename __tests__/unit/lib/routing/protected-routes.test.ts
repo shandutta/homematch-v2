@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P0-strict-anon-protected
 import {
   isProtectedPath,
   PROTECTED_PATH_PREFIXES,
