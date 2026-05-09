@@ -207,4 +207,122 @@ describe('MutualLikesListPage', () => {
     expect(bedFilter.value).toBe('any')
     expect(screen.getByText('1 Studio Ln')).toBeInTheDocument()
   })
+
+  describe('Compare mode', () => {
+    test('compare toggle is hidden when no likes exist', () => {
+      renderWithQuery(<MutualLikesListPage />)
+      expect(screen.queryByTestId('mutual-likes-compare-toggle')).toBeNull()
+    })
+
+    test('compare toggle reveals checkboxes on cards', () => {
+      mockQuery.data = [
+        buildLike({ id: 'a', property: { address: '111 Aspen St' } }),
+        buildLike({ id: 'b', property: { address: '222 Birch Ave' } }),
+      ]
+
+      renderWithQuery(<MutualLikesListPage />)
+
+      expect(screen.queryByTestId('compare-checkbox-a')).toBeNull()
+
+      fireEvent.click(screen.getByTestId('mutual-likes-compare-toggle'))
+
+      expect(screen.getByTestId('compare-checkbox-a')).toBeInTheDocument()
+      expect(screen.getByTestId('compare-checkbox-b')).toBeInTheDocument()
+      expect(screen.getByTestId('compare-help-text')).toHaveTextContent(
+        /Pick up to 3 homes/i
+      )
+    })
+
+    test('selecting properties opens compare panel and renders both', () => {
+      mockQuery.data = [
+        buildLike({
+          id: 'a',
+          property: { address: '111 Aspen St', price: 500000 },
+        }),
+        buildLike({
+          id: 'b',
+          property: { address: '222 Birch Ave', price: 700000 },
+        }),
+      ]
+
+      renderWithQuery(<MutualLikesListPage />)
+      fireEvent.click(screen.getByTestId('mutual-likes-compare-toggle'))
+
+      fireEvent.click(screen.getByTestId('compare-checkbox-a'))
+      expect(screen.getByTestId('mutual-likes-compare-panel')).toBeInTheDocument()
+      expect(screen.getByTestId('compare-card-a')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByTestId('compare-checkbox-b'))
+      expect(screen.getByTestId('compare-card-b')).toBeInTheDocument()
+    })
+
+    test('compare panel caps selections at 3', () => {
+      mockQuery.data = [
+        buildLike({ id: 'a' }),
+        buildLike({ id: 'b' }),
+        buildLike({ id: 'c' }),
+        buildLike({ id: 'd' }),
+      ]
+
+      renderWithQuery(<MutualLikesListPage />)
+      fireEvent.click(screen.getByTestId('mutual-likes-compare-toggle'))
+
+      fireEvent.click(screen.getByTestId('compare-checkbox-a'))
+      fireEvent.click(screen.getByTestId('compare-checkbox-b'))
+      fireEvent.click(screen.getByTestId('compare-checkbox-c'))
+
+      const fourthCheckbox = screen.getByTestId(
+        'compare-checkbox-d'
+      ) as HTMLInputElement
+      expect(fourthCheckbox.disabled).toBe(true)
+
+      fireEvent.click(fourthCheckbox)
+      expect(screen.queryByTestId('compare-card-d')).toBeNull()
+    })
+
+    test('removing a card from the panel deselects the checkbox', () => {
+      mockQuery.data = [
+        buildLike({
+          id: 'a',
+          property: { address: '111 Aspen St' },
+        }),
+        buildLike({
+          id: 'b',
+          property: { address: '222 Birch Ave' },
+        }),
+      ]
+
+      renderWithQuery(<MutualLikesListPage />)
+      fireEvent.click(screen.getByTestId('mutual-likes-compare-toggle'))
+      fireEvent.click(screen.getByTestId('compare-checkbox-a'))
+      fireEvent.click(screen.getByTestId('compare-checkbox-b'))
+
+      fireEvent.click(screen.getByTestId('compare-remove-a'))
+
+      expect(screen.queryByTestId('compare-card-a')).toBeNull()
+      expect(screen.getByTestId('compare-card-b')).toBeInTheDocument()
+
+      const checkboxA = screen.getByTestId(
+        'compare-checkbox-a'
+      ) as HTMLInputElement
+      expect(checkboxA.checked).toBe(false)
+    })
+
+    test('"Done comparing" exits compare mode and clears selections', () => {
+      mockQuery.data = [
+        buildLike({ id: 'a', property: { address: '111 Aspen St' } }),
+      ]
+
+      renderWithQuery(<MutualLikesListPage />)
+      const toggle = screen.getByTestId('mutual-likes-compare-toggle')
+      fireEvent.click(toggle)
+      fireEvent.click(screen.getByTestId('compare-checkbox-a'))
+      expect(screen.getByTestId('mutual-likes-compare-panel')).toBeInTheDocument()
+
+      fireEvent.click(toggle)
+
+      expect(screen.queryByTestId('mutual-likes-compare-panel')).toBeNull()
+      expect(screen.queryByTestId('compare-checkbox-a')).toBeNull()
+    })
+  })
 })

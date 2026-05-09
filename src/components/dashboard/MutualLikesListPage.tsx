@@ -10,6 +10,9 @@ import { PropertyImage } from '@/components/ui/property-image'
 import { Heart, Users, ChevronRight } from 'lucide-react'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
 import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
+import { MutualLikesComparePanel } from './MutualLikesComparePanel'
+
+const MAX_COMPARE = 3
 
 type SortKey = 'recent' | 'most-liked' | 'price-desc' | 'price-asc'
 type BedFilter = 'any' | '1' | '2' | '3' | '4'
@@ -36,9 +39,34 @@ export function MutualLikesListPage() {
   const query = useMutualLikes()
   const [sortKey, setSortKey] = useState<SortKey>('recent')
   const [bedFilter, setBedFilter] = useState<BedFilter>('any')
+  const [compareMode, setCompareMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const allLikes = query.data ?? []
   const totalLikes = allLikes.length
+
+  const toggleSelected = (propertyId: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(propertyId)) {
+        return prev.filter((id) => id !== propertyId)
+      }
+      if (prev.length >= MAX_COMPARE) {
+        return prev
+      }
+      return [...prev, propertyId]
+    })
+  }
+
+  const exitCompareMode = () => {
+    setCompareMode(false)
+    setSelectedIds([])
+  }
+
+  const selectedLikes = selectedIds
+    .map((id) => allLikes.find((like) => like.property_id === id))
+    .filter(
+      (like): like is NonNullable<typeof like> => like !== undefined
+    )
 
   const mutualLikes = useMemo(() => {
     const minBeds = bedFilter === 'any' ? 0 : Number(bedFilter)
@@ -142,13 +170,50 @@ export function MutualLikesListPage() {
           </label>
 
           <span
-            className="ml-auto text-xs text-hm-stone-500"
+            className="text-xs text-hm-stone-500"
             data-testid="mutual-likes-count"
             aria-live="polite"
           >
             Showing {mutualLikes.length} of {totalLikes}
           </span>
+
+          <Button
+            type="button"
+            variant={compareMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              if (compareMode) {
+                exitCompareMode()
+              } else {
+                setCompareMode(true)
+              }
+            }}
+            data-testid="mutual-likes-compare-toggle"
+            aria-pressed={compareMode}
+            className="ml-auto"
+          >
+            {compareMode ? 'Done comparing' : 'Compare'}
+          </Button>
         </div>
+      )}
+
+      {compareMode && selectedLikes.length > 0 && (
+        <MutualLikesComparePanel
+          selected={selectedLikes}
+          onRemove={(id) =>
+            setSelectedIds((prev) => prev.filter((p) => p !== id))
+          }
+          onClose={exitCompareMode}
+        />
+      )}
+
+      {compareMode && selectedLikes.length === 0 && totalLikes > 0 && (
+        <p
+          className="text-hm-stone-400 text-xs"
+          data-testid="compare-help-text"
+        >
+          Pick up to {MAX_COMPARE} homes to compare side-by-side.
+        </p>
       )}
 
       {query.isLoading ? (
@@ -256,16 +321,53 @@ export function MutualLikesListPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {mutualLikes.map((like) => (
+          {mutualLikes.map((like) => {
+            const isSelected = selectedIds.includes(like.property_id)
+            const selectionDisabled =
+              !isSelected && selectedIds.length >= MAX_COMPARE
+
+            return (
             <Card
               key={like.property_id}
-              className="border-white/10"
+              className={`border-white/10 ${
+                compareMode && isSelected
+                  ? 'ring-1 ring-couples-primary/60'
+                  : ''
+              }`}
               style={{
                 backgroundColor: dashboardTokens.colors.background.cardDark,
                 borderColor: dashboardTokens.colors.secondary[700],
               }}
+              data-testid={`mutual-like-card-${like.property_id}`}
             >
               <CardContent className="p-4">
+                {compareMode && (
+                  <label
+                    className={`mb-3 flex cursor-pointer items-center gap-2 text-xs ${
+                      selectionDisabled
+                        ? 'text-hm-stone-500 cursor-not-allowed'
+                        : 'text-hm-stone-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelected(like.property_id)}
+                      disabled={selectionDisabled}
+                      aria-label={`Select ${
+                        like.property?.address || 'property'
+                      } for comparison`}
+                      data-testid={`compare-checkbox-${like.property_id}`}
+                      className="h-4 w-4 rounded border-white/20 bg-white/[0.04]"
+                    />
+                    {isSelected
+                      ? 'Selected for comparison'
+                      : selectionDisabled
+                        ? `Max ${MAX_COMPARE} selected`
+                        : 'Add to comparison'}
+                  </label>
+                )}
+
                 <Link
                   href={`/properties/${like.property_id}?returnTo=/dashboard/mutual-likes`}
                   className="group block"
@@ -311,7 +413,8 @@ export function MutualLikesListPage() {
                 </Link>
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
