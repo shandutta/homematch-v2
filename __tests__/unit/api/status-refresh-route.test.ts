@@ -21,6 +21,7 @@ function makeSupabaseStub(rows: Row[]) {
     order: jest.fn(),
     range: jest.fn(),
     update: jest.fn(),
+    upsert: jest.fn(),
   }
   // Chaining methods return the same chain
   chain.select.mockReturnValue(chain)
@@ -35,9 +36,10 @@ function makeSupabaseStub(rows: Row[]) {
     in: jest.fn().mockReturnValue({ error: null }),
     eq: jest.fn().mockReturnValue({ error: null }),
   })
+  chain.upsert.mockReturnValue({ error: null })
 
   const from = jest.fn().mockReturnValue(chain)
-  return { client: { from }, update: chain.update }
+  return { client: { from }, update: chain.update, upsert: chain.upsert }
 }
 
 describe('POST /api/admin/status-refresh', () => {
@@ -150,10 +152,10 @@ describe('POST /api/admin/status-refresh', () => {
     expect(body.changeSamples.length).toBeGreaterThanOrEqual(2)
 
     // Batched status updates: one call per (listing_status, is_active) group
-    // z1 → ('sold', false), z2 → ('removed', false) + price change on z1
+    // z1 → ('sold', false) + price change, z2 → ('removed', false)
     expect(stub.update).toHaveBeenCalled()
-    // update should be called 3 times (2 status groups + 1 price update)
-    expect(stub.update.mock.calls.length).toBe(3)
+    expect(stub.update.mock.calls.length).toBe(2) // 2 status groups
+    expect(stub.upsert.mock.calls.length).toBe(1) // 1 batched price upsert (z1)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
