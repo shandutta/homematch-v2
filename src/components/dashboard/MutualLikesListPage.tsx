@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { Card, CardContent } from '@/components/ui/card'
@@ -11,17 +11,66 @@ import { Heart, Users, ChevronRight } from 'lucide-react'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
 import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 
+type SortKey = 'recent' | 'most-liked' | 'price-desc' | 'price-asc'
+type BedFilter = 'any' | '1' | '2' | '3' | '4'
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'recent', label: 'Recently liked' },
+  { value: 'most-liked', label: 'Most liked' },
+  { value: 'price-desc', label: 'Highest price' },
+  { value: 'price-asc', label: 'Lowest price' },
+]
+
+const BED_FILTER_OPTIONS: { value: BedFilter; label: string }[] = [
+  { value: 'any', label: 'Any beds' },
+  { value: '1', label: '1+ beds' },
+  { value: '2', label: '2+ beds' },
+  { value: '3', label: '3+ beds' },
+  { value: '4', label: '4+ beds' },
+]
+
+const SELECT_CLASS =
+  'rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-hm-stone-200 hover:border-white/20 focus:border-couples-primary/60 focus:outline-none focus:ring-1 focus:ring-couples-primary/40'
+
 export function MutualLikesListPage() {
   const query = useMutualLikes()
+  const [sortKey, setSortKey] = useState<SortKey>('recent')
+  const [bedFilter, setBedFilter] = useState<BedFilter>('any')
+
+  const allLikes = query.data ?? []
+  const totalLikes = allLikes.length
 
   const mutualLikes = useMemo(() => {
-    const likes = query.data ?? []
-    return [...likes].sort(
-      (a, b) =>
-        new Date(b.last_liked_at).getTime() -
-        new Date(a.last_liked_at).getTime()
-    )
-  }, [query.data])
+    const minBeds = bedFilter === 'any' ? 0 : Number(bedFilter)
+    const filtered = allLikes.filter((like) => {
+      if (minBeds === 0) return true
+      const beds = like.property?.bedrooms
+      return typeof beds === 'number' && beds >= minBeds
+    })
+
+    return [...filtered].sort((a, b) => {
+      switch (sortKey) {
+        case 'most-liked':
+          return (b.liked_by_count ?? 0) - (a.liked_by_count ?? 0)
+        case 'price-desc':
+          return (b.property?.price ?? 0) - (a.property?.price ?? 0)
+        case 'price-asc':
+          return (
+            (a.property?.price ?? Number.POSITIVE_INFINITY) -
+            (b.property?.price ?? Number.POSITIVE_INFINITY)
+          )
+        case 'recent':
+        default:
+          return (
+            new Date(b.last_liked_at).getTime() -
+            new Date(a.last_liked_at).getTime()
+          )
+      }
+    })
+  }, [allLikes, sortKey, bedFilter])
+
+  const isFilteredEmpty =
+    !query.isLoading && !query.error && totalLikes > 0 && mutualLikes.length === 0
 
   return (
     <div
@@ -50,6 +99,57 @@ export function MutualLikesListPage() {
           </Link>
         </Button>
       </div>
+
+      {!query.isLoading && !query.error && totalLikes > 0 && (
+        <div
+          className="flex flex-wrap items-center gap-3"
+          data-testid="mutual-likes-toolbar"
+        >
+          <label className="flex items-center gap-2 text-xs text-hm-stone-400">
+            <span>Sort</span>
+            <select
+              aria-label="Sort mutual likes"
+              data-testid="mutual-likes-sort"
+              value={sortKey}
+              onChange={(event) => setSortKey(event.target.value as SortKey)}
+              className={SELECT_CLASS}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 text-xs text-hm-stone-400">
+            <span>Filter</span>
+            <select
+              aria-label="Filter mutual likes by bedrooms"
+              data-testid="mutual-likes-bed-filter"
+              value={bedFilter}
+              onChange={(event) =>
+                setBedFilter(event.target.value as BedFilter)
+              }
+              className={SELECT_CLASS}
+            >
+              {BED_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <span
+            className="ml-auto text-xs text-hm-stone-500"
+            data-testid="mutual-likes-count"
+            aria-live="polite"
+          >
+            Showing {mutualLikes.length} of {totalLikes}
+          </span>
+        </div>
+      )}
 
       {query.isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -89,7 +189,7 @@ export function MutualLikesListPage() {
             Try again
           </Button>
         </div>
-      ) : mutualLikes.length === 0 ? (
+      ) : totalLikes === 0 ? (
         <Card
           className="border-white/10"
           style={{
@@ -120,6 +220,36 @@ export function MutualLikesListPage() {
               </Button>
               <Button asChild variant="outline">
                 <Link href="/couples">Household hub</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : isFilteredEmpty ? (
+        <Card
+          className="border-white/10"
+          style={{
+            backgroundColor: dashboardTokens.colors.background.cardDark,
+            borderColor: dashboardTokens.colors.secondary[700],
+          }}
+          data-testid="mutual-likes-filtered-empty"
+        >
+          <CardContent className="p-10 text-center">
+            <h2 className="text-hm-stone-100 text-xl font-semibold">
+              No matches with current filters
+            </h2>
+            <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
+              {totalLikes} mutual {totalLikes === 1 ? 'like' : 'likes'} hidden by
+              your filter. Adjust to see them.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBedFilter('any')
+                  setSortKey('recent')
+                }}
+              >
+                Clear filters
               </Button>
             </div>
           </CardContent>
