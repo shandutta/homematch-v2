@@ -113,7 +113,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${plusJakartaSans.variable} antialiased`}
       >
         <ErrorBoundary>
-          <PerformanceProvider>{children}</PerformanceProvider>
+          <PerformanceProvider>
+            <main>{children}</main>
+          </PerformanceProvider>
         </ErrorBoundary>
         <Toaster position="top-right" />
         <AnalyticsGate />
