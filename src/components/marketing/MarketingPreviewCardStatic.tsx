@@ -81,11 +81,16 @@ export function MarketingPreviewCardStatic({
 
       <div className="space-y-4 p-6 pb-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
-            Listing · Lake Merritt
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
+              Example Listing
+            </p>
+            <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold tracking-[0.14em] text-amber-300 uppercase">
+              Example
+            </span>
+          </div>
           <h3 className="text-xl font-semibold text-white">
-            1200 Lakeview Dr, Oakland, CA 94610
+            123 Sample Street, Anytown, USA
           </h3>
         </div>
 

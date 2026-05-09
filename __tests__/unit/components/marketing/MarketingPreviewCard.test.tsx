@@ -81,13 +81,13 @@ describe('MarketingPreviewCard', () => {
   test('renders property address', () => {
     render(<MarketingPreviewCard />)
     expect(
-      screen.getByText('1200 Lakeview Dr, Oakland, CA 94610')
+      screen.getByText('123 Sample Street, Anytown, USA')
     ).toBeInTheDocument()
   })
 
   test('renders location label', () => {
     render(<MarketingPreviewCard />)
-    expect(screen.getByText('Listing · Lake Merritt')).toBeInTheDocument()
+    expect(screen.getByText('Example Listing')).toBeInTheDocument()
   })
 
   test('renders property details', () => {

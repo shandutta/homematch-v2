@@ -73,8 +73,8 @@ jest.mock('@/components/marketing/MarketingPreviewCardStatic', () => ({
     <div data-testid="marketing-preview-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img alt="Sample property interior" src="/test.jpg" />
-      <span>Listing · Lake Merritt</span>
-      <span>1200 Lakeview Dr, Oakland, CA 94610</span>
+      <span>Example Listing</span>
+      <span>123 Sample Street, Anytown, USA</span>
       <span>3 beds</span>
       <button>Like</button>
       <span>Built for households</span>
