@@ -72,9 +72,8 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
     <m.div
       ref={cardRef}
       className={cn(
-        'relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 shadow-[0_18px_44px_rgba(0,0,0,0.3),0_0_40px_rgba(56,189,248,0.08)] backdrop-blur-xl transition-shadow duration-300',
-        isHovered &&
-          'shadow-[0_24px_60px_rgba(0,0,0,0.4),0_0_60px_rgba(56,189,248,0.12)]',
+        'relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 shadow-card-glow backdrop-blur-xl transition-shadow duration-300',
+        isHovered && 'shadow-card-glow-hover',
         className
       )}
       style={{
