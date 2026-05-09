@@ -380,7 +380,8 @@ export async function POST(req: Request) {
         const { error: priceErr } = await supabase
           .from('properties')
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          .upsert(priceRows as Record<string, unknown>[])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .upsert(priceRows as any)
 
         if (priceErr) {
           console.error('[status-refresh] batch price upsert failed', {

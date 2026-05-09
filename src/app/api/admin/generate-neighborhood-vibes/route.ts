@@ -114,6 +114,7 @@ export async function POST(req: Request) {
 
   const listingsByNeighborhood = new Map<string, NonNullable<typeof allListings>>()
   for (const listing of allListings ?? []) {
+    if (!listing.neighborhood_id) continue
     const bucket = listingsByNeighborhood.get(listing.neighborhood_id) ?? []
     if (bucket.length < 12) {
       bucket.push(listing)

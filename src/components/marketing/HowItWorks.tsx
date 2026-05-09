@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { m, useInView } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
-import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { Card } from '@/components/ui/card'
 import { Heart, MapPin, Sparkles } from 'lucide-react'
 

@@ -3,7 +3,7 @@
 import { useScroll, useTransform, MotionValue } from 'framer-motion'
 import { useEffect, useState, useMemo } from 'react'
 import { MotionDiv } from '@/components/ui/motion-components'
-import { MotionMaxProvider } from '@/providers/MotionMaxProvider'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 
 /**
  * Deterministic PRNG (Mulberry32) to ensure SSR/CSR parity for star field
