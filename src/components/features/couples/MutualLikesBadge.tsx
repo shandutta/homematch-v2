@@ -31,7 +31,7 @@ export function MutualLikesBadge({
 
   const BadgeContent = () => (
     <Badge
-      className={`bg-gradient-mutual-likes backdrop-blur-sm ${sizeClasses[variant]} `}
+      className={`bg-gradient-mutual-likes shadow-elevated backdrop-blur-sm ${sizeClasses[variant]} `}
       data-testid="mutual-likes-badge"
     >
       <div className="gap-1 flex items-center">
