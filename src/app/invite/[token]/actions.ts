@@ -21,7 +21,7 @@ export async function acceptInviteAction(token: string) {
   const serviceClient = await getServiceRoleClient()
   const { data: invite, error } = await serviceClient
     .from('household_invitations')
-    .select('*')
+    .select('accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at')
     .eq('token', token)
     .single()
 

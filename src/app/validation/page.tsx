@@ -61,7 +61,7 @@ export default async function ValidationPage() {
     try {
       const { error, count } = await supabase
         .from(table)
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
 
       tableStats.push({
         tableName: table,

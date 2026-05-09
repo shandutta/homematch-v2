@@ -592,7 +592,7 @@ export class CouplesService {
 
       const { count: totalHouseholdLikes } = await supabase
         .from('user_property_interactions')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('household_id', householdId)
         .eq('interaction_type', 'like')
 

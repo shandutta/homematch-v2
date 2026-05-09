@@ -34,7 +34,7 @@ export class NeighborhoodService
     return this.executeSingleQuery('getNeighborhood', async (supabase) => {
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select('*')
+        .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
         .eq('id', neighborhoodId)
         .single()
 
@@ -118,7 +118,7 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select('*')
+          .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
           .eq('city', city)
           .eq('state', state)
           .order('name')
@@ -148,7 +148,7 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select('*')
+          .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
           .eq('metro_area', metroArea)
           .order('name')
 
@@ -173,7 +173,7 @@ export class NeighborhoodService
       const searchTerm = this.sanitizeInput(query)
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select('*')
+        .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
         .or(
           `name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,metro_area.ilike.%${searchTerm}%`
         )
@@ -299,7 +299,7 @@ export class NeighborhoodService
         // Get neighborhood details
         supabase
           .from('neighborhoods')
-          .select('*')
+          .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
           .eq('id', neighborhoodId)
           .single(),
 

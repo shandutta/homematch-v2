@@ -81,7 +81,7 @@ export async function POST(req: Request): Promise<Response> {
       // Fetch specific properties
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
         .in('id', body.propertyIds.slice(0, 50))
         .overrideTypes<Property[], { merge: false }>()
 
@@ -94,7 +94,7 @@ export async function POST(req: Request): Promise<Response> {
       // Random selection of properties with images
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
         .not('images', 'is', null)
         .gte('price', 100000) // Filter out likely bad data
         .order('created_at', { ascending: false })
@@ -311,7 +311,7 @@ async function selectDiverseProperties(
   for (const type of types) {
     const { data } = await supabase
       .from('properties')
-      .select('*')
+      .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
       .eq('property_type', type)
       .not('images', 'is', null)
       .gte('price', 100000)
@@ -358,11 +358,11 @@ export async function GET(req: Request): Promise<Response> {
   // Note: property_vibes table is not in generated types yet
   const { count: vibesCount } = await supabase
     .from('property_vibes')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
 
   const { count: propertiesCount } = await supabase
     .from('properties')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .not('images', 'is', null)
 
   return noStoreJson({

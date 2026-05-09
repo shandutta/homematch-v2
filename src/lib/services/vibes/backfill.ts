@@ -141,11 +141,11 @@ export async function backfillVibes(
     const { data, error } = args.propertyIds
       ? await deps.supabase
           .from('properties')
-          .select('*')
+          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
           .in('id', args.propertyIds)
       : await deps.supabase
           .from('properties')
-          .select('*')
+          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
           .not('zpid', 'is', null)
           .gte('price', minPrice)
           .order('created_at', { ascending: false })

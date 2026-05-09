@@ -40,7 +40,7 @@ export class UserServiceClient {
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('*')
+      .select('created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at')
       .eq('id', userId)
       .single()
 
@@ -206,7 +206,7 @@ export class UserServiceClient {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('household_invitations')
-      .select('*')
+      .select('accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at')
       .eq('household_id', householdId)
       .order('created_at', { ascending: false })
 
@@ -335,7 +335,7 @@ export class UserServiceClient {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('saved_searches')
-      .select('*')
+      .select('created_at, filters, household_id, id, is_active, name, user_id')
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
