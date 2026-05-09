@@ -29,6 +29,18 @@ const FALLBACK_IMAGES = [
   '/images/properties/house-3.svg',
 ]
 
+// Tiny dark-grey gradient SVG used as the blur placeholder for remote images.
+// Matches the obsidian theme, avoids a white flash, and ships ~150 bytes.
+const BLUR_DATA_URL =
+  'data:image/svg+xml;base64,' +
+  (typeof window === 'undefined'
+    ? Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
+      ).toString('base64')
+    : btoa(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
+      ))
+
 const BROKEN_IMAGE_PATH_PATTERNS = [
   'photo-1575517111478-7f6f2c59ebb0',
 ]
@@ -152,6 +164,11 @@ export function PropertyImage({
   const imageClassName =
     `transition-opacity duration-500 ${fadeClass} ${className}`.trim()
 
+  // Blur placeholder is only valuable for remote images (which take a while to
+  // load). Local SVG fallbacks render instantly, so skip the placeholder there
+  // to avoid an extra paint.
+  const usesBlurPlaceholder = !isLocalAsset(resolvedSrc!)
+
   const imageProps = {
     src: resolvedSrc!,
     alt,
@@ -160,6 +177,9 @@ export function PropertyImage({
     sizes,
     onError: handleImageError,
     onLoad: handleImageLoad,
+    ...(usesBlurPlaceholder
+      ? { placeholder: 'blur' as const, blurDataURL: BLUR_DATA_URL }
+      : {}),
     ...(fill ? { fill: true } : { width, height }),
   }
 

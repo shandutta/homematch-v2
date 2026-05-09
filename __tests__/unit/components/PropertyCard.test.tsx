@@ -128,13 +128,14 @@ describe('PropertyCard Component', () => {
     expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
   })
 
-  test('should render PropertyMap when coordinates are present', () => {
+  test('should render PropertyMap when coordinates are present', async () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
       coordinates: { lat: 37.7749, lng: -122.4194 },
     }
     renderWithQuery(<PropertyCard property={propertyWithCoords} />)
-    expect(screen.getByTestId('property-map')).toBeDefined()
+    // PropertyMap is loaded via next/dynamic, so wait for it to resolve.
+    expect(await screen.findByTestId('property-map')).toBeDefined()
   })
 
   test('should not render PropertyMap when coordinates are null', () => {

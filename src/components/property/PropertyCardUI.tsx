@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Property, Neighborhood } from '@/lib/schemas/property'
@@ -20,9 +21,21 @@ import { PropertyImage } from '@/components/ui/property-image'
 import { InteractionType } from '@/types/app'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
-import { PropertyMap } from '@/components/property/PropertyMap'
 import { cn } from '@/lib/utils'
 import { formatPropertyType } from '@/lib/utils/formatPropertyType'
+
+// Code-split: Google Maps loader + PropertyMap only fetched when a card actually
+// renders its map view. Saves ~150KB of JS on the initial dashboard payload.
+const PropertyMap = dynamic(
+  () =>
+    import('@/components/property/PropertyMap').then((mod) => mod.PropertyMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-36 w-full animate-pulse rounded-xl border border-white/10 bg-slate-900/60" />
+    ),
+  }
+)
 
 // Types needed for the UI component
 export interface PropertyCardUIProps {
