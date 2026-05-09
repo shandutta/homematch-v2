@@ -21,6 +21,7 @@ export default function SignupPage() {
       title="HomeMatch"
       subtitle="Create your account"
       maxWidthClassName="max-w-md"
+      valueProp="AI-powered home matching for you and your household"
     >
       <div className="space-y-6">
         <SignupForm />

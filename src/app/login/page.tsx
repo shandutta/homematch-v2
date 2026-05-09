@@ -15,7 +15,7 @@ export const metadata = createNoindexRouteMetadata({
 
 export default function LoginPage() {
   return (
-    <AuthPageShell title="HomeMatch" subtitle="Sign in to your account">
+    <AuthPageShell title="HomeMatch" subtitle="Sign in to your account" valueProp="AI-powered home matching for you and your household">
       <div className="space-y-6">
         <LoginForm />
 
