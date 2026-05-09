@@ -369,21 +369,23 @@ export async function POST(req: Request) {
         }
       }
 
-      // Separate batch for price changes
+      // Batch price changes via upsert (one round-trip for all price updates)
       const priceUpdates = updates.filter((u) => u.priceChanged)
       if (priceUpdates.length > 0) {
-        for (const pu of priceUpdates) {
-          const { error: priceErr } = await supabase
-            .from('properties')
-            .update({ price: pu.price, updated_at: nowIso })
-            .eq('id', pu.id)
+        const priceRows = priceUpdates.map((pu) => ({
+          id: pu.id,
+          price: pu.price,
+          updated_at: nowIso,
+        }))
+        const { error: priceErr } = await supabase
+          .from('properties')
+          .upsert(priceRows as any)
 
-          if (priceErr) {
-            console.error('[status-refresh] price update failed', {
-              error: priceErr.message,
-              id: pu.id,
-            })
-          }
+        if (priceErr) {
+          console.error('[status-refresh] batch price upsert failed', {
+            error: priceErr.message,
+            count: priceRows.length,
+          })
         }
       }
     }
