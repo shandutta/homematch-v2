@@ -35,8 +35,8 @@ describe('RLS Boundaries - Integration', () => {
     })
     const { data: { session }, error: signInError } =
       await tempClient.auth.signInWithPassword({
-        email: process.env.TEST_USER_2_EMAIL || 'test2@example.com',
-        password: process.env.TEST_USER_2_PASSWORD || 'testpassword456',
+        email: process.env.TEST_USER_2_EMAIL || 'test-worker-2@example.com',
+        password: process.env.TEST_USER_2_PASSWORD || 'testpassword123',
       })
 
     if (signInError || !session?.access_token) {
@@ -53,12 +53,27 @@ describe('RLS Boundaries - Integration', () => {
   })
 
   it('prevents anon read of protected household data', async () => {
+    // Insert a test profile via service role, then verify anon cannot read it
+    const testUserId = randomUUID()
+    await serviceClient.from('user_profiles').upsert({
+      id: testUserId,
+    })
+
+    // Anon should NOT be able to read this specific profile
     const { data, error } = await anonClient
       .from('user_profiles')
-      .select('household_id')
-      .limit(1)
+      .select('id')
+      .eq('id', testUserId)
+
     expect(error).toBeNull()
+    // RLS blocks anon from reading authenticated users' data
     expect(data ?? []).toEqual([])
+
+    // Cleanup
+    await serviceClient
+      .from('user_profiles')
+      .delete()
+      .eq('id', testUserId)
   })
 
   it('prevents authenticated user from reading another household interactions', async () => {

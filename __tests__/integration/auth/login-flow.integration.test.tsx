@@ -8,21 +8,41 @@ import userEvent from '@testing-library/user-event'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { vi } from 'vitest'
 import { LoginForm } from '@/components/features/auth/LoginForm'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { setupTestIsolation } from '../../utils/test-isolation'
 
 // Mock external dependencies
-vi.mock('@/lib/supabase/client')
+const { mockSignInWithPassword, mockSignInWithOAuth } = vi.hoisted(() => ({
+  mockSignInWithPassword: vi.fn(),
+  mockSignInWithOAuth: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => {
+    const client = {
+      auth: {
+        signInWithPassword: mockSignInWithPassword,
+        signInWithOAuth: mockSignInWithOAuth,
+        getUser: () =>
+          Promise.resolve({ data: { user: null }, error: null }),
+        getSession: () =>
+          Promise.resolve({ data: { session: null }, error: null }),
+      },
+      from: () => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: (onFulfilled: (value: unknown) => unknown) => onFulfilled({ data: [], error: null }),
+      }),
+    }
+    return Promise.resolve(client)
+  },
+}))
 vi.mock('next/navigation')
 
 describe('Login Flow Integration', () => {
   const mockPush = vi.fn()
-  const mockSignInWithPassword = vi.fn()
-  const mockSignInWithOAuth = vi.fn()
 
   const mockUseRouter = vi.mocked(useRouter)
-  const mockCreateClient = vi.mocked(createClient)
 
   // Use test isolation utilities
   setupTestIsolation()
@@ -50,25 +70,6 @@ describe('Login Flow Integration', () => {
       refresh: vi.fn(),
       prefetch: vi.fn(),
     })
-
-    // Setup Supabase client with custom auth handlers
-    mockCreateClient.mockReturnValue({
-      auth: {
-        signInWithPassword: mockSignInWithPassword,
-        signInWithOAuth: mockSignInWithOAuth,
-        getUser: vi.fn(() =>
-          Promise.resolve({ data: { user: null }, error: null })
-        ),
-        getSession: vi.fn(() =>
-          Promise.resolve({ data: { session: null }, error: null })
-        ),
-      },
-      from: vi.fn(() => ({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        then: vi.fn((onFulfilled) => onFulfilled({ data: [], error: null })),
-      })),
-    })
   })
 
   describe('Successful Authentication Flow', () => {
@@ -78,7 +79,6 @@ describe('Login Flow Integration', () => {
         error: null,
       })
 
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       // Test actual form interaction without mocking form behavior
@@ -86,6 +86,10 @@ describe('Login Flow Integration', () => {
       const passwordInput = screen.getByTestId('password-input')
       const submitButton = screen.getByTestId('signin-button')
 
+      // Wait for useSupabaseClient to resolve (async hook loading)
+      await waitFor(() => expect(emailInput).not.toBeDisabled())
+
+      const user = userEvent.setup()
       // Fill form with valid data
       await user.type(emailInput, 'test@example.com')
       await user.type(passwordInput, 'validpassword123')
@@ -109,10 +113,14 @@ describe('Login Flow Integration', () => {
     it('completes OAuth login flow', async () => {
       mockSignInWithOAuth.mockResolvedValue({ error: null })
 
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const googleButton = screen.getByTestId('google-signin-button')
+
+      // Wait for useSupabaseClient to resolve
+      await waitFor(() => expect(googleButton).not.toBeDisabled())
+
+      const user = userEvent.setup()
       await user.click(googleButton)
 
       await waitFor(() => {
@@ -133,12 +141,16 @@ describe('Login Flow Integration', () => {
         error: { message: errorMessage },
       })
 
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const emailInput = screen.getByTestId('email-input')
       const passwordInput = screen.getByTestId('password-input')
       const submitButton = screen.getByTestId('signin-button')
+
+      // Wait for useSupabaseClient to resolve
+      await waitFor(() => expect(emailInput).not.toBeDisabled())
+
+      const user = userEvent.setup()
 
       // Fill form with credentials that will fail
       await user.type(emailInput, 'invalid@example.com')
@@ -160,13 +172,15 @@ describe('Login Flow Integration', () => {
     it('handles network errors gracefully', async () => {
       mockSignInWithPassword.mockRejectedValue(new Error('Network error'))
 
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const emailInput = screen.getByTestId('email-input')
       const passwordInput = screen.getByTestId('password-input')
       const submitButton = screen.getByTestId('signin-button')
 
+      await waitFor(() => expect(emailInput).not.toBeDisabled())
+
+      const user = userEvent.setup()
       await user.type(emailInput, 'test@example.com')
       await user.type(passwordInput, 'password123')
       await user.click(submitButton)
@@ -180,12 +194,15 @@ describe('Login Flow Integration', () => {
 
   describe('Form Validation Flow', () => {
     it('validates email format correctly', async () => {
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const emailInput = screen.getByTestId('email-input')
       const passwordInput = screen.getByTestId('password-input')
       const submitButton = screen.getByTestId('signin-button')
+
+      await waitFor(() => expect(emailInput).not.toBeDisabled())
+
+      const user = userEvent.setup()
 
       // Test invalid email format
       await user.type(emailInput, 'invalid-email')
@@ -207,11 +224,13 @@ describe('Login Flow Integration', () => {
     })
 
     it('requires both email and password', async () => {
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const submitButton = screen.getByTestId('signin-button')
 
+      await waitFor(() => expect(submitButton).not.toBeDisabled())
+
+      const user = userEvent.setup()
       // Try to submit empty form
       await user.click(submitButton)
 
@@ -237,13 +256,15 @@ describe('Login Flow Integration', () => {
           )
       )
 
-      const user = userEvent.setup()
       render(<LoginForm />)
 
       const emailInput = screen.getByTestId('email-input')
       const passwordInput = screen.getByTestId('password-input')
       const submitButton = screen.getByTestId('signin-button')
 
+      await waitFor(() => expect(emailInput).not.toBeDisabled())
+
+      const user = userEvent.setup()
       await user.type(emailInput, 'test@example.com')
       await user.type(passwordInput, 'password123')
 
