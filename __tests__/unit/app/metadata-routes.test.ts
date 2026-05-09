@@ -107,6 +107,42 @@ const noindexMetadataCases = [
     description:
       'View the full details of a HomeMatch property listing inside your private household workspace.',
   },
+  {
+    route: '/dashboard/liked',
+    importPath: '@/app/dashboard/liked/page',
+    title: 'Liked Properties | HomeMatch',
+    description: 'Browse the homes you and your household have liked.',
+  },
+  {
+    route: '/dashboard/passed',
+    importPath: '@/app/dashboard/passed/page',
+    title: 'Passed Properties | HomeMatch',
+    description: 'Review the homes you have skipped while swiping.',
+  },
+  {
+    route: '/dashboard/viewed',
+    importPath: '@/app/dashboard/viewed/page',
+    title: 'Viewed Properties | HomeMatch',
+    description: 'See every home you have opened, grouped by household.',
+  },
+  {
+    route: '/dashboard/activity',
+    importPath: '@/app/dashboard/activity/page',
+    title: 'Activity | HomeMatch',
+    description: 'See your household’s latest property activity.',
+  },
+  {
+    route: '/dashboard/mutual-likes',
+    importPath: '@/app/dashboard/mutual-likes/page',
+    title: 'Mutual Likes | HomeMatch',
+    description: 'Explore homes every member of your household liked.',
+  },
+  {
+    route: '/couples/decisions',
+    importPath: '@/app/couples/decisions/page',
+    title: 'Property Decisions | HomeMatch',
+    description: 'Resolve property disagreements with your household.',
+  },
 ]
 
 describe('metadata routes', () => {

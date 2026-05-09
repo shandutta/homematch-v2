@@ -14,10 +14,13 @@ import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
 import { AdSenseGate } from '@/components/legal/AdSenseGate'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
 import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED } from '@/lib/adsense'
+import { createOrganizationJsonLd } from '@/lib/seo/route-metadata'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
+
+const organizationJsonLd = createOrganizationJsonLd()
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -50,6 +53,15 @@ export const metadata: Metadata = {
   description:
     'Find your perfect home with AI-powered matching and personalized recommendations',
   metadataBase: new URL(siteUrl),
+  applicationName: 'HomeMatch',
+  authors: [{ name: 'HomeMatch' }],
+  creator: 'HomeMatch',
+  publisher: 'HomeMatch',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 }
 
 export const viewport: Viewport = {
@@ -77,13 +89,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'HomeMatch',
-              url: siteUrl,
-              logo: `${siteUrl}/favicon.ico`,
-            }),
+            __html: JSON.stringify(organizationJsonLd),
           }}
         />
         {/* 

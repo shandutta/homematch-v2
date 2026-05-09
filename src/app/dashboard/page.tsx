@@ -8,7 +8,14 @@ import {
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import type { Json } from '@/types/database'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Dashboard | HomeMatch',
+  description:
+    'Swipe through homes, see household activity, and pick up where you left off.',
+})
 
 interface DashboardPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>

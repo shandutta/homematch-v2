@@ -2,6 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { UserService } from '@/lib/services/users'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Profile | HomeMatch',
+  description:
+    'Manage your HomeMatch account profile, household membership, and activity.',
+})
 
 export default async function ProfilePage() {
   const supabase = await createClient()

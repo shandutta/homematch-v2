@@ -2,6 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { UserService } from '@/lib/services/users'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Settings | HomeMatch',
+  description: 'Update your HomeMatch profile, preferences, and notifications.',
+})
 
 interface SettingsPageProps {
   searchParams?: Promise<{ tab?: string }>

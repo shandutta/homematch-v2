@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import type { Database } from '@/types/database'
 import {
   Home,
@@ -18,6 +19,11 @@ import {
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Migration validation (internal) | HomeMatch',
+  description: 'Internal database migration validation dashboard.',
+})
 
 interface DatabaseStats {
   tableName: string

@@ -1,8 +1,15 @@
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Household | HomeMatch',
+  description:
+    'Manage your household members, invitations, and shared property decisions.',
+})
 
 interface CouplesPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>

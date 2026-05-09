@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CreateHouseholdForm } from './CreateHouseholdForm'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Create Household | HomeMatch',
+  description: 'Start a HomeMatch household and invite people to search with you.',
+})
 
 export default async function CreateHouseholdPage() {
   const supabase = await createClient()
