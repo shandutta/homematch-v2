@@ -12,7 +12,7 @@
  * functions that take a normalized record and return strings.
  */
 
-import crypto from 'node:crypto'
+import * as crypto from 'node:crypto'
 import { z } from 'zod'
 
 const trimmedString = z
@@ -149,12 +149,14 @@ function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map(canonicalJson).join(',')}]`
   }
-  const entries = Object.entries(value as Record<string, unknown>).sort(
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const entries = Object.entries(value).sort(
     ([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)
   )
   return `{${entries
     .map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`)
     .join(',')}}`
+  }
 }
 
 export interface DedupeResult<T extends IngestRecord> {
