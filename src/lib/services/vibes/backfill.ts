@@ -404,9 +404,8 @@ export async function backfillVibes(
         }))
         const { error: upsertErr } = await deps.supabase
           .from('properties')
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .upsert(allRows as any)
+          .upsert(allRows as any[])
 
         if (upsertErr?.code === '42703') {
           // Migration not applied; fall back to marker-only batch + per-row images
@@ -422,9 +421,8 @@ export async function backfillVibes(
           if (markerRows.length > 0) {
             const { error: markerErr } = await deps.supabase
               .from('properties')
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              .upsert(markerRows as any)
+              .upsert(markerRows as any[])
             if (markerErr) {
               logger.warn(
                 `[backfill-vibes] [images] Batch marker-only upsert failed: ${markerErr.message}`
