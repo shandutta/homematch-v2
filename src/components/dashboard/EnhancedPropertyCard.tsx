@@ -103,14 +103,14 @@ export function EnhancedPropertyCard({
 
   return (
     <Card
-      className="bg-card shadow-token-xl transition-token-all duration-token-normal hover:shadow-token-2xl mx-auto w-full max-w-sm overflow-hidden"
+      className="bg-card shadow-xl transition-all duration-300 hover:shadow-2xl mx-auto w-full max-w-sm overflow-hidden"
       data-testid="property-card"
     >
       {/* Image Section */}
-      <div className="from-token-secondary-100 to-token-secondary-200 relative h-64 bg-gradient-to-br">
+      <div className="from-slate-100 to-slate-200 relative h-64 bg-gradient-to-br">
         {isImageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-token-full from-token-primary-400 to-token-accent-500 h-12 w-12 animate-pulse bg-gradient-to-r"></div>
+            <div className="rounded-full from-blue-400 to-amber-500 h-12 w-12 animate-pulse bg-gradient-to-r"></div>
           </div>
         )}
 
@@ -126,12 +126,12 @@ export function EnhancedPropertyCard({
         />
 
         {/* Gradient Overlay */}
-        <div className="from-token-secondary-900/60 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+        <div className="from-slate-900/60 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
 
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
           <Badge
-            className="bg-token-background-primary/95 p-token-md text-token-lg text-token-secondary-900 shadow-token-lg font-bold backdrop-blur-sm"
+            className="bg-white/95 p-3 text-lg text-slate-900 shadow-lg font-bold backdrop-blur-sm"
             data-testid="property-price"
           >
             {formatPrice(property.price)}
@@ -143,7 +143,7 @@ export function EnhancedPropertyCard({
           <div className="absolute top-4 left-4">
             <Badge
               variant="secondary"
-              className="bg-token-background-primary/95 shadow-token-md backdrop-blur-sm"
+              className="bg-white/95 shadow-md backdrop-blur-sm"
               data-testid="property-type"
             >
               <Home className="mr-1 h-3 w-3" />
@@ -157,7 +157,7 @@ export function EnhancedPropertyCard({
           <>
             <button
               onClick={prevImage}
-              className="rounded-token-full bg-token-secondary-900/60 text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Previous image"
               data-testid="previous-image-button"
             >
@@ -165,7 +165,7 @@ export function EnhancedPropertyCard({
             </button>
             <button
               onClick={nextImage}
-              className="rounded-token-full bg-token-secondary-900/60 text-token-text-inverse transition-token-all hover:bg-token-secondary-900/80 absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Next image"
               data-testid="next-image-button"
             >
@@ -174,7 +174,7 @@ export function EnhancedPropertyCard({
 
             {/* Image Counter */}
             <div
-              className="gap-token-xs rounded-token-md bg-token-secondary-900/70 p-token-xs text-token-xs text-token-text-inverse absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center"
+              className="gap-1 rounded-md bg-slate-900/70 p-1 text-xs text-white absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center"
               data-testid="image-counter"
             >
               <Camera className="h-3 w-3" />
@@ -198,10 +198,10 @@ export function EnhancedPropertyCard({
               >
                 <span
                   aria-hidden="true"
-                  className={`rounded-token-full transition-token-all block h-2 ${
+                  className={`rounded-full transition-all block h-2 ${
                     index === currentImageIndex
-                      ? 'bg-token-text-inverse w-4'
-                      : 'bg-token-text-inverse/50 hover:bg-token-text-inverse/75 w-2'
+                      ? 'bg-white w-4'
+                      : 'bg-white/50 hover:bg-white/75 w-2'
                   }`}
                 />
               </button>
@@ -211,17 +211,17 @@ export function EnhancedPropertyCard({
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-token-lg space-y-4">
+      <CardContent className="p-6 space-y-4">
         {/* Address */}
         <div>
           <h3
-            className="text-foreground text-token-xl mb-1 font-bold"
+            className="text-foreground text-xl mb-1 font-bold"
             data-testid="property-address"
           >
             {property.address}
           </h3>
           <p
-            className="text-muted-foreground text-token-sm"
+            className="text-muted-foreground text-sm"
             data-testid="property-location"
           >
             <MapPin className="mr-1 inline h-3 w-3" />
@@ -233,7 +233,7 @@ export function EnhancedPropertyCard({
         </div>
 
         {/* Property Details */}
-        <div className="text-token-sm flex items-center justify-between">
+        <div className="text-sm flex items-center justify-between">
           <span className="font-medium" data-testid="property-beds-baths">
             {formatBedsBaths(property.bedrooms || 0, property.bathrooms || 0)}
           </span>
@@ -276,8 +276,8 @@ export function EnhancedPropertyCard({
         {/* Mini Map - Commented out for now */}
         {/* {property.coordinates && typeof property.coordinates === 'object' && property.coordinates !== null && (
           <div className="mt-2">
-            <PropertyMap 
-              property={property} 
+            <PropertyMap
+              property={property}
               className="h-32 rounded-lg"
             />
           </div>
@@ -285,12 +285,12 @@ export function EnhancedPropertyCard({
 
         {/* Action Buttons */}
         {showActions && (
-          <div className="gap-token-md mt-4 flex">
+          <div className="gap-3 mt-4 flex">
             <Button
               variant="outline"
               size="lg"
               onClick={() => onDislike(property.id)}
-              className="border-token-error-light bg-token-error-light/20 text-token-error transition-token-all hover:border-token-error hover:bg-token-error-light/30 flex-1 hover:scale-105"
+              className="border-red-300 bg-red-300/20 text-red-600 transition-all hover:border-red-500 hover:bg-red-300/30 flex-1 hover:scale-105"
               data-testid="pass-button"
             >
               <X className="mr-2 h-5 w-5" />
@@ -300,7 +300,7 @@ export function EnhancedPropertyCard({
             <Button
               size="lg"
               onClick={() => onLike(property.id)}
-              className="bg-token-success transition-token-all hover:bg-token-success-dark flex-1 text-white hover:scale-105"
+              className="bg-green-500 transition-all hover:bg-green-600 flex-1 text-white hover:scale-105"
               data-testid="like-button"
             >
               <Heart className="mr-2 h-5 w-5" fill="currentColor" />
