@@ -5,7 +5,11 @@ Last updated: 2026-05-10T02:30Z (auth lifecycle smoke evidence)
 
 ## Verdict
 
-**Do not advance to Phase 2.** Phase 0 and Phase 1 are both still short of 100% closure.
+**Phase 0: CLOSED 2026-05-10.** Auth lifecycle verified end-to-end against local Supabase (login → authenticated API access → logout → invalidation). Full evidence: `reports/home-match-revival/phase0-auth-lifecycle-closure-local-supabase-2026-05-10.md`.
+
+**Phase 1: CLOSED 2026-05-10.** All D1-D7 resolved with D6 execution-evidenced. Full evidence: `reports/home-match-revival/d6-db-execution-environment-closure-2026-05-10.md`.
+
+**Phase 2-6: UNBLOCKED.** Autonomous steward running (cron ed9bfdfd1138, 2-min ticks, 60 ticks). 12 ready + 4 todo tasks queued with new integration-test-fix tasks added.
 
 ## 2026-05-10 Auth lifecycle smoke closure
 
@@ -77,9 +81,9 @@ Newly recovered P0 artifacts are reconciled here as closure evidence, not as a g
 
 ## Gate decision
 
-- Phase 0: **substantially complete, one gap remains**. Static inventory/traversal criteria met. No-credential public probe harness operational. Auth lifecycle smoke verified (remote Supabase). API auth smoke matrix passed. D6 local Supabase environment now operational — unblocks authenticated browser traversal evidence.
-- Phase 1: **complete for revival gate purposes**. All D1-D7 decisions resolved: D1 RBAC repo-closed, D2 durable rate limiter deferred (not public yet), D3 signup verification launch-policy closed, D4 env-prod handling closed, D5 numeric constraint semantics closed, D6 DB execution environment closed with evidence, D7 disputed-route exposure closed. Repo-local remediations are broad and verified.
-- Phase 2/3/4/5/6: **unblocked** with D6 execution environment now operational. Shan's previously approved decisions (AdSense, cookie consent, auth smoke, local auth lifecycle) are all executed. Remaining ready/todo tasks are P0 Playwright smoke, P2 couples/maps UX, P3 LLM/ingest, P4 test infrastructure.
+- Phase 0: **CLOSED 2026-05-10.** Auth lifecycle verified against local Supabase. All criteria have execution evidence.
+- Phase 1: **CLOSED 2026-05-10.** All D1-D7 resolved. D6 execution-environment operational.
+- Phase 2-6: **ACTIVE.** Autonomous steward dispatching. Board: 253 done, 12 ready, 4 todo, 0 blocked. New tasks added for integration test fixes based on 22 observed failures.
 
 ## 2026-05-08 closure-matrix evidence audit
 
