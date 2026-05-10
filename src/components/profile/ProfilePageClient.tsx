@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, Household } from '@/types/database'
+import { UserServiceClient } from '@/lib/services/users-client'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from './ProfileForm'
@@ -28,7 +30,10 @@ import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
-import { TasteProfileCollector } from '@/components/features/profile/TasteProfileCollector'
+import {
+  TasteProfileCollector,
+  type TasteProfileValues,
+} from '@/components/features/profile/TasteProfileCollector'
 
 interface ProfilePageClientProps {
   user: User
@@ -102,6 +107,58 @@ export function ProfilePageClient({
   const handleProfileUpdate = (updated: UserProfile) => {
     setProfileState(updated)
   }
+
+  const handleTasteProfileSave = useCallback(
+    async (values: TasteProfileValues) => {
+      const existingPrefs =
+        typeof profileState.preferences === 'object' &&
+        profileState.preferences !== null
+          ? (profileState.preferences as Record<string, unknown>)
+          : {}
+      const updatedPreferences = {
+        ...existingPrefs,
+        tasteProfile: {
+          aesthetics: values.aesthetics,
+          lifestyle: values.lifestyle,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+      try {
+        const updated = await UserServiceClient.updateProfile(user.id, {
+          preferences: updatedPreferences,
+        })
+        setProfileState((prev) => ({ ...prev, preferences: updated.preferences }))
+        toast.success('Taste profile saved')
+      } catch {
+        toast.error('Failed to save taste profile')
+        throw new Error('Save failed')
+      }
+    },
+    [profileState.preferences, user.id]
+  )
+
+  const tasteProfileInitialValues: TasteProfileValues | undefined =
+    (() => {
+      const prefs = profileState.preferences
+      if (typeof prefs !== 'object' || prefs === null) return undefined
+      const raw = (prefs as Record<string, unknown>).tasteProfile
+      if (typeof raw !== 'object' || raw === null) return undefined
+      const tp = raw as Record<string, unknown>
+      const aesthetics = Array.isArray(tp.aesthetics)
+        ? (tp.aesthetics as unknown[]).filter(
+            (a): a is string => typeof a === 'string'
+          )
+        : []
+      const ls =
+        typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+          ? (tp.lifestyle as Record<string, unknown>)
+          : {}
+      const lifestyle: Record<string, number> = {}
+      for (const [k, v] of Object.entries(ls)) {
+        if (typeof v === 'number') lifestyle[k] = v
+      }
+      return { aesthetics, lifestyle }
+    })()
 
   const preferenceRecord = isRecord(profile.preferences)
     ? profile.preferences
@@ -549,9 +606,8 @@ export function ProfilePageClient({
                           </div>
                         </div>
                         <TasteProfileCollector
-                          userId={user.id}
-                          profile={profileState}
-                          onProfileUpdate={handleProfileUpdate}
+                          onSave={handleTasteProfileSave}
+                          initialValues={tasteProfileInitialValues}
                         />
                       </m.div>
                     </TabsContent>

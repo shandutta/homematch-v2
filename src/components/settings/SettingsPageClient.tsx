@@ -9,6 +9,11 @@ import { NotificationsSection } from './NotificationsSection'
 import { AccountSection } from './AccountSection'
 import { SavedSearchesSection } from './SavedSearchesSection'
 import {
+  TasteProfileCollector,
+  type TasteProfileValues,
+} from '@/components/features/profile/TasteProfileCollector'
+import { UserServiceClient } from '@/lib/services/users-client'
+import {
   Settings,
   Bell,
   User as UserIcon,
@@ -17,6 +22,7 @@ import {
   DollarSign,
   MapPin,
   Mail,
+  Heart,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -26,6 +32,7 @@ import {
   DEFAULT_PRICE_RANGE,
   DEFAULT_SEARCH_RADIUS,
 } from '@/lib/constants/preferences'
+import { toast } from 'sonner'
 
 interface SettingsPageClientProps {
   user: User
@@ -122,13 +129,24 @@ export function SettingsPageClient({
       icon: Search,
     },
     {
+      value: 'taste-profile',
+      label: 'Taste Profile',
+      description: 'Aesthetics & lifestyle',
+      icon: Heart,
+    },
+    {
       value: 'account',
       label: 'Account',
       description: 'Security & sessions',
       icon: UserIcon,
     },
   ] satisfies ReadonlyArray<{
-    value: 'preferences' | 'notifications' | 'saved-searches' | 'account'
+    value:
+      | 'preferences'
+      | 'notifications'
+      | 'saved-searches'
+      | 'taste-profile'
+      | 'account'
     label: string
     description: string
     icon: typeof Settings
@@ -231,6 +249,57 @@ export function SettingsPageClient({
   const handleProfileUpdate = (updated: UserProfile) => {
     setProfileState(updated)
   }
+
+  const handleTasteProfileSave = useCallback(
+    async (values: TasteProfileValues) => {
+      const existingPrefs =
+        typeof profileState.preferences === 'object' &&
+        profileState.preferences !== null
+          ? (profileState.preferences as Record<string, unknown>)
+          : {}
+      const updatedPreferences = {
+        ...existingPrefs,
+        tasteProfile: {
+          aesthetics: values.aesthetics,
+          lifestyle: values.lifestyle,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+      try {
+        const updated = await UserServiceClient.updateProfile(user.id, {
+          preferences: updatedPreferences,
+        })
+        setProfileState(updated)
+        toast.success('Taste profile saved')
+      } catch {
+        toast.error('Failed to save taste profile')
+        throw new Error('Save failed')
+      }
+    },
+    [profileState.preferences, user.id]
+  )
+
+  const tasteProfileInitialValues = useMemo((): TasteProfileValues | undefined => {
+    const prefs = profileState.preferences
+    if (typeof prefs !== 'object' || prefs === null) return undefined
+    const raw = (prefs as Record<string, unknown>).tasteProfile
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const tp = raw as Record<string, unknown>
+    const aesthetics = Array.isArray(tp.aesthetics)
+      ? (tp.aesthetics as unknown[]).filter(
+          (a): a is string => typeof a === 'string'
+        )
+      : []
+    const ls =
+      typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+        ? (tp.lifestyle as Record<string, unknown>)
+        : {}
+    const lifestyle: Record<string, number> = {}
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'number') lifestyle[k] = v
+    }
+    return { aesthetics, lifestyle }
+  }, [profileState.preferences])
 
   const [preferencesSaveState, setPreferencesSaveState] = useState<SaveState>({
     isSaving: false,
@@ -408,7 +477,7 @@ export function SettingsPageClient({
             className="space-y-8"
           >
             {/* Tab navigation */}
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 backdrop-blur-sm sm:gap-2 sm:p-2 md:grid-cols-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 backdrop-blur-sm sm:gap-2 sm:p-2 md:grid-cols-5">
               {tabOptions.map(({ value, label, description, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
@@ -486,6 +555,25 @@ export function SettingsPageClient({
                     transition={{ duration: 0.3 }}
                   >
                     <SavedSearchesSection userId={user.id} />
+                  </m.div>
+                </TabsContent>
+              )}
+
+              {activeTab === 'taste-profile' && (
+                <TabsContent
+                  value="taste-profile"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                >
+                  <m.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <TasteProfileCollector
+                      onSave={handleTasteProfileSave}
+                      initialValues={tasteProfileInitialValues}
+                    />
                   </m.div>
                 </TabsContent>
               )}
