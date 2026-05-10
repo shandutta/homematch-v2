@@ -288,15 +288,23 @@ function clamp01(n: number): number {
   return n
 }
 
+export interface ParsedLLMResponse {
+  ranked: RankedProperty[]
+  /** Number of entries from the LLM that were dropped due to hallucination
+   *  (unknown property_id) or schema validation failure. */
+  droppedCount: number
+}
+
 /**
  * Parse and ground-check an LLM response. Drops any ranked entry whose
  * property_id is not in the candidate set, and renumbers ranks 1..N.
+ * Returns both the grounded ranked list and a droppedCount for observability.
  */
 export function parseLLMResponse(
   raw: string,
   candidates: MatchCandidateProperty[],
   topK: number
-): RankedProperty[] {
+): ParsedLLMResponse {
   const trimmed = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
   let parsed: unknown
   try {
@@ -316,18 +324,27 @@ export function parseLLMResponse(
 
   const validIds = new Set(candidates.map((c) => c.id))
   const grounded: RankedProperty[] = []
+  let droppedCount = 0
   for (const entry of root) {
     const result = rankedPropertySchema.safeParse(entry)
-    if (!result.success) continue
-    if (!validIds.has(result.data.property_id)) continue
+    if (!result.success) {
+      droppedCount++
+      continue
+    }
+    if (!validIds.has(result.data.property_id)) {
+      droppedCount++
+      continue
+    }
     grounded.push(result.data)
   }
 
   grounded.sort((a, b) => a.rank - b.rank)
-  return grounded.slice(0, topK).map((entry, idx) => ({
+  const ranked = grounded.slice(0, topK).map((entry, idx) => ({
     ...entry,
     rank: idx + 1,
   }))
+
+  return { ranked, droppedCount }
 }
 
 /**
@@ -393,7 +410,21 @@ export async function match(
     user: userPrompt,
     model,
   })
-  const ranked = parseLLMResponse(content, request.candidates, request.top_k)
+  const { ranked, droppedCount } = parseLLMResponse(
+    content,
+    request.candidates,
+    request.top_k
+  )
+
+  if (droppedCount > 0) {
+    console.warn(
+      JSON.stringify({
+        event: 'match.llm.dropped_entries',
+        prompt_version: version,
+        dropped_count: droppedCount,
+      })
+    )
+  }
 
   return matchResultSchema.parse({
     ranked,
