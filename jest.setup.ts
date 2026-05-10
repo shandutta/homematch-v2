@@ -153,6 +153,15 @@ jest.mock('framer-motion', () => {
     }),
     useAnimation: () => ({ start: jest.fn(), stop: jest.fn() }),
     useInView: () => false,
+    LazyMotion: ({
+      children,
+    }: {
+      children?: React.ReactNode
+      features?: unknown
+    }) => children,
+    MotionConfig: ({ children }: { children?: React.ReactNode }) => children,
+    domAnimation: {},
+    domMax: {},
   }
 })
 
