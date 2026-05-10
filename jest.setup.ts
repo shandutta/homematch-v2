@@ -141,6 +141,10 @@ jest.mock('framer-motion', () => {
       li: createMotionComponent('li'),
     },
     AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
+    LazyMotion: ({ children }: { children?: React.ReactNode }) => children,
+    MotionConfig: ({ children }: { children?: React.ReactNode }) => children,
+    domAnimation: {},
+    domMax: {},
     useScroll: () => ({ scrollY: { get: () => 0 } }),
     useTransform: () => 0,
     useMotionValue: <T>(initial: T) => ({
