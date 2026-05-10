@@ -43,7 +43,7 @@ export function MutualLikesListPage() {
   const [compareMode, setCompareMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  const allLikes = query.data ?? []
+  const allLikes = useMemo(() => query.data ?? [], [query.data])
   const totalLikes = allLikes.length
 
   const toggleSelected = (propertyId: string) => {
