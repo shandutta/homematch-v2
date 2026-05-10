@@ -15,22 +15,39 @@ describe('RLS Boundaries - Integration', () => {
     const anonKey =
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const token = process.env.TEST_AUTH_TOKEN
 
-    if (!supabaseUrl || !anonKey || !serviceKey || !token) {
+    if (!supabaseUrl || !anonKey || !serviceKey) {
       throw new Error('Missing Supabase env for RLS tests')
     }
 
-    return { supabaseUrl, anonKey, serviceKey, token }
+    return { supabaseUrl, anonKey, serviceKey }
   }
 
-  beforeAll(() => {
-    const { supabaseUrl, anonKey, serviceKey, token } = expectEnv()
+  beforeAll(async () => {
+    const { supabaseUrl, anonKey, serviceKey } = expectEnv()
     anonClient = createClient<Database>(supabaseUrl, anonKey)
     serviceClient = createClient<Database>(supabaseUrl, serviceKey)
+
+    // Sign in as a test user to get a valid auth token. This avoids relying on
+    // a pre-generated TEST_AUTH_TOKEN file that may not exist in all environments.
+    const tempClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false },
+    })
+    const { data: { session }, error: signInError } =
+      await tempClient.auth.signInWithPassword({
+        email: process.env.TEST_USER_2_EMAIL || 'test2@example.com',
+        password: process.env.TEST_USER_2_PASSWORD || 'testpassword456',
+      })
+
+    if (signInError || !session?.access_token) {
+      throw new Error(
+        `Could not authenticate test user for RLS boundary tests: ${signInError?.message ?? 'no session'}`
+      )
+    }
+
     authClient = createClient<Database>(supabaseUrl, anonKey, {
       global: {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       },
     })
   })

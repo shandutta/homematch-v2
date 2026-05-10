@@ -63,8 +63,14 @@ export class IntegrationTestHelper {
     email: string,
     password: string
   ): Promise<SupabaseClient> {
-    const supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
-    const supabaseKey = process.env.SUPABASE_ANON_KEY || null
+    const supabaseUrl =
+      process.env.SUPABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      'http://127.0.0.1:54200'
+    const supabaseKey =
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      null
 
     if (process.env.DEBUG_TEST_SETUP) {
       console.log(
@@ -74,7 +80,7 @@ export class IntegrationTestHelper {
 
     if (!supabaseKey) {
       throw new Error(
-        'Missing SUPABASE_ANON_KEY for integration test helper. Set it via .env.test.local or .env.prod.'
+        'Missing SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) for integration test helper. Set it via .env.test.local or .env.local.'
       )
     }
 
@@ -176,27 +182,34 @@ export class IntegrationTestHelper {
 
   /**
    * Gets test users that were created by setup-test-users-admin.js
+   *
+   * Uses perPage:10 pagination to work around a local Supabase bug where
+   * listUsers() with perPage>10 returns "Database error finding users".
    */
   async getTestUser(email: string): Promise<TestUser> {
-    const { data: users, error } =
-      await this.serviceClient.auth.admin.listUsers()
+    let page = 1
+    while (true) {
+      const { data: users, error } =
+        await this.serviceClient.auth.admin.listUsers({ perPage: 10, page })
 
-    if (error) {
-      throw new Error(`Failed to list users: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to list users: ${error.message}`)
+      }
+
+      const user = users?.users?.find((u) => u.email === email)
+      if (user) {
+        return { id: user.id, email: user.email! }
+      }
+
+      if (!users?.users?.length || users.users.length < 10) {
+        break
+      }
+      page++
     }
 
-    const user = users.users.find((u) => u.email === email)
-
-    if (!user) {
-      throw new Error(
-        `Test user ${email} not found. Run setup-test-users-admin.js first.`
-      )
-    }
-
-    return {
-      id: user.id,
-      email: user.email!,
-    }
+    throw new Error(
+      `Test user ${email} not found. Run setup-test-users-admin.js first.`
+    )
   }
 
   /**
