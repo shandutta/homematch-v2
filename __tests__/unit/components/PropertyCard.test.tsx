@@ -1,5 +1,6 @@
 import { jest, describe, test, expect } from '@jest/globals'
 import { screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { renderWithQuery } from '../../utils/TestQueryProvider'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { Property } from '@/lib/schemas/property'
@@ -75,15 +76,20 @@ const getStatValueByLabel = (label: string) => {
 }
 
 describe('PropertyCard Component', () => {
-  test('should render property details correctly', () => {
-    renderWithQuery(<PropertyCard property={mockProperty} />)
-    expect(screen.getByText('123 Main St')).toBeDefined()
-    expect(screen.getByText('$500,000')).toBeDefined()
-    expect(screen.getByText('Single Family')).toBeDefined()
+  test('should render property details correctly and respond to like decision', async () => {
+    const onDecision = jest.fn()
+    const user = userEvent.setup()
+    renderWithQuery(<PropertyCard property={mockProperty} onDecision={onDecision} />)
+    expect(screen.getByText('123 Main St')).toBeInTheDocument()
+    expect(screen.getByText('$500,000')).toBeInTheDocument()
+    expect(screen.getByText('Single Family')).toBeInTheDocument()
     // New layout uses lowercase labels: "bed", "bath", "sqft"
     expect(getStatValueByLabel('bed')).toHaveTextContent('3')
     expect(getStatValueByLabel('bath')).toHaveTextContent('2')
     expect(getStatValueByLabel('sqft')).toHaveTextContent('1,500')
+    // Behavioral: clicking Like fires the decision handler with the correct property id
+    await user.click(screen.getByLabelText('Like property'))
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
   })
 
   test('should render Zillow link with correct href, opens in new tab, and is keyboard-accessible', async () => {
