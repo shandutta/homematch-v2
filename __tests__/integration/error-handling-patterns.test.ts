@@ -4,7 +4,6 @@ import { PropertyService } from '@/lib/services/properties'
 import { InteractionService } from '@/lib/services/interactions'
 import { createClient } from '@/lib/supabase/standalone'
 import { setupTestDatabase, cleanupTestDatabase } from './fixtures'
-import { getTestDataFactory } from '../utils/test-data-factory'
 import { createTestClientFactory } from '../utils/test-client-factory'
 import { randomUUID } from 'crypto'
 
@@ -42,20 +41,12 @@ describeOrSkip('Error Handling Patterns Integration Tests', () => {
 
   describe('PropertyService Error Patterns', () => {
     let propertyService: PropertyService
-    let testClient: ReturnType<typeof createClient>
     let createdPropertyIds: string[] = []
 
     beforeEach(async () => {
-      // Create test client with service role (bypasses RLS)
-      testClient = createClient()
-
       // Create client factory that returns our test client
       const clientFactory = createTestClientFactory()
       propertyService = new PropertyService(clientFactory)
-
-      // Get existing test user (from setup-test-users-admin.js)
-      const factory = getTestDataFactory(testClient)
-      await factory.getTestUser('test1@example.com')
 
       // Reset created properties list
       createdPropertyIds = []

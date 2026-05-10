@@ -20,7 +20,6 @@ describe('PropertyService Facade Extended Tests', () => {
     // Create a mock factory that implements ISupabaseClientFactory
     const mockFactory: ISupabaseClientFactory = {
       createClient: () => getTestDatabaseClient(),
-      getInstance: () => mockFactory,
     }
 
     propertyService = new PropertyService(mockFactory)
@@ -178,6 +177,14 @@ describe('PropertyService Facade Extended Tests', () => {
 
   describe('Text Search Operations', () => {
     beforeEach(async () => {
+      // Remove any leftover "UniqueNameTest123" properties from previous runs
+      // so the text-search count assertions remain stable across runs.
+      const supabase = createClient()
+      await supabase
+        .from('properties')
+        .delete()
+        .ilike('address', '%UniqueNameTest123%')
+
       const downtownNeighborhood = await propertyService.createNeighborhood({
         name: 'Historic District',
         city: 'Search City',

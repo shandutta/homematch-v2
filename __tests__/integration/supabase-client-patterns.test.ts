@@ -35,15 +35,15 @@ describe('Supabase Client Patterns E2E Tests', () => {
   })
 
   describe('Browser Client Pattern', () => {
-    test('should create browser client with proper configuration', () => {
-      const client = createBrowserClient()
+    test('should create browser client with proper configuration', async () => {
+      const client = await createBrowserClient()
 
       expect(client).toBeTruthy()
       expect(typeof client.from).toBe('function')
       expect(typeof client.auth).toBe('object')
     })
 
-    test('should handle browser environment correctly', () => {
+    test('should handle browser environment correctly', async () => {
       // Simulate browser environment
       const originalWindow = globalThis.window
       Object.defineProperty(globalThis, 'window', {
@@ -52,7 +52,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
         writable: true,
       })
 
-      const client = createBrowserClient()
+      const client = await createBrowserClient()
       expect(client).toBeTruthy()
 
       // Restore original environment
@@ -63,8 +63,8 @@ describe('Supabase Client Patterns E2E Tests', () => {
       })
     })
 
-    test('should maintain consistent API surface with server client', () => {
-      const browserClient = createBrowserClient()
+    test('should maintain consistent API surface with server client', async () => {
+      const browserClient = await createBrowserClient()
 
       // Should have same basic methods as server client
       expect(typeof browserClient.from).toBe('function')
@@ -157,7 +157,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
       }
     })
 
-    test('should handle client creation errors gracefully', async () => {
+    test('should handle client creation errors gracefully', () => {
       // Mock environment variables to cause client creation failure
       const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const originalKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -169,15 +169,20 @@ describe('Supabase Client Patterns E2E Tests', () => {
       delete process.env.SUPABASE_URL
       delete process.env.SUPABASE_SERVICE_ROLE_KEY
 
-      expect(() => createBrowserClient()).toThrow()
-      expect(() => createStandaloneClient()).toThrow()
-
-      // Restore environment variables
-      if (originalUrl) process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl
-      if (originalKey) process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey
-      if (originalServiceUrl) process.env.SUPABASE_URL = originalServiceUrl
-      if (originalServiceKey) {
-        process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceKey
+      try {
+        // Standalone client throws synchronously on missing credentials.
+        // Browser client uses module-level promise caching; once initialized it
+        // returns the cached promise regardless of env vars, so it cannot be
+        // tested for synchronous throws after first use.
+        expect(() => createStandaloneClient()).toThrow()
+      } finally {
+        // Always restore env vars so subsequent tests are not affected.
+        if (originalUrl) process.env.NEXT_PUBLIC_SUPABASE_URL = originalUrl
+        if (originalKey) process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey
+        if (originalServiceUrl) process.env.SUPABASE_URL = originalServiceUrl
+        if (originalServiceKey) {
+          process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceKey
+        }
       }
     })
   })
@@ -194,7 +199,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
     })
 
     test('should handle authentication with browser client', async () => {
-      const client = createBrowserClient()
+      const client = await createBrowserClient()
 
       // Test auth operations
       const { error } = await client.auth.getSession()
@@ -207,7 +212,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
   describe('Client Error Handling Patterns', () => {
     test('should handle network errors consistently across clients', async () => {
       const standaloneClient = createStandaloneClient()
-      const browserClient = createBrowserClient()
+      const browserClient = await createBrowserClient()
       const testClient = await createTestClientFactory().createClient()
 
       // All clients should handle network errors the same way
@@ -265,7 +270,7 @@ describe('Supabase Client Patterns E2E Tests', () => {
 
       // Create multiple clients
       const standaloneClient = createStandaloneClient()
-      const browserClient = createBrowserClient()
+      const browserClient = await createBrowserClient()
       const testClient = await createTestClientFactory().createClient()
 
       const endTime = Date.now()
