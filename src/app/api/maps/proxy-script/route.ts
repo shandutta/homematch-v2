@@ -95,7 +95,7 @@ export async function GET(request: Request) {
     const librariesParam = Array.from(libraries).join(',')
 
     // Fetch the actual Google Maps script
-    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=${librariesParam}&loading=async&callback=initGoogleMaps`
+    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(serverApiKey)}&libraries=${librariesParam}&loading=async&callback=initGoogleMaps`
 
     const googleReferer = getGoogleReferer(request)
     const response = await fetchWithTimeout(scriptUrl, {

@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
 import { AdSenseGate } from '@/components/legal/AdSenseGate'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
+import { CcpaOptOutLink } from '@/components/legal/CcpaOptOutLink'
 import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED } from '@/lib/adsense'
 import {
   createOrganizationJsonLd,
@@ -76,6 +77,32 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  openGraph: {
+    title: 'HomeMatch — Collaborative Home Search for Couples & Households',
+    description:
+      'Find your perfect home with AI-powered matching and personalized recommendations',
+    url: siteUrl,
+    siteName: 'HomeMatch',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: `${siteUrl}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: 'HomeMatch — Collaborative Home Search',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@homematch',
+    creator: '@homematch',
+    title: 'HomeMatch — Collaborative Home Search for Couples & Households',
+    description:
+      'Find your perfect home with AI-powered matching and personalized recommendations',
+    images: [`${siteUrl}/twitter-image.jpg`],
+  },
 }
 
 export const viewport: Viewport = {
@@ -131,6 +158,7 @@ export default function RootLayout({
         <AnalyticsGate />
         <AdSenseGate />
         <CookieConsentBanner />
+        <CcpaOptOutLink />
       </body>
     </html>
   )

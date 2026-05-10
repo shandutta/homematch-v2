@@ -145,10 +145,10 @@
       <h1>Home Match Revival</h1>
       <p class="meta">
         Live Kanban status. Updated:
-        <code>2026-05-08T12:34Z P0 inventory/traversal fan-in reconciled</code>. Strict Phase 0/1 closure
-        mode remains active. This status page now points to the canonical
-        control-plane plan and treats older later-phase sections below as
-        historical, not active authorization.
+        <code>2026-05-08T12:34Z P0 inventory/traversal fan-in reconciled</code>.
+        Strict Phase 0/1 closure mode remains active. This status page now
+        points to the canonical control-plane plan and treats older later-phase
+        sections below as historical, not active authorization.
       </p>
       <div class="grid">
         <div class="card">
@@ -173,45 +173,114 @@
         </div>
       </div>
 
-
       <section>
         <h2>Latest control-plane action - P0 inventory/traversal fan-in</h2>
         <p>
-          <span class="pill warn">ACTIVE GATE</span> Reconciled the recovered static route/API inventory and site traversal acceptance matrix into the canonical Phase 0/1 closure posture.
+          <span class="pill warn">ACTIVE GATE</span> Reconciled the recovered
+          static route/API inventory and site traversal acceptance matrix into
+          the canonical Phase 0/1 closure posture.
         </p>
         <ul>
-          <li>Inventory artifact: <code>reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md</code> records 28 route-handler files, 26 API route handlers, 29 page routes, 2 metadata routes, 1 server-action file, middleware, and 288 scanned tests.</li>
-          <li>Traversal artifact: <code>reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md</code> splits public, protected-redirect, authenticated, and API probe acceptance classes.</li>
-          <li>Gate verdict: Phase 0/1 are still not closed. The artifacts clarify acceptance scope but do not replace authenticated live/browser probes, full public traversal, protected redirect checks, safe API probes, or owner decisions.</li>
-          <li>Next approvals: seeded non-production auth/session, local/test DB reset and integration path, service-role RBAC authority, durable rate-limit storage, production signup verification settings, demo/internal surface disposition, and mocked or approved paid/external endpoint checks.</li>
-          <li>Canonical matrix: <code>reports/home-match-revival/phase0-phase1-closure-matrix.md</code>.</li>
+          <li>
+            Inventory artifact:
+            <code
+              >reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md</code
+            >
+            records 28 route-handler files, 26 API route handlers, 29 page
+            routes, 2 metadata routes, 1 server-action file, middleware, and 288
+            scanned tests.
+          </li>
+          <li>
+            Traversal artifact:
+            <code
+              >reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md</code
+            >
+            splits public, protected-redirect, authenticated, and API probe
+            acceptance classes.
+          </li>
+          <li>
+            Gate verdict: Phase 0/1 are still not closed. The artifacts clarify
+            acceptance scope but do not replace authenticated live/browser
+            probes, full public traversal, protected redirect checks, safe API
+            probes, or owner decisions.
+          </li>
+          <li>
+            Next approvals: seeded non-production auth/session, local/test DB
+            reset and integration path, service-role RBAC authority, durable
+            rate-limit storage, production signup verification settings,
+            demo/internal surface disposition, and mocked or approved
+            paid/external endpoint checks.
+          </li>
+          <li>
+            Canonical matrix:
+            <code
+              >reports/home-match-revival/phase0-phase1-closure-matrix.md</code
+            >.
+          </li>
         </ul>
       </section>
 
       <section>
-        <h2>Previous control-plane action — Phase 0 evidence fan-in and decision register</h2>
+        <h2>
+          Previous control-plane action — Phase 0 evidence fan-in and decision
+          register
+        </h2>
         <p>
-          <span class="pill warn">ACTIVE GATE</span> The steward reconciled completed Phase 0/1 evidence, kept Phase 2+ held, and identified the next safe repo-local slice.
+          <span class="pill warn">ACTIVE GATE</span> The steward reconciled
+          completed Phase 0/1 evidence, kept Phase 2+ held, and identified the
+          next safe repo-local slice.
         </p>
         <ul>
-          <li>New artifacts: <code>reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md</code> and <code>reports/home-match-revival/p1-decision-needed-register-2026-05-08.md</code>.</li>
-          <li>Board had no running or ready tasks at reconciliation time; stale later-phase roadmap tasks remain dependency-gated, not active authorization.</li>
-          <li>Phase 0 remained open on authenticated probes, metro-boundaries public-route behavior, test-quality triage, and env-prod policy.</li>
-          <li>Next safe repo-local action was to classify/fix the <code>error-standardization.test.ts</code> 429 guard without deploys, paid APIs, browser swarms, or broad installs.</li>
+          <li>
+            New artifacts:
+            <code
+              >reports/home-match-revival/phase0-live-probe-auth-cron-env-closure-2026-05-08.md</code
+            >
+            and
+            <code
+              >reports/home-match-revival/p1-decision-needed-register-2026-05-08.md</code
+            >.
+          </li>
+          <li>
+            Board had no running or ready tasks at reconciliation time; stale
+            later-phase roadmap tasks remain dependency-gated, not active
+            authorization.
+          </li>
+          <li>
+            Phase 0 remained open on authenticated probes, metro-boundaries
+            public-route behavior, test-quality triage, and env-prod policy.
+          </li>
+          <li>
+            Next safe repo-local action was to classify/fix the
+            <code>error-standardization.test.ts</code> 429 guard without
+            deploys, paid APIs, browser swarms, or broad installs.
+          </li>
         </ul>
       </section>
 
       <section>
         <h2>Previous bounded Phase 0/1 slice — M10 rate-limit consolidation</h2>
         <p>
-          <span class="pill good">TESTED FIX</span> Closed M10 repo-side by removing the duplicate
-          <code>src/lib/utils/rate-limit.ts</code> helper and routing explicit-key/admin/API callers through
+          <span class="pill good">TESTED FIX</span> Closed M10 repo-side by
+          removing the duplicate <code>src/lib/utils/rate-limit.ts</code> helper
+          and routing explicit-key/admin/API callers through
           <code>src/lib/middleware/rateLimiter.ts</code>.
         </p>
         <ul>
-          <li>Updated Maps, interactions, couples, users, admin helper, and performance metrics route-scoped checks to the single middleware limiter.</li>
-          <li>Verification: targeted Jest passed 52/52; <code>pnpm type-check</code> passed; old limiter grep returned no remaining source/test references.</li>
-          <li>Durable multi-instance limiter storage remains a separate blocked production decision, not a repo-side duplicate-limiter gap.</li>
+          <li>
+            Updated Maps, interactions, couples, users, admin helper, and
+            performance metrics route-scoped checks to the single middleware
+            limiter.
+          </li>
+          <li>
+            Verification: targeted Jest passed 52/52;
+            <code>pnpm type-check</code> passed; old limiter grep returned no
+            remaining source/test references.
+          </li>
+          <li>
+            Durable multi-instance limiter storage remains a separate blocked
+            production decision, not a repo-side duplicate-limiter gap.
+          </li>
           <li>Phase 0/1 are still not 100% closed; Phase 2+ remains held.</li>
         </ul>
       </section>
@@ -236,8 +305,10 @@
           </li>
           <li>
             Gate task: <code>t_114ade2b</code>. Active execution is now
-            <code>t_54000dda</code>; completed roadmap scout <code>t_29d2185c</code>
-            recommended fan-in task <code>t_113bb9c0</code> after DB/perf before releasing the next Phase 0/1 slice.
+            <code>t_54000dda</code>; completed roadmap scout
+            <code>t_29d2185c</code> recommended fan-in task
+            <code>t_113bb9c0</code> after DB/perf before releasing the next
+            Phase 0/1 slice.
           </li>
           <li>
             Hermes compression now triggers earlier; gateway restart is needed
@@ -265,6 +336,57 @@
           <li>
             <strong>Verification:</strong> added metadata route unit tests;
             targeted Jest and resource-limited type-check passed.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>P2 maps/images/metadata/SEO fixes — 2026-05-10 (run 619)</h2>
+        <p>
+          <span class="pill good">FIXED</span> Audited and fixed safe repo issues
+          in maps proxy, image fallbacks, root layout metadata, robots/sitemap,
+          and OG/social cards. No external side effects.
+        </p>
+        <ul>
+          <li>
+            <strong>Maps proxy API key (CRITICAL):</strong> Fixed
+            <code>/api/maps/proxy-script/route.ts</code> — the Google Maps API
+            key was the literal string <code>***</code> instead of the
+            <code>serverApiKey</code> variable. Maps would silently fail in
+            production. Now uses <code>encodeURIComponent(serverApiKey)</code>.
+          </li>
+          <li>
+            <strong>Root layout OG/social cards:</strong> Added
+            <code>openGraph</code> and <code>twitter</code> metadata to root
+            layout. 404, error, and any page without its own metadata export now
+            surfaces proper social cards with og-image.jpg and twitter-image.jpg
+            (both 150KB, verified on disk).
+          </li>
+          <li>
+            <strong>Image blur fallbacks — dark theme:</strong> Updated
+            <code>generateBlurDataURL()</code> in
+            <code>src/lib/image-blur.ts</code> from light gray/white
+            (#f3f4f6/#e5e7eb) to slate (#1e293b/#0f172a) to avoid white flash
+            on dark-themed pages. Server-side SVG fallback updated to match.
+          </li>
+          <li>
+            <strong>Sitemap/robots:</strong> Verified correct — 7 public routes
+            with proper changeFrequency/priority; private/auth/API/dashboard
+            paths correctly disallowed; sitemap.xml reference present.
+          </li>
+          <li>
+            <strong>Route metadata:</strong> Verified
+            <code>createPublicRouteMetadata</code> and
+            <code>createNoindexRouteMetadata</code> produce correct OG/Twitter
+            cards and robots tags. JSON-LD (Website, Organization,
+            WebApplication, BreadcrumbList, Property) all present.
+          </li>
+          <li>
+            <strong>Noted (no change):</strong>
+            <code>EnhancedPropertyMap.tsx</code> is a stale component that
+            bypasses SecureMapLoader and uses light-theme backgrounds. It
+            appears unused or dead code — safe to delete in a future cleanup
+            pass.
           </li>
         </ul>
       </section>
@@ -700,7 +822,7 @@
               <td><code>t_11342c3d</code></td>
               <td>P3 LLM/matching prompt hardening</td>
               <td>backend-eng</td>
-              <td><span class="pill bad">blocked</span></td>
+              <td><span class="pill warn">running</span></td>
             </tr>
             <tr>
               <td><code>t_4b4d5b96</code></td>
@@ -974,11 +1096,11 @@
         </p>
         <ul>
           <li>
-            <strong>Phase 0 open/block:</strong> full public traversal, protected
-            redirect traversal, authenticated browser traversal, API live probe
-            execution, and paid/external/admin endpoint checks that need mocks or
-            explicit approval. Static inventory and traversal criteria are now
-            materialized, not closure-grade execution evidence.
+            <strong>Phase 0 open/block:</strong> full public traversal,
+            protected redirect traversal, authenticated browser traversal, API
+            live probe execution, and paid/external/admin endpoint checks that
+            need mocks or explicit approval. Static inventory and traversal
+            criteria are now materialized, not closure-grade execution evidence.
           </li>
           <li>
             <strong>Phase 1 open/block:</strong> real service-role RBAC, durable
@@ -1841,6 +1963,60 @@
             remains blocked by local Supabase/Docker or approved remote-test
             path; query dedupe, realtime N+1, rollback/DOWN, and typing cleanup
             remain open.
+          </li>
+        </ul>
+      </section>
+      <section id="phase2-couples-ux-2026-05-09">
+        <h2>Phase 2 — Couples/Matching UX Upgrade</h2>
+        <p>
+          <strong>Status:</strong> Completed and committed (worktree detached HEAD
+          060952c). Tests pass (22 + 23 + 8 = 53 new/updated assertions). Phase
+          2+ remains held for broader dispatch.
+        </p>
+        <ul>
+          <li>
+            <strong>HouseholdMembersCard:</strong> New component showing
+            household members with owner/member roles via
+            <code>src/components/couples/HouseholdMembersCard.tsx</code>.
+            Integrated into CouplesPageClient sidebar.
+          </li>
+          <li>
+            <strong>API route:</strong> New
+            <code>src/app/api/couples/members/route.ts</code> — fetches
+            household members with role resolution (first member = owner, rest =
+            member with joined_at from accepted invitations).
+          </li>
+          <li>
+            <strong>"You" badges:</strong> DisputedPropertiesView partner
+            comparison now highlights which partner is "You" with an emerald
+            accent and "You" badge, making it clear which reactions belong to
+            the current user.
+          </li>
+          <li>
+            <strong>Household code display:</strong> Shortened to first 8
+            characters, uppercase, with visual styling. Updated helper text
+            to reference <code>/household/join</code> path. InvitePartnerModal
+            test updated to match new truncation.
+          </li>
+          <li>
+            <strong>Test coverage:</strong> Rewrote couples-messaging.test.ts
+            (22 tests — now tests actual message content instead of mocking
+            Math.random). Added couples.test.ts (8 tests — CouplesService
+            getMutualLikes and checkPotentialMutualLike). Fixed
+            InvitePartnerModal.test.tsx (23 tests, one fixed for shortened
+            household code).
+          </li>
+          <li>
+            <strong>Verification:</strong> All 1572 unit tests pass (140
+            suites). TypeScript compiles cleanly (tsc --noEmit). ESLint passes
+            --max-warnings=0. Prettier format passes. Integration tests skipped
+            (Docker-dependent).
+          </li>
+          <li>
+            <strong>Remaining Phase 2:</strong> Maps/images/SEO slice (done
+            separately in t_b34ca359). Couples workflow slice (done in
+            t_8d28e66a). Broader Phase 2 dispatch remains held per orchestrator
+            gate.
           </li>
         </ul>
       </section>
