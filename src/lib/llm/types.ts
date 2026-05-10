@@ -78,6 +78,7 @@ export const matchResultSchema = z.object({
   generated_at: z.string().datetime(),
   candidate_count: z.number().int().min(0),
   truncated: z.boolean(),
+  prompt_version: z.enum(['1', '2']).default('1'),
 })
 
 export type MatchPreferences = z.infer<typeof matchPreferencesSchema>

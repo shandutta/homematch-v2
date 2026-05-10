@@ -1,4 +1,5 @@
 import { buildUserPrompt, SYSTEM_PROMPT } from './prompts'
+import { buildUserPromptV2, SYSTEM_PROMPT_V2 } from './prompts-v2'
 import { validateAndRedact } from './safety'
 import {
   matchResultSchema,
@@ -18,10 +19,15 @@ export interface LLMClient {
   }): Promise<{ content: string; model: string }>
 }
 
+export type PromptVersion = '1' | '2'
+
 export interface MatcherOptions {
   llmClient?: LLMClient
   llmEnabled?: boolean
   model?: string
+  /** Which prompt template to use. Defaults to "1" (original). Use "2" for the
+   *  structured rubric-based prompt with per-dimension score breakdown. */
+  promptVersion?: PromptVersion
 }
 
 const DEFAULT_MODEL = 'qwen/qwen3-vl-8b-instruct'
@@ -275,6 +281,8 @@ export async function match(
   const request: MatchRequest = validateAndRedact(input)
   const useLLM = isLLMEnabled(opts)
 
+  const version: PromptVersion = opts.promptVersion ?? '1'
+
   if (!useLLM) {
     const ranked = mockRank(
       request.preferences,
@@ -288,6 +296,7 @@ export async function match(
       generated_at: new Date().toISOString(),
       candidate_count: request.candidates.length,
       truncated: ranked.length < request.candidates.length,
+      prompt_version: version,
     })
   }
 
@@ -295,14 +304,23 @@ export async function match(
     throw new Error('LLM mode enabled but no llmClient was provided')
   }
 
-  const userPrompt = buildUserPrompt({
-    preferences: request.preferences,
-    candidates: request.candidates,
-    topK: request.top_k,
-  })
+  const systemPrompt = version === '2' ? SYSTEM_PROMPT_V2 : SYSTEM_PROMPT
+  const userPrompt =
+    version === '2'
+      ? buildUserPromptV2({
+          preferences: request.preferences,
+          candidates: request.candidates,
+          topK: request.top_k,
+        })
+      : buildUserPrompt({
+          preferences: request.preferences,
+          candidates: request.candidates,
+          topK: request.top_k,
+        })
+
   const model = opts.model || process.env.LLM_MODEL || DEFAULT_MODEL
   const { content, model: usedModel } = await opts.llmClient.complete({
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     user: userPrompt,
     model,
   })
@@ -315,5 +333,6 @@ export async function match(
     generated_at: new Date().toISOString(),
     candidate_count: request.candidates.length,
     truncated: ranked.length < request.candidates.length,
+    prompt_version: version,
   })
 }
