@@ -73,7 +73,7 @@ export const rankedPropertySchema = z.object({
 
 export const matchResultSchema = z.object({
   ranked: z.array(rankedPropertySchema),
-  mode: z.enum(['mock', 'llm']),
+  mode: z.enum(['mock', 'llm', 'llm-fallback-mock']),
   model: z.string().nullable(),
   generated_at: z.string().datetime(),
   candidate_count: z.number().int().min(0),

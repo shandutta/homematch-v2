@@ -30,12 +30,13 @@ this worker does not execute them.
 **Why owed:** static guards assert reset-replay-safe statements but do not
 prove the migrations actually replay end-to-end on an empty DB.
 
-| Path | Command (operator-run, not by autonomous worker) | Output to capture |
-|------|---------------------------------------------------|-------------------|
-| Safe local (preferred) | `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime` then `pnpm dlx supabase@latest db reset` | Full stdout/stderr → `reports/home-match-revival/evidence/d6-db-reset-<date>.log` (redacted of any URLs/keys) |
-| Remote-test (Supabase preview branch) | `pnpm dlx supabase@latest branches create d6-reset-evidence` then `pnpm dlx supabase@latest db reset --linked` against the **preview branch only** | Same log, plus `branches list` snapshot before/after |
+| Path                                  | Command (operator-run, not by autonomous worker)                                                                                                        | Output to capture                                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Safe local (preferred)                | `pnpm dlx supabase@latest start -x studio,mailpit,imgproxy,storage-api,logflare,vector,supavisor,edge-runtime` then `pnpm dlx supabase@latest db reset` | Full stdout/stderr → `reports/home-match-revival/evidence/d6-db-reset-<date>.log` (redacted of any URLs/keys) |
+| Remote-test (Supabase preview branch) | `pnpm dlx supabase@latest branches create d6-reset-evidence` then `pnpm dlx supabase@latest db reset --linked` against the **preview branch only**      | Same log, plus `branches list` snapshot before/after                                                          |
 
 **Stop conditions:**
+
 - Stop and surface the log if any migration logs `ERROR`, `permission denied`,
   or non-zero exit. Do not retry with `--db-url`, `psql`, or by editing
   migrations to silence the error.
@@ -49,12 +50,13 @@ prove the migrations actually replay end-to-end on an empty DB.
 **Why owed:** the static guard suite enforces `-- DOWN:` and reset-replay
 hygiene only; it does not enforce the Postgres advisor / lint catalogue.
 
-| Path | Command (operator-run) | Output to capture |
-|------|-----------------------|-------------------|
-| Safe local | `pnpm dlx supabase@latest db lint --schema public` against the locally-started stack | `reports/home-match-revival/evidence/d6-db-lint-<date>.log` |
-| Remote-test | `pnpm dlx supabase@latest db lint --linked --schema public` against the **preview branch only** | Same log |
+| Path        | Command (operator-run)                                                                          | Output to capture                                           |
+| ----------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Safe local  | `pnpm dlx supabase@latest db lint --schema public` against the locally-started stack            | `reports/home-match-revival/evidence/d6-db-lint-<date>.log` |
+| Remote-test | `pnpm dlx supabase@latest db lint --linked --schema public` against the **preview branch only** | Same log                                                    |
 
 **Stop conditions:**
+
 - Treat any `level=warning` or `level=error` as evidence to file, not to
   silence — suppressing a lint warning is a Phase 2 follow-up, not part
   of D6 closure.
@@ -84,6 +86,7 @@ recording the schema diff before and after each DOWN (e.g. `\d+ properties`
 for #1, `\df get_property_stats` for #2).
 
 **Stop conditions:**
+
 - Stop on **migration #5** (`fix_interaction_uniqueness`) before running DOWN
   if there is any production-like data — the DOWN restores constraint shape
   but **cannot** recover rows deleted by duplicate compaction (D22 §3.5,
@@ -115,6 +118,7 @@ systemd-run --user --scope -p MemoryMax=2G -p CPUQuota=200% \
 copy `.env.local` contents into the log.
 
 **Stop conditions:**
+
 - Stop if `.env.local` is missing — do **not** synthesize secrets, fetch
   them from a secret manager, or read them from another worktree. Surface
   the missing-env condition as the blocker.
@@ -126,13 +130,13 @@ copy `.env.local` contents into the log.
 
 ## Safe local vs remote-test decision matrix
 
-| Constraint | Safe local | Remote-test (preview branch) |
-|------------|-----------|------------------------------|
-| Docker available on operator host | ✅ preferred | optional |
-| Docker unavailable / Windows-without-WSL2 | ❌ | ✅ |
-| Operator wants zero remote footprint | ✅ | ❌ (creates a preview branch) |
-| Need to share evidence with reviewers without sharing local logs | ❌ | ✅ (preview-branch URL is shareable, secrets are not) |
-| Risk of mutating production | none | none, **iff** `--linked` always targets the preview branch |
+| Constraint                                                       | Safe local   | Remote-test (preview branch)                               |
+| ---------------------------------------------------------------- | ------------ | ---------------------------------------------------------- |
+| Docker available on operator host                                | ✅ preferred | optional                                                   |
+| Docker unavailable / Windows-without-WSL2                        | ❌           | ✅                                                         |
+| Operator wants zero remote footprint                             | ✅           | ❌ (creates a preview branch)                              |
+| Need to share evidence with reviewers without sharing local logs | ❌           | ✅ (preview-branch URL is shareable, secrets are not)      |
+| Risk of mutating production                                      | none         | none, **iff** `--linked` always targets the preview branch |
 
 Both paths satisfy the D6 closure criterion; pick whichever the operator
 can run without secret leakage.

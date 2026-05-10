@@ -80,7 +80,7 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
   return (
     <div
       ref={adRef}
-      className={`bg-card rounded-xl shadow-lg relative flex flex-col overflow-hidden border border-white/10 transition-all ${className}`}
+      className={`bg-card relative flex flex-col overflow-hidden rounded-xl border border-white/10 shadow-lg transition-all ${className}`}
       data-ad-position={position}
     >
       {/* Sponsored label */}

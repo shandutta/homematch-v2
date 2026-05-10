@@ -454,6 +454,7 @@ Before Phase 2+ implementation deepens the codebase, dedicated design/UX scoutin
 ### Avoid vibe-coding tells
 
 Workers must:
+
 - Reference real design-system measurements (spacing scales, type ramps, color tokens)
 - Cite specific shadcn/ui and Tailwind conventions
 - Flag only concrete, fixable issues — no "could be more modern" platitudes

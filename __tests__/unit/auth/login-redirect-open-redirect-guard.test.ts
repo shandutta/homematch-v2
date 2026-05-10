@@ -15,6 +15,7 @@
  */
 // Phase 0/1 closure: P0-auth-redirect-guards
 
+// Phase 0/1 closure: P0-auth-redirect-guards
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { NextRequest } from 'next/server'

@@ -31,12 +31,12 @@ data shown to anonymous visitors. The guard test fails if any of them is
 removed without an inventory update, or if a new file joins the surface
 without explicit review.
 
-| # | File | Role | Fixture content |
-| - | --- | --- | --- |
-| 1 | `src/app/api/properties/marketing/route.ts` | Public GET endpoint backing the landing-page card stack | Three hardcoded `MarketingCard` entries with `zpid: 'mock-N'`, city-level address strings, synthetic price/bed/bath, and Bay-Area centroid lat/lng |
-| 2 | `src/components/marketing/MarketingPreviewCard.tsx` | Animated landing hero card (anonymous) | Hardcoded `1200 Lakeview Dr, Oakland, CA 94610`, `$975,000`, copy-only badges; no data fetch |
-| 3 | `src/components/marketing/MarketingPreviewCardStatic.tsx` | Static fallback variant of the hero card (anonymous) | Same hardcoded synthetic listing as `MarketingPreviewCard.tsx` |
-| 4 | `src/components/marketing/PhoneMockup.tsx` | Phone-frame card stack on landing (anonymous) | `placeholderProperties` array with `Palo Alto`, `Mountain View`, `Sunnyvale` location strings + local mock images; optionally swaps in cards from `/api/properties/marketing` |
+| #   | File                                                      | Role                                                    | Fixture content                                                                                                                                                               |
+| --- | --------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `src/app/api/properties/marketing/route.ts`               | Public GET endpoint backing the landing-page card stack | Three hardcoded `MarketingCard` entries with `zpid: 'mock-N'`, city-level address strings, synthetic price/bed/bath, and Bay-Area centroid lat/lng                            |
+| 2   | `src/components/marketing/MarketingPreviewCard.tsx`       | Animated landing hero card (anonymous)                  | Hardcoded `1200 Lakeview Dr, Oakland, CA 94610`, `$975,000`, copy-only badges; no data fetch                                                                                  |
+| 3   | `src/components/marketing/MarketingPreviewCardStatic.tsx` | Static fallback variant of the hero card (anonymous)    | Same hardcoded synthetic listing as `MarketingPreviewCard.tsx`                                                                                                                |
+| 4   | `src/components/marketing/PhoneMockup.tsx`                | Phone-frame card stack on landing (anonymous)           | `placeholderProperties` array with `Palo Alto`, `Mountain View`, `Sunnyvale` location strings + local mock images; optionally swaps in cards from `/api/properties/marketing` |
 
 Notes:
 
@@ -116,8 +116,8 @@ The marketing API route is additionally pinned to:
    even in dead branches.
 4. **Inventory honesty**: gating tests like
    `__tests__/unit/app/demo-surface-production-gate.test.ts` already
-   guard the *internal* preview surfaces. This guard closes the
-   complementary gap on the *public* listing fixture surface.
+   guard the _internal_ preview surfaces. This guard closes the
+   complementary gap on the _public_ listing fixture surface.
 
 ## 6. Out of scope (deliberately)
 

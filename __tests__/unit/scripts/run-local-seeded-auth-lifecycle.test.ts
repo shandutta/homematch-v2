@@ -3,6 +3,8 @@ import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+// Phase 0/1 closure: P0-remote-test-seed
+
 const scriptPath = path.join(
   process.cwd(),
   'scripts/run-local-seeded-auth-lifecycle.js'
@@ -44,9 +46,7 @@ describe('run-local-seeded-auth-lifecycle wrapper readiness guards', () => {
   })
 
   it('refuses non-local app and Supabase URLs before seeding users', () => {
-    const supabaseGuardIndex = source.indexOf(
-      'refusing non-local Supabase URL'
-    )
+    const supabaseGuardIndex = source.indexOf('refusing non-local Supabase URL')
     const appGuardIndex = source.indexOf('refusing non-local app URL')
     const seedIndex = source.indexOf('seed local Supabase test users')
 

@@ -40,7 +40,8 @@ const PHASE1_MIGRATIONS = [
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', 'supabase.local'])
 const DEV_PROXY_HOSTS = new Set(['dev.homematch.pro'])
-const SUPABASE_PROD_PATTERN = /(\.supabase\.co|\.supabase\.net|\.supabase\.com|\.supabase\.in)$/i
+const SUPABASE_PROD_PATTERN =
+  /(\.supabase\.co|\.supabase\.net|\.supabase\.com|\.supabase\.in)$/i
 const POOLER_SUFFIX = '.pooler.supabase.com'
 
 const SECRET_KEY_NAMES = [
@@ -77,7 +78,11 @@ const loadProductionHosts = (root) => {
     if (!Array.isArray(cfg.hosts)) return new Set()
     return new Set(
       cfg.hosts
-        .map((h) => stripPort(getHost(h) || (typeof h === 'string' ? h.toLowerCase() : null)))
+        .map((h) =>
+          stripPort(
+            getHost(h) || (typeof h === 'string' ? h.toLowerCase() : null)
+          )
+        )
         .filter(Boolean)
     )
   } catch {
@@ -92,11 +97,7 @@ const isSupabaseProdShape = (host) => {
   return SUPABASE_PROD_PATTERN.test(host)
 }
 
-const classifyTarget = ({
-  env,
-  root,
-  previewBranchAcknowledged = false,
-}) => {
+const classifyTarget = ({ env, root, previewBranchAcknowledged = false }) => {
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL
   const host = stripPort(getHost(url))
   const offenders = []
@@ -171,11 +172,17 @@ const formatPlan = ({ target, migrations }) => {
     lines.push('   pnpm dlx supabase@latest db reset')
   } else if (target === 'preview-branch') {
     lines.push('   pnpm dlx supabase@latest branches create d6-reset-evidence')
-    lines.push('   pnpm dlx supabase@latest db reset --linked   # preview branch only')
+    lines.push(
+      '   pnpm dlx supabase@latest db reset --linked   # preview branch only'
+    )
   } else if (target === 'dev-proxy') {
-    lines.push('   <dev-proxy: route via local Supabase wrapper, do not target the proxy directly>')
+    lines.push(
+      '   <dev-proxy: route via local Supabase wrapper, do not target the proxy directly>'
+    )
   } else {
-    lines.push('   <skipped — target is not local-loopback or approved preview-branch>')
+    lines.push(
+      '   <skipped — target is not local-loopback or approved preview-branch>'
+    )
   }
   lines.push('')
   lines.push('E2 — supabase db lint clean run')
@@ -194,8 +201,12 @@ const formatPlan = ({ target, migrations }) => {
     for (const migration of migrations) {
       lines.push(`   - ${migration}`)
     }
-    lines.push('   stop before DOWN of fix_interaction_uniqueness against any data,')
-    lines.push('   and before DOWN of create_admin_role_assignments without a recorded D1 cutover decision.')
+    lines.push(
+      '   stop before DOWN of fix_interaction_uniqueness against any data,'
+    )
+    lines.push(
+      '   and before DOWN of create_admin_role_assignments without a recorded D1 cutover decision.'
+    )
   }
   lines.push('')
   lines.push('E4 — Vitest integration suite against the reset stack')
@@ -205,7 +216,9 @@ const formatPlan = ({ target, migrations }) => {
   lines.push('   - SUPABASE_URL classified as production → refused (exit 1).')
   lines.push('   - --preview-branch ack only allowed when the host is NOT in')
   lines.push('     config/supabase-production-hosts.json.')
-  lines.push('   - secrets (SUPABASE_*_KEY, SUPABASE_DB_PASSWORD, POSTGRES_PASSWORD,')
+  lines.push(
+    '   - secrets (SUPABASE_*_KEY, SUPABASE_DB_PASSWORD, POSTGRES_PASSWORD,'
+  )
   lines.push('     POSTGRES_URL) are never printed; only category labels.')
   return lines
 }
@@ -235,11 +248,17 @@ const run = ({
     }
   }
 
-  const classification = classifyTarget({ env, root, previewBranchAcknowledged })
+  const classification = classifyTarget({
+    env,
+    root,
+    previewBranchAcknowledged,
+  })
   const migrations = findPhase1Migrations(root)
 
   if (classification.target === 'production') {
-    logger.error('❌ D6 evidence runner refusing: target classifies as production.')
+    logger.error(
+      '❌ D6 evidence runner refusing: target classifies as production.'
+    )
     logger.error(
       `   offender categories: ${classification.offenders.join(', ') || 'SUPABASE_URL_HOST'}`
     )
@@ -262,7 +281,10 @@ const run = ({
     )
   }
 
-  for (const line of formatPlan({ target: classification.target, migrations })) {
+  for (const line of formatPlan({
+    target: classification.target,
+    migrations,
+  })) {
     logger.log(line)
   }
 
@@ -270,7 +292,8 @@ const run = ({
   if (Object.keys(summary).length > 0) {
     logger.log('')
     logger.log('Detected secret-bearing env keys (redacted):')
-    for (const k of Object.keys(summary)) logger.log(`   - ${k}: <set, redacted>`)
+    for (const k of Object.keys(summary))
+      logger.log(`   - ${k}: <set, redacted>`)
   }
 
   return exit(0)

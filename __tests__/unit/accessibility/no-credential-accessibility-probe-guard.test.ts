@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+// Phase 0/1 closure: P0-noauth-live-probe-expand
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isProtectedPath } from '../../../src/lib/routing/protected-routes'

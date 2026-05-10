@@ -3,6 +3,7 @@
 Generated: 2026-05-08
 Scope: repo-local mapping artifact only. No Supabase dashboard mutation, no Vercel/Google/CAPTCHA-provider calls, no production env or secret mutation, no live signup, no real email, no browser swarms, no paid APIs, no deploys.
 Parent artifacts:
+
 - `reports/home-match-revival/d3-signup-verification-policy-decision-2026-05-08.md`
 - `reports/home-match-revival/d3-signup-verification-repo-invariant-guard-2026-05-08.md`
 - `config/signup-verification-launch-policy.json`

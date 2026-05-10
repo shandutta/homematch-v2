@@ -7,11 +7,7 @@ export const metadata = createNoindexRouteMetadata({
   description: 'Internal preview of LLM-generated property vibes.',
 })
 
-export default function VibesTestLayout({
-  children,
-}: {
-  children: ReactNode
-}) {
+export default function VibesTestLayout({ children }: { children: ReactNode }) {
   requireInternalPreviewAccess()
   return children
 }

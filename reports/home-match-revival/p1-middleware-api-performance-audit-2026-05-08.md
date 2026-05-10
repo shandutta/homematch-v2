@@ -9,11 +9,11 @@ Date: 2026-05-08
 
 The prior P1 middleware/API audit is partly stale. Several high-impact issues have already been fixed: the rate limiter no longer calls Supabase auth, paid Maps endpoints now require authenticated users, admin routes are rate-limited, outbound Google/RapidAPI calls mostly use fetchWithTimeout, and most user-specific GET responses now use no-store helpers.
 
-The remaining performance architecture problem is narrower and clearer: middleware still runs Supabase session work on API requests that immediately authenticate again inside the route handler. The fastest safe path is to stop doing route-auth in middleware for /api/*, keep security headers globally, and let API handlers own API auth/rate/cache behavior.
+The remaining performance architecture problem is narrower and clearer: middleware still runs Supabase session work on API requests that immediately authenticate again inside the route handler. The fastest safe path is to stop doing route-auth in middleware for /api/\*, keep security headers globally, and let API handlers own API auth/rate/cache behavior.
 
 ## Current surface
 
-Observed from src/app/api/**/route.ts plus middleware.ts:
+Observed from src/app/api/\*\*/route.ts plus middleware.ts:
 
 - 26 API route files under src/app/api.
 - 17 GET routes and 15 POST routes, including explicit unsupported-method stubs on several files.
@@ -50,28 +50,32 @@ Observed from src/app/api/**/route.ts plus middleware.ts:
 
 ## Fix now: high impact, low/medium risk
 
-### 1. Stop middleware from doing Supabase auth work for /api/*
+### 1. Stop middleware from doing Supabase auth work for /api/\*
 
 File: middleware.ts:96-214, 279-321, 324-335
 
 Current behavior:
-- The matcher includes /api/*.
+
+- The matcher includes /api/\*.
 - middleware.ts creates a Supabase SSR client for most requests.
 - For API requests with auth cookies and non-test mode, it may call supabase.auth.getUser().
 - API route handlers then call requireUserFromRequest(), which calls getUserFromRequest(), which calls supabase.auth.getUser() again.
 
 Impact:
+
 - Authenticated API requests can pay two Supabase auth validations before doing useful work.
 - This is the biggest remaining request-path speed issue.
 
 Recommendation:
-- Keep middleware matched for /api/* only if it is needed for security headers.
+
+- Keep middleware matched for /api/\* only if it is needed for security headers.
 - For isApiRoute, return applySecurityHeaders(NextResponse.next({ request })) before creating the Supabase client, except for any deliberately middleware-protected API path if one is introduced later.
 - Let API routes own auth and rate limiting.
 
 Aggressive stance: do not build an x-auth-resolved handoff header. It adds complexity and trust-boundary ambiguity. API handlers should authenticate APIs; middleware should redirect pages and stamp headers.
 
 Acceptance test:
+
 - Existing API auth tests still pass.
 - Protected page redirects still pass.
 - Middleware unit test proves /api/foo does not call Supabase getUser.
@@ -81,14 +85,17 @@ Acceptance test:
 File: middleware.ts:126-174, 183-214
 
 Current behavior:
+
 - createServerClient is constructed before checking whether a non-API request has the auth cookie.
 - getUser is skipped without a cookie, but the client construction still happens on public page requests.
 
 Recommendation:
+
 - Compute cookieName and hasAuthCookie first.
 - If !hasAuthCookie && !isApiRoute && !isProtectedPath(pathname) && !isAuthPath, return security headers before createServerClient.
 
 Impact:
+
 - Removes per-request Supabase client setup from anonymous public browsing.
 - Low risk if protected-route and auth-route behavior remains covered.
 
@@ -97,10 +104,12 @@ Impact:
 File: src/app/api/properties/marketing/route.ts:66-73
 
 Current behavior:
+
 - Returns hardcoded MARKETING_CARDS with no cache header.
 - Wrapped in withPerformanceTracking, but the data is static.
 
 Recommendation:
+
 - Return public, max-age=3600, stale-while-revalidate=86400 or longer.
 - If these mock cards stay hardcoded, this endpoint should be CDN-cheap.
 
@@ -109,20 +118,24 @@ Aggressive stance: either cache it publicly or delete the endpoint and inline th
 ### 4. Add a route-level timeout/deadline for long Supabase-heavy APIs
 
 Files:
+
 - src/app/api/couples/disputed/route.ts
 - src/app/api/users/avatar/route.ts
 - src/app/api/users/search/route.ts
 
 Current behavior:
+
 - Outbound fetch calls use fetchWithTimeout, but multi-query Supabase route handlers can still accumulate sequential waits.
 - couples/disputed GET performs multiple service-role/user-scoped queries and in-memory grouping.
 - users/avatar performs form parsing, storage upload/list/remove, and profile update.
 
 Recommendation:
+
 - Do not wrap every Supabase call ad hoc. Create one route helper: withRouteDeadline(label, ms, handler), returning 504/timeout with consistent logging.
 - Apply to file upload and disputed-property routes first.
 
 Suggested budgets:
+
 - users/search: 2s
 - couples/disputed GET: 4s
 - users/avatar POST/DELETE: 8-10s
@@ -130,20 +143,24 @@ Suggested budgets:
 ### 5. Use route-scoped rate-limit keys everywhere
 
 Current mixed behavior:
+
 - Some routes call checkRateLimit(auth.user.id), which shares a user-wide bucket across unrelated endpoints.
 - Some routes use route-specific keys like couples:notify:${user.id} and couples:disputed:${user.id}.
 - withRateLimit uses IP keys.
 
 Recommendation:
+
 - For authenticated routes, prefer `${routeKey}:${user.id}`.
 - For anonymous/public routes, prefer `${routeKey}:${ip}`.
 - Keep tier selection explicit.
 
 Why:
+
 - A burst of Google autocomplete should not throttle user search or interactions.
 - Route-specific buckets make logs and abuse diagnosis clearer.
 
 Priority targets:
+
 - maps/geocode and maps/places/autocomplete currently use auth.user.id only.
 - users/search currently uses auth.user.id only.
 
@@ -152,10 +169,12 @@ Priority targets:
 ### 6. Standardize unsupported method handling only where it matters
 
 Current state:
+
 - health, couples/activity, couples/check-mutual, and properties/marketing expose explicit unsupported-method handlers.
 - Many routes rely on Next.js default 405 behavior.
 
 Recommendation:
+
 - Do not blanket-add handlers to every route just to satisfy inventory neatness.
 - Add explicit handlers only for endpoints covered by E2E tests or routes where CORS/preflight behavior matters.
 - Delete inconsistent one-off stubs if they exist only to placate stale tests.
@@ -163,29 +182,35 @@ Recommendation:
 ### 7. Fix the status mapping for external provider failures
 
 Files:
+
 - src/app/api/maps/geocode/route.ts:113-115
 - src/app/api/maps/places/autocomplete/route.ts:121-128
 
 Current behavior:
+
 - Non-OK Google statuses become ApiErrorHandler.badRequest.
 
 Recommendation:
+
 - INVALID_REQUEST / missing input -> 400.
 - REQUEST_DENIED / key/config issue -> 503 or 502, with no secret leakage.
 - OVER_QUERY_LIMIT -> 429 or 503 depending whether it is app-user throttling or provider quota.
 - UNKNOWN_ERROR -> 502.
 
 Why:
+
 - Treating provider quota/config failures as client 400s hides operational issues and makes alerting harder.
 
 ### 8. Reduce service-role use or make it explicit per route
 
 Current service-role routes:
+
 - users/search: justified by cross-user search after auth; returns minimal data.
 - maps/metro-boundaries: public static-ish read of neighborhoods; questionable service-role use.
 - couples/disputed: justified by household-wide joins/resolutions, but it has a wide read surface.
 
 Recommendations:
+
 - users/search: keep service role only if RLS cannot support a safe search RPC. Better long-term: create a security-definer RPC that returns id/display_name/email/household_id only.
 - maps/metro-boundaries: prefer anon/RLS read or a precomputed static artifact; do not use service role for public map geometry unless RLS forces it.
 - couples/disputed: keep for now, but move the query logic into one constrained RPC if this route becomes product-critical.
@@ -193,16 +218,19 @@ Recommendations:
 ### 9. Make cache policy declarative
 
 Current state:
+
 - cache-control.ts has private no-store helpers only.
 - Public cache headers are hand-coded in individual routes.
 
 Recommendation:
+
 - Add helper names that encode intent:
   - publicShortJson(body) => public, max-age=300, stale-while-revalidate=600
   - publicStaticJson(body) => public, max-age=3600 or 86400
   - noStoreJson(body) remains for user-specific data
 
 Why:
+
 - Prevents future routes from forgetting cache headers and makes code review faster.
 
 ## Delete / consider deleting
@@ -224,7 +252,7 @@ Why:
 
 ## Updated priority order
 
-1. API middleware fast path: skip Supabase auth/client creation for /api/*.
+1. API middleware fast path: skip Supabase auth/client creation for /api/\*.
 2. Anonymous public-page fast path: avoid createServerClient when no auth cookie and not protected/auth page.
 3. Cache or delete /api/properties/marketing.
 4. Route-scoped rate-limit keys for maps/geocode, maps/places/autocomplete, users/search.

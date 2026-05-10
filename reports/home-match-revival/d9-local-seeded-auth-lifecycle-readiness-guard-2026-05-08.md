@@ -71,7 +71,7 @@ The hermetic spawn does not inherit the parent test process env, so no real
 secrets are ever in scope for the wrapper's child process — the secret-leak
 assertion is a defense-in-depth check, not a load-bearing one.
 
-## What this is *not*
+## What this is _not_
 
 - Not a fix for the underlying lifecycle smoke (`auth-lifecycle-local-seeded.spec.ts`),
   which still requires a real local Supabase + Next.js dev server to exercise

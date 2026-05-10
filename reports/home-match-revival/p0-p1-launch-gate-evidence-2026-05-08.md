@@ -33,7 +33,7 @@ exception.
    and `redirectTo` round-trip executed against an approved non-
    production environment with a local email sink.
 4. **API auth smoke live execution**: `__tests__/integration/api/
-   auth-smoke-matrix.spec.ts` run with an approved
+auth-smoke-matrix.spec.ts` run with an approved
    `API_AUTH_SMOKE_TOKEN` against `127.0.0.1:3000` (or an explicitly
    approved non-production remote with `ALLOW_REMOTE_API_AUTH_SMOKE=1`).
 5. **DB reset/lint/rollback/integration validation (D6)**: executed
@@ -41,7 +41,7 @@ exception.
    test) DB; this also unblocks the live D1 authority-table
    integration leg.
 6. **Durable rate limiter (D2)**: one provider chosen and provisioned
-   *or* the in-memory-only launch risk explicitly accepted in writing.
+   _or_ the in-memory-only launch risk explicitly accepted in writing.
 7. **Production email confirmation + CAPTCHA (D3)**: external Supabase
    project settings confirmed/provisioned to match the repo-local
    launch policy; the local E2E leg has a live execution under (3).
@@ -65,20 +65,20 @@ Each row below corresponds to a row in the master blocker index. Lane
 labels: **R** = repo-side, **L** = live-evidenced (environment-gated),
 **X** = external-approval-gated.
 
-| # | Blocker | Lane |
-| - | --- | --- |
-| 1 | Authenticated browser traversal (full protected matrix; partial live evidence exists for 4 core protected pages via the remote disposable seed) | L |
-| 2 | E2E auth lifecycle (signup/login/verify/logout/session clearing, `redirectTo`) | L |
-| 3 | API auth smoke live token + server | L |
-| 4 | D1 service-role RBAC authority — repo-side closed; live integration D6-gated | R/L |
-| 5 | D2 durable production rate limiter | X |
-| 6 | D3 production email confirmation + CAPTCHA execution | X |
-| 7 | D6 DB reset/lint/rollback/integration validation | L |
-| 8 | Final public no-credential traversal artifact (Playwright/local-smoke); harness already exists | R |
-| 9 | Internal/demo surface disposition — repo-side closed for the launch gate; future product decision only | R |
-| 10 | Paid/external route checks (Maps/Zillow/RapidAPI/OpenRouter/LLM, email/notification, cron/admin) | X |
-| 11 | Authenticated mutation/storage/invite/account positive flows | L |
-| 12 | Protected positive accessibility traversal | L |
+| #   | Blocker                                                                                                                                         | Lane |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| 1   | Authenticated browser traversal (full protected matrix; partial live evidence exists for 4 core protected pages via the remote disposable seed) | L    |
+| 2   | E2E auth lifecycle (signup/login/verify/logout/session clearing, `redirectTo`)                                                                  | L    |
+| 3   | API auth smoke live token + server                                                                                                              | L    |
+| 4   | D1 service-role RBAC authority — repo-side closed; live integration D6-gated                                                                    | R/L  |
+| 5   | D2 durable production rate limiter                                                                                                              | X    |
+| 6   | D3 production email confirmation + CAPTCHA execution                                                                                            | X    |
+| 7   | D6 DB reset/lint/rollback/integration validation                                                                                                | L    |
+| 8   | Final public no-credential traversal artifact (Playwright/local-smoke); harness already exists                                                  | R    |
+| 9   | Internal/demo surface disposition — repo-side closed for the launch gate; future product decision only                                          | R    |
+| 10  | Paid/external route checks (Maps/Zillow/RapidAPI/OpenRouter/LLM, email/notification, cron/admin)                                                | X    |
+| 11  | Authenticated mutation/storage/invite/account positive flows                                                                                    | L    |
+| 12  | Protected positive accessibility traversal                                                                                                      | L    |
 
 ## Do-not-claim-closure conditions
 
@@ -96,7 +96,7 @@ predicates; each one is sufficient on its own to keep the gate held.
    authenticated mutation/storage/invite/account positive flows have
    not all been executed under one approved auth lane against
    disposable seeded fixtures. Partial coverage of four core
-   protected pages is *not* full coverage.
+   protected pages is _not_ full coverage.
 4. The API auth smoke matrix has not been run live with an approved
    token against an approved non-production server. Handler-level
    matrix passes alone are insufficient.
@@ -115,7 +115,7 @@ predicates; each one is sufficient on its own to keep the gate held.
    risk with multi-instance behavior documented.
 8. D3 production Supabase project settings have not been verified
    or provisioned to match `config/signup-verification-launch-
-   policy.json` (email confirmation required, CAPTCHA required,
+policy.json` (email confirmation required, CAPTCHA required,
    Turnstile preferred, no pre-verification app session).
 9. Any paid/external surface is exercised against a real provider
    without explicit per-provider approval covering budget, target

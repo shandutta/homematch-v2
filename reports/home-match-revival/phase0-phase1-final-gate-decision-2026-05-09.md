@@ -4,13 +4,13 @@
 
 ## Remaining blockers assessed
 
-| Blocker | Status | Rationale |
-|---|---|---|
-| D2 (rate limiter provider) | **Deferred** | Repo-side adapter exists. In-memory protects launch. Provider choice is ops, not code. |
+| Blocker                       | Status       | Rationale                                                                                 |
+| ----------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
+| D2 (rate limiter provider)    | **Deferred** | Repo-side adapter exists. In-memory protects launch. Provider choice is ops, not code.    |
 | D6 (DB reset/integration env) | **Deferred** | Static guards pass. Live execution requires Docker, which is unavailable. Not a code gap. |
-| D3 (signup verification) | **Deferred** | Repo-side policy guard closed. External Supabase settings are ops, not code. |
-| Auth live probes | **Deferred** | Harness exists. Requires local dev server + manual auth session. Not a code gap. |
-| Browser traversal | **Deferred** | Traversal matrix exists. Requires local dev server. Not a code gap. |
+| D3 (signup verification)      | **Deferred** | Repo-side policy guard closed. External Supabase settings are ops, not code.              |
+| Auth live probes              | **Deferred** | Harness exists. Requires local dev server + manual auth session. Not a code gap.          |
+| Browser traversal             | **Deferred** | Traversal matrix exists. Requires local dev server. Not a code gap.                       |
 
 ## All repo-side items closed
 

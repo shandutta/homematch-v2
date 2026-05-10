@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+// Phase 0/1 closure: D6-db-reset-readiness
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

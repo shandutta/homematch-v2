@@ -5,7 +5,8 @@ import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 
 export const metadata = createNoindexRouteMetadata({
   title: 'Create Household | HomeMatch',
-  description: 'Start a HomeMatch household and invite people to search with you.',
+  description:
+    'Start a HomeMatch household and invite people to search with you.',
 })
 
 export default async function CreateHouseholdPage() {

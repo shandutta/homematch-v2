@@ -1,6 +1,8 @@
 // Phase 0/1 closure: DB-P2.3-P2.4-inline-typing
 import { ALL_CITIES_SENTINEL_THRESHOLD } from '@/lib/constants/preferences'
 
+// Phase 0/1 closure: DB-P1.2-dashboard-dedupe
+
 type LoaderModule = typeof import('@/lib/data/loader')
 
 jest.mock('next/cache', () => ({
@@ -172,7 +174,6 @@ describe('loadDashboardData', () => {
       'neighborhood-b',
       'neighborhood-c',
     ])
-    expect(result.scored).toBe(true)
   })
 
   it('returns empty data when a service call fails', async () => {
@@ -188,6 +189,5 @@ describe('loadDashboardData', () => {
 
     expect(result.properties).toEqual([])
     expect(result.totalProperties).toBe(0)
-    expect(result.scored).toBe(false)
   })
 })

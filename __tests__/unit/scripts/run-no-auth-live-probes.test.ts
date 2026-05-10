@@ -1,5 +1,7 @@
 // Phase 0/1 closure: P0-noauth-probe-harness
 import {
+// Phase 0/1 closure: P0-noauth-probe-harness
+
   DEFAULT_BASE_URL,
   ALLOWED_LOCAL_HOSTS,
   assertLocalBaseUrl,
@@ -21,9 +23,12 @@ describe('run-no-auth-live-probes wrapper readiness', () => {
       ['http://localhost:3100'],
       ['http://[::1]:3000'],
       ['http://[::1]:3100'],
-    ])('accepts documented local URL %s including alternate port 3100', (url) => {
-      expect(() => assertLocalBaseUrl(url)).not.toThrow()
-    })
+    ])(
+      'accepts documented local URL %s including alternate port 3100',
+      (url) => {
+        expect(() => assertLocalBaseUrl(url)).not.toThrow()
+      }
+    )
 
     it.each([
       ['https://example.com'],
@@ -105,7 +110,9 @@ describe('run-no-auth-live-probes wrapper readiness', () => {
       expect(readyCheck).not.toHaveBeenCalled()
       const errMessage = logger.error.mock.calls.map((c) => c[0]).join('\n')
       expect(errMessage).toContain('[p0-no-auth-live-probes] ERROR')
-      expect(errMessage).toContain('Refusing no-auth live probes against non-local URL')
+      expect(errMessage).toContain(
+        'Refusing no-auth live probes against non-local URL'
+      )
     })
 
     it('exits 0 with explicit SKIP log when no local server responds; does not spawn vitest', async () => {
@@ -127,7 +134,9 @@ describe('run-no-auth-live-probes wrapper readiness', () => {
       const skipMessage = logger.log.mock.calls.map((c) => c[0]).join('\n')
       expect(skipMessage).toContain('[p0-no-auth-live-probes] SKIP')
       expect(skipMessage).toContain('http://127.0.0.1:3100')
-      expect(skipMessage).toContain('start the local app before running live probes')
+      expect(skipMessage).toContain(
+        'start the local app before running live probes'
+      )
     })
 
     it('spawns vitest with NO_AUTH_LIVE_PROBES_RUN=1 only when ready and base URL is local', async () => {

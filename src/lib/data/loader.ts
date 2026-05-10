@@ -110,7 +110,6 @@ export interface DashboardData {
   properties: Property[]
   neighborhoods: Neighborhood[]
   totalProperties: number
-  scored: boolean
   userStats: {
     totalViewed: number
     totalLiked: number
@@ -247,7 +246,6 @@ export async function loadDashboardData(
   options: {
     limit?: number
     offset?: number
-    withScoring?: boolean
     userPreferences?: DashboardPreferences | null
     includeNeighborhoods?: boolean
     includeCount?: boolean
@@ -262,7 +260,6 @@ export async function loadDashboardData(
   const {
     limit = 20,
     offset = 0,
-    withScoring = true,
     userPreferences,
     includeNeighborhoods = true,
     includeCount = true,
@@ -348,7 +345,6 @@ export async function loadDashboardData(
       properties: properties || [],
       neighborhoods: neighborhoods || [],
       totalProperties: total || 0,
-      scored: withScoring,
       userStats,
     }
   } catch (_error) {
@@ -357,7 +353,6 @@ export async function loadDashboardData(
       properties: [],
       neighborhoods: [],
       totalProperties: 0,
-      scored: false,
       userStats: {
         totalViewed: 0,
         totalLiked: 0,
@@ -367,28 +362,3 @@ export async function loadDashboardData(
   }
 }
 
-// Load properties sorted by match score (called from dashboard)
-export async function loadScoredProperties(
-  limit: number = 10
-): Promise<Property[]> {
-  try {
-    const data = await loadDashboardData({ limit, withScoring: true })
-
-    // Sort by calculated_match_score if available, otherwise by match_score
-    return data.properties.sort((a, b) => {
-      const scoreA =
-        'calculated_match_score' in a &&
-        typeof a.calculated_match_score === 'number'
-          ? a.calculated_match_score
-          : 0
-      const scoreB =
-        'calculated_match_score' in b &&
-        typeof b.calculated_match_score === 'number'
-          ? b.calculated_match_score
-          : 0
-      return scoreB - scoreA
-    })
-  } catch (_error) {
-    return []
-  }
-}

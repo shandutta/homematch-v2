@@ -4,9 +4,15 @@ import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'
 
+// Phase 0/1 closure: P1-supabase-factory-consolidation
+// Phase 0/1 closure: M11-test-only-exports
+
 const projectRoot = process.cwd()
 const deprecatedFactoryPath = join(projectRoot, 'src/lib/supabase/factory.ts')
-const productionRoots = [join(projectRoot, 'src'), join(projectRoot, 'middleware.ts')]
+const productionRoots = [
+  join(projectRoot, 'src'),
+  join(projectRoot, 'middleware.ts'),
+]
 
 const ignoredDirectories = new Set(['node_modules', '.next', '.git'])
 const sourceExtensions = new Set(['.ts', '.tsx'])
@@ -33,7 +39,9 @@ describe('Supabase client factory consolidation guard', () => {
   test('keeps production code on the canonical Supabase client modules', () => {
     const offenders = productionRoots
       .flatMap(collectSourceFiles)
-      .filter((file) => readFileSync(file, 'utf8').includes('@/lib/supabase/factory'))
+      .filter((file) =>
+        readFileSync(file, 'utf8').includes('@/lib/supabase/factory')
+      )
       .map((file) => relative(projectRoot, file))
 
     expect(offenders).toEqual([])

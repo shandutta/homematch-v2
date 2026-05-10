@@ -47,7 +47,7 @@ Saved searches live at `src/components/settings/SavedSearchesSection.tsx`, behin
 
 - **A saved search row shows a recency signal.** Each row renders `Last run · <relative time>` derived from the most recent matching property scan (or `Never run yet` for brand-new rows). Relative format: `just now / Xm ago / Xh ago / Yesterday / MMM D`.
 - **Run-now is one click.** Each row exposes a primary action `Run search` that navigates to `/dashboard?savedSearch=<id>` and pre-applies the filters. The dashboard must read the query param on mount and hydrate filter state before the first list paint.
-- **Notification toggle is honest.** When the user flips the bell, the UI optimistically updates *and* shows a toast: "You'll be notified when new matches appear" or "Notifications off." If the PATCH fails the toggle reverts and an error toast appears. There is no silent failure path.
+- **Notification toggle is honest.** When the user flips the bell, the UI optimistically updates _and_ shows a toast: "You'll be notified when new matches appear" or "Notifications off." If the PATCH fails the toggle reverts and an error toast appears. There is no silent failure path.
 - **Delete requires confirmation.** Trash icon opens a destructive `AlertDialog` ("Delete this saved search? This cannot be undone."). Cancel must close the dialog without mutation. Confirm calls the API; on success the row animates out (`AnimatePresence`); on failure the row stays and an error toast appears.
 - **Filter chips render on every row.** Each saved search shows the human-readable filter set as chips (location, price band, beds, home type). Chips are read-only on this surface — editing happens by running the search and re-saving from `/dashboard`.
 - **Empty / loading / error.**

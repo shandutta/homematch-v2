@@ -1,31 +1,46 @@
-# Agent Guidelines for homematch-v2
+# Agent Guidelines — HomeMatch V2
 
 ## Commands
 
-- **Dev (fast)**: `SKIP_SUPABASE_GUARD=true pnpm dev` — uses production Supabase, no Docker needed
-- **Dev (local DB)**: `SKIP_SUPABASE_GUARD=true pnpm dev:db` — needs Docker + local Supabase
+- **Dev (fast)**: `pnpm dev` — no Docker, no DB reset; blocks production Supabase hosts
+- **Dev (skip guard)**: `SKIP_SUPABASE_GUARD=true pnpm dev` — read-only remote dev only; no mutations
+- **Dev (local DB)**: `pnpm dev:db` — Docker + local Supabase reset + seed + test users
+- **Dev (integration)**: `pnpm dev:integration` — no-reset dev server for integration-test config
 - **Build**: `pnpm build`
 - **Lint/Format**: `pnpm lint:fix && pnpm format`
-- **Test (All)**: `pnpm test`
-- **Test (Single Unit)**: `pnpm exec jest -t 'test name'`
-- **Test (Single Integration)**: `pnpm exec vitest -t 'test name'`
 - **Type Check**: `pnpm type-check`
+- **Test (all)**: `pnpm test`
+- **Test (single unit)**: `pnpm exec jest -t 'test name'`
+- **Test (single integration)**: `pnpm exec vitest -t 'test name'`
 
-Docker is optional — only needed for `pnpm dev:db` and `pnpm test:integration`. Use `SKIP_DOCKER=1` to bypass Docker checks.
+Docker only needed for `pnpm dev:db` and `pnpm test:integration`. `SKIP_DOCKER=1` bypasses Docker checks.
 
-## Code Style & Conventions
+## Stack
 
-- **Stack**: TypeScript, React 19, Next.js 15 (App Router), Tailwind, shadcn/ui.
-- **Formatting**: Prettier (single quotes, no semi). Run format before committing.
-- **Naming**: PascalCase for components, camelCase for hooks/utils/files.
-- **Imports**: Use absolute paths (e.g., `src/components/ui/button`).
-- **State**: TanStack Query (server), Zustand (client), RHF + Zod (forms).
-- **Testing**: Jest (unit), Vitest (integration), Playwright (E2E).
-- **Error Handling**: Use Zod for validation; consistent errors via `lib/api/errors.ts`.
-- **Commits**: Conventional Commits (e.g., `feat: add login`).
+TypeScript, React 19, Next.js 15 (App Router), Tailwind CSS 4, shadcn/ui. Supabase (Postgres, Auth, RLS). TanStack Query (server state), Zustand (client state), RHF + Zod (forms). Jest (unit), Vitest (integration), Playwright (E2E).
 
-## DevTools MCP Auth (Dev Only)
+## Conventions
 
-- When driving authenticated pages via the Chrome DevTools MCP, use the same local test users that are created by `scripts/setup-test-users-admin.js` (the primary user is `testUsers[0]` in that script).
-- Don’t store plaintext creds in `.env.local`, `.env.test.local`, or `/home/shan/.codex/config.toml`; treat `scripts/setup-test-users-admin.js` as the source of truth.
-- Login route is `/login`; a successful login should land on `/dashboard`.
+- **Formatting**: Prettier (single quotes, no semicolons). Run before commit.
+- **Naming**: PascalCase components, camelCase hooks/utils/files.
+- **Imports**: Absolute paths (`src/components/ui/button`).
+- **Error handling**: Zod validation; `src/lib/api/errors.ts` for consistent error responses.
+- **Commits**: Conventional Commits (`feat:`, `fix:`, etc.), enforced by commitlint.
+
+## Docs
+
+- `docs/README.md` — index
+- `docs/SETUP_GUIDE.md` — env, dev paths, test users
+- `docs/ARCHITECTURE.md` — service layer, data access, directory layout
+- `docs/TESTING.md` — Jest/Vitest/Playwright commands
+
+## Test Users
+
+Created by `pnpm test:setup-users` or automatically by `pnpm dev:db`. Source of truth: `scripts/setup-test-users-admin.js` (`testUsers[0]` is the primary test user). Login at `/login`; successful login lands on `/dashboard`. Do not store plaintext credentials in tracked files.
+
+## Safety
+
+- Never commit secrets, API keys, service-role keys, or database URLs
+- Never run mutations, resets, or admin workflows against production data
+- Production hostnames (no secrets) live in `config/supabase-production-hosts.json`
+- Deployments, paid API calls, and dashboard changes require explicit approval

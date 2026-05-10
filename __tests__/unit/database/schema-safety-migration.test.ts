@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+// Phase 0/1 closure: D5-numeric-constraints
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

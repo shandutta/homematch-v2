@@ -14,18 +14,18 @@ HomeMatch has **three competing color systems** layered on top of each other, wi
 
 Defined in `globals.css:31–55`. Adoption (counts from grep of `*.tsx`):
 
-| Class | Count |
-| --- | ---: |
-| `text-hm-stone-500` | 118 |
-| `text-hm-stone-200` | 94 |
-| `text-hm-stone-400` | 74 |
-| `text-hm-stone-300` | 40 |
-| `text-hm-stone-100` | 26 |
-| `text-hm-amber-400` | 22 |
-| `bg-hm-obsidian-800` | 11 |
+| Class                               | Count |
+| ----------------------------------- | ----: |
+| `text-hm-stone-500`                 |   118 |
+| `text-hm-stone-200`                 |    94 |
+| `text-hm-stone-400`                 |    74 |
+| `text-hm-stone-300`                 |    40 |
+| `text-hm-stone-100`                 |    26 |
+| `text-hm-amber-400`                 |    22 |
+| `bg-hm-obsidian-800`                |    11 |
 | `text-hm-success` / `text-hm-error` | 9 / 9 |
-| `bg-hm-amber-400` | 9 |
-| `bg-hm-obsidian-900` | 7 |
+| `bg-hm-amber-400`                   |     9 |
+| `bg-hm-obsidian-900`                |     7 |
 
 Strong as a **text** scale. Backgrounds are weaker — only `obsidian-800/900` (~18 calls) are routinely used; `obsidian-950` and `obsidian-700` are defined but never referenced as bg. `stone-600` is defined and only used twice.
 
@@ -33,14 +33,14 @@ Strong as a **text** scale. Backgrounds are weaker — only `obsidian-800/900` (
 
 Defined `globals.css:91–153` with full 50–900 ramps for primary/secondary/success/error/warning/accent/info. There are also hundreds of lines of utility classes (`globals.css:451–1182`) wrapping these. Actual adoption is shallow:
 
-| Class | Count |
-| --- | ---: |
-| `text-token-sm` / `text-token-xs` | 15 / 13 |
-| `bg-token-primary` | 6 |
-| `bg-token-secondary-900` | 5 ← **token does not exist** |
-| `bg-token-primary-dark` | 3 |
-| `border-token-primary` | 3 |
-| `text-token-error`, `text-token-xl`, etc. | 1 each |
+| Class                                     |                        Count |
+| ----------------------------------------- | ---------------------------: |
+| `text-token-sm` / `text-token-xs`         |                      15 / 13 |
+| `bg-token-primary`                        |                            6 |
+| `bg-token-secondary-900`                  | 5 ← **token does not exist** |
+| `bg-token-primary-dark`                   |                            3 |
+| `border-token-primary`                    |                            3 |
+| `text-token-error`, `text-token-xl`, etc. |                       1 each |
 
 Almost all `bg-token-*` and `text-token-*` semantic classes have zero or one usage. The infrastructure is built; the components don't call into it.
 
@@ -48,21 +48,21 @@ Almost all `bg-token-*` and `text-token-*` semantic classes have zero or one usa
 
 Despite the two systems above, the most-used colors in the codebase are raw Tailwind utilities:
 
-| Class | Count |
-| --- | ---: |
-| `text-pink-400` | 28 |
-| `bg-emerald-500` | 26 |
-| `bg-slate-900` | 22 |
-| `text-slate-400` | 21 |
-| `bg-amber-500` | 21 |
-| `text-sky-400` | 20 |
-| `text-purple-400` | 20 |
-| `text-emerald-400` | 19 |
-| `text-red-400` | 19 |
-| `bg-sky-500` | 18 |
-| `text-slate-900` | 16 |
-| `text-amber-400` | 16 |
-| `bg-red-500` | 16 |
+| Class              | Count |
+| ------------------ | ----: |
+| `text-pink-400`    |    28 |
+| `bg-emerald-500`   |    26 |
+| `bg-slate-900`     |    22 |
+| `text-slate-400`   |    21 |
+| `bg-amber-500`     |    21 |
+| `text-sky-400`     |    20 |
+| `text-purple-400`  |    20 |
+| `text-emerald-400` |    19 |
+| `text-red-400`     |    19 |
+| `bg-sky-500`       |    18 |
+| `text-slate-900`   |    16 |
+| `text-amber-400`   |    16 |
+| `bg-red-500`       |    16 |
 
 There is overlap with the HM scale (e.g. `text-amber-400` raw vs `text-hm-amber-400` token — both exist with the same value, used 16 and 22 times respectively). Same story for emerald/success and slate/stone.
 
@@ -72,18 +72,18 @@ There is overlap with the HM scale (e.g. `text-amber-400` raw vs `text-hm-amber-
 
 The "luxury dark" backdrop is implemented as **eight different near-black hex codes**, none of which equal the token `--hm-obsidian-950` (`#0c0a09`) or `--hm-obsidian-900` (`#1c1917`):
 
-| Hex | Count | Notes |
-| --- | ---: | --- |
-| `#0f172a` | 12 | Slate-900; appears in maps, property image gradient, providers |
-| `#030712` | 6 | Different near-black |
-| `#07132b` | 3 | Header / MobileBottomNav background |
-| `#063A9E` | 3 | Marketing gradient endpoint, **uppercase** |
-| `#021A44` | 3 | Marketing gradient start, **uppercase** (siblings are lowercase) |
-| `#0a1628` | 2 | UserAvatar border, ProfileMenu bg |
-| `#0a0f1d` | 1 | Button focus ring offset |
-| `#0b0f1a`, `#0f131b`, `#0c0a09`, `#020617` | 1 each | More near-blacks |
-| `#ffffff` vs `#fff` | 4 vs 2 | Inconsistent shorthand |
-| `#000` (no `#000000`) | 2 | Inconsistent shorthand |
+| Hex                                        |  Count | Notes                                                            |
+| ------------------------------------------ | -----: | ---------------------------------------------------------------- |
+| `#0f172a`                                  |     12 | Slate-900; appears in maps, property image gradient, providers   |
+| `#030712`                                  |      6 | Different near-black                                             |
+| `#07132b`                                  |      3 | Header / MobileBottomNav background                              |
+| `#063A9E`                                  |      3 | Marketing gradient endpoint, **uppercase**                       |
+| `#021A44`                                  |      3 | Marketing gradient start, **uppercase** (siblings are lowercase) |
+| `#0a1628`                                  |      2 | UserAvatar border, ProfileMenu bg                                |
+| `#0a0f1d`                                  |      1 | Button focus ring offset                                         |
+| `#0b0f1a`, `#0f131b`, `#0c0a09`, `#020617` | 1 each | More near-blacks                                                 |
+| `#ffffff` vs `#fff`                        | 4 vs 2 | Inconsistent shorthand                                           |
+| `#000` (no `#000000`)                      |      2 | Inconsistent shorthand                                           |
 
 Notable hardcoded clusters:
 
@@ -97,12 +97,12 @@ Notable hardcoded clusters:
 
 `EnhancedPropertyCard.tsx` (lines 129, 134, 146, 160, 168, 177, 203, 204) uses tokens that are **not defined** in the `@theme inline` block:
 
-| Class | Status |
-| --- | --- |
+| Class                                                                            | Status                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bg-token-secondary-900`, `from-token-secondary-900`, `text-token-secondary-900` | `--color-token-secondary-900` is **not defined**; only 100, 200, 300, 500, 600, 700, 800 exist (`globals.css:103–109`). The dark-mode override at line 1172 references it but the source variable is missing. |
-| `bg-token-background-primary` | `--color-token-background-primary` not defined anywhere. |
-| `text-token-text-inverse`, `bg-token-text-inverse` | `--color-token-text-inverse` not defined anywhere. |
-| `rounded-token-full` | `--border-radius-full` not defined; only sm/md/lg/xl/2xl exist (`globals.css:257–261`). |
+| `bg-token-background-primary`                                                    | `--color-token-background-primary` not defined anywhere.                                                                                                                                                      |
+| `text-token-text-inverse`, `bg-token-text-inverse`                               | `--color-token-text-inverse` not defined anywhere.                                                                                                                                                            |
+| `rounded-token-full`                                                             | `--border-radius-full` not defined; only sm/md/lg/xl/2xl exist (`globals.css:257–261`).                                                                                                                       |
 
 Tailwind v4 silently no-ops unknown utilities, so these elements likely fall back to transparent / default. **Bug, not a style issue.**
 
@@ -110,17 +110,17 @@ Tailwind v4 silently no-ops unknown utilities, so these elements likely fall bac
 
 Defined: `--radius` (0.625rem) plus shadcn-style derived `--radius-sm/md/lg/xl`, plus `--border-radius-sm/md/lg/xl/2xl` (`globals.css:257–261`), plus `rounded-token-*` utilities. Usage:
 
-| Class | Count |
-| --- | ---: |
-| `rounded-full` | 188 |
-| `rounded-xl` | 121 |
-| `rounded-lg` | 76 |
-| `rounded-2xl` | 27 |
-| `rounded-md` | 17 |
-| `rounded-token-md` | 10 |
-| `rounded-sm` | 5 |
+| Class                |              Count |
+| -------------------- | -----------------: |
+| `rounded-full`       |                188 |
+| `rounded-xl`         |                121 |
+| `rounded-lg`         |                 76 |
+| `rounded-2xl`        |                 27 |
+| `rounded-md`         |                 17 |
+| `rounded-token-md`   |                 10 |
+| `rounded-sm`         |                  5 |
 | `rounded-token-full` | 4 ← does not exist |
-| `rounded-3xl` | 1 |
+| `rounded-3xl`        |                  1 |
 
 Plus arbitrary values that do not match any token:
 
@@ -141,12 +141,12 @@ rounded-[4px]    (1×)
 
 Token shadows (`--shadow-token-sm/md/lg/xl/2xl`, `globals.css:239–246`) exist. Usage:
 
-| Class | Count |
-| --- | ---: |
-| `shadow-lg` (Tailwind default) | 46 |
-| `shadow-sm` | 15 |
-| `shadow-token-lg` | 9 |
-| `shadow-token-sm` | 7 |
+| Class                                                    |    Count |
+| -------------------------------------------------------- | -------: |
+| `shadow-lg` (Tailwind default)                           |       46 |
+| `shadow-sm`                                              |       15 |
+| `shadow-token-lg`                                        |        9 |
+| `shadow-token-sm`                                        |        7 |
 | `shadow-md`, `shadow-xl`, `shadow-2xl`, `shadow-token-*` | 2–5 each |
 
 Plus **23 distinct arbitrary `shadow-[…]` values**, including five inset highlights and many bespoke RGBA stacks like:
@@ -165,11 +165,11 @@ There are also **color-tinted Tailwind shadows** (`shadow-amber-500` ×12, `shad
 
 Spacing tokens (`--spacing-xs/sm/md/lg/xl/2xl/3xl`, `globals.css:230–236`) exist, with `p-token-*`, `gap-token-*`, `m-token-*`, `mt-token-*`, `mb-token-*` utilities defined. Adoption:
 
-| Family | Token usage | Raw Tailwind usage |
-| --- | ---: | ---: |
-| `gap-*` | 8 | 164 (`gap-2`) + 116 (`gap-3`) + 61 (`gap-4`) + 32 (`gap-1`) + … |
-| `p-*` | 23 | 52 (`p-4`) + 35 (`p-3`) + 25 (`p-6`) + 21 (`p-8`) + … |
-| `m-*` | 0–1 | hundreds |
+| Family  | Token usage |                                              Raw Tailwind usage |
+| ------- | ----------: | --------------------------------------------------------------: |
+| `gap-*` |           8 | 164 (`gap-2`) + 116 (`gap-3`) + 61 (`gap-4`) + 32 (`gap-1`) + … |
+| `p-*`   |          23 |           52 (`p-4`) + 35 (`p-3`) + 25 (`p-6`) + 21 (`p-8`) + … |
+| `m-*`   |         0–1 |                                                        hundreds |
 
 The token spacing scale jumps `0.25 → 0.5 → 1 → 1.5 → 2 → 3 → 4 rem`, matching Tailwind's `1 → 2 → 4 → 6 → 8 → 12 → 16` (×0.25rem). So token names don't add new values, only alias existing ones — which probably explains low adoption: there is no benefit to typing `gap-token-md` over `gap-4`. If consolidation is the goal, the tokens should add semantic value (e.g. `gap-stack`, `gap-inline`) rather than re-aliasing the numeric scale.
 
@@ -177,21 +177,21 @@ The token spacing scale jumps `0.25 → 0.5 → 1 → 1.5 → 2 → 3 → 4 rem`
 
 Typography tokens (`--font-size-xs … --font-size-5xl`, `globals.css:264–272`) and `text-token-xs … text-token-5xl` utilities are defined. Adoption:
 
-| Class | Count |
-| --- | ---: |
-| `text-sm` (Tailwind) | 209 |
-| `text-xs` | 165 |
-| `text-xl` | 48 |
-| `text-2xl` | 38 |
-| `text-lg` | 32 |
-| `text-base` | 19 |
-| `text-3xl` | 17 |
-| `text-token-sm` | 15 |
-| `text-token-xs` | 13 |
-| `text-4xl` | 14 |
-| `text-token-lg` | 4 |
+| Class                                                  |     Count |
+| ------------------------------------------------------ | --------: |
+| `text-sm` (Tailwind)                                   |       209 |
+| `text-xs`                                              |       165 |
+| `text-xl`                                              |        48 |
+| `text-2xl`                                             |        38 |
+| `text-lg`                                              |        32 |
+| `text-base`                                            |        19 |
+| `text-3xl`                                             |        17 |
+| `text-token-sm`                                        |        15 |
+| `text-token-xs`                                        |        13 |
+| `text-4xl`                                             |        14 |
+| `text-token-lg`                                        |         4 |
 | `text-token-base` / `text-token-xl` / `text-token-3xl` | 2 / 1 / 1 |
-| `text-7xl` | 1 |
+| `text-7xl`                                             |         1 |
 
 Same pattern as spacing: the token scale is an alias of Tailwind's, so no incentive to migrate.
 

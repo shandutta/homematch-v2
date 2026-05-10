@@ -20,11 +20,11 @@
 
 ## Table 1: user_profiles
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 1 | preferences JSONB — no GIN index | **HIGH** | `preferences->>'display_name'`, `preferences->'avatar'` queries do sequential scans. Dev scale is fine; 10K+ users will be slow. |
-| 2 | email column — no UNIQUE | MEDIUM | `display_name` and `email` were added in migration 20251123220000. No unique constraint on email, so duplicate emails are possible if the new-user trigger misfires. |
-| 3 | No CHECK on preferences shape | LOW | Free-form JSONB is flexible but allows garbage data. Consider JSON schema validation at the application layer (already done via Zod in `user.ts`). |
+| #   | Finding                          | Severity | Detail                                                                                                                                                               |
+| --- | -------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | preferences JSONB — no GIN index | **HIGH** | `preferences->>'display_name'`, `preferences->'avatar'` queries do sequential scans. Dev scale is fine; 10K+ users will be slow.                                     |
+| 2   | email column — no UNIQUE         | MEDIUM   | `display_name` and `email` were added in migration 20251123220000. No unique constraint on email, so duplicate emails are possible if the new-user trigger misfires. |
+| 3   | No CHECK on preferences shape    | LOW      | Free-form JSONB is flexible but allows garbage data. Consider JSON schema validation at the application layer (already done via Zod in `user.ts`).                   |
 
 ### Effective DDL (all migrations applied)
 
@@ -56,11 +56,11 @@ CREATE UNIQUE INDEX uq_user_profiles_email ON user_profiles (email) WHERE email 
 
 ## Table 2: households
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 4 | No FK cascade from user_profiles→households | **CRITICAL** | Deleting a household leaves `user_profiles.household_id` dangling (no `ON DELETE SET NULL` or `CASCADE`). This breaks couples features that JOIN on household_id. |
-| 5 | name is now nullable but created_by may not be | MEDIUM | `name` was made nullable in 20251130200000. If the `create_household_for_user()` function is bypassed (direct INSERT), `name` can be NULL and `created_by` NULL — leaving orphan households. |
-| 6 | No updated_at trigger | LOW | No automatic `updated_at` update on row modification. |
+| #   | Finding                                        | Severity     | Detail                                                                                                                                                                                       |
+| --- | ---------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4   | No FK cascade from user_profiles→households    | **CRITICAL** | Deleting a household leaves `user_profiles.household_id` dangling (no `ON DELETE SET NULL` or `CASCADE`). This breaks couples features that JOIN on household_id.                            |
+| 5   | name is now nullable but created_by may not be | MEDIUM       | `name` was made nullable in 20251130200000. If the `create_household_for_user()` function is bypassed (direct INSERT), `name` can be NULL and `created_by` NULL — leaving orphan households. |
+| 6   | No updated_at trigger                          | LOW          | No automatic `updated_at` update on row modification.                                                                                                                                        |
 
 ### Effective DDL
 
@@ -92,12 +92,12 @@ ALTER TABLE user_profiles
 
 ## Table 3: neighborhoods
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 7 | Missing updated_at column | **HIGH** | No way to track when a neighborhood was last modified. Used in caching logic. |
-| 8 | No CHECK on walk_score/transit_score range | **HIGH** | Accepts any INTEGER including negatives or values > 100. App code assumes 0-100. |
-| 9 | No CHECK on median_price > 0 | MEDIUM | Allows 0 or negative median_price. |
-| 10 | city_state_key is generated — good | — | Well-implemented generated column with index. No issues. |
+| #   | Finding                                    | Severity | Detail                                                                           |
+| --- | ------------------------------------------ | -------- | -------------------------------------------------------------------------------- |
+| 7   | Missing updated_at column                  | **HIGH** | No way to track when a neighborhood was last modified. Used in caching logic.    |
+| 8   | No CHECK on walk_score/transit_score range | **HIGH** | Accepts any INTEGER including negatives or values > 100. App code assumes 0-100. |
+| 9   | No CHECK on median_price > 0               | MEDIUM   | Allows 0 or negative median_price.                                               |
+| 10  | city_state_key is generated — good         | —        | Well-implemented generated column with index. No issues.                         |
 
 ### Effective DDL
 
@@ -136,14 +136,14 @@ ALTER TABLE neighborhoods ADD CONSTRAINT chk_median_price_positive CHECK (median
 
 ## Table 4: properties
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 11 | listing_status has NO CHECK constraint | **CRITICAL** | Any string accepted. App code writes 'active'/'pending'/'sold'/'off_market'. A typo like 'actve' silently succeeds and breaks all dashboard queries that filter on `listing_status = 'active'`. |
-| 12 | No CHECK on price, bedrooms, bathrooms, square_feet | **CRITICAL** | All are NOT NULL but accept 0 or negatives. A data ingestion bug inserting `price = -1` or `bedrooms = 0` corrupts search results. |
-| 13 | No CHECK on year_built | **HIGH** | Accepts year 5000, year 800, or negative values. |
-| 14 | No ON DELETE for neighborhood_id FK | **HIGH** | If a neighborhood is deleted, property.neighborhood_id becomes dangling. Should be SET NULL with a backfill job. |
-| 15 | No composite indexes for city/state/price queries | MEDIUM | Partially addressed by 20251218120000 (`idx_properties_active_type_price`), but no index on `(city, price)` or `(state, bedrooms)`. The generated `city_state_key` helps but doesn't replace direct column composites. |
-| 16 | images TEXT[] has no GIN index | LOW | Array containment queries (`amenities && ARRAY['pool']`) would benefit from a GIN index. Currently only `amenities` and `images` are TEXT[] arrays. |
+| #   | Finding                                             | Severity     | Detail                                                                                                                                                                                                                 |
+| --- | --------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 11  | listing_status has NO CHECK constraint              | **CRITICAL** | Any string accepted. App code writes 'active'/'pending'/'sold'/'off_market'. A typo like 'actve' silently succeeds and breaks all dashboard queries that filter on `listing_status = 'active'`.                        |
+| 12  | No CHECK on price, bedrooms, bathrooms, square_feet | **CRITICAL** | All are NOT NULL but accept 0 or negatives. A data ingestion bug inserting `price = -1` or `bedrooms = 0` corrupts search results.                                                                                     |
+| 13  | No CHECK on year_built                              | **HIGH**     | Accepts year 5000, year 800, or negative values.                                                                                                                                                                       |
+| 14  | No ON DELETE for neighborhood_id FK                 | **HIGH**     | If a neighborhood is deleted, property.neighborhood_id becomes dangling. Should be SET NULL with a backfill job.                                                                                                       |
+| 15  | No composite indexes for city/state/price queries   | MEDIUM       | Partially addressed by 20251218120000 (`idx_properties_active_type_price`), but no index on `(city, price)` or `(state, bedrooms)`. The generated `city_state_key` helps but doesn't replace direct column composites. |
+| 16  | images TEXT[] has no GIN index                      | LOW          | Array containment queries (`amenities && ARRAY['pool']`) would benefit from a GIN index. Currently only `amenities` and `images` are TEXT[] arrays.                                                                    |
 
 ### Effective DDL
 
@@ -208,12 +208,12 @@ CREATE INDEX idx_properties_city_state_price ON properties (city, state, price) 
 
 ## Table 5: user_property_interactions
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 17 | UNIQUE allows 4 rows per user×property | **CRITICAL** | `UNIQUE(user_id, property_id, interaction_type)` permits one row PER type (like, dislike, skip, view). The application code deletes-then-inserts, effectively enforcing 1 row total, but the schema allows 4. If the delete fails silently (RLS, race condition), orphans accumulate. |
-| 18 | score_data JSONB — no GIN index | MEDIUM | Couples features query `score_data` for ML scores. Without a GIN index, `score_data->>'compatibility'` scans sequentially. |
-| — | FK cascade from auth.users works | ✓ | Fixed in 20250731041925: `ON DELETE CASCADE` from auth.users. |
-| — | interaction_type CHECK is correct | ✓ | Allows `like`,`dislike`,`skip`,`view` and matches app code. |
+| #   | Finding                                | Severity     | Detail                                                                                                                                                                                                                                                                                |
+| --- | -------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 17  | UNIQUE allows 4 rows per user×property | **CRITICAL** | `UNIQUE(user_id, property_id, interaction_type)` permits one row PER type (like, dislike, skip, view). The application code deletes-then-inserts, effectively enforcing 1 row total, but the schema allows 4. If the delete fails silently (RLS, race condition), orphans accumulate. |
+| 18  | score_data JSONB — no GIN index        | MEDIUM       | Couples features query `score_data` for ML scores. Without a GIN index, `score_data->>'compatibility'` scans sequentially.                                                                                                                                                            |
+| —   | FK cascade from auth.users works       | ✓            | Fixed in 20250731041925: `ON DELETE CASCADE` from auth.users.                                                                                                                                                                                                                         |
+| —   | interaction_type CHECK is correct      | ✓            | Allows `like`,`dislike`,`skip`,`view` and matches app code.                                                                                                                                                                                                                           |
 
 ### Effective DDL
 
@@ -257,12 +257,12 @@ ALTER TABLE user_property_interactions
 
 ## Table 6: saved_searches
 
-| # | Finding | Severity | Detail |
-|---|---|---|---|
-| 19 | filters JSONB — no GIN index | **HIGH** | `filters->>'city'`, `filters->>'min_price'` queries are unindexed. Searches with `filters @> '{"city":"San Francisco"}'` would benefit hugely from GIN. |
-| 20 | Missing updated_at column | MEDIUM | Cannot track when a saved search was last modified. |
-| 21 | No CHECK on filters shape | LOW | Free-form JSONB. Application validates via Zod. Acceptable at DB layer. |
-| — | FK CASCADE from auth.users works | ✓ | Added in 20250731041925. |
+| #   | Finding                          | Severity | Detail                                                                                                                                                  |
+| --- | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19  | filters JSONB — no GIN index     | **HIGH** | `filters->>'city'`, `filters->>'min_price'` queries are unindexed. Searches with `filters @> '{"city":"San Francisco"}'` would benefit hugely from GIN. |
+| 20  | Missing updated_at column        | MEDIUM   | Cannot track when a saved search was last modified.                                                                                                     |
+| 21  | No CHECK on filters shape        | LOW      | Free-form JSONB. Application validates via Zod. Acceptable at DB layer.                                                                                 |
+| —   | FK CASCADE from auth.users works | ✓        | Added in 20250731041925.                                                                                                                                |
 
 ### Effective DDL
 
@@ -343,12 +343,12 @@ CREATE TRIGGER trg_saved_searches_updated_at
 
 ## Severity Summary
 
-| Severity | Count | Issues |
-|---|---|---|
-| **CRITICAL** | 4 | listing_status no CHECK (#11), no price/bed/bath/sqft checks (#12), interaction UNIQUE too permissive (#17), household FK orphan risk (#4) |
-| **HIGH** | 6 | preferences GIN missing (#1), neighborhoods missing updated_at (#7), score checks missing (#8), year_built no CHECK (#13), neighborhood FK no SET NULL (#14), filters GIN missing (#19) |
-| **MEDIUM** | 5 | email no UNIQUE (#2), household created_by nullable (#5), median_price no CHECK (#9), composite indexes missing (#15), neighborhoods updated_at (#20) |
-| **LOW** | 3 | preferences shape (#3), updated_at trigger (#6), images GIN (#16) |
+| Severity     | Count | Issues                                                                                                                                                                                  |
+| ------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CRITICAL** | 4     | listing_status no CHECK (#11), no price/bed/bath/sqft checks (#12), interaction UNIQUE too permissive (#17), household FK orphan risk (#4)                                              |
+| **HIGH**     | 6     | preferences GIN missing (#1), neighborhoods missing updated_at (#7), score checks missing (#8), year_built no CHECK (#13), neighborhood FK no SET NULL (#14), filters GIN missing (#19) |
+| **MEDIUM**   | 5     | email no UNIQUE (#2), household created_by nullable (#5), median_price no CHECK (#9), composite indexes missing (#15), neighborhoods updated_at (#20)                                   |
+| **LOW**      | 3     | preferences shape (#3), updated_at trigger (#6), images GIN (#16)                                                                                                                       |
 
 ---
 
@@ -356,11 +356,11 @@ CREATE TRIGGER trg_saved_searches_updated_at
 
 All patches are under `supabase/migrations/` in the workspace:
 
-| File | Patches |
-|---|---|
-| `20260507220000_add_missing_check_constraints.sql` | P8, P9 (listing_status, numeric sanity) |
-| `20260507220100_fix_foreign_key_cascades.sql` | P3, P10, P15 (household SET NULL, neighborhood SET NULL, property CASCADE) |
-| `20260507220200_fix_interaction_unique_constraint.sql` | P13 (user×property global UNIQUE) |
-| `20260507220300_add_jsonb_gin_indexes.sql` | P1, P14, P16 (preferences, score_data, filters GIN) |
-| `20260507220400_add_updated_at_and_triggers.sql` | P4, P17, P18 (updated_at columns + universal trigger) |
-| `20260507220500_add_score_checks_and_indexes.sql` | P6, P7, P11, P12 (score ranges, amenities GIN, city+price composite) |
+| File                                                   | Patches                                                                    |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `20260507220000_add_missing_check_constraints.sql`     | P8, P9 (listing_status, numeric sanity)                                    |
+| `20260507220100_fix_foreign_key_cascades.sql`          | P3, P10, P15 (household SET NULL, neighborhood SET NULL, property CASCADE) |
+| `20260507220200_fix_interaction_unique_constraint.sql` | P13 (user×property global UNIQUE)                                          |
+| `20260507220300_add_jsonb_gin_indexes.sql`             | P1, P14, P16 (preferences, score_data, filters GIN)                        |
+| `20260507220400_add_updated_at_and_triggers.sql`       | P4, P17, P18 (updated_at columns + universal trigger)                      |
+| `20260507220500_add_score_checks_and_indexes.sql`      | P6, P7, P11, P12 (score ranges, amenities GIN, city+price composite)       |

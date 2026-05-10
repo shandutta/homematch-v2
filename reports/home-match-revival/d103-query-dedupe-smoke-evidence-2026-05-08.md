@@ -8,12 +8,12 @@ inside Phase 0/1 boundaries (no Phase 2+ work).
 
 ## Where dedupe lives today
 
-| Layer | Source | Notes |
-| --- | --- | --- |
-| In-flight Map (per Node process) | `src/lib/data/loader.ts:51`, `:215-242` | `inFlightDashboardSearches` keyed on `JSON.stringify({ searchParams, options })`. `runDedupedDashboardSearch` returns the existing promise; `.finally` deletes the entry whether the inner search resolved or rejected, so failures do not poison subsequent calls. |
-| Cached search overlay | `src/lib/data/loader.ts:89-105`, `:310-331` | `unstable_cache(['dashboard-properties'], { revalidate: 60 })` wraps `searchProperties` for the anon path. Activated only when `useCache=true`, `NODE_ENV !== 'test'`, and an anon factory was constructed. |
-| Neighborhood result dedupe | `src/lib/data/loader.ts:286-296` | `Map<string, Neighborhood>` collapses overlapping per-city results into a single id-keyed list. |
-| Locations client dedupe | `src/lib/services/locations-client.ts:32-44`, `:154-162` | `LocationsClient.getCities` and `getMetroAreas` collapse PostgREST rows by lowercased composite key before returning. No test today (see gaps). |
+| Layer                            | Source                                                   | Notes                                                                                                                                                                                                                                                               |
+| -------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| In-flight Map (per Node process) | `src/lib/data/loader.ts:51`, `:215-242`                  | `inFlightDashboardSearches` keyed on `JSON.stringify({ searchParams, options })`. `runDedupedDashboardSearch` returns the existing promise; `.finally` deletes the entry whether the inner search resolved or rejected, so failures do not poison subsequent calls. |
+| Cached search overlay            | `src/lib/data/loader.ts:89-105`, `:310-331`              | `unstable_cache(['dashboard-properties'], { revalidate: 60 })` wraps `searchProperties` for the anon path. Activated only when `useCache=true`, `NODE_ENV !== 'test'`, and an anon factory was constructed.                                                         |
+| Neighborhood result dedupe       | `src/lib/data/loader.ts:286-296`                         | `Map<string, Neighborhood>` collapses overlapping per-city results into a single id-keyed list.                                                                                                                                                                     |
+| Locations client dedupe          | `src/lib/services/locations-client.ts:32-44`, `:154-162` | `LocationsClient.getCities` and `getMetroAreas` collapse PostgREST rows by lowercased composite key before returning. No test today (see gaps).                                                                                                                     |
 
 ## What the unit tests prove
 
@@ -35,9 +35,9 @@ preference→filter projection and neighborhood-fetch skip rules
 
 ## Smoke surfaces that touch the dedupe path
 
-| Spec | What it exercises | Hits dedupe? |
-| --- | --- | --- |
-| `__tests__/e2e/smoke-min.spec.ts` | Landing render, hero/secondary CTA → /signup and /login, login page shape, footer brand. | No. Dashboard not entered; `loadDashboardData` not called. |
+| Spec                                                 | What it exercises                                                                                                                                                                      | Hits dedupe?                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `__tests__/e2e/smoke-min.spec.ts`                    | Landing render, hero/secondary CTA → /signup and /login, login page shape, footer brand.                                                                                               | No. Dashboard not entered; `loadDashboardData` not called.            |
 | `__tests__/e2e/no-auth-public-accessibility.spec.ts` | 11 public routes + `/dashboard`, `/dashboard/liked`, `/profile`, `/settings`, `/household/*`, `/couples*`, `/properties/<id>`, `/validation` redirect to `/login`; robots/sitemap/404. | No. Anonymous redirect happens before `loadDashboardData` is reached. |
 
 So the dedupe code path is currently guarded **only** by the unit tests above.

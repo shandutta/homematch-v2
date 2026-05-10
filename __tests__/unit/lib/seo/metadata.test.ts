@@ -3,6 +3,7 @@
  */
 // Phase 0/1 closure: P0-accessibility-core-flow
 
+// Phase 0/1 closure: P0-accessibility-core-flow
 const SITE_URL = 'https://example.com'
 
 describe('SEO metadata polish', () => {

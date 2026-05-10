@@ -65,9 +65,7 @@ export function MutualLikesListPage() {
 
   const selectedLikes = selectedIds
     .map((id) => allLikes.find((like) => like.property_id === id))
-    .filter(
-      (like): like is NonNullable<typeof like> => like !== undefined
-    )
+    .filter((like): like is NonNullable<typeof like> => like !== undefined)
 
   const mutualLikes = useMemo(() => {
     const minBeds = bedFilter === 'any' ? 0 : Number(bedFilter)
@@ -99,7 +97,10 @@ export function MutualLikesListPage() {
   }, [allLikes, sortKey, bedFilter])
 
   const isFilteredEmpty =
-    !query.isLoading && !query.error && totalLikes > 0 && mutualLikes.length === 0
+    !query.isLoading &&
+    !query.error &&
+    totalLikes > 0 &&
+    mutualLikes.length === 0
 
   return (
     <div
@@ -134,19 +135,19 @@ export function MutualLikesListPage() {
           className="flex flex-wrap items-center gap-3"
           data-testid="mutual-likes-toolbar"
         >
-          <label className="flex items-center gap-2 text-xs text-hm-stone-400">
+          <label className="text-hm-stone-400 flex items-center gap-2 text-xs">
             <span>Sort</span>
             <select
               aria-label="Sort mutual likes"
               data-testid="mutual-likes-sort"
               value={sortKey}
               onChange={(event) => {
-                const v = event.target.value;
+                const v = event.target.value
                 if (SORT_OPTIONS.some((o) => o.value === v)) {
                   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                  setSortKey(v as SortKey);
+                  setSortKey(v as SortKey)
                 } else {
-                  setSortKey('recent');
+                  setSortKey('recent')
                 }
               }}
               className={SELECT_CLASS}
@@ -159,19 +160,19 @@ export function MutualLikesListPage() {
             </select>
           </label>
 
-          <label className="flex items-center gap-2 text-xs text-hm-stone-400">
+          <label className="text-hm-stone-400 flex items-center gap-2 text-xs">
             <span>Filter</span>
             <select
               aria-label="Filter mutual likes by bedrooms"
               data-testid="mutual-likes-bed-filter"
               value={bedFilter}
               onChange={(event) => {
-                const v = event.target.value;
+                const v = event.target.value
                 if (BED_FILTER_OPTIONS.some((o) => o.value === v)) {
                   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                  setBedFilter(v as BedFilter);
+                  setBedFilter(v as BedFilter)
                 } else {
-                  setBedFilter('any');
+                  setBedFilter('any')
                 }
               }}
               className={SELECT_CLASS}
@@ -185,7 +186,7 @@ export function MutualLikesListPage() {
           </label>
 
           <span
-            className="text-xs text-hm-stone-500"
+            className="text-hm-stone-500 text-xs"
             data-testid="mutual-likes-count"
             aria-live="polite"
           >
@@ -344,8 +345,8 @@ export function MutualLikesListPage() {
               No matches with current filters
             </h2>
             <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
-              {totalLikes} mutual {totalLikes === 1 ? 'like' : 'likes'} hidden by
-              your filter. Adjust to see them.
+              {totalLikes} mutual {totalLikes === 1 ? 'like' : 'likes'} hidden
+              by your filter. Adjust to see them.
             </p>
             <div className="mt-6 flex justify-center">
               <Button
@@ -368,92 +369,94 @@ export function MutualLikesListPage() {
               !isSelected && selectedIds.length >= MAX_COMPARE
 
             return (
-            <Card
-              key={like.property_id}
-              className={`border-white/10 ${
-                compareMode && isSelected
-                  ? 'ring-1 ring-couples-primary/60'
-                  : ''
-              }`}
-              style={{
-                backgroundColor: dashboardTokens.colors.background.cardDark,
-                borderColor: dashboardTokens.colors.secondary[700],
-              }}
-              data-testid={`mutual-like-card-${like.property_id}`}
-            >
-              <CardContent className="p-4">
-                {compareMode && (
-                  <label
-                    className={`mb-3 flex cursor-pointer items-center gap-2 text-xs ${
-                      selectionDisabled
-                        ? 'text-hm-stone-500 cursor-not-allowed'
-                        : 'text-hm-stone-300'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSelected(like.property_id)}
-                      disabled={selectionDisabled}
-                      aria-label={`Select ${
-                        like.property?.address || 'property'
-                      } for comparison`}
-                      data-testid={`compare-checkbox-${like.property_id}`}
-                      className="h-4 w-4 rounded border-white/20 bg-white/[0.04]"
-                    />
-                    {isSelected
-                      ? 'Selected for comparison'
-                      : selectionDisabled
-                        ? `Max ${MAX_COMPARE} selected`
-                        : 'Add to comparison'}
-                  </label>
-                )}
-
-                <Link
-                  href={`/properties/${like.property_id}?returnTo=/dashboard/mutual-likes`}
-                  className="group block"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="relative h-20 w-20 overflow-hidden rounded-lg border border-white/10">
-                      <PropertyImage
-                        src={like.property?.images || like.property?.image_urls}
-                        alt={like.property?.address || 'Property'}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                        sizes="80px"
+              <Card
+                key={like.property_id}
+                className={`border-white/10 ${
+                  compareMode && isSelected
+                    ? 'ring-couples-primary/60 ring-1'
+                    : ''
+                }`}
+                style={{
+                  backgroundColor: dashboardTokens.colors.background.cardDark,
+                  borderColor: dashboardTokens.colors.secondary[700],
+                }}
+                data-testid={`mutual-like-card-${like.property_id}`}
+              >
+                <CardContent className="p-4">
+                  {compareMode && (
+                    <label
+                      className={`mb-3 flex cursor-pointer items-center gap-2 text-xs ${
+                        selectionDisabled
+                          ? 'text-hm-stone-500 cursor-not-allowed'
+                          : 'text-hm-stone-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelected(like.property_id)}
+                        disabled={selectionDisabled}
+                        aria-label={`Select ${
+                          like.property?.address || 'property'
+                        } for comparison`}
+                        data-testid={`compare-checkbox-${like.property_id}`}
+                        className="h-4 w-4 rounded border-white/20 bg-white/[0.04]"
                       />
-                    </div>
+                      {isSelected
+                        ? 'Selected for comparison'
+                        : selectionDisabled
+                          ? `Max ${MAX_COMPARE} selected`
+                          : 'Add to comparison'}
+                    </label>
+                  )}
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-hm-stone-100 truncate text-sm font-semibold">
-                          {like.property?.address ||
-                            `Property ${like.property_id.slice(0, 8)}`}
-                        </p>
-                        <MutualLikesBadge
-                          likedByCount={like.liked_by_count}
-                          variant="compact"
-                          showAnimation={false}
+                  <Link
+                    href={`/properties/${like.property_id}?returnTo=/dashboard/mutual-likes`}
+                    className="group block"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-20 w-20 overflow-hidden rounded-lg border border-white/10">
+                        <PropertyImage
+                          src={
+                            like.property?.images || like.property?.image_urls
+                          }
+                          alt={like.property?.address || 'Property'}
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                          sizes="80px"
                         />
                       </div>
 
-                      {like.property && (
-                        <p className="text-hm-stone-400 mt-1 text-xs">
-                          ${Math.round(like.property.price / 1000)}k •{' '}
-                          {like.property.bedrooms} bd •{' '}
-                          {like.property.bathrooms} ba
-                        </p>
-                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-hm-stone-100 truncate text-sm font-semibold">
+                            {like.property?.address ||
+                              `Property ${like.property_id.slice(0, 8)}`}
+                          </p>
+                          <MutualLikesBadge
+                            likedByCount={like.liked_by_count}
+                            variant="compact"
+                            showAnimation={false}
+                          />
+                        </div>
 
-                      <p className="text-hm-stone-500 mt-3 text-xs">
-                        Last liked{' '}
-                        {new Date(like.last_liked_at).toLocaleDateString()}
-                      </p>
+                        {like.property && (
+                          <p className="text-hm-stone-400 mt-1 text-xs">
+                            ${Math.round(like.property.price / 1000)}k •{' '}
+                            {like.property.bedrooms} bd •{' '}
+                            {like.property.bathrooms} ba
+                          </p>
+                        )}
+
+                        <p className="text-hm-stone-500 mt-3 text-xs">
+                          Last liked{' '}
+                          {new Date(like.last_liked_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </CardContent>
-            </Card>
+                  </Link>
+                </CardContent>
+              </Card>
             )
           })}
         </div>

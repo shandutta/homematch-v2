@@ -2,6 +2,8 @@
 import { readFileSync } from 'fs'
 import * as path from 'path'
 
+// Phase 0/1 closure: DB-P2.3-P2.4-inline-typing
+
 describe('dashboard DB select typing cleanup', () => {
   const loaderSource = readFileSync(
     path.join(process.cwd(), 'src/lib/data/loader.ts'),

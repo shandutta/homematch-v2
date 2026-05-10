@@ -123,7 +123,6 @@
     var(--color-token-primary-600)
   );
 
-
   --gradient-token-mutual-likes: linear-gradient(
     135deg,
     rgba(236, 72, 153, 0.2) 0%,
@@ -345,7 +344,6 @@
 
 /* HomeMatch Custom Components */
 @layer components {
-
   /* Styles for the new dashboard look and feel - Warm Obsidian theme */
   .gradient-grid-bg {
     background-color: var(--hm-obsidian-950); /* Warm dark fallback */
@@ -994,11 +992,9 @@
     .text-token-primary,
     .text-token-secondary,
     .text-token-error,
-
     .bg-token-primary,
     .bg-token-secondary,
     .bg-token-error,
-
     .shadow-token-sm,
     .shadow-token-md,
     .shadow-token-lg,

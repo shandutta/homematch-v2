@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+// Phase 0/1 closure: D7-disputed-route-exposure
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

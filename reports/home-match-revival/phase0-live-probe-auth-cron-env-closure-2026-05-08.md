@@ -29,14 +29,14 @@ Result:
 
 Browser-verified pages and flows:
 
-| Path | Result | Console |
-| --- | --- | --- |
-| `/` | Rendered landing page with header, hero, CTAs, feature sections, footer, and cookie banner. | 0 console errors |
-| `/cookies` | Rendered cookie settings. Banner accept action was clickable; cookie page controls remained visible. | 0 console errors |
-| `/dashboard` unauthenticated | Redirected to login form instead of exposing protected dashboard content. | 0 console errors |
-| `/about` | Rendered public about page. | 0 console errors |
-| `/contact` | Rendered public contact page. | 0 console errors |
-| `/login` invalid credential attempt | Showed `Invalid login credentials`; no protected content exposed. | No JS crash observed |
+| Path                                | Result                                                                                               | Console              |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------- |
+| `/`                                 | Rendered landing page with header, hero, CTAs, feature sections, footer, and cookie banner.          | 0 console errors     |
+| `/cookies`                          | Rendered cookie settings. Banner accept action was clickable; cookie page controls remained visible. | 0 console errors     |
+| `/dashboard` unauthenticated        | Redirected to login form instead of exposing protected dashboard content.                            | 0 console errors     |
+| `/about`                            | Rendered public about page.                                                                          | 0 console errors     |
+| `/contact`                          | Rendered public contact page.                                                                        | 0 console errors     |
+| `/login` invalid credential attempt | Showed `Invalid login credentials`; no protected content exposed.                                    | No JS crash observed |
 
 Authenticated traversal status: **blocked**. `scripts/setup-test-users-admin.js` defines default local test users, but `.env.local` does not provide `TEST_USER_1_EMAIL` / `TEST_USER_1_PASSWORD`, `.env.prod` is absent, and the default local test login failed against the currently configured remote Supabase. Running `scripts/setup-test-users-admin.js` would mutate auth/profile data and is outside this no-side-effects slice.
 
@@ -46,30 +46,30 @@ Exact next action: provide an approved existing test account/session cookie for 
 
 Probe shape: local `curl` against `http://127.0.0.1:3000`, no secrets, no real auth cookie, no mutation payloads beyond empty unauthenticated requests expected to reject before side effects.
 
-| Method | Path | Status | Body class | Closure meaning |
-| --- | --- | ---: | --- | --- |
-| GET | `/api/health` | 200 | JSON | Public health live probe passed; `Cache-Control: no-cache, no-store, must-revalidate`. |
-| POST | `/api/health` | 405 | JSON | Unsupported method rejected. |
-| GET | `/api/properties/marketing` | 200 | JSON | Public marketing API live probe passed. |
-| GET | `/api/maps/metro-boundaries?metro=bay-area` | 500 | empty | **Open bug:** public route calls service-role client and throws `Unauthorized access to service role client`. |
-| GET | `/api/maps/script` | 200 | JSON | Public script endpoint responded; `Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0`. |
-| GET | `/api/maps/proxy-script` | 200 | JavaScript | Public proxy script responded; `Cache-Control: public, max-age=3600`. |
-| GET | `/api/couples/activity` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/couples/check-mutual?propertyId=00000000-0000-0000-0000-000000000000` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/couples/disputed` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/couples/mutual-likes` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/couples/stats` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/interactions` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/properties/vibes` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| GET | `/api/users/search?q=a` | 401 | auth rejection | User-auth endpoint rejected anonymous request. |
-| POST | `/api/maps/geocode` | 401 | auth rejection | Paid Maps geocode rejected before external Google call. |
-| POST | `/api/maps/places/autocomplete` | 401 | auth rejection | Paid Places autocomplete rejected before external Google call. |
-| POST | `/api/admin/ingest/zillow` | 401 | auth rejection | Cron/admin endpoint rejected missing secret. |
-| POST | `/api/admin/status-refresh` | 401 | auth rejection | Cron/admin endpoint rejected missing secret. |
-| POST | `/api/admin/generate-neighborhood-vibes` | 401 | auth rejection | Cron/admin endpoint rejected missing secret. |
-| POST | `/api/admin/generate-vibes` | 401 | auth rejection | Cron/admin endpoint rejected missing secret. |
-| GET | `/api/admin/generate-vibes` | 401 | auth rejection | Cron/admin status endpoint rejected missing secret. |
-| POST | `/api/admin/generate-vibes-zillow` | 401 | auth rejection | Cron/admin endpoint rejected missing secret. |
+| Method | Path                                                                        | Status | Body class     | Closure meaning                                                                                               |
+| ------ | --------------------------------------------------------------------------- | -----: | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/health`                                                               |    200 | JSON           | Public health live probe passed; `Cache-Control: no-cache, no-store, must-revalidate`.                        |
+| POST   | `/api/health`                                                               |    405 | JSON           | Unsupported method rejected.                                                                                  |
+| GET    | `/api/properties/marketing`                                                 |    200 | JSON           | Public marketing API live probe passed.                                                                       |
+| GET    | `/api/maps/metro-boundaries?metro=bay-area`                                 |    500 | empty          | **Open bug:** public route calls service-role client and throws `Unauthorized access to service role client`. |
+| GET    | `/api/maps/script`                                                          |    200 | JSON           | Public script endpoint responded; `Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0`.   |
+| GET    | `/api/maps/proxy-script`                                                    |    200 | JavaScript     | Public proxy script responded; `Cache-Control: public, max-age=3600`.                                         |
+| GET    | `/api/couples/activity`                                                     |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/couples/check-mutual?propertyId=00000000-0000-0000-0000-000000000000` |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/couples/disputed`                                                     |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/couples/mutual-likes`                                                 |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/couples/stats`                                                        |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/interactions`                                                         |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/properties/vibes`                                                     |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| GET    | `/api/users/search?q=a`                                                     |    401 | auth rejection | User-auth endpoint rejected anonymous request.                                                                |
+| POST   | `/api/maps/geocode`                                                         |    401 | auth rejection | Paid Maps geocode rejected before external Google call.                                                       |
+| POST   | `/api/maps/places/autocomplete`                                             |    401 | auth rejection | Paid Places autocomplete rejected before external Google call.                                                |
+| POST   | `/api/admin/ingest/zillow`                                                  |    401 | auth rejection | Cron/admin endpoint rejected missing secret.                                                                  |
+| POST   | `/api/admin/status-refresh`                                                 |    401 | auth rejection | Cron/admin endpoint rejected missing secret.                                                                  |
+| POST   | `/api/admin/generate-neighborhood-vibes`                                    |    401 | auth rejection | Cron/admin endpoint rejected missing secret.                                                                  |
+| POST   | `/api/admin/generate-vibes`                                                 |    401 | auth rejection | Cron/admin endpoint rejected missing secret.                                                                  |
+| GET    | `/api/admin/generate-vibes`                                                 |    401 | auth rejection | Cron/admin status endpoint rejected missing secret.                                                           |
+| POST   | `/api/admin/generate-vibes-zillow`                                          |    401 | auth rejection | Cron/admin endpoint rejected missing secret.                                                                  |
 
 API live probe status: **partially closed, not complete**.
 
@@ -90,13 +90,13 @@ Open after this slice:
 
 Static source scan plus live anonymous probes covered five admin route families:
 
-| Route file | Header accepted | Query accepted | Missing secret rejects | Admin rate-limit hook present | Live no-secret status |
-| --- | --- | --- | --- | --- | ---: |
-| `src/app/api/admin/ingest/zillow/route.ts` | yes | yes | yes | yes | 401 |
-| `src/app/api/admin/status-refresh/route.ts` | yes | yes | yes | yes | 401 |
-| `src/app/api/admin/generate-vibes/route.ts` | yes | yes | yes | yes | 401 |
-| `src/app/api/admin/generate-vibes-zillow/route.ts` | yes | yes | yes | yes | 401 |
-| `src/app/api/admin/generate-neighborhood-vibes/route.ts` | yes | yes | yes | yes | 401 |
+| Route file                                               | Header accepted | Query accepted | Missing secret rejects | Admin rate-limit hook present | Live no-secret status |
+| -------------------------------------------------------- | --------------- | -------------- | ---------------------- | ----------------------------- | --------------------: |
+| `src/app/api/admin/ingest/zillow/route.ts`               | yes             | yes            | yes                    | yes                           |                   401 |
+| `src/app/api/admin/status-refresh/route.ts`              | yes             | yes            | yes                    | yes                           |                   401 |
+| `src/app/api/admin/generate-vibes/route.ts`              | yes             | yes            | yes                    | yes                           |                   401 |
+| `src/app/api/admin/generate-vibes-zillow/route.ts`       | yes             | yes            | yes                    | yes                           |                   401 |
+| `src/app/api/admin/generate-neighborhood-vibes/route.ts` | yes             | yes            | yes                    | yes                           |                   401 |
 
 Closure status: **closed for no-secret endpoint opacity**. Secret strength, storage, rotation, and incident-response policy remain an ops/security decision and should not be inferred from route code.
 
@@ -110,10 +110,10 @@ Observed environment file presence:
 
 Guard behavior:
 
-| Command | Result | Evidence |
-| --- | --- | --- |
-| `pnpm run guard:supabase` | exit 1 | Blocks because `.env.local` host matches fallback production host / Supabase host pattern. |
-| `SKIP_SUPABASE_GUARD=true pnpm run guard:supabase` | exit 0 | Explicit developer bypass works for known read-only local dev/probe flows. |
+| Command                                            | Result | Evidence                                                                                   |
+| -------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
+| `pnpm run guard:supabase`                          | exit 1 | Blocks because `.env.local` host matches fallback production host / Supabase host pattern. |
+| `SKIP_SUPABASE_GUARD=true pnpm run guard:supabase` | exit 0 | Explicit developer bypass works for known read-only local dev/probe flows.                 |
 
 Closure status: **precision improved but not fully closed**. The guard is precise enough to block the current remote/prod-like `.env.local` even without `.env.prod`, but `.env.prod` remains absent, so the guard still depends on a hard-coded fallback prod host plus generic Supabase-host detection. A sanitized non-secret `.env.prod` baseline or explicit documented fallback policy is still needed for full closure.
 
@@ -154,15 +154,15 @@ Closure status: **not closed**. This is useful quality triage evidence: the suit
 
 ## Blocked / closed matrix update
 
-| Phase 0 item | Prior status | Current status | Evidence |
-| --- | --- | --- | --- |
-| API live probe coverage | open | partial, not closed | 22 local probes run; one public API 500 found; authenticated probes still blocked. |
-| Browser traversal | open | partial, not closed | `/`, `/cookies`, `/about`, `/contact`, and unauth `/dashboard` verified with clean console. |
-| Authenticated flow verification | open | blocked | No approved valid test credentials/session present; default local test login failed; setup script would mutate data. |
-| Cron-secret endpoint opacity | open | closed for no-secret route opacity | Five cron/admin route families reject missing secrets with 401; static scan confirms header/query secret checks and admin limiter hook. |
-| `.env.prod` guard precision | open | partial, not closed | Guard blocks current prod-like `.env.local`; skip bypass works; `.env.prod` still absent. |
-| Test-suite quality triage | open | partial, not closed | Focused 8-suite triage found 7 pass and one failing static standardization guard. |
-| Integration-test execution | blocked | blocked | No local Supabase/Docker or approved remote-test path used in this slice. |
+| Phase 0 item                    | Prior status | Current status                     | Evidence                                                                                                                                |
+| ------------------------------- | ------------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| API live probe coverage         | open         | partial, not closed                | 22 local probes run; one public API 500 found; authenticated probes still blocked.                                                      |
+| Browser traversal               | open         | partial, not closed                | `/`, `/cookies`, `/about`, `/contact`, and unauth `/dashboard` verified with clean console.                                             |
+| Authenticated flow verification | open         | blocked                            | No approved valid test credentials/session present; default local test login failed; setup script would mutate data.                    |
+| Cron-secret endpoint opacity    | open         | closed for no-secret route opacity | Five cron/admin route families reject missing secrets with 401; static scan confirms header/query secret checks and admin limiter hook. |
+| `.env.prod` guard precision     | open         | partial, not closed                | Guard blocks current prod-like `.env.local`; skip bypass works; `.env.prod` still absent.                                               |
+| Test-suite quality triage       | open         | partial, not closed                | Focused 8-suite triage found 7 pass and one failing static standardization guard.                                                       |
+| Integration-test execution      | blocked      | blocked                            | No local Supabase/Docker or approved remote-test path used in this slice.                                                               |
 
 ## Exact next actions
 

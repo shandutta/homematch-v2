@@ -19,60 +19,60 @@ Everything else is supplementary: business readiness tracking, integration-speci
 
 ### 2.1 Entrypoint Docs (rewrite/tighten)
 
-| Doc | Current Lines | Verdict | Notes |
-|---|---|---|---|
-| README.md | 102 | Rewrite (minor) | Good bones. Collapse Docker bullet points from 6 to 2. Tighten "Essential Commands" table. Remove duplicated stack list (already in ARCHITECTURE). |
-| docs/README.md | 65 | Rewrite (minor) | Drop CONTEXT.md reference. Remove "Removed Historical Docs" section — that's archaeology. Simplify to: "Start here → SETUP → ARCHITECTURE → TESTING → STYLE_GUIDE." |
-| docs/SETUP_GUIDE.md | 126 | Tighten | Solid. Remove "Current Status" / "In progress" section — those rot instantly. The env var list is good. Merge the Supabase local proxy section into the main env block. |
-| docs/ARCHITECTURE.md | 109 | Keep (minor trim) | Already clean. Remove the "Reading path" header line — that's docs/README's job. |
-| docs/TESTING.md | 93 | Keep (minor trim) | Already clean. Remove "See docs/testing/README.md for deeper guidance" — the testing appendix adds nothing TESTS.md doesn't say. |
-| docs/STYLE_GUIDE.md | 98 | Keep | Good reference. Minor: move "Parallax Stars" admonition to a component comment, not the style guide. |
+| Doc                  | Current Lines | Verdict           | Notes                                                                                                                                                                   |
+| -------------------- | ------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| README.md            | 102           | Rewrite (minor)   | Good bones. Collapse Docker bullet points from 6 to 2. Tighten "Essential Commands" table. Remove duplicated stack list (already in ARCHITECTURE).                      |
+| docs/README.md       | 65            | Rewrite (minor)   | Drop CONTEXT.md reference. Remove "Removed Historical Docs" section — that's archaeology. Simplify to: "Start here → SETUP → ARCHITECTURE → TESTING → STYLE_GUIDE."     |
+| docs/SETUP_GUIDE.md  | 126           | Tighten           | Solid. Remove "Current Status" / "In progress" section — those rot instantly. The env var list is good. Merge the Supabase local proxy section into the main env block. |
+| docs/ARCHITECTURE.md | 109           | Keep (minor trim) | Already clean. Remove the "Reading path" header line — that's docs/README's job.                                                                                        |
+| docs/TESTING.md      | 93            | Keep (minor trim) | Already clean. Remove "See docs/testing/README.md for deeper guidance" — the testing appendix adds nothing TESTS.md doesn't say.                                        |
+| docs/STYLE_GUIDE.md  | 98            | Keep              | Good reference. Minor: move "Parallax Stars" admonition to a component comment, not the style guide.                                                                    |
 
 ### 2.2 Merge Candidates
 
-| Docs | Action | Notes |
-|---|---|---|
+| Docs                                     | Action                    | Notes                                                                                                                                                                             |
+| ---------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | docs/DEVELOPMENT_WORKFLOWS.md (74 lines) | Merge into SETUP_GUIDE.md | 80% overlap. SETUP_GUIDE already covers dev commands. Move the "Code Quality" and "CI Expectations" sections to SETUP_GUIDE and TESTING respectively. Delete the standalone file. |
-| docs/CONTEXT.md (31 lines) | Delete | Redundant with README.md + ARCHITECTURE.md. Nothing here that isn't already said better elsewhere. |
+| docs/CONTEXT.md (31 lines)               | Delete                    | Redundant with README.md + ARCHITECTURE.md. Nothing here that isn't already said better elsewhere.                                                                                |
 
 ### 2.3 Business / Product Docs (keep, don't rewrite now)
 
-| Doc | Verdict | Notes |
-|---|---|---|
-| docs/BUSINESS_HARDENING_REVIEW.md | Keep as-is | This is the working control document. It's a living matrix, not prose. Don't de-bloat it — it's supposed to be dense. |
-| docs/COUPLES_MATCH_PLAN.md | Keep | Solid product spec with data model invariants, API contracts, test strategy. |
-| docs/cookie-session-security-evidence.md | Keep | Evidence artifact tied to Phase 0/1 closure. |
+| Doc                                      | Verdict    | Notes                                                                                                                 |
+| ---------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| docs/BUSINESS_HARDENING_REVIEW.md        | Keep as-is | This is the working control document. It's a living matrix, not prose. Don't de-bloat it — it's supposed to be dense. |
+| docs/COUPLES_MATCH_PLAN.md               | Keep       | Solid product spec with data model invariants, API contracts, test strategy.                                          |
+| docs/cookie-session-security-evidence.md | Keep       | Evidence artifact tied to Phase 0/1 closure.                                                                          |
 
 ### 2.4 Refactoring / Archaeology (cut hard)
 
-| Doc | Verdict | Notes |
-|---|---|---|
+| Doc                                          | Verdict                   | Notes                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | docs/REFACTORING_ARCHITECTURE.md (866 lines) | **Delete or radical cut** | 866 lines. First half: refactoring plan with TypeScript interface stubs. Second half: completion report with checkmarks and metrics tables. Both are archaeological. The actual architecture is in the code. If anything here is still relevant, fold a 20-line summary into ARCHITECTURE.md. Otherwise: delete. |
-| docs/TROUBLESHOOTING_AUTH.md (40 lines) | Rewrite or delete | Reads like a chat transcript ("You are correct that..."). If the Google OAuth redirect fix is still correct, fold into SETUP_GUIDE as a one-paragraph note. Otherwise delete. |
+| docs/TROUBLESHOOTING_AUTH.md (40 lines)      | Rewrite or delete         | Reads like a chat transcript ("You are correct that..."). If the Google OAuth redirect fix is still correct, fold into SETUP_GUIDE as a one-paragraph note. Otherwise delete.                                                                                                                                    |
 
 ### 2.5 Integration / Operations Docs (keep, flag for later refresh)
 
 These are reference docs for specific integrations. They're fine as-is for now — update when the integration changes.
 
-| Doc | Notes |
-|---|---|
-| docs/RAPIDAPI_ZILLOW.md | Zillow ingest reference. |
-| docs/SMTP_SETUP.md | Custom SMTP config. |
-| docs/property-vibes-backfill.md | Vibes generation workflow. |
-| docs/auto-commit.md | Auto-commit flow. |
-| docs/secrets.md | Secrets scanning. |
-| docs/performance.md | Performance notes. |
-| docs/CI_INTEGRATION_TESTS.md | CI pipeline reference. |
-| docs/marketing/assets-credits.md | Asset attribution. |
+| Doc                              | Notes                      |
+| -------------------------------- | -------------------------- |
+| docs/RAPIDAPI_ZILLOW.md          | Zillow ingest reference.   |
+| docs/SMTP_SETUP.md               | Custom SMTP config.        |
+| docs/property-vibes-backfill.md  | Vibes generation workflow. |
+| docs/auto-commit.md              | Auto-commit flow.          |
+| docs/secrets.md                  | Secrets scanning.          |
+| docs/performance.md              | Performance notes.         |
+| docs/CI_INTEGRATION_TESTS.md     | CI pipeline reference.     |
+| docs/marketing/assets-credits.md | Asset attribution.         |
 
 ### 2.6 Testing Appendix
 
-| Doc | Verdict |
-|---|---|
-| docs/testing/README.md (14 lines) | Delete — this is an index to an index. TESTS.md already points to the integration/E2E guides. |
-| docs/testing/integration-testing-guide.md | Keep |
-| docs/testing/fixtures.md | Keep |
-| docs/testing/manual-test-guide.md | Keep |
+| Doc                                       | Verdict                                                                                       |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| docs/testing/README.md (14 lines)         | Delete — this is an index to an index. TESTS.md already points to the integration/E2E guides. |
+| docs/testing/integration-testing-guide.md | Keep                                                                                          |
+| docs/testing/fixtures.md                  | Keep                                                                                          |
+| docs/testing/manual-test-guide.md         | Keep                                                                                          |
 
 ## 3. LLM-Tell Removal Guidance
 
@@ -91,9 +91,9 @@ The OG scout found these patterns to scrub during rewrite:
 
 ## 4. Target Doc Count
 
-| Phase | Count |
-|---|---|
-| Current | 25 files in docs/ + 1 README |
+| Phase         | Count                           |
+| ------------- | ------------------------------- |
+| Current       | 25 files in docs/ + 1 README    |
 | After rewrite | ~18 files (delete 6-7, merge 2) |
 
 ## 5. Implementation Order

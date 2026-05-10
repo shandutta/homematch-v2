@@ -92,5 +92,3 @@ Glassmorphism utilities:
 ### Property Storytelling
 
 `src/components/features/storytelling/StorytellingDescription.tsx` generates lifestyle tags and descriptions based on property and neighborhood data. Keep output concise and avoid overloading cards with text. Tags are capped to three.
-
-

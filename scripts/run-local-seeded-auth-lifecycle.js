@@ -164,7 +164,10 @@ const main = async () => {
   console.log(`[local-seeded-auth-lifecycle] READY: ${appProbe.detail}`)
 
   const supabaseHealthUrl = `${localSupabaseUrl}/auth/v1/health`
-  const supabaseProbe = await probe('local Supabase auth health endpoint', supabaseHealthUrl)
+  const supabaseProbe = await probe(
+    'local Supabase auth health endpoint',
+    supabaseHealthUrl
+  )
   if (!supabaseProbe.ok) {
     failOrSkip(
       `${supabaseProbe.detail}; start local Supabase before seeding test users`
@@ -176,12 +179,16 @@ const main = async () => {
     'scripts/setup-test-users-admin.js',
   ])
 
-  run('run local seeded auth lifecycle smoke with one Playwright worker', 'node', [
-    'scripts/playwright-wrapper.js',
-    'test',
-    '__tests__/e2e/auth-lifecycle-local-seeded.spec.ts',
-    '--project=chromium',
-  ])
+  run(
+    'run local seeded auth lifecycle smoke with one Playwright worker',
+    'node',
+    [
+      'scripts/playwright-wrapper.js',
+      'test',
+      '__tests__/e2e/auth-lifecycle-local-seeded.spec.ts',
+      '--project=chromium',
+    ]
+  )
 }
 
 main().catch((error) => {

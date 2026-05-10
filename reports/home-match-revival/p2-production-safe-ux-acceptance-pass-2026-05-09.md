@@ -44,7 +44,7 @@ this reviewer pass share one definition of done.
    (`/dashboard/*`, `/profile`, `/household/*`, `/settings`, `/couples/*`,
    `/properties/[id]`, `/login`, `/reset-password`, `/verify-email`,
    `/auth/*`, `/invite/[token]`) renders `robots: { index:false,
-   follow:false }` via `createNoindexRouteMetadata`.
+follow:false }` via `createNoindexRouteMetadata`.
 3. **`robots.txt` and `sitemap.xml` agree.** `ROBOTS_DISALLOW_PATHS`
    covers every protected prefix in `PROTECTED_PATH_PREFIXES`,
    `LEGACY_PRIVATE_PREFIXES`, and the `EXACT_AND_SLASH_PRIVATE_PATHS`
@@ -84,22 +84,22 @@ this reviewer pass share one definition of done.
 
 ## Public no-credential acceptance matrix
 
-| Route | Metadata source | Public? | Indexable? | In sitemap | OG image | Privacy / paid-API risk | Acceptance check (no creds) |
-|---|---|---|---|---|---|---|---|
-| `/` | `createPublicRouteMetadata` (page.tsx) | yes | yes | yes (priority 1.0) | default | none — uses defaults | header, hero, features, footer, CTAs link to `/signup` and `/login`, no console errors. |
-| `/about` | `createPublicRouteMetadata` (about/page.tsx) | yes | yes | yes (0.7) | default | none | renders, header/footer, canonical+OG present, no console errors. |
-| `/contact` | `createPublicRouteMetadata` (contact/page.tsx) | yes | yes | yes (0.5) | default | mailto/contact links must be inert; do not submit | renders, links inert, no external POST on first paint. |
-| `/signup` | (verify) | yes | yes | yes (0.8) | default | must noindex if it transitions to auth | form fields render, validation works locally with synthetic input. |
-| `/privacy` | `createPublicRouteMetadata` (privacy/page.tsx) | yes | yes | yes (0.3, lastModified 2026-01-04) | default | legal text, AdSense disclosures present | full render, no console errors. |
-| `/terms` | `createPublicRouteMetadata` (terms/page.tsx) | yes | yes | yes (0.3, lastModified 2026-01-04) | default | none | full render, no console errors. |
-| `/cookies` | (verify) | yes | yes | yes (0.3, lastModified 2026-01-04) | default | cookie banner state | accept/reject/manage all work locally; persistence across reload. |
-| `/login` | `createNoindexRouteMetadata` | yes | no | no | n/a | redirectTo preservation from protected routes | renders, redirectTo carried across deep links. |
-| `/reset-password` | (verify) | yes | no | no | n/a | reset token entry only | renders, no real email sent locally. |
-| `/verify-email` | (verify) | yes | no | no | n/a | verify code only | renders, error states obvious without real code. |
-| `/auth/auth-code-error` | (verify) | yes | no | no | n/a | terminal error state | renders, no infinite redirect. |
-| `/invite/[token]` | `createNoindexRouteMetadata` | yes (synthetic token) | no | no | n/a | must reject invalid synthetic gracefully | renders invalid/expired state, no DB writes. |
-| `/properties/[id]` | `createNoindexRouteMetadata` | partial | no | no | property images via JSON-LD | listing-only, no authed user fields in JSON-LD | renders skeleton/empty for unknown id, JSON-LD shape valid for fixture id. |
-| `/demo/ads`, `/sponsor-mockups` | (private/demo) | demo | should be noindex | no | n/a | placeholder ads only | renders demo, no real ad network calls. |
+| Route                           | Metadata source                                | Public?               | Indexable?        | In sitemap                         | OG image                    | Privacy / paid-API risk                           | Acceptance check (no creds)                                                             |
+| ------------------------------- | ---------------------------------------------- | --------------------- | ----------------- | ---------------------------------- | --------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `/`                             | `createPublicRouteMetadata` (page.tsx)         | yes                   | yes               | yes (priority 1.0)                 | default                     | none — uses defaults                              | header, hero, features, footer, CTAs link to `/signup` and `/login`, no console errors. |
+| `/about`                        | `createPublicRouteMetadata` (about/page.tsx)   | yes                   | yes               | yes (0.7)                          | default                     | none                                              | renders, header/footer, canonical+OG present, no console errors.                        |
+| `/contact`                      | `createPublicRouteMetadata` (contact/page.tsx) | yes                   | yes               | yes (0.5)                          | default                     | mailto/contact links must be inert; do not submit | renders, links inert, no external POST on first paint.                                  |
+| `/signup`                       | (verify)                                       | yes                   | yes               | yes (0.8)                          | default                     | must noindex if it transitions to auth            | form fields render, validation works locally with synthetic input.                      |
+| `/privacy`                      | `createPublicRouteMetadata` (privacy/page.tsx) | yes                   | yes               | yes (0.3, lastModified 2026-01-04) | default                     | legal text, AdSense disclosures present           | full render, no console errors.                                                         |
+| `/terms`                        | `createPublicRouteMetadata` (terms/page.tsx)   | yes                   | yes               | yes (0.3, lastModified 2026-01-04) | default                     | none                                              | full render, no console errors.                                                         |
+| `/cookies`                      | (verify)                                       | yes                   | yes               | yes (0.3, lastModified 2026-01-04) | default                     | cookie banner state                               | accept/reject/manage all work locally; persistence across reload.                       |
+| `/login`                        | `createNoindexRouteMetadata`                   | yes                   | no                | no                                 | n/a                         | redirectTo preservation from protected routes     | renders, redirectTo carried across deep links.                                          |
+| `/reset-password`               | (verify)                                       | yes                   | no                | no                                 | n/a                         | reset token entry only                            | renders, no real email sent locally.                                                    |
+| `/verify-email`                 | (verify)                                       | yes                   | no                | no                                 | n/a                         | verify code only                                  | renders, error states obvious without real code.                                        |
+| `/auth/auth-code-error`         | (verify)                                       | yes                   | no                | no                                 | n/a                         | terminal error state                              | renders, no infinite redirect.                                                          |
+| `/invite/[token]`               | `createNoindexRouteMetadata`                   | yes (synthetic token) | no                | no                                 | n/a                         | must reject invalid synthetic gracefully          | renders invalid/expired state, no DB writes.                                            |
+| `/properties/[id]`              | `createNoindexRouteMetadata`                   | partial               | no                | no                                 | property images via JSON-LD | listing-only, no authed user fields in JSON-LD    | renders skeleton/empty for unknown id, JSON-LD shape valid for fixture id.              |
+| `/demo/ads`, `/sponsor-mockups` | (private/demo)                                 | demo                  | should be noindex | no                                 | n/a                         | placeholder ads only                              | renders demo, no real ad network calls.                                                 |
 
 Protected anchors below redirect to `/login?redirectTo=...` for any
 unauthenticated visit (covered by P0 acceptance matrix

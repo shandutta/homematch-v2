@@ -32,12 +32,12 @@ exports:
 
 ## Protected entry points
 
-| Route | Purpose | Gate location |
-|---|---|---|
-| `src/app/api/admin/ingest/zillow/route.ts` | Bulk Bay Area listing ingest (74 cities × 10 pages) | After `RAPIDAPI_KEY` presence check, before `ingestZillowLocations()` |
-| `src/app/api/admin/status-refresh/route.ts` | Per-`zpid` active-listing status refresh (default 600/day) | After `RAPIDAPI_KEY` presence check, before `fetchDetails()` loop |
-| `src/app/api/zillow/random-image/route.ts` | Demo `/propertyExtendedSearch` + `/images` calls | After `RAPIDAPI_KEY` presence check, before search fetch |
-| `src/app/api/admin/generate-vibes-zillow/route.ts` | `/property` + `/images` for LLM vibe generation | After `RAPIDAPI_KEY` presence check, before `Promise.all(fetch...)` |
+| Route                                              | Purpose                                                    | Gate location                                                         |
+| -------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| `src/app/api/admin/ingest/zillow/route.ts`         | Bulk Bay Area listing ingest (74 cities × 10 pages)        | After `RAPIDAPI_KEY` presence check, before `ingestZillowLocations()` |
+| `src/app/api/admin/status-refresh/route.ts`        | Per-`zpid` active-listing status refresh (default 600/day) | After `RAPIDAPI_KEY` presence check, before `fetchDetails()` loop     |
+| `src/app/api/zillow/random-image/route.ts`         | Demo `/propertyExtendedSearch` + `/images` calls           | After `RAPIDAPI_KEY` presence check, before search fetch              |
+| `src/app/api/admin/generate-vibes-zillow/route.ts` | `/property` + `/images` for LLM vibe generation            | After `RAPIDAPI_KEY` presence check, before `Promise.all(fetch...)`   |
 
 The `__tests__/unit/lib/api/rapidapi-approval-gate.test.ts` guard enforces
 that every file matching `RAPIDAPI_KEY` in the routes list above also imports

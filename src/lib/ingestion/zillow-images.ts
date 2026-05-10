@@ -1,3 +1,11 @@
+/**
+ * ⚠️ DEPRECATED — consolidated into src/lib/providers/zillow/
+ *
+ * - Images: src/lib/providers/zillow/client.ts (fetchImages)
+ *
+ * This file is kept for backward compatibility only.
+ */
+
 const DEFAULT_RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
 
 export type FetchZillowImagesOptions = {

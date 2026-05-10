@@ -3,6 +3,7 @@
  */
 // Phase 0/1 closure: D6-db-reset-readiness
 
+// Phase 0/1 closure: D6-db-reset-readiness
 import {
   mkdtempSync,
   mkdirSync,
@@ -61,8 +62,16 @@ const createRoot = ({ withMigrations = true } = {}) => {
   return root
 }
 
-const collectOutput = (logger: { error: jest.Mock; warn: jest.Mock; log: jest.Mock }) =>
-  [...logger.error.mock.calls, ...logger.warn.mock.calls, ...logger.log.mock.calls]
+const collectOutput = (logger: {
+  error: jest.Mock
+  warn: jest.Mock
+  log: jest.Mock
+}) =>
+  [
+    ...logger.error.mock.calls,
+    ...logger.warn.mock.calls,
+    ...logger.log.mock.calls,
+  ]
     .flat()
     .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
     .join('\n')
@@ -138,7 +147,9 @@ describe('D6 db-validation-evidence-runner', () => {
     it('blocks pooler.supabase.com regardless of subdomain', () => {
       const root = createRoot()
       const result = classifyTarget({
-        env: { SUPABASE_URL: 'https://aws-0-us-east-1.pooler.supabase.com:6543' },
+        env: {
+          SUPABASE_URL: 'https://aws-0-us-east-1.pooler.supabase.com:6543',
+        },
         root,
       })
       expect(result.target).toBe('production')
@@ -179,7 +190,8 @@ describe('D6 db-validation-evidence-runner', () => {
       const result = classifyTarget({
         env: {
           SUPABASE_URL: 'https://internal.example.test',
-          POSTGRES_URL: 'postgresql://postgres@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
+          POSTGRES_URL:
+            'postgresql://postgres@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
         },
         root,
       })
@@ -294,11 +306,13 @@ describe('D6 db-validation-evidence-runner', () => {
     it('never prints raw secret values from .env.local', () => {
       const root = createRoot()
 
-      const fakeAnonKey = 'sb_anon_REDACTION_TEST_VALUE_aaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const fakeAnonKey =
+        'sb_anon_REDACTION_TEST_VALUE_aaaaaaaaaaaaaaaaaaaaaaaaaaaa'
       const fakeServiceRoleKey =
         'sb_service_role_REDACTION_TEST_VALUE_bbbbbbbbbbbbbbbbbbbbbbbb'
       const fakeDbPassword = 'pg_password_REDACTION_TEST_VALUE_cccccccccccccc'
-      const fakeAccessToken = 'sbp_REDACTION_TEST_VALUE_dddddddddddddddddddddddd'
+      const fakeAccessToken =
+        'sbp_REDACTION_TEST_VALUE_dddddddddddddddddddddddd'
 
       writeFileSync(
         path.join(root, '.env.local'),
@@ -362,7 +376,9 @@ describe('D6 db-validation-evidence-runner', () => {
         .map(([name, cmd]) => `${name}: ${cmd}`)
         .join('\n')
 
-      expect(scriptsText).not.toMatch(/db-validation-evidence-runner[^\n]*--execute/)
+      expect(scriptsText).not.toMatch(
+        /db-validation-evidence-runner[^\n]*--execute/
+      )
       expect(scriptsText).not.toMatch(/supabase\s+db\s+reset[^\n]*--linked/)
       expect(scriptsText).not.toMatch(/supabase\s+db\s+lint[^\n]*--linked/)
     })

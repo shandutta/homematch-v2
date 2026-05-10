@@ -4,6 +4,9 @@ import { readFileSync } from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
 
+// Phase 0/1 closure: D4-env-prod-handling
+// Phase 0/1 closure: P0-env-prod-guard
+
 const envExamplePath = path.join(process.cwd(), '.env.example')
 const envExampleRaw = readFileSync(envExamplePath, 'utf8')
 const envExample = dotenv.parse(envExampleRaw)

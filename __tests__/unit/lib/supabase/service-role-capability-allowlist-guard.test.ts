@@ -18,6 +18,7 @@
  */
 // Phase 0/1 closure: D1-service-role-rbac
 
+// Phase 0/1 closure: D1-service-role-rbac
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
 
@@ -43,9 +44,7 @@ const APPROVED_ROUTES = [
 
 // Pre-auth surfaces: documented exceptions where the bypass runs before
 // authentication because the capability is invite-preview by opaque token.
-const PRE_AUTH_ROUTES = new Set<string>([
-  './src/app/invite/[token]/page.tsx',
-])
+const PRE_AUTH_ROUTES = new Set<string>(['./src/app/invite/[token]/page.tsx'])
 
 const AUTH_GUARD_PATTERNS = [
   /requireUserFromRequest\s*\(/,
@@ -105,7 +104,9 @@ describe('service-role capability allowlist guard', () => {
     expect(serverSource).toMatch(
       /hasApprovedCapability\s*\|\|\s*\(await\s+checkServiceRoleAuthorization\(\)\)/
     )
-    expect(serverSource).toMatch(/throw new Error\('Unauthorized access to service role client'\)/)
+    expect(serverSource).toMatch(
+      /throw new Error\('Unauthorized access to service role client'\)/
+    )
   })
 
   test('each approved service-role route contains an auth guard or is on the pre-auth allowlist', () => {

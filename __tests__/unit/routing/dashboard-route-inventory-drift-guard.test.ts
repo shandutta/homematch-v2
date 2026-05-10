@@ -3,6 +3,7 @@
  */
 // Phase 0/1 closure: P0-accessibility-core-flow
 
+// Phase 0/1 closure: P0-accessibility-core-flow
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, posix, sep } from 'node:path'
 import { isProtectedPath } from '../../../src/lib/routing/protected-routes'
@@ -107,7 +108,10 @@ describe('dashboard route inventory drift guard', () => {
   })
 
   it('keeps every classified /dashboard route documented in the P0 inventory matrix', () => {
-    const matrix = readFileSync(join(process.cwd(), inventoryMatrixPath), 'utf8')
+    const matrix = readFileSync(
+      join(process.cwd(), inventoryMatrixPath),
+      'utf8'
+    )
     for (const route of dashboardRouteManifest) {
       expect(matrix).toContain(route.reportPath ?? route.path)
     }

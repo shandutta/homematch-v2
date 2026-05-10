@@ -48,28 +48,28 @@ tagged to a specific blocker row in the broader index. The mapping is
 strictly for navigation; it does not change any blocker's lane or
 verdict.
 
-| # | Surface | Artifact | Lane | P0/P1 blocker row |
-|---|---|---|---|---|
-| 1 | Cookie/session helper hardening + live-auth gates | `reports/home-match-revival/d79-cookie-session-security-index-2026-05-08.md` | Repo-side index; live gates remain environment-gated | 1, 2 |
-| 2 | Auth audit (legacy snapshot) | `reports/home-match-revival/auth-audit.md` | Repo-side reference | — |
-| 3 | Auth boundary consolidation | `reports/home-match-revival/auth-boundary-consolidation-2026-05-08.md` | Repo-side closed | 1, 2 |
-| 4 | Auth provider replacement decision | `reports/home-match-revival/p1-auth-provider-replacement-decision-memo-2026-05-08.md` | Decision, owner-approval-gated | — |
-| 5 | RLS security audit | `reports/home-match-revival/rls-security-audit.md` | Repo-side reference | 4 |
-| 6 | D1 service-role RBAC authority packet | `reports/home-match-revival/d1-service-role-rbac-authority-implementation-packet-2026-05-08.md` | Repo-side closed; live integration D6-gated | 4 (with row 7 for live integration) |
-| 7 | D2 durable rate limiter approval-gate guard | `reports/home-match-revival/d2-durable-rate-limiter-approval-gate-guard-2026-05-08.md` | External-approval-gated | 5 |
-| 8 | D2 rate limit provider readiness map | `reports/home-match-revival/d2-rate-limit-provider-readiness-map-2026-05-08.md` | External-approval-gated | 5 |
-| 9 | D2 rate limit gap scout | `reports/home-match-revival/rate-limit-gap-scout.md` | Repo-side reference | 5 |
-| 10 | D2 route-scoped limiter key closure | `reports/home-match-revival/p1-route-scoped-limiter-key-closure-2026-05-08.md` | Repo-side closed | 5 |
-| 11 | D3 signup verification policy decision | `reports/home-match-revival/d3-signup-verification-policy-decision-2026-05-08.md` | Decision, owner-approval-gated | 2, 6 |
-| 12 | D3 signup verification repo invariant guard | `reports/home-match-revival/d3-signup-verification-repo-invariant-guard-2026-05-08.md` | Repo-side closed | 2, 6 |
-| 13 | CSP and external origin policy inventory | `reports/home-match-revival/p0-p1-csp-and-external-origin-policy-inventory-2026-05-08.md` | Repo-side reference | 10 |
-| 14 | No-auth public traversal smoke guard | `reports/home-match-revival/p0-no-auth-traversal-smoke-guard-2026-05-08.md` | Repo-side closed | 8 |
-| 15 | No-auth API protected redirect probe harness | `reports/home-match-revival/p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md` | Repo-side harness; local-only execution | 8 |
-| 16 | Strict anonymous protected route closure | `reports/home-match-revival/p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md` | Repo-side closed | 1, 8 |
-| 17 | Strict anonymous live probe rerun | `reports/home-match-revival/p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md` | Live evidence | 1 |
-| 18 | Credentialless auth lifecycle verification plan | `reports/home-match-revival/p0-p1-credentialless-auth-lifecycle-verification-plan-2026-05-08.md` | Plan, environment-gated | 2 |
-| 19 | API auth smoke matrix | `reports/home-match-revival/p0-p1-api-auth-smoke-matrix-2026-05-08.md` | Repo-side closed; live execution gated | 3 |
-| 20 | Auth credential recovery + tiny probe plan | `reports/home-match-revival/p0-auth-credential-recovery-and-tiny-probe-plan-2026-05-08.md` | Plan, environment-gated | 2 |
+| #   | Surface                                           | Artifact                                                                                         | Lane                                                 | P0/P1 blocker row                   |
+| --- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ----------------------------------- |
+| 1   | Cookie/session helper hardening + live-auth gates | `reports/home-match-revival/d79-cookie-session-security-index-2026-05-08.md`                     | Repo-side index; live gates remain environment-gated | 1, 2                                |
+| 2   | Auth audit (legacy snapshot)                      | `reports/home-match-revival/auth-audit.md`                                                       | Repo-side reference                                  | —                                   |
+| 3   | Auth boundary consolidation                       | `reports/home-match-revival/auth-boundary-consolidation-2026-05-08.md`                           | Repo-side closed                                     | 1, 2                                |
+| 4   | Auth provider replacement decision                | `reports/home-match-revival/p1-auth-provider-replacement-decision-memo-2026-05-08.md`            | Decision, owner-approval-gated                       | —                                   |
+| 5   | RLS security audit                                | `reports/home-match-revival/rls-security-audit.md`                                               | Repo-side reference                                  | 4                                   |
+| 6   | D1 service-role RBAC authority packet             | `reports/home-match-revival/d1-service-role-rbac-authority-implementation-packet-2026-05-08.md`  | Repo-side closed; live integration D6-gated          | 4 (with row 7 for live integration) |
+| 7   | D2 durable rate limiter approval-gate guard       | `reports/home-match-revival/d2-durable-rate-limiter-approval-gate-guard-2026-05-08.md`           | External-approval-gated                              | 5                                   |
+| 8   | D2 rate limit provider readiness map              | `reports/home-match-revival/d2-rate-limit-provider-readiness-map-2026-05-08.md`                  | External-approval-gated                              | 5                                   |
+| 9   | D2 rate limit gap scout                           | `reports/home-match-revival/rate-limit-gap-scout.md`                                             | Repo-side reference                                  | 5                                   |
+| 10  | D2 route-scoped limiter key closure               | `reports/home-match-revival/p1-route-scoped-limiter-key-closure-2026-05-08.md`                   | Repo-side closed                                     | 5                                   |
+| 11  | D3 signup verification policy decision            | `reports/home-match-revival/d3-signup-verification-policy-decision-2026-05-08.md`                | Decision, owner-approval-gated                       | 2, 6                                |
+| 12  | D3 signup verification repo invariant guard       | `reports/home-match-revival/d3-signup-verification-repo-invariant-guard-2026-05-08.md`           | Repo-side closed                                     | 2, 6                                |
+| 13  | CSP and external origin policy inventory          | `reports/home-match-revival/p0-p1-csp-and-external-origin-policy-inventory-2026-05-08.md`        | Repo-side reference                                  | 10                                  |
+| 14  | No-auth public traversal smoke guard              | `reports/home-match-revival/p0-no-auth-traversal-smoke-guard-2026-05-08.md`                      | Repo-side closed                                     | 8                                   |
+| 15  | No-auth API protected redirect probe harness      | `reports/home-match-revival/p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md`       | Repo-side harness; local-only execution              | 8                                   |
+| 16  | Strict anonymous protected route closure          | `reports/home-match-revival/p0-p1-strict-anonymous-protected-route-closure-2026-05-08.md`        | Repo-side closed                                     | 1, 8                                |
+| 17  | Strict anonymous live probe rerun                 | `reports/home-match-revival/p0-p1-strict-anonymous-live-probe-rerun-2026-05-08.md`               | Live evidence                                        | 1                                   |
+| 18  | Credentialless auth lifecycle verification plan   | `reports/home-match-revival/p0-p1-credentialless-auth-lifecycle-verification-plan-2026-05-08.md` | Plan, environment-gated                              | 2                                   |
+| 19  | API auth smoke matrix                             | `reports/home-match-revival/p0-p1-api-auth-smoke-matrix-2026-05-08.md`                           | Repo-side closed; live execution gated               | 3                                   |
+| 20  | Auth credential recovery + tiny probe plan        | `reports/home-match-revival/p0-auth-credential-recovery-and-tiny-probe-plan-2026-05-08.md`       | Plan, environment-gated                              | 2                                   |
 
 ## Adjacent (non-security) blocker artifacts referenced for integration
 
@@ -80,11 +80,11 @@ neighbors a security-themed blocker depends on. They are repeated from
 not extend the canonical security-evidence subset enforced by the
 companion freshness guard.
 
-| Surface | Artifact | P0/P1 blocker row |
-|---|---|---|
-| D6 DB reset/lint/rollback static readiness (gates D1 live integration) | `reports/home-match-revival/d6-db-static-reset-readiness-closure-2026-05-08.md` | 7 |
-| Authenticated traversal probe (live) | `reports/home-match-revival/remote-supabase-test-seed-and-auth-probe-2026-05-08.md` | 1, 2 |
-| Site traversal acceptance matrix | `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md` | 1, 8, 11 |
+| Surface                                                                | Artifact                                                                            | P0/P1 blocker row |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------- |
+| D6 DB reset/lint/rollback static readiness (gates D1 live integration) | `reports/home-match-revival/d6-db-static-reset-readiness-closure-2026-05-08.md`     | 7                 |
+| Authenticated traversal probe (live)                                   | `reports/home-match-revival/remote-supabase-test-seed-and-auth-probe-2026-05-08.md` | 1, 2              |
+| Site traversal acceptance matrix                                       | `reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md`      | 1, 8, 11          |
 
 ## What this index does NOT do
 

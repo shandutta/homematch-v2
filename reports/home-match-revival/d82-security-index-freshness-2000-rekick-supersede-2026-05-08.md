@@ -38,16 +38,16 @@ The recovered patch contained three diffs:
 
 Verified by `git show`:
 
-| # | Recovered artifact | Existing artifact (autonomy) | Comparison |
-|---|---|---|---|
-| 1 | `__tests__/unit/docs/security-evidence-index-freshness.test.ts` (84 lines) | Same path, 84 lines | Functionally identical: same imports, same `INDEX_REL_PATH`, same `BLOCKER_INDEX_REL_PATH`, same `extractRevivalRefs` regex, same 20-entry `REQUIRED_SECURITY_ARTIFACTS`, same five `it()` cases including the four read-only-scope phrase matchers. |
-| 2 | append-only line in `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md` adding the security index | Already present at line 75 of the existing blocker index | Already merged. |
-| 3 | `reports/home-match-revival/security-evidence-index-2026-05-08.md` (74 lines) | Same path, 97 lines | Strict superset: existing version adds a `P0/P1 blocker row` column that maps each of the 20 security artifacts to its row(s) in the broader blocker index, plus an `Adjacent (non-security) blocker artifacts referenced for integration` table with three navigation rows (D6 DB closure, authenticated traversal probe, site traversal acceptance matrix). All 20 canonical security artifact paths are present and tabled in rows 1–20 in the existing version. |
+| #   | Recovered artifact                                                                                                    | Existing artifact (autonomy)                             | Comparison                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `__tests__/unit/docs/security-evidence-index-freshness.test.ts` (84 lines)                                            | Same path, 84 lines                                      | Functionally identical: same imports, same `INDEX_REL_PATH`, same `BLOCKER_INDEX_REL_PATH`, same `extractRevivalRefs` regex, same 20-entry `REQUIRED_SECURITY_ARTIFACTS`, same five `it()` cases including the four read-only-scope phrase matchers.                                                                                                                                                                                                                |
+| 2   | append-only line in `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md` adding the security index | Already present at line 75 of the existing blocker index | Already merged.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 3   | `reports/home-match-revival/security-evidence-index-2026-05-08.md` (74 lines)                                         | Same path, 97 lines                                      | Strict superset: existing version adds a `P0/P1 blocker row` column that maps each of the 20 security artifacts to its row(s) in the broader blocker index, plus an `Adjacent (non-security) blocker artifacts referenced for integration` table with three navigation rows (D6 DB closure, authenticated traversal probe, site traversal acceptance matrix). All 20 canonical security artifact paths are present and tabled in rows 1–20 in the existing version. |
 
 ## Test-assertion compatibility check (existing index vs patch test)
 
 The patch's Jest guard (now present verbatim on autonomy) has five
-assertions. Each one passes against the *existing* (richer) autonomy
+assertions. Each one passes against the _existing_ (richer) autonomy
 index:
 
 1. `existsSync(INDEX_REL_PATH)` — file exists at the asserted path on
@@ -65,7 +65,7 @@ index:
 5. "Does not authorize live execution, paid APIs, or production data
    access" — the existing index header contains all four required
    phrases: `No secrets read`, `no paid APIs invoked`, `no production
-   data\n  inspected` (matches `/no production data\s+inspected/i`),
+data\n  inspected` (matches `/no production data\s+inspected/i`),
    and `does not authorize`.
 
 ## Why no commit in this worktree's code paths

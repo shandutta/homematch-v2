@@ -29,16 +29,19 @@
 ## Parallelization policy
 
 Allowed now:
+
 - One writer cron in the main worktree.
 - One read-only scout cron in the same repo.
 - Optional future read-only scouts for product/LLM/compliance if resource headroom remains good.
 
 Not allowed by default:
+
 - Same-worktree parallel code writers.
 - Broad Kanban worker fleets from the Telegram gateway lane.
 - Browser swarms or full builds from the gateway context.
 
 Possible next guarded parallel step:
+
 - Create separate git worktrees/branches for P2 frontend and P3 backend writers, with the main lane acting as integrator. This is faster but requires stricter merge/review overhead and more RAM. Current devbox has ~3.7GiB RAM, 2 CPUs, and about ~1.5GiB available at the time of this optimization, so start with scout+single-writer before escalating.
 
 ## Immediate operational changes made

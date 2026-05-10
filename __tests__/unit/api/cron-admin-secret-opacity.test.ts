@@ -1,6 +1,7 @@
 // Phase 0/1 closure: P0-cron-secret-opacity
 /** @jest-environment node */
 
+// Phase 0/1 closure: P0-cron-secret-opacity
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

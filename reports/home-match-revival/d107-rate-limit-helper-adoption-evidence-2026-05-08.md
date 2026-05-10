@@ -18,13 +18,13 @@ production storage decision remains tracked in
 All five helpers live in two files; no parallel limiter implementation
 exists post-M10 consolidation.
 
-| Helper | Source | Wraps |
-| --- | --- | --- |
-| `checkRateLimit(identifier, tier?)` | `src/lib/middleware/rateLimiter.ts` | Explicit-key path against `rate-limiter-flexible/lib/RateLimiterMemory`. |
-| `rateLimit(request, tier?)` | `src/lib/middleware/rateLimiter.ts` | `checkRateLimit(getClientIdentifier(request), tier)`. |
-| `withRateLimit(request, handler, tier?)` | `src/lib/middleware/rateLimiter.ts` | `rateLimit(...)` then handler, with auth/server-error normalization. |
-| `authRateLimit(request, identifier?)` | `src/lib/middleware/rateLimiter.ts` | `auth` tier (5 / 15min, 30m block) with brute-force log. |
-| `rateLimitAdminRoute(request, routeKey)` | `src/lib/api/admin-rate-limit.ts` | `checkRateLimit('admin:<routeKey>:<ip>', 'strict')`; never logs secret material. |
+| Helper                                   | Source                              | Wraps                                                                            |
+| ---------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| `checkRateLimit(identifier, tier?)`      | `src/lib/middleware/rateLimiter.ts` | Explicit-key path against `rate-limiter-flexible/lib/RateLimiterMemory`.         |
+| `rateLimit(request, tier?)`              | `src/lib/middleware/rateLimiter.ts` | `checkRateLimit(getClientIdentifier(request), tier)`.                            |
+| `withRateLimit(request, handler, tier?)` | `src/lib/middleware/rateLimiter.ts` | `rateLimit(...)` then handler, with auth/server-error normalization.             |
+| `authRateLimit(request, identifier?)`    | `src/lib/middleware/rateLimiter.ts` | `auth` tier (5 / 15min, 30m block) with brute-force log.                         |
+| `rateLimitAdminRoute(request, routeKey)` | `src/lib/api/admin-rate-limit.ts`   | `checkRateLimit('admin:<routeKey>:<ip>', 'strict')`; never logs secret material. |
 
 Tier table (`RATE_LIMIT_TIERS` in `rateLimiter.ts`): `strict` 10/min/5m,
 `standard` 30/min/2m, `relaxed` 100/min/1m, `auth` 5/15min/30m,
@@ -54,7 +54,7 @@ plus `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`,
 Companion repo-side coverage tests already in place:
 
 - `__tests__/unit/api/rate-limit-coverage.test.ts` — per-route helper
-  + scoped-key assertions.
+  - scoped-key assertions.
 - `__tests__/unit/lib/middleware/rate-limiter-check.test.ts` — explicit-
   key isolation + memory-provider default behavior.
 - `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test.ts`
@@ -62,25 +62,25 @@ Companion repo-side coverage tests already in place:
 
 ## 3. Mutation route adoption snapshot
 
-| Route | Mutation handlers | Treatment | Identity / key |
-| --- | --- | --- | --- |
-| `src/app/api/admin/status-refresh/route.ts` | POST | helper | `rateLimitAdminRoute(request, 'admin:status-refresh')` → route+IP |
-| `src/app/api/admin/ingest/zillow/route.ts` | POST | helper | `rateLimitAdminRoute(request, 'admin:ingest-zillow')` → route+IP |
-| `src/app/api/admin/generate-vibes/route.ts` | POST | helper | `rateLimitAdminRoute(request, 'admin:generate-vibes')` → route+IP |
-| `src/app/api/admin/generate-neighborhood-vibes/route.ts` | POST | helper | `rateLimitAdminRoute(request, 'admin:generate-neighborhood-vibes')` → route+IP |
-| `src/app/api/admin/generate-vibes-zillow/route.ts` | POST | helper | `rateLimitAdminRoute(request, 'admin:generate-vibes-zillow')` → route+IP |
-| `src/app/api/couples/disputed/route.ts` | PATCH | helper | `checkRateLimit(rateLimitKey('couples:disputed', user.id))` → user.id |
-| `src/app/api/couples/notify/route.ts` | POST | helper | `checkRateLimit(rateLimitKey('couples:notify', user.id))` → user.id |
-| `src/app/api/interactions/route.ts` | POST, DELETE | helper | `checkRateLimit(...)` keyed on user.id (POST) / `interactions:delete` scope (DELETE) |
-| `src/app/api/interactions/reset/route.ts` | DELETE | helper | `checkRateLimit(rateLimitKey('interactions:reset', user.id))` → user.id |
-| `src/app/api/performance/metrics/route.ts` | POST | helper | `checkRateLimit(rateLimitKey('performance:metrics', ip))` → IP |
-| `src/app/api/maps/geocode/route.ts` | POST | helper | `checkRateLimit(rateLimitKey('maps:geocode', auth.user.id))` → user.id |
-| `src/app/api/maps/places/autocomplete/route.ts` | POST | helper | `checkRateLimit(rateLimitKey('maps:autocomplete', auth.user.id))` → user.id |
-| `src/app/api/users/avatar/route.ts` | POST, DELETE | helper | `rateLimit(request, 'strict' / 'standard')` → IP |
-| `src/app/api/couples/activity/route.ts` | (GET helper) | helper on GET; no mutation handlers exposed | `withRateLimit(request, ..., 'standard')` |
-| `src/app/api/health/route.ts` | POST, PUT, PATCH, DELETE | 405 stub | n/a |
-| `src/app/api/properties/marketing/route.ts` | POST, PUT, PATCH, DELETE | 405 stub | n/a |
-| `src/app/api/couples/check-mutual/route.ts` | POST, PUT, PATCH, DELETE | 405 stub | n/a |
+| Route                                                    | Mutation handlers        | Treatment                                   | Identity / key                                                                       |
+| -------------------------------------------------------- | ------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/app/api/admin/status-refresh/route.ts`              | POST                     | helper                                      | `rateLimitAdminRoute(request, 'admin:status-refresh')` → route+IP                    |
+| `src/app/api/admin/ingest/zillow/route.ts`               | POST                     | helper                                      | `rateLimitAdminRoute(request, 'admin:ingest-zillow')` → route+IP                     |
+| `src/app/api/admin/generate-vibes/route.ts`              | POST                     | helper                                      | `rateLimitAdminRoute(request, 'admin:generate-vibes')` → route+IP                    |
+| `src/app/api/admin/generate-neighborhood-vibes/route.ts` | POST                     | helper                                      | `rateLimitAdminRoute(request, 'admin:generate-neighborhood-vibes')` → route+IP       |
+| `src/app/api/admin/generate-vibes-zillow/route.ts`       | POST                     | helper                                      | `rateLimitAdminRoute(request, 'admin:generate-vibes-zillow')` → route+IP             |
+| `src/app/api/couples/disputed/route.ts`                  | PATCH                    | helper                                      | `checkRateLimit(rateLimitKey('couples:disputed', user.id))` → user.id                |
+| `src/app/api/couples/notify/route.ts`                    | POST                     | helper                                      | `checkRateLimit(rateLimitKey('couples:notify', user.id))` → user.id                  |
+| `src/app/api/interactions/route.ts`                      | POST, DELETE             | helper                                      | `checkRateLimit(...)` keyed on user.id (POST) / `interactions:delete` scope (DELETE) |
+| `src/app/api/interactions/reset/route.ts`                | DELETE                   | helper                                      | `checkRateLimit(rateLimitKey('interactions:reset', user.id))` → user.id              |
+| `src/app/api/performance/metrics/route.ts`               | POST                     | helper                                      | `checkRateLimit(rateLimitKey('performance:metrics', ip))` → IP                       |
+| `src/app/api/maps/geocode/route.ts`                      | POST                     | helper                                      | `checkRateLimit(rateLimitKey('maps:geocode', auth.user.id))` → user.id               |
+| `src/app/api/maps/places/autocomplete/route.ts`          | POST                     | helper                                      | `checkRateLimit(rateLimitKey('maps:autocomplete', auth.user.id))` → user.id          |
+| `src/app/api/users/avatar/route.ts`                      | POST, DELETE             | helper                                      | `rateLimit(request, 'strict' / 'standard')` → IP                                     |
+| `src/app/api/couples/activity/route.ts`                  | (GET helper)             | helper on GET; no mutation handlers exposed | `withRateLimit(request, ..., 'standard')`                                            |
+| `src/app/api/health/route.ts`                            | POST, PUT, PATCH, DELETE | 405 stub                                    | n/a                                                                                  |
+| `src/app/api/properties/marketing/route.ts`              | POST, PUT, PATCH, DELETE | 405 stub                                    | n/a                                                                                  |
+| `src/app/api/couples/check-mutual/route.ts`              | POST, PUT, PATCH, DELETE | 405 stub                                    | n/a                                                                                  |
 
 Read-only routes that also opt into a limiter helper but are out of the
 mutation scan's scope: `src/app/api/users/search/route.ts` (GET) and

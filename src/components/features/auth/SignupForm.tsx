@@ -93,9 +93,7 @@ export function SignupForm() {
 
   const handleResendVerification = async () => {
     if (!lastEmail || !supabase) {
-      setResendError(
-        !supabase ? configError : 'Enter your email above first.'
-      )
+      setResendError(!supabase ? configError : 'Enter your email above first.')
       return
     }
 

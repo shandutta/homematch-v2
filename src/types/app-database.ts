@@ -1,6 +1,6 @@
 import type { Database } from './database'
 
-type PropertyRow = Database['public']['Tables']['properties']['Row']
+export type PropertyRow = Database['public']['Tables']['properties']['Row']
 type NeighborhoodRow = Database['public']['Tables']['neighborhoods']['Row']
 
 type AdminRoleAssignmentRole = 'admin'

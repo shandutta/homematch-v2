@@ -40,7 +40,7 @@ based on:
    failure-status guard plus per-route status assertions.
 
 Should a later rekick gain `/tmp` read access and discover that the
-patch's intent is *not* covered by the artifacts enumerated below, this
+patch's intent is _not_ covered by the artifacts enumerated below, this
 note should be revisited and the no-change verdict re-evaluated.
 
 ## Existing canonical coverage
@@ -49,11 +49,11 @@ note should be revisited and the no-change verdict re-evaluated.
 together cover Google Maps / Places provider failure status mapping for
 both proxy routes:
 
-| Artifact | Path | Status mapping covered |
-|---|---|---|
-| Failure-envelope guard (recovered as d98) | `__tests__/unit/api/maps/failure-envelope.test.ts` | `REQUEST_DENIED` → 400, `OVER_QUERY_LIMIT` → 400, network error → 500, `FetchTimeoutError` → 500, malformed JSON → 500, validation failure → 400, missing key → 503; parameterized via `describe.each` across both `geocode` and `places-autocomplete` routes; also asserts the server API key never leaks into the response envelope or `console.error` logs |
-| Per-route geocode status assertion | `__tests__/unit/api/maps/geocode.route.test.ts` | `REQUEST_DENIED` → 400 with `details.status === 'REQUEST_DENIED'` |
-| Per-route places-autocomplete status assertions | `__tests__/unit/api/maps/places-autocomplete.route.test.ts` | `OVER_QUERY_LIMIT` → 400 with `details.status === 'OVER_QUERY_LIMIT'`, `ZERO_RESULTS` → 200 with empty `predictions` array |
+| Artifact                                        | Path                                                        | Status mapping covered                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Failure-envelope guard (recovered as d98)       | `__tests__/unit/api/maps/failure-envelope.test.ts`          | `REQUEST_DENIED` → 400, `OVER_QUERY_LIMIT` → 400, network error → 500, `FetchTimeoutError` → 500, malformed JSON → 500, validation failure → 400, missing key → 503; parameterized via `describe.each` across both `geocode` and `places-autocomplete` routes; also asserts the server API key never leaks into the response envelope or `console.error` logs |
+| Per-route geocode status assertion              | `__tests__/unit/api/maps/geocode.route.test.ts`             | `REQUEST_DENIED` → 400 with `details.status === 'REQUEST_DENIED'`                                                                                                                                                                                                                                                                                             |
+| Per-route places-autocomplete status assertions | `__tests__/unit/api/maps/places-autocomplete.route.test.ts` | `OVER_QUERY_LIMIT` → 400 with `details.status === 'OVER_QUERY_LIMIT'`, `ZERO_RESULTS` → 200 with empty `predictions` array                                                                                                                                                                                                                                    |
 
 Cross-references on the same canonical branch:
 
@@ -66,7 +66,7 @@ Cross-references on the same canonical branch:
   Google-status-mapping responsibility lives inside those four routes
   and is exercised by the three test artifacts above.
 - The recovered d98 worker (`recover: salvage
-  d98-maps-api-failure-envelope-2017 worker artifacts`, commit
+d98-maps-api-failure-envelope-2017 worker artifacts`, commit
   `06bc599`) is the immediate predecessor that introduced
   `failure-envelope.test.ts`. The reconcile commit `e18882e` rewires
   the per-route tests to the canonical auth-scoped rate-limit keys
@@ -79,7 +79,7 @@ Cross-references on the same canonical branch:
 This worktree branch (`worktree-hm-rekick-d16`) is at the merge-base
 `de497a3` with `autonomy/6h-business-hardening`; the recovery commits
 `06bc599` and `e18882e` (and the canonical `failure-envelope.test.ts`)
-are *ahead* of this worktree. As a result, the worktree's current
+are _ahead_ of this worktree. As a result, the worktree's current
 maps-route tests still exercise the older `apiRateLimiter`/IP-based
 rate-limit key shape:
 
@@ -163,7 +163,7 @@ paths is the operative evidence.
 ## Follow-up handoff
 
 If a later rekick gains `/tmp` read access and the patch turns out to
-add coverage that is *not* a subset of the canonical
+add coverage that is _not_ a subset of the canonical
 `failure-envelope.test.ts`, the next steps would be:
 
 1. Diff the patch's added test cases against the seven canonical

@@ -14,14 +14,14 @@ The repo has ~100 Lane A unit guards and ~12 Lane B integration specs, but the t
 
 ### 1.1 Test shape breakdown
 
-| Pattern | Count (approx.) | Examples | What it verifies |
-| --- | --- | --- | --- |
-| **Static source guard** | ~40 | `rate-limit-coverage.test.ts`, `rollback-coverage.test.ts`, `route-error-envelope-scan.test.ts`, `admin-role-assignments-migration.test.ts` | Source code string/regex matching. "Does `checkRateLimit` appear in the route handler?" "Does each migration have `-- DOWN:`?" |
-| **Mocked module behavioral** | ~25 | `dashboard-query-dedupe.test.ts`, `route-deadline.test.ts`, `couples-realtime-db-closure.test.ts`, `server-service-role-authorization.test.ts` | Module-level contract tested with jest.mock. "Does the loader dedupe concurrent calls?" "Does the deadline helper return 504 after timeout?" |
-| **Schema/validation** | ~10 | `schemas/api.test.ts`, `schemas/property.test.ts`, `auth-security-policy-guard.test.ts` | Zod schema shape, regex patterns, policy invariants. |
-| **RTL component** | ~8 | `middleware.test.ts`, `login-redirect-open-redirect-guard.test.ts`, `no-auth-traversal-smoke-guard.test.ts`, `core-flow-matrix.test.ts` | Component rendering under jsdom with mocked Next/Supabase. |
-| **Doc/script invariant** | ~8 | `env-example-guard.test.ts`, `readme-local-dev.test.ts`, `security-evidence-index-freshness.test.ts` | Doc-to-repo alignment, script behavior, report cross-reference correctness. |
-| **Lane B integration** | ~12 | `auth-smoke-matrix.spec.ts`, `no-auth-live-probe.spec.ts`, `couples-stats.spec.ts` | Vitest + real Supabase + dev server. All currently skipped or environment-gated. |
+| Pattern                      | Count (approx.) | Examples                                                                                                                                       | What it verifies                                                                                                                             |
+| ---------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Static source guard**      | ~40             | `rate-limit-coverage.test.ts`, `rollback-coverage.test.ts`, `route-error-envelope-scan.test.ts`, `admin-role-assignments-migration.test.ts`    | Source code string/regex matching. "Does `checkRateLimit` appear in the route handler?" "Does each migration have `-- DOWN:`?"               |
+| **Mocked module behavioral** | ~25             | `dashboard-query-dedupe.test.ts`, `route-deadline.test.ts`, `couples-realtime-db-closure.test.ts`, `server-service-role-authorization.test.ts` | Module-level contract tested with jest.mock. "Does the loader dedupe concurrent calls?" "Does the deadline helper return 504 after timeout?" |
+| **Schema/validation**        | ~10             | `schemas/api.test.ts`, `schemas/property.test.ts`, `auth-security-policy-guard.test.ts`                                                        | Zod schema shape, regex patterns, policy invariants.                                                                                         |
+| **RTL component**            | ~8              | `middleware.test.ts`, `login-redirect-open-redirect-guard.test.ts`, `no-auth-traversal-smoke-guard.test.ts`, `core-flow-matrix.test.ts`        | Component rendering under jsdom with mocked Next/Supabase.                                                                                   |
+| **Doc/script invariant**     | ~8              | `env-example-guard.test.ts`, `readme-local-dev.test.ts`, `security-evidence-index-freshness.test.ts`                                           | Doc-to-repo alignment, script behavior, report cross-reference correctness.                                                                  |
+| **Lane B integration**       | ~12             | `auth-smoke-matrix.spec.ts`, `no-auth-live-probe.spec.ts`, `couples-stats.spec.ts`                                                             | Vitest + real Supabase + dev server. All currently skipped or environment-gated.                                                             |
 
 ### 1.2 What's strong
 
@@ -61,7 +61,14 @@ Template:
 /**
  * @jest-environment node
  */
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals'
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from '@jest/globals'
 
 // Mock the service boundary — not the implementation.
 jest.mock('@/lib/services/properties', () => {
@@ -97,6 +104,7 @@ describe('myFeature', () => {
 ```
 
 Key rules for Tier 1:
+
 - Mock at the **service/proxy boundary** (Supabase client, maps API, Zillow client), not at the function-under-test.
 - Use `jest.requireMock().__mock__` to expose mock controls (established pattern in the repo).
 - `resetMocks: true` in jest.config.js STRIPS module-level `jest.fn()` implementations after the first test. All mock implementations must be set in `beforeEach`.
@@ -108,6 +116,7 @@ Key rules for Tier 1:
 Pattern: Vitest + local Supabase + seeded users + dev server on localhost — test the real HTTP contract, not just the internal function.
 
 Design rules (for when the environment is available):
+
 - Each spec tests exactly one API route family (e.g., all CRUD on `/api/interactions`).
 - Seed minimal test data in `beforeAll`; clean up in `afterAll`.
 - Test the HTTP contract: status codes, response bodies, headers, redirects.
@@ -117,11 +126,13 @@ Design rules (for when the environment is available):
 #### Tier 3: E2E critical-path guards (Lane C — further-gated)
 
 Pattern: Playwright against a running Next.js dev server. Reserved for:
+
 - Auth lifecycle: signup -> verify -> login -> access protected page -> logout.
 - Matching flow: like property -> mutual match detected -> couple created.
 - Paid/external surface: gated behind explicit approval per the paid-API rule.
 
 Design rules:
+
 - Maximum one E2E spec per critical user journey.
 - Use `testUsers[0]` (from `scripts/setup-test-users-admin.js`) as the seeded user.
 - All E2E specs must skip by default unless `E2E_RUN=1` is set.
@@ -143,17 +154,18 @@ The existing ~70 Lane A guards ARE the regression harness for Phase 0/1 closures
 
 Several static guards can be upgraded to Tier 1 behavioral tests without waiting for the environment:
 
-| Current static guard | Upgrade target |
-| --- | --- |
-| `rate-limit-coverage.test.ts` (verifies `checkRateLimit` appears) | Behavioral: test that `checkRateLimit(req)` returns `{ limited: true }` after N calls within the window |
-| `route-error-envelope-scan.test.ts` (verifies error patterns in source) | Behavioral: test that route handlers actually emit `ApiErrorHandler.*` error shapes |
-| `external-timeouts.test.ts` (verifies timeout registration) | Behavioral: test that a slow mock actually triggers the timeout response |
-| `cache-control.test.ts` (verifies header strings in source) | Behavioral: test that the handler's NextResponse actually carries `Cache-Control: no-store` |
-| `auth-boundary-consolidation.test.ts` (verifies auth helper import) | Behavioral: test that unauthenticated requests to protected routes return 401 with correct error shape |
+| Current static guard                                                    | Upgrade target                                                                                          |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `rate-limit-coverage.test.ts` (verifies `checkRateLimit` appears)       | Behavioral: test that `checkRateLimit(req)` returns `{ limited: true }` after N calls within the window |
+| `route-error-envelope-scan.test.ts` (verifies error patterns in source) | Behavioral: test that route handlers actually emit `ApiErrorHandler.*` error shapes                     |
+| `external-timeouts.test.ts` (verifies timeout registration)             | Behavioral: test that a slow mock actually triggers the timeout response                                |
+| `cache-control.test.ts` (verifies header strings in source)             | Behavioral: test that the handler's NextResponse actually carries `Cache-Control: no-store`             |
+| `auth-boundary-consolidation.test.ts` (verifies auth helper import)     | Behavioral: test that unauthenticated requests to protected routes return 401 with correct error shape  |
 
 #### Category C: Environment-gated integration verification (design only)
 
 For closures that need live Supabase/auth (D1 RBAC, D6 DB reset, D3 signup verification):
+
 - The integration spec shape is designed in this document (Tier 2).
 - Actual execution waits for the D6 environment resolution.
 - The guard files exist and skip by default — they become active the moment the environment is available.
@@ -168,6 +180,7 @@ Phase 4 must identify and remove tests that guard against code patterns that no 
 4. **Redundant guard**: two guards covering the exact same invariant. The newer one supersedes.
 
 Cleanup process:
+
 - Run the full Lane A suite.
 - Flag every test that references a deleted file/path.
 - Flag every guard that tests a code shape known to have been replaced.
@@ -247,14 +260,14 @@ Priority order for Phase 4 test coverage, ranked by business impact and risk:
 
 How the D6 (DB reset/lint/integration environment) resolution unlocks Phase 4:
 
-| Without D6 (today) | With D6 (after resolution) |
-| --- | --- |
-| Tier 1 behavioral (mock-based) — fully runnable | Tier 1 continues to run |
-| Meta-guards for stale detection — runnable | Meta-guards continue |
-| Tier 2 integration specs — designed but skip | Tier 2 specs run against real Supabase |
-| Tier 3 E2E — not designed (premature) | Tier 3 becomes designable |
-| RLS policy behavioral validation — blocked | RLS policies tested with real roles |
-| Migration rollback execution — blocked | Rollback verify becomes testable |
+| Without D6 (today)                              | With D6 (after resolution)             |
+| ----------------------------------------------- | -------------------------------------- |
+| Tier 1 behavioral (mock-based) — fully runnable | Tier 1 continues to run                |
+| Meta-guards for stale detection — runnable      | Meta-guards continue                   |
+| Tier 2 integration specs — designed but skip    | Tier 2 specs run against real Supabase |
+| Tier 3 E2E — not designed (premature)           | Tier 3 becomes designable              |
+| RLS policy behavioral validation — blocked      | RLS policies tested with real roles    |
+| Migration rollback execution — blocked          | Rollback verify becomes testable       |
 
 The TDD harness is designed so that Tier 1 provides immediate value while Tier 2/3 are ready the moment the environment gate opens.
 

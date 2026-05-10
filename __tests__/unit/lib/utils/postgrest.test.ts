@@ -1,5 +1,7 @@
 // Phase 0/1 closure: P1-security-definer-paths
 import {
+// Phase 0/1 closure: P1-security-definer-paths
+
   buildCityStateKey,
   buildCityStateKeys,
   buildCityStateOrClause,
@@ -97,9 +99,7 @@ describe('postgrest utilities', () => {
     })
 
     it('builds an or clause from a single pair', () => {
-      const clause = buildCityStateOrClause([
-        { city: 'Oakland', state: 'CA' },
-      ])
+      const clause = buildCityStateOrClause([{ city: 'Oakland', state: 'CA' }])
       expect(clause).toBe('and(city.eq.Oakland,state.eq.CA)')
     })
 

@@ -26,6 +26,7 @@ import {
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
+import { HouseholdReactionsPanel } from '@/components/features/couples/HouseholdReactionsPanel'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
@@ -518,6 +519,14 @@ export function PropertyDetailModal({
                   </div>
                 ) : null}
               </div>
+
+              {/* Household partner reactions */}
+              {property.id && (
+                <HouseholdReactionsPanel
+                  propertyId={property.id}
+                  className="pt-2"
+                />
+              )}
 
               <div className="space-y-3">
                 <h3 className="font-display text-hm-stone-200 text-lg font-medium">

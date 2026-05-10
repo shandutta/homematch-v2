@@ -1,6 +1,8 @@
 // Phase 0/1 closure: P0-maps-auth-hardening
 import { describe, it, expect, jest } from '@jest/globals'
 import {
+// Phase 0/1 closure: P0-maps-auth-hardening
+
   match,
   mockRank,
   parseLLMResponse,
@@ -182,19 +184,20 @@ describe('match (LLM mode)', () => {
   })
 
   it('calls the injected LLM client and parses its JSON response', async () => {
+    const responseContent = JSON.stringify({
+      ranked: [
+        {
+          property_id: ID_A,
+          rank: 1,
+          score: 0.92,
+          rationale: 'Within budget; matches type.',
+          citations: [{ field: 'price', evidence: '800000' }],
+          concerns: [],
+        },
+      ],
+    })
     const completeSpy = jest.fn(async () => ({
-      content: JSON.stringify({
-        ranked: [
-          {
-            property_id: ID_A,
-            rank: 1,
-            score: 0.92,
-            rationale: 'Within budget; matches type.',
-            citations: [{ field: 'price', evidence: '800000' }],
-            concerns: [],
-          },
-        ],
-      }),
+      content: responseContent,
       model: 'test-model',
     }))
     const llmClient: LLMClient = { complete: completeSpy }
@@ -213,6 +216,23 @@ describe('match (LLM mode)', () => {
     const callArgs = completeSpy.mock.calls[0][0]
     expect(callArgs.system).toMatch(/HomeMatch/i)
     expect(callArgs.user).toContain(ID_A)
+  })
+
+  it('falls back to mock ranking on LLM failure (retry + fallback)', async () => {
+    const completeSpy = jest.fn(async () => {
+      throw new Error('LLM unavailable')
+    })
+    const llmClient: LLMClient = { complete: completeSpy }
+
+    const result = await match(validRequest(), {
+      llmEnabled: true,
+      llmClient,
+      maxAttempts: 2,
+    })
+
+    expect(result.mode).toBe('llm-fallback-mock')
+    expect(result.ranked).toHaveLength(1)
+    expect(completeSpy).toHaveBeenCalledTimes(2) // retried once
   })
 
   it('strips ranked entries whose property_id is not in candidates (anti-hallucination)', () => {
@@ -237,10 +257,37 @@ describe('match (LLM mode)', () => {
         },
       ],
     })
-    const ranked = parseLLMResponse(raw, candidates, 5)
+    const { ranked } = parseLLMResponse(raw, candidates, 5)
     expect(ranked).toHaveLength(1)
     expect(ranked[0].property_id).toBe(ID_A)
     expect(ranked[0].rank).toBe(1) // renumbered
+  })
+
+  it('reports droppedCount for hallucinated or invalid entries', () => {
+    const candidates = [baseCandidate({ id: ID_A })]
+    const raw = JSON.stringify({
+      ranked: [
+        {
+          property_id: ID_B, // hallucinated
+          rank: 1,
+          score: 0.99,
+          rationale: 'Made up.',
+          citations: [{ field: 'price', evidence: '0' }],
+          concerns: [],
+        },
+        {
+          property_id: ID_A,
+          rank: 2,
+          score: 0.8,
+          rationale: 'Real candidate.',
+          citations: [{ field: 'price', evidence: '800000' }],
+          concerns: [],
+        },
+      ],
+    })
+    const { ranked, droppedCount } = parseLLMResponse(raw, candidates, 5)
+    expect(ranked).toHaveLength(1)
+    expect(droppedCount).toBe(1)
   })
 
   it('strips ```json fences from LLM output', () => {
@@ -261,7 +308,7 @@ describe('match (LLM mode)', () => {
       }),
       '```',
     ].join('\n')
-    const ranked = parseLLMResponse(raw, candidates, 5)
+    const { ranked } = parseLLMResponse(raw, candidates, 5)
     expect(ranked).toHaveLength(1)
   })
 
@@ -299,8 +346,9 @@ describe('match (LLM mode)', () => {
         },
       ],
     })
-    const ranked = parseLLMResponse(raw, candidates, 5)
+    const { ranked, droppedCount } = parseLLMResponse(raw, candidates, 5)
     expect(ranked).toHaveLength(1)
     expect(ranked[0].property_id).toBe(ID_B)
+    expect(droppedCount).toBe(1)
   })
 })

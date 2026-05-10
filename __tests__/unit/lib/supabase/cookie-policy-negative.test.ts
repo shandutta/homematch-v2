@@ -24,7 +24,9 @@ describe('Supabase session cookie policy — negative guards', () => {
 
   describe('httpOnly cannot be downgraded by caller', () => {
     it('rejects httpOnly: false (boolean)', () => {
-      expect(buildSupabaseSessionCookieOptions({ httpOnly: false }).httpOnly).toBe(true)
+      expect(
+        buildSupabaseSessionCookieOptions({ httpOnly: false }).httpOnly
+      ).toBe(true)
     })
 
     it('rejects httpOnly: undefined as a noop (still true)', () => {
@@ -49,16 +51,16 @@ describe('Supabase session cookie policy — negative guards', () => {
   describe('secure is bound to NODE_ENV and cannot be overridden', () => {
     it('caller cannot disable Secure in production', () => {
       process.env = { ...originalEnv, NODE_ENV: 'production' }
-      expect(
-        buildSupabaseSessionCookieOptions({ secure: false }).secure
-      ).toBe(true)
+      expect(buildSupabaseSessionCookieOptions({ secure: false }).secure).toBe(
+        true
+      )
     })
 
     it('caller cannot fake Secure in development (dev-only exception)', () => {
       process.env = { ...originalEnv, NODE_ENV: 'development' }
-      expect(
-        buildSupabaseSessionCookieOptions({ secure: true }).secure
-      ).toBe(false)
+      expect(buildSupabaseSessionCookieOptions({ secure: true }).secure).toBe(
+        false
+      )
     })
 
     it('NODE_ENV=test is treated as non-production (Secure off in unit tests)', () => {

@@ -1,10 +1,15 @@
 import { ZillowUtils } from '@/lib/api/zillow-client'
 import {
   DataTransformer,
-  RawPropertyData,
+  type RawPropertyData,
 } from '@/lib/migration/data-transformer'
 import type { PropertyInsert } from '@/types/database'
 import { defaultZipForCityState } from './default-zips'
+import {
+  computeDedupeKey,
+  computeSourceFingerprint,
+  dedupeBatch,
+} from '@/lib/ingest/idempotency'
 
 type AllowedPropertyType =
   | 'single_family'
@@ -49,6 +54,15 @@ type SupabaseLike = {
       rows: PropertyInsert[],
       options?: { onConflict?: string }
     ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>
+    select: (columns: string) => {
+      in: (
+        column: string,
+        values: string[]
+      ) => PromiseLike<{
+        data: Array<Record<string, unknown>> | null
+        error: { message?: string } | null
+      }>
+    }
   }
   rpc: (
     fn: 'backfill_property_neighborhoods',
@@ -130,6 +144,10 @@ export interface IngestLocationSummary {
   transformed: number
   insertedOrUpdated: number
   skipped: number
+  /** Records skipped because their content fingerprint matched the DB -- no write needed. */
+  idempotentSkipped: number
+  /** In-batch duplicates collapsed during deduplication. */
+  inBatchDuplicates: number
   errors: string[]
 }
 
@@ -139,6 +157,8 @@ export interface IngestSummary {
     transformed: number
     insertedOrUpdated: number
     skipped: number
+    idempotentSkipped: number
+    inBatchDuplicates: number
   }
   locations: IngestLocationSummary[]
   propertyTypes: Record<string, number>
@@ -512,6 +532,56 @@ export function mapSearchItemToRaw(
   }
 }
 
+/**
+ * Lightweight conversion from RawPropertyData to the shape needed for
+ * dedupe-key and content-fingerprint computation. Numbers coerced from
+ * string fields (common in Zillow API responses).
+ */
+function toIngestRecord(raw: RawPropertyData): {
+  source: 'zillow'
+  zpid: string | undefined
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  price: number
+  bedrooms: number
+  bathrooms: number
+  square_feet: number | null
+  property_type: string | undefined
+  listing_status: string | undefined
+  latitude: number | null
+  longitude: number | null
+} {
+  const toNum = (v: unknown): number => {
+    if (typeof v === 'number') return Number.isFinite(v) ? v : 0
+    const n = Number(v)
+    return Number.isFinite(n) ? n : 0
+  }
+  const toNumOrNull = (v: unknown): number | null => {
+    if (v === null || v === undefined || v === '') return null
+    const n = Number(v)
+    return Number.isFinite(n) ? n : null
+  }
+
+  return {
+    source: 'zillow' as const,
+    zpid: raw.zpid?.trim() || undefined,
+    address: raw.address,
+    city: raw.city,
+    state: raw.state.toUpperCase().slice(0, 2),
+    zip_code: raw.zip_code.slice(0, 5),
+    price: toNum(raw.price),
+    bedrooms: toNum(raw.bedrooms),
+    bathrooms: toNum(raw.bathrooms),
+    square_feet: toNumOrNull(raw.square_feet),
+    property_type: raw.property_type,
+    listing_status: raw.listing_status,
+    latitude: toNumOrNull(raw.latitude),
+    longitude: toNumOrNull(raw.longitude),
+  }
+}
+
 export async function ingestZillowLocations(
   options: ZillowIngestOptions
 ): Promise<IngestSummary> {
@@ -534,7 +604,14 @@ export async function ingestZillowLocations(
   const log = debug ? console.log : null
 
   const summary: IngestSummary = {
-    totals: { attempted: 0, transformed: 0, insertedOrUpdated: 0, skipped: 0 },
+    totals: {
+      attempted: 0,
+      transformed: 0,
+      insertedOrUpdated: 0,
+      skipped: 0,
+      idempotentSkipped: 0,
+      inBatchDuplicates: 0,
+    },
     locations: [],
     propertyTypes: {},
   }
@@ -549,10 +626,14 @@ export async function ingestZillowLocations(
       transformed: 0,
       insertedOrUpdated: 0,
       skipped: 0,
+      idempotentSkipped: 0,
+      inBatchDuplicates: 0,
       errors: [],
     }
     const locationTypeCounts: Record<string, number> = {}
     const zipFallbacks: ZipFallbackMap = new Map()
+    /** Cross-page dedupe: keys already ingested in this location run. */
+    const seenDedupeKeys = new Set<string>()
 
     let page = 1
     let hasMore = true
@@ -609,9 +690,103 @@ export async function ingestZillowLocations(
         continue
       }
 
+      // ---------- Idempotency pipeline ----------
+
+      // 1. Convert to the shape needed for dedupe/fingerprint computation.
+      const ingestRecords = rawItems.map((raw) => toIngestRecord(raw))
+
+      // 2. Collapse in-batch duplicates. Richer record wins.
+      const { unique, duplicates } = dedupeBatch(ingestRecords)
+      locationSummary.inBatchDuplicates += duplicates.length
+      summary.totals.inBatchDuplicates += duplicates.length
+      summary.totals.skipped += duplicates.length
+
+      // 3. Cross-page dedupe -- skip records already seen in this run.
+      const crossPageFiltered: Array<{
+        ingest: ReturnType<typeof toIngestRecord>
+        raw: RawPropertyData
+      }> = []
+      for (let i = 0; i < unique.length; i++) {
+        const ingest = unique[i]
+        const raw = rawItems[i]
+        const dedupeKey = computeDedupeKey(ingest)
+        if (seenDedupeKeys.has(dedupeKey)) {
+          locationSummary.skipped++
+          summary.totals.skipped++
+          continue
+        }
+        seenDedupeKeys.add(dedupeKey)
+        crossPageFiltered.push({ ingest, raw })
+      }
+
+      if (crossPageFiltered.length === 0) {
+        hasMore = pageResult.hasNextPage
+        page++
+        await delay(delayMs)
+        continue
+      }
+
+      // 4. Batch-lookup existing fingerprints from Supabase.
+      const zpidsToQuery = crossPageFiltered
+        .map(({ raw }) => raw.zpid?.trim())
+        .filter((z): z is string => Boolean(z) && z.length > 0)
+
+      const existingFpMap = new Map<
+        string,
+        { fingerprint: string; zpid: string }
+      >()
+      if (zpidsToQuery.length > 0) {
+        try {
+          const { data: existingRows, error: lookupErr } = await supabase
+            .from('properties')
+            .select('zpid, source_fingerprint')
+            .in('zpid', zpidsToQuery)
+
+          if (!lookupErr && existingRows) {
+            for (const row of existingRows) {
+              const rowZpid =
+                typeof row.zpid === 'string' ? row.zpid : String(row.zpid ?? '')
+              const fp =
+                typeof row.source_fingerprint === 'string'
+                  ? row.source_fingerprint
+                  : null
+              if (rowZpid && fp) {
+                existingFpMap.set(rowZpid, { fingerprint: fp, zpid: rowZpid })
+              }
+            }
+          }
+        } catch {
+          // If lookup fails, proceed without idempotency.
+          // Worst case: some unnecessary writes, same as before.
+        }
+      }
+
+      // 5. Compute fingerprints, skip unchanged records, transform the rest.
       const inserts: PropertyInsert[] = []
-      rawItems.forEach((raw, index) => {
-        const result = transformer.transformProperty(raw, index)
+      const now = new Date().toISOString()
+
+      for (const { ingest, raw } of crossPageFiltered) {
+        const fingerprint = computeSourceFingerprint(ingest)
+
+        // Check fingerprint match against DB.
+        const zpid = raw.zpid?.trim()
+        if (zpid) {
+          const existing = existingFpMap.get(zpid)
+          if (existing && fingerprint === existing.fingerprint) {
+            locationSummary.idempotentSkipped++
+            summary.totals.idempotentSkipped++
+            summary.totals.skipped++
+            if (log) {
+              log(
+                `[ingest-zillow] ${location} skipping zpid=${zpid} -- fingerprint unchanged`
+              )
+            }
+            continue
+          }
+        }
+
+        // Transform the raw record.
+        const result = transformer.transformProperty(raw)
         if (result.success && result.data) {
           locationSummary.transformed++
           summary.totals.transformed++
@@ -627,7 +802,9 @@ export async function ingestZillowLocations(
             bedrooms: Math.min(result.data.bedrooms ?? 0, 20),
             bathrooms: Math.min(result.data.bathrooms ?? 0, 20),
             property_type: normalizedType,
-            updated_at: new Date().toISOString(),
+            source_fingerprint: fingerprint,
+            last_refreshed_at: now,
+            updated_at: now,
           })
         } else {
           locationSummary.skipped++
@@ -636,7 +813,7 @@ export async function ingestZillowLocations(
             locationSummary.errors.push(result.errors.join('; '))
           }
         }
-      })
+      }
 
       if (inserts.length > 0) {
         const builder = supabase.from('properties')
@@ -667,7 +844,7 @@ export async function ingestZillowLocations(
           summary.totals.insertedOrUpdated += inserts.length
           if (log) {
             log(
-              `[ingest-zillow] ${location} page ${page} upserted ${inserts.length} properties (hasNextPage=${pageResult.hasNextPage})`
+              `[ingest-zillow] ${location} page ${page} upserted ${inserts.length} properties (${locationSummary.idempotentSkipped} idempotent skips) (hasNextPage=${pageResult.hasNextPage})`
             )
           }
 

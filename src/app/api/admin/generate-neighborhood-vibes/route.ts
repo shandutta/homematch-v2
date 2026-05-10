@@ -109,10 +109,15 @@ export async function POST(req: Request) {
 
   const { data: allListings } = await supabase
     .from('properties')
-    .select('neighborhood_id, address, price, bedrooms, bathrooms, property_type')
+    .select(
+      'neighborhood_id, address, price, bedrooms, bathrooms, property_type'
+    )
     .in('neighborhood_id', neighborhoodIds)
 
-  const listingsByNeighborhood = new Map<string, NonNullable<typeof allListings>>()
+  const listingsByNeighborhood = new Map<
+    string,
+    NonNullable<typeof allListings>
+  >()
   for (const listing of allListings ?? []) {
     if (!listing.neighborhood_id) continue
     const bucket = listingsByNeighborhood.get(listing.neighborhood_id) ?? []

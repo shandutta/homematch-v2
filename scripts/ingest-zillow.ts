@@ -18,7 +18,8 @@ if (envFile !== '.env.local') {
 }
 config()
 
-import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
+import { ingestZillowLocations } from '@/lib/providers/zillow/ingest'
+import type { ZillowSortOption } from '@/lib/providers/zillow/types'
 import { createClient } from '@/lib/supabase/standalone'
 
 type Args = {
@@ -200,12 +201,12 @@ async function main() {
 
   console.log('[ingest-zillow] Finished.')
   console.log(
-    `[ingest-zillow] Totals: attempted=${summary.totals.attempted}, transformed=${summary.totals.transformed}, upserted=${summary.totals.insertedOrUpdated}, skipped=${summary.totals.skipped}`
+    `[ingest-zillow] Totals: attempted=${summary.totals.attempted}, transformed=${summary.totals.transformed}, inserted=${summary.totals.inserted}, updated=${summary.totals.updated}, unchanged=${summary.totals.unchangedSkip}, skipped=${summary.totals.skipped}`
   )
 
   summary.locations.forEach((loc) => {
     console.log(
-      `[ingest-zillow] ${loc.location}: attempted=${loc.attempted}, transformed=${loc.transformed}, upserted=${loc.insertedOrUpdated}, skipped=${loc.skipped}`
+      `[ingest-zillow] ${loc.location}: attempted=${loc.attempted}, transformed=${loc.transformed}, inserted=${loc.inserted}, updated=${loc.updated}, unchanged=${loc.unchangedSkip}, skipped=${loc.skipped}`
     )
     if (loc.errors.length > 0) {
       console.log(

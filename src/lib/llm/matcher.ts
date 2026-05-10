@@ -305,18 +305,27 @@ export async function match(
   }
 
   const systemPrompt = version === '2' ? SYSTEM_PROMPT_V2 : SYSTEM_PROMPT
-  const userPrompt =
-    version === '2'
-      ? buildUserPromptV2({
-          preferences: request.preferences,
-          candidates: request.candidates,
-          topK: request.top_k,
-        })
-      : buildUserPrompt({
-          preferences: request.preferences,
-          candidates: request.candidates,
-          topK: request.top_k,
-        })
+
+  let userPrompt: string
+  let promptTruncated = false
+  if (version === '2') {
+    userPrompt = buildUserPromptV2({
+      preferences: request.preferences,
+      candidates: request.candidates,
+      topK: request.top_k,
+    })
+  } else {
+    const v1Result = buildUserPrompt({
+      preferences: request.preferences,
+      candidates: request.candidates,
+      topK: request.top_k,
+    })
+    userPrompt = v1Result.prompt
+    promptTruncated = v1Result.truncated
+    if (v1Result.warning) {
+      console.warn(JSON.stringify({ event: 'match.prompt.truncated', warning: v1Result.warning }))
+    }
+  }
 
   const model = opts.model || process.env.LLM_MODEL || DEFAULT_MODEL
   const { content, model: usedModel } = await opts.llmClient.complete({
@@ -332,7 +341,7 @@ export async function match(
     model: usedModel,
     generated_at: new Date().toISOString(),
     candidate_count: request.candidates.length,
-    truncated: ranked.length < request.candidates.length,
+    truncated: promptTruncated || ranked.length < request.candidates.length,
     prompt_version: version,
   })
 }

@@ -53,10 +53,10 @@ The `prime` variant in `src/components/ui/button.tsx:25-39` hard-codes `px-9 py-
 
 In **`CtaBand.tsx:106`** the same `prime` variant is invoked with another override: `className="... px-4 py-3 sm:px-8 sm:py-4"`. So:
 
-| Surface | Effective padding | Effective height | Source |
-| --- | --- | --- | --- |
-| Hero "Start swiping" | 36 × 28 px | ~76 px | `HeroSection.tsx:91-107` |
-| CtaBand "Start Swiping" | 32 × 16 px (sm:) | ~52 px | `CtaBand.tsx:102-134` |
+| Surface                 | Effective padding | Effective height | Source                   |
+| ----------------------- | ----------------- | ---------------- | ------------------------ |
+| Hero "Start swiping"    | 36 × 28 px        | ~76 px           | `HeroSection.tsx:91-107` |
+| CtaBand "Start Swiping" | 32 × 16 px (sm:)  | ~52 px           | `CtaBand.tsx:102-134`    |
 
 Two CTAs that share a brand variant on the same scroll appear at different heights and weights. Pick one canonical size for `prime` in `button.tsx:42-47` (replace `px-9 py-7` with token-aware padding driven by `size`), then remove the per-call overrides.
 
@@ -246,20 +246,20 @@ The marketing pages use a serif display family (`var(--font-display), Georgia, s
 
 Computed from the rendered class strings:
 
-| Pair | Foreground | Background | Approx ratio | WCAG AA |
-| --- | --- | --- | --- | --- |
-| Hero h1 white on `#030712` | `#fff` | `#030712` | 19.6:1 | ✅ |
-| Hero subhead `text-white/80` on `#030712` | `#fff` α=0.8 | `#030712` | 13.6:1 | ✅ |
-| Header "Log In" `text-white/70` on `bg-slate-800/60` over `#030712` | composed ~`#c1c8d4` | composed ~`#0f1322` | ~11:1 | ✅ |
-| Feature card body `text-gray-700` on `#fff` | `#374151` | `#fff` | 9.8:1 | ✅ |
-| HowItWorks step body `text-gray-700` on `#fff` | `#374151` | `#fff` | 9.8:1 | ✅ |
-| Cookies page body `text-slate-700` on `#fff` | `#334155` | `#fff` | 11.6:1 | ✅ |
-| Footer "Built in the Bay Area" `text-white/70` on gradient blue (~`#04296b`) | `#fff` α=0.7 | `#04296b` | ~5.6:1 | ✅ |
-| **Footer copyright `text-white/50` on gradient blue (~`#04296b`)** | `#fff` α=0.5 | `#04296b` | **~3.3:1** | **❌ AA body** |
-| **Auth Card hint links `text-amber-400` `#fbbf24` on dark obsidian `#1c1917`** | `#fbbf24` | `#1c1917` | ~10.5:1 | ✅ |
-| Marketing card pill date `text-slate-300` on `bg-[#0f172a]/70` over hero | composed ~`#cbd5e1` | composed ~`#0f1729` | ~12:1 | ✅ |
-| Marketing card pill icon `text-slate-400` on `bg-white/5` glass | `#94a3b8` | composed dark | ~6:1 | ✅ |
-| **Hero outline button `text-white` on `bg-white/5` over `#030712`** | `#fff` | composed `#0c1320` | ~17:1 | ✅ (contrast OK; visibility low because *the surface* itself blends — see P1 below) |
+| Pair                                                                           | Foreground          | Background          | Approx ratio | WCAG AA                                                                             |
+| ------------------------------------------------------------------------------ | ------------------- | ------------------- | ------------ | ----------------------------------------------------------------------------------- |
+| Hero h1 white on `#030712`                                                     | `#fff`              | `#030712`           | 19.6:1       | ✅                                                                                  |
+| Hero subhead `text-white/80` on `#030712`                                      | `#fff` α=0.8        | `#030712`           | 13.6:1       | ✅                                                                                  |
+| Header "Log In" `text-white/70` on `bg-slate-800/60` over `#030712`            | composed ~`#c1c8d4` | composed ~`#0f1322` | ~11:1        | ✅                                                                                  |
+| Feature card body `text-gray-700` on `#fff`                                    | `#374151`           | `#fff`              | 9.8:1        | ✅                                                                                  |
+| HowItWorks step body `text-gray-700` on `#fff`                                 | `#374151`           | `#fff`              | 9.8:1        | ✅                                                                                  |
+| Cookies page body `text-slate-700` on `#fff`                                   | `#334155`           | `#fff`              | 11.6:1       | ✅                                                                                  |
+| Footer "Built in the Bay Area" `text-white/70` on gradient blue (~`#04296b`)   | `#fff` α=0.7        | `#04296b`           | ~5.6:1       | ✅                                                                                  |
+| **Footer copyright `text-white/50` on gradient blue (~`#04296b`)**             | `#fff` α=0.5        | `#04296b`           | **~3.3:1**   | **❌ AA body**                                                                      |
+| **Auth Card hint links `text-amber-400` `#fbbf24` on dark obsidian `#1c1917`** | `#fbbf24`           | `#1c1917`           | ~10.5:1      | ✅                                                                                  |
+| Marketing card pill date `text-slate-300` on `bg-[#0f172a]/70` over hero       | composed ~`#cbd5e1` | composed ~`#0f1729` | ~12:1        | ✅                                                                                  |
+| Marketing card pill icon `text-slate-400` on `bg-white/5` glass                | `#94a3b8`           | composed dark       | ~6:1         | ✅                                                                                  |
+| **Hero outline button `text-white` on `bg-white/5` over `#030712`**            | `#fff`              | composed `#0c1320`  | ~17:1        | ✅ (contrast OK; visibility low because _the surface_ itself blends — see P1 below) |
 
 **Action:** lift `text-white/50` body in `Footer.tsx:215` to `text-white/65` minimum (4.7:1) or `text-white/70`.
 
@@ -285,13 +285,14 @@ Computed from the rendered class strings:
 - Footer social icons: `aria-label="X (formerly Twitter)"` / `"Instagram"`, `min-h-[40px] min-w-[40px]` (`Footer.tsx:42`). ✅
 - Form labels: `<FormLabel>` from shadcn-form, paired with `<Input>` via `react-hook-form` Controller. ✅
 - **Skip link**: not present. Add a visually-hidden "Skip to main content" link as the first interactive element of `<Header>`. The page has 12+ marketing links before the form on `/login` if a user lands via header.
-- **Focus order**: hero CTAs sit *after* a Framer-staggered nav. On keyboard navigation from the URL bar, Tab order is Header → "Start swiping" CTA → "Resume your search" CTA → next section. Reasonable. ✅
+- **Focus order**: hero CTAs sit _after_ a Framer-staggered nav. On keyboard navigation from the URL bar, Tab order is Header → "Start swiping" CTA → "Resume your search" CTA → next section. Reasonable. ✅
 - **Reduced motion**: see §1 P1.
 - **Color-only signaling**: cookie toggles use only the Switch's color/state. Pair with text label "On / Off" (already present via `aria-label`) — fine. ✅
 
 ### Animation budget
 
 Counting only unconditional/auto-run animations on `/`:
+
 - `motion.header` shadow + bg-color transitions — 2.
 - Hero stagger entrance: logo, "Log In" pill, "Sign Up" pill, parallax stars init — 4.
 - HeroMotionEnhancer spotlight tracking — continuous on mousemove.
@@ -305,24 +306,24 @@ That's a lot of "in view" animation in one viewport. Consider gating below-the-f
 
 ## Prioritized fix list
 
-| # | Pri | Route | What | Where |
-| --- | --- | --- | --- | --- |
-| 1 | P0 | `/` | Reconcile `prime` button sizing — remove hardcoded `px-9 py-7`; let `size` control padding; add `compoundVariants` so `prime+lg` snaps to a single canonical CTA shape. Audit `HeroSection.tsx:91-107` and `CtaBand.tsx:106-134` callers; remove their per-call padding overrides. | `src/components/ui/button.tsx:25-39`; callers above |
-| 2 | P0 | `/`, all | Add `useReducedMotion()` gating to Framer Motion components in `HeroSection`, `FeatureGrid`, `HowItWorks`, `CtaBand`, `Footer`. Cap infinite-loop hover animations at 2-3 reps. | files above |
-| 3 | P0 | `/login`, `/signup` | Verify and populate `loading.tsx` with a `<AuthPageShell>` + `<Skeleton>` skeleton. | `src/app/login/loading.tsx`, `src/app/signup/loading.tsx` |
-| 4 | P0 | `/login`, `/signup` | Remove duplicate "HomeMatch" heading from shell **or** demote `<CardTitle>` to plain copy; ensure exactly one H1 per page. | `AuthPageShell.tsx:36-41` + `LoginForm.tsx:239-241` + `SignupForm.tsx:198-201` |
-| 5 | P1 | `/` | Add brand-affordance hover state on Header logo link (color shift + slight underline or glow). | `Header.tsx:52-65` |
-| 6 | P1 | `/` | Lift Footer copyright/credit from `text-white/50` to `text-white/70` (or `/65` minimum). | `Footer.tsx:215` |
-| 7 | P1 | `/` | Lock FeatureGrid + HowItWorks vertical rhythm: `lg:mt-12` between heading and grid; add `lg:pt-4` to HowItWorks so it doesn't smash against FeatureGrid's bottom. | `FeatureGrid.tsx:207`, `HowItWorks.tsx:67,93` |
-| 8 | P1 | `/login`, `/signup` | Switch auth submit to `variant="primary"` (brand blue with white text — survives `disabled:opacity-50` better than default). Lift focus rings to `ring-amber-400/40` on inputs. | `LoginForm.tsx:305-319`, `SignupForm.tsx:301-314`, `Input` className override at call sites |
-| 9 | P1 | `/login`, `/signup` | Increase auth Card surface contrast: `bg-card/90` + `ring-1 ring-white/10`. Swap divider pill `bg-background` → `bg-card`. | `LoginForm.tsx:235`, `SignupForm.tsx:197`, divider in both |
-| 10 | P1 | `/cookies` | Restore site nav: add `<Header />` + `<Footer />` (or a breadcrumb + back link). Re-rank panel buttons (Accept all = primary). | `/cookies/page.tsx`, `CookiePreferencesPanel.tsx:154-181` |
-| 11 | P1 | `/signup` | Reorder fields: displayName → email → password → confirm. Add live "passwords match" hint. Demote post-signup "Return to login" to ghost link. | `SignupForm.tsx:225-298,170-190` |
-| 12 | P2 | `/` | Hero h1 `font-black` → `font-extrabold` (or verify display font supports 900). Hero `pt-22` → `pt-24` or arbitrary `pt-[5.5rem]`. | `HeroSection.tsx:74,78` |
-| 13 | P2 | `/` | Replace duplicated `rounded-xl` in Feature/Step card hover overlays with `rounded-[inherit]` so they track Card's `rounded-token-xl`. | `FeatureGrid.tsx:257`, `HowItWorks.tsx:173` |
-| 14 | P2 | `/login`/`/signup` | Unify max-width: both `max-w-lg`. | `/login/page.tsx:18`, `/signup/page.tsx:23` |
-| 15 | P2 | `/cookies` | Pick one link color (`text-sky-600`); add `hover:underline` toggle. Add `Required` badge to Essential cookie row. Bump page H2 to `text-2xl`. | `/cookies/page.tsx:67,93,114`, `CookiePreferencesPanel.tsx:94-105` |
-| 16 | P2 | All pages | Add a "Skip to content" visually-hidden link as first focusable. Apply Framer's `useReducedMotion` + reuse the existing `.visually-hidden-token` utility. | `Header.tsx`, root `layout.tsx` |
+| #   | Pri | Route               | What                                                                                                                                                                                                                                                                               | Where                                                                                       |
+| --- | --- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | P0  | `/`                 | Reconcile `prime` button sizing — remove hardcoded `px-9 py-7`; let `size` control padding; add `compoundVariants` so `prime+lg` snaps to a single canonical CTA shape. Audit `HeroSection.tsx:91-107` and `CtaBand.tsx:106-134` callers; remove their per-call padding overrides. | `src/components/ui/button.tsx:25-39`; callers above                                         |
+| 2   | P0  | `/`, all            | Add `useReducedMotion()` gating to Framer Motion components in `HeroSection`, `FeatureGrid`, `HowItWorks`, `CtaBand`, `Footer`. Cap infinite-loop hover animations at 2-3 reps.                                                                                                    | files above                                                                                 |
+| 3   | P0  | `/login`, `/signup` | Verify and populate `loading.tsx` with a `<AuthPageShell>` + `<Skeleton>` skeleton.                                                                                                                                                                                                | `src/app/login/loading.tsx`, `src/app/signup/loading.tsx`                                   |
+| 4   | P0  | `/login`, `/signup` | Remove duplicate "HomeMatch" heading from shell **or** demote `<CardTitle>` to plain copy; ensure exactly one H1 per page.                                                                                                                                                         | `AuthPageShell.tsx:36-41` + `LoginForm.tsx:239-241` + `SignupForm.tsx:198-201`              |
+| 5   | P1  | `/`                 | Add brand-affordance hover state on Header logo link (color shift + slight underline or glow).                                                                                                                                                                                     | `Header.tsx:52-65`                                                                          |
+| 6   | P1  | `/`                 | Lift Footer copyright/credit from `text-white/50` to `text-white/70` (or `/65` minimum).                                                                                                                                                                                           | `Footer.tsx:215`                                                                            |
+| 7   | P1  | `/`                 | Lock FeatureGrid + HowItWorks vertical rhythm: `lg:mt-12` between heading and grid; add `lg:pt-4` to HowItWorks so it doesn't smash against FeatureGrid's bottom.                                                                                                                  | `FeatureGrid.tsx:207`, `HowItWorks.tsx:67,93`                                               |
+| 8   | P1  | `/login`, `/signup` | Switch auth submit to `variant="primary"` (brand blue with white text — survives `disabled:opacity-50` better than default). Lift focus rings to `ring-amber-400/40` on inputs.                                                                                                    | `LoginForm.tsx:305-319`, `SignupForm.tsx:301-314`, `Input` className override at call sites |
+| 9   | P1  | `/login`, `/signup` | Increase auth Card surface contrast: `bg-card/90` + `ring-1 ring-white/10`. Swap divider pill `bg-background` → `bg-card`.                                                                                                                                                         | `LoginForm.tsx:235`, `SignupForm.tsx:197`, divider in both                                  |
+| 10  | P1  | `/cookies`          | Restore site nav: add `<Header />` + `<Footer />` (or a breadcrumb + back link). Re-rank panel buttons (Accept all = primary).                                                                                                                                                     | `/cookies/page.tsx`, `CookiePreferencesPanel.tsx:154-181`                                   |
+| 11  | P1  | `/signup`           | Reorder fields: displayName → email → password → confirm. Add live "passwords match" hint. Demote post-signup "Return to login" to ghost link.                                                                                                                                     | `SignupForm.tsx:225-298,170-190`                                                            |
+| 12  | P2  | `/`                 | Hero h1 `font-black` → `font-extrabold` (or verify display font supports 900). Hero `pt-22` → `pt-24` or arbitrary `pt-[5.5rem]`.                                                                                                                                                  | `HeroSection.tsx:74,78`                                                                     |
+| 13  | P2  | `/`                 | Replace duplicated `rounded-xl` in Feature/Step card hover overlays with `rounded-[inherit]` so they track Card's `rounded-token-xl`.                                                                                                                                              | `FeatureGrid.tsx:257`, `HowItWorks.tsx:173`                                                 |
+| 14  | P2  | `/login`/`/signup`  | Unify max-width: both `max-w-lg`.                                                                                                                                                                                                                                                  | `/login/page.tsx:18`, `/signup/page.tsx:23`                                                 |
+| 15  | P2  | `/cookies`          | Pick one link color (`text-sky-600`); add `hover:underline` toggle. Add `Required` badge to Essential cookie row. Bump page H2 to `text-2xl`.                                                                                                                                      | `/cookies/page.tsx:67,93,114`, `CookiePreferencesPanel.tsx:94-105`                          |
+| 16  | P2  | All pages           | Add a "Skip to content" visually-hidden link as first focusable. Apply Framer's `useReducedMotion` + reuse the existing `.visually-hidden-token` utility.                                                                                                                          | `Header.tsx`, root `layout.tsx`                                                             |
 
 ---
 
@@ -440,7 +441,7 @@ export function HeroSection() {
 
 ## Notes for the next pass
 
-- **Token consolidation.** The codebase carries two parallel scales (shadcn semantic + `--color-token-*` + `hm-*` warm-obsidian). Marketing pages mostly use raw Tailwind utility colors (`text-gray-900`, `text-white/70`, `bg-slate-50`), which are the *third* scale. A future cleanup should pick one canonical scale per surface — e.g., marketing → semantic + `--color-token-*`; auth → `hm-*` warm obsidian + amber; legal → semantic only.
+- **Token consolidation.** The codebase carries two parallel scales (shadcn semantic + `--color-token-*` + `hm-*` warm-obsidian). Marketing pages mostly use raw Tailwind utility colors (`text-gray-900`, `text-white/70`, `bg-slate-50`), which are the _third_ scale. A future cleanup should pick one canonical scale per surface — e.g., marketing → semantic + `--color-token-*`; auth → `hm-*` warm obsidian + amber; legal → semantic only.
 - **Stale copyright (`Footer.tsx:218`):** "© 2024 HomeMatch" — update to 2026 dynamically (`new Date().getFullYear()`).
 - **Server-side rendering of consent.** `CookiePreferencesPanel` should be hydrated with the consent cookie value, not mounted with `getDefaultConsent()` and reconciled in `useEffect`.
 - **Hero microcopy length.** "Find a home that works for everyone." (h1) → "Swipe through real listings, save the ones your household likes, and keep the search clear instead of stressful." (45 words / 282 chars, `HeroSection.tsx:82-85`). On `lg:` the subhead wraps to ~3 lines, which is plus-one too many under a `text-7xl` headline. Trim to ≤25 words.

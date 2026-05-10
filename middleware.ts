@@ -134,7 +134,9 @@ export async function middleware(request: NextRequest) {
   // Dynamic cookie name based on hostname
   const hostname = request.nextUrl.hostname
   const cookieName = getSupabaseAuthStorageKey(hostname)
-  const hasAuthCookie = request.cookies.getAll().some((c) => c.name === cookieName)
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name === cookieName)
 
   if (!hasAuthCookie) {
     if (isProtectedPath(pathname)) {

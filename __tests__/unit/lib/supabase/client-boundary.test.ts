@@ -13,6 +13,7 @@
  */
 // Phase 0/1 closure: P1-auth-client-consolidation
 
+// Phase 0/1 closure: P1-auth-client-consolidation
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'
@@ -67,9 +68,7 @@ function importsAnySpecifier(contents: string, specifiers: string[]): string[] {
     // quote styles. Sub-path imports like `@/lib/supabase/server/foo` are
     // intentionally not matched — only the canonical module entries count.
     const escaped = specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const re = new RegExp(
-      `(?:from|import\\(|require\\()\\s*['"]${escaped}['"]`,
-    )
+    const re = new RegExp(`(?:from|import\\(|require\\()\\s*['"]${escaped}['"]`)
     if (re.test(contents)) matched.push(specifier)
   }
   return matched
@@ -92,7 +91,7 @@ describe('Supabase client/server boundary policy', () => {
       .flatMap(({ file, contents }) => {
         const violations = importsAnySpecifier(
           contents,
-          SERVER_ONLY_IMPORT_SPECIFIERS,
+          SERVER_ONLY_IMPORT_SPECIFIERS
         )
         return violations.length > 0
           ? [{ file: relative(projectRoot, file), violations }]
@@ -107,7 +106,10 @@ describe('Supabase client/server boundary policy', () => {
       .map((file) => ({ file, contents: readFileSync(file, 'utf8') }))
       .filter(({ contents }) => isUseClientFile(contents))
       .flatMap(({ file, contents }) => {
-        const violations = referencesAnyEnv(contents, SERVER_ONLY_ENV_REFERENCES)
+        const violations = referencesAnyEnv(
+          contents,
+          SERVER_ONLY_ENV_REFERENCES
+        )
         return violations.length > 0
           ? [{ file: relative(projectRoot, file), violations }]
           : []
@@ -120,7 +122,9 @@ describe('Supabase client/server boundary policy', () => {
     expect(existsSync(browserEntryPoint)).toBe(true)
     const contents = readFileSync(browserEntryPoint, 'utf8')
 
-    expect(importsAnySpecifier(contents, SERVER_ONLY_IMPORT_SPECIFIERS)).toEqual([])
+    expect(
+      importsAnySpecifier(contents, SERVER_ONLY_IMPORT_SPECIFIERS)
+    ).toEqual([])
     expect(referencesAnyEnv(contents, SERVER_ONLY_ENV_REFERENCES)).toEqual([])
 
     // Sanity: the browser client should still pull from @supabase/ssr's

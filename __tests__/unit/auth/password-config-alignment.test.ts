@@ -2,6 +2,8 @@
 import { readFileSync } from 'fs'
 import path from 'path'
 
+// Phase 0/1 closure: P1-cookie-httpOnly
+
 describe('Supabase auth password config alignment', () => {
   const config = readFileSync(
     path.join(process.cwd(), 'supabase/config.toml'),

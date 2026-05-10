@@ -14,12 +14,14 @@
  */
 // Phase 0/1 closure: P0-noauth-live-probe-expand
 
+// Phase 0/1 closure: P0-noauth-live-probe-expand
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const repoRoot = process.cwd()
 
-const PROBE_SPEC_REL = '__tests__/integration/routing/no-auth-live-probe.spec.ts'
+const PROBE_SPEC_REL =
+  '__tests__/integration/routing/no-auth-live-probe.spec.ts'
 const PROBE_WRAPPER_REL = 'scripts/run-no-auth-live-probes.js'
 const HARNESS_REPORT_REL =
   'reports/home-match-revival/p0-no-auth-api-protected-redirect-probe-harness-2026-05-08.md'
@@ -50,11 +52,15 @@ describe('P0 no-auth live-probe harness no-mutation invariants', () => {
       // The harness is read-only by design. It may mention POST-only or
       // DELETE-only routes in explanatory copy, but no fetch() call may set a
       // mutating method.
-      expect(probeSpec).not.toMatch(/method:\s*['"](POST|PUT|PATCH|DELETE)['"]/i)
+      expect(probeSpec).not.toMatch(
+        /method:\s*['"](POST|PUT|PATCH|DELETE)['"]/i
+      )
     })
 
     it('does not attach credentials, bearer tokens, or session cookies on probes', () => {
-      expect(probeSpec).not.toMatch(/credentials:\s*['"](include|same-origin)['"]/i)
+      expect(probeSpec).not.toMatch(
+        /credentials:\s*['"](include|same-origin)['"]/i
+      )
       expect(probeSpec).not.toMatch(/Authorization\s*:/i)
       expect(probeSpec).not.toMatch(/Cookie\s*:/i)
       expect(probeSpec).not.toMatch(/Bearer\s+/i)
@@ -65,7 +71,9 @@ describe('P0 no-auth live-probe harness no-mutation invariants', () => {
       // marker so a reviewer can spot a non-synthetic ID at a glance.
       expect(probeSpec).toContain('/invite/synthetic-invalid-token')
       expect(probeSpec).toContain('/properties/synthetic-property-id')
-      expect(probeSpec).toContain('/synthetic-missing-route-for-p0-no-auth-probe')
+      expect(probeSpec).toContain(
+        '/synthetic-missing-route-for-p0-no-auth-probe'
+      )
     })
 
     it('asserts the configured base URL is local before probing', () => {
@@ -82,7 +90,9 @@ describe('P0 no-auth live-probe harness no-mutation invariants', () => {
       expect(probeWrapper).toMatch(
         /\[\s*['"]127\.0\.0\.1['"]\s*,\s*['"]localhost['"]\s*,\s*['"]::1['"]\s*\]/
       )
-      expect(probeWrapper).toMatch(/Refusing no-auth live probes against non-local URL/)
+      expect(probeWrapper).toMatch(
+        /Refusing no-auth live probes against non-local URL/
+      )
     })
 
     it('defaults to a local 127.0.0.1 base URL', () => {
@@ -111,7 +121,9 @@ describe('P0 no-auth live-probe harness no-mutation invariants', () => {
       // shells out to vitest. Any mutating fetch in the wrapper itself would
       // be out of scope.
       expect(probeWrapper).toMatch(/method:\s*['"]GET['"]/)
-      expect(probeWrapper).not.toMatch(/method:\s*['"](POST|PUT|PATCH|DELETE)['"]/i)
+      expect(probeWrapper).not.toMatch(
+        /method:\s*['"](POST|PUT|PATCH|DELETE)['"]/i
+      )
     })
   })
 

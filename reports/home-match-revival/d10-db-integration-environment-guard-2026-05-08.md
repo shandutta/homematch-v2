@@ -58,5 +58,5 @@ pnpm type-check
 
 - No supabase db reset (no Docker/Supabase reset, no local stack reset, no remote reset).
 - No Docker/Supabase local stack startup.
-- No live Supabase or hosted *.supabase.co mutation.
+- No live Supabase or hosted \*.supabase.co mutation.
 - No remote DB URL, paid API, deploy, dependency install, secret read/write, or real-user-data action.

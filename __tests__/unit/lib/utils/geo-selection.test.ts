@@ -1,5 +1,7 @@
 // Phase 0/1 closure: P0-maps-auth-hardening
 import {
+// Phase 0/1 closure: P0-maps-auth-hardening
+
   convexHull,
   isPointInPolygon,
   polygonCentroid,
@@ -7,9 +9,7 @@ import {
 } from '@/lib/utils/geo-selection'
 
 const sortPoints = (points: GeoPoint[]) =>
-  [...points].sort((a, b) =>
-    a.lng !== b.lng ? a.lng - b.lng : a.lat - b.lat
-  )
+  [...points].sort((a, b) => (a.lng !== b.lng ? a.lng - b.lng : a.lat - b.lat))
 
 describe('geo-selection utilities', () => {
   describe('convexHull', () => {
@@ -135,9 +135,9 @@ describe('geo-selection utilities', () => {
 
     it('returns false for fewer than 3 polygon points', () => {
       expect(isPointInPolygon({ lat: 0, lng: 0 }, [])).toBe(false)
-      expect(
-        isPointInPolygon({ lat: 0, lng: 0 }, [{ lat: 0, lng: 0 }])
-      ).toBe(false)
+      expect(isPointInPolygon({ lat: 0, lng: 0 }, [{ lat: 0, lng: 0 }])).toBe(
+        false
+      )
     })
 
     it('returns true for a point clearly inside', () => {

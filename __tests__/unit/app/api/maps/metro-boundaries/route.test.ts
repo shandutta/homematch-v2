@@ -2,6 +2,8 @@
 // Phase 0/1 closure: P0-metro-boundaries-anon
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
 
+// Phase 0/1 closure: P0-metro-boundaries-anon
+
 const jsonMock = jest.fn((body: unknown, init?: ResponseInit) => ({
   status: init?.status ?? 200,
   body,

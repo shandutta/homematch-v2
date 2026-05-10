@@ -22,16 +22,16 @@ without rebuilding it from the ~80+ revival reports.
 
 ## Coverage rows
 
-| # | Surface | Artifact | Lane |
-|---|---|---|---|
-| 1 | M6 raw-error inventory (route-by-route, pre-remediation) | `reports/home-match-revival/api-error-standardization-scout.md` | Repo-side scout |
-| 2 | M6 helper + shared-helper standardization (ApiErrorHandler 405/429/502/503/504, admin-rate-limit, rateLimiter middleware) | `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md` | Repo-side closed |
-| 3 | M6 route-family conversions (interactions, couples, maps, admin, final JSON) | `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md` (sections "Additional M6 route conversion" / "Remaining M6 work") | Repo-side closed |
-| 4 | M8 external-call timeout adoption across `src/app/api/**/route.ts` | `reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md` | Repo-side closed |
-| 5 | M8/M6 route-deadline helper (`withRouteDeadline` → `ApiErrorHandler.gatewayTimeout`) | `reports/home-match-revival/p1-route-deadline-helper-closure-2026-05-08.md` | Repo-side closed |
-| 6 | M8 rate-limit / route-scoped limiter integration referenced from timeout/error envelope flows | `reports/home-match-revival/p1-route-scoped-limiter-key-closure-2026-05-08.md` | Repo-side closed |
-| 7 | M6/M8 supporting helper modules in repo today | `src/lib/api/errors.ts`, `src/lib/api/fetch-timeout.ts`, `src/lib/api/route-deadline.ts`, `src/lib/api/admin-rate-limit.ts`, `src/lib/middleware/rateLimiter.ts` | Repo source-of-truth |
-| 8 | M6/M8 regression coverage in the test suite | `__tests__/unit/api/error-standardization.test.ts`, `__tests__/unit/api/external-timeouts.test.ts`, `__tests__/unit/lib/api/route-deadline.test.ts`, `__tests__/unit/lib/api/errors.test.ts` | Repo-side; local-only execution |
+| #   | Surface                                                                                                                   | Artifact                                                                                                                                                                                     | Lane                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 1   | M6 raw-error inventory (route-by-route, pre-remediation)                                                                  | `reports/home-match-revival/api-error-standardization-scout.md`                                                                                                                              | Repo-side scout                 |
+| 2   | M6 helper + shared-helper standardization (ApiErrorHandler 405/429/502/503/504, admin-rate-limit, rateLimiter middleware) | `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md`                                                                                                             | Repo-side closed                |
+| 3   | M6 route-family conversions (interactions, couples, maps, admin, final JSON)                                              | `reports/home-match-revival/api-error-standardization-remediation-2026-05-08.md` (sections "Additional M6 route conversion" / "Remaining M6 work")                                           | Repo-side closed                |
+| 4   | M8 external-call timeout adoption across `src/app/api/**/route.ts`                                                        | `reports/home-match-revival/m8-external-timeouts-closure-2026-05-08.md`                                                                                                                      | Repo-side closed                |
+| 5   | M8/M6 route-deadline helper (`withRouteDeadline` → `ApiErrorHandler.gatewayTimeout`)                                      | `reports/home-match-revival/p1-route-deadline-helper-closure-2026-05-08.md`                                                                                                                  | Repo-side closed                |
+| 6   | M8 rate-limit / route-scoped limiter integration referenced from timeout/error envelope flows                             | `reports/home-match-revival/p1-route-scoped-limiter-key-closure-2026-05-08.md`                                                                                                               | Repo-side closed                |
+| 7   | M6/M8 supporting helper modules in repo today                                                                             | `src/lib/api/errors.ts`, `src/lib/api/fetch-timeout.ts`, `src/lib/api/route-deadline.ts`, `src/lib/api/admin-rate-limit.ts`, `src/lib/middleware/rateLimiter.ts`                             | Repo source-of-truth            |
+| 8   | M6/M8 regression coverage in the test suite                                                                               | `__tests__/unit/api/error-standardization.test.ts`, `__tests__/unit/api/external-timeouts.test.ts`, `__tests__/unit/lib/api/route-deadline.test.ts`, `__tests__/unit/lib/api/errors.test.ts` | Repo-side; local-only execution |
 
 ## Documented exceptions
 
@@ -83,8 +83,8 @@ reviewer proposing to act on this index:
 - Does not change any gate verdict; the canonical matrix is unchanged.
 - Does not authorize live execution of any plan/probe.
 - Does not enumerate every Phase 0/1 evidence doc — only the M6 + M8
-  + route-deadline subset relevant to API timeout and error-envelope
-  coverage.
+  - route-deadline subset relevant to API timeout and error-envelope
+    coverage.
 - Does not ingest secrets, anon keys, service-role keys, cron
   secrets, RapidAPI keys, Google Maps keys, refresh tokens, or PKCE
   verifiers; none are present in this report.

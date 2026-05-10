@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { ingestZillowLocations, ZillowSortOption } from '@/lib/ingestion/zillow'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -7,6 +6,17 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
+
+// New unified provider module
+import {
+  ingestZillowLocations,
+  discoverLocations,
+} from '@/lib/providers/zillow/ingest'
+import { mapSearchItemToProperty } from '@/lib/providers/zillow/transform'
+import { emitIngestEvent } from '@/lib/providers/zillow/observability'
+import type { ZillowSortOption } from '@/lib/providers/zillow/types'
+
+// ── Constants ────────────────────────────────────────────────────────
 
 const VALID_SORT_OPTIONS: ZillowSortOption[] = [
   'Newest',
@@ -97,10 +107,11 @@ const DEFAULT_BAY_AREA_LOCATIONS = [
   'Walnut Creek, CA',
 ]
 
+// ── Helpers ──────────────────────────────────────────────────────────
+
 function parseLocations(): string[] {
   const env = process.env.ZILLOW_LOCATIONS
   if (env && env.trim().length > 0) {
-    // Split on semicolon only - commas are part of "City, State" format
     return env
       .split(';')
       .map((s) => s.trim())
@@ -108,6 +119,105 @@ function parseLocations(): string[] {
   }
   return DEFAULT_BAY_AREA_LOCATIONS
 }
+
+function parseQueryParams(url: URL): {
+  sort: ZillowSortOption
+  minPrice: number | undefined
+  maxPrice: number | undefined
+  maxPages: number | undefined
+  dryRun: boolean
+} {
+  const sortParam = url.searchParams.get('sort')
+  const sort = isZillowSortOption(sortParam ?? '')
+    ? (sortParam as ZillowSortOption)
+    : 'Newest'
+
+  const minPriceParam = url.searchParams.get('minPrice')
+  const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined
+
+  const maxPriceParam = url.searchParams.get('maxPrice')
+  const maxPrice = maxPriceParam ? parseInt(maxPriceParam, 10) : undefined
+
+  const maxPagesParam = url.searchParams.get('maxPages')
+  const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : undefined
+
+  const dryRun =
+    url.searchParams.get('dryRun') === 'true' ||
+    url.searchParams.get('dryrun') === 'true'
+
+  return { sort, minPrice, maxPrice, maxPages, dryRun }
+}
+
+// ── Dry‑run handler ──────────────────────────────────────────────────
+
+async function handleDryRun(
+  locations: string[],
+  rapidApiKey: string,
+  rapidApiHost: string,
+  sort: ZillowSortOption,
+  minPrice: number | undefined,
+  maxPrice: number | undefined
+) {
+  const discoverResults = await discoverLocations({
+    locations,
+    rapidApiKey,
+    supabase: undefined as unknown as Parameters<typeof discoverLocations>[0]['supabase'],
+    host: rapidApiHost,
+    sort,
+    minPrice,
+    maxPrice,
+    dryRun: true,
+    maxPages: 1,
+  })
+
+  const sampleProperties: Record<string, unknown>[] = []
+  let totalItems = 0
+  let totalRequests = 0
+
+  for (const dr of discoverResults) {
+    totalRequests += 1 // 1 request per location in dry-run mode
+    totalItems += dr.items.length
+
+    // Build sample properties from the first 3 items (max)
+    for (const item of dr.items.slice(0, 3)) {
+      const mapped = mapSearchItemToProperty(item, dr.location)
+      if (mapped) {
+        sampleProperties.push({
+          zpid: mapped.zpid,
+          address: mapped.address,
+          city: mapped.city,
+          state: mapped.state,
+          price: mapped.price,
+          bedrooms: mapped.bedrooms,
+          bathrooms: mapped.bathrooms,
+          property_type: mapped.property_type,
+          property_hash: mapped.property_hash,
+        })
+      }
+    }
+  }
+
+  emitIngestEvent('ingest.upsert.complete', {
+    dryRun: true,
+    locations: locations.length,
+    estimatedRequests: totalRequests,
+    sampleCount: sampleProperties.length,
+  })
+
+  return NextResponse.json(
+    {
+      dryRun: true,
+      locations: locations.length,
+      estimatedRequests: totalRequests,
+      estimatedRapidApiCost: `~${totalRequests} RapidAPI requests`,
+      sampleProperties: sampleProperties.slice(0, 10),
+      totalItemsFound: totalItems,
+    },
+    { status: 200 }
+  )
+}
+
+// ── Route handler ────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const secret = process.env.ZILLOW_CRON_SECRET
@@ -133,29 +243,23 @@ export async function POST(req: Request) {
     return ApiErrorHandler.serviceUnavailable('RAPIDAPI_KEY missing')
   }
 
+  const { sort, minPrice, maxPrice, maxPages, dryRun } =
+    parseQueryParams(url)
+
+  const locations = parseLocations()
+
+  // Dry-run: no DB writes, no paid-API gate needed (estimates only)
+  if (dryRun) {
+    return handleDryRun(locations, rapidApiKey, rapidApiHost, sort, minPrice, maxPrice)
+  }
+
+  // Full ingest: requires paid-API approval and a Supabase client
   if (!isPaidRapidApiApproved()) {
     return ApiErrorHandler.serviceUnavailable(
       RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
     )
   }
 
-  // Parse optional query parameters
-  const sortParam = url.searchParams.get('sort')
-  const sortCandidate = sortParam ?? ''
-  const sort: ZillowSortOption = isZillowSortOption(sortCandidate)
-    ? sortCandidate
-    : 'Newest' // Default to Newest to catch new listings
-
-  const minPriceParam = url.searchParams.get('minPrice')
-  const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined
-
-  const maxPriceParam = url.searchParams.get('maxPrice')
-  const maxPrice = maxPriceParam ? parseInt(maxPriceParam, 10) : undefined
-
-  const maxPagesParam = url.searchParams.get('maxPages')
-  const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : undefined
-
-  const locations = parseLocations()
   const supabase = createStandaloneClient()
 
   try {

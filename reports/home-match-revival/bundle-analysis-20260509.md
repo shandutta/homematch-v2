@@ -6,41 +6,41 @@ Next.js 15.5.9, app router. Build compiled successfully in 40s; lint phase faile
 
 ## Top-line numbers
 
-| Metric                  | Value     |
-|-------------------------|-----------|
-| `.next-build/static`    | 3.5 MB    |
-| `.next-build/server`    | 8.4 MB    |
-| Client JS files         | 131       |
-| Total client JS (sum)   | 2.26 MB   |
-| `chunks/`               | 2.9 MB    |
-| `css/`                  | 268 KB    |
-| `media/` (fonts etc.)   | 280 KB    |
+| Metric                | Value   |
+| --------------------- | ------- |
+| `.next-build/static`  | 3.5 MB  |
+| `.next-build/server`  | 8.4 MB  |
+| Client JS files       | 131     |
+| Total client JS (sum) | 2.26 MB |
+| `chunks/`             | 2.9 MB  |
+| `css/`                | 268 KB  |
+| `media/` (fonts etc.) | 280 KB  |
 
 ## Largest JS chunks (`.next-build/static/chunks/`)
 
-| Size    | Chunk                                | Likely contents |
-|---------|--------------------------------------|-----------------|
-| 178 KB  | `framework-cd397c9612a6bcf9.js`      | Next.js framework runtime (react, react-dom, scheduler) |
-| 169 KB  | `910ccfc4-667c09e979d690e1.js`       | react-dom shared chunk (confirmed: react-dom hits) |
-| 169 KB  | `6579-54bd25f68d07a4d2.js`           | Next polyfills + PromiseQueue/image-loader runtime |
-| 144 KB  | `3521-7a82319f4f9748ae.js`           | **@supabase/* stack** — gotrue (27), realtime (20), supabase (56), postgrest hits |
-| 125 KB  | `main-08465fcdad5979ec.js`           | Next.js app shell |
-| 120 KB  | `4576-feb5675e98531f6e.js`           | **framer-motion** (motion×18 references) |
-| 110 KB  | `polyfills-42372ed130431b0a.js`      | Legacy-browser polyfills |
-| 74 KB   | `app/settings/page-…js`              | settings route (largest route-specific chunk) |
-| 58 KB   | `app/profile/page-…js`               | profile route |
-| 55 KB   | `8004-…js`                           | Shared lib chunk |
-| 52 KB   | `9247-…js`                           | Shared lib chunk |
+| Size   | Chunk                           | Likely contents                                                                    |
+| ------ | ------------------------------- | ---------------------------------------------------------------------------------- |
+| 178 KB | `framework-cd397c9612a6bcf9.js` | Next.js framework runtime (react, react-dom, scheduler)                            |
+| 169 KB | `910ccfc4-667c09e979d690e1.js`  | react-dom shared chunk (confirmed: react-dom hits)                                 |
+| 169 KB | `6579-54bd25f68d07a4d2.js`      | Next polyfills + PromiseQueue/image-loader runtime                                 |
+| 144 KB | `3521-7a82319f4f9748ae.js`      | **@supabase/\* stack** — gotrue (27), realtime (20), supabase (56), postgrest hits |
+| 125 KB | `main-08465fcdad5979ec.js`      | Next.js app shell                                                                  |
+| 120 KB | `4576-feb5675e98531f6e.js`      | **framer-motion** (motion×18 references)                                           |
+| 110 KB | `polyfills-42372ed130431b0a.js` | Legacy-browser polyfills                                                           |
+| 74 KB  | `app/settings/page-…js`         | settings route (largest route-specific chunk)                                      |
+| 58 KB  | `app/profile/page-…js`          | profile route                                                                      |
+| 55 KB  | `8004-…js`                      | Shared lib chunk                                                                   |
+| 52 KB  | `9247-…js`                      | Shared lib chunk                                                                   |
 
 Per-route page chunks (top): `settings` 74 KB, `profile` 58 KB, `dashboard` 36 KB, `couples` 36 KB, `dashboard/mutual-likes` 32 KB, `dashboard/vibes-test` 27 KB, `/` (landing) 21 KB.
 
 ## Largest CSS
 
-| Size    | File                          | Notes |
-|---------|-------------------------------|-------|
-| 248 KB  | `css/0f6ff2c035353067.css`    | Single global Tailwind bundle — dominates CSS payload (>98%). Suggests one large `globals.css`/Tailwind output covering all utility classes used across the app. |
-| 5.1 KB  | `css/ded341ceae2284c6.css`    | Route-scoped |
-| 3.0 KB  | `css/8bfa1f3df6d94713.css`    | Route-scoped |
+| Size   | File                       | Notes                                                                                                                                                            |
+| ------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 248 KB | `css/0f6ff2c035353067.css` | Single global Tailwind bundle — dominates CSS payload (>98%). Suggests one large `globals.css`/Tailwind output covering all utility classes used across the app. |
+| 5.1 KB | `css/ded341ceae2284c6.css` | Route-scoped                                                                                                                                                     |
+| 3.0 KB | `css/8bfa1f3df6d94713.css` | Route-scoped                                                                                                                                                     |
 
 A 248 KB CSS file is large but typical for full-app Tailwind v4 output without
 strict purge boundaries. Worth verifying the JIT scan globs (`content`) are not
@@ -50,13 +50,13 @@ without being deleted from `src/components/ui/`.
 
 ## Public images — optimization candidates
 
-| Size    | File                                 | Recommendation |
-|---------|--------------------------------------|----------------|
-| 211 KB  | `public/images/marketing/mock-home-3.jpg` | Re-encode WebP/AVIF; serve via `next/image`. Likely 60–80% smaller. |
-| 200 KB  | `public/images/marketing/mock-home-2.jpg` | Same. |
-| 165 KB  | `public/images/marketing/mock-home-1.jpg` | Same. |
-| 151 KB  | `public/twitter-image.jpg`           | Required JPEG for OG/Twitter — keep as JPEG but verify it is not also imported by a client component. Consider mozjpeg re-encode. |
-| 151 KB  | `public/og-image.jpg`                | Same. |
+| Size   | File                                      | Recommendation                                                                                                                    |
+| ------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 211 KB | `public/images/marketing/mock-home-3.jpg` | Re-encode WebP/AVIF; serve via `next/image`. Likely 60–80% smaller.                                                               |
+| 200 KB | `public/images/marketing/mock-home-2.jpg` | Same.                                                                                                                             |
+| 165 KB | `public/images/marketing/mock-home-1.jpg` | Same.                                                                                                                             |
+| 151 KB | `public/twitter-image.jpg`                | Required JPEG for OG/Twitter — keep as JPEG but verify it is not also imported by a client component. Consider mozjpeg re-encode. |
+| 151 KB | `public/og-image.jpg`                     | Same.                                                                                                                             |
 
 The three `mock-home-*.jpg` marketing assets total **577 KB raw**. Twin
 `mock-home-*.svg` placeholders already exist in the same directory (~3 KB each)
@@ -105,17 +105,17 @@ Gaps worth investigating:
 
 Disk size ≠ shipped JS, but it's a useful signal for "what's likely being imported".
 
-| Disk size | Package                                              | Notes |
-|-----------|------------------------------------------------------|-------|
-| 42 MB     | `lucide-react`                                       | OK if `optimizePackageImports` does its job — confirmed enabled. Verify no `import * as Icons from 'lucide-react'` patterns. |
-| 33 MB     | `date-fns`                                           | `optimizePackageImports` enabled. Confirm no `import * as df from 'date-fns'`; prefer named imports per function. |
-| 23 MB     | `posthog-js`                                         | Defer behind consent gate. Use `posthog-js/dist/array` or lazy init. |
-| 19 MB     | `@sentry/cli-linux-x64`                              | Build-time only — does NOT ship. |
-| 7.2 MB    | `@sentry/core@9.44.0`                                | Sentry browser SDK — ensure tree-shaken; `@sentry-internal/replay` (3.3 MB) and `replay-canvas` (860 KB) ship only if Replay is enabled. |
-| 4.7 MB    | `zod@3.25.76`                                        | Often tree-shakes well; verify schemas aren't bundled into client components needlessly. |
-| 4.3 MB    | `@ai-sdk/provider-utils@2.2.8`                       | Should be server-only; check no client component imports `ai` or `@ai-sdk/openai`. |
-| 3.3 MB    | `framer-motion@12.23.12`                             | See note above re: `LazyMotion`. |
-| 2.7 MB    | `ai@5.0.101`                                         | Server-only — verify not pulled into client. |
+| Disk size | Package                        | Notes                                                                                                                                    |
+| --------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 42 MB     | `lucide-react`                 | OK if `optimizePackageImports` does its job — confirmed enabled. Verify no `import * as Icons from 'lucide-react'` patterns.             |
+| 33 MB     | `date-fns`                     | `optimizePackageImports` enabled. Confirm no `import * as df from 'date-fns'`; prefer named imports per function.                        |
+| 23 MB     | `posthog-js`                   | Defer behind consent gate. Use `posthog-js/dist/array` or lazy init.                                                                     |
+| 19 MB     | `@sentry/cli-linux-x64`        | Build-time only — does NOT ship.                                                                                                         |
+| 7.2 MB    | `@sentry/core@9.44.0`          | Sentry browser SDK — ensure tree-shaken; `@sentry-internal/replay` (3.3 MB) and `replay-canvas` (860 KB) ship only if Replay is enabled. |
+| 4.7 MB    | `zod@3.25.76`                  | Often tree-shakes well; verify schemas aren't bundled into client components needlessly.                                                 |
+| 4.3 MB    | `@ai-sdk/provider-utils@2.2.8` | Should be server-only; check no client component imports `ai` or `@ai-sdk/openai`.                                                       |
+| 3.3 MB    | `framer-motion@12.23.12`       | See note above re: `LazyMotion`.                                                                                                         |
+| 2.7 MB    | `ai@5.0.101`                   | Server-only — verify not pulled into client.                                                                                             |
 
 Two versions of Sentry coexist (`@sentry/core@7.120.4` AND `@sentry/core@9.44.0`,
 `@sentry/node@7.120.4` AND `@sentry/node@9.44.0`). The 7.x copies ship via

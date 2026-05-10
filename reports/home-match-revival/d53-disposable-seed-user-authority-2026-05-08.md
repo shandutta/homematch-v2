@@ -15,13 +15,13 @@ This report is documentation only. No commands run beyond the file reads needed 
 
 ## Source of truth
 
-| Concern | Authoritative file | What it owns |
-| --- | --- | --- |
-| Local test-user identity (emails + worker accounts) | `scripts/setup-test-users-admin.js` | Hard-coded list of local test users (`test1@example.com`, `test2@example.com`, `test3@example.com`, plus `test-worker-0..7@example.com`), plus the special-case `test3@example.com` non-onboarded profile and the `dev-100014` gallery-like seed for `test1@example.com`. |
-| Local DB row fixtures | `supabase/seed.sql` | Neighborhoods, properties, and other static rows applied by `supabase db reset`. |
-| Playwright primary user identity | `__tests__/fixtures/config.ts` | The `users.user1` / `users.user2` objects consumed by `__tests__/fixtures/auth.ts` and by tests under `__tests__/e2e/`. Emails here MUST stay aligned with the seeder's first two accounts. |
-| Local-only auth-lifecycle wrapper | `scripts/run-local-seeded-auth-lifecycle.js` | Refuses non-loopback Supabase URLs, pins `SUPABASE_URL`, and delegates user creation to the seeder above. |
-| One-time E2E setup helper | `scripts/setup-test-users.js` and `pnpm run test:setup-users` | `pnpm run test:setup-users` is the documented developer entry point; it execs `setup-test-users-admin.js`. |
+| Concern                                             | Authoritative file                                            | What it owns                                                                                                                                                                                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local test-user identity (emails + worker accounts) | `scripts/setup-test-users-admin.js`                           | Hard-coded list of local test users (`test1@example.com`, `test2@example.com`, `test3@example.com`, plus `test-worker-0..7@example.com`), plus the special-case `test3@example.com` non-onboarded profile and the `dev-100014` gallery-like seed for `test1@example.com`. |
+| Local DB row fixtures                               | `supabase/seed.sql`                                           | Neighborhoods, properties, and other static rows applied by `supabase db reset`.                                                                                                                                                                                          |
+| Playwright primary user identity                    | `__tests__/fixtures/config.ts`                                | The `users.user1` / `users.user2` objects consumed by `__tests__/fixtures/auth.ts` and by tests under `__tests__/e2e/`. Emails here MUST stay aligned with the seeder's first two accounts.                                                                               |
+| Local-only auth-lifecycle wrapper                   | `scripts/run-local-seeded-auth-lifecycle.js`                  | Refuses non-loopback Supabase URLs, pins `SUPABASE_URL`, and delegates user creation to the seeder above.                                                                                                                                                                 |
+| One-time E2E setup helper                           | `scripts/setup-test-users.js` and `pnpm run test:setup-users` | `pnpm run test:setup-users` is the documented developer entry point; it execs `setup-test-users-admin.js`.                                                                                                                                                                |
 
 Workers must read identity from these files, not from prior chat output, not from other reports, and not from environment dumps. If a future test needs another fixture user, the change goes through `scripts/setup-test-users-admin.js` first.
 
@@ -37,13 +37,13 @@ Workers must read identity from these files, not from prior chat output, not fro
 
 Any of the following commands are also part of the disposability contract — they are expected to wipe and rebuild the local test dataset:
 
-| Command | What it disposes |
-| --- | --- |
-| `pnpm dlx supabase@latest db reset` | Drops and recreates the local Postgres, replays migrations, then runs `supabase/seed.sql`. |
-| `pnpm run db:reset` (`scripts/dev-supabase-reset.js`) | Wraps `supabase start` + `supabase db reset` with retries; leaves the stack ready for re-seeding. |
-| `pnpm run test:db:reset` (`scripts/infrastructure-working.js reset-db`) | The integration-test variant; same destructive intent against the local stack. |
-| `pnpm run test:setup-users` | Re-runs the seeder above; safe to repeat between resets. |
-| `pnpm run test:integration` (`scripts/run-integration-tests.js`) | Resets DB, seeds users, starts dev server, runs Vitest, then tears down. |
+| Command                                                                 | What it disposes                                                                                  |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `pnpm dlx supabase@latest db reset`                                     | Drops and recreates the local Postgres, replays migrations, then runs `supabase/seed.sql`.        |
+| `pnpm run db:reset` (`scripts/dev-supabase-reset.js`)                   | Wraps `supabase start` + `supabase db reset` with retries; leaves the stack ready for re-seeding. |
+| `pnpm run test:db:reset` (`scripts/infrastructure-working.js reset-db`) | The integration-test variant; same destructive intent against the local stack.                    |
+| `pnpm run test:setup-users`                                             | Re-runs the seeder above; safe to repeat between resets.                                          |
+| `pnpm run test:integration` (`scripts/run-integration-tests.js`)        | Resets DB, seeds users, starts dev server, runs Vitest, then tears down.                          |
 
 The seeder treats those eleven accounts as ephemeral fixtures, not real users. Anyone running these commands consents to losing all rows tied to those accounts. Production / shared / non-loopback Supabase is explicitly out of scope: `setup-test-users-admin.js` refuses non-local URLs unless `ALLOW_REMOTE_SUPABASE=true` (or `SUPABASE_ALLOW_REMOTE=true`) is set explicitly, and `run-local-seeded-auth-lifecycle.js` hard-fails on non-loopback URLs even with that override.
 

@@ -3,6 +3,7 @@
  */
 // Phase 0/1 closure: P1-middleware-matchers
 
+// Phase 0/1 closure: P1-middleware-matchers
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
@@ -83,7 +84,12 @@ describe('Next 15 middleware proxy guard', () => {
     )
 
     it('aligns matcher coverage with isProtectedPath so middleware actually intercepts /dashboard and /couples', () => {
-      for (const pathname of ['/dashboard', '/dashboard/liked', '/couples', '/couples/decisions']) {
+      for (const pathname of [
+        '/dashboard',
+        '/dashboard/liked',
+        '/couples',
+        '/couples/decisions',
+      ]) {
         expect(matcherRegex.test(pathname)).toBe(true)
         expect(isProtectedPath(pathname)).toBe(true)
       }

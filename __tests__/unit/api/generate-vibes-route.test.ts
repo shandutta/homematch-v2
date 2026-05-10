@@ -1,6 +1,7 @@
 // Phase 0/1 closure: P1-property-stats-rpc
 /** @jest-environment node */
 
+// Phase 0/1 closure: P1-property-stats-rpc
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { POST } from '@/app/api/admin/generate-vibes/route'
 import { createStandaloneClient } from '@/lib/supabase/standalone'

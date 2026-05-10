@@ -194,3 +194,43 @@ export function useMutualLikeCheck(propertyId: string) {
     mutualLike,
   }
 }
+
+/**
+ * Represents a household member's reaction to a specific property.
+ */
+export interface PropertyReaction {
+  user_id: string
+  display_name: string
+  interaction_type: 'like' | 'dislike' | 'skip' | 'view'
+  created_at: string
+}
+
+/**
+ * Hook to fetch household member reactions for a specific property.
+ * Returns null when user has no household.
+ */
+export function usePropertyReactions(propertyId: string | undefined) {
+  return useQuery<PropertyReaction[], Error>({
+    queryKey: ['couples', 'property-reactions', propertyId],
+    queryFn: async () => {
+      if (!propertyId) return []
+
+      const response = await fetch(
+        `/api/couples/property-reactions?propertyId=${encodeURIComponent(propertyId)}`,
+        { credentials: 'include' }
+      )
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please sign in to view household reactions')
+        }
+        throw new Error('Failed to fetch household reactions')
+      }
+
+      const data = await response.json()
+      return (data.reactions || []) as PropertyReaction[]
+    },
+    staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY,
+    enabled: typeof window !== 'undefined' && !!propertyId,
+  })
+}

@@ -4,6 +4,7 @@ Generated: 2026-05-08
 Scope: repo-local procedural checklist only. Docs-only artifact. No merges, no cherry-picks, no pushes, no Supabase mutations, no dashboard changes, no secret printing, no paid APIs, no Docker/DB resets, no broad test runs. Reading and `git cherry`-style inspection only; any actual recovery action stays gated by the integration owner.
 
 Parent artifacts:
+
 - `reports/home-match-revival/parallel-worktree-setup-2026-05-07.md` (worktree topology and lane policy)
 - `reports/home-match-revival/p0-p1-blocker-evidence-index-2026-05-08.md` (canonical index recovered worker outputs must crosslink into)
 - `reports/home-match-revival/phase0-phase1-strict-closure-gate.md` (strict gate; recovery does not advance closure on its own)
@@ -42,6 +43,7 @@ Run each step from `/home/shan/projects/homematch-v2`. None of these mutate the 
 `git cherry [-v] <upstream> <head>` answers a single question: **which commits on `<head>` are not yet equivalent to anything on `<upstream>`?**
 
 For worker-to-integration recovery:
+
 - `<upstream>` = `autonomy/6h-business-hardening` (the integration branch you want to land into).
 - `<head>` = `autonomy/hm-d{NN}-<slug>` (the worker branch).
 
@@ -65,12 +67,14 @@ When you are reading multi-commit ranges, prefer `git log --oneline --left-right
 ## Same-worktree collision avoidance
 
 The collisions to prevent are:
+
 - Two workers checking out the same branch in different worktrees (git refuses this, but a confused operator can still try).
 - A worker recovering its own commit by `cd`-ing into the integration worktree and running `git cherry-pick` there while the integration worktree is dirty or on a different branch.
 - Two recovery attempts running concurrently against the integration worktree from different shells.
 - A worker writing to `reports/home-match-revival/` in its own worktree while a sibling lane is writing to the same path in another worktree, then both landing later — silent merge surprise.
 
 Rules:
+
 1. [ ] Recovery happens **only in the integration worktree**, not in the worker worktree.
 2. [ ] The worker worktree is treated as read-only during recovery. Do not run `git pull`, `git rebase`, `git fetch --prune`, or any branch-creating command inside the worker worktree while recovery is in flight.
 3. [ ] Never `git checkout autonomy/6h-business-hardening` inside a worker worktree. The worker's branch must remain checked out in its own worktree until it is confirmed retired.
@@ -94,6 +98,7 @@ For mixed commits (docs + code/tests), this checklist does **not** authorize the
 ## After recovery (handoff, not action for this checklist)
 
 The actual `git cherry-pick -x <sha>` (or `git merge --ff-only` for trivially fast-forwardable cases) is performed by the integration owner in the integration worktree, not by this checklist and not by the worker. After it lands:
+
 - Re-run `git cherry -v autonomy/6h-business-hardening autonomy/hm-d{NN}-<slug>` and confirm the `+` line is now `-`.
 - Update the worker log entry to reference the new integration sha.
 - If any sibling lane's `git cherry` output flipped from `+` to `-` as a side effect of this landing, record that in their respective worker logs as well.

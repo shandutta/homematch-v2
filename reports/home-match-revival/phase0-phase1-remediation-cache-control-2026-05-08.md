@@ -42,7 +42,6 @@ M3 is **partial**, not closed globally. Authenticated/user-specific successful G
 
 Phase 0 and Phase 1 are still not 100% closed. Continue strict Phase 0/1 remediation only; keep Phase 2+ held.
 
-
 ## Expanded closure slice — public/admin/metrics GET classification
 
 Status: **M3 closed for successful GET route classification**.

@@ -1,4 +1,15 @@
 /**
+ * ⚠️ DEPRECATED — consolidated into src/lib/providers/zillow/
+ *
+ * - Types:     src/lib/providers/zillow/types.ts
+ * - HTTP:      src/lib/providers/zillow/client.ts
+ * - Images:    src/lib/providers/zillow/client.ts (fetchImages)
+ *
+ * This file is kept for backward compatibility only.
+ * New code should use the provider module directly.
+ */
+
+/**
  * Zillow API Client
  *
  * Comprehensive client for interacting with Zillow API via RapidAPI

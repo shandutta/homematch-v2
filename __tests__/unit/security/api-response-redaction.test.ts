@@ -12,6 +12,7 @@
  */
 // Phase 0/1 closure: D7-disputed-route-exposure
 
+// Phase 0/1 closure: D7-disputed-route-exposure
 import {
   describe,
   it,
@@ -147,9 +148,9 @@ describe('ApiErrorHandler redaction contract', () => {
 })
 
 describe('API route response redaction (static guard)', () => {
-  const routes = findRouteFiles(
-    join(process.cwd(), 'src/app/api')
-  ).map((p) => relative(process.cwd(), p))
+  const routes = findRouteFiles(join(process.cwd(), 'src/app/api')).map((p) =>
+    relative(process.cwd(), p)
+  )
 
   it('discovers route files to scan', () => {
     expect(routes.length).toBeGreaterThan(0)

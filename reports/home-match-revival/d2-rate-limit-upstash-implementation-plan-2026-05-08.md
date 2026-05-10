@@ -9,14 +9,14 @@ Scope: Post-approval implementation plan. This document is the concrete engineer
 
 Why Upstash over alternatives:
 
-| Criterion | Upstash Redis | Vercel KV | Self-hosted Redis |
-| --- | --- | --- | --- |
-| Vercel Edge compatibility | First-class (`@upstash/redis` HTTP client) | Native | Requires TCP proxy |
-| Serverless connection model | HTTP/REST (no connection pool exhaustion) | HTTP | TCP connection pool |
-| Pricing | Pay-per-request, free tier (10k/day) | Pay-per-read/write | Infrastructure cost |
-| `rate-limiter-flexible` adapter | Not native; bridge via `@upstash/ratelimit` | Not native | Native `RateLimiterRedis` |
-| Regional latency | Global edge (Cloudflare Workers) | Vercel edge only | Single region |
-| HomeMatch fit | Best for Vercel + Next.js serverless | Redundant (same infra) | Overkill for current scale |
+| Criterion                       | Upstash Redis                               | Vercel KV              | Self-hosted Redis          |
+| ------------------------------- | ------------------------------------------- | ---------------------- | -------------------------- |
+| Vercel Edge compatibility       | First-class (`@upstash/redis` HTTP client)  | Native                 | Requires TCP proxy         |
+| Serverless connection model     | HTTP/REST (no connection pool exhaustion)   | HTTP                   | TCP connection pool        |
+| Pricing                         | Pay-per-request, free tier (10k/day)        | Pay-per-read/write     | Infrastructure cost        |
+| `rate-limiter-flexible` adapter | Not native; bridge via `@upstash/ratelimit` | Not native             | Native `RateLimiterRedis`  |
+| Regional latency                | Global edge (Cloudflare Workers)            | Vercel edge only       | Single region              |
+| HomeMatch fit                   | Best for Vercel + Next.js serverless        | Redundant (same infra) | Overkill for current scale |
 
 ## Architecture
 
@@ -51,6 +51,7 @@ pnpm add @upstash/redis @upstash/ratelimit
 ```
 
 Two packages:
+
 - `@upstash/ratelimit` — provides the sliding-window rate limiter
 - `@upstash/redis` — HTTP-based Redis client (no connection pool, Edge-safe)
 
@@ -59,6 +60,7 @@ Two packages:
 New file: `src/lib/middleware/rateLimiterUpstashAdapter.ts`
 
 Responsibilities:
+
 - Accept `RATE_LIMIT_STORAGE_PROVIDER=upstash` and validate required env vars
 - Construct `@upstash/redis` client from `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
 - Wrap `@upstash/ratelimit` sliding-window limiter behind `RateLimiterInstance` interface
@@ -69,7 +71,11 @@ Pseudo:
 ```typescript
 import { Redis } from '@upstash/redis'
 import { Ratelimit } from '@upstash/ratelimit'
-import type { RateLimiterInstance, RateLimitTierKey, RateLimitTierConfig } from './rateLimiter'
+import type {
+  RateLimiterInstance,
+  RateLimitTierKey,
+  RateLimitTierConfig,
+} from './rateLimiter'
 
 export function createUpstashRateLimiter(
   tier: RateLimitTierKey,
@@ -109,22 +115,24 @@ export function createUpstashRateLimiter(
 Modify `getConfiguredRateLimitStorageProvider()`:
 
 ```typescript
-export const getConfiguredRateLimitStorageProvider = (): RateLimitStorageProviderConfig => {
-  const provider =
-    process.env[RATE_LIMIT_STORAGE_PROVIDER_ENV]?.trim().toLowerCase() || 'memory'
+export const getConfiguredRateLimitStorageProvider =
+  (): RateLimitStorageProviderConfig => {
+    const provider =
+      process.env[RATE_LIMIT_STORAGE_PROVIDER_ENV]?.trim().toLowerCase() ||
+      'memory'
 
-  if (provider === 'memory') {
-    return { provider, durable: false }
+    if (provider === 'memory') {
+      return { provider, durable: false }
+    }
+
+    if (provider === 'upstash') {
+      return { provider, durable: true }
+    }
+
+    throw new Error(
+      `Durable rate limiter storage provider "${provider}" requires an approved adapter before production use`
+    )
   }
-
-  if (provider === 'upstash') {
-    return { provider, durable: true }
-  }
-
-  throw new Error(
-    `Durable rate limiter storage provider "${provider}" requires an approved adapter before production use`
-  )
-}
 ```
 
 Modify `createRateLimiter()`:
@@ -163,6 +171,7 @@ Note: Dynamic `require()` is intentional — it keeps `@upstash/*` out of the me
 The file `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test.ts` enforces Phase 0/1 invariants. Post-approval, it must be updated:
 
 **Remove from `APPROVAL_GATED_PROVIDER_NAMES`:**
+
 ```diff
 -  'upstash',
 -  'upstash-redis',
@@ -170,18 +179,21 @@ The file `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test
 ```
 
 **Remove from `FORBIDDEN_SDK_IMPORT_PATTERNS`:**
+
 ```diff
 -  /['"]@upstash\/redis['"]/,
 -  /['"]@upstash\/ratelimit['"]/,
 ```
 
 **Remove from `FORBIDDEN_DEPENDENCY_NAMES`:**
+
 ```diff
 -  '@upstash/redis',
 -  '@upstash/ratelimit',
 ```
 
 **Add new tests:**
+
 - `it('accepts upstash as an executable provider and returns durable:true')`
 - `it('fails fast when UPSTASH_REDIS_REST_URL is missing')`
 - `it('fails fast when UPSTASH_REDIS_REST_TOKEN is missing')`
@@ -189,6 +201,7 @@ The file `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test
 
 **Update closure-matrix assertion:**
 The test at line 202-212 asserts the closure matrix still says D2 is gated. Post-approval, this assertion must flip:
+
 ```diff
 -  expect(closureMatrix).toContain('durable provider choice/provisioning remains owner/ops approval-gated')
 +  expect(closureMatrix).toContain('Upstash Redis provisioned and adapter implemented')
@@ -199,6 +212,7 @@ The test at line 202-212 asserts the closure matrix still says D2 is gated. Post
 New file: `__tests__/unit/lib/middleware/rate-limiter-upstash-adapter.test.ts`
 
 Coverage:
+
 1. `getConfiguredRateLimitStorageProvider()` returns `{ provider: 'upstash', durable: true }` when env is `upstash`
 2. Adapter throws with clear message when `UPSTASH_REDIS_REST_URL` is missing
 3. Adapter throws with clear message when `UPSTASH_REDIS_REST_TOKEN` is missing
@@ -215,6 +229,7 @@ New file: `__tests__/integration/lib/middleware/rate-limiter-upstash.spec.ts`
 This test requires a real Upstash Redis instance. It is skipped by default (`test.skip`) unless `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set.
 
 Coverage:
+
 1. Real `consume()` against Upstash sandbox/test database
 2. Rapid successive calls trigger rate limit
 3. Rate limit resets after window expiry
@@ -224,6 +239,7 @@ Coverage:
 ### Step 7: Update environment configuration
 
 **Production (Vercel):**
+
 ```
 RATE_LIMIT_STORAGE_PROVIDER=upstash
 UPSTASH_REDIS_REST_URL=<from Upstash dashboard>
@@ -231,6 +247,7 @@ UPSTASH_REDIS_REST_TOKEN=<from Upstash dashboard>
 ```
 
 **Local dev (default — no change):**
+
 ```
 # Unset or RATE_LIMIT_STORAGE_PROVIDER=memory
 # No Upstash env vars needed
@@ -242,6 +259,7 @@ Same as production but pointing to a separate Upstash database (or sandbox) to a
 ### Step 8: Upstash provisioning (external — ops)
 
 Before deploying Step 7, ops must:
+
 1. Create an Upstash Redis database (Global or regional — Global recommended for Vercel Edge)
 2. Note the `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
 3. Store them as Vercel environment variables (production + preview)
@@ -260,6 +278,7 @@ Files to update:
 4. **`AGENTS.md`** or project README — Document the new env vars and provider behavior
 
 5. **`.env.example`** — Add commented examples:
+
 ```
 # Rate limiter storage provider: 'memory' (default) or 'upstash'
 RATE_LIMIT_STORAGE_PROVIDER=memory
@@ -289,18 +308,18 @@ No code rollback needed — the env seam is the kill switch.
 
 ## Files Changed Summary
 
-| File | Action | Purpose |
-| --- | --- | --- |
-| `src/lib/middleware/rateLimiterUpstashAdapter.ts` | **NEW** | Upstash adapter behind the seam |
-| `src/lib/middleware/rateLimiter.ts` | MODIFY | Add `upstash` to provider config + createRateLimiter |
-| `__tests__/unit/lib/middleware/rate-limiter-upstash-adapter.test.ts` | **NEW** | Unit tests for the adapter |
-| `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test.ts` | MODIFY | Remove Upstash from gated lists; add post-approval assertions |
-| `__tests__/integration/lib/middleware/rate-limiter-upstash.spec.ts` | **NEW** | Integration test (skippable) |
-| `package.json` | MODIFY | Add `@upstash/redis` + `@upstash/ratelimit` |
-| `pnpm-lock.yaml` | MODIFY | Lockfile update |
-| `reports/home-match-revival/phase0-phase1-closure-matrix.md` | MODIFY | Update D2 status |
-| `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md` | MODIFY | Update D2 status |
-| `.env.example` | MODIFY | Document new env vars |
+| File                                                                        | Action  | Purpose                                                       |
+| --------------------------------------------------------------------------- | ------- | ------------------------------------------------------------- |
+| `src/lib/middleware/rateLimiterUpstashAdapter.ts`                           | **NEW** | Upstash adapter behind the seam                               |
+| `src/lib/middleware/rateLimiter.ts`                                         | MODIFY  | Add `upstash` to provider config + createRateLimiter          |
+| `__tests__/unit/lib/middleware/rate-limiter-upstash-adapter.test.ts`        | **NEW** | Unit tests for the adapter                                    |
+| `__tests__/unit/lib/middleware/rate-limiter-durable-provider-guard.test.ts` | MODIFY  | Remove Upstash from gated lists; add post-approval assertions |
+| `__tests__/integration/lib/middleware/rate-limiter-upstash.spec.ts`         | **NEW** | Integration test (skippable)                                  |
+| `package.json`                                                              | MODIFY  | Add `@upstash/redis` + `@upstash/ratelimit`                   |
+| `pnpm-lock.yaml`                                                            | MODIFY  | Lockfile update                                               |
+| `reports/home-match-revival/phase0-phase1-closure-matrix.md`                | MODIFY  | Update D2 status                                              |
+| `reports/home-match-revival/p1-decision-needed-register-2026-05-08.md`      | MODIFY  | Update D2 status                                              |
+| `.env.example`                                                              | MODIFY  | Document new env vars                                         |
 
 ## Non-Goals
 

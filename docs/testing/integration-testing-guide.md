@@ -79,4 +79,3 @@ Prefer real HTTP requests against the dev server and avoid heavy mocking unless 
 ## Related Docs
 
 - Core testing guide: `docs/TESTING.md`
-- Testing appendix index: `docs/testing/README.md`

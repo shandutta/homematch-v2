@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+// Phase 0/1 closure: D1-service-role-rbac
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

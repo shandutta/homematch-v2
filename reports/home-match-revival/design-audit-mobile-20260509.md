@@ -22,6 +22,7 @@ Severity scale: **P1** = visible breakage / a11y violation • **P2** = polish /
 ## 2. `HeroSection` — `src/components/marketing/HeroSection.tsx` + `MarketingPreviewCardStatic.tsx`
 
 **P1 — Floating preview-card overlay badges overlap on mobile.** `MarketingPreviewCardStatic` paints three absolute overlays. Two render on mobile (the middle one is `hidden sm:flex`):
+
 - "Built for households" — `left-2 top-2`, `max-w-[210px]`
 - "Real listings, quick swipes" — `right-2 bottom-20`, `max-w-[210px]`
 - Price chip `$975,000` — `bottom-4 left-4`
@@ -72,6 +73,7 @@ The `prime` button variant (button.tsx:25–39) hard-codes `px-9 py-7 text-base 
 **P2 — Column heading flush against links.** `mb-0 ... lg:mb-4` — at base the uppercase column title sits glued to its first link. Add `mb-2` at base.
 
 **P2 — Asymmetric mobile grid orphans "Legal".** Mobile uses `grid-cols-2`; layout becomes:
+
 - Row 1: Brand (col-span-2)
 - Row 2: Product · Company
 - Row 3: Legal · (empty)
@@ -112,26 +114,26 @@ Legal sits alone in column 1 of row 3. Fix: switch to `grid-cols-3` for the link
 
 ## Summary Table
 
-| # | Severity | Surface | Issue |
-|---|---|---|---|
-| 1 | P1 | Header | Login/Sign Up anchors ~34px tall (<44px) |
-| 2 | P1 | Hero / PreviewCard | Floating overlay badges crowd price chip on mobile |
-| 3 | P1 | CtaBand | `prime` variant `py-7` survives override — primary CTA ~84px tall, dwarfs outline |
-| 4 | P1 | Footer | `space-y-0 leading-none` on link list = unsafe tap targets |
-| 5 | P1 | AuthPageShell | 680px blur with no `overflow-hidden` (scroll risk) |
-| 6 | P1 | Inputs | Verify `--token-base` ≥16px to prevent iOS auto-zoom |
-| 7 | P2 | Header | `pt-22` leaves ~4–8px clearance under expanded fixed header |
-| 8 | P2 | Hero | `min-h-[680px]` > iPhone SE viewport |
-| 9 | P2 | Hero / FeatureGrid | H1/H2 lack `text-balance` |
-| 10 | P2 | CtaBand | "House-Hunting" can force-wrap in `WordReveal` |
-| 11 | P2 | Footer | Mobile `grid-cols-2` orphans Legal column |
-| 12 | P2 | Footer | Column titles flush against links (`mb-0`) |
-| 13 | P2 | AuthPages | Inline auth links `Forgot password?` / `Sign up` <44px tap |
-| 14 | P2 | AuthShell | `valueProp` pill needs `max-w-full whitespace-normal` |
-| 15 | P2 | All marketing | No `prefers-reduced-motion` guards on framer-motion entrances |
-| 16 | P3 | Hero / FeatureGrid | `gap-10` and `p-4` mobile spacing tight; consider `gap-12` / `p-5` |
-| 17 | P3 | Footer | Brand wordmark oversized vs social icons on mobile |
-| 18 | P3 | SignupForm | Form runs below fold on 375×667; consider OAuth-first |
+| #   | Severity | Surface            | Issue                                                                             |
+| --- | -------- | ------------------ | --------------------------------------------------------------------------------- |
+| 1   | P1       | Header             | Login/Sign Up anchors ~34px tall (<44px)                                          |
+| 2   | P1       | Hero / PreviewCard | Floating overlay badges crowd price chip on mobile                                |
+| 3   | P1       | CtaBand            | `prime` variant `py-7` survives override — primary CTA ~84px tall, dwarfs outline |
+| 4   | P1       | Footer             | `space-y-0 leading-none` on link list = unsafe tap targets                        |
+| 5   | P1       | AuthPageShell      | 680px blur with no `overflow-hidden` (scroll risk)                                |
+| 6   | P1       | Inputs             | Verify `--token-base` ≥16px to prevent iOS auto-zoom                              |
+| 7   | P2       | Header             | `pt-22` leaves ~4–8px clearance under expanded fixed header                       |
+| 8   | P2       | Hero               | `min-h-[680px]` > iPhone SE viewport                                              |
+| 9   | P2       | Hero / FeatureGrid | H1/H2 lack `text-balance`                                                         |
+| 10  | P2       | CtaBand            | "House-Hunting" can force-wrap in `WordReveal`                                    |
+| 11  | P2       | Footer             | Mobile `grid-cols-2` orphans Legal column                                         |
+| 12  | P2       | Footer             | Column titles flush against links (`mb-0`)                                        |
+| 13  | P2       | AuthPages          | Inline auth links `Forgot password?` / `Sign up` <44px tap                        |
+| 14  | P2       | AuthShell          | `valueProp` pill needs `max-w-full whitespace-normal`                             |
+| 15  | P2       | All marketing      | No `prefers-reduced-motion` guards on framer-motion entrances                     |
+| 16  | P3       | Hero / FeatureGrid | `gap-10` and `p-4` mobile spacing tight; consider `gap-12` / `p-5`                |
+| 17  | P3       | Footer             | Brand wordmark oversized vs social icons on mobile                                |
+| 18  | P3       | SignupForm         | Form runs below fold on 375×667; consider OAuth-first                             |
 
 ---
 

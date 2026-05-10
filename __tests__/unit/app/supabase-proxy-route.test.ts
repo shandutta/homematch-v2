@@ -1,6 +1,7 @@
 // Phase 0/1 closure: P0-supabase-proxy-off
 /** @jest-environment node */
 
+// Phase 0/1 closure: P0-supabase-proxy-off
 import { NextRequest } from 'next/server'
 
 const installFetchMock = () => {

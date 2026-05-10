@@ -34,12 +34,12 @@ preconditions for one.
 
 ## 1. Surfaces in scope (default hidden)
 
-| Surface | Gate seam | Default behavior | Public/marketing exposure |
-| --- | --- | --- | --- |
-| `/dashboard/vibes-test` | `src/app/dashboard/vibes-test/layout.tsx` calls `requireInternalPreviewAccess()` | `notFound()` (HTTP 404) unless `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true` | None (also under `/dashboard` middleware, robots disallow) |
-| `/validation` | `src/app/validation/page.tsx` calls `requireInternalPreviewAccess()` | `notFound()` (HTTP 404) unless flag is set | None (also middleware-protected, robots disallow via `PROTECTED_PATH_PREFIXES`) |
-| `/demo/ads` | `src/app/demo/ads/page.tsx` calls `requireInternalPreviewAccess()` | `notFound()` (HTTP 404) unless flag is set | Page-level `robots: { index: false, follow: false }`; `/demo` excluded from sitemap and listed in robots disallow |
-| `/sponsor-mockups` | `src/app/sponsor-mockups/page.tsx` calls `requireInternalPreviewAccess()` | `notFound()` (HTTP 404) unless flag is set | Page-level `robots: { index: false, follow: false }`; excluded from sitemap and listed in robots disallow |
+| Surface                 | Gate seam                                                                        | Default behavior                                                        | Public/marketing exposure                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `/dashboard/vibes-test` | `src/app/dashboard/vibes-test/layout.tsx` calls `requireInternalPreviewAccess()` | `notFound()` (HTTP 404) unless `HOMEMATCH_ENABLE_INTERNAL_PREVIEW=true` | None (also under `/dashboard` middleware, robots disallow)                                                        |
+| `/validation`           | `src/app/validation/page.tsx` calls `requireInternalPreviewAccess()`             | `notFound()` (HTTP 404) unless flag is set                              | None (also middleware-protected, robots disallow via `PROTECTED_PATH_PREFIXES`)                                   |
+| `/demo/ads`             | `src/app/demo/ads/page.tsx` calls `requireInternalPreviewAccess()`               | `notFound()` (HTTP 404) unless flag is set                              | Page-level `robots: { index: false, follow: false }`; `/demo` excluded from sitemap and listed in robots disallow |
+| `/sponsor-mockups`      | `src/app/sponsor-mockups/page.tsx` calls `requireInternalPreviewAccess()`        | `notFound()` (HTTP 404) unless flag is set                              | Page-level `robots: { index: false, follow: false }`; excluded from sitemap and listed in robots disallow         |
 
 The gate helper itself is the single seam every surface depends on:
 

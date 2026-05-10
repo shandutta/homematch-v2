@@ -34,12 +34,12 @@ always `HELD — gate not opened`.
 
 ## 1. Capability map (what an operator needs)
 
-| # | Capability | One-line description |
-| - | --- | --- |
-| 1 | Ingest status | Did the latest Zillow ingest job succeed? How many rows? Last run? Errors? |
-| 2 | Bad listing triage | A queue for couples-disputed / clearly-broken listings with a take-action surface. |
-| 3 | Prompt / debug traces | Per-property record of the prompt, model, output, latency, and cost for vibes / neighborhood-vibes generations. |
-| 4 | Spend visibility | Aggregate $ spent on OpenRouter/OpenAI/Zillow over a window, with per-route attribution. |
+| #   | Capability            | One-line description                                                                                            |
+| --- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1   | Ingest status         | Did the latest Zillow ingest job succeed? How many rows? Last run? Errors?                                      |
+| 2   | Bad listing triage    | A queue for couples-disputed / clearly-broken listings with a take-action surface.                              |
+| 3   | Prompt / debug traces | Per-property record of the prompt, model, output, latency, and cost for vibes / neighborhood-vibes generations. |
+| 4   | Spend visibility      | Aggregate $ spent on OpenRouter/OpenAI/Zillow over a window, with per-route attribution.                        |
 
 These four are the minimum operator surface to run the product without
 hand-querying Supabase or grepping logs. They are **not** present today.
@@ -67,7 +67,7 @@ Observations (held, not asserted as bugs):
   the gate in front of them is **rate-limit-only**, not an admin identity
   check. Whether that is acceptable is itself a held P1 decision (already
   tracked elsewhere in the P1 decision register; not re-litigated here).
-- There is **no `src/app/admin/**`** route group — i.e., no operator UI
+- There is **no `src/app/admin/**`\*\* route group — i.e., no operator UI
   pages exist. Admin functionality today is API-only.
 - No `/api/admin/spend`, `/api/admin/triage`, or `/api/admin/traces` route
   exists. Spend, triage, and traces are entirely absent from the admin
@@ -75,14 +75,14 @@ Observations (held, not asserted as bugs):
 
 ### 2.2 Data we already capture (raw signal, no surface)
 
-| Signal | Where | Surfaced in admin? |
-| --- | --- | --- |
-| `property_vibes.generation_cost_usd` | `types/database.ts` schema | No |
-| `neighborhood_vibes.generation_cost_usd` | `types/database.ts` schema | No |
-| Per-batch `totalCostUsd` log line | `src/lib/services/vibes/vibes-service.ts:691` | No (stdout only) |
-| Disputed properties (couple-flagged) | `src/app/api/couples/disputed/route.ts`, `src/components/couples/Disputed*.tsx` | No (couples-scoped, not operator-scoped) |
-| Zillow ingest run results | `src/lib/ingestion/zillow.ts` (return value of `ingestZillowLocations`) | No (returned from API, never persisted in a queryable run-history table) |
-| Prompt strings | `src/lib/services/vibes/prompts.ts`, `src/lib/services/neighborhood-vibes/prompts.ts` | No (static in code; per-call rendered prompt is not stored) |
+| Signal                                   | Where                                                                                 | Surfaced in admin?                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `property_vibes.generation_cost_usd`     | `types/database.ts` schema                                                            | No                                                                       |
+| `neighborhood_vibes.generation_cost_usd` | `types/database.ts` schema                                                            | No                                                                       |
+| Per-batch `totalCostUsd` log line        | `src/lib/services/vibes/vibes-service.ts:691`                                         | No (stdout only)                                                         |
+| Disputed properties (couple-flagged)     | `src/app/api/couples/disputed/route.ts`, `src/components/couples/Disputed*.tsx`       | No (couples-scoped, not operator-scoped)                                 |
+| Zillow ingest run results                | `src/lib/ingestion/zillow.ts` (return value of `ingestZillowLocations`)               | No (returned from API, never persisted in a queryable run-history table) |
+| Prompt strings                           | `src/lib/services/vibes/prompts.ts`, `src/lib/services/neighborhood-vibes/prompts.ts` | No (static in code; per-call rendered prompt is not stored)              |
 
 The recurring pattern is: the **raw signal exists or is reachable, but no
 operator-readable surface (table, page, or aggregated endpoint) consumes it**.
@@ -94,43 +94,43 @@ held, and the gate that would have to open before any work can start.
 
 ### 3.1 Ingest status
 
-| Field | Value |
-| --- | --- |
-| What's missing | A persisted `ingest_runs` (or equivalent) table + read-only operator view: `started_at`, `finished_at`, `locations`, `succeeded`, `failed`, `error_summary`. |
-| Current substitute | Operator must invoke `/api/admin/ingest/zillow` and read the response body in-flight; nothing is persisted for later inspection. |
-| Why held | (a) No P1 decision yet on whether ingest history persists in app DB or in a logging sink. (b) Implementing it requires a migration, which is gated by the broader migration freeze tracked in the P0/P1 blocker evidence index. |
-| Future gate to open | "Phase 1 ingest observability" — depends on migration freeze lifting and on a decision about run-history retention. |
-| Closure | HELD — gate not opened. |
+| Field               | Value                                                                                                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What's missing      | A persisted `ingest_runs` (or equivalent) table + read-only operator view: `started_at`, `finished_at`, `locations`, `succeeded`, `failed`, `error_summary`.                                                                    |
+| Current substitute  | Operator must invoke `/api/admin/ingest/zillow` and read the response body in-flight; nothing is persisted for later inspection.                                                                                                |
+| Why held            | (a) No P1 decision yet on whether ingest history persists in app DB or in a logging sink. (b) Implementing it requires a migration, which is gated by the broader migration freeze tracked in the P0/P1 blocker evidence index. |
+| Future gate to open | "Phase 1 ingest observability" — depends on migration freeze lifting and on a decision about run-history retention.                                                                                                             |
+| Closure             | HELD — gate not opened.                                                                                                                                                                                                         |
 
 ### 3.2 Bad listing triage
 
-| Field | Value |
-| --- | --- |
-| What's missing | An operator-scoped triage queue that surfaces listings flagged as "bad" (couple-disputed, ingest-malformed, vibes-generation-failed) with a take-action affordance (suppress / re-ingest / dismiss). |
-| Current substitute | `couples/disputed/*` exists at the **couple** level only. There is no operator aggregation across couples, and no surface for ingest-malformed or vibes-failed listings at all. |
-| Why held | (a) Definition of "bad listing" is not a decided product surface — couple-disputed and ingest-malformed are different signals with different action sets. (b) Admin auth gating (3.0 above) needs to be decided before any triage write surface can be built. |
-| Future gate to open | "P1 operator triage surface" — depends on admin identity decision + a product decision on which signals merge into one queue vs. stay separate. |
-| Closure | HELD — gate not opened. |
+| Field               | Value                                                                                                                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What's missing      | An operator-scoped triage queue that surfaces listings flagged as "bad" (couple-disputed, ingest-malformed, vibes-generation-failed) with a take-action affordance (suppress / re-ingest / dismiss).                                                          |
+| Current substitute  | `couples/disputed/*` exists at the **couple** level only. There is no operator aggregation across couples, and no surface for ingest-malformed or vibes-failed listings at all.                                                                               |
+| Why held            | (a) Definition of "bad listing" is not a decided product surface — couple-disputed and ingest-malformed are different signals with different action sets. (b) Admin auth gating (3.0 above) needs to be decided before any triage write surface can be built. |
+| Future gate to open | "P1 operator triage surface" — depends on admin identity decision + a product decision on which signals merge into one queue vs. stay separate.                                                                                                               |
+| Closure             | HELD — gate not opened.                                                                                                                                                                                                                                       |
 
 ### 3.3 Prompt / debug traces
 
-| Field | Value |
-| --- | --- |
-| What's missing | Per-generation record of: rendered prompt (not just the static template), model id, input data hash, raw output, latency ms, cost usd, and which admin route invoked it. Reachable by `property_id` and `neighborhood_id`. |
-| Current substitute | `property_vibes` / `neighborhood_vibes` rows store `generation_cost_usd` and `input_data` but do not store the **rendered** prompt or the raw model response. Per-batch totals are `console.log`-only (`vibes-service.ts:691`). |
-| Why held | (a) Storing rendered prompts may include user-derived address strings — privacy review is gated separately. (b) Cost of additional row-per-call storage is non-trivial and needs a retention decision. (c) No P1 decision yet on whether traces live in app DB, an external observability sink, or a structured log shipper. |
-| Future gate to open | "Prompt trace store" — depends on privacy review of stored prompt content + retention decision. |
-| Closure | HELD — gate not opened. |
+| Field               | Value                                                                                                                                                                                                                                                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What's missing      | Per-generation record of: rendered prompt (not just the static template), model id, input data hash, raw output, latency ms, cost usd, and which admin route invoked it. Reachable by `property_id` and `neighborhood_id`.                                                                                                   |
+| Current substitute  | `property_vibes` / `neighborhood_vibes` rows store `generation_cost_usd` and `input_data` but do not store the **rendered** prompt or the raw model response. Per-batch totals are `console.log`-only (`vibes-service.ts:691`).                                                                                              |
+| Why held            | (a) Storing rendered prompts may include user-derived address strings — privacy review is gated separately. (b) Cost of additional row-per-call storage is non-trivial and needs a retention decision. (c) No P1 decision yet on whether traces live in app DB, an external observability sink, or a structured log shipper. |
+| Future gate to open | "Prompt trace store" — depends on privacy review of stored prompt content + retention decision.                                                                                                                                                                                                                              |
+| Closure             | HELD — gate not opened.                                                                                                                                                                                                                                                                                                      |
 
 ### 3.4 Spend visibility
 
-| Field | Value |
-| --- | --- |
-| What's missing | An aggregated read-only view: total $ spent over `[window]`, broken down by `(provider, route, day)`. Bonus: a soft-cap alert threshold. |
-| Current substitute | Per-row `generation_cost_usd` exists in `property_vibes` and `neighborhood_vibes`, but nothing aggregates them. Zillow API spend is **not captured anywhere** — there is no per-call cost field on the ingest path. |
-| Why held | (a) Zillow per-call cost is a constant negotiated with the provider; a decision is needed on whether to model it as a config constant or pull from billing API. (b) Aggregation surface depends on the same admin-identity decision as 3.2. (c) Soft-cap alerting requires a decision on the alerting channel (already deferred per P1 decision register). |
-| Future gate to open | "P1 spend dashboard" — depends on admin identity + Zillow cost-model decision + alerting channel decision. |
-| Closure | HELD — gate not opened. |
+| Field               | Value                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What's missing      | An aggregated read-only view: total $ spent over `[window]`, broken down by `(provider, route, day)`. Bonus: a soft-cap alert threshold.                                                                                                                                                                                                                   |
+| Current substitute  | Per-row `generation_cost_usd` exists in `property_vibes` and `neighborhood_vibes`, but nothing aggregates them. Zillow API spend is **not captured anywhere** — there is no per-call cost field on the ingest path.                                                                                                                                        |
+| Why held            | (a) Zillow per-call cost is a constant negotiated with the provider; a decision is needed on whether to model it as a config constant or pull from billing API. (b) Aggregation surface depends on the same admin-identity decision as 3.2. (c) Soft-cap alerting requires a decision on the alerting channel (already deferred per P1 decision register). |
+| Future gate to open | "P1 spend dashboard" — depends on admin identity + Zillow cost-model decision + alerting channel decision.                                                                                                                                                                                                                                                 |
+| Closure             | HELD — gate not opened.                                                                                                                                                                                                                                                                                                                                    |
 
 ## 4. Cross-gap dependencies (read-only)
 

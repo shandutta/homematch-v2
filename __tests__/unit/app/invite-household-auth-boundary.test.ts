@@ -12,6 +12,7 @@
  */
 // Phase 0/1 closure: P0-strict-anon-protected
 
+// Phase 0/1 closure: P0-strict-anon-protected
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative, sep } from 'path'
 

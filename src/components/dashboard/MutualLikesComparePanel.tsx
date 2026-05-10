@@ -35,7 +35,7 @@ const formatNumber = (value?: number, suffix = '') =>
   typeof value === 'number' ? `${value.toLocaleString()}${suffix}` : '—'
 
 const RowLabel = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-hm-stone-500 text-xs uppercase tracking-wide">
+  <div className="text-hm-stone-500 text-xs tracking-wide uppercase">
     {children}
   </div>
 )
@@ -51,7 +51,8 @@ const valueClass = (
   if (filtered.length < 2 || typeof current !== 'number') {
     return 'text-hm-stone-100'
   }
-  const target = prefer === 'low' ? Math.min(...filtered) : Math.max(...filtered)
+  const target =
+    prefer === 'low' ? Math.min(...filtered) : Math.max(...filtered)
   return current === target
     ? 'text-couples-primary font-semibold'
     : 'text-hm-stone-100'
@@ -140,7 +141,7 @@ export function MutualLikesComparePanel({
                   aria-label={`Remove ${
                     like.property?.address || 'property'
                   } from comparison`}
-                  className="text-hm-stone-400 hover:bg-white/5 hover:text-white rounded-md p-1 transition-colors"
+                  className="text-hm-stone-400 rounded-md p-1 transition-colors hover:bg-white/5 hover:text-white"
                   onClick={() => onRemove(like.property_id)}
                   data-testid={`compare-remove-${like.property_id}`}
                 >
@@ -151,20 +152,32 @@ export function MutualLikesComparePanel({
               <div className="space-y-2 pt-1">
                 <div>
                   <RowLabel>Price</RowLabel>
-                  <div className={valueClass(prices, like.property?.price, 'low')}>
+                  <div
+                    className={valueClass(prices, like.property?.price, 'low')}
+                  >
                     {formatPrice(like.property?.price)}
                   </div>
                 </div>
                 <div>
                   <RowLabel>Beds</RowLabel>
-                  <div className={valueClass(beds, like.property?.bedrooms, 'high')}>
+                  <div
+                    className={valueClass(
+                      beds,
+                      like.property?.bedrooms,
+                      'high'
+                    )}
+                  >
                     {formatNumber(like.property?.bedrooms)}
                   </div>
                 </div>
                 <div>
                   <RowLabel>Baths</RowLabel>
                   <div
-                    className={valueClass(baths, like.property?.bathrooms, 'high')}
+                    className={valueClass(
+                      baths,
+                      like.property?.bathrooms,
+                      'high'
+                    )}
                   >
                     {formatNumber(like.property?.bathrooms)}
                   </div>
@@ -172,7 +185,11 @@ export function MutualLikesComparePanel({
                 <div>
                   <RowLabel>Sqft</RowLabel>
                   <div
-                    className={valueClass(sqfts, like.property?.square_feet, 'high')}
+                    className={valueClass(
+                      sqfts,
+                      like.property?.square_feet,
+                      'high'
+                    )}
                   >
                     {formatNumber(like.property?.square_feet)}
                   </div>

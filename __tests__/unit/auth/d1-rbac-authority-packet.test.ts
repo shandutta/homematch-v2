@@ -2,6 +2,8 @@
 import { readFileSync } from 'fs'
 import * as path from 'path'
 
+// Phase 0/1 closure: D1-service-role-rbac
+
 const readRepoFile = (relativePath: string) =>
   readFileSync(path.join(process.cwd(), relativePath), 'utf8')
 

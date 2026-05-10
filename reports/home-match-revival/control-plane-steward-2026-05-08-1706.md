@@ -30,12 +30,12 @@ Canonical gates checked:
 
 Restarted four external Claude Code tmux lanes, all in separate worktrees and all constrained to Phase 0/1 only:
 
-| Session | Task | Worktree | Purpose |
-| --- | --- | --- | --- |
-| `hm-rbac-1702` | `t_b22ddbd5` | `/home/shan/projects/homematch-v2.claude-workers/p1-rbac-static-164859` | D1 service-role RBAC repo-local closure using `admin_role_assignments` |
-| `hm-demo-1702` | `t_90d363ad` | `/home/shan/projects/homematch-v2.claude-workers/p1-internal-demo-close-164859` | Internal/demo launch-surface gating closure |
-| `hm-db-1702` | `t_e4d71eb4` | `/home/shan/projects/homematch-v2.claude-workers/p1-db-env-static-164859` | D6 DB/test-env static closure without Docker/live Supabase |
-| `hm-probe-1702` | `t_0ce9ff93` | `/home/shan/projects/homematch-v2.claude-workers/p0-noauth-probe-164859` | Local-only/no-secret no-auth probe evidence reconciliation |
+| Session         | Task         | Worktree                                                                        | Purpose                                                                |
+| --------------- | ------------ | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `hm-rbac-1702`  | `t_b22ddbd5` | `/home/shan/projects/homematch-v2.claude-workers/p1-rbac-static-164859`         | D1 service-role RBAC repo-local closure using `admin_role_assignments` |
+| `hm-demo-1702`  | `t_90d363ad` | `/home/shan/projects/homematch-v2.claude-workers/p1-internal-demo-close-164859` | Internal/demo launch-surface gating closure                            |
+| `hm-db-1702`    | `t_e4d71eb4` | `/home/shan/projects/homematch-v2.claude-workers/p1-db-env-static-164859`       | D6 DB/test-env static closure without Docker/live Supabase             |
+| `hm-probe-1702` | `t_0ce9ff93` | `/home/shan/projects/homematch-v2.claude-workers/p0-noauth-probe-164859`        | Local-only/no-secret no-auth probe evidence reconciliation             |
 
 Kanban comments were added to each source task with the tmux session name and log path:
 

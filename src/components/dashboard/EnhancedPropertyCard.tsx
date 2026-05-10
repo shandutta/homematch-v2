@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Camera,
+  Users,
 } from 'lucide-react'
 import { StorytellingDescription } from '@/components/features/storytelling/StorytellingDescription'
 
@@ -103,14 +104,14 @@ export function EnhancedPropertyCard({
 
   return (
     <Card
-      className="bg-card shadow-xl transition-all duration-300 hover:shadow-2xl mx-auto w-full max-w-sm overflow-hidden"
+      className="bg-card mx-auto w-full max-w-sm overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl"
       data-testid="property-card"
     >
       {/* Image Section */}
-      <div className="from-slate-100 to-slate-200 relative h-64 bg-gradient-to-br">
+      <div className="relative h-64 bg-gradient-to-br from-slate-100 to-slate-200">
         {isImageLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-full from-blue-400 to-amber-500 h-12 w-12 animate-pulse bg-gradient-to-r"></div>
+            <div className="h-12 w-12 animate-pulse rounded-full bg-gradient-to-r from-blue-400 to-amber-500"></div>
           </div>
         )}
 
@@ -126,12 +127,12 @@ export function EnhancedPropertyCard({
         />
 
         {/* Gradient Overlay */}
-        <div className="from-slate-900/60 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
 
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
           <Badge
-            className="bg-white/95 p-3 text-lg text-slate-900 shadow-lg font-bold backdrop-blur-sm"
+            className="bg-white/95 p-3 text-lg font-bold text-slate-900 shadow-lg backdrop-blur-sm"
             data-testid="property-price"
           >
             {formatPrice(property.price)}
@@ -152,12 +153,26 @@ export function EnhancedPropertyCard({
           </div>
         )}
 
+        {/* Mutual likes badge */}
+        {isMutualLike && (
+          <div className="absolute top-4 right-4">
+            <Badge
+              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg backdrop-blur-sm"
+              data-testid="mutual-like-badge"
+            >
+              <Heart className="mr-1 h-3 w-3 fill-current" />
+              <Users className="mr-1 h-3 w-3" />
+              Liked by both
+            </Badge>
+          </div>
+        )}
+
         {/* Image Navigation */}
         {validImages.length > 1 && (
           <>
             <button
               onClick={prevImage}
-              className="rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="absolute top-1/2 left-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Previous image"
               data-testid="previous-image-button"
             >
@@ -165,7 +180,7 @@ export function EnhancedPropertyCard({
             </button>
             <button
               onClick={nextImage}
-              className="rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+              className="absolute top-1/2 right-2 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] -translate-y-1/2 touch-manipulation items-center justify-center rounded-full bg-slate-900/60 text-white transition-all hover:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               aria-label="Next image"
               data-testid="next-image-button"
             >
@@ -174,7 +189,7 @@ export function EnhancedPropertyCard({
 
             {/* Image Counter */}
             <div
-              className="gap-1 rounded-md bg-slate-900/70 p-1 text-xs text-white absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center"
+              className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-md bg-slate-900/70 p-1 text-xs text-white"
               data-testid="image-counter"
             >
               <Camera className="h-3 w-3" />
@@ -198,10 +213,10 @@ export function EnhancedPropertyCard({
               >
                 <span
                   aria-hidden="true"
-                  className={`rounded-full transition-all block h-2 ${
+                  className={`block h-2 rounded-full transition-all ${
                     index === currentImageIndex
-                      ? 'bg-white w-4'
-                      : 'bg-white/50 hover:bg-white/75 w-2'
+                      ? 'w-4 bg-white'
+                      : 'w-2 bg-white/50 hover:bg-white/75'
                   }`}
                 />
               </button>
@@ -211,11 +226,11 @@ export function EnhancedPropertyCard({
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="space-y-4 p-6">
         {/* Address */}
         <div>
           <h3
-            className="text-foreground text-xl mb-1 font-bold"
+            className="text-foreground mb-1 text-xl font-bold"
             data-testid="property-address"
           >
             {property.address}
@@ -233,7 +248,7 @@ export function EnhancedPropertyCard({
         </div>
 
         {/* Property Details */}
-        <div className="text-sm flex items-center justify-between">
+        <div className="flex items-center justify-between text-sm">
           <span className="font-medium" data-testid="property-beds-baths">
             {formatBedsBaths(property.bedrooms || 0, property.bathrooms || 0)}
           </span>
@@ -285,12 +300,12 @@ export function EnhancedPropertyCard({
 
         {/* Action Buttons */}
         {showActions && (
-          <div className="gap-3 mt-4 flex">
+          <div className="mt-4 flex gap-3">
             <Button
               variant="outline"
               size="lg"
               onClick={() => onDislike(property.id)}
-              className="border-red-300 bg-red-300/20 text-red-600 transition-all hover:border-red-500 hover:bg-red-300/30 flex-1 hover:scale-105"
+              className="flex-1 border-red-300 bg-red-300/20 text-red-600 transition-all hover:scale-105 hover:border-red-500 hover:bg-red-300/30"
               data-testid="pass-button"
             >
               <X className="mr-2 h-5 w-5" />
@@ -300,7 +315,7 @@ export function EnhancedPropertyCard({
             <Button
               size="lg"
               onClick={() => onLike(property.id)}
-              className="bg-green-500 transition-all hover:bg-green-600 flex-1 text-white hover:scale-105"
+              className="flex-1 bg-green-500 text-white transition-all hover:scale-105 hover:bg-green-600"
               data-testid="like-button"
             >
               <Heart className="mr-2 h-5 w-5" fill="currentColor" />

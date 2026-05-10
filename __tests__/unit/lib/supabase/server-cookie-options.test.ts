@@ -17,9 +17,10 @@ import {
   jest,
 } from '@jest/globals'
 
-const mockCookieSet = jest.fn<
-  (name: string, value: string, options: Record<string, unknown>) => void
->()
+const mockCookieSet =
+  jest.fn<
+    (name: string, value: string, options: Record<string, unknown>) => void
+  >()
 const mockCreateServerClient = jest.fn()
 
 jest.mock('@supabase/ssr', () => ({

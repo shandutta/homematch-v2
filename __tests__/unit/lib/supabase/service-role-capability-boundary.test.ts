@@ -3,6 +3,7 @@
  */
 // Phase 0/1 closure: D1-service-role-rbac
 
+// Phase 0/1 closure: D1-service-role-rbac
 import { describe, expect, test } from '@jest/globals'
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'
@@ -26,9 +27,7 @@ function collectSourceFiles(path: string): string[] {
 
   const stat = statSync(path)
   if (stat.isFile()) {
-    return sourceExtensions.has(path.slice(path.lastIndexOf('.')))
-      ? [path]
-      : []
+    return sourceExtensions.has(path.slice(path.lastIndexOf('.'))) ? [path] : []
   }
 
   return readdirSync(path).flatMap((entry) => {
@@ -74,9 +73,12 @@ describe('service-role capability boundary guard', () => {
           /import\s*(?:type\s*)?\{([^}]+)\}\s*from\s*'@\/lib\/supabase\/server'/g
         )
         for (const match of importMatches) {
-          const named = match[1]
-            .split(',')
-            .map((s) => s.trim().split(/\s+as\s+/)[0].trim())
+          const named = match[1].split(',').map((s) =>
+            s
+              .trim()
+              .split(/\s+as\s+/)[0]
+              .trim()
+          )
           if (named.includes('createServiceClient')) return true
         }
         return false
