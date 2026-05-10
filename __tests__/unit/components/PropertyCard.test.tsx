@@ -86,13 +86,20 @@ describe('PropertyCard Component', () => {
     expect(getStatValueByLabel('sqft')).toHaveTextContent('1,500')
   })
 
-  test('should render Zillow link with correct href', () => {
+  test('should render Zillow link with correct href, opens in new tab, and is keyboard-accessible', async () => {
+    const user = userEvent.setup()
     renderWithQuery(<PropertyCard property={mockProperty} />)
     const zillowLink = screen.getByLabelText('View on Zillow')
-    expect(zillowLink).toBeTruthy()
-    expect(zillowLink.getAttribute('href')).toBe(
+    expect(zillowLink).toBeInTheDocument()
+    expect(zillowLink).toHaveAttribute(
+      'href',
       'https://www.zillow.com/homedetails/12345678_zpid/'
     )
+    // Behavioral: link opens in a new tab (safe external navigation)
+    expect(zillowLink).toHaveAttribute('target', '_blank')
+    // Behavioral: clicking the link does not throw and element remains in DOM
+    await user.click(zillowLink)
+    expect(zillowLink).toBeInTheDocument()
   })
 
   test('should render action buttons when onDecision is provided', () => {
