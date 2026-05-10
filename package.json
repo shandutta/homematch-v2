@@ -37,6 +37,7 @@
     "test:e2e:ui-tests": "cross-env NEXT_PUBLIC_TEST_MODE=true node scripts/playwright-wrapper.js test",
     "test:e2e:smoke": "node scripts/playwright-wrapper.js test __tests__/e2e/smoke-min.spec.ts",
     "test:e2e:no-auth-accessibility": "playwright test --config=playwright.no-auth-accessibility.config.ts",
+    "test:e2e:tp0": "node scripts/run-tp0-playwright.js",
     "test:no-auth-live-probes": "node scripts/run-no-auth-live-probes.js",
     "test:e2e:auth-lifecycle:local": "node scripts/run-local-seeded-auth-lifecycle.js",
     "test:e2e:ui": "node scripts/playwright-wrapper.js test --ui",
