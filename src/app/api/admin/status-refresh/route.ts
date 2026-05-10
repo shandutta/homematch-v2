@@ -7,6 +7,7 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
+import type { TablesInsert } from '@/types/database'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -175,7 +176,7 @@ export async function POST(req: Request) {
         'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
       )
       .eq('is_active', true)
-      .order('last_verified_at', { ascending: true, nullsFirst: true })
+      .order('updated_at', { ascending: true, nullsFirst: true })
       .order('id', { ascending: true })
       .range(0, Math.min(batchSize, maxItems) - 1)
 
@@ -307,7 +308,7 @@ export async function POST(req: Request) {
           'id, zpid, address, city, state, zip_code, bedrooms, bathrooms, price, listing_status, is_active'
         )
         .eq('is_active', true)
-        .order('last_verified_at', { ascending: true, nullsFirst: true })
+        .order('updated_at', { ascending: true, nullsFirst: true })
         .order('id', { ascending: true })
         .range(offset, Math.min(offset + batchSize - 1, maxItems - 1))
 
@@ -355,7 +356,6 @@ export async function POST(req: Request) {
           .update({
             listing_status: group.listing_status,
             is_active: group.is_active,
-            last_verified_at: nowIso,
             updated_at: nowIso,
           })
           .in('id', group.ids)
@@ -376,13 +376,12 @@ export async function POST(req: Request) {
         const priceRows = priceUpdates.map((pu) => ({
           id: pu.id,
           price: pu.price,
-          last_verified_at: nowIso,
           updated_at: nowIso,
         }))
         const { error: priceErr } = await supabase
           .from('properties')
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .upsert(priceRows as any[])
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          .upsert(priceRows as unknown as TablesInsert<'properties'>[])
 
         if (priceErr) {
           console.error('[status-refresh] batch price upsert failed', {
