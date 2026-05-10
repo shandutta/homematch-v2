@@ -115,6 +115,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
       'Creates household notification rows that fan out to partner users.',
   },
   {
+    path: '/api/couples/property-reactions',
+    categories: ['safe-auth-read'],
+    rationale:
+      'Auth-gated DB read of household member reactions for a given property.',
+  },
+  {
     path: '/api/couples/stats',
     categories: ['safe-auth-read'],
     rationale: 'Auth-gated DB read of household statistics.',
@@ -133,6 +139,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
     path: '/api/interactions/reset',
     categories: ['destructive-auth'],
     rationale: 'Bulk-deletes the requester’s interactions; destructive.',
+  },
+  {
+    path: '/api/match',
+    categories: ['safe-auth-read'],
+    rationale:
+      'Auth-free LLM matcher; mock mode by default, no paid quota in default config.',
   },
   {
     path: '/api/maps/geocode',
