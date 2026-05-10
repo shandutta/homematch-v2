@@ -12,17 +12,36 @@ const HEALTH_URL = `http://127.0.0.1:${DEV_PORT}/api/health`
 
 let devServer: ChildProcess | null = null
 
+function findSearchRoots(): string[] {
+  const roots = [ROOT]
+  // When running from a git worktree, also search the main worktree for env files
+  // so credentials don't have to be duplicated into each worktree directory.
+  try {
+    const out = execSync('git worktree list --porcelain', { cwd: ROOT, encoding: 'utf8' })
+    for (const line of out.split('\n')) {
+      if (line.startsWith('worktree ')) {
+        const wt = line.slice('worktree '.length).trim()
+        if (wt !== ROOT && !roots.includes(wt)) roots.push(wt)
+      }
+    }
+  } catch { /* not a git repo or git unavailable */ }
+  return roots
+}
+
 function loadEnvFiles(): NodeJS.ProcessEnv {
   // Merge env files; earlier entries win (.env.test.local > .env.prod > .env.local)
+  // Search in this worktree first, then fallback to other worktrees (e.g. main).
   const candidates = ['.env.test.local', '.env.prod', '.env.local']
   const merged: NodeJS.ProcessEnv = {}
 
-  for (const file of candidates) {
-    const envPath = path.join(ROOT, file)
-    if (fs.existsSync(envPath)) {
-      const parsed = dotenv.parse(fs.readFileSync(envPath))
-      for (const [k, v] of Object.entries(parsed)) {
-        if (!(k in merged)) merged[k] = v
+  for (const searchRoot of findSearchRoots()) {
+    for (const file of candidates) {
+      const envPath = path.join(searchRoot, file)
+      if (fs.existsSync(envPath)) {
+        const parsed = dotenv.parse(fs.readFileSync(envPath))
+        for (const [k, v] of Object.entries(parsed)) {
+          if (!(k in merged)) merged[k] = v
+        }
       }
     }
   }
@@ -140,8 +159,22 @@ export async function setup(): Promise<void> {
   await waitForHealth(HEALTH_URL)
   console.log(`[globalSetup] Dev server ready at http://127.0.0.1:${DEV_PORT}`)
 
-  // Set TEST_API_URL so test workers inherit it (forks pool inherits parent env)
-  process.env.TEST_API_URL = `http://127.0.0.1:${DEV_PORT}`
+  // Propagate Supabase credentials + test env into the parent process so fork
+  // workers inherit them. vitest.setup.ts reads these from process.env directly.
+  const inherit: Array<[string, string]> = [
+    ['TEST_API_URL', `http://127.0.0.1:${DEV_PORT}`],
+    ['NEXT_PUBLIC_SUPABASE_URL', supabaseUrl],
+    ['SUPABASE_URL', supabaseUrl],
+    ['NEXT_PUBLIC_SUPABASE_ANON_KEY', supabaseAnonKey],
+    ['SUPABASE_ANON_KEY', supabaseAnonKey],
+    ['SUPABASE_SERVICE_ROLE_KEY', supabaseServiceRoleKey],
+    ['NODE_ENV', 'test'],
+    ['NEXT_PUBLIC_TEST_MODE', 'true'],
+    ['MARKETING_USE_SEED', 'true'],
+  ]
+  for (const [k, v] of inherit) {
+    if (v) process.env[k] = v
+  }
 }
 
 export async function teardown(): Promise<void> {
