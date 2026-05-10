@@ -3,6 +3,7 @@ import path from 'path'
 
 export default defineConfig({
   test: {
+    globalSetup: ['./vitest.globalSetup.ts'],
     include: [
       '__tests__/integration/**/*.{test,spec}.{js,jsx,ts,tsx}',
       '__tests__/accessibility/**/*.{test,spec}.{js,jsx,ts,tsx}',
