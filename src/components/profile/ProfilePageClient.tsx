@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, Household } from '@/types/database'
+import { UserServiceClient } from '@/lib/services/users-client'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from './ProfileForm'
@@ -21,12 +23,17 @@ import {
   Sparkles,
   Copy,
   Check,
+  Palette,
 } from 'lucide-react'
 import Link from 'next/link'
 import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
+import {
+  TasteProfileCollector,
+  type TasteProfileValues,
+} from '@/components/features/profile/TasteProfileCollector'
 
 interface ProfilePageClientProps {
   user: User
@@ -95,6 +102,63 @@ export function ProfilePageClient({
 }: ProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState('profile')
   const [codeCopied, setCodeCopied] = useState(false)
+  const [profileState, setProfileState] = useState(profile)
+
+  const handleProfileUpdate = (updated: UserProfile) => {
+    setProfileState(updated)
+  }
+
+  const handleTasteProfileSave = useCallback(
+    async (values: TasteProfileValues) => {
+      const existingPrefs =
+        typeof profileState.preferences === 'object' &&
+        profileState.preferences !== null
+          ? (profileState.preferences as Record<string, unknown>)
+          : {}
+      const updatedPreferences = {
+        ...existingPrefs,
+        tasteProfile: {
+          aesthetics: values.aesthetics,
+          lifestyle: values.lifestyle,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+      try {
+        const updated = await UserServiceClient.updateProfile(user.id, {
+          preferences: updatedPreferences,
+        })
+        setProfileState((prev) => ({ ...prev, preferences: updated.preferences }))
+        toast.success('Taste profile saved')
+      } catch {
+        toast.error('Failed to save taste profile')
+        throw new Error('Save failed')
+      }
+    },
+    [profileState.preferences, user.id]
+  )
+
+  const tasteProfileInitialValues: TasteProfileValues | undefined =
+    (() => {
+      const prefs = profileState.preferences
+      if (typeof prefs !== 'object' || prefs === null) return undefined
+      const raw = (prefs as Record<string, unknown>).tasteProfile
+      if (typeof raw !== 'object' || raw === null) return undefined
+      const tp = raw as Record<string, unknown>
+      const aesthetics = Array.isArray(tp.aesthetics)
+        ? (tp.aesthetics as unknown[]).filter(
+            (a): a is string => typeof a === 'string'
+          )
+        : []
+      const ls =
+        typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+          ? (tp.lifestyle as Record<string, unknown>)
+          : {}
+      const lifestyle: Record<string, number> = {}
+      for (const [k, v] of Object.entries(ls)) {
+        if (typeof v === 'number') lifestyle[k] = v
+      }
+      return { aesthetics, lifestyle }
+    })()
 
   const preferenceRecord = isRecord(profile.preferences)
     ? profile.preferences
@@ -435,6 +499,7 @@ export function ProfilePageClient({
                   { value: 'profile', label: 'Profile', icon: UserIcon },
                   { value: 'household', label: 'Household', icon: Home },
                   { value: 'activity', label: 'Activity', icon: Activity },
+                  { value: 'taste', label: 'Taste', icon: Palette },
                 ].map((tab) => {
                   const Icon = tab.icon
                   return (
@@ -511,6 +576,39 @@ export function ProfilePageClient({
                         transition={{ duration: 0.3 }}
                       >
                         <ActivityStats summary={activitySummary} />
+                      </m.div>
+                    </TabsContent>
+                  )}
+
+                  {activeTab === 'taste' && (
+                    <TabsContent
+                      key="taste"
+                      value="taste"
+                      className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                    >
+                      <m.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="card-luxury overflow-hidden p-6 sm:p-8"
+                      >
+                        <div className="mb-6 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                            <Palette className="text-hm-stone-400 h-5 w-5" />
+                          </div>
+                          <div>
+                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                              Taste Profile
+                            </h2>
+                            <p className="text-hm-stone-500 text-sm">
+                              Aesthetic preferences and lifestyle priorities
+                            </p>
+                          </div>
+                        </div>
+                        <TasteProfileCollector
+                          onSave={handleTasteProfileSave}
+                          initialValues={tasteProfileInitialValues}
+                        />
                       </m.div>
                     </TabsContent>
                   )}
