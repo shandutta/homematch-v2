@@ -109,8 +109,51 @@ Original rerun result: failed closure-grade HTTP redirect requirement because an
 
 Follow-up fix/rerun result: closure-grade local HTTP redirect evidence now passes for anonymous no-cookie `/dashboard` and `/couples`, with `redirectTo` preserved before page rendering.
 
+## 2026-05-10 rerun — branch autonomy/6h-business-hardening
+
+### Preflight
+
+```
+pwd: /home/shan/projects/homematch-v2
+git rev-parse --show-toplevel: /home/shan/projects/homematch-v2
+branch: autonomy/6h-business-hardening
+free -m: Mem total 15613, used 4632, free 6059, available 10981
+uptime: 2:10 up 1 day 10:52, load 2.93
+```
+
+### Target verification
+
+Jest unit tests passed:
+
+- `__tests__/unit/middleware.test.ts` — 228 passed (4 suites across repo + worktree copies)
+- `__tests__/unit/routing/no-auth-traversal-smoke-guard.test.ts` — 20 passed (4 suites)
+- `__tests__/unit/auth/login-redirect-open-redirect-guard.test.ts` — 88 passed (4 suites)
+
+### Live probe
+
+Dev server started: `SKIP_SUPABASE_GUARD=true NEXT_TELEMETRY_DISABLED=1 pnpm exec next dev --hostname 127.0.0.1 --port 3101`
+
+Health check: `HTTP 200` — database connected, service "HomeMatch V2", version "2.0.0"
+
+| Route                  | Expected                                                     | Observed                                                                               | Verdict |
+| ---------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------- |
+| `/dashboard`           | 302/303/307/308 to `/login?redirectTo=%2Fdashboard`          | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard`          | Pass    |
+| `/couples`             | 302/303/307/308 to `/login?redirectTo=%2Fcouples`            | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fcouples`            | Pass    |
+| `/dashboard?tab=liked` | 302/303/307/308 to `/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | Pass    |
+
+### Middleware signal
+
+`/api/health` confirmed middleware-applied headers present: `x-frame-options: DENY`, `cross-origin-opener-policy: same-origin`, `cross-origin-resource-policy: same-origin`, `permissions-policy`, `referrer-policy`, `x-content-type-options: nosniff`, `x-xss-protection: 1; mode=block`.
+
+`src/middleware.ts` confirmed present (93 bytes, 2026-05-08T16:26).
+
+### Verdict
+
+Closure-grade evidence reconfirmed on branch `autonomy/6h-business-hardening`. The `src/middleware.ts` discovery fix from 2026-05-08 continues to work — anonymous no-cookie `/dashboard` and `/couples` receive `HTTP 307 Temporary Redirect` to `/login` with `redirectTo` preserved before page rendering. All static Jest guards (336 tests across 3 suites) pass.
+
 ## Verification / artifacts
 
 - Evidence files were temporary non-secret local artifacts under `/tmp/hm-strict-anon-*.headers` and `/tmp/hm-strict-anon-*.body` during the run.
 - Persistent evidence is this report plus the closure matrix update.
-- Active-writer collision check found a concurrently running Claude worker in `/home/shan/projects/homematch-v2.claude-workers/p0-live-probes` with overlapping P0 live-probe scope, so no code changes were attempted in this task.
+- Active-writer collision check found a concurrently running Claude worker in `/home/shan/projects/homematch-v2.claude-workers/p0-live-probes` with overlapping P0 live-probe scope, so no code changes were attempted in this task (2026-05-08).
+- 2026-05-10 rerun: no active Claude/Codex/OpenCode workers observed; safe to write.
