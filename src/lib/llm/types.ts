@@ -39,6 +39,7 @@ export const matchCandidatePropertySchema = z.object({
   amenities: z.array(z.string()).nullable(),
   year_built: z.number().min(1800).nullable(),
   description: z.string().max(4000).nullable(),
+  walk_score: z.number().min(0).max(100).nullable().optional(),
 })
 
 export const matchRequestSchema = z.object({

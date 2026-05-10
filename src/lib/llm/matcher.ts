@@ -38,6 +38,56 @@ function isLLMEnabled(opts: MatcherOptions): boolean {
 }
 
 /**
+ * Compute taste-aware heuristic bonus using weighted preference matches.
+ *
+ * Formula (raw points, later normalised to the [0, 1] score space):
+ *   bedroomMatch  × 10
+ *   bathroomMatch × 5
+ *   priceMatch    × 15
+ *   walkScore     × 2   (walk_score is 0-100, contributes up to 200 raw pts)
+ *
+ * The raw point total is divided by MAX_TASTE_POINTS so it yields a
+ * fractional bonus in [0, 0.5] that is added to the base score before
+ * final clamping.
+ */
+const MAX_TASTE_POINTS = 430 // 10 + 5 + 15 + 200 (max walk) + buffer
+
+export function computeTasteBonus(
+  prefs: MatchPreferences,
+  c: MatchCandidateProperty
+): number {
+  let points = 0
+
+  // Bedroom taste weight: +10 if candidate meets or exceeds min bedrooms
+  if (
+    typeof prefs.bedrooms_min === 'number' &&
+    c.bedrooms >= prefs.bedrooms_min
+  ) {
+    points += 10
+  }
+
+  // Bathroom taste weight: +5 if candidate meets or exceeds min bathrooms
+  if (
+    typeof prefs.bathrooms_min === 'number' &&
+    c.bathrooms >= prefs.bathrooms_min
+  ) {
+    points += 5
+  }
+
+  // Price taste weight: +15 if price is within the specified max budget
+  if (typeof prefs.price_max === 'number' && c.price <= prefs.price_max) {
+    points += 15
+  }
+
+  // Walk score taste weight: +2 per point of walk_score (0-100 → 0-200 raw pts)
+  if (typeof c.walk_score === 'number' && c.walk_score !== null) {
+    points += c.walk_score * 2
+  }
+
+  return points / MAX_TASTE_POINTS
+}
+
+/**
  * Heuristic ranker used when LLM mode is disabled (the default). Produces
  * the same shape as the LLM path so callers can swap modes without changes.
  */
@@ -196,6 +246,16 @@ function scoreCandidate(
         field: 'amenities',
         evidence: matched.join(', '),
       })
+    }
+  }
+
+  // Taste-aware heuristic bonus: weighted preference matches
+  const tasteBonus = computeTasteBonus(prefs, c)
+  if (tasteBonus > 0) {
+    score += tasteBonus
+    if (typeof c.walk_score === 'number' && c.walk_score !== null) {
+      hits.push(`walk score ${c.walk_score}`)
+      citations.push({ field: 'description', evidence: `walk_score:${c.walk_score}` })
     }
   }
 
