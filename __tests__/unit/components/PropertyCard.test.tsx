@@ -102,13 +102,22 @@ describe('PropertyCard Component', () => {
     expect(zillowLink).toBeInTheDocument()
   })
 
-  test('should render action buttons when onDecision is provided', () => {
+  test('should render action buttons when onDecision is provided and both trigger decisions', async () => {
     const onDecision = jest.fn()
+    const user = userEvent.setup()
     renderWithQuery(
       <PropertyCard property={mockProperty} onDecision={onDecision} />
     )
-    expect(screen.getByLabelText('Pass property')).toBeDefined()
-    expect(screen.getByLabelText('Like property')).toBeDefined()
+    const passBtn = screen.getByLabelText('Pass property')
+    const likeBtn = screen.getByLabelText('Like property')
+    expect(passBtn).toBeInTheDocument()
+    expect(likeBtn).toBeInTheDocument()
+    // Behavioral: each button triggers onDecision with the correct interaction type
+    await user.click(passBtn)
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'skip')
+    await user.click(likeBtn)
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
+    expect(onDecision).toHaveBeenCalledTimes(2)
   })
 
   test('should not render action buttons when onDecision is not provided', () => {
