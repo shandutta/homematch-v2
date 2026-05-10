@@ -7,6 +7,7 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
+import type { TablesInsert } from '@/types/database'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -380,7 +381,7 @@ export async function POST(req: Request) {
         const { error: priceErr } = await supabase
           .from('properties')
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          .upsert(priceRows as Record<string, unknown>[])
+          .upsert(priceRows as unknown as TablesInsert<'properties'>[])
 
         if (priceErr) {
           console.error('[status-refresh] batch price upsert failed', {

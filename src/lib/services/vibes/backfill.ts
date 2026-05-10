@@ -8,6 +8,7 @@ import {
 import { propertySchema, type Property } from '@/lib/schemas/property'
 import { VibesService, type BatchGenerationResult } from '@/lib/services/vibes'
 import type { AppDatabase } from '@/types/app-database'
+import type { TablesInsert } from '@/types/database'
 
 type Logger = {
   log: (...args: unknown[]) => void
@@ -405,7 +406,7 @@ export async function backfillVibes(
         const { error: upsertErr } = await deps.supabase
           .from('properties')
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          .upsert(allRows as Record<string, unknown>[])
+          .upsert(allRows as unknown as TablesInsert<'properties'>[])
 
         if (upsertErr?.code === '42703') {
           // Migration not applied; fall back to marker-only batch + per-row images
@@ -422,7 +423,7 @@ export async function backfillVibes(
             const { error: markerErr } = await deps.supabase
               .from('properties')
               // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              .upsert(markerRows as Record<string, unknown>[])
+              .upsert(markerRows as unknown as TablesInsert<'properties'>[])
             if (markerErr) {
               logger.warn(
                 `[backfill-vibes] [images] Batch marker-only upsert failed: ${markerErr.message}`
