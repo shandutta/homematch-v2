@@ -40,6 +40,40 @@ const getSafeRedirectPath = (value: string | null) => {
   return decoded
 }
 
+/**
+ * Convert a safe redirectTo path into a human-readable destination phrase.
+ * Powers the contextual login banner ("Sign in to continue to …").
+ * Returns `null` if the path is missing or unmappable so callers can fall
+ * back to a generic prompt.
+ */
+const humanizeRedirectPath = (path: string | null): string | null => {
+  if (!path) return null
+
+  let pathname = path
+  try {
+    pathname = new URL(path, 'http://localhost').pathname
+  } catch {
+    return null
+  }
+
+  if (pathname === '/dashboard') return 'your dashboard'
+  if (pathname === '/profile') return 'your profile'
+  if (pathname === '/couples') return 'your household'
+  if (pathname === '/household/create') return 'create your household'
+  if (pathname === '/household/join') return 'join your household'
+  if (
+    pathname.startsWith('/properties/') &&
+    pathname.length > '/properties/'.length
+  ) {
+    return 'this property'
+  }
+  if (pathname.startsWith('/invite/') && pathname.length > '/invite/'.length) {
+    return 'accept your invite'
+  }
+
+  return null
+}
+
 const isJsdomEnvironment = () => {
   if (typeof window === 'undefined') return false
   const userAgent = window.navigator?.userAgent?.toLowerCase() || ''
@@ -77,6 +111,18 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { client: supabase, error: configError } = useSupabaseClient()
+
+  // Compute the contextual sign-in prompt from the redirectTo query param so
+  // anonymous users redirected from protected routes know *why* they're here.
+  const rawRedirect =
+    getSafeRedirectPath(searchParams?.get('redirectTo') ?? null) ||
+    getSafeRedirectPath(searchParams?.get('redirect') ?? null)
+  const humanizedDestination = humanizeRedirectPath(rawRedirect)
+  const contextualPrompt = humanizedDestination
+    ? `Sign in to continue to ${humanizedDestination}`
+    : rawRedirect
+      ? 'Sign in to continue'
+      : null
   const isTestMode =
     process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
     process.env.NODE_ENV === 'test' ||
@@ -220,6 +266,14 @@ export function LoginForm() {
       data-testid="login-form"
     >
       <CardHeader>
+        {contextualPrompt && (
+          <p
+            className="text-muted-foreground text-center text-sm"
+            data-testid="login-contextual-prompt"
+          >
+            {contextualPrompt}
+          </p>
+        )}
         <CardTitle className="text-center text-2xl font-bold">
           {CouplesMessages.welcome.returning}
         </CardTitle>
