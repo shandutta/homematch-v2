@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
   const [hasScrolled, setHasScrolled] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   // Track scroll position for state-based styling
   useEffect(() => {
@@ -44,10 +45,14 @@ export function Header() {
         }`}
       >
         {/* Logo with entrance animation */}
-        <m.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.5, delay: 0.1 }
+          }
         >
           <Link
             href="/"
@@ -55,8 +60,8 @@ export function Header() {
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >
-            <m.div
-              whileHover={{ scale: 1.02 }}
+            <motion.div
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <HomeMatchLogo size="sm" textClassName="text-white" />
@@ -67,8 +72,8 @@ export function Header() {
         {/* Nav links with staggered entrance */}
         <m.div
           className="flex items-center gap-3 sm:gap-6"
-          initial="hidden"
-          animate="visible"
+          initial={shouldReduceMotion ? false : 'hidden'}
+          animate={shouldReduceMotion ? undefined : 'visible'}
           variants={{
             hidden: {},
             visible: {

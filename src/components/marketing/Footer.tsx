@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 
 // Animated link with hover underline
@@ -35,6 +35,7 @@ function SocialIcon({
   children: React.ReactNode
 }) {
   const [isHovered, setIsHovered] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   return (
     <m.a
@@ -45,14 +46,14 @@ function SocialIcon({
       rel="noopener noreferrer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
     >
       {/* Glow effect */}
       <m.div
         className="absolute inset-0 rounded-lg"
         initial={{ opacity: 0 }}
-        animate={{ opacity: isHovered ? 1 : 0 }}
+        animate={{ opacity: isHovered && !shouldReduceMotion ? 1 : 0 }}
         style={{
           background:
             'radial-gradient(circle at center, rgba(56,189,248,0.3), transparent 70%)',
@@ -73,11 +74,13 @@ function LinkColumn({
   links: { href: string; label: string }[]
   delay?: number
 }) {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <MotionDiv
       className="text-center lg:text-left"
-      initial="hidden"
-      whileInView="visible"
+      initial={shouldReduceMotion ? false : 'hidden'}
+      whileInView={shouldReduceMotion ? undefined : 'visible'}
       viewport={{ once: true }}
       variants={{
         hidden: {},
@@ -93,7 +96,9 @@ function LinkColumn({
         className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
         style={{ fontFamily: 'var(--font-heading)' }}
         variants={{
-          hidden: { opacity: 0, y: 10 },
+          hidden: shouldReduceMotion
+            ? { opacity: 1, y: 0 }
+            : { opacity: 0, y: 10 },
           visible: { opacity: 1, y: 0 },
         }}
       >
@@ -107,7 +112,9 @@ function LinkColumn({
           <m.li
             key={link.href}
             variants={{
-              hidden: { opacity: 0, x: -10 },
+              hidden: shouldReduceMotion
+                ? { opacity: 1, x: 0 }
+                : { opacity: 0, x: -10 },
               visible: { opacity: 1, x: 0 },
             }}
           >
@@ -120,6 +127,8 @@ function LinkColumn({
 }
 
 export function Footer() {
+  const shouldReduceMotion = useReducedMotion()
+
   const productLinks = [
     { href: '/signup', label: 'Get Started' },
     { href: '/login', label: 'Sign In' },
@@ -145,15 +154,19 @@ export function Footer() {
           {/* Brand */}
           <MotionDiv
             className="col-span-2 mb-6 flex flex-col items-center lg:col-span-1 lg:items-start"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+            whileInView={
+              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
+            }
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={
+              shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }
+            }
           >
             <m.h3
               className="text-token-3xl text-center font-bold lg:text-left"
               style={{ fontFamily: 'var(--font-heading)' }}
-              whileHover={{ scale: 1.02 }}
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               HomeMatch
@@ -200,10 +213,14 @@ export function Footer() {
 
         <MotionDiv
           className="mt-6 border-t border-white/10 pt-4 text-center sm:mt-8 sm:pt-6"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.5, delay: 0.4 }
+          }
         >
           <p
             className="text-token-xs sm:text-token-sm flex items-center justify-center gap-1 text-white/70"
