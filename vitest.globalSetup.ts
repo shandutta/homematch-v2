@@ -135,11 +135,28 @@ export async function setup(): Promise<void> {
 
   // Honor SKIP_DEV_SERVER (CI memory budget): if set, skip Next.js dev
   // server entirely. Tests that need HTTP will fail explicitly; pure DB
-  // and route-handler-import tests still run.
+  // and route-handler-import tests still run. We still propagate the
+  // Supabase test credentials into process.env so workers don't fall
+  // back to whatever .env.local points at (often prod).
   if (process.env.SKIP_DEV_SERVER === 'true') {
     console.log(
       '[globalSetup] SKIP_DEV_SERVER=true — Next.js dev server NOT started.'
     )
+    const earlyInherit: Array<[string, string]> = [
+      ['TEST_API_URL', `http://127.0.0.1:${DEV_PORT}`],
+      ['NEXT_PUBLIC_SUPABASE_URL', supabaseUrl],
+      ['SUPABASE_URL', supabaseUrl],
+      ['NEXT_PUBLIC_SUPABASE_ANON_KEY', supabaseAnonKey],
+      ['SUPABASE_ANON_KEY', supabaseAnonKey],
+      ['SUPABASE_SERVICE_ROLE_KEY', supabaseServiceRoleKey],
+      ['NODE_ENV', 'test'],
+      ['NEXT_PUBLIC_TEST_MODE', 'true'],
+      ['MARKETING_USE_SEED', 'true'],
+    ]
+    for (const [k, v] of earlyInherit) {
+      if (v) process.env[k] = v
+    }
+    console.log(`[globalSetup] Supabase URL: ${supabaseUrl}`)
     return async () => {
       console.log('[globalSetup] Teardown (no dev server to stop)')
     }
