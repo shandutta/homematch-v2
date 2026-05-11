@@ -144,6 +144,8 @@ const nextConfig: NextConfig = {
       'lucide-react',
       'framer-motion',
       'date-fns',
+      '@supabase/supabase-js',
+      '@supabase/ssr',
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
       '@radix-ui/react-checkbox',
