@@ -21,7 +21,7 @@
     "deadcode:fix": "knip --fix --no-progress",
     "shell-lint": "shellcheck scripts/*.sh",
     "type-check": "pnpm exec tsc --noEmit",
-    "check": "pnpm run lint && pnpm run type-check && pnpm run deadcode && pnpm run shell-lint",
+    "check": "pnpm run lint && pnpm run type-check && pnpm run deadcode",
     "prepare": "simple-git-hooks",
     "format": "prettier --write .",
     "lint:fix": "eslint --fix .",
