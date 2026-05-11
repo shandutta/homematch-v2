@@ -19,20 +19,9 @@ export default defineConfig({
       '__tests__/e2e/**/*.test.ts', // Exclude ALL e2e test files from Vitest
       // CI quarantine — pre-existing failing tests (NOT introduced by recent work).
       // These need individual refactors to be moved out of this list:
-      // 1. fetch()-against-dev-server tests (8 files): need same NextRequest +
-      //    raw token-fetch treatment as commit f39573f did for vibes/interactions.
-      // 2. jsdom-Radix pointer-events tests (3 files): need
-      //    userEvent.setup({ pointerEventsCheck: 0 }) or upstream fix.
-      // 3. couples-a11y test: multiple "found N elements" errors — need
-      //    queryBy* vs getByRole + scoping.
+      // Category A (fetch→NextRequest) un-quarantined by agent in
+      // commits aaecde9..9ce862c. Remaining quarantine is just B/C/D.
       // See follow-up: reports/home-match-revival/ci-quarantine-2026-05-11.md
-      '__tests__/integration/api/activity.spec.ts',
-      '__tests__/integration/api/couples-check-mutual.spec.ts',
-      '__tests__/integration/api/couples-stats.spec.ts',
-      '__tests__/integration/api/map-boundaries.integration.test.ts',
-      '__tests__/integration/api/mutual-likes.spec.ts',
-      '__tests__/integration/api/performance-metrics.spec.ts',
-      '__tests__/integration/api/properties-marketing.spec.ts',
       '__tests__/integration/services/property-service-facade.integration.test.ts',
       '__tests__/integration/services/interaction-pages.test.ts',
       '__tests__/integration/ui/property-detail-modal.test.tsx',
