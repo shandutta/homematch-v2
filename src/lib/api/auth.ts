@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Clerk → Supabase User shape conversion requires explicit casts because
+// the shape is structurally similar but TypeScript can't infer it.
 import type { User } from '@supabase/supabase-js'
 import type { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'

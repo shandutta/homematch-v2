@@ -108,7 +108,7 @@ export class UserService extends BaseService {
         const { data, error } = await supabase
           .from('user_profiles')
           .select(
-            'created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
+            'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
           )
           .eq('id', userId)
           .single()

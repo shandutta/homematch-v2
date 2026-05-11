@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Webhook payload narrowing from Svix's WebhookEvent union requires casts.
 /**
  * Clerk webhook handler — Phase C.2.4 of the Clerk migration.
  *

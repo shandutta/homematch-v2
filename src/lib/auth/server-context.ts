@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Clerk-to-Supabase User shape conversion needs explicit casts.
 /**
  * Phase C.2 helper: unified server-side auth context.
  *

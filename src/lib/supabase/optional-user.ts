@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Clerk-to-Supabase User shape conversion needs explicit casts.
 import type { User } from '@supabase/supabase-js'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from './server'
