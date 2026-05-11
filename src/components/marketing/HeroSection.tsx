@@ -11,8 +11,14 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
     '--spotlight-y': '35%',
   }
 
-  const secondaryHref = loggedIn ? '/dashboard' : '/login'
-  const secondaryLabel = loggedIn ? 'Resume your search' : 'Sign in'
+  // L1: Conditional CTAs by session state. Anonymous visitors saw
+  // "Resume your search" pointing at /login — confusing when there's
+  // nothing to resume. Now anonymous users get a clear signup entry
+  // ("Start swiping") and logged-in visitors get the resume path.
+  const primaryHref = loggedIn ? '/dashboard' : '/signup'
+  const primaryLabel = loggedIn ? 'Resume your search' : 'Start swiping'
+  const secondaryHref = loggedIn ? '/signup' : '/login'
+  const secondaryLabel = loggedIn ? 'Invite household' : 'Sign in'
 
   return (
     <section
@@ -96,12 +102,12 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
                   className="group relative w-full overflow-hidden sm:w-auto"
                 >
                   <Link
-                    href="/signup"
+                    href={primaryHref}
                     data-testid="primary-cta"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <Heart className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                      Start swiping
+                      {primaryLabel}
                     </span>
                     {/* Shimmer effect on hover */}
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
