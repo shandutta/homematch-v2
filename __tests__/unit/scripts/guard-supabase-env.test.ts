@@ -158,9 +158,14 @@ describe('Supabase env guard precision', () => {
     expect(allOutput).not.toContain(`postgresql://postgres:`)
     expect(allOutput).not.toContain(`https://${productionHost}`)
     // The bare hostname is permitted only via category labels; the guard must
-    // not echo it as a standalone diagnostic value.
+    // not echo it as a standalone diagnostic value. Escape ALL regex
+    // metacharacters (including \) before interpolating into a RegExp — the
+    // .replace(/\./g) we used before tripped the CodeQL "Incomplete string
+    // escaping" alert because backslashes / other metas weren't handled.
+    const escapeRegex = (s: string) =>
+      s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     expect(allOutput).not.toMatch(
-      new RegExp(`(^|[^A-Z_])${productionHost.replace(/\./g, '\\.')}`)
+      new RegExp(`(^|[^A-Z_])${escapeRegex(productionHost)}`)
     )
 
     rmSync(root, { recursive: true, force: true })
