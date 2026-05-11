@@ -6,13 +6,14 @@ export const USER_SPECIFIC_NO_STORE_CACHE_CONTROL =
 export function withUserSpecificNoStoreHeaders<T>(
   response: NextResponse<T>
 ): NextResponse<T>
-export function withUserSpecificNoStoreHeaders(
-  response: undefined
-): undefined
+export function withUserSpecificNoStoreHeaders(response: undefined): undefined
 export function withUserSpecificNoStoreHeaders<T>(
   response: NextResponse<T> | undefined
 ): NextResponse<T> | undefined {
-  response?.headers?.set?.('Cache-Control', USER_SPECIFIC_NO_STORE_CACHE_CONTROL)
+  response?.headers?.set?.(
+    'Cache-Control',
+    USER_SPECIFIC_NO_STORE_CACHE_CONTROL
+  )
   return response
 }
 

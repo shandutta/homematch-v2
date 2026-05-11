@@ -41,13 +41,9 @@ const BLUR_DATA_URL =
         '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
       ))
 
-const BROKEN_IMAGE_PATH_PATTERNS = [
-  'photo-1575517111478-7f6f2c59ebb0',
-]
+const BROKEN_IMAGE_PATH_PATTERNS = ['photo-1575517111478-7f6f2c59ebb0']
 
-const BLOCKED_DOMAINS = new Set([
-  'loremflickr.com',
-])
+const BLOCKED_DOMAINS = new Set(['loremflickr.com'])
 
 const shouldBlockHostname = (hostname: string | null) =>
   process.env.NEXT_PUBLIC_TEST_MODE === 'true' &&
@@ -218,7 +214,7 @@ function ImageSkeleton() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden bg-slate-900/40"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[propertyImageShimmer_1.6s_ease-in-out_infinite]" />
+      <div className="absolute inset-0 animate-[propertyImageShimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%]" />
       <style>{`
         @keyframes propertyImageShimmer {
           0% { background-position: -100% 0; }

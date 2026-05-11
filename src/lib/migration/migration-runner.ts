@@ -215,7 +215,9 @@ export class MigrationRunner {
             if (skipDuplicates && transformResult.data) {
               const { data: existingNeighborhoods } = await this.supabase
                 .from('neighborhoods')
-                .select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
+                .select(
+                  'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+                )
                 .eq('city', transformResult.data.city)
                 .eq('state', transformResult.data.state)
 
@@ -410,7 +412,9 @@ export class MigrationRunner {
               if (rawProperty.zpid) {
                 const { data } = await this.supabase
                   .from('properties')
-                  .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+                  .select(
+                    'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+                  )
                   .eq('zpid', rawProperty.zpid)
                   .eq('is_active', true)
                   .single()
@@ -421,7 +425,9 @@ export class MigrationRunner {
               if (!duplicate && rawProperty.property_hash) {
                 const { data } = await this.supabase
                   .from('properties')
-                  .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+                  .select(
+                    'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+                  )
                   .eq('property_hash', rawProperty.property_hash)
                   .eq('is_active', true)
                   .single()

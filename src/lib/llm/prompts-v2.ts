@@ -117,25 +117,44 @@ function buildPreferencesBlock(prefs: MatchPreferences): string {
   const lines: string[] = []
 
   // Budget
-  if (typeof prefs.price_min === 'number' || typeof prefs.price_max === 'number') {
-    const min = typeof prefs.price_min === 'number' ? `$${prefs.price_min.toLocaleString()}` : 'no min'
-    const max = typeof prefs.price_max === 'number' ? `$${prefs.price_max.toLocaleString()}` : 'no max'
+  if (
+    typeof prefs.price_min === 'number' ||
+    typeof prefs.price_max === 'number'
+  ) {
+    const min =
+      typeof prefs.price_min === 'number'
+        ? `$${prefs.price_min.toLocaleString()}`
+        : 'no min'
+    const max =
+      typeof prefs.price_max === 'number'
+        ? `$${prefs.price_max.toLocaleString()}`
+        : 'no max'
     lines.push(`Budget: ${min} – ${max}`)
   } else {
     lines.push(`Budget: no preference`)
   }
 
   // Bedrooms
-  if (typeof prefs.bedrooms_min === 'number' || typeof prefs.bedrooms_max === 'number') {
-    const min = typeof prefs.bedrooms_min === 'number' ? prefs.bedrooms_min : 'any'
-    const max = typeof prefs.bedrooms_max === 'number' ? prefs.bedrooms_max : 'any'
+  if (
+    typeof prefs.bedrooms_min === 'number' ||
+    typeof prefs.bedrooms_max === 'number'
+  ) {
+    const min =
+      typeof prefs.bedrooms_min === 'number' ? prefs.bedrooms_min : 'any'
+    const max =
+      typeof prefs.bedrooms_max === 'number' ? prefs.bedrooms_max : 'any'
     lines.push(`Bedrooms: ${min} – ${max}`)
   }
 
   // Bathrooms
-  if (typeof prefs.bathrooms_min === 'number' || typeof prefs.bathrooms_max === 'number') {
-    const min = typeof prefs.bathrooms_min === 'number' ? prefs.bathrooms_min : 'any'
-    const max = typeof prefs.bathrooms_max === 'number' ? prefs.bathrooms_max : 'any'
+  if (
+    typeof prefs.bathrooms_min === 'number' ||
+    typeof prefs.bathrooms_max === 'number'
+  ) {
+    const min =
+      typeof prefs.bathrooms_min === 'number' ? prefs.bathrooms_min : 'any'
+    const max =
+      typeof prefs.bathrooms_max === 'number' ? prefs.bathrooms_max : 'any'
     lines.push(`Bathrooms: ${min} – ${max}`)
   }
 
@@ -161,7 +180,9 @@ function buildPreferencesBlock(prefs: MatchPreferences): string {
 
   // Nice-to-haves
   if (prefs.nice_to_have_amenities && prefs.nice_to_have_amenities.length > 0) {
-    lines.push(`Nice-to-have amenities: ${prefs.nice_to_have_amenities.join(', ')}`)
+    lines.push(
+      `Nice-to-have amenities: ${prefs.nice_to_have_amenities.join(', ')}`
+    )
   }
 
   // Free-text context
@@ -185,7 +206,9 @@ function buildCandidatesBlock(candidates: MatchCandidateProperty[]): string {
         `    property_type: ${c.property_type ?? 'unknown'}`,
         `    year_built: ${c.year_built ?? 'unknown'}`,
         `    amenities: ${c.amenities && c.amenities.length > 0 ? c.amenities.join(', ') : 'none listed'}`,
-        c.description ? `    description: ${c.description.slice(0, 500)}` : null,
+        c.description
+          ? `    description: ${c.description.slice(0, 500)}`
+          : null,
         `  </property>`,
       ]
         .filter(Boolean)

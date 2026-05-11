@@ -43,9 +43,8 @@ describe('demo surface production gate', () => {
   it('keeps internal preview disabled by default', async () => {
     delete process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW
 
-    const { isInternalPreviewEnabled } = await import(
-      '@/lib/routing/internal-preview'
-    )
+    const { isInternalPreviewEnabled } =
+      await import('@/lib/routing/internal-preview')
 
     expect(isInternalPreviewEnabled()).toBe(false)
   })
@@ -53,9 +52,8 @@ describe('demo surface production gate', () => {
   it('allows internal preview access only when explicitly enabled', async () => {
     process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW = 'true'
 
-    const { isInternalPreviewEnabled } = await import(
-      '@/lib/routing/internal-preview'
-    )
+    const { isInternalPreviewEnabled } =
+      await import('@/lib/routing/internal-preview')
 
     expect(isInternalPreviewEnabled()).toBe(true)
   })
@@ -74,9 +72,8 @@ describe('demo surface production gate', () => {
     async (value) => {
       process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW = value
 
-      const { isInternalPreviewEnabled } = await import(
-        '@/lib/routing/internal-preview'
-      )
+      const { isInternalPreviewEnabled } =
+        await import('@/lib/routing/internal-preview')
 
       expect(isInternalPreviewEnabled()).toBe(false)
     }
@@ -85,9 +82,8 @@ describe('demo surface production gate', () => {
   it('requireInternalPreviewAccess invokes notFound() when the gate is disabled', async () => {
     delete process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW
 
-    const { requireInternalPreviewAccess } = await import(
-      '@/lib/routing/internal-preview'
-    )
+    const { requireInternalPreviewAccess } =
+      await import('@/lib/routing/internal-preview')
 
     expect(() => requireInternalPreviewAccess()).toThrow('NEXT_NOT_FOUND')
     expect(notFoundMock).toHaveBeenCalledTimes(1)
@@ -96,9 +92,8 @@ describe('demo surface production gate', () => {
   it('requireInternalPreviewAccess is a no-op when the gate is explicitly enabled', async () => {
     process.env.HOMEMATCH_ENABLE_INTERNAL_PREVIEW = 'true'
 
-    const { requireInternalPreviewAccess } = await import(
-      '@/lib/routing/internal-preview'
-    )
+    const { requireInternalPreviewAccess } =
+      await import('@/lib/routing/internal-preview')
 
     expect(() => requireInternalPreviewAccess()).not.toThrow()
     expect(notFoundMock).not.toHaveBeenCalled()

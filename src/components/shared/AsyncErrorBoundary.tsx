@@ -92,8 +92,6 @@ export class AsyncErrorBoundary extends Component<Props, State> {
       })
     }
 
-
-
     // Auto-retry for certain error types only if we haven't exceeded the limit
     if (
       this.shouldAutoRetry(error) &&

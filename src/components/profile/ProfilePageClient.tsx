@@ -129,7 +129,10 @@ export function ProfilePageClient({
         const updated = await UserServiceClient.updateProfile(user.id, {
           preferences: updatedPreferences,
         })
-        setProfileState((prev) => ({ ...prev, preferences: updated.preferences }))
+        setProfileState((prev) => ({
+          ...prev,
+          preferences: updated.preferences,
+        }))
         toast.success('Taste profile saved')
       } catch {
         toast.error('Failed to save taste profile')
@@ -139,28 +142,27 @@ export function ProfilePageClient({
     [profileState.preferences, user.id]
   )
 
-  const tasteProfileInitialValues: TasteProfileValues | undefined =
-    (() => {
-      const prefs = profileState.preferences
-      if (typeof prefs !== 'object' || prefs === null) return undefined
-      const raw = (prefs as Record<string, unknown>).tasteProfile
-      if (typeof raw !== 'object' || raw === null) return undefined
-      const tp = raw as Record<string, unknown>
-      const aesthetics = Array.isArray(tp.aesthetics)
-        ? (tp.aesthetics as unknown[]).filter(
-            (a): a is string => typeof a === 'string'
-          )
-        : []
-      const ls =
-        typeof tp.lifestyle === 'object' && tp.lifestyle !== null
-          ? (tp.lifestyle as Record<string, unknown>)
-          : {}
-      const lifestyle: Record<string, number> = {}
-      for (const [k, v] of Object.entries(ls)) {
-        if (typeof v === 'number') lifestyle[k] = v
-      }
-      return { aesthetics, lifestyle }
-    })()
+  const tasteProfileInitialValues: TasteProfileValues | undefined = (() => {
+    const prefs = profileState.preferences
+    if (typeof prefs !== 'object' || prefs === null) return undefined
+    const raw = (prefs as Record<string, unknown>).tasteProfile
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const tp = raw as Record<string, unknown>
+    const aesthetics = Array.isArray(tp.aesthetics)
+      ? (tp.aesthetics as unknown[]).filter(
+          (a): a is string => typeof a === 'string'
+        )
+      : []
+    const ls =
+      typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+        ? (tp.lifestyle as Record<string, unknown>)
+        : {}
+    const lifestyle: Record<string, number> = {}
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'number') lifestyle[k] = v
+    }
+    return { aesthetics, lifestyle }
+  })()
 
   const preferenceRecord = isRecord(profile.preferences)
     ? profile.preferences
@@ -306,10 +308,7 @@ export function ProfilePageClient({
             </m.div>
 
             {/* Right: Action buttons */}
-            <m.div
-              variants={itemVariants}
-              className="flex flex-wrap gap-3"
-            >
+            <m.div variants={itemVariants} className="flex flex-wrap gap-3">
               <Link href="/settings">
                 <Button
                   variant="outline"

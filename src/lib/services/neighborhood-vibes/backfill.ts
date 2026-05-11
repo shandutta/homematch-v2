@@ -342,7 +342,11 @@ export async function backfillNeighborhoodVibes(
 
     const pageStartOffset = offset
 
-    let neighborhoodsQuery = deps.supabase.from('neighborhoods').select('bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score')
+    let neighborhoodsQuery = deps.supabase
+      .from('neighborhoods')
+      .select(
+        'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+      )
 
     if (states) {
       neighborhoodsQuery = neighborhoodsQuery.in('state', states)

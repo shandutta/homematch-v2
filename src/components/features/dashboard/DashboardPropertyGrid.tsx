@@ -250,7 +250,7 @@ export function DashboardPropertyGrid({
                     <button
                       type="button"
                       aria-label="Pass on this home"
-                      className="shadow-lg flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/90 text-white transition-all duration-200 hover:scale-110 hover:bg-rose-600 focus-visible:outline-none"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/90 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-rose-600 focus-visible:outline-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onDecision(property.id, 'skip')
@@ -261,7 +261,7 @@ export function DashboardPropertyGrid({
                     <button
                       type="button"
                       aria-label="Like this home"
-                      className="shadow-lg flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white transition-all duration-200 hover:scale-110 hover:bg-emerald-600 focus-visible:outline-none"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-200/60 bg-emerald-500/90 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-emerald-600 focus-visible:outline-none"
                       onClick={(e) => {
                         e.stopPropagation()
                         onDecision(property.id, 'liked')

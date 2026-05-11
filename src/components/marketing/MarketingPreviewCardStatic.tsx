@@ -12,7 +12,7 @@ export function MarketingPreviewCardStatic({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 shadow-card-glow backdrop-blur-xl transition-shadow duration-300 hover:shadow-card-glow-hover',
+        'group shadow-card-glow hover:shadow-card-glow-hover relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 backdrop-blur-xl transition-shadow duration-300',
         className
       )}
     >

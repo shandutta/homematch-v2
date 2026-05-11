@@ -53,18 +53,20 @@ type RateLimitStorageProviderConfig = {
 // provider names instead of silently treating them as durable.
 const RATE_LIMIT_STORAGE_PROVIDER_ENV = 'RATE_LIMIT_STORAGE_PROVIDER'
 
-export const getConfiguredRateLimitStorageProvider = (): RateLimitStorageProviderConfig => {
-  const provider =
-    process.env[RATE_LIMIT_STORAGE_PROVIDER_ENV]?.trim().toLowerCase() || 'memory'
+export const getConfiguredRateLimitStorageProvider =
+  (): RateLimitStorageProviderConfig => {
+    const provider =
+      process.env[RATE_LIMIT_STORAGE_PROVIDER_ENV]?.trim().toLowerCase() ||
+      'memory'
 
-  if (provider === 'memory') {
-    return { provider, durable: false }
+    if (provider === 'memory') {
+      return { provider, durable: false }
+    }
+
+    throw new Error(
+      `Durable rate limiter storage provider "${provider}" requires an approved adapter before production use`
+    )
   }
-
-  throw new Error(
-    `Durable rate limiter storage provider "${provider}" requires an approved adapter before production use`
-  )
-}
 
 const createRateLimiter = (
   tier: RateLimitTierKey,

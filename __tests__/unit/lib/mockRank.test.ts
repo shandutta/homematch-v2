@@ -27,8 +27,8 @@ const perfectCandidate = (): MatchCandidateProperty => ({
   state: 'TX',
   zip_code: '78701',
   price: 750000, // within budget
-  bedrooms: 4,   // ≥ min 3
-  bathrooms: 3,  // ≥ min 2
+  bedrooms: 4, // ≥ min 3
+  bathrooms: 3, // ≥ min 2
   square_feet: 2000,
   property_type: 'single_family',
   amenities: [],
@@ -44,8 +44,8 @@ const partialCandidate = (): MatchCandidateProperty => ({
   state: 'TX',
   zip_code: '78702',
   price: 900000, // over budget → price weight does NOT apply
-  bedrooms: 3,   // meets min exactly
-  bathrooms: 2,  // meets min exactly
+  bedrooms: 3, // meets min exactly
+  bathrooms: 2, // meets min exactly
   square_feet: 1500,
   property_type: 'condo',
   amenities: [],
@@ -61,8 +61,8 @@ const noMatchCandidate = (): MatchCandidateProperty => ({
   state: 'TX',
   zip_code: '78703',
   price: 1200000, // over budget
-  bedrooms: 1,    // below min 3
-  bathrooms: 1,   // below min 2
+  bedrooms: 1, // below min 3
+  bathrooms: 1, // below min 2
   square_feet: 600,
   property_type: 'condo',
   amenities: [],
@@ -108,7 +108,11 @@ describe('computeTasteBonus', () => {
 
 describe('mockRank taste-aware heuristic', () => {
   it('perfect match: ranks highest among all three candidates', () => {
-    const candidates = [noMatchCandidate(), partialCandidate(), perfectCandidate()]
+    const candidates = [
+      noMatchCandidate(),
+      partialCandidate(),
+      perfectCandidate(),
+    ]
     const [first] = mockRank(basePrefs(), candidates, 3)
     expect(first.property_id).toBe(ID_PERFECT)
     expect(first.score).toBeGreaterThan(0.5)
@@ -123,7 +127,11 @@ describe('mockRank taste-aware heuristic', () => {
   })
 
   it('no match: receives the lowest score and carries concern annotations', () => {
-    const candidates = [perfectCandidate(), partialCandidate(), noMatchCandidate()]
+    const candidates = [
+      perfectCandidate(),
+      partialCandidate(),
+      noMatchCandidate(),
+    ]
     const ranked = mockRank(basePrefs(), candidates, 3)
     const last = ranked[ranked.length - 1]
     expect(last.property_id).toBe(ID_NOMATCH)
@@ -133,12 +141,18 @@ describe('mockRank taste-aware heuristic', () => {
   it('walk_score is reflected in citations for candidates that have it', () => {
     const candidates = [perfectCandidate()]
     const [result] = mockRank(basePrefs(), candidates, 1)
-    const hasCitation = result.citations.some((c) => c.evidence.includes('walk_score'))
+    const hasCitation = result.citations.some((c) =>
+      c.evidence.includes('walk_score')
+    )
     expect(hasCitation).toBe(true)
   })
 
   it('scores are clamped to [0, 1] regardless of taste bonus magnitude', () => {
-    const candidates = [perfectCandidate(), partialCandidate(), noMatchCandidate()]
+    const candidates = [
+      perfectCandidate(),
+      partialCandidate(),
+      noMatchCandidate(),
+    ]
     const ranked = mockRank(basePrefs(), candidates, 3)
     for (const r of ranked) {
       expect(r.score).toBeGreaterThanOrEqual(0)

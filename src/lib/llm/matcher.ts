@@ -98,7 +98,9 @@ export function mockRank(
   candidates: MatchCandidateProperty[],
   topK: number
 ): RankedProperty[] {
-  const scored = candidates.map((candidate) => scoreCandidate(preferences, candidate))
+  const scored = candidates.map((candidate) =>
+    scoreCandidate(preferences, candidate)
+  )
   scored.sort((a, b) => b.score - a.score)
   return scored.slice(0, topK).map((entry, idx) => ({
     property_id: entry.candidate.id,
@@ -175,18 +177,13 @@ function scoreCandidate(
     }
   }
 
-  if (
-    typeof prefs.square_feet_min === 'number' &&
-    c.square_feet !== null
-  ) {
+  if (typeof prefs.square_feet_min === 'number' && c.square_feet !== null) {
     if (c.square_feet >= prefs.square_feet_min) {
       score += 0.05
       hits.push(`${c.square_feet} sqft`)
       citations.push({ field: 'square_feet', evidence: String(c.square_feet) })
     } else {
-      concerns.push(
-        `${c.square_feet} sqft < min ${prefs.square_feet_min}`
-      )
+      concerns.push(`${c.square_feet} sqft < min ${prefs.square_feet_min}`)
       score -= 0.05
     }
   }
@@ -257,7 +254,10 @@ function scoreCandidate(
     score += tasteBonus
     if (typeof c.walk_score === 'number' && c.walk_score !== null) {
       hits.push(`walk score ${c.walk_score}`)
-      citations.push({ field: 'description', evidence: `walk_score:${c.walk_score}` })
+      citations.push({
+        field: 'description',
+        evidence: `walk_score:${c.walk_score}`,
+      })
     }
   }
 
@@ -307,7 +307,11 @@ export function parseLLMResponse(
   candidates: MatchCandidateProperty[],
   topK: number
 ): ParsedLLMResponse {
-  const trimmed = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
+  const trimmed = raw
+    .trim()
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/, '')
+    .trim()
   let parsed: unknown
   try {
     parsed = JSON.parse(trimmed)
@@ -402,7 +406,12 @@ export async function match(
     userPrompt = v1Result.prompt
     promptTruncated = v1Result.truncated
     if (v1Result.warning) {
-      console.warn(JSON.stringify({ event: 'match.prompt.truncated', warning: v1Result.warning }))
+      console.warn(
+        JSON.stringify({
+          event: 'match.prompt.truncated',
+          warning: v1Result.warning,
+        })
+      )
     }
   }
 
@@ -476,7 +485,8 @@ export async function match(
     model: null,
     generated_at: new Date().toISOString(),
     candidate_count: request.candidates.length,
-    truncated: promptTruncated || fallbackRanked.length < request.candidates.length,
+    truncated:
+      promptTruncated || fallbackRanked.length < request.candidates.length,
     prompt_version: version,
   })
 }

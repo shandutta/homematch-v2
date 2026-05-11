@@ -43,13 +43,12 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: false })
     .maybeSingle()
 
-  const interactions = (
-    interactionsData as Array<{
+  const interactions =
+    (interactionsData as Array<{
       user_id: string
       interaction_type: string
       created_at: string
-    }> | null
-  ) ?? []
+    }> | null) ?? []
 
   if (!interactions.length) {
     return noStoreJson({ reactions: [], householdId })
@@ -70,9 +69,11 @@ export async function GET(request: NextRequest) {
     .in('id', userIds)
     .maybeSingle()
 
-  const profiles = (
-    profilesData as Array<{ id: string; display_name: string | null }> | null
-  ) ?? []
+  const profiles =
+    (profilesData as Array<{
+      id: string
+      display_name: string | null
+    }> | null) ?? []
 
   const profileMap = new Map(profiles.map((p) => [p.id, p.display_name]))
 

@@ -79,7 +79,9 @@ describe('PropertyCard Component', () => {
   test('should render property details correctly and respond to like decision', async () => {
     const onDecision = jest.fn()
     const user = userEvent.setup()
-    renderWithQuery(<PropertyCard property={mockProperty} onDecision={onDecision} />)
+    renderWithQuery(
+      <PropertyCard property={mockProperty} onDecision={onDecision} />
+    )
     expect(screen.getByText('123 Main St')).toBeInTheDocument()
     expect(screen.getByText('$500,000')).toBeInTheDocument()
     expect(screen.getByText('Single Family')).toBeInTheDocument()

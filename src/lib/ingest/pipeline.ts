@@ -65,7 +65,9 @@ export interface IdempotencyLookup {
    */
   lookup(
     keys: string[]
-  ): Promise<Map<string, IdempotencyRecord | null>> | Map<string, IdempotencyRecord | null>
+  ):
+    | Promise<Map<string, IdempotencyRecord | null>>
+    | Map<string, IdempotencyRecord | null>
 }
 
 export interface RecordEnricher {
@@ -75,7 +77,9 @@ export interface RecordEnricher {
    * unworthy — e.g. geocoding failed for a record we require coordinates
    * for). Throwing reports a failure; the record is dropped.
    */
-  enrich(record: IngestRecord): Promise<IngestRecord | null> | IngestRecord | null
+  enrich(
+    record: IngestRecord
+  ): Promise<IngestRecord | null> | IngestRecord | null
 }
 
 export interface PipelineWriteInput {
@@ -274,7 +278,9 @@ export class InMemoryWriter implements RecordWriter {
  * unchanged fingerprints are skipped and changed fingerprints update.
  */
 export class InMemoryIdempotencyStore implements IdempotencyLookup {
-  constructor(private readonly state: Map<string, IdempotencyRecord> = new Map()) {}
+  constructor(
+    private readonly state: Map<string, IdempotencyRecord> = new Map()
+  ) {}
 
   set(record: IdempotencyRecord): void {
     this.state.set(record.dedupe_key, record)

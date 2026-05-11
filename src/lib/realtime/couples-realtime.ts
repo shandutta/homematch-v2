@@ -23,7 +23,9 @@ const toRealtimeMutualLikePayload = (
     partner_name:
       typeof value.partner_name === 'string' ? value.partner_name : null,
     property_address:
-      typeof value.property_address === 'string' ? value.property_address : null,
+      typeof value.property_address === 'string'
+        ? value.property_address
+        : null,
   }
 }
 

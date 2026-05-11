@@ -1,6 +1,6 @@
 // Phase 0/1 closure: P1-interaction-uniqueness
 import {
-// Phase 0/1 closure: P1-interaction-uniqueness
+  // Phase 0/1 closure: P1-interaction-uniqueness
 
   LoginSchema,
   SignupSchema,

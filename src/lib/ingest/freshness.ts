@@ -54,7 +54,10 @@ const MANUAL_TTL: FreshnessTtl = {
   expireAfterMs: 90 * DAY_MS,
 }
 
-export const DEFAULT_TTL_BY_SOURCE: Record<FreshnessRecord['source'], FreshnessTtl> = {
+export const DEFAULT_TTL_BY_SOURCE: Record<
+  FreshnessRecord['source'],
+  FreshnessTtl
+> = {
   zillow: ZILLOW_TTL,
   mock: MOCK_TTL,
   manual: MANUAL_TTL,

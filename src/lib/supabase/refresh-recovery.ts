@@ -14,11 +14,16 @@ export type SupabaseAuthRecoveryClient = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const describeAuthError = (error: unknown): { code?: string; message?: string } => {
+const describeAuthError = (
+  error: unknown
+): { code?: string; message?: string } => {
   // Duck-type AuthApiError without importing the class (avoids bundling @supabase/supabase-js
   // including realtime-js into the refresh-recovery chunk)
   if (isRecord(error) && typeof error.message === 'string') {
-    return { code: typeof error.code === 'string' ? error.code : undefined, message: error.message }
+    return {
+      code: typeof error.code === 'string' ? error.code : undefined,
+      message: error.message,
+    }
   }
 
   return {}

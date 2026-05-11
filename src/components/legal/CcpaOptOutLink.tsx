@@ -15,7 +15,7 @@ export function CcpaOptOutLink() {
   }
 
   return (
-    <div className="fixed bottom-16 right-4 z-40 hidden" id="ccpa-opt-out">
+    <div className="fixed right-4 bottom-16 z-40 hidden" id="ccpa-opt-out">
       <button
         type="button"
         onClick={handleClick}

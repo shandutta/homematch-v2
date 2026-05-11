@@ -40,15 +40,20 @@ const EXCLUDED_DIRS = new Set(['regression'])
  *  if a test contains this pattern but NOT in a negative assertion context,
  *  it may be guarding an obsolete code shape. */
 const STALE_PATTERN_MAP: Record<string, string> = {
-  "checkRateLimit.*429.*guard.*didn't apply": "Pre-M10 error-standardization 429 guard (consolidated into delegated path)",
+  "checkRateLimit.*429.*guard.*didn't apply":
+    'Pre-M10 error-standardization 429 guard (consolidated into delegated path)',
 }
 
 /** Walker that skips excluded directories */
 function collectTestFiles(dir: string): string[] {
   const results: string[] = []
   let entries: string[] = []
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  try { entries = require('fs').readdirSync(dir) } catch { return [] }
+   
+  try {
+    entries = require('fs').readdirSync(dir)
+  } catch {
+    return []
+  }
   for (const entry of entries) {
     const full = join(dir, entry)
     try {
@@ -60,7 +65,9 @@ function collectTestFiles(dir: string): string[] {
       } else if (entry.endsWith('.test.ts') || entry.endsWith('.test.tsx')) {
         results.push(full)
       }
-    } catch { /* skip unreadable */ }
+    } catch {
+      /* skip unreadable */
+    }
   }
   return results
 }
@@ -88,7 +95,8 @@ function isWithinDeletedTree(testPath: string): boolean {
     if (deleted.endsWith('/')) {
       if (testPath.startsWith(deleted)) return true
     } else {
-      if (testPath === deleted || testPath.startsWith(deleted + '/')) return true
+      if (testPath === deleted || testPath.startsWith(deleted + '/'))
+        return true
     }
   }
   return false
@@ -109,11 +117,20 @@ function hasExistenceAssertion(content: string, ref: string): boolean {
   const lines = content.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-    if (!line.includes(ref.replace(/^src\//, '')) && !new RegExp(escaped).test(line)) continue
+    if (
+      !line.includes(ref.replace(/^src\//, '')) &&
+      !new RegExp(escaped).test(line)
+    )
+      continue
     // Check a 3-line window: line i, i+1, i+2 for assertion context
     const window = lines.slice(i, Math.min(i + 3, lines.length)).join('\n')
     // If the window asserts EXISTENCE (not absence), this is stale
-    if (/\bexistsSync\(/.test(line) && !/\.toBe\(false\)/.test(window) && !/!existsSync/.test(window)) return true
+    if (
+      /\bexistsSync\(/.test(line) &&
+      !/\.toBe\(false\)/.test(window) &&
+      !/!existsSync/.test(window)
+    )
+      return true
     if (/\.toBe\(true\)/.test(window)) return true
   }
   return false
@@ -130,7 +147,9 @@ describe('Phase 4 guard staleness scan', () => {
       const refs = extractReferencedPaths(content)
       for (const ref of refs) {
         if (isWithinDeletedTree(ref) && hasExistenceAssertion(content, ref)) {
-          stale.push(`${file.replace(repoRoot + '/', '')} → ${ref} (existence check on deleted path)`)
+          stale.push(
+            `${file.replace(repoRoot + '/', '')} → ${ref} (existence check on deleted path)`
+          )
         }
       }
     }
@@ -215,7 +234,7 @@ describe('Phase 4 guard staleness scan', () => {
     if (dupes.length > 0) {
       console.warn(
         '⚠ Approximate redundant guard pairs (review manually):\n' +
-        dupes.map((d) => `  - ${d}`).join('\n')
+          dupes.map((d) => `  - ${d}`).join('\n')
       )
     }
 

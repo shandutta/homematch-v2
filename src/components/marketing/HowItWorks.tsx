@@ -65,45 +65,45 @@ export function HowItWorks() {
   return (
     <MotionMaxProvider>
       <section
-      ref={sectionRef}
-      className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
-      id="how-it-works"
-    >
-      <div className="container mx-auto px-4">
-        <MotionDiv
-          className="mx-auto text-center"
-          style={{ maxWidth: '48rem' }}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2
-            className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
-            style={{ fontFamily: 'var(--font-heading)' }}
+        ref={sectionRef}
+        className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
+        id="how-it-works"
+      >
+        <div className="container mx-auto px-4">
+          <MotionDiv
+            className="mx-auto text-center"
+            style={{ maxWidth: '48rem' }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
           >
-            How It Works
-          </h2>
-          <p
-            className="mt-3 text-lg text-gray-600 sm:text-xl"
-            style={{ fontFamily: 'var(--font-body)' }}
-          >
-            Three simple steps to go from scrolling to moving in.
-          </p>
-        </MotionDiv>
+            <h2
+              className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              How It Works
+            </h2>
+            <p
+              className="mt-3 text-lg text-gray-600 sm:text-xl"
+              style={{ fontFamily: 'var(--font-body)' }}
+            >
+              Three simple steps to go from scrolling to moving in.
+            </p>
+          </MotionDiv>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
-          {steps.map((step, i) => (
-            <StepCard
-              key={step.title}
-              step={step}
-              index={i}
-              isActive={activeStep >= i}
-            />
-          ))}
+          <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
+            {steps.map((step, i) => (
+              <StepCard
+                key={step.title}
+                step={step}
+                index={i}
+                isActive={activeStep >= i}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
     </MotionMaxProvider>
   )
 }

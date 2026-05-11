@@ -29,7 +29,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('user_profiles')
-          .select('created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at')
+          .select(
+            'created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+          )
           .eq('id', userId)
           .single()
 
@@ -164,7 +166,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('households')
-      .select('collaboration_mode, created_at, created_by, id, name, updated_at, user_count')
+      .select(
+        'collaboration_mode, created_at, created_by, id, name, updated_at, user_count'
+      )
       .eq('id', householdId)
       .single()
 
@@ -200,7 +204,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at')
+      .select(
+        'created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+      )
       .eq('household_id', householdId)
 
     if (error) {
@@ -270,7 +276,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('household_invitations')
-          .select('accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at')
+          .select(
+            'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
+          )
           .eq('household_id', householdId)
           .order('created_at', { ascending: false })
 
@@ -344,7 +352,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('household_invitations')
-          .select('accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at')
+          .select(
+            'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
+          )
           .eq('token', token)
           .single()
 
@@ -389,7 +399,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('created_at, household_id, id, interaction_type, property_id, score_data, user_id')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -408,7 +420,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('created_at, household_id, id, interaction_type, property_id, score_data, user_id')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('property_id', propertyId)
       .order('created_at', { ascending: false })
 
@@ -427,7 +441,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('created_at, household_id, id, interaction_type, property_id, score_data, user_id')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .eq('interaction_type', type)
       .order('created_at', { ascending: false })
@@ -448,7 +464,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('created_at, household_id, id, interaction_type, property_id, score_data, user_id')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .in('interaction_type', types)
       .order('created_at', { ascending: false })

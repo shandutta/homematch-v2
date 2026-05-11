@@ -18,9 +18,8 @@ describe('SEO metadata polish', () => {
 
   describe('createPublicRouteMetadata', () => {
     it('attaches Twitter site and creator handles for richer cards', async () => {
-      const { createPublicRouteMetadata } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createPublicRouteMetadata } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const metadata = createPublicRouteMetadata({
         title: 'Acquisition Page',
@@ -36,9 +35,8 @@ describe('SEO metadata polish', () => {
     })
 
     it('emits an absolute canonical URL anchored to NEXT_PUBLIC_BASE_URL', async () => {
-      const { createPublicRouteMetadata } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createPublicRouteMetadata } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const metadata = createPublicRouteMetadata({
         title: 'About',
@@ -55,9 +53,8 @@ describe('SEO metadata polish', () => {
     })
 
     it('canonicalizes the root by stripping trailing slashes', async () => {
-      const { createPublicRouteMetadata } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createPublicRouteMetadata } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const rootMeta = createPublicRouteMetadata({
         title: 'Root',
@@ -76,9 +73,8 @@ describe('SEO metadata polish', () => {
     })
 
     it('serves home-search keyword targets by default and accepts overrides', async () => {
-      const { createPublicRouteMetadata, SEO_KEYWORDS } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createPublicRouteMetadata, SEO_KEYWORDS } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const defaults = createPublicRouteMetadata({
         title: 'Default keywords',
@@ -102,9 +98,8 @@ describe('SEO metadata polish', () => {
 
   describe('Organization JSON-LD', () => {
     it('links the organization to its public Twitter profile via sameAs', async () => {
-      const { createOrganizationJsonLd } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createOrganizationJsonLd } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const ld = createOrganizationJsonLd()
       expect(ld['@context']).toBe('https://schema.org')
@@ -115,9 +110,8 @@ describe('SEO metadata polish', () => {
 
   describe('WebApplication JSON-LD', () => {
     it('describes HomeMatch as a free LifestyleApplication anchored to siteUrl', async () => {
-      const { createWebApplicationJsonLd } = await import(
-        '../../../../src/lib/seo/route-metadata'
-      )
+      const { createWebApplicationJsonLd } =
+        await import('../../../../src/lib/seo/route-metadata')
 
       const ld = createWebApplicationJsonLd()
 

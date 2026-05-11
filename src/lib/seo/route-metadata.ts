@@ -238,9 +238,7 @@ export function createPropertyJsonLd(property: PropertyJsonLdInput) {
     numberOfBathroomsTotal: property.bathrooms,
     ...(floorSize ? { floorSize } : {}),
     ...(property.yearBuilt ? { yearBuilt: property.yearBuilt } : {}),
-    ...(property.propertyType
-      ? { additionalType: property.propertyType }
-      : {}),
+    ...(property.propertyType ? { additionalType: property.propertyType } : {}),
     offers: {
       '@type': 'Offer',
       price: property.price,

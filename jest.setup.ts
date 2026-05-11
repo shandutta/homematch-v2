@@ -90,7 +90,7 @@ console.error = (...args: unknown[]) => {
   originalConsoleError.apply(console, args)
 }
 
-jest.mock("framer-motion")
+jest.mock('framer-motion')
 
 // Add global test helpers
 global.beforeEach = global.beforeEach || (() => {})

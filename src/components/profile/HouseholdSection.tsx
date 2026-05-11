@@ -601,10 +601,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
   return (
     <div className="space-y-6">
       {error && (
-        <m.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Alert className="border-red-500/30 bg-red-500/10 text-red-300">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>

@@ -47,54 +47,54 @@ export function useCurrentUserAvatar(): UserAvatarState {
       }
 
       async function fetchUserAvatar() {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
+        try {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
 
-        if (!user) {
+          if (!user) {
+            setState({
+              displayName: null,
+              email: null,
+              avatar: null,
+              isLoading: false,
+            })
+            return
+          }
+
+          // Fetch user profile with avatar
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('preferences')
+            .eq('id', user.id)
+            .single()
+
+          const preferences = isRecord(profile?.preferences)
+            ? profile.preferences
+            : {}
+          const displayName =
+            typeof preferences.display_name === 'string'
+              ? preferences.display_name
+              : undefined
+          const avatar = isAvatarData(preferences.avatar)
+            ? preferences.avatar
+            : null
+
           setState({
-            displayName: null,
-            email: null,
-            avatar: null,
+            displayName:
+              displayName ||
+              user.user_metadata?.full_name ||
+              user.email?.split('@')[0] ||
+              null,
+            email: user.email || null,
+            avatar,
             isLoading: false,
           })
-          return
+        } catch (error) {
+          console.error('Failed to fetch user avatar:', error)
+          setState((prev) => ({ ...prev, isLoading: false }))
         }
-
-        // Fetch user profile with avatar
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('preferences')
-          .eq('id', user.id)
-          .single()
-
-        const preferences = isRecord(profile?.preferences)
-          ? profile.preferences
-          : {}
-        const displayName =
-          typeof preferences.display_name === 'string'
-            ? preferences.display_name
-            : undefined
-        const avatar = isAvatarData(preferences.avatar)
-          ? preferences.avatar
-          : null
-
-        setState({
-          displayName:
-            displayName ||
-            user.user_metadata?.full_name ||
-            user.email?.split('@')[0] ||
-            null,
-          email: user.email || null,
-          avatar,
-          isLoading: false,
-        })
-      } catch (error) {
-        console.error('Failed to fetch user avatar:', error)
-        setState((prev) => ({ ...prev, isLoading: false }))
       }
-    }
 
       fetchUserAvatar()
 

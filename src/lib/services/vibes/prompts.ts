@@ -150,9 +150,7 @@ export function buildUserPrompt(
     const sanitized = redactPropertyDescription(property.description)
     // Truncate very long descriptions
     const desc =
-      sanitized.length > 800
-        ? sanitized.slice(0, 800) + '...'
-        : sanitized
+      sanitized.length > 800 ? sanitized.slice(0, 800) + '...' : sanitized
     descriptionSection = `
 
 LISTING DESCRIPTION:

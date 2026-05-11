@@ -17,9 +17,8 @@ describe('route-metadata helpers', () => {
   })
 
   it('emits a SingleFamilyResidence JSON-LD with offer, address, and floor size', async () => {
-    const { createPropertyJsonLd } = await import(
-      '../../../../src/lib/seo/route-metadata'
-    )
+    const { createPropertyJsonLd } =
+      await import('../../../../src/lib/seo/route-metadata')
 
     const ld = createPropertyJsonLd({
       id: 'prop-123',
@@ -73,9 +72,8 @@ describe('route-metadata helpers', () => {
   })
 
   it('falls back to default OG image and synthesized description when fields are missing', async () => {
-    const { createPropertyJsonLd } = await import(
-      '../../../../src/lib/seo/route-metadata'
-    )
+    const { createPropertyJsonLd } =
+      await import('../../../../src/lib/seo/route-metadata')
 
     const ld = createPropertyJsonLd({
       id: 'prop-empty',
@@ -99,9 +97,8 @@ describe('route-metadata helpers', () => {
   })
 
   it('emits an ordered BreadcrumbList JSON-LD anchored to siteUrl', async () => {
-    const { createBreadcrumbJsonLd } = await import(
-      '../../../../src/lib/seo/route-metadata'
-    )
+    const { createBreadcrumbJsonLd } =
+      await import('../../../../src/lib/seo/route-metadata')
 
     const ld = createBreadcrumbJsonLd([
       { name: 'Home', path: '/' },
@@ -136,9 +133,8 @@ describe('route-metadata helpers', () => {
   })
 
   it('emits an Organization JSON-LD anchored to siteUrl', async () => {
-    const { createOrganizationJsonLd } = await import(
-      '../../../../src/lib/seo/route-metadata'
-    )
+    const { createOrganizationJsonLd } =
+      await import('../../../../src/lib/seo/route-metadata')
 
     expect(createOrganizationJsonLd()).toEqual({
       '@context': 'https://schema.org',
@@ -151,9 +147,8 @@ describe('route-metadata helpers', () => {
   })
 
   it('threads custom OG image url and alt text through public route metadata', async () => {
-    const { createPublicRouteMetadata } = await import(
-      '../../../../src/lib/seo/route-metadata'
-    )
+    const { createPublicRouteMetadata } =
+      await import('../../../../src/lib/seo/route-metadata')
 
     const metadata = createPublicRouteMetadata({
       title: 'Custom Page',

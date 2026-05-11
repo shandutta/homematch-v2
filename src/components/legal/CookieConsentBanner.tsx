@@ -82,9 +82,8 @@ export function CookieConsentBanner() {
     setShowDetails(false)
 
     if (nextDraft.analytics) {
-      const { initPerformanceTracker } = await import(
-        '@/lib/utils/performance-tracker'
-      )
+      const { initPerformanceTracker } =
+        await import('@/lib/utils/performance-tracker')
       initPerformanceTracker()
     }
   }

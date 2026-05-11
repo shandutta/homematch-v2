@@ -43,7 +43,6 @@ export class PropertyErrorBoundary extends Component<Props, State> {
         },
       })
     }
-
   }
 
   handleRetry = () => {

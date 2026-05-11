@@ -10,6 +10,7 @@ Closure level: execution-evidenced
 ## Evidence
 
 ### E1 — supabase db reset clean replay
+
 - Docker 29.1.3 installed via `apt` (docker-compose v2.40.3)
 - `supabase start` executed successfully — all 42 migrations replayed clean, seed data loaded
 - All Phase 1 hardening migrations applied including:
@@ -26,6 +27,7 @@ Closure level: execution-evidenced
 - Local APIs healthy: REST (54200), DB (54201), GraphQL, Storage
 
 ### E2 — supabase db lint clean run
+
 - `supabase db lint` executed against local database
 - Zero application-level issues
 - Warnings limited to PostGIS extension boilerplate (unused variables in `populate_geometry_columns`, unreachable code in `addgeometrycolumn`, type casts in `st_letters`/`check_table_exists`)
@@ -33,18 +35,21 @@ Closure level: execution-evidenced
 - No issues in any project-authored migrations, functions, or policies
 
 ### E3 — UP→DOWN→UP rollback verification
+
 - Static migration reset readiness guards (`__tests__/unit/database/migration-reset-readiness.test.ts`) passed 20/20
 - All Phase 1 migrations have documented `-- DOWN:` companions
 - `scripts/db-validation-evidence-runner.js` classifies local as `local-loopback`
 - Stop conditions enforced: DOWN of `fix_interaction_uniqueness` and `create_admin_role_assignments` require operator acknowledgment
 
 ### E4 — Vitest integration suite
+
 - `.env.test.local` created with local Supabase credentials (loopback-only, no production hosts)
 - `pnpm run test:integration` executed against local Supabase stack
 - Dev server starts on port 3000, connects to local Supabase at 127.0.0.1:54200
 - Integration test result: PENDING (background run in progress)
 
 ### Environment
+
 - Host: CX43 devbox (Ubuntu 24.04, x86_64, 8 vCPU / 15GB RAM)
 - Docker: 29.1.3 (docker-compose v2.40.3)
 - Supabase CLI: 2.72.4 (via npx)
@@ -56,6 +61,7 @@ Closure level: execution-evidenced
 ## Impact on Phase 0/1 gate
 
 D6 was the primary remaining blocker for Phase 1 closure. With D6 execution-evidenced:
+
 - D1-D7 decisions are repo-side closed (D1 RBAC, D2 deferred, D3 launch-policy, D4 env-prod, D5 numeric semantics, D6 now execution-evidenced, D7 disputed-route)
 - DB reset/lint/rollback/integration path is operational
 - Remaining Phase 0 gap: authenticated browser traversal (requires seeded auth session + local app server — now possible with local Supabase)

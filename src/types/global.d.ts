@@ -16,8 +16,9 @@ declare global {
     interface ElementChildrenAttribute
       extends ReactJSX.ElementChildrenAttribute {}
     interface IntrinsicAttributes extends ReactJSX.IntrinsicAttributes {}
-    interface IntrinsicClassAttributes<T>
-      extends ReactJSX.IntrinsicClassAttributes<T> {}
+    interface IntrinsicClassAttributes<
+      T,
+    > extends ReactJSX.IntrinsicClassAttributes<T> {}
     interface IntrinsicElements extends ReactJSX.IntrinsicElements {}
     /* eslint-enable @typescript-eslint/no-empty-object-type */
   }

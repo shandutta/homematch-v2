@@ -10,7 +10,11 @@ import {
   validateAndRedact,
 } from '@/lib/llm/safety'
 import { buildUserPrompt } from '@/lib/llm/prompts'
-import type { MatchCandidateProperty, MatchPreferences, RankedProperty } from '@/lib/llm/types'
+import type {
+  MatchCandidateProperty,
+  MatchPreferences,
+  RankedProperty,
+} from '@/lib/llm/types'
 
 // ─── Prompt Injection Detection ───────────────────────────────────────
 
@@ -112,7 +116,11 @@ describe('sanitizeFreeText', () => {
 // ─── Output PII Scanning (scanRankedForPII) ──────────────────────────
 
 describe('scanRankedForPII', () => {
-  const makeRanked = (rationale: string, concerns: string[] = [], evidence = '800000'): RankedProperty => ({
+  const makeRanked = (
+    rationale: string,
+    concerns: string[] = [],
+    evidence = '800000'
+  ): RankedProperty => ({
     property_id: '11111111-1111-4111-8111-111111111111',
     rank: 1,
     score: 0.9,
@@ -132,7 +140,9 @@ describe('scanRankedForPII', () => {
     const result = scanRankedForPII([
       makeRanked('Contact agent@example.com for details.'),
     ])
-    expect(result.piiWarnings).toContain('LLM output contains email address(es)')
+    expect(result.piiWarnings).toContain(
+      'LLM output contains email address(es)'
+    )
   })
 
   it('detects phone numbers in rationale', () => {
@@ -153,7 +163,9 @@ describe('scanRankedForPII', () => {
     const result = scanRankedForPII([
       makeRanked('Payment method: 4111 1111 1111 1111'),
     ])
-    expect(result.piiWarnings).toContain('LLM output contains credit-card pattern(s)')
+    expect(result.piiWarnings).toContain(
+      'LLM output contains credit-card pattern(s)'
+    )
   })
 
   it('detects SSN patterns in concerns', () => {
@@ -172,7 +184,9 @@ describe('scanRankedForPII', () => {
 
   it('accumulates multiple warnings for multiple PII types', () => {
     const result = scanRankedForPII([
-      makeRanked('Contact jane@example.com or call 415-555-1212. See https://listing.com.'),
+      makeRanked(
+        'Contact jane@example.com or call 415-555-1212. See https://listing.com.'
+      ),
     ])
     expect(result.piiWarnings.length).toBeGreaterThanOrEqual(3)
   })

@@ -280,7 +280,9 @@ export function SettingsPageClient({
     [profileState.preferences, user.id]
   )
 
-  const tasteProfileInitialValues = useMemo((): TasteProfileValues | undefined => {
+  const tasteProfileInitialValues = useMemo(():
+    | TasteProfileValues
+    | undefined => {
     const prefs = profileState.preferences
     if (typeof prefs !== 'object' || prefs === null) return undefined
     const raw = (prefs as Record<string, unknown>).tasteProfile

@@ -151,12 +151,13 @@ type CreateServiceClientOptions = {
   approvedCapability?: ApprovedServiceRoleCapability
 }
 
-const APPROVED_SERVICE_ROLE_CAPABILITIES = new Set<ApprovedServiceRoleCapability>([
-  'users-search',
-  'household-disputes',
-  'invite-acceptance',
-  'invite-preview',
-])
+const APPROVED_SERVICE_ROLE_CAPABILITIES =
+  new Set<ApprovedServiceRoleCapability>([
+    'users-search',
+    'household-disputes',
+    'invite-acceptance',
+    'invite-preview',
+  ])
 
 // Alternative server client with service role for administrative operations
 // WARNING: This uses the service role key which bypasses RLS

@@ -40,7 +40,11 @@ export function buildUserPrompt({
   preferences,
   candidates,
   topK,
-}: BuildUserPromptArgs): { prompt: string; truncated: boolean; warning: string | null } {
+}: BuildUserPromptArgs): {
+  prompt: string
+  truncated: boolean
+  warning: string | null
+} {
   const k = Math.min(topK, candidates.length)
   const prefsJson = JSON.stringify(preferences, null, 2)
 
@@ -61,11 +65,9 @@ export function buildUserPrompt({
     null,
     2
   ).length
-  const prefixTokens = (
-    prefsJson.length +
-    schemaOverhead +
-    500 // instruction text
-  ) / CHARS_PER_TOKEN_ESTIMATE
+  const prefixTokens =
+    (prefsJson.length + schemaOverhead + 500) / // instruction text
+    CHARS_PER_TOKEN_ESTIMATE
 
   let candidatesJson = JSON.stringify(candidates, null, 2)
   let candidateTokens = candidatesJson.length / CHARS_PER_TOKEN_ESTIMATE
@@ -73,7 +75,10 @@ export function buildUserPrompt({
   let warning: string | null = null
 
   // If the full set exceeds the budget, progressively reduce candidates
-  while (candidates.length > 1 && prefixTokens + candidateTokens > MAX_PROMPT_TOKENS) {
+  while (
+    candidates.length > 1 &&
+    prefixTokens + candidateTokens > MAX_PROMPT_TOKENS
+  ) {
     // First, try truncating the JSON by using compact serialization
     if (!truncated) {
       candidatesJson = JSON.stringify(candidates)
