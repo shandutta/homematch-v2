@@ -2,7 +2,17 @@ import { render, screen } from '@testing-library/react'
 import { FeatureGrid } from '@/components/marketing/FeatureGrid'
 
 // Mock framer-motion
-jest.mock('framer-motion')
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+  },
+  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
+  useReducedMotion: () => false,
+  useSpring: <T,>(value: T) => value,
+  useTransform: () => ({ get: () => 0 }),
+}))
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
