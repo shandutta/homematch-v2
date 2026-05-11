@@ -22,12 +22,6 @@ export default defineConfig({
       // Category A (fetch→NextRequest) un-quarantined by agent in
       // commits aaecde9..9ce862c. Remaining quarantine is just B/C/D.
       // See follow-up: reports/home-match-revival/ci-quarantine-2026-05-11.md
-      '__tests__/integration/services/property-service-facade.integration.test.ts',
-      '__tests__/integration/services/interaction-pages.test.ts',
-      '__tests__/integration/ui/property-detail-modal.test.tsx',
-      '__tests__/integration/ui/property-detail-modal-images.test.tsx',
-      '__tests__/integration/ui/tab-presence.test.tsx',
-      '__tests__/accessibility/couples-a11y.test.tsx',
     ],
     environment: 'jsdom', // Keep jsdom for most tests
     globals: true,

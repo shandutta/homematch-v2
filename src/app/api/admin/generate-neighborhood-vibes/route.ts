@@ -127,13 +127,26 @@ export async function POST(req: Request) {
     }
   }
 
-  const contexts: NeighborhoodContext[] = []
+  // Batch-fetch neighborhood stats in parallel (RPC is per-neighborhood; no
+  // batched RPC exists in this schema). This collapses the serial N+1 walk
+  // into a single fan-out.
+  const statsByNeighborhood = new Map<
+    string,
+    NeighborhoodStatsResult | null
+  >()
+  const statsResults = await Promise.all(
+    neighborhoods.map(async (n) => ({
+      id: n.id,
+      stats: await fetchNeighborhoodStats(supabase, n.id),
+    }))
+  )
+  for (const { id, stats } of statsResults) {
+    statsByNeighborhood.set(id, stats)
+  }
 
-  for (const neighborhood of neighborhoods) {
-    const listingStats = await fetchNeighborhoodStats(supabase, neighborhood.id)
+  const contexts: NeighborhoodContext[] = neighborhoods.map((neighborhood) => {
     const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
-
-    contexts.push({
+    return {
       neighborhoodId: neighborhood.id,
       name: neighborhood.name,
       city: neighborhood.city,
@@ -142,7 +155,7 @@ export async function POST(req: Request) {
       medianPrice: neighborhood.median_price,
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
-      listingStats,
+      listingStats: statsByNeighborhood.get(neighborhood.id) ?? null,
       sampleProperties: listings.map((p) => ({
         address: p.address,
         price: p.price,
@@ -150,8 +163,8 @@ export async function POST(req: Request) {
         bathrooms: p.bathrooms,
         propertyType: p.property_type,
       })),
-    })
-  }
+    }
+  })
 
   const service = createNeighborhoodVibesService()
   const batch = await service.generateBatch(contexts, {
