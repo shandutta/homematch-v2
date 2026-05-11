@@ -4,7 +4,6 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.ts',
     '<rootDir>/__tests__/test-env.ts',
-    '<rootDir>/__tests__/setupSentry.ts',
   ],
   transform: {
     '^.+\\.(ts|tsx)$': [

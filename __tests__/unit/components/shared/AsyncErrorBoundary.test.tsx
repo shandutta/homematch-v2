@@ -655,18 +655,8 @@ describe('AsyncErrorBoundary', () => {
       })
     })
 
-    it('reports to Sentry with comprehensive context', () => {
-      render(
-        <AsyncErrorBoundary operation="sentry-test">
-          <ThrowError shouldThrow={true} errorType="server" />
-        </AsyncErrorBoundary>
-      )
-
-      expect(mockSentry.withScope).toHaveBeenCalled()
-      expect(mockSentry.captureException).toHaveBeenCalledWith(
-        expect.any(Error)
-      )
-    })
+    // 'reports to Sentry with comprehensive context' removed: Sentry was
+    // removed from AsyncErrorBoundary (commit 0dc20e4, unused dep).
 
     it('includes retry count in analytics', async () => {
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })

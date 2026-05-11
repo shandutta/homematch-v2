@@ -214,7 +214,7 @@ export function SignupForm() {
                     <Input
                       type="email"
                       placeholder="Enter your email"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -233,7 +233,7 @@ export function SignupForm() {
                     <Input
                       type="text"
                       placeholder="Enter your display name"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -252,7 +252,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Enter your password"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -271,7 +271,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Confirm your password"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -311,7 +311,7 @@ export function SignupForm() {
         <Button
           variant="outline"
           onClick={handleGoogleSignup}
-          disabled={loading || !supabase}
+          disabled={loading}
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

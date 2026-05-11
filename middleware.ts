@@ -113,14 +113,16 @@ export async function middleware(request: NextRequest) {
   }
 
   const redirectAnonymousProtectedPage = () => {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.search = ''
-    url.searchParams.set(
+    // Resolve against request.url (the actual incoming host) so cookies
+    // stay scoped to the host the user is on (e.g. 127.0.0.1 vs localhost,
+    // or www.* vs apex). Cloning request.nextUrl sometimes normalizes the
+    // host and causes session loss across the redirect.
+    const target = new URL('/login', request.url)
+    target.searchParams.set(
       'redirectTo',
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     )
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(target)
   }
 
   if (!hasSupabasePublicConfig()) {
@@ -295,15 +297,15 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - redirect to login if not authenticated
   if (isProtectedPath(request.nextUrl.pathname) && !user) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.search = ''
-    url.searchParams.set(
+    // Resolve against request.url so the redirect stays on the same host
+    // (preserves auth cookies). See redirectAnonymousProtectedPage for
+    // the same fix earlier in this file.
+    const target = new URL('/login', request.url)
+    target.searchParams.set(
       'redirectTo',
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     )
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(target)
   }
 
   // Auth routes - redirect to dashboard if already authenticated

@@ -256,7 +256,7 @@ export function LoginForm() {
                     <Input
                       type="email"
                       placeholder="Email"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       data-testid="email-input"
                       {...field}
                     />
@@ -276,7 +276,7 @@ export function LoginForm() {
                     <Input
                       type="password"
                       placeholder="Password"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       data-testid="password-input"
                       {...field}
                     />
@@ -322,7 +322,7 @@ export function LoginForm() {
         <Button
           variant="outline"
           onClick={handleGoogleLogin}
-          disabled={loading || !supabase}
+          disabled={loading}
           className="w-full"
           data-testid="google-signin-button"
         >
