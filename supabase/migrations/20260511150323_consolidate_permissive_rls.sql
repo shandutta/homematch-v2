@@ -74,9 +74,11 @@ CREATE POLICY "Authenticated users can view active properties"
 -- 2. public.user_property_interactions — collapse SELECT duplicates
 -- ============================================================================
 
--- Drop both overlapping SELECT policies.
+-- Drop both overlapping SELECT policies AND the consolidated one (so the
+-- migration is safe to re-run after the new policy has already landed).
 DROP POLICY IF EXISTS "Users can view their own interactions" ON public.user_property_interactions;
 DROP POLICY IF EXISTS "Household members can access mutual likes function" ON public.user_property_interactions;
+DROP POLICY IF EXISTS "Users can view own and household interactions" ON public.user_property_interactions;
 
 -- Create a single consolidated SELECT policy. USING is the OR of both
 -- previous predicates: the user owns the row, OR the row belongs to a
