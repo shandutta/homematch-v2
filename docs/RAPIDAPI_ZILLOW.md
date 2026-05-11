@@ -36,13 +36,13 @@ pnpm exec tsx scripts/pipeline.ts <subcommand> [args]
 
 Subcommands:
 
-| Command | Description | Example |
-|---|---|---|
-| `discover` | Stage 1: fetch + upsert listings | `pnpm exec tsx scripts/pipeline.ts discover --sort=Newest --maxPages=10` |
-| `verify` | Stage 3: status refresh + price update | `pnpm exec tsx scripts/pipeline.ts verify --limit=600 --delayMs=350` |
-| `enrich-images` | Image enrichment for a property | `pnpm exec tsx scripts/pipeline.ts enrich-images --zpid=12345678` |
-| `coverage` | Coverage gap report (DB vs RapidAPI) | `pnpm exec tsx scripts/pipeline.ts coverage --locations="Oakland, CA;SF, CA" --showAll` |
-| `dry-run` | Estimate request count without executing | `pnpm exec tsx scripts/pipeline.ts dry-run --maxPages=10` |
+| Command         | Description                              | Example                                                                                 |
+| --------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `discover`      | Stage 1: fetch + upsert listings         | `pnpm exec tsx scripts/pipeline.ts discover --sort=Newest --maxPages=10`                |
+| `verify`        | Stage 3: status refresh + price update   | `pnpm exec tsx scripts/pipeline.ts verify --limit=600 --delayMs=350`                    |
+| `enrich-images` | Image enrichment for a property          | `pnpm exec tsx scripts/pipeline.ts enrich-images --zpid=12345678`                       |
+| `coverage`      | Coverage gap report (DB vs RapidAPI)     | `pnpm exec tsx scripts/pipeline.ts coverage --locations="Oakland, CA;SF, CA" --showAll` |
+| `dry-run`       | Estimate request count without executing | `pnpm exec tsx scripts/pipeline.ts dry-run --maxPages=10`                               |
 
 Or use npm scripts:
 
@@ -55,6 +55,7 @@ pnpm pipeline:dry-run
 ```
 
 **Legacy scripts** (still available for backward compatibility):
+
 - `pnpm exec tsx scripts/ingest-zillow.ts`
 - `pnpm exec tsx scripts/refresh-zillow-status.ts`
 - `pnpm exec tsx scripts/report-zillow-coverage.ts`

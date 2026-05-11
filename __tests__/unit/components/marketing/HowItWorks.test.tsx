@@ -1,8 +1,23 @@
 import { render, screen } from '@testing-library/react'
 import { HowItWorks } from '@/components/marketing/HowItWorks'
 
-// Mock framer-motion
-jest.mock('framer-motion')
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
+      <p {...props}>{children}</p>
+    ),
+  }
+  return {
+    motion,
+    m: motion,
+    useInView: () => true,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({

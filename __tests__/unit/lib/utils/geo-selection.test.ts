@@ -1,6 +1,6 @@
 // Phase 0/1 closure: P0-maps-auth-hardening
 import {
-// Phase 0/1 closure: P0-maps-auth-hardening
+  // Phase 0/1 closure: P0-maps-auth-hardening
 
   convexHull,
   isPointInPolygon,

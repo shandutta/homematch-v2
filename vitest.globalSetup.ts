@@ -17,14 +17,19 @@ function findSearchRoots(): string[] {
   // When running from a git worktree, also search the main worktree for env files
   // so credentials don't have to be duplicated into each worktree directory.
   try {
-    const out = execSync('git worktree list --porcelain', { cwd: ROOT, encoding: 'utf8' })
+    const out = execSync('git worktree list --porcelain', {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
     for (const line of out.split('\n')) {
       if (line.startsWith('worktree ')) {
         const wt = line.slice('worktree '.length).trim()
         if (wt !== ROOT && !roots.includes(wt)) roots.push(wt)
       }
     }
-  } catch { /* not a git repo or git unavailable */ }
+  } catch {
+    /* not a git repo or git unavailable */
+  }
   return roots
 }
 
@@ -54,18 +59,34 @@ function killPort(port: number): void {
     if (process.platform === 'win32') {
       // Windows: kill via netstat + taskkill
       try {
-        const out = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf8' })
-        const pids = [...new Set(
-          out.split('\n').map((l) => l.trim().split(/\s+/).pop()).filter(Boolean)
-        )]
-        for (const pid of pids) execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' })
-      } catch { /* port free */ }
+        const out = execSync(`netstat -ano | findstr :${port}`, {
+          encoding: 'utf8',
+        })
+        const pids = [
+          ...new Set(
+            out
+              .split('\n')
+              .map((l) => l.trim().split(/\s+/).pop())
+              .filter(Boolean)
+          ),
+        ]
+        for (const pid of pids)
+          execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' })
+      } catch {
+        /* port free */
+      }
     } else {
       // Unix: lsof
-      const out = execSync(`lsof -ti:${port} 2>/dev/null || true`, { encoding: 'utf8' })
+      const out = execSync(`lsof -ti:${port} 2>/dev/null || true`, {
+        encoding: 'utf8',
+      })
       const pids = out.trim().split('\n').filter(Boolean)
       for (const pid of pids) {
-        try { execSync(`kill -9 ${pid}`, { stdio: 'ignore' }) } catch { /* already gone */ }
+        try {
+          execSync(`kill -9 ${pid}`, { stdio: 'ignore' })
+        } catch {
+          /* already gone */
+        }
       }
     }
   } catch {
@@ -96,10 +117,14 @@ export async function setup(): Promise<void> {
   const envFromFiles = loadEnvFiles()
 
   const pick = (...keys: string[]): string =>
-    keys.map((k) => (envFromFiles[k] ?? process.env[k] ?? '')).find(Boolean) ?? ''
+    keys.map((k) => envFromFiles[k] ?? process.env[k] ?? '').find(Boolean) ?? ''
 
-  const supabaseUrl = pick('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL') || 'http://127.0.0.1:54200'
-  const supabaseAnonKey = pick('SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  const supabaseUrl =
+    pick('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL') || 'http://127.0.0.1:54200'
+  const supabaseAnonKey = pick(
+    'SUPABASE_ANON_KEY',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  )
   const supabaseServiceRoleKey = pick('SUPABASE_SERVICE_ROLE_KEY')
   const serverActionsKey = pick('NEXT_SERVER_ACTIONS_ENCRYPTION_KEY')
 
@@ -107,6 +132,35 @@ export async function setup(): Promise<void> {
   killPort(DEV_PORT)
   // Brief pause for OS to release the port
   await new Promise<void>((r) => setTimeout(r, 500))
+
+  // Honor SKIP_DEV_SERVER (CI memory budget): if set, skip Next.js dev
+  // server entirely. Tests that need HTTP will fail explicitly; pure DB
+  // and route-handler-import tests still run. We still propagate the
+  // Supabase test credentials into process.env so workers don't fall
+  // back to whatever .env.local points at (often prod).
+  if (process.env.SKIP_DEV_SERVER === 'true') {
+    console.log(
+      '[globalSetup] SKIP_DEV_SERVER=true — Next.js dev server NOT started.'
+    )
+    const earlyInherit: Array<[string, string]> = [
+      ['TEST_API_URL', `http://127.0.0.1:${DEV_PORT}`],
+      ['NEXT_PUBLIC_SUPABASE_URL', supabaseUrl],
+      ['SUPABASE_URL', supabaseUrl],
+      ['NEXT_PUBLIC_SUPABASE_ANON_KEY', supabaseAnonKey],
+      ['SUPABASE_ANON_KEY', supabaseAnonKey],
+      ['SUPABASE_SERVICE_ROLE_KEY', supabaseServiceRoleKey],
+      ['NODE_ENV', 'test'],
+      ['NEXT_PUBLIC_TEST_MODE', 'true'],
+      ['MARKETING_USE_SEED', 'true'],
+    ]
+    for (const [k, v] of earlyInherit) {
+      if (v) process.env[k] = v
+    }
+    console.log(`[globalSetup] Supabase URL: ${supabaseUrl}`)
+    return async () => {
+      console.log('[globalSetup] Teardown (no dev server to stop)')
+    }
+  }
 
   // Build env for the Next.js dev server: test mode + local Supabase, no prod DB
   const devEnv: NodeJS.ProcessEnv = {
@@ -125,18 +179,34 @@ export async function setup(): Promise<void> {
   }
 
   // Strip production DB vars so they can't shadow local Supabase
-  for (const key of ['POSTGRES_URL', 'POSTGRES_DATABASE', 'POSTGRES_HOST', 'POSTGRES_PASSWORD', 'POSTGRES_PRISMA_URL']) {
+  for (const key of [
+    'POSTGRES_URL',
+    'POSTGRES_DATABASE',
+    'POSTGRES_HOST',
+    'POSTGRES_PASSWORD',
+    'POSTGRES_PRISMA_URL',
+  ]) {
     delete devEnv[key]
   }
 
-  console.log(`[globalSetup] Starting Next.js dev server on port ${DEV_PORT}...`)
+  console.log(
+    `[globalSetup] Starting Next.js dev server on port ${DEV_PORT}...`
+  )
   console.log(`[globalSetup] Supabase URL: ${supabaseUrl}`)
 
   // Spawn next dev directly — bypasses npm guard scripts (guard:supabase, ensure:server-action-key)
   // that are designed for interactive use and would block in CI/test mode.
   devServer = spawn(
     'pnpm',
-    ['exec', 'next', 'dev', '--hostname', '127.0.0.1', '--port', String(DEV_PORT)],
+    [
+      'exec',
+      'next',
+      'dev',
+      '--hostname',
+      '127.0.0.1',
+      '--port',
+      String(DEV_PORT),
+    ],
     {
       cwd: ROOT,
       env: devEnv,

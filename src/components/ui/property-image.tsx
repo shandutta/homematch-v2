@@ -2,7 +2,37 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import Image from 'next/image'
-import { Home } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
+
+/**
+ * A5: distinct visual state for properties whose remote image AND all local
+ * fallbacks have failed to load (dead Zillow CDN URLs, missing assets, etc.).
+ *
+ * The legacy placeholder rendered a Home icon on a soft gradient — which was
+ * indistinguishable from a real property image at a glance. This component
+ * gives broken images a deliberately "unavailable" treatment so users (and
+ * QA) can tell the data is bad, not the layout: a greyscale block with a
+ * crossed-out image glyph plus an "Image unavailable" caption.
+ */
+function BrokenImagePlaceholder({ className = '' }: { className?: string }) {
+  return (
+    <div
+      data-testid="property-image-broken"
+      role="img"
+      aria-label="Property image unavailable"
+      className={`flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-800 to-slate-900 grayscale ${className}`}
+    >
+      <ImageOff
+        className="h-10 w-10 text-slate-500"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+      <span className="px-2 text-center text-[11px] font-medium tracking-wide text-slate-400 uppercase">
+        Image unavailable
+      </span>
+    </div>
+  )
+}
 
 interface PropertyImageProps {
   src?: string | string[]
@@ -41,13 +71,9 @@ const BLUR_DATA_URL =
         '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="8" height="8" fill="url(#g)"/></svg>'
       ))
 
-const BROKEN_IMAGE_PATH_PATTERNS = [
-  'photo-1575517111478-7f6f2c59ebb0',
-]
+const BROKEN_IMAGE_PATH_PATTERNS = ['photo-1575517111478-7f6f2c59ebb0']
 
-const BLOCKED_DOMAINS = new Set([
-  'loremflickr.com',
-])
+const BLOCKED_DOMAINS = new Set(['loremflickr.com'])
 
 const shouldBlockHostname = (hostname: string | null) =>
   process.env.NEXT_PUBLIC_TEST_MODE === 'true' &&
@@ -183,15 +209,10 @@ export function PropertyImage({
     ...(fill ? { fill: true } : { width, height }),
   }
 
+  // If all images fail, show a distinct broken-image placeholder (A5) so the
+  // bad-image state is visually obvious instead of mimicking a real photo.
   if (allFallbacksFailed) {
-    return (
-      <div
-        data-testid="property-image-placeholder"
-        className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 ${className}`}
-      >
-        <Home className="h-12 w-12 text-slate-500" />
-      </div>
-    )
+    return <BrokenImagePlaceholder className={className} />
   }
 
   if (!fill) {
@@ -218,7 +239,7 @@ function ImageSkeleton() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden bg-slate-900/40"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%] animate-[propertyImageShimmer_1.6s_ease-in-out_infinite]" />
+      <div className="absolute inset-0 animate-[propertyImageShimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.08)_50%,transparent_70%)] bg-[length:200%_100%]" />
       <style>{`
         @keyframes propertyImageShimmer {
           0% { background-position: -100% 0; }

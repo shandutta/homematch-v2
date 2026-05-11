@@ -47,6 +47,23 @@ describe('AuthPageShell', () => {
 
     expect(screen.queryByRole('link', { name: 'HomeMatch' })).toBeNull()
   })
+
+  // A3: the decorative blur layer below uses w-[680px] centered with
+  // -translate-x-1/2, which overflows a 375px mobile viewport by ~150px on
+  // each side. Without overflow-hidden on the outer container, the page
+  // scrolls horizontally on mobile. Asserting the class here keeps the
+  // safeguard from regressing.
+  it('clips decorative overflow on the outer container', () => {
+    const { container } = render(
+      <AuthPageShell title="HomeMatch" subtitle="Sign in to your account">
+        <div />
+      </AuthPageShell>
+    )
+
+    const shell = container.firstElementChild
+    expect(shell).not.toBeNull()
+    expect(shell?.className).toContain('overflow-hidden')
+  })
 })
 
 describe('AuthLink', () => {

@@ -1,6 +1,6 @@
 // Phase 0/1 closure: P0-noauth-probe-harness
 import {
-// Phase 0/1 closure: P0-noauth-probe-harness
+  // Phase 0/1 closure: P0-noauth-probe-harness
 
   DEFAULT_BASE_URL,
   ALLOWED_LOCAL_HOSTS,

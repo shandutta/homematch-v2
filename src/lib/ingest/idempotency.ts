@@ -152,8 +152,8 @@ function canonicalJson(value: unknown): string {
     return `[${value.map(canonicalJson).join(',')}]`
   }
   // value is a non-null, non-array object at this point
-  const entries = Object.entries(value).sort(
-    ([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)
+  const entries = Object.entries(value).sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0
   )
   return `{${entries
     .map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`)

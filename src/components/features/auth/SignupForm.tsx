@@ -123,7 +123,15 @@ export function SignupForm() {
 
     return (
       <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full max-w-md shadow-lg backdrop-blur">
-        <CardContent className="space-y-4 pt-6">
+        {/* M18: success state announced via aria-live so screen readers
+            confirm the signup attempt succeeded. status role is preferred
+            over alert here because the message is informational, not an
+            error that interrupts the user. */}
+        <CardContent
+          className="space-y-4 pt-6"
+          role="status"
+          aria-live="polite"
+        >
           <Alert>
             <AlertDescription>
               {lastEmail
@@ -214,7 +222,7 @@ export function SignupForm() {
                     <Input
                       type="email"
                       placeholder="Enter your email"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -233,7 +241,7 @@ export function SignupForm() {
                     <Input
                       type="text"
                       placeholder="Enter your display name"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -252,7 +260,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Enter your password"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -271,7 +279,7 @@ export function SignupForm() {
                     <Input
                       type="password"
                       placeholder="Confirm your password"
-                      disabled={loading || !supabase}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -283,13 +291,9 @@ export function SignupForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                loading ||
-                !supabase ||
-                (!form.formState.isValid &&
-                  // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
-              }
+              // H5 audit: keep button enabled until submit; the resolver
+              // surfaces errors inline. `loading` still blocks double-submit.
+              disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Account
@@ -311,11 +315,11 @@ export function SignupForm() {
         <Button
           variant="outline"
           onClick={handleGoogleSignup}
-          disabled={loading || !supabase}
+          disabled={loading}
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Google
+          Sign up with Google
         </Button>
       </CardContent>
     </Card>

@@ -1,12 +1,10 @@
-// Force dynamic rendering to prevent static generation issues
-export const dynamic = 'force-dynamic'
-
+// Phase C of Clerk migration: /signup redirects to Clerk's /sign-up.
+// The legacy SignupForm at @/components/features/auth/SignupForm.tsx is
+// retained but unhooked — it can be removed after Phase E (user migration).
+import { redirect } from 'next/navigation'
 import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
-import {
-  AuthLink,
-  AuthPageShell,
-} from '@/components/features/auth/AuthPageShell'
-import { SignupForm } from '@/components/features/auth/SignupForm'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = createPublicRouteMetadata({
   title: 'Sign Up | HomeMatch — Start Your Collaborative Home Search',
@@ -15,21 +13,23 @@ export const metadata = createPublicRouteMetadata({
   path: '/signup',
 })
 
-export default function SignupPage() {
-  return (
-    <AuthPageShell
-      title="HomeMatch"
-      subtitle="Create your account"
-      maxWidthClassName="max-w-md"
-      valueProp="AI-powered home matching for you and your household"
-    >
-      <div className="space-y-6">
-        <SignupForm />
+interface SignupPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
 
-        <p className="text-muted-foreground text-center text-sm">
-          Already have an account? <AuthLink href="/login">Sign in</AuthLink>
-        </p>
-      </div>
-    </AuthPageShell>
-  )
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const resolved = await searchParams
+  const redirectTo = (() => {
+    const v = resolved?.redirectTo ?? resolved?.redirect
+    if (typeof v === 'string') return v
+    if (Array.isArray(v) && typeof v[0] === 'string') return v[0]
+    return null
+  })()
+
+  const target = new URLSearchParams()
+  if (redirectTo) {
+    target.set('redirect_url', redirectTo)
+  }
+  const query = target.toString()
+  redirect(query ? `/sign-up?${query}` : '/sign-up')
 }

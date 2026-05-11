@@ -506,18 +506,6 @@ class PerformanceTracker {
           }),
         })
       }
-
-      // Also send to PostHog if available
-      if (typeof window !== 'undefined' && window.posthog) {
-        metrics.forEach((metric) => {
-          window.posthog!.capture('performance_metric', {
-            metric_name: metric.name,
-            metric_value: metric.value,
-            metric_rating: metric.rating,
-            page_url: window.location.href,
-          })
-        })
-      }
     } catch (error) {
       console.error('Failed to report metrics:', error)
     }

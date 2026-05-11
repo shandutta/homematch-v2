@@ -102,9 +102,9 @@ export function redactPII(input: string): string {
  * with a warning logged. The output is always returned (never
  * discarded) — callers handle warnings.
  */
-export function scanRankedForPII(
-  ranked: RankedProperty[]
-): { piiWarnings: string[] } {
+export function scanRankedForPII(ranked: RankedProperty[]): {
+  piiWarnings: string[]
+} {
   const warnings: string[] = []
 
   for (const entry of ranked) {
@@ -122,8 +122,7 @@ export function scanRankedForPII(
       warnings.push('LLM output contains SSN pattern(s)')
     if (CREDIT_CARD_RE.test(textToScan))
       warnings.push('LLM output contains credit-card pattern(s)')
-    if (URL_RE.test(textToScan))
-      warnings.push('LLM output contains URL(s)')
+    if (URL_RE.test(textToScan)) warnings.push('LLM output contains URL(s)')
   }
 
   return { piiWarnings: Array.from(new Set(warnings)) }
@@ -147,9 +146,7 @@ function redactCandidate(
     : null
   return {
     ...candidate,
-    description: descResult
-      ? descResult.sanitized
-      : candidate.description,
+    description: descResult ? descResult.sanitized : candidate.description,
   }
 }
 

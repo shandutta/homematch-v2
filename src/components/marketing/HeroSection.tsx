@@ -5,16 +5,25 @@ import type { CSSProperties } from 'react'
 import { HeroMotionEnhancer } from './HeroMotionEnhancer'
 import { MarketingPreviewCardStatic } from './MarketingPreviewCardStatic'
 
-export function HeroSection() {
+export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
   const heroStyle: CSSProperties & Record<string, string> = {
     '--spotlight-x': '50%',
     '--spotlight-y': '35%',
   }
 
+  // L1: Conditional CTAs by session state. Anonymous visitors saw
+  // "Resume your search" pointing at /login — confusing when there's
+  // nothing to resume. Now anonymous users get a clear signup entry
+  // ("Start swiping") and logged-in visitors get the resume path.
+  const primaryHref = loggedIn ? '/dashboard' : '/signup'
+  const primaryLabel = loggedIn ? 'Resume your search' : 'Start swiping'
+  const secondaryHref = loggedIn ? '/signup' : '/login'
+  const secondaryLabel = loggedIn ? 'Invite household' : 'Sign in'
+
   return (
     <section
       data-hero
-      className="relative isolate min-h-[680px] overflow-hidden bg-[#030712] text-white sm:min-h-[720px]"
+      className="relative isolate overflow-hidden bg-[#030712] text-white"
       style={heroStyle}
       data-testid="hero"
     >
@@ -93,13 +102,12 @@ export function HeroSection() {
                   className="group relative w-full overflow-hidden sm:w-auto"
                 >
                   <Link
-                    href="/signup"
-                    aria-label="Start swiping with HomeMatch"
+                    href={primaryHref}
                     data-testid="primary-cta"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       <Heart className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                      Start swiping
+                      {primaryLabel}
                     </span>
                     {/* Shimmer effect on hover */}
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
@@ -111,7 +119,7 @@ export function HeroSection() {
                   className="w-full border-white/30 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/10 hover:!text-white sm:w-auto"
                   asChild
                 >
-                  <Link href="/login">Resume your search</Link>
+                  <Link href={secondaryHref}>{secondaryLabel}</Link>
                 </Button>
               </div>
             </div>

@@ -124,8 +124,7 @@ export function PropertyDetailModal({
 
     const handleKey = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return
-      const target =
-        event.target instanceof HTMLElement ? event.target : null
+      const target = event.target instanceof HTMLElement ? event.target : null
       const tagName = target?.tagName
       if (tagName === 'INPUT' || tagName === 'TEXTAREA') return
       if (target?.isContentEditable) return
@@ -384,7 +383,7 @@ export function PropertyDetailModal({
               )}
 
               {hasMultipleImages && (
-                <div className="absolute bottom-4 left-1/2 z-10 max-w-[80%] -translate-x-1/2 overflow-x-auto rounded-full border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="absolute bottom-4 left-1/2 z-10 max-w-[80%] -translate-x-1/2 [scrollbar-width:none] overflow-x-auto rounded-full border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   <div className="flex items-center gap-1">
                     {images.map((_, index) => {
                       const isActive = index === normalizedIndex
@@ -396,7 +395,7 @@ export function PropertyDetailModal({
                           aria-current={isActive ? 'true' : undefined}
                           data-testid={`image-dot-${index}`}
                           onClick={() => setCurrentImageIndex(index)}
-                          className="group relative inline-flex min-h-[44px] min-w-[28px] touch-manipulation items-center justify-center rounded-full px-1 py-1 transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none sm:min-h-0 sm:min-w-0 sm:h-6 sm:w-6 sm:px-0 sm:py-0"
+                          className="group relative inline-flex min-h-[44px] min-w-[28px] touch-manipulation items-center justify-center rounded-full px-1 py-1 transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none sm:h-6 sm:min-h-0 sm:w-6 sm:min-w-0 sm:px-0 sm:py-0"
                         >
                           <span
                             className={`block h-1.5 w-1.5 rounded-full bg-white/50 transition-all duration-200 ${

@@ -90,7 +90,38 @@ console.error = (...args: unknown[]) => {
   originalConsoleError.apply(console, args)
 }
 
-jest.mock("framer-motion")
+jest.mock('framer-motion')
+
+// Global Clerk mocks — server-side Clerk pulls @clerk/backend which uses
+// .mjs exports that ts-jest can't transform in jsdom. Most unit tests
+// don't exercise auth; they just need the imports to resolve.
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: () => Promise.resolve({ userId: null }),
+  currentUser: () => Promise.resolve(null),
+  clerkMiddleware:
+    (
+      handler: (
+        clerkAuth: () => Promise<{ userId: string | null }>,
+        request: unknown
+      ) => unknown
+    ) =>
+    async (request: unknown) =>
+      handler(() => Promise.resolve({ userId: null }), request),
+  createRouteMatcher:
+    () =>
+    () =>
+      false,
+  verifyWebhook: jest.fn(),
+}))
+jest.mock('@clerk/nextjs', () => ({
+  ClerkProvider: ({ children }: { children: unknown }) => children,
+  SignIn: () => null,
+  SignUp: () => null,
+  SignOutButton: ({ children }: { children: unknown }) => children,
+  useClerk: () => ({ signOut: jest.fn() }),
+  useAuth: () => ({ userId: null, isLoaded: true, isSignedIn: false }),
+  useUser: () => ({ user: null, isLoaded: true, isSignedIn: false }),
+}))
 
 // Add global test helpers
 global.beforeEach = global.beforeEach || (() => {})

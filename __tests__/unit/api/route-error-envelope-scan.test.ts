@@ -46,6 +46,11 @@ const INTENTIONAL_EXCEPTIONS: ReadonlyArray<{
     reason:
       'Proxies the Google Maps JavaScript API and returns raw application/javascript bodies (with comment-style error markers); the JSON `{ error, code }` envelope does not apply to a script-tag-loaded resource.',
   },
+  {
+    path: 'src/app/api/webhooks/clerk/route.ts',
+    reason:
+      'Clerk webhook endpoint. Responds with raw status codes (NextResponse with plain text body) that Svix expects for retry signaling; the structured `{ error, code }` envelope is not the contract that Clerk/Svix consume.',
+  },
 ]
 
 const collectRouteFiles = (root: string): string[] => {

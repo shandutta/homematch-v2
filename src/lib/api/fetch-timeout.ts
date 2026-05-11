@@ -52,6 +52,7 @@ export function isFetchTimeoutError(error: unknown): boolean {
   return (
     error instanceof FetchTimeoutError ||
     (error instanceof Error &&
-      (error.name === 'AbortError' || /timed?\s*out|timeout/i.test(error.message)))
+      (error.name === 'AbortError' ||
+        /timed?\s*out|timeout/i.test(error.message)))
   )
 }

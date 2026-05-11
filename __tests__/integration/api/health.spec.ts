@@ -1,29 +1,24 @@
 /**
- * E2E tests for /api/health endpoint
- * Tests the health check functionality including database connectivity using real HTTP requests
+ * Integration tests for /api/health endpoint
+ * Tests the health check functionality including database connectivity.
+ * Invokes the route handler directly so no dev server is required (CI runs
+ * with SKIP_DEV_SERVER=true).
  */
 
-import { E2EHttpClient } from '../../utils/e2e-http-client'
+import { NextRequest } from 'next/server'
+import { describe, test, expect } from 'vitest'
 
-const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
+import { GET } from '@/app/api/health/route'
 
-// Increase timeout for integration tests making real HTTP requests
+// Increase timeout for integration tests making real DB queries
 const TEST_TIMEOUT = 60000 // 60s per test
 
-describe('E2E: /api/health', () => {
-  let client: E2EHttpClient
-
-  // Use beforeEach to create fresh client per test, preventing connection
-  // exhaustion when tests share a single client instance.
-  // Health tests don't authenticate, so no cleanup/afterEach is needed.
-  beforeEach(() => {
-    client = new E2EHttpClient(API_URL)
-  })
-
+describe('Integration: /api/health', () => {
   test(
     'should return health status with proper structure',
     async () => {
-      const response = await client.get('/api/health')
+      const req = new NextRequest('http://localhost/api/health')
+      const response = await GET(req)
       const body = await response.json()
 
       // Should return either 200 (healthy) or 503 (unhealthy)
@@ -53,7 +48,8 @@ describe('E2E: /api/health', () => {
   test(
     'should include database connectivity information',
     async () => {
-      const response = await client.get('/api/health')
+      const req = new NextRequest('http://localhost/api/health')
+      const response = await GET(req)
       const body = await response.json()
 
       // Should have database status
@@ -73,7 +69,8 @@ describe('E2E: /api/health', () => {
   test(
     'should return 200 when database is connected',
     async () => {
-      const response = await client.get('/api/health')
+      const req = new NextRequest('http://localhost/api/health')
+      const response = await GET(req)
       const body = await response.json()
 
       if (body.database === 'connected') {

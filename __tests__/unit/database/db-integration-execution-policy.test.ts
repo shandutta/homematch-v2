@@ -11,7 +11,8 @@ const readRepoFile = (relativePath: string) =>
   readFileSync(repoPath(relativePath), 'utf8')
 const readRepoJson = (relativePath: string) =>
   JSON.parse(readRepoFile(relativePath))
-const normalize = (value: string) => value.replace(/\\\*/g, '*').replace(/\s+/g, ' ').trim()
+const normalize = (value: string) =>
+  value.replace(/\\\*/g, '*').replace(/\s+/g, ' ').trim()
 
 describe('D10 DB integration execution environment policy', () => {
   const policy = readRepoJson('config/db-integration-execution-policy.json')

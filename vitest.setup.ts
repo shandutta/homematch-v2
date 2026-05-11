@@ -764,6 +764,7 @@ try {
 
 // Global test isolation: each test gets a clean database state
 import { beforeEach, afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
 let _testStartTime = 0
 
@@ -773,5 +774,9 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // No delay needed for sequential tests
+  // Tear down rendered DOM so subsequent tests don't see duplicate elements
+  // (we run vitest with singleThread + pool='threads', so the jsdom instance
+  // is shared across files). Without this, getByText() across tests that
+  // render the same component throws "Found multiple elements".
+  cleanup()
 })

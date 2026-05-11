@@ -789,7 +789,7 @@ export function StorytellingDescription({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <p className="text-sm dark:text-hm-stone-400 leading-relaxed text-slate-600">
+        <p className="dark:text-hm-stone-400 text-sm leading-relaxed text-slate-600">
           {isMutualLike ? description : lifestyleStory}
         </p>
       </MotionDiv>
@@ -806,7 +806,7 @@ export function StorytellingDescription({
       >
         {/* Main Description */}
         <p
-          className={`text-sm line-clamp-1 leading-relaxed font-medium sm:line-clamp-2 ${
+          className={`line-clamp-1 text-sm leading-relaxed font-medium sm:line-clamp-2 ${
             isMutualLike
               ? 'rounded-md border border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-2 py-1 text-pink-700 dark:border-pink-500/30 dark:from-pink-500/10 dark:via-purple-500/5 dark:to-slate-900/0 dark:text-pink-200'
               : 'dark:text-hm-stone-400 text-slate-600'
@@ -820,7 +820,7 @@ export function StorytellingDescription({
 
         {/* Future vision tag - show as subtle pill when enabled */}
         {futureVision && (
-          <div className="rounded-2xl shadow-sm dark:text-hm-stone-200 hidden border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 ring-1 ring-blue-100/60 sm:block dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:ring-white/10">
+          <div className="dark:text-hm-stone-200 hidden rounded-2xl border border-blue-100/70 bg-gradient-to-r from-blue-50/90 via-slate-50 to-purple-50/70 px-3.5 py-2.5 text-slate-700 shadow-sm ring-1 ring-blue-100/60 sm:block dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] dark:ring-white/10">
             <div className="flex items-start gap-2">
               <Sparkles className="dark:text-hm-amber-400 mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
               <div>
@@ -847,7 +847,7 @@ export function StorytellingDescription({
                 <Badge
                   key={tag}
                   variant="secondary"
-                  className={`${tagConfig.color} text-xs flex items-center gap-1 px-2 py-0.5`}
+                  className={`${tagConfig.color} flex items-center gap-1 px-2 py-0.5 text-xs`}
                 >
                   <IconComponent className="h-2.5 w-2.5" />
                   {displayTag}
@@ -899,7 +899,7 @@ export function StorytellingDescription({
       {/* Lifestyle Story - Only show if not a mutual like (avoid redundancy) */}
       {showVibeStatement && !isMutualLike && (
         <MotionP
-          className="text-sm dark:text-hm-stone-500 leading-relaxed text-slate-500 italic"
+          className="text-token-sm dark:text-hm-stone-500 leading-relaxed text-slate-600 italic"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -921,10 +921,10 @@ export function StorytellingDescription({
               key={i}
               className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 dark:bg-white/[0.05]"
             >
-              <span className="text-xs dark:text-hm-stone-200 font-medium text-slate-700">
+              <span className="dark:text-hm-stone-200 text-xs font-medium text-slate-700">
                 {vibe.name}
               </span>
-              <span className="text-xs dark:text-hm-stone-500 text-slate-400">
+              <span className="dark:text-hm-stone-500 text-xs text-slate-400">
                 {vibe.source === 'both'
                   ? '↔'
                   : vibe.source === 'interior'
@@ -947,7 +947,7 @@ export function StorytellingDescription({
           {emotionalHooks.slice(0, 2).map((hook, i) => (
             <p
               key={i}
-              className="text-xs dark:text-hm-stone-500 leading-relaxed text-slate-400 italic"
+              className="dark:text-hm-stone-500 text-xs leading-relaxed text-slate-400 italic"
             >
               &quot;{hook}&quot;
             </p>
@@ -958,7 +958,7 @@ export function StorytellingDescription({
       {/* Neighborhood Perks */}
       {neighborhoodPerk && (
         <MotionP
-          className="text-sm dark:text-hm-stone-500 flex items-start gap-2 leading-relaxed text-slate-500"
+          className="text-token-sm dark:text-hm-stone-500 flex items-start gap-2 leading-relaxed text-slate-600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.4 }}
@@ -978,11 +978,11 @@ export function StorytellingDescription({
         >
           <div className="mb-1 flex items-center gap-2">
             <Sparkles className="dark:text-hm-amber-400 h-3 w-3 text-blue-600" />
-            <span className="text-xs dark:text-hm-stone-200 font-semibold text-blue-800">
+            <span className="dark:text-hm-stone-200 text-xs font-semibold text-blue-800">
               {normalizeStorytellingTag(futureVision.tag)}
             </span>
           </div>
-          <p className="text-xs dark:text-hm-stone-400 leading-relaxed text-blue-700">
+          <p className="dark:text-hm-stone-400 text-xs leading-relaxed text-blue-700">
             {futureVision.description}
           </p>
         </MotionDiv>
@@ -1016,7 +1016,7 @@ export function StorytellingDescription({
               >
                 <Badge
                   variant="secondary"
-                  className={`${tagConfig.color} text-xs flex cursor-default items-center gap-1 px-2 py-1 font-medium transition-all hover:shadow-sm`}
+                  className={`${tagConfig.color} flex cursor-default items-center gap-1 px-2 py-1 text-xs font-medium transition-all hover:shadow-sm`}
                 >
                   <IconComponent className="h-3 w-3" />
                   {displayTag}

@@ -26,7 +26,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getProperty', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('id', propertyId)
         .eq('is_active', true)
         .single()
@@ -50,13 +52,14 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery(
       'getPropertyWithNeighborhood',
       async (supabase) => {
+        // Explicit columns per audit M13 — replaces the `*` wildcards on
+        // both the properties row and the embedded neighborhood join. Every
+        // column in the public.properties and public.neighborhoods Row is
+        // still listed so PropertyWithNeighborhood resolves cleanly.
         const { data, error } = await supabase
           .from('properties')
           .select(
-            `
-            *,
-            neighborhood:neighborhoods(*)
-          `
+            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, last_refreshed_at, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, source_fingerprint, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, neighborhood:neighborhoods(bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score)'
           )
           .eq('id', propertyId)
           .eq('is_active', true)
@@ -168,7 +171,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByZpid', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('zpid', zpid)
         .eq('is_active', true)
         .single()
@@ -193,7 +198,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByHash', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('property_hash', hash)
         .eq('is_active', true)
         .single()

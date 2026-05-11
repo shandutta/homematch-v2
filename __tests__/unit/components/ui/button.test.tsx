@@ -283,6 +283,45 @@ describe('Button Component', () => {
         'custom-spacing'
       )
     })
+
+    // H7: padding for the `prime` variant must come from `size` (via CVA
+    // compoundVariants), NOT from the base variant. This guarantees that
+    // `<Button variant="prime" size="lg" />` renders at the SAME height
+    // wherever it's used (Hero CTA, CtaBand) instead of leaking a hardcoded
+    // `py-7` from the base that escapes className overrides on one axis.
+    test('prime variant does NOT bake padding into the base variant', () => {
+      render(<Button variant="prime">Prime no size</Button>)
+      const button = screen.getByRole('button')
+      // The previously-baked `px-9 py-7` must be gone — otherwise size and
+      // className overrides can only catch one axis and we end up with the
+      // 76px-vs-52px regression from the audit.
+      expect(button).not.toHaveClass('px-9')
+      expect(button).not.toHaveClass('py-7')
+    })
+
+    test('prime + lg gets size-specific padding from compoundVariants', () => {
+      render(
+        <Button variant="prime" size="lg">
+          Prime LG
+        </Button>
+      )
+      const button = screen.getByRole('button')
+      // size variant still applies its height
+      expect(button).toHaveClass('min-h-[48px]', 'h-12')
+      // compoundVariant supplies prime-specific padding + typography
+      expect(button).toHaveClass('px-8', 'py-4', 'text-base')
+    })
+
+    test('prime + default gets size-specific padding from compoundVariants', () => {
+      render(
+        <Button variant="prime" size="default">
+          Prime Default
+        </Button>
+      )
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('min-h-[44px]', 'h-11')
+      expect(button).toHaveClass('px-6', 'py-3', 'text-base')
+    })
   })
 
   describe('Edge Cases', () => {

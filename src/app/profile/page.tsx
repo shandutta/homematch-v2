@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
+import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 import { redirect } from 'next/navigation'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { UserService } from '@/lib/services/users'
@@ -11,36 +12,47 @@ export const metadata = createNoindexRouteMetadata({
 })
 
 export default async function ProfilePage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userCtx = await getServerUserContext()
 
-  if (!user) {
+  if (!userCtx) {
+    redirect('/login?redirectTo=%2Fprofile')
+  }
+
+  // For new Clerk users without a profile row, we still need to render the
+  // profile page so they can complete onboarding. We'll fetch a "user" shape
+  // from the unified optional-user helper for the client component.
+  const userShape = await getOptionalServerUser()
+  if (!userShape) {
     redirect('/login?redirectTo=%2Fprofile')
   }
 
   const userService = new UserService()
 
-  // Safely fetch profile and activity summary, handling potential errors
+  // Safely fetch profile and activity summary, handling potential errors.
+  // Use profileId (UUID) for the DB lookups; userShape.id is the auth id
+  // (Clerk userId or legacy Supabase UUID).
   let userProfile = null
   let activitySummary = null
 
-  try {
-    ;[userProfile, activitySummary] = await Promise.all([
-      userService.getUserProfileWithHousehold(user.id),
-      userService.getUserActivitySummary(user.id),
-    ])
-  } catch (error) {
-    console.error('Error fetching user data:', error)
-    // Continue with null values - will create profile below
+  if (userCtx.profileId) {
+    try {
+      ;[userProfile, activitySummary] = await Promise.all([
+        userService.getUserProfileWithHousehold(userCtx.profileId),
+        userService.getUserActivitySummary(userCtx.profileId),
+      ])
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+      // Continue with null values - will create profile below
+    }
   }
 
-  // Create profile if it doesn't exist (OAuth users or first-time users)
+  // Create profile if it doesn't exist (OAuth users or first-time Clerk users).
+  // NOTE: For Clerk users, the webhook at /api/webhooks/clerk should normally
+  // create the profile. This is the fallback path.
   let profile = userProfile
   if (!profile) {
     try {
-      const metadata = user.user_metadata
+      const metadata = userShape.user_metadata
       const emailFromMetadata =
         metadata &&
         typeof metadata === 'object' &&
@@ -48,12 +60,19 @@ export default async function ProfilePage() {
         typeof metadata.email === 'string'
           ? metadata.email
           : ''
-      const email = user.email || emailFromMetadata || ''
+      const email = userShape.email || emailFromMetadata || userCtx.email || ''
+      // For Clerk users, generate a UUID for user_profiles.id (legacy schema
+      // constraint). For Supabase legacy users, userShape.id IS the UUID.
+      const profileInsertId =
+        userCtx.source === 'supabase-legacy' ? userShape.id : crypto.randomUUID()
       profile = await userService.createUserProfile({
-        id: user.id,
+        id: profileInsertId,
         email,
         onboarding_completed: false,
         preferences: {},
+        ...(userCtx.source === 'clerk'
+          ? { clerk_user_id: userCtx.authId }
+          : {}),
       })
     } catch (error) {
       console.error('Error creating user profile:', error)
@@ -70,7 +89,7 @@ export default async function ProfilePage() {
   return (
     <div className="gradient-grid-bg min-h-screen">
       <ProfilePageClient
-        user={user}
+        user={userShape}
         profile={profile}
         activitySummary={
           activitySummary || {

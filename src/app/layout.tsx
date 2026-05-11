@@ -5,6 +5,8 @@ import {
   Fraunces,
   Plus_Jakarta_Sans,
 } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { shadcn } from '@clerk/ui/themes'
 import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
@@ -147,18 +149,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${plusJakartaSans.variable} antialiased`}
       >
-        <ErrorBoundary>
-          <PerformanceProvider>
-            <MotionProvider>
-              <main>{children}</main>
-            </MotionProvider>
-          </PerformanceProvider>
-        </ErrorBoundary>
-        <Toaster position="top-right" />
-        <AnalyticsGate />
-        <AdSenseGate />
-        <CookieConsentBanner />
-        <CcpaOptOutLink />
+        <ClerkProvider appearance={{ theme: shadcn }}>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-slate-900 focus:shadow-lg focus:ring-2 focus:ring-sky-500"
+          >
+            Skip to content
+          </a>
+          <ErrorBoundary>
+            <PerformanceProvider>
+              <MotionProvider>
+                <main id="main-content">{children}</main>
+              </MotionProvider>
+            </PerformanceProvider>
+          </ErrorBoundary>
+          <Toaster position="top-right" />
+          <AnalyticsGate />
+          <AdSenseGate />
+          <CookieConsentBanner />
+          <CcpaOptOutLink />
+        </ClerkProvider>
       </body>
     </html>
   )

@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// clerkMiddleware passes a Request that we widen to NextRequest because
+// the Clerk types are not aware of Next's extensions.
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isProtectedPath } from '@/lib/routing/protected-routes'
@@ -18,16 +22,34 @@ const SECURITY_HEADERS = {
   'Cross-Origin-Resource-Policy': 'same-origin',
 }
 
-const PUBLIC_BYPASS_PATHS = ['/api/performance/metrics', '/api/health']
+const PUBLIC_BYPASS_PATHS = [
+  '/api/performance/metrics',
+  '/api/health',
+  // Clerk webhook (verified by Svix signature, must not be gated by auth).
+  '/api/webhooks/clerk',
+]
 const SUPABASE_TIMEOUT_MS = parseInt(
   process.env.MIDDLEWARE_SUPABASE_TIMEOUT_MS || '5000',
   10
 )
 
+// Clerk route matcher for protected pages.
+// Mirrors PROTECTED_PATH_PREFIXES in src/lib/routing/protected-routes.ts.
+// Clerk uses path-to-regexp glob syntax.
+const isClerkProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/profile(.*)',
+  '/household(.*)',
+  '/settings(.*)',
+  '/validation(.*)',
+  '/couples(.*)',
+  '/properties(.*)',
+])
+
 const hasSupabasePublicConfig = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )
 
 const getSafeRedirectPath = (value: string | null) => {
@@ -56,12 +78,12 @@ const applySecurityHeaders = (response: NextResponse) => {
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https: blob:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
         "frame-ancestors 'none';"
     )
 
@@ -93,7 +115,21 @@ const isSupabaseAuthTimeoutError = (error: unknown) => {
   return String(error).toLowerCase().includes('timeout')
 }
 
-export async function middleware(request: NextRequest) {
+/**
+ * Inner middleware logic — the legacy Supabase session refresh + protection
+ * pipeline. Wrapped by clerkMiddleware below.
+ *
+ * Why both auths coexist (Phase C transition window):
+ * - Clerk gates *new* protected routes via `auth.protect()` (called above
+ *   inside clerkMiddleware) but only after users sign up via Clerk's UI.
+ * - Existing users still have Supabase sessions until Phase E (user data
+ *   migration) ships. This Supabase path keeps them logged in.
+ * - Once migration completes, this entire function can collapse to just
+ *   security headers + Clerk's auth.protect().
+ */
+async function legacySupabaseMiddleware(
+  request: NextRequest
+): Promise<NextResponse> {
   const pathname = request.nextUrl.pathname
   let supabaseResponse = NextResponse.next({ request })
   const isApiRoute = pathname.startsWith('/api/')
@@ -113,14 +149,16 @@ export async function middleware(request: NextRequest) {
   }
 
   const redirectAnonymousProtectedPage = () => {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.search = ''
-    url.searchParams.set(
+    // Resolve against request.url (the actual incoming host) so cookies
+    // stay scoped to the host the user is on (e.g. 127.0.0.1 vs localhost,
+    // or www.* vs apex). Cloning request.nextUrl sometimes normalizes the
+    // host and causes session loss across the redirect.
+    const target = new URL('/login', request.url)
+    target.searchParams.set(
       'redirectTo',
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     )
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(target)
   }
 
   if (!hasSupabasePublicConfig()) {
@@ -161,7 +199,13 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(
+          cookiesToSet: Array<{
+            name: string
+            value: string
+            options?: Record<string, unknown>
+          }>
+        ) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -169,9 +213,6 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Log cookie setting for debugging
-            // console.log(`[Middleware] Setting cookie: ${name}, Secure: ${sharedOptions.secure}`)
-
             supabaseResponse.cookies.set(
               name,
               value,
@@ -295,15 +336,15 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes - redirect to login if not authenticated
   if (isProtectedPath(request.nextUrl.pathname) && !user) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.search = ''
-    url.searchParams.set(
+    // Resolve against request.url so the redirect stays on the same host
+    // (preserves auth cookies). See redirectAnonymousProtectedPage for
+    // the same fix earlier in this file.
+    const target = new URL('/login', request.url)
+    target.searchParams.set(
       'redirectTo',
       `${request.nextUrl.pathname}${request.nextUrl.search}`
     )
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(target)
   }
 
   // Auth routes - redirect to dashboard if already authenticated
@@ -338,6 +379,57 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+/**
+ * Top-level middleware wrapping with Clerk.
+ *
+ * Phase C.1 (coexistence): Clerk and Supabase auth both run. Clerk handles
+ * NEW sign-ups via /sign-in /sign-up; Supabase keeps existing users logged in.
+ * Phase E (user data migration) is the bridge to single-source-of-truth Clerk.
+ *
+ * Clerk's `auth.protect()` is intentionally NOT called here yet — that would
+ * lock existing Supabase users out of protected routes during the transition.
+ * Instead, the legacy Supabase path still handles route protection. Once
+ * Phase E completes, swap the body to:
+ *
+ *     if (isClerkProtectedRoute(req)) await auth.protect()
+ *     return NextResponse.next()
+ *
+ * Behavior:
+ * - If a Clerk session is detected, the user is treated as authenticated
+ *   regardless of Supabase state (skip the Supabase redirect-to-login).
+ * - Otherwise, fall through to the legacy Supabase pipeline.
+ */
+export default clerkMiddleware(async (clerkAuth, request) => {
+  const { userId: clerkUserId } = await clerkAuth()
+  const nextRequest = request as NextRequest
+  const pathname = nextRequest.nextUrl.pathname
+
+  // Clerk user is signed in — skip the legacy Supabase protection that would
+  // redirect them to /login, and just return security headers.
+  if (clerkUserId) {
+    // Still let API bypass paths and API routes through with security headers.
+    let response = NextResponse.next({ request: nextRequest })
+
+    // For auth pages (login/signup) when Clerk is signed in, redirect to
+    // dashboard (or the requested target).
+    if (pathname === '/login' || pathname === '/signup') {
+      const params = nextRequest.nextUrl.searchParams
+      const redirectTo =
+        getSafeRedirectPath(params.get('redirectTo')) ||
+        getSafeRedirectPath(params.get('redirect'))
+      const target = new URL(redirectTo ?? '/dashboard', request.url)
+      response = NextResponse.redirect(target)
+    }
+
+    return applySecurityHeaders(response)
+  }
+
+  // Anonymous (no Clerk session) — fall through to the legacy Supabase
+  // middleware so existing Supabase users still get their session refresh +
+  // protection logic.
+  return legacySupabaseMiddleware(nextRequest)
+})
+
 export const config = {
   matcher: [
     /*
@@ -350,3 +442,7 @@ export const config = {
     '/((?!_next/static|_next/image|_next/data|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css|json|xml|txt|ico|map|woff|woff2|ttf|otf)$).*)',
   ],
 }
+
+// Export the route matcher so other layers can reuse it (sanity check that
+// PROTECTED_PATH_PREFIXES and isClerkProtectedRoute stay in sync).
+export { isClerkProtectedRoute }

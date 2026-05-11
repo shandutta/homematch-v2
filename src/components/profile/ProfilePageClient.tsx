@@ -3,6 +3,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, Household } from '@/types/database'
 import { UserServiceClient } from '@/lib/services/users-client'
@@ -10,8 +11,6 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from './ProfileForm'
-import { HouseholdSection } from './HouseholdSection'
-import { ActivityStats } from './ActivityStats'
 import {
   User as UserIcon,
   Home,
@@ -32,10 +31,30 @@ import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
-import {
-  TasteProfileCollector,
-  type TasteProfileValues,
-} from '@/components/features/profile/TasteProfileCollector'
+import type { TasteProfileValues } from '@/components/features/profile/TasteProfileCollector'
+
+// Lazy-load secondary tabs — only the Profile tab is rendered first paint.
+// HouseholdSection (~700 LOC) and TasteProfileCollector are the heaviest,
+// so deferring them shrinks the profile route chunk substantially.
+const HouseholdSection = dynamic(
+  () =>
+    import('./HouseholdSection').then((mod) => ({
+      default: mod.HouseholdSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const ActivityStats = dynamic(
+  () =>
+    import('./ActivityStats').then((mod) => ({ default: mod.ActivityStats })),
+  { ssr: false, loading: () => null }
+)
+const TasteProfileCollector = dynamic(
+  () =>
+    import('@/components/features/profile/TasteProfileCollector').then(
+      (mod) => ({ default: mod.TasteProfileCollector })
+    ),
+  { ssr: false, loading: () => null }
+)
 
 interface ProfilePageClientProps {
   user: User
@@ -129,7 +148,10 @@ export function ProfilePageClient({
         const updated = await UserServiceClient.updateProfile(user.id, {
           preferences: updatedPreferences,
         })
-        setProfileState((prev) => ({ ...prev, preferences: updated.preferences }))
+        setProfileState((prev) => ({
+          ...prev,
+          preferences: updated.preferences,
+        }))
         toast.success('Taste profile saved')
       } catch {
         toast.error('Failed to save taste profile')
@@ -139,28 +161,27 @@ export function ProfilePageClient({
     [profileState.preferences, user.id]
   )
 
-  const tasteProfileInitialValues: TasteProfileValues | undefined =
-    (() => {
-      const prefs = profileState.preferences
-      if (typeof prefs !== 'object' || prefs === null) return undefined
-      const raw = (prefs as Record<string, unknown>).tasteProfile
-      if (typeof raw !== 'object' || raw === null) return undefined
-      const tp = raw as Record<string, unknown>
-      const aesthetics = Array.isArray(tp.aesthetics)
-        ? (tp.aesthetics as unknown[]).filter(
-            (a): a is string => typeof a === 'string'
-          )
-        : []
-      const ls =
-        typeof tp.lifestyle === 'object' && tp.lifestyle !== null
-          ? (tp.lifestyle as Record<string, unknown>)
-          : {}
-      const lifestyle: Record<string, number> = {}
-      for (const [k, v] of Object.entries(ls)) {
-        if (typeof v === 'number') lifestyle[k] = v
-      }
-      return { aesthetics, lifestyle }
-    })()
+  const tasteProfileInitialValues: TasteProfileValues | undefined = (() => {
+    const prefs = profileState.preferences
+    if (typeof prefs !== 'object' || prefs === null) return undefined
+    const raw = (prefs as Record<string, unknown>).tasteProfile
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const tp = raw as Record<string, unknown>
+    const aesthetics = Array.isArray(tp.aesthetics)
+      ? (tp.aesthetics as unknown[]).filter(
+          (a): a is string => typeof a === 'string'
+        )
+      : []
+    const ls =
+      typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+        ? (tp.lifestyle as Record<string, unknown>)
+        : {}
+    const lifestyle: Record<string, number> = {}
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'number') lifestyle[k] = v
+    }
+    return { aesthetics, lifestyle }
+  })()
 
   const preferenceRecord = isRecord(profile.preferences)
     ? profile.preferences
@@ -306,10 +327,7 @@ export function ProfilePageClient({
             </m.div>
 
             {/* Right: Action buttons */}
-            <m.div
-              variants={itemVariants}
-              className="flex flex-wrap gap-3"
-            >
+            <m.div variants={itemVariants} className="flex flex-wrap gap-3">
               <Link href="/settings">
                 <Button
                   variant="outline"

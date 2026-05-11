@@ -246,7 +246,7 @@ export function InvitePartnerModal({
                     <p className="font-medium text-slate-900">
                       {selectedUser.display_name || selectedUser.email}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-600">
                       {selectedUser.email}
                     </p>
                   </div>
@@ -255,7 +255,7 @@ export function InvitePartnerModal({
                   variant="ghost"
                   size="sm"
                   onClick={handleClearSelectedUser}
-                  className="text-slate-500 hover:text-slate-700"
+                  className="text-slate-600 hover:text-slate-700"
                 >
                   Change
                 </Button>
@@ -285,14 +285,14 @@ export function InvitePartnerModal({
                     className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100">
-                      <User className="h-4 w-4 text-slate-500" />
+                      <User className="h-4 w-4 text-slate-600" />
                     </div>
                     <div>
                       <p className="font-medium text-slate-900">
                         {user.display_name || user.email}
                       </p>
                       {user.display_name && (
-                        <p className="text-sm text-slate-500">{user.email}</p>
+                        <p className="text-sm text-slate-600">{user.email}</p>
                       )}
                     </div>
                   </button>
@@ -304,7 +304,7 @@ export function InvitePartnerModal({
               searchResults.length === 0 &&
               !searchLoading &&
               !selectedUser && (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-600">
                   No users found. You can still invite them by email below.
                 </p>
               )}
@@ -315,7 +315,7 @@ export function InvitePartnerModal({
               <span className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">
+              <span className="bg-white px-2 text-slate-600">
                 Or invite by email
               </span>
             </div>
@@ -410,7 +410,7 @@ export function InvitePartnerModal({
                           {invite.invited_name || invite.invited_email}
                         </p>
                         {invite.invited_name && (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-slate-600">
                             {invite.invited_email}
                           </p>
                         )}
@@ -457,7 +457,7 @@ export function InvitePartnerModal({
                 )}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-slate-600">
               They can use this code to join directly from their profile
               settings.
             </p>

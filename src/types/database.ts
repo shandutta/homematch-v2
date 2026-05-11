@@ -519,6 +519,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          clerk_user_id: string | null
           created_at: string | null
           display_name: string | null
           email: string | null
@@ -529,6 +530,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          clerk_user_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
@@ -539,6 +541,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          clerk_user_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null

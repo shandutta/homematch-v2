@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react'
 import {
   m,
   useMotionValue,
+  useReducedMotion,
   useTransform,
   type MotionValue,
 } from 'framer-motion'
@@ -106,8 +107,9 @@ function AnimatedIcon({
   animation: string
   isHovered: boolean
 }) {
+  const shouldReduceMotion = useReducedMotion()
   const getAnimationProps = () => {
-    if (!isHovered) return {}
+    if (!isHovered || shouldReduceMotion) return {}
 
     switch (animation) {
       case 'pulse':
@@ -150,6 +152,8 @@ function AnimatedIcon({
 }
 
 export function FeatureGrid() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <section className="relative py-14 sm:py-16">
       {/* Clean break from Hero; align background with How It Works refined light grid */}
@@ -183,8 +187,8 @@ export function FeatureGrid() {
         <MotionDiv
           className="mx-auto text-center"
           style={{ maxWidth: '48rem' }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
           <h2
@@ -215,8 +219,8 @@ export function FeatureGrid() {
         {/* Feature cards container with stagger */}
         <m.div
           className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
-          initial="hidden"
-          whileInView="visible"
+          initial={shouldReduceMotion ? false : 'hidden'}
+          whileInView={shouldReduceMotion ? undefined : 'visible'}
           viewport={{ once: true }}
           variants={{
             hidden: {},
@@ -238,27 +242,32 @@ export function FeatureGrid() {
 
 function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
   const [isHovered, setIsHovered] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   return (
     <m.div
       variants={{
-        hidden: { opacity: 0, y: 30, rotateX: -10 },
+        hidden: shouldReduceMotion
+          ? { opacity: 1 }
+          : { opacity: 0, y: 30, rotateX: -10 },
         visible: {
           opacity: 1,
           y: 0,
           rotateX: 0,
-          transition: {
-            type: 'spring',
-            stiffness: 100,
-            damping: 15,
-          },
+          transition: shouldReduceMotion
+            ? { duration: 0 }
+            : {
+                type: 'spring',
+                stiffness: 100,
+                damping: 15,
+              },
         },
       }}
       style={{ perspective: 1000 }}
     >
       <SpotlightCard className="h-full">
         <Card
-          className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+          className="group relative h-full overflow-hidden border-gray-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -266,7 +275,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
           <m.div
             className="pointer-events-none absolute inset-0 rounded-xl"
             initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
+            animate={{ opacity: isHovered && !shouldReduceMotion ? 1 : 0 }}
             transition={{ duration: 0.3 }}
             style={{
               background:
@@ -285,7 +294,9 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
                 background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
               }}
               animate={
-                isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }
+                isHovered && !shouldReduceMotion
+                  ? { scale: 1.1, rotate: 5 }
+                  : { scale: 1, rotate: 0 }
               }
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >

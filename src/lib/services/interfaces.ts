@@ -210,9 +210,7 @@ export interface ISavedSearchService extends IBaseService {
  * Comprehensive property service interface (facade pattern)
  */
 export interface IPropertyService
-  extends IPropertyCrudService,
-    IPropertySearchService,
-    INeighborhoodService {
+  extends IPropertyCrudService, IPropertySearchService, INeighborhoodService {
   // Inherits all methods from the component interfaces
 }
 
@@ -220,7 +218,8 @@ export interface IPropertyService
  * Comprehensive user service interface
  */
 export interface IUserServiceFull
-  extends IUserService,
+  extends
+    IUserService,
     IHouseholdService,
     IInteractionService,
     ISavedSearchService {

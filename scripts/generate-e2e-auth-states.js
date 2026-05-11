@@ -42,9 +42,13 @@ const loadEnv = () => {
 const getStorageKey = () => {
   const hostname = 'localhost'
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'http://127.0.0.1:54200'
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    ''
 
   const slugify = (val, fallback) => {
     if (!val) return fallback
@@ -63,9 +67,13 @@ const getStorageKey = () => {
     const hostSlug = slugify(parsed.hostname, 'supabase')
     const pathSlug = slugify(parsed.pathname === '/' ? '' : parsed.pathname, '')
     projectSlug = pathSlug ? `${hostSlug}-${pathSlug}` : hostSlug
-  } catch {}
+  } catch {
+    // ignore: invalid URL falls back to default projectSlug
+  }
 
-  const anonFingerprint = anonKey ? slugify(anonKey.slice(0, 8), 'anon') : 'anon'
+  const anonFingerprint = anonKey
+    ? slugify(anonKey.slice(0, 8), 'anon')
+    : 'anon'
   const hostSlug = slugify(hostname, 'localhost')
 
   return `sb-${hostSlug}-${projectSlug}-${anonFingerprint}-auth-token`
@@ -73,9 +81,13 @@ const getStorageKey = () => {
 
 async function generateAuthState(user, outputFile) {
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'http://127.0.0.1:54200'
   const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ''
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    ''
 
   const supabase = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false },
@@ -87,7 +99,9 @@ async function generateAuthState(user, outputFile) {
   })
 
   if (error || !data?.session) {
-    throw new Error(`Auth failed for ${user.email}: ${error?.message || 'no session'}`)
+    throw new Error(
+      `Auth failed for ${user.email}: ${error?.message || 'no session'}`
+    )
   }
 
   const storageKey = getStorageKey()
@@ -123,7 +137,9 @@ async function generateAuthState(user, outputFile) {
 
 async function main() {
   loadEnv()
-  console.log(`🔑 Generating E2E auth states (${WORKER_COUNT} workers + fresh user)...\n`)
+  console.log(
+    `🔑 Generating E2E auth states (${WORKER_COUNT} workers + fresh user)...\n`
+  )
 
   // Worker users
   for (let i = 0; i < WORKER_COUNT; i++) {
@@ -135,7 +151,9 @@ async function main() {
   const freshFile = path.join(AUTH_DIR, `user-worker-${FRESH_INDEX}.json`)
   await generateAuthState(FRESH_USER, freshFile)
 
-  console.log(`\n✅ All ${WORKER_COUNT + 1} auth states generated in ${AUTH_DIR}`)
+  console.log(
+    `\n✅ All ${WORKER_COUNT + 1} auth states generated in ${AUTH_DIR}`
+  )
 }
 
 main().catch((err) => {

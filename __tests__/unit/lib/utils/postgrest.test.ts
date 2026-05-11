@@ -1,6 +1,6 @@
 // Phase 0/1 closure: P1-security-definer-paths
 import {
-// Phase 0/1 closure: P1-security-definer-paths
+  // Phase 0/1 closure: P1-security-definer-paths
 
   buildCityStateKey,
   buildCityStateKeys,

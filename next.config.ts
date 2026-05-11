@@ -64,6 +64,17 @@ const nextConfig: NextConfig = {
       }
     : {}),
 
+  // M7: The "N" badge bottom-left flagged in the 2026-05-11 audit is
+  // Next.js' built-in dev indicator. It is gated by NODE_ENV inside
+  // the framework and does not render in production builds — verified
+  // by inspecting next@15.5.9 source. The audit's screenshots were
+  // captured against `next dev`, hence the badge. We move it to
+  // bottom-right anyway so it doesn't visually collide with the cookie
+  // consent banner during local development.
+  devIndicators: {
+    position: 'bottom-right',
+  },
+
   ...(distDir ? { distDir } : {}),
 
   // Allow external Zillow image hosts for next/image
@@ -133,6 +144,8 @@ const nextConfig: NextConfig = {
       'lucide-react',
       'framer-motion',
       'date-fns',
+      '@supabase/supabase-js',
+      '@supabase/ssr',
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
       '@radix-ui/react-checkbox',

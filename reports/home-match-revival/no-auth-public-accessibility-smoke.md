@@ -53,19 +53,23 @@ Passed static/config fallback:
 - **14 tests executed.** Results: 1 passed, 13 failed.
 
 #### Passing
+
 - ✅ Cookie preferences keyboard focus, Escape close, and return focus.
 
 #### Failing — genuine app accessibility gaps
+
 - Landing (`/`): 2 unlabeled controls (buttons/inputs without `aria-label`/`aria-labelledby` and no visible text).
 - Cookies (`/cookies`): 7 unlabeled controls — cookie preference toggle switches lack aria-labels.
 - Login (`/login`): 4 unlabeled controls.
 - About, Contact, Terms, Privacy: console errors (hydration warnings and Next.js static chunk 404s on cold start).
 
 #### Failing — environment
+
 - Signup, Reset Password, Verify Email, Auth Error: connection refused after server instability (server remained up long enough for all 14 tests on second attempt but first attempt crashed mid-run).
 - Robots/Sitemap/Missing-route, Protected redirects: connection refused (server already down when these ran on first attempt; timed out on second).
 
 #### Notes
+
 - Test 12 (cookie focus/Escape/return-focus) proves the Playwright harness and accessibility assertion helpers work correctly.
 - The 13 failures are real app conditions, not test bugs. The unlabeled controls represent genuine WCAG violations in the production pages.
 - Dev server instability suggests next dev may need more robust health-check readiness or the test WebServer config should not reuse a stale server.

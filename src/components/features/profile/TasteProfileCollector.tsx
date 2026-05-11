@@ -142,9 +142,9 @@ export function TasteProfileCollector({
   onSave,
   initialValues,
 }: TasteProfileCollectorProps) {
-  const [selectedAesthetics, setSelectedAesthetics] = useState<Set<AestheticId>>(
-    new Set((initialValues?.aesthetics ?? []) as AestheticId[])
-  )
+  const [selectedAesthetics, setSelectedAesthetics] = useState<
+    Set<AestheticId>
+  >(new Set((initialValues?.aesthetics ?? []) as AestheticId[]))
   const [lifestyle, setLifestyle] = useState<Record<string, number>>(
     initialValues?.lifestyle ?? { ...DEFAULT_LIFESTYLE }
   )
@@ -219,7 +219,11 @@ export function TasteProfileCollector({
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 400,
+                        damping: 20,
+                      }}
                       className={`absolute top-2.5 right-2.5 flex h-5 w-5 items-center justify-center rounded-full ${style.checkColor}`}
                     >
                       <Check className="h-3 w-3 text-white" strokeWidth={3} />

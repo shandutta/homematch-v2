@@ -4,7 +4,6 @@ import React, { Component, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, RefreshCw, RotateCcw } from 'lucide-react'
-import type { SentryScope } from '@/types/analytics'
 
 interface Props {
   children: ReactNode
@@ -42,18 +41,6 @@ export class PropertyErrorBoundary extends Component<Props, State> {
           retry_count: this.state.retryCount,
           fatal: false,
         },
-      })
-    }
-
-    // Report to Sentry if available
-    if (typeof window !== 'undefined' && window.Sentry) {
-      window.Sentry.withScope((scope: SentryScope) => {
-        scope.setTag('error_boundary', 'property')
-        scope.setContext('property', {
-          propertyId: this.props.propertyId,
-          retryCount: this.state.retryCount,
-        })
-        window.Sentry!.captureException(error)
       })
     }
   }

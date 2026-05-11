@@ -83,7 +83,9 @@ export const matchResultSchema = z.object({
 })
 
 export type MatchPreferences = z.infer<typeof matchPreferencesSchema>
-export type MatchCandidateProperty = z.infer<typeof matchCandidatePropertySchema>
+export type MatchCandidateProperty = z.infer<
+  typeof matchCandidatePropertySchema
+>
 export type MatchRequest = z.infer<typeof matchRequestSchema>
 export type MatchCitation = z.infer<typeof matchCitationSchema>
 export type RankedProperty = z.infer<typeof rankedPropertySchema>

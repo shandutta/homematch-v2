@@ -111,7 +111,7 @@ describe('HeroSection', () => {
   test('renders secondary CTA linking to login', () => {
     render(<HeroSection />)
 
-    const secondaryCTA = screen.getByText('Resume your search').closest('a')
+    const secondaryCTA = screen.getByText('Sign in').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
@@ -137,10 +137,6 @@ describe('HeroSection', () => {
     render(<HeroSection />)
 
     const primaryCTA = screen.getByText('Start swiping').closest('a')
-    expect(primaryCTA).toHaveAttribute(
-      'aria-label',
-      'Start swiping with HomeMatch'
-    )
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 })

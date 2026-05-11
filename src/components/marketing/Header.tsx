@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
   const [hasScrolled, setHasScrolled] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   // Track scroll position for state-based styling
   useEffect(() => {
@@ -45,18 +46,22 @@ export function Header() {
       >
         {/* Logo with entrance animation */}
         <m.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
+          animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.5, delay: 0.1 }
+          }
         >
           <Link
             href="/"
-            className="group rounded-xl px-3 py-2 text-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+            className="group rounded-xl px-3 py-2 text-white transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >
             <m.div
-              whileHover={{ scale: 1.02 }}
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               <HomeMatchLogo size="sm" textClassName="text-white" />
@@ -67,8 +72,8 @@ export function Header() {
         {/* Nav links with staggered entrance */}
         <m.div
           className="flex items-center gap-3 sm:gap-6"
-          initial="hidden"
-          animate="visible"
+          initial={shouldReduceMotion ? false : 'hidden'}
+          animate={shouldReduceMotion ? undefined : 'visible'}
           variants={{
             hidden: {},
             visible: {
@@ -89,7 +94,7 @@ export function Header() {
             >
               <Link
                 href="/login"
-                className="group relative block overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
+                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 <span className="relative z-10">Log In</span>
@@ -106,7 +111,7 @@ export function Header() {
             >
               <Link
                 href="/signup"
-                className="group relative block overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
+                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 <span className="relative z-10">Sign Up</span>

@@ -34,13 +34,13 @@ export function MutualLikesBadge({
       className={`bg-gradient-mutual-likes shadow-dark-sm shadow-glow-md backdrop-blur-sm ${sizeClasses[variant]} `}
       data-testid="mutual-likes-badge"
     >
-      <div className="gap-1 flex items-center">
+      <div className="flex items-center gap-1">
         <div className="relative">
           <Heart
             className={`${iconSizes[variant]} fill-pink-400 text-pink-400`}
           />
           {likedByCount > 2 && (
-            <span className="text-xs absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-purple-500 font-bold text-white">
+            <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-purple-500 text-xs font-bold text-white">
               {likedByCount}
             </span>
           )}

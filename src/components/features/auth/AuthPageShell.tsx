@@ -25,7 +25,11 @@ export function AuthPageShell({
   valueProp,
 }: AuthPageShellProps) {
   return (
-    <div className="gradient-grid-bg dark text-foreground relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <div className="gradient-grid-bg dark text-foreground relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-12">
+      {/* A3: overflow-hidden contains the decorative blurs below — at w-[680px]
+          centered with -translate-x-1/2, they extend ~150px past the 375px
+          mobile viewport on each side, causing horizontal scrollbars
+          otherwise. */}
       <div
         className="pointer-events-none absolute inset-0 opacity-30"
         aria-hidden="true"

@@ -1,38 +1,35 @@
-// Force dynamic rendering to prevent static generation issues
-export const dynamic = 'force-dynamic'
-
+// Phase C of Clerk migration: /login redirects to Clerk's /sign-in.
+// The legacy LoginForm at @/components/features/auth/LoginForm.tsx is
+// retained but unhooked — it can be removed after Phase E (user migration)
+// when no legacy Supabase users remain.
+import { redirect } from 'next/navigation'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
-import {
-  AuthLink,
-  AuthPageShell,
-} from '@/components/features/auth/AuthPageShell'
-import { LoginForm } from '@/components/features/auth/LoginForm'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata = createNoindexRouteMetadata({
   title: 'Log In | HomeMatch',
   description: 'Sign in to your HomeMatch account.',
 })
 
-export default function LoginPage() {
-  return (
-    <AuthPageShell
-      title="HomeMatch"
-      subtitle="Sign in to your account"
-      valueProp="AI-powered home matching for you and your household"
-    >
-      <div className="space-y-6">
-        <LoginForm />
+interface LoginPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
 
-        <p className="text-muted-foreground text-center text-sm">
-          Have a verification code?{' '}
-          <AuthLink href="/verify-email">Verify email</AuthLink>
-        </p>
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolved = await searchParams
+  const redirectTo = (() => {
+    const v = resolved?.redirectTo ?? resolved?.redirect
+    if (typeof v === 'string') return v
+    if (Array.isArray(v) && typeof v[0] === 'string') return v[0]
+    return null
+  })()
 
-        <p className="text-muted-foreground text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <AuthLink href="/signup">Sign up</AuthLink>
-        </p>
-      </div>
-    </AuthPageShell>
-  )
+  const target = new URLSearchParams()
+  if (redirectTo) {
+    // Clerk expects redirect_url for post-sign-in destination.
+    target.set('redirect_url', redirectTo)
+  }
+  const query = target.toString()
+  redirect(query ? `/sign-in?${query}` : '/sign-in')
 }

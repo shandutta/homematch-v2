@@ -58,11 +58,10 @@ function findMainProjectRoot(startDir) {
   }
 }
 
-const pnpmDir = findPnpmDir(projectRoot) || findPnpmDir(findMainProjectRoot(projectRoot))
+const pnpmDir =
+  findPnpmDir(projectRoot) || findPnpmDir(findMainProjectRoot(projectRoot))
 if (!pnpmDir) {
-  console.error(
-    'Could not locate node_modules/.pnpm. Run pnpm install first.'
-  )
+  console.error('Could not locate node_modules/.pnpm. Run pnpm install first.')
   process.exit(1)
 }
 
@@ -72,8 +71,14 @@ const rootWithModules = path.dirname(path.dirname(pnpmDir)) // project root that
 // The pnpm store entry for @playwright/test contains its own node_modules,
 // which is where `@playwright/test` is resolvable as a package name.
 // e.g. <pnpmDir>/@playwright+test@1.56.1/node_modules  →  contains @playwright/test
-const playwrightEntry = path.basename(path.dirname(path.dirname(path.dirname(cli)))) // "@playwright+test@1.56.1"
-const playwrightNodeModules = path.join(pnpmDir, playwrightEntry, 'node_modules')
+const playwrightEntry = path.basename(
+  path.dirname(path.dirname(path.dirname(cli)))
+) // "@playwright+test@1.56.1"
+const playwrightNodeModules = path.join(
+  pnpmDir,
+  playwrightEntry,
+  'node_modules'
+)
 
 // Build NODE_PATH so @playwright/test resolves from the worktree config file.
 const extraNodePath = [
@@ -81,7 +86,13 @@ const extraNodePath = [
   path.join(rootWithModules, 'node_modules'), // top-level node_modules
 ].join(path.delimiter)
 
-const args = [cli, 'test', '--config', path.join(projectRoot, 'playwright.tp0.config.ts'), ...process.argv.slice(2)]
+const args = [
+  cli,
+  'test',
+  '--config',
+  path.join(projectRoot, 'playwright.tp0.config.ts'),
+  ...process.argv.slice(2),
+]
 
 console.log(`Using Playwright from: ${path.relative(rootWithModules, cli)}`)
 
@@ -90,10 +101,15 @@ const child = spawn('node', args, {
   cwd: rootWithModules,
   env: {
     ...process.env,
-    NODE_PATH: extraNodePath + (process.env.NODE_PATH ? path.delimiter + process.env.NODE_PATH : ''),
+    NODE_PATH:
+      extraNodePath +
+      (process.env.NODE_PATH ? path.delimiter + process.env.NODE_PATH : ''),
     NEXT_PUBLIC_TEST_MODE: process.env.NEXT_PUBLIC_TEST_MODE || 'true',
   },
 })
 
 child.on('close', (code) => process.exit(code))
-child.on('error', (err) => { console.error('Failed to start Playwright:', err); process.exit(1) })
+child.on('error', (err) => {
+  console.error('Failed to start Playwright:', err)
+  process.exit(1)
+})

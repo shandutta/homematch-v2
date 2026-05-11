@@ -38,31 +38,31 @@ and the closure rollups in
 representative commits referenced below were resolved against the integration
 branch via `git log -1 --pretty=format:'%s' <sha>`.
 
-| # | Category | Anchor commit | Resolves? | Status |
-| - | --- | --- | --- | --- |
-| 1 | API auth boundary + service-role narrow helpers | `1ef1bae` `fix: standardize api auth boundary` | yes | repo-closed |
-| 2 | Service-role RBAC authority (D1) | `e7af71e` admin_role_assignments authority | yes | repo-closed; live DB gated under D6 |
-| 3 | Durable rate limiter seam (D2) | `5c428b9` durable rate limiter approval gate | yes | repo-closed; provisioning approval-gated |
-| 4 | Signup verification policy (D3) | `a24760d` launch-policy guard | yes | repo-closed; production Supabase config gated |
-| 5 | `.env.prod` handling + Supabase env guard (D4) | `52697b1` env guard local-dev | yes | repo-closed |
-| 6 | Numeric constraint semantics (D5) | `018b5ba` numeric constraint decision | yes | repo-closed |
-| 7 | DB migration reset/rollback static readiness (D6) | `1a55e73` DB reset readiness guards | yes | repo-closed; live reset gated |
-| 8 | Disputed-route profile exposure (D7) | `7a24b38` limit disputed route profile exposure | yes | repo-closed |
-| 9 | Schema safety + RLS hardening | `b67826c` schema safety constraints | yes | repo-closed; live RLS gated under D6 |
-| 10 | Anonymous protected-route redirect (P0/P1) | `05ebfbe` no-auth traversal smoke guard, `92a6c35` middleware exposure, `a57ed3e` redirect preservation | yes | repo-closed + live-evidenced (partial) |
-| 11 | No-credential live probe harness | `736f604` no-auth live probe harness | yes | repo-closed; local execution slice pending |
-| 12 | Authenticated traversal + remote Supabase seed | `7c513d7` local auth lifecycle smoke gates | yes | repo-closed + live-evidenced (partial) |
-| 13 | Public no-credential accessibility coverage | `4e93347` accessibility core-flow matrix guard | yes | repo-closed |
-| 14 | Internal/demo surface gating | `3e5f510` gate remaining internal demo surfaces | yes | repo-closed (default 404 in prod) |
-| 15 | Public route metadata + SEO inventory | `be73555` route metadata coverage | yes | repo-closed |
-| 16 | Public performance metrics ingest hardening | `ca46903` standardize perf metrics payload error | yes | repo-closed |
-| 17 | API error standardization + 429 reconciliation (M6/M10) | `02d5bb0` reconcile M6 429 standardization guard | yes | repo-closed |
-| 18 | External fetch timeout + middleware AbortController (M7/M8) | `cee25c5` close api external fetch timeout coverage | yes | repo-closed |
-| 19 | Middleware fast paths + route deadline helper | `9ab96ed` skip middleware auth for API routes | yes | repo-closed |
-| 20 | Supabase factory + cookie hardening + refresh recovery | `fc6069d` consolidate duplicate Supabase factory | yes | repo-closed |
-| 21 | Maps + paid-provider auth hardening | `3fc00eb` use anon client for metro boundaries | yes | repo-closed; positive paid execution gated |
-| 22 | Cron-secret admin/ingest endpoints opacity | `2abb027` reconcile phase0 live probe closure evidence | yes | repo-closed; positive execution paid/external-gated |
-| 23 | Test-suite taxonomy + worker lane discipline | `6fbdc46` test suite taxonomy report; `528c769` blocker reconciliation | yes | repo-closed (documentation-only) |
+| #   | Category                                                    | Anchor commit                                                                                           | Resolves? | Status                                              |
+| --- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------- |
+| 1   | API auth boundary + service-role narrow helpers             | `1ef1bae` `fix: standardize api auth boundary`                                                          | yes       | repo-closed                                         |
+| 2   | Service-role RBAC authority (D1)                            | `e7af71e` admin_role_assignments authority                                                              | yes       | repo-closed; live DB gated under D6                 |
+| 3   | Durable rate limiter seam (D2)                              | `5c428b9` durable rate limiter approval gate                                                            | yes       | repo-closed; provisioning approval-gated            |
+| 4   | Signup verification policy (D3)                             | `a24760d` launch-policy guard                                                                           | yes       | repo-closed; production Supabase config gated       |
+| 5   | `.env.prod` handling + Supabase env guard (D4)              | `52697b1` env guard local-dev                                                                           | yes       | repo-closed                                         |
+| 6   | Numeric constraint semantics (D5)                           | `018b5ba` numeric constraint decision                                                                   | yes       | repo-closed                                         |
+| 7   | DB migration reset/rollback static readiness (D6)           | `1a55e73` DB reset readiness guards                                                                     | yes       | repo-closed; live reset gated                       |
+| 8   | Disputed-route profile exposure (D7)                        | `7a24b38` limit disputed route profile exposure                                                         | yes       | repo-closed                                         |
+| 9   | Schema safety + RLS hardening                               | `b67826c` schema safety constraints                                                                     | yes       | repo-closed; live RLS gated under D6                |
+| 10  | Anonymous protected-route redirect (P0/P1)                  | `05ebfbe` no-auth traversal smoke guard, `92a6c35` middleware exposure, `a57ed3e` redirect preservation | yes       | repo-closed + live-evidenced (partial)              |
+| 11  | No-credential live probe harness                            | `736f604` no-auth live probe harness                                                                    | yes       | repo-closed; local execution slice pending          |
+| 12  | Authenticated traversal + remote Supabase seed              | `7c513d7` local auth lifecycle smoke gates                                                              | yes       | repo-closed + live-evidenced (partial)              |
+| 13  | Public no-credential accessibility coverage                 | `4e93347` accessibility core-flow matrix guard                                                          | yes       | repo-closed                                         |
+| 14  | Internal/demo surface gating                                | `3e5f510` gate remaining internal demo surfaces                                                         | yes       | repo-closed (default 404 in prod)                   |
+| 15  | Public route metadata + SEO inventory                       | `be73555` route metadata coverage                                                                       | yes       | repo-closed                                         |
+| 16  | Public performance metrics ingest hardening                 | `ca46903` standardize perf metrics payload error                                                        | yes       | repo-closed                                         |
+| 17  | API error standardization + 429 reconciliation (M6/M10)     | `02d5bb0` reconcile M6 429 standardization guard                                                        | yes       | repo-closed                                         |
+| 18  | External fetch timeout + middleware AbortController (M7/M8) | `cee25c5` close api external fetch timeout coverage                                                     | yes       | repo-closed                                         |
+| 19  | Middleware fast paths + route deadline helper               | `9ab96ed` skip middleware auth for API routes                                                           | yes       | repo-closed                                         |
+| 20  | Supabase factory + cookie hardening + refresh recovery      | `fc6069d` consolidate duplicate Supabase factory                                                        | yes       | repo-closed                                         |
+| 21  | Maps + paid-provider auth hardening                         | `3fc00eb` use anon client for metro boundaries                                                          | yes       | repo-closed; positive paid execution gated          |
+| 22  | Cron-secret admin/ingest endpoints opacity                  | `2abb027` reconcile phase0 live probe closure evidence                                                  | yes       | repo-closed; positive execution paid/external-gated |
+| 23  | Test-suite taxonomy + worker lane discipline                | `6fbdc46` test suite taxonomy report; `528c769` blocker reconciliation                                  | yes       | repo-closed (documentation-only)                    |
 
 All 26 spot-checked SHAs (rows above + follow-on SHAs `e7af71e 5c428b9 a24760d
 52697b1 018b5ba 1a55e73 7a24b38 b67826c 05ebfbe 736f604 7c513d7 4e93347
@@ -93,7 +93,7 @@ All 26 spot-checked SHAs (rows above + follow-on SHAs `e7af71e 5c428b9 a24760d
   polish that exceed the strict P0/P1 scope. They are low-risk additive doc/UX
   changes but reviewers should confirm they were intended for this merge.
 - **Stale local stash markers** — git log shows numerous `WIP on … / index on
-  …` entries from prior worker stashes; these are not commits on the
+…` entries from prior worker stashes; these are not commits on the
   integration ref but appear in `git log --all`. Confirm `git stash list` is
   empty before merging.
 

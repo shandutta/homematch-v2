@@ -1,8 +1,34 @@
 import { render, screen } from '@testing-library/react'
 import { Footer } from '@/components/marketing/Footer'
 
-// Mock framer-motion
-jest.mock('framer-motion')
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
+    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
+      <div {...props}>{children}</div>
+    ),
+    a: ({ children, ...props }: JSX.IntrinsicElements['a']) => (
+      <a {...props}>{children}</a>
+    ),
+    h3: ({ children, ...props }: JSX.IntrinsicElements['h3']) => (
+      <h3 {...props}>{children}</h3>
+    ),
+    h4: ({ children, ...props }: JSX.IntrinsicElements['h4']) => (
+      <h4 {...props}>{children}</h4>
+    ),
+    li: ({ children, ...props }: JSX.IntrinsicElements['li']) => (
+      <li {...props}>{children}</li>
+    ),
+    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
+      <span {...props}>{children}</span>
+    ),
+  }
+  return {
+    motion,
+    m: motion,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
@@ -95,7 +121,7 @@ describe('Footer', () => {
   test('renders copyright notice', () => {
     render(<Footer />)
     expect(
-      screen.getByText(/© 2024 HomeMatch\. All rights reserved\./)
+      screen.getByText(/© \d{4} HomeMatch\. All rights reserved\./)
     ).toBeInTheDocument()
   })
 })

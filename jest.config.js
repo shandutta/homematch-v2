@@ -4,7 +4,6 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.ts',
     '<rootDir>/__tests__/test-env.ts',
-    '<rootDir>/__tests__/setupSentry.ts',
   ],
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -38,8 +37,12 @@ module.exports = {
     '<rootDir>/node_modules/',
     '<rootDir>/homematch-original-analysis/',
     '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
   ],
-  modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',

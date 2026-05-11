@@ -166,8 +166,8 @@ describe('ProfilePageClient', () => {
 
     expect(householdTab).toHaveAttribute('data-state', 'active')
 
-    // The household section should now be visible
-    const householdSection = screen.getByTestId('household-section')
+    // The household section should now be visible (lazy-loaded)
+    const householdSection = await screen.findByTestId('household-section')
     expect(householdSection).toBeInTheDocument()
 
     // Profile form should be hidden
@@ -189,7 +189,7 @@ describe('ProfilePageClient', () => {
     await user.click(activityTab)
 
     expect(activityTab).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('activity-stats')).toBeInTheDocument()
+    expect(await screen.findByTestId('activity-stats')).toBeInTheDocument()
     expect(screen.queryByTestId('profile-form')).not.toBeInTheDocument()
     expect(screen.queryByTestId('household-section')).not.toBeInTheDocument()
   })
@@ -290,9 +290,11 @@ describe('ProfilePageClient', () => {
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     await user.click(screen.getByRole('tab', { name: /household/i }))
+    await screen.findByTestId('household-component')
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     await user.click(screen.getByRole('tab', { name: /activity/i }))
+    await screen.findByTestId('activity-stats')
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     const warnedAboutAnimatePresence = warnSpy.mock.calls.some((call) =>

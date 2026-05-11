@@ -104,16 +104,16 @@ export function ParallaxStars() {
   return (
     <MotionMaxProvider>
       <div className="absolute inset-0 overflow-hidden">
-      {stars.map((star, index) => (
-        <StarComponent
-          key={star.id}
-          star={star}
-          index={index}
-          prefersReducedMotion={prefersReducedMotion}
-          scrollY={scrollY}
-        />
-      ))}
-    </div>
+        {stars.map((star, index) => (
+          <StarComponent
+            key={star.id}
+            star={star}
+            index={index}
+            prefersReducedMotion={prefersReducedMotion}
+            scrollY={scrollY}
+          />
+        ))}
+      </div>
     </MotionMaxProvider>
   )
 }

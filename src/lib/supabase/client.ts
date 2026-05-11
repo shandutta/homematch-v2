@@ -8,12 +8,15 @@ import type { AppDatabase } from '@/types/app-database'
 let _clientPromise: Promise<SupabaseClient<AppDatabase>> | null = null
 
 async function _createRealClient(): Promise<SupabaseClient<AppDatabase>> {
-  const [{ createBrowserClient }, { getSupabaseAuthStorageKey }, { withRefreshRecovery }] =
-    await Promise.all([
-      import('@supabase/ssr'),
-      import('./storage-keys'),
-      import('./refresh-recovery'),
-    ])
+  const [
+    { createBrowserClient },
+    { getSupabaseAuthStorageKey },
+    { withRefreshRecovery },
+  ] = await Promise.all([
+    import('@supabase/ssr'),
+    import('./storage-keys'),
+    import('./refresh-recovery'),
+  ])
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

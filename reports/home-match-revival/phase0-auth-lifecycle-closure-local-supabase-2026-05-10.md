@@ -25,6 +25,7 @@ All steps verified against local Supabase at 127.0.0.1:54200 using p0test@exampl
 ## Verdict
 
 **Phase 0: CLOSED.** All Phase 0 criteria now have execution evidence:
+
 - Static inventory/traversal criteria met
 - Public no-credential probes operational
 - API auth smoke verified

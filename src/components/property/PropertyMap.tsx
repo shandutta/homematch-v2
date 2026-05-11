@@ -254,9 +254,7 @@ export function PropertyMap({
 
         {(loaderError || error) && (
           <MapErrorOverlay
-            message={
-              error ?? loaderError?.message ?? 'Unable to load map'
-            }
+            message={error ?? loaderError?.message ?? 'Unable to load map'}
             property={property}
           />
         )}
@@ -272,7 +270,7 @@ function MapLoadingShimmer() {
       data-testid="property-map-skeleton"
       aria-busy="true"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.06)_50%,transparent_70%)] bg-[length:200%_100%] animate-[shimmer_1.6s_ease-in-out_infinite]" />
+      <div className="absolute inset-0 animate-[shimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.06)_50%,transparent_70%)] bg-[length:200%_100%]" />
       <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1.5 backdrop-blur-sm">
         <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
         <span className="text-[11px] font-medium tracking-[0.18em] text-slate-300 uppercase">
@@ -397,7 +395,9 @@ function createPropertyMarker({
     title,
     animation: maps.Animation?.DROP,
     icon: {
-      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(MARKER_PIN_SVG),
+      url:
+        'data:image/svg+xml;charset=UTF-8,' +
+        encodeURIComponent(MARKER_PIN_SVG),
       scaledSize: new maps.Size(36, 44),
       anchor: new maps.Point(18, 44),
     },

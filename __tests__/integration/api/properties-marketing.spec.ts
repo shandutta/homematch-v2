@@ -2,25 +2,26 @@
  * Integration tests for /api/properties/marketing endpoint
  * Tests the marketing properties API functionality
  */
-import { describe, test, expect, beforeAll } from 'vitest'
+import { describe, test, expect } from 'vitest'
+import { NextRequest } from 'next/server'
 
-const API_URL = process.env.TEST_API_URL || 'http://localhost:3000'
+import {
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  PATCH,
+} from '@/app/api/properties/marketing/route'
 
-// Increase timeout for integration tests making real HTTP requests
+// Increase timeout for integration tests
 const TEST_TIMEOUT = 60000 // 60s per test
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const fetchJson = async (path: string, init?: RequestInit) => {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: 'GET',
-    headers: {
-      'content-type': 'application/json',
-      ...(init?.headers || {}),
-    },
-    ...init,
-  })
+const fetchJson = async (path: string) => {
+  const req = new NextRequest(`http://localhost${path}`)
+  const res = await GET(req)
 
   let body: unknown = []
   try {
@@ -34,14 +35,6 @@ const fetchJson = async (path: string, init?: RequestInit) => {
 }
 
 describe('Integration: /api/properties/marketing', () => {
-  beforeAll(() => {
-    if (!API_URL) {
-      throw new Error(
-        'TEST_API_URL environment variable is required for integration tests'
-      )
-    }
-  })
-
   test('should return marketing properties array', async () => {
     const { status, body } = await fetchJson('/api/properties/marketing')
 
@@ -138,12 +131,10 @@ describe('Integration: /api/properties/marketing', () => {
       const { body } = await fetchJson('/api/properties/marketing')
 
       if (body.length > 0) {
-        // In development or with proper data, should prefer cards with images
         const cardsWithImages = body.filter(
           (card) => isRecord(card) && typeof card.imageUrl === 'string'
         )
 
-        // If there are any cards with images, they should be prioritized
         if (cardsWithImages.length > 0) {
           cardsWithImages.forEach((card) => {
             if (!isRecord(card)) return
@@ -192,10 +183,9 @@ describe('Integration: /api/properties/marketing', () => {
       const startTime = Date.now()
 
       // Make multiple concurrent requests
-      const requests = Array.from({ length: 3 }, () =>
-        fetchJson('/api/properties/marketing')
+      const responses = await Promise.all(
+        Array.from({ length: 3 }, () => fetchJson('/api/properties/marketing'))
       )
-      const responses = await Promise.all(requests)
 
       const endTime = Date.now()
       const duration = endTime - startTime
@@ -206,8 +196,7 @@ describe('Integration: /api/properties/marketing', () => {
         expect(Array.isArray(body)).toBe(true)
       })
 
-      // Should complete reasonably quickly (within 30 seconds)
-      // Relaxed from 10s to account for variable integration test latency
+      // Should complete reasonably quickly
       expect(duration).toBeLessThan(30000)
     },
     TEST_TIMEOUT
@@ -216,21 +205,7 @@ describe('Integration: /api/properties/marketing', () => {
   test(
     'should reject non-GET methods',
     async () => {
-      const methods = ['POST', 'PUT', 'DELETE', 'PATCH']
-
-      // Make all requests concurrently to avoid sequential timeout stacking
-      const responses = await Promise.all(
-        methods.map((method) =>
-          fetch(`${API_URL}/api/properties/marketing`, {
-            method,
-            headers: {
-              'content-type': 'application/json',
-            },
-          })
-        )
-      )
-
-      // All should return 405 Method Not Allowed
+      const responses = await Promise.all([POST(), PUT(), DELETE(), PATCH()])
       for (const res of responses) {
         expect(res.status).toBe(405)
       }

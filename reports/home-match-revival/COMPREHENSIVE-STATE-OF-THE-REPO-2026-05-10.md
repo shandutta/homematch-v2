@@ -13,14 +13,14 @@
 
 The original HomeMatch Business Revival Operating Plan (`reports/home-match-business-revival-operating-plan.md`) established six workstreams:
 
-| Stream | Goal |
-|--------|------|
-| A | Full route/API endpoint inventory + site traversal + dead code identification |
-| B | Auth strategy: keep Supabase Auth or migrate to Clerk/Auth0/etc. |
-| C | Frontend design & product UX — sharp, snappy, couples-differentiated |
-| D | Backend DB architecture — efficient schema, RLS, query patterns |
-| E | API/middleware performance — timeouts, rate limits, caching |
-| F | Dev/CI/local env — Vercel, Supabase local, Docker, test harness, docs |
+| Stream | Goal                                                                          |
+| ------ | ----------------------------------------------------------------------------- |
+| A      | Full route/API endpoint inventory + site traversal + dead code identification |
+| B      | Auth strategy: keep Supabase Auth or migrate to Clerk/Auth0/etc.              |
+| C      | Frontend design & product UX — sharp, snappy, couples-differentiated          |
+| D      | Backend DB architecture — efficient schema, RLS, query patterns               |
+| E      | API/middleware performance — timeouts, rate limits, caching                   |
+| F      | Dev/CI/local env — Vercel, Supabase local, Docker, test harness, docs         |
 
 **The strict Phase gate:** Phase 2+ (product/UX/LLM/ingest) was held behind 100% closure of Phase 0 (end-to-end verification) and Phase 1 (architecture/auth/performance hardening).
 
@@ -29,6 +29,7 @@ The original HomeMatch Business Revival Operating Plan (`reports/home-match-busi
 ## 2. Execution Timeline
 
 ### May 7 (Initial Audit)
+
 - Cloned `shandutta/homematch-v2` at commit `179df3c`
 - Verified codebase: `pnpm install`, lint, type-check, build all passed locally; 1,511 unit tests passed
 - Discovered production is **down**: `homematch.pro/api/health` → 503 (Supabase unreachable)
@@ -37,6 +38,7 @@ The original HomeMatch Business Revival Operating Plan (`reports/home-match-busi
 - Identified all required env vars for Supabase, Google Maps, RapidAPI (Zillow), OpenRouter
 
 ### May 8 (Phase 0/1 Architecture + Worker Ramp)
+
 - **Established the parallel Kanban model**: control plane in Telegram, execution in bounded Kanban workers
 - Created 3 git worktrees for parallel lanes: `p2-frontend`, `p3-backend`, `p4-quality-compliance`
 - Built the **Phase 0/1 Closure Matrix** as canonical gate artifact
@@ -45,6 +47,7 @@ The original HomeMatch Business Revival Operating Plan (`reports/home-match-busi
 - Over **60+ Claude worker worktrees** created under `/home/shan/projects/homematch-v2.claude-workers/`
 
 ### May 9 (Integration Push + Phase Gate Lift)
+
 - Integrated all worker branches back into `autonomy/6h-business-hardening`
 - **Phase 0 closed** — auth lifecycle verified end-to-end against local Supabase (login → authenticated API → logout)
 - **Phase 1 closed** — all D1-D7 resolved with D6 execution-evidenced
@@ -53,6 +56,7 @@ The original HomeMatch Business Revival Operating Plan (`reports/home-match-busi
 - Added 12 ready + 4 todo tasks to Kanban for Phase 2+ work
 
 ### May 10 (Current)
+
 - 272 Kanban tasks completed, board fully drained
 - Unit tests: **201 suites, 2,519 tests — all passing**
 - Two remaining code issues identified (see §5)
@@ -110,20 +114,25 @@ ff4261a feat(couples): layer shadow-dark-sm under glow on MutualLikesBadge
 All worker branches exist under `homematch-v2.claude-workers/` with `prunable` tags. Notable categories:
 
 **P0/P1 Hardening:**
+
 - `autonomy/fix-tintapiroutes`, `autonomy/fix-tintclientpatterns`, `autonomy/fix-tintfixdevserver`, `autonomy/fix-tintfixframer`, `autonomy/fix-tinthouseholdrls`, `autonomy/fix-tp0playwright`
 - `autonomy/fix-taf5cdb35`, `autonomy/fix-t3910aa62`, `autonomy/fix-t7a8f34f3`, `autonomy/fix-t38c893a6`, `autonomy/fix-t2c0ce204`, `autonomy/fix-t40e5666a`
 - `autonomy/fix-t9e95feb7`, `autonomy/fix-t23e8fcaa`, `autonomy/fix-t8d28e66a`, `autonomy/fix-ta12d2d51`, `autonomy/fix-tde1ec954`, `autonomy/fix-teab22374`, `autonomy/fix-tafd84c50`
 
 **Phase 2 UX/Product:**
+
 - `autonomy/fix-couples-matching-ux`, `fix-couples-workflow`, `p2-couples-ux`, `p2-maps-images`, `p2-mobile-responsive`, `p2-perf-optimize`, `p2-property-cards-retry`
 
 **Phase 3 LLM/Ingest:**
+
 - `p3-ingest-impl`, `p3-llm-impl`
 
 **Phase 4 Quality:**
+
 - `p4-accessibility`, `p4-test-coverage`, `p4-test-triage`
 
 **Design/Audit:**
+
 - `autonomy/design-tokens`, `autonomy/fix-broken-tokens`, `autonomy/fix-bundle-optimize`, `autonomy/fix-font-typography`, `autonomy/fix-framer-lazy`, `autonomy/fix-hex-hardcode`, `autonomy/fix-n1-batch`, `autonomy/fix-pagination`, `autonomy/fix-select-star`, `autonomy/fix-tailwind-globs`, `autonomy/mobile-audit`, `autonomy/mobile-ux`, `autonomy/a11y`, `autonomy/api-scan`, `autonomy/bundle-audit`, `autonomy/component-scan`, `autonomy/config-scan`, `autonomy/query-audit`, `autonomy/route-audit`, `autonomy/seo-metadata`, `autonomy/test-gap`, `autonomy/perf`
 
 **Watchtower/docs/evidence workers:** `wt-hm-accessibility`, `wt-hm-mobile-ux`, `wt-hm-observability`, `wt-mobile-audit`, `wt-p4-test`, `wt-perf-lite`
@@ -133,6 +142,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 ## 4. What Was Built — By Domain
 
 ### Auth & Security
+
 - Removed duplicate `createApiClient()` `auth.getUser` monkey-patch
 - Removed user-scoped interactions POST service-role fallback/backfill
 - Auth lifecycle smoke verified: login → authenticated API → logout → invalidation (local Supabase + remote seeded)
@@ -144,6 +154,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - RLS policy coverage indexed
 
 ### API & Performance
+
 - `fetchWithTimeout` wrapper applied to all external API calls (M8)
 - API error envelope standardized across all route handlers (M6)
 - Rate limit helper adoption scanned across all 26 API routes
@@ -155,6 +166,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - `SwipeablePropertyCard` wrapped in `MotionMaxProvider` for drag support
 
 ### Database & Supabase
+
 - Duplicate Supabase factory consolidated (removed unused modules)
 - Query dedupe smoke evidence collected
 - Supabase client refresh/recovery test coverage added
@@ -164,6 +176,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - Supabase production project `lpwlbbowavozpywnpamn` status: **INACTIVE** (blocker for Vercel deploys)
 
 ### Frontend / UX
+
 - **PropertyCard behavioral tests**: like decision, action-button existence, Zillow link — upgraded from static to behavioral
 - **TasteProfileCollector** component: aesthetic picker + lifestyle sliders, wired into settings profile
 - **MutualLikesBadge**: shadow-dark-sm layer under glow, elevated shadow token
@@ -174,6 +187,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - **Typography/font audit**
 
 ### Matching / LLM
+
 - V2 matching prompt: structured prompt with taste-aware heuristic weights
 - `v=2` query param routing to V2 prompt path
 - `droppedCount` exposed from `parseLLMResponse` for anti-hallucination observability
@@ -181,6 +195,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - V1 buildUserPrompt unwrap fix (result object)
 
 ### SEO / Metadata
+
 - Root layout OG/social cards added
 - Dark-theme image blur fallback
 - Default canonical/robots policies
@@ -189,10 +204,12 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - Metadata/Social preview inventory
 
 ### Legal / Compliance
+
 - `CcpaOptOutLink` component added (was missing, causing build failure)
 - Cookie consent flow verified
 
 ### DevOps / Infra
+
 - Kanban board: 272 tasks completed, fully drained
 - 60+ Claude Code worker worktrees (prunable)
 - 1Password integration for secret-safe test user seeding
@@ -202,6 +219,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 - Hermes `/goal` incomplete-override patch (PR #21689 upstream)
 
 ### Documentation & Reports
+
 - **100+ report artifacts** in `reports/home-match-revival/` covering every domain
 - Closure matrix with D1-D7 resolution tracking
 - OG plan crosscheck completed (verdict: PASS)
@@ -223,22 +241,22 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 
 ### ✅ Passing
 
-| Check | Result |
-|-------|--------|
-| Unit tests | **201 suites, 2,519 tests — all green** |
+| Check             | Result                                                              |
+| ----------------- | ------------------------------------------------------------------- |
+| Unit tests        | **201 suites, 2,519 tests — all green**                             |
 | Integration tests | **43 files, 395 tests — all green** (when local Supabase available) |
-| Lint | 0 errors |
-| Git diff --check | Clean |
+| Lint              | 0 errors                                                            |
+| Git diff --check  | Clean                                                               |
 
 ### ❌ Failing
 
-| Check | Issue | Root Cause | Fix Complexity |
-|-------|-------|-----------|----------------|
-| **Build** | `websiteJsonLd` is not a valid Next.js Page export field | `src/app/page.tsx` line 16: `export const websiteJsonLd = createWebsiteJsonLd()` — Next.js doesn't recognize custom page exports | **Low** — move `websiteJsonLd` into a `<script>` tag in the component body or use `generateMetadata` return object |
-| **Type check** | Same as build | Next.js build types reject unknown page exports | **Low** — same fix |
-| **Integration tests** | Require local Supabase at `http://127.0.0.1:54200` | Docker not installed on devbox; cannot run `supabase start` | **Medium** — either: install Docker on devbox, or set `ALLOW_REMOTE_SUPABASE=true` and point to remote, or run integration tests on a different machine |
-| **Vitest (globalSetup)** | Dev server doesn't become ready within 90s | Health check to `http://127.0.0.1:3000/api/health` times out | **Medium** — may be related to local Supabase guard blocking startup; try `SKIP_SUPABASE_GUARD=true pnpm dev` or increase timeout |
-| **Vercel deploys** | `Provisioning integrations failed` | Supabase production project `lpwlbbowavozpywnpamn` is **INACTIVE** | **High/External** — requires Supabase project reactivation or new project + re-pointing env vars. Vercel token also lost (tmpfs cleanup) |
+| Check                    | Issue                                                    | Root Cause                                                                                                                       | Fix Complexity                                                                                                                                          |
+| ------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Build**                | `websiteJsonLd` is not a valid Next.js Page export field | `src/app/page.tsx` line 16: `export const websiteJsonLd = createWebsiteJsonLd()` — Next.js doesn't recognize custom page exports | **Low** — move `websiteJsonLd` into a `<script>` tag in the component body or use `generateMetadata` return object                                      |
+| **Type check**           | Same as build                                            | Next.js build types reject unknown page exports                                                                                  | **Low** — same fix                                                                                                                                      |
+| **Integration tests**    | Require local Supabase at `http://127.0.0.1:54200`       | Docker not installed on devbox; cannot run `supabase start`                                                                      | **Medium** — either: install Docker on devbox, or set `ALLOW_REMOTE_SUPABASE=true` and point to remote, or run integration tests on a different machine |
+| **Vitest (globalSetup)** | Dev server doesn't become ready within 90s               | Health check to `http://127.0.0.1:3000/api/health` times out                                                                     | **Medium** — may be related to local Supabase guard blocking startup; try `SKIP_SUPABASE_GUARD=true pnpm dev` or increase timeout                       |
+| **Vercel deploys**       | `Provisioning integrations failed`                       | Supabase production project `lpwlbbowavozpywnpamn` is **INACTIVE**                                                               | **High/External** — requires Supabase project reactivation or new project + re-pointing env vars. Vercel token also lost (tmpfs cleanup)                |
 
 ### ⚠️ Infrastructure Blockers
 
@@ -257,6 +275,7 @@ All worker branches exist under `homematch-v2.claude-workers/` with `prunable` t
 The page-level `export const websiteJsonLd` pattern isn't supported by Next.js. Two options:
 
 **Option A (preferred — zero-risk):** Inline the JSON-LD `<script>` tag directly in the LandingPage component body:
+
 ```tsx
 // In LandingPage component:
 <script
@@ -266,6 +285,7 @@ The page-level `export const websiteJsonLd` pattern isn't supported by Next.js. 
   }}
 />
 ```
+
 Remove the page-level `export const websiteJsonLd`.
 
 **Option B:** Use Next.js `generateMetadata` to inject JSON-LD via a metadata other field (complex, fragile).
@@ -279,6 +299,7 @@ Best path: use `ALLOW_REMOTE_SUPABASE=true` and point Vitest globalSetup at the 
 **3. Fix Vitest dev server startup**
 
 The globalSetup tries to start a Next.js dev server but the health check times out. Likely causes:
+
 - Supabase guard blocking startup (try `SKIP_SUPABASE_GUARD=true` in the globalSetup env)
 - Port 3000 conflicts
 - Timeout too aggressive (90s) for slow startup
@@ -288,6 +309,7 @@ The globalSetup tries to start a Next.js dev server but the health check times o
 **4. Restore Supabase production project**
 
 This is an external action. Options:
+
 - Reactivate `lpwlbbowavozpywnpamn` in Supabase dashboard (if paused due to inactivity)
 - Create new Supabase project and migrate schema
 - Update Vercel env vars to point to new project
@@ -298,16 +320,16 @@ Once Supabase is live, Vercel deploys should auto-resume on PR push to branch `a
 
 With the gate officially open, the following are ready for implementation:
 
-| Priority | Domain | Key Tasks |
-|----------|--------|-----------|
-| P2 | **Couples UX** | Saved-search, compare flows, partner review, MutualLikesBadge polish |
-| P2 | **Maps/Images** | Neighborhood imagery, listing metadata, map pin UX |
-| P2 | **SEO** | OG cards polishing, structured data, sitemap |
-| P3 | **LLM/Matching** | Prompt hardening, eval dataset, ranking robustness, hallucination guardrails |
-| P3 | **Ingest** | Pipeline idempotency, source freshness, backfill safety |
-| P4 | **Testing** | Test suite triage, Playwright coverage expansion, TDD harness |
-| P5 | **Compliance** | Legal review checklist, analytics, AdSense, Stripe |
-| P6 | **Docs** | Final docs rewrite, launch checklist, merge readiness |
+| Priority | Domain           | Key Tasks                                                                    |
+| -------- | ---------------- | ---------------------------------------------------------------------------- |
+| P2       | **Couples UX**   | Saved-search, compare flows, partner review, MutualLikesBadge polish         |
+| P2       | **Maps/Images**  | Neighborhood imagery, listing metadata, map pin UX                           |
+| P2       | **SEO**          | OG cards polishing, structured data, sitemap                                 |
+| P3       | **LLM/Matching** | Prompt hardening, eval dataset, ranking robustness, hallucination guardrails |
+| P3       | **Ingest**       | Pipeline idempotency, source freshness, backfill safety                      |
+| P4       | **Testing**      | Test suite triage, Playwright coverage expansion, TDD harness                |
+| P5       | **Compliance**   | Legal review checklist, analytics, AdSense, Stripe                           |
+| P6       | **Docs**         | Final docs rewrite, launch checklist, merge readiness                        |
 
 ### Operational Cleanup
 
@@ -322,39 +344,39 @@ With the gate officially open, the following are ready for implementation:
 
 ### Canonical (source of truth)
 
-| File | Role |
-|------|------|
-| `reports/home-match-parallel-kanban-execution-plan.md` | Control-plane plan, gates, worker archetypes |
-| `reports/home-match-revival/phase0-phase1-closure-matrix.md` | Phase 0/1 closure verdict and evidence |
-| `reports/home-match-business-revival-operating-plan.md` | Full workstreams from OG instruction |
-| `reports/home-match-revival/phase2-phase6-execution-roadmap.md` | Held downstream phases |
+| File                                                            | Role                                         |
+| --------------------------------------------------------------- | -------------------------------------------- |
+| `reports/home-match-parallel-kanban-execution-plan.md`          | Control-plane plan, gates, worker archetypes |
+| `reports/home-match-revival/phase0-phase1-closure-matrix.md`    | Phase 0/1 closure verdict and evidence       |
+| `reports/home-match-business-revival-operating-plan.md`         | Full workstreams from OG instruction         |
+| `reports/home-match-revival/phase2-phase6-execution-roadmap.md` | Held downstream phases                       |
 
 ### Live Status
 
-| URL | Role |
-|-----|------|
-| `http://100.79.222.28:8767/home-match-revival-status.html` | Shan-facing current status |
-| `http://100.79.222.28:8767/home-match-parallel-kanban-execution-plan.html` | Plan HTML mirror |
+| URL                                                                        | Role                       |
+| -------------------------------------------------------------------------- | -------------------------- |
+| `http://100.79.222.28:8767/home-match-revival-status.html`                 | Shan-facing current status |
+| `http://100.79.222.28:8767/home-match-parallel-kanban-execution-plan.html` | Plan HTML mirror           |
 
 ### Key Reports (partial — 100+ total)
 
-| File | Domain |
-|------|--------|
-| `design-ux-audit-desktop-2026-05-09.md` | Desktop design audit |
-| `design-ux-audit-mobile-2026-05-09.md` | Mobile design audit |
-| `design-tokens-audit-20260509.md` | Design tokens |
-| `bundle-analysis-20260509.md` | Bundle size analysis |
-| `component-scan-2026-05-09.md` | Component inventory |
-| `a11y-audit-2026-05-09.md` | Accessibility audit |
-| `accessibility-core-flow-matrix.md` | A11y flow matrix |
-| `api-error-envelope-evidence-2026-05-08.md` | API error standardization |
-| `d107-rate-limit-helper-adoption-evidence-2026-05-08.md` | Rate limit coverage |
-| `d123-secret-redaction-evidence-index-2026-05-08.md` | Secret redaction |
-| `d127-maps-paid-surface-gate-index-2026-05-08.md` | Maps API gate |
-| `d6-db-execution-environment-closure-2026-05-10.md` | DB execution environment |
-| `d99-supabase-inactive-health-evidence-index-2026-05-08.md` | Supabase health |
-| `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` | Route/API inventory |
-| `p0-site-traversal-acceptance-matrix-2026-05-08.md` | Site traversal matrix |
+| File                                                        | Domain                    |
+| ----------------------------------------------------------- | ------------------------- |
+| `design-ux-audit-desktop-2026-05-09.md`                     | Desktop design audit      |
+| `design-ux-audit-mobile-2026-05-09.md`                      | Mobile design audit       |
+| `design-tokens-audit-20260509.md`                           | Design tokens             |
+| `bundle-analysis-20260509.md`                               | Bundle size analysis      |
+| `component-scan-2026-05-09.md`                              | Component inventory       |
+| `a11y-audit-2026-05-09.md`                                  | Accessibility audit       |
+| `accessibility-core-flow-matrix.md`                         | A11y flow matrix          |
+| `api-error-envelope-evidence-2026-05-08.md`                 | API error standardization |
+| `d107-rate-limit-helper-adoption-evidence-2026-05-08.md`    | Rate limit coverage       |
+| `d123-secret-redaction-evidence-index-2026-05-08.md`        | Secret redaction          |
+| `d127-maps-paid-surface-gate-index-2026-05-08.md`           | Maps API gate             |
+| `d6-db-execution-environment-closure-2026-05-10.md`         | DB execution environment  |
+| `d99-supabase-inactive-health-evidence-index-2026-05-08.md` | Supabase health           |
+| `p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md` | Route/API inventory       |
+| `p0-site-traversal-acceptance-matrix-2026-05-08.md`         | Site traversal matrix     |
 
 ### Git Worktrees
 

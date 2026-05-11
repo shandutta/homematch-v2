@@ -105,6 +105,9 @@ export async function POST(req: Request) {
     })
   }
 
+  // Per audit M12.1: properties are batch-fetched once via .in() (already done),
+  // and per-neighborhood stats RPC calls are issued in parallel via Promise.all
+  // (replaces the previous serial-await N+1 walk through neighborhoods).
   const neighborhoodIds = neighborhoods.map((n) => n.id)
 
   const { data: allListings } = await supabase
@@ -127,13 +130,24 @@ export async function POST(req: Request) {
     }
   }
 
-  const contexts: NeighborhoodContext[] = []
+  // Fan-out per-neighborhood stats RPC calls in parallel. There's no batched
+  // get_neighborhood_stats RPC in the schema; the fan-out collapses the
+  // sequential N round-trips into one wall-clock RTT (modulo client/server
+  // concurrency limits).
+  const statsResults = await Promise.all(
+    neighborhoods.map((n) => fetchNeighborhoodStats(supabase, n.id))
+  )
+  const statsByNeighborhood = new Map<
+    string,
+    NeighborhoodStatsResult | null
+  >()
+  neighborhoods.forEach((n, idx) => {
+    statsByNeighborhood.set(n.id, statsResults[idx] ?? null)
+  })
 
-  for (const neighborhood of neighborhoods) {
-    const listingStats = await fetchNeighborhoodStats(supabase, neighborhood.id)
+  const contexts: NeighborhoodContext[] = neighborhoods.map((neighborhood) => {
     const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
-
-    contexts.push({
+    return {
       neighborhoodId: neighborhood.id,
       name: neighborhood.name,
       city: neighborhood.city,
@@ -142,7 +156,7 @@ export async function POST(req: Request) {
       medianPrice: neighborhood.median_price,
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
-      listingStats,
+      listingStats: statsByNeighborhood.get(neighborhood.id) ?? null,
       sampleProperties: listings.map((p) => ({
         address: p.address,
         price: p.price,
@@ -150,8 +164,8 @@ export async function POST(req: Request) {
         bathrooms: p.bathrooms,
         propertyType: p.property_type,
       })),
-    })
-  }
+    }
+  })
 
   const service = createNeighborhoodVibesService()
   const batch = await service.generateBatch(contexts, {

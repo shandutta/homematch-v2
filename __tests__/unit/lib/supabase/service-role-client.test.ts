@@ -16,9 +16,8 @@ describe('getServiceRoleClient', () => {
     const gatedClient = { client: 'gated-service-role' }
     createServiceClientMock.mockResolvedValue(gatedClient)
 
-    const { getServiceRoleClient } = await import(
-      '@/lib/supabase/service-role-client'
-    )
+    const { getServiceRoleClient } =
+      await import('@/lib/supabase/service-role-client')
 
     await expect(getServiceRoleClient()).resolves.toBe(gatedClient)
     expect(createServiceClientMock).toHaveBeenCalledTimes(1)
@@ -28,9 +27,8 @@ describe('getServiceRoleClient', () => {
     const gateError = new Error('Unauthorized access to service role client')
     createServiceClientMock.mockRejectedValue(gateError)
 
-    const { getServiceRoleClient } = await import(
-      '@/lib/supabase/service-role-client'
-    )
+    const { getServiceRoleClient } =
+      await import('@/lib/supabase/service-role-client')
 
     await expect(getServiceRoleClient()).rejects.toThrow(
       'Unauthorized access to service role client'

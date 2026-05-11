@@ -693,51 +693,43 @@ export class GeographicService
         // Get all properties in bounds first
         const properties = await this.getPropertiesInBounds(bounds, 200)
 
-        // Filter properties by calculating transit score for each
-        const propertiesWithTransitScores: Property[] = []
-
-        for (const property of properties) {
-          if (property.coordinates) {
-            try {
-              // Extract coordinates using our utility function
+        // Sprint 4 N+1: previously this loop did one RPC per property,
+        // serially. With up to 200 properties from the bounds query that's
+        // 200 round-trips before the user sees anything. Parallelize via
+        // Promise.allSettled so a single bad row never poisons the rest.
+        const rpc = createTypedRPC(supabase)
+        const scoredCandidates = await Promise.allSettled(
+          properties
+            .filter((p) => Boolean(p.coordinates))
+            .map(async (property) => {
               const coords = extractPropertyCoordinates(property)
-
-              if (!coords) {
-                console.warn(
-                  `Unable to extract coordinates for property ${property.id}`
-                )
-                continue
-              }
-
-              const rpc = createTypedRPC(supabase)
+              if (!coords) return null
               const { data: transitScore, error: scoreError } =
                 await rpc.get_transit_score({
                   center_lat: coords.lat,
                   center_lng: coords.lng,
                 })
-
               if (scoreError) {
                 console.warn(
                   `Transit score calculation failed for property ${property.id}:`,
                   scoreError.message
                 )
-                continue
+                return null
               }
-
-              if (transitScore && transitScore >= minTransitScore) {
-                propertiesWithTransitScores.push(property)
+              if (typeof transitScore === 'number' && transitScore >= minTransitScore) {
+                return property
               }
-            } catch (error) {
-              console.warn(
-                `Error processing transit score for property ${property.id}:`,
-                error
-              )
-              continue
-            }
-          }
-        }
+              return null
+            })
+        )
 
-        return propertiesWithTransitScores
+        return scoredCandidates
+          .filter(
+            (r): r is PromiseFulfilledResult<Property | null> =>
+              r.status === 'fulfilled'
+          )
+          .map((r) => r.value)
+          .filter((p): p is Property => p !== null)
       }
     )
   }

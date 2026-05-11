@@ -135,10 +135,10 @@ Dev server started: `SKIP_SUPABASE_GUARD=true NEXT_TELEMETRY_DISABLED=1 pnpm exe
 
 Health check: `HTTP 200` — database connected, service "HomeMatch V2", version "2.0.0"
 
-| Route                  | Expected                                                     | Observed                                                                               | Verdict |
-| ---------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------- |
-| `/dashboard`           | 302/303/307/308 to `/login?redirectTo=%2Fdashboard`          | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard`          | Pass    |
-| `/couples`             | 302/303/307/308 to `/login?redirectTo=%2Fcouples`            | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fcouples`            | Pass    |
+| Route                  | Expected                                                          | Observed                                                                                                         | Verdict |
+| ---------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
+| `/dashboard`           | 302/303/307/308 to `/login?redirectTo=%2Fdashboard`               | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard`               | Pass    |
+| `/couples`             | 302/303/307/308 to `/login?redirectTo=%2Fcouples`                 | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fcouples`                 | Pass    |
 | `/dashboard?tab=liked` | 302/303/307/308 to `/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | `HTTP/1.1 307 Temporary Redirect`; `location: http://localhost:3101/login?redirectTo=%2Fdashboard%3Ftab%3Dliked` | Pass    |
 
 ### Middleware signal

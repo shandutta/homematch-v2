@@ -27,17 +27,39 @@ const getFreshAuthToken = async (
   supabaseUrl: string,
   anonKey: string
 ): Promise<string> => {
-  const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'test-worker-1@example.com',
-    password: 'testpassword123',
-  })
-
-  if (error || !data.session) {
-    throw new Error(`Failed to get fresh auth token: ${error?.message}`)
+  // Use a fully-isolated supabase-js client. signInWithPassword leaks the
+  // session into a process-shared in-memory store; even with
+  // persistSession: false, other supabase-ssr clients in the same Vitest
+  // worker pick up the session and treat unauthenticated requests as
+  // authenticated. Hack: fetch the token via raw POST to /auth/v1/token
+  // so no GoTrueClient instance ever caches it.
+  const tokenRes = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: 'test-worker-1@example.com',
+        password: 'testpassword123',
+      }),
+    }
+  )
+  if (!tokenRes.ok) {
+    const text = await tokenRes.text()
+    throw new Error(
+      `Failed to get fresh auth token (HTTP ${tokenRes.status}): ${text}`
+    )
   }
-
-  return data.session.access_token
+  const data: { access_token?: string } = await tokenRes.json()
+  if (!data.access_token) {
+    throw new Error(
+      `Failed to get fresh auth token: no access_token in response`
+    )
+  }
+  return data.access_token
 }
 
 describe.sequential('Integration: /api/neighborhoods/vibes', () => {
@@ -69,7 +91,8 @@ describe.sequential('Integration: /api/neighborhoods/vibes', () => {
   })
 
   it('rejects unauthenticated requests', async () => {
-    const res = await fetch('http://localhost:3000/api/neighborhoods/vibes')
+    const req = new NextRequest('http://localhost/api/neighborhoods/vibes')
+    const res = await GET(req)
     expect(res.status).toBe(401)
   })
 

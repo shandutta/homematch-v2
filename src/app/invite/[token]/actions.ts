@@ -2,21 +2,31 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 // @service-role-capability: authenticated invite acceptance; validates token
 // status/expiry and requester identity before household/profile mutations.
 // TODO(D1 follow-up): replace with atomic accept_household_invite RPC.
 export async function acceptInviteAction(token: string) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userCtx = await getServerUserContext()
 
-  if (!user) {
+  if (!userCtx) {
     redirect(`/login?redirectTo=/invite/${token}`)
   }
+
+  // For brand-new Clerk users without a profile row yet, we can't link them
+  // to a household. Surface a clear error so the client surfaces a useful
+  // message; the webhook should fix this soon for Clerk-native users.
+  if (!userCtx.profileId) {
+    return {
+      success: false,
+      error:
+        'Your profile is still being set up. Please refresh in a moment and try again.',
+    }
+  }
+
+  const profileId = userCtx.profileId
 
   const serviceClient = await getServiceRoleClient()
   const { data: invite, error } = await serviceClient
@@ -47,7 +57,7 @@ export async function acceptInviteAction(token: string) {
   const { data: profile } = await serviceClient
     .from('user_profiles')
     .select('household_id')
-    .eq('id', user!.id)
+    .eq('id', profileId)
     .single()
 
   if (profile?.household_id && profile.household_id !== invite.household_id) {
@@ -60,13 +70,13 @@ export async function acceptInviteAction(token: string) {
   await serviceClient
     .from('user_profiles')
     .update({ household_id: invite.household_id })
-    .eq('id', user!.id)
+    .eq('id', profileId)
 
   await serviceClient
     .from('household_invitations')
     .update({
       status: 'accepted',
-      accepted_by: user!.id,
+      accepted_by: profileId,
       accepted_at: now.toISOString(),
     })
     .eq('id', invite.id)

@@ -236,7 +236,8 @@ export interface IBaseService {
  * This maintains backward compatibility with the existing PropertyService
  */
 export interface IPropertyService
-  extends IPropertyCrudService,
+  extends
+    IPropertyCrudService,
     IPropertySearchService,
     INeighborhoodService,
     IPropertyStatsService,

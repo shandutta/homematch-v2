@@ -4,7 +4,7 @@
  */
 
 import type { JSX as ReactJSX } from 'react'
-import type { GtagFunction, SentryHub, PostHogFunction } from './analytics'
+import type { GtagFunction } from './analytics'
 
 declare global {
   namespace JSX {
@@ -16,8 +16,9 @@ declare global {
     interface ElementChildrenAttribute
       extends ReactJSX.ElementChildrenAttribute {}
     interface IntrinsicAttributes extends ReactJSX.IntrinsicAttributes {}
-    interface IntrinsicClassAttributes<T>
-      extends ReactJSX.IntrinsicClassAttributes<T> {}
+    interface IntrinsicClassAttributes<
+      T,
+    > extends ReactJSX.IntrinsicClassAttributes<T> {}
     interface IntrinsicElements extends ReactJSX.IntrinsicElements {}
     /* eslint-enable @typescript-eslint/no-empty-object-type */
   }
@@ -25,8 +26,6 @@ declare global {
   interface Window {
     // Analytics
     gtag?: GtagFunction
-    Sentry?: SentryHub
-    posthog?: PostHogFunction
 
     // Performance monitoring
     __REACT_HYDRATION_TIME__?: number

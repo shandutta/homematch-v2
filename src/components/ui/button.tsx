@@ -23,8 +23,15 @@ const buttonVariants = cva(
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         prime:
-          // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow
-          'relative overflow-hidden rounded-full text-white px-9 py-7 text-base font-semibold ' +
+          // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow.
+          // Padding + text sizing are intentionally NOT hardcoded here; they live in
+          // compoundVariants below so that `<Button variant="prime" size="lg" />` and
+          // `<Button variant="prime" size="default" />` get consistent, predictable heights.
+          // Hardcoded `px-9 py-7` in the base variant collided with size variants and
+          // caller-provided `className` overrides — a single `cn(px-4)` could only catch
+          // px-* and would leave the variant's `py-7` intact, producing inconsistent
+          // heights on the same `size="lg"` prop across Hero and CtaBand. See H7.
+          'relative overflow-hidden rounded-full text-white font-semibold ' +
           // base fill + depth (slightly bluer)
           'before:content-[""] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#0c1426_0%,#0a0f1d_100%)] before:[box-shadow:0_2px_8px_rgba(0,0,0,0.35)] ' +
           // gradient border ring (masked) — brand blue sweep
@@ -46,6 +53,32 @@ const buttonVariants = cva(
         xl: 'min-h-[48px] h-12 rounded-full p-8 text-lg',
       },
     },
+    compoundVariants: [
+      // Prime variant uses a fully-rounded pill shape and bumped text size at every
+      // size. Padding is set per-size so callers can rely on `size` alone to control
+      // the button's height — and caller-provided `className="px-X py-Y"` cleanly
+      // overrides both axes via Tailwind's class merging. See H7.
+      {
+        variant: 'prime',
+        size: 'default',
+        className: 'px-6 py-3 text-base',
+      },
+      {
+        variant: 'prime',
+        size: 'sm',
+        className: 'px-4 py-2 text-sm',
+      },
+      {
+        variant: 'prime',
+        size: 'lg',
+        className: 'px-8 py-4 text-base',
+      },
+      {
+        variant: 'prime',
+        size: 'xl',
+        className: 'px-10 py-5 text-lg',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',

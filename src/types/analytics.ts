@@ -16,31 +16,8 @@ export interface GtagFunction {
   (command: string, ...params: unknown[]): void
 }
 
-export interface SentryScope {
-  setTag(key: string, value: string): void
-  setContext(key: string, context: Record<string, unknown>): void
-  setLevel(level: 'fatal' | 'error' | 'warning' | 'info' | 'debug'): void
-  setUser(user: Record<string, unknown>): void
-  setExtra(key: string, extra: unknown): void
-}
-
-export interface SentryHub {
-  captureException(exception: Error): string
-  captureMessage(message: string): string
-  withScope(callback: (scope: SentryScope) => void): void
-}
-
-export interface PostHogFunction {
-  capture(event: string, properties?: Record<string, unknown>): void
-  identify(distinctId: string, properties?: Record<string, unknown>): void
-  alias(alias: string, distinctId?: string): void
-  reset(): void
-}
-
 export interface WindowWithAnalytics {
   gtag?: GtagFunction
-  Sentry?: SentryHub
-  posthog?: PostHogFunction
   __REACT_HYDRATION_TIME__?: number
 }
 

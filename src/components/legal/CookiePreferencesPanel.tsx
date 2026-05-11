@@ -180,7 +180,7 @@ export function CookiePreferencesPanel({
           Reject non-essential
         </Button>
         {hasConsent && hasSaved ? (
-          <span className="text-xs text-slate-500">Preferences saved.</span>
+          <span className="text-xs text-slate-600">Preferences saved.</span>
         ) : null}
       </div>
     </div>

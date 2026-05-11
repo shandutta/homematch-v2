@@ -1,5 +1,12 @@
 // Phase 0/1 closure: D7-disputed-route-exposure
-import { describe, it, expect, beforeAll, beforeEach, jest } from '@jest/globals'
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  jest,
+} from '@jest/globals'
 import { readFileSync } from 'fs'
 import * as path from 'path'
 
@@ -53,7 +60,9 @@ describe('observability log redaction policy', () => {
       | 'serviceUnavailable'
       | 'gatewayTimeout'
 
-    const nonValidationResponders: Array<[NonValidationMethod, string, number]> = [
+    const nonValidationResponders: Array<
+      [NonValidationMethod, string, number]
+    > = [
       ['unauthorized', 'UNAUTHORIZED', 401],
       ['forbidden', 'FORBIDDEN', 403],
       ['notFound', 'NOT_FOUND', 404],
@@ -94,14 +103,15 @@ describe('observability log redaction policy', () => {
         if (!lastCall) throw new Error('expected jsonMock to be called')
         const [body, init] = lastCall
         expect(init?.status).toBe(expectedStatus)
-        expect(body).toEqual({ error: 'Standardized message', code: expectedCode })
+        expect(body).toEqual({
+          error: 'Standardized message',
+          code: expectedCode,
+        })
       }
     )
 
     it('serverError keeps details out of the JSON response body even when callers pass secret-shaped values', () => {
-      const errorSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
       ApiErrorHandler.serverError('Internal failure', {
         serviceRoleKey: FAKE_SERVICE_ROLE_KEY,

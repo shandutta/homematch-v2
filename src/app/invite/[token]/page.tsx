@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import type {
   Household,
   HouseholdInvitation,
@@ -63,10 +63,7 @@ export default async function InvitePage({
     .eq('id', invite.created_by)
     .maybeSingle<Pick<UserProfile, 'display_name' | 'email'>>()
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getServerUserContext()
 
   const isExpired = new Date(invite.expires_at) < new Date()
   const canAccept = invite.status === 'pending' && !isExpired

@@ -48,9 +48,14 @@ export const DASHBOARD_PROPERTY_SELECT_COLUMNS = [
   'updated_at',
 ] satisfies readonly DashboardPropertySelectColumn[]
 
-type DashboardSearchResult = Awaited<ReturnType<PropertyService['searchProperties']>>
+type DashboardSearchResult = Awaited<
+  ReturnType<PropertyService['searchProperties']>
+>
 
-const inFlightDashboardSearches = new Map<string, Promise<DashboardSearchResult>>()
+const inFlightDashboardSearches = new Map<
+  string,
+  Promise<DashboardSearchResult>
+>()
 
 class StaticSupabaseClientFactory implements ISupabaseClientFactory {
   private readonly client: SupabaseClient<AppDatabase>
@@ -129,7 +134,8 @@ export interface DashboardPreferences {
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
 
-export const DASHBOARD_PROPERTY_SELECT = DASHBOARD_PROPERTY_SELECT_COLUMNS.join(',')
+export const DASHBOARD_PROPERTY_SELECT =
+  DASHBOARD_PROPERTY_SELECT_COLUMNS.join(',')
 
 const shouldTreatAsAllCities = (
   prefs?: DashboardPreferences | null
@@ -361,4 +367,3 @@ export async function loadDashboardData(
     }
   }
 }
-

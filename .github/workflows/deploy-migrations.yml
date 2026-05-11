@@ -1,0 +1,78 @@
+name: Deploy migrations to prod
+
+# Auto-apply Supabase migrations to the linked prod project when changes to
+# supabase/migrations/** land on main.
+#
+# Prerequisites — these GitHub repo secrets must exist:
+#   SUPABASE_ACCESS_TOKEN  Personal-access token (Account → Access Tokens).
+#   SUPABASE_DB_PASSWORD   The DB password for the linked project (Project
+#                           Settings → Database → Connection string).
+#   SUPABASE_PROJECT_REF   Project ref (the lpwlbbowavozpywnpamn slug, NOT
+#                           the org id).
+#
+# Behavior:
+#   - Triggers on pushes to main that touch a .sql file under supabase/migrations.
+#   - Manual `workflow_dispatch` button for emergency rerun.
+#   - `supabase link` connects to the project, then `supabase db push`
+#     applies the new migrations recorded in supabase_migrations.schema_migrations.
+#   - Uses --include-all so any drifted/missing rows are caught.
+#   - If push fails, the job fails and main keeps a red badge until someone
+#     looks at it. No partial-apply silent failure.
+#
+# Why not just `db push` in CI for every PR?
+#   - PRs run against the docker-booted Supabase instance, not prod.
+#   - We only want prod side-effects when code is on main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - '.github/workflows/deploy-migrations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-migrations
+  cancel-in-progress: false
+
+jobs:
+  push:
+    name: supabase db push (prod)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - name: Guard required secrets
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] && missing+=(SUPABASE_ACCESS_TOKEN)
+          [ -z "${SUPABASE_DB_PASSWORD:-}" ] && missing+=(SUPABASE_DB_PASSWORD)
+          [ -z "${SUPABASE_PROJECT_REF:-}" ] && missing+=(SUPABASE_PROJECT_REF)
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing required repo secrets: ${missing[*]}"
+            echo "Set them at Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.62.5
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Dry-run migration plan
+        run: supabase db push --dry-run
+
+      - name: Apply migrations to prod
+        run: supabase db push --include-all
