@@ -123,7 +123,15 @@ export function SignupForm() {
 
     return (
       <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full max-w-md shadow-lg backdrop-blur">
-        <CardContent className="space-y-4 pt-6">
+        {/* M18: success state announced via aria-live so screen readers
+            confirm the signup attempt succeeded. status role is preferred
+            over alert here because the message is informational, not an
+            error that interrupts the user. */}
+        <CardContent
+          className="space-y-4 pt-6"
+          role="status"
+          aria-live="polite"
+        >
           <Alert>
             <AlertDescription>
               {lastEmail
