@@ -58,11 +58,17 @@ export function DashboardPropertyGrid({
 }: DashboardPropertyGridProps) {
   const hasEnoughContentForAds = properties.length >= MIN_CONTENT_FOR_ADS
 
-  // Detect small screens to switch to swipe-first layout
+  // Detect small screens to switch to swipe-first layout. We track whether
+  // the matchMedia listener has had a chance to run; until it has we rely on
+  // CSS responsive classes so SSR/initial paint matches the viewport without
+  // waiting on a state-driven re-render (which previously caused the mobile
+  // dashboard to render the desktop grid until JS hydration finished).
   const [isMobile, setIsMobile] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'stack'>('grid')
 
   useEffect(() => {
+    setHasMounted(true)
     if (typeof window === 'undefined' || !('matchMedia' in window)) return
     const mq = window.matchMedia('(max-width: 1024px)')
     const handleChange = (event: MediaQueryListEvent) => {
@@ -130,69 +136,76 @@ export function DashboardPropertyGrid({
     )
   }
 
+  // Show stack on mobile (≤lg breakpoint) once we know the viewport, OR when
+  // the user has explicitly chosen "Card stack" on desktop. Until JS detects
+  // the viewport, we render BOTH layouts and let CSS responsive classes pick
+  // one — this matches what real users see immediately rather than flashing
+  // the desktop grid on mobile while React hydrates.
+  const showStackOnly = hasMounted && isStackView
+  const showGridOnly = hasMounted && !isStackView
+  const renderBoth = !hasMounted
+
   // Mobile: Tinder-style single-card stack with swipe + buttons
-  if (isStackView) {
-    return (
-      <div className="relative">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <Link href="/settings?tab=preferences">
-            <Button
-              variant="outline"
-              className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+  const stackBranch = (
+    <div className="relative">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Link href="/settings?tab=preferences">
+          <Button
+            variant="outline"
+            className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+          </Button>
+        </Link>
+        {!isMobile && (
+          <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-white'
+              }`}
+              onClick={() => setViewMode('grid')}
             >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filters
-            </Button>
-          </Link>
-          {!isMobile && (
-            <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur">
-              <button
-                type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-muted-foreground hover:text-white'
-                }`}
-                onClick={() => setViewMode('grid')}
-              >
-                Grid
-              </button>
-              <button
-                type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  viewMode === 'stack'
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-muted-foreground hover:text-white'
-                }`}
-                onClick={() => setViewMode('stack')}
-              >
-                Card stack
-              </button>
-            </div>
-          )}
-        </div>
-
-        <Suspense fallback={null}>
-          <FloatingHearts
-            trigger={celebrationTrigger?.type === 'mutual-like'}
-            count={8}
-          />
-          <SuccessConfetti trigger={celebrationTrigger?.type === 'milestone'} />
-        </Suspense>
-
-        <SwipeablePropertyCard
-          properties={properties}
-          currentIndex={0}
-          onDecision={onDecision}
-          showHints
-          className="max-w-md"
-        />
+              Grid
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                viewMode === 'stack'
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-muted-foreground hover:text-white'
+              }`}
+              onClick={() => setViewMode('stack')}
+            >
+              Card stack
+            </button>
+          </div>
+        )}
       </div>
-    )
-  }
+
+      <Suspense fallback={null}>
+        <FloatingHearts
+          trigger={celebrationTrigger?.type === 'mutual-like'}
+          count={8}
+        />
+        <SuccessConfetti trigger={celebrationTrigger?.type === 'milestone'} />
+      </Suspense>
+
+      <SwipeablePropertyCard
+        properties={properties}
+        currentIndex={0}
+        onDecision={onDecision}
+        showHints
+        className="max-w-md"
+      />
+    </div>
+  )
 
   // Desktop/tablet: grid of cards with inline like/pass actions
-  return (
+  const gridBranch = (
     <div className="relative">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <Link href="/settings?tab=preferences">
@@ -284,6 +297,25 @@ export function DashboardPropertyGrid({
         ))}
       </div>
     </div>
+  )
+
+  // Post-hydration: pick one branch based on JS-detected viewport + user
+  // preference. Pre-hydration: render both, using Tailwind responsive classes
+  // to ensure the correct one is visible at first paint.
+  if (showStackOnly) {
+    return stackBranch
+  }
+  if (showGridOnly) {
+    return gridBranch
+  }
+  // renderBoth: SSR + first client paint. Mobile (<lg) sees stack, desktop
+  // (≥lg) sees grid via display utility classes — matches the 1024px
+  // breakpoint used by the matchMedia listener above.
+  return (
+    <>
+      <div className="lg:hidden">{stackBranch}</div>
+      <div className="hidden lg:block">{gridBranch}</div>
+    </>
   )
 }
 
