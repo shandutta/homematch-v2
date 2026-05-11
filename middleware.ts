@@ -1,3 +1,4 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isProtectedPath } from '@/lib/routing/protected-routes'
@@ -23,6 +24,19 @@ const SUPABASE_TIMEOUT_MS = parseInt(
   process.env.MIDDLEWARE_SUPABASE_TIMEOUT_MS || '5000',
   10
 )
+
+// Clerk route matcher for protected pages.
+// Mirrors PROTECTED_PATH_PREFIXES in src/lib/routing/protected-routes.ts.
+// Clerk uses path-to-regexp glob syntax.
+const isClerkProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/profile(.*)',
+  '/household(.*)',
+  '/settings(.*)',
+  '/validation(.*)',
+  '/couples(.*)',
+  '/properties(.*)',
+])
 
 const hasSupabasePublicConfig = () =>
   Boolean(
@@ -56,12 +70,12 @@ const applySecurityHeaders = (response: NextResponse) => {
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https: blob:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
         "frame-ancestors 'none';"
     )
 
@@ -93,7 +107,21 @@ const isSupabaseAuthTimeoutError = (error: unknown) => {
   return String(error).toLowerCase().includes('timeout')
 }
 
-export async function middleware(request: NextRequest) {
+/**
+ * Inner middleware logic — the legacy Supabase session refresh + protection
+ * pipeline. Wrapped by clerkMiddleware below.
+ *
+ * Why both auths coexist (Phase C transition window):
+ * - Clerk gates *new* protected routes via `auth.protect()` (called above
+ *   inside clerkMiddleware) but only after users sign up via Clerk's UI.
+ * - Existing users still have Supabase sessions until Phase E (user data
+ *   migration) ships. This Supabase path keeps them logged in.
+ * - Once migration completes, this entire function can collapse to just
+ *   security headers + Clerk's auth.protect().
+ */
+async function legacySupabaseMiddleware(
+  request: NextRequest
+): Promise<NextResponse> {
   const pathname = request.nextUrl.pathname
   let supabaseResponse = NextResponse.next({ request })
   const isApiRoute = pathname.startsWith('/api/')
@@ -177,9 +205,6 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Log cookie setting for debugging
-            // console.log(`[Middleware] Setting cookie: ${name}, Secure: ${sharedOptions.secure}`)
-
             supabaseResponse.cookies.set(
               name,
               value,
@@ -346,6 +371,25 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+/**
+ * Top-level middleware wrapping with Clerk.
+ *
+ * Phase C.1 (coexistence): Clerk and Supabase auth both run. Clerk handles
+ * NEW sign-ups via /sign-in /sign-up; Supabase keeps existing users logged in.
+ * Phase E (user data migration) is the bridge to single-source-of-truth Clerk.
+ *
+ * Clerk's `auth.protect()` is intentionally NOT called here yet — that would
+ * lock existing Supabase users out of protected routes during the transition.
+ * Instead, the legacy Supabase path still handles route protection. Once
+ * Phase E completes, swap the body to:
+ *
+ *     if (isClerkProtectedRoute(req)) await auth.protect()
+ *     return NextResponse.next()
+ */
+export default clerkMiddleware(async (_auth, request) => {
+  return legacySupabaseMiddleware(request as NextRequest)
+})
+
 export const config = {
   matcher: [
     /*
@@ -358,3 +402,7 @@ export const config = {
     '/((?!_next/static|_next/image|_next/data|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css|json|xml|txt|ico|map|woff|woff2|ttf|otf)$).*)',
   ],
 }
+
+// Export the route matcher so other layers can reuse it (sanity check that
+// PROTECTED_PATH_PREFIXES and isClerkProtectedRoute stay in sync).
+export { isClerkProtectedRoute }
