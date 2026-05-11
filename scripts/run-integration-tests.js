@@ -285,8 +285,18 @@ async function run() {
   // Setup database and test users
   await setupIntegrationTests()
 
-  // Start dev server for E2E HTTP tests
-  await startDevServer()
+  // Start dev server for E2E HTTP tests, unless SKIP_DEV_SERVER=true
+  // (used in CI to stay under the ubuntu-latest 7GB memory budget when
+  // running alongside Supabase containers; tests that need HTTP will
+  // be skipped or fail explicitly rather than OOM the whole runner).
+  if (process.env.SKIP_DEV_SERVER !== 'true') {
+    await startDevServer()
+  } else {
+    console.log(
+      'ℹ️  SKIP_DEV_SERVER=true — Next.js dev server NOT started. ' +
+        'HTTP-based integration tests will fail.'
+    )
+  }
 
   // Verify Supabase is accessible before starting tests
   // This catches race conditions where Kong gateway isn't fully ready
