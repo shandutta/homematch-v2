@@ -28,13 +28,16 @@ export default defineConfig({
     ],
     testTimeout: 60000, // 60 seconds for individual tests (increased for HTTP requests)
     hookTimeout: 90000, // 90 seconds for beforeAll/afterAll hooks (increased for auth setup)
-    // Use forks pool to allow execArgv for suppressing Node experimental warnings
-    pool: 'forks',
+    // Use threads with singleThread for memory efficiency in CI. Each
+    // fork-based worker spawns a fresh Node process (~300-500MB each);
+    // combined with Supabase containers (~2GB) + Next.js dev server
+    // (~500MB-1GB) on a 7GB ubuntu-latest runner, the integration test
+    // job OOMs (exit 137). Threads share the parent's heap so we stay
+    // under budget. (2026-05-11)
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: false, // Enable parallel execution for faster tests
-        maxForks: 1, // Run sequentially to prevent server overload on single port
-        isolate: true, // Isolate globals between tests
+      threads: {
+        singleThread: true,
         execArgv: ['--disable-warning=ExperimentalWarning'],
       },
     },
