@@ -25,9 +25,22 @@ WHERE interactions.id = ranked.id
 ALTER TABLE public.user_property_interactions
   DROP CONSTRAINT IF EXISTS user_property_interactions_user_id_property_id_interaction_type_key;
 
-ALTER TABLE public.user_property_interactions
-  ADD CONSTRAINT user_property_interactions_user_id_property_id_key
-  UNIQUE (user_id, property_id);
+-- ADD CONSTRAINT doesn't support IF NOT EXISTS for unique constraints, so we
+-- guard against the re-run case (e.g. prod's migration history was repaired
+-- after an out-of-band apply). Idempotent: skip cleanly if the constraint
+-- already exists.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'user_property_interactions_user_id_property_id_key'
+      AND conrelid = 'public.user_property_interactions'::regclass
+  ) THEN
+    ALTER TABLE public.user_property_interactions
+      ADD CONSTRAINT user_property_interactions_user_id_property_id_key
+      UNIQUE (user_id, property_id);
+  END IF;
+END $$;
 
 COMMIT;
 
