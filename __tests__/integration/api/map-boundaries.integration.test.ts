@@ -1,7 +1,10 @@
 import { describe, test, expect, afterAll } from 'vitest'
+import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import polygonClipping from 'polygon-clipping'
+
+import { GET } from '@/app/api/maps/metro-boundaries/route'
 
 type PolygonCoordinates = number[][][]
 type MultiPolygonCoordinates = number[][][][]
@@ -146,14 +149,20 @@ describe('Map boundaries API', () => {
       throw new Error(insertError.message)
     }
 
-    const response = await fetch(
-      `http://localhost:3000/api/maps/metro-boundaries?metro=${encodeURIComponent(
-        metro
-      )}&debug=1`
+    const response = await GET(
+      new NextRequest(
+        `http://localhost/api/maps/metro-boundaries?metro=${encodeURIComponent(
+          metro
+        )}&debug=1`
+      )
     )
 
     expect(response.ok).toBe(true)
-    const payload = await response.json()
+    const payload = (await response.json()) as {
+      precomputed: boolean
+      neighborhoods: Array<{ bounds: unknown }>
+      debug?: { overlapRemoved?: number }
+    }
 
     expect(payload.precomputed).toBe(true)
     expect(Array.isArray(payload.neighborhoods)).toBe(true)
