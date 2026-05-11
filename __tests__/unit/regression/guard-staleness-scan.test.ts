@@ -48,8 +48,9 @@ const STALE_PATTERN_MAP: Record<string, string> = {
 function collectTestFiles(dir: string): string[] {
   const results: string[] = []
   let entries: string[] = []
-   
+
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     entries = require('fs').readdirSync(dir)
   } catch {
     return []
