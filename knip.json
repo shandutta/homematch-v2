@@ -38,7 +38,19 @@
     "prettier",
     "ts-node",
     "concurrently",
-    "cross-env"
+    "cross-env",
+    "@faker-js/faker",
+    "@lhci/cli",
+    "chrome-devtools-mcp",
+    "pg",
+    "shadcn",
+    "supabase",
+    "tailwindcss",
+    "tw-animate-css",
+    "vite-tsconfig-paths"
+  ],
+  "ignoreBinaries": [
+    "shellcheck"
   ],
   "rules": {
     "files": "warn",

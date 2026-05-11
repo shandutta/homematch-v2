@@ -221,6 +221,11 @@ BUILD_LOG="/tmp/homematch-local-build.log"
 if [[ "$MODE" == "dev" ]]; then
   echo "[run-local-api] [$(timestamp)] Starting dev server on port $PORT..."
   unset NEXT_PUBLIC_TEST_MODE >/dev/null 2>&1 || true
+  # shellcheck disable=SC2097,SC2098
+  # PORT="$PORT" looks redundant but propagates the shell PORT to the child's env
+  # explicitly (next reads process.env.PORT). The `-p "$PORT"` after it uses the
+  # SAME shell variable; shellcheck flags this as ambiguous but the behavior is
+  # what we want.
   NODE_ENV=development HOSTNAME=127.0.0.1 PORT="$PORT" node_modules/.bin/next dev --turbopack -H 0.0.0.0 -p "$PORT" \
     >"$SERVER_LOG" 2>&1 &
 else
