@@ -15,15 +15,6 @@ import { BaseService } from '@/lib/services/base'
 import type { ISupabaseClientFactory } from '@/lib/services/interfaces'
 import { DatabaseError, NotFoundError } from '@/lib/services/errors'
 
-// Explicit projection — replaces `select('*')` on hot CRUD paths so the
-// planner sees a predictable column list and schema growth doesn't bloat
-// reads silently. Lists every column on the public.properties Row type
-// (audit M13). Detail endpoints return all of these, including the heavy
-// JSONB/array columns (images, amenities, coordinates) that callers
-// expect on the `Property` type.
-const PROPERTY_FULL_COLS =
-  'id, address, city, state, zip_code, price, bedrooms, bathrooms, square_feet, lot_size_sqft, year_built, property_type, listing_status, is_active, parking_spots, description, amenities, images, coordinates, neighborhood_id, property_hash, zpid, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, created_at, updated_at'
-
 export class PropertyCrudService extends BaseService {
   constructor(clientFactory?: ISupabaseClientFactory) {
     super(clientFactory)
@@ -35,7 +26,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getProperty', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select(PROPERTY_FULL_COLS)
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('id', propertyId)
         .eq('is_active', true)
         .single()
@@ -62,7 +55,10 @@ export class PropertyCrudService extends BaseService {
         const { data, error } = await supabase
           .from('properties')
           .select(
-            `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(id, name, city, state, metro_area, median_price, walk_score, transit_score, bounds, created_at)`
+            `
+            *,
+            neighborhood:neighborhoods(*)
+          `
           )
           .eq('id', propertyId)
           .eq('is_active', true)
@@ -174,7 +170,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByZpid', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select(PROPERTY_FULL_COLS)
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('zpid', zpid)
         .eq('is_active', true)
         .single()
@@ -199,7 +197,9 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByHash', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select(PROPERTY_FULL_COLS)
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
         .eq('property_hash', hash)
         .eq('is_active', true)
         .single()
