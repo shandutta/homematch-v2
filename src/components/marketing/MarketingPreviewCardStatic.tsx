@@ -59,7 +59,7 @@ export function MarketingPreviewCardStatic({
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'right-2 bottom-20 sm:left-4 sm:bottom-25',
+              className: 'hidden sm:flex sm:left-4 sm:bottom-25',
             },
           ].map(({ title, copy, icon: Icon, className: positionClass }) => (
             <div
