@@ -395,15 +395,18 @@ export class UserService extends BaseService {
 
   async getUserInteractions(
     userId: string,
-    limit = 50
+    limit = 50,
+    offset = 0
   ): Promise<UserPropertyInteraction[]> {
     const supabase = await this.getSupabase()
+    const safeLimit = Math.max(1, Math.min(limit, 200))
+    const safeOffset = Math.max(0, offset)
     const { data, error } = await supabase
       .from('user_property_interactions')
       .select(INTERACTION_COLS)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(limit)
+      .range(safeOffset, safeOffset + safeLimit - 1)
 
     if (error) {
       console.error('Error fetching user interactions:', error)
@@ -491,14 +494,21 @@ export class UserService extends BaseService {
     return data
   }
 
-  async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
+  async getUserSavedSearches(
+    userId: string,
+    limit = 50,
+    offset = 0
+  ): Promise<SavedSearch[]> {
     const supabase = await this.getSupabase()
+    const safeLimit = Math.max(1, Math.min(limit, 200))
+    const safeOffset = Math.max(0, offset)
     const { data, error } = await supabase
       .from('saved_searches')
       .select(SAVED_SEARCH_COLS)
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .range(safeOffset, safeOffset + safeLimit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)
