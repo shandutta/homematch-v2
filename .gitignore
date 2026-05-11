@@ -7,6 +7,8 @@
 !.github/
 !.github/**
 !.vscode/
+!.claude/
+!.claude/**
 
 # dependencies
 /node_modules
