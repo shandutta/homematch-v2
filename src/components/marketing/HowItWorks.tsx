@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { m, useInView, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { Card } from '@/components/ui/card'
@@ -84,33 +84,28 @@ export function HowItWorks() {
             className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            <h2
-              className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
-              style={{ fontFamily: 'var(--font-heading)' }}
-            >
-              How It Works
-            </h2>
-            <p
-              className="mt-3 text-lg text-gray-600 sm:text-xl"
-              style={{ fontFamily: 'var(--font-body)' }}
-            >
-              Three simple steps to go from scrolling to moving in.
-            </p>
-          </MotionDiv>
+            How It Works
+          </h2>
+          <p
+            className="mt-3 text-lg text-gray-600 sm:text-xl"
+            style={{ fontFamily: 'var(--font-body)' }}
+          >
+            Three simple steps to go from scrolling to moving in.
+          </p>
+        </MotionDiv>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
-            {steps.map((step, i) => (
-              <StepCard
-                key={step.title}
-                step={step}
-                index={i}
-                isActive={activeStep >= i}
-              />
-            ))}
-          </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-3 sm:gap-5">
+          {steps.map((step, i) => (
+            <StepCard
+              key={step.title}
+              step={step}
+              index={i}
+              isActive={activeStep >= i}
+            />
+          ))}
         </div>
-      </section>
-    </MotionMaxProvider>
+      </div>
+    </section>
   )
 }
 
@@ -159,7 +154,7 @@ function StepCard({
   }
 
   return (
-    <motion.div
+    <m.div
       initial={shouldReduceMotion ? false : { opacity: 0, y: 24, scale: 0.95 }}
       animate={
         shouldReduceMotion
