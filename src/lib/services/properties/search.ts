@@ -18,14 +18,49 @@ import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
 import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
-// Explicit column projections — replaces `select('*')` on HOT search paths
-// (audit M13, search.ts is the highest-traffic file in the service layer).
-// PROPERTY_FULL_COLS mirrors every column on the public.properties Row so
-// callers consuming the typed Property keep working.
-const PROPERTY_FULL_COLS =
-  'id, address, city, state, zip_code, price, bedrooms, bathrooms, square_feet, lot_size_sqft, year_built, property_type, listing_status, is_active, parking_spots, description, amenities, images, coordinates, neighborhood_id, property_hash, zpid, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, created_at, updated_at'
-const NEIGHBORHOOD_COLS =
-  'id, name, city, state, metro_area, median_price, walk_score, transit_score, bounds, created_at'
+const toRoundedNumber = (value: unknown): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric) : 0
+}
+
+const toRoundedTenth = (value: unknown): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric * 10) / 10 : 0
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizePropertyStatsRpcRow = (row: unknown): PropertyStats => {
+  if (!isRecord(row)) {
+    return {
+      total_properties: 0,
+      avg_price: 0,
+      median_price: 0,
+      avg_bedrooms: 0,
+      avg_bathrooms: 0,
+      avg_square_feet: 0,
+      property_type_distribution: {},
+    }
+  }
+
+  const distribution = row.property_type_distribution
+  return {
+    total_properties: toRoundedNumber(row.total_properties),
+    avg_price: toRoundedNumber(row.avg_price),
+    median_price: toRoundedNumber(row.median_price),
+    avg_bedrooms: toRoundedTenth(row.avg_bedrooms),
+    avg_bathrooms: toRoundedTenth(row.avg_bathrooms),
+    avg_square_feet: toRoundedNumber(row.avg_square_feet),
+    property_type_distribution: isRecord(distribution)
+      ? Object.fromEntries(
+          Object.entries(distribution).filter(
+            (entry): entry is [string, number] => typeof entry[1] === 'number'
+          )
+        )
+      : {},
+  }
+}
 
 export class PropertySearchService
   extends BaseService
@@ -63,8 +98,11 @@ export class PropertySearchService
       const selectClause =
         options.select ||
         (includeNeighborhoods
-          ? `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(${NEIGHBORHOOD_COLS})`
-          : PROPERTY_FULL_COLS)
+          ? `
+          *,
+          neighborhood:neighborhoods(*)
+        `
+          : '*')
 
       const shouldCount = options.includeCount ?? true
 
@@ -144,7 +182,9 @@ export class PropertySearchService
       async (supabase) => {
         const { data, error } = await supabase
           .from('properties')
-          .select(PROPERTY_FULL_COLS)
+          .select(
+            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+          )
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
@@ -212,7 +252,10 @@ export class PropertySearchService
         const { data, error } = await supabase
           .from('properties')
           .select(
-            `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods!inner(name, city, state)`
+            `
+            *,
+            neighborhood:neighborhoods!inner(name, city, state)
+          `
           )
           .eq('neighborhood.name', neighborhoodName)
           .eq('neighborhood.city', city)
@@ -281,7 +324,10 @@ export class PropertySearchService
       const { data, error } = await supabase
         .from('properties')
         .select(
-          `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(name, city, state)`
+          `
+            *,
+            neighborhood:neighborhoods(name, city, state)
+          `
         )
         .eq('is_active', true)
         .or(
@@ -365,7 +411,9 @@ export class PropertySearchService
       async (supabase) => {
         let query = supabase
           .from('properties')
-          .select(PROPERTY_FULL_COLS)
+          .select(
+            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+          )
           .eq('is_active', true)
 
         // Apply amenity filters
