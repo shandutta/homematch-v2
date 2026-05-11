@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 /**
  * Integration tests for /api/performance/metrics endpoint
  * Tests the performance metrics collection and retrieval functionality

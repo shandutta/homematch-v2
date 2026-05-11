@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { describe, test, expect, afterAll } from 'vitest'
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'

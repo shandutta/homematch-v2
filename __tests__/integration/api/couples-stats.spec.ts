@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 /**
  * Integration tests for /api/couples/stats endpoint
  * Tests the couples household statistics API functionality

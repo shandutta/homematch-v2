@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 /**
  * Integration tests for /api/couples/check-mutual endpoint
  * Tests the mutual like checking functionality
