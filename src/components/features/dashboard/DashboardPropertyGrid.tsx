@@ -143,7 +143,6 @@ export function DashboardPropertyGrid({
   // the desktop grid on mobile while React hydrates.
   const showStackOnly = hasMounted && isStackView
   const showGridOnly = hasMounted && !isStackView
-  const renderBoth = !hasMounted
 
   // Mobile: Tinder-style single-card stack with swipe + buttons
   const stackBranch = (
