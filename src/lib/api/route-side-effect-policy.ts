@@ -206,6 +206,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
     rationale:
       'Calls RapidAPI Zillow at request time; production deploys reject the request, but the route still requires a paid key.',
   },
+  {
+    path: '/api/webhooks/clerk',
+    categories: ['mutating-auth'],
+    rationale:
+      'Clerk webhook (Svix-signed). user.created/updated/deleted events upsert/delete rows in user_profiles. Signature-gated; not user-facing.',
+  },
 ] as const
 
 const POLICY_BY_PATH = new Map<string, RouteSideEffectPolicy>(

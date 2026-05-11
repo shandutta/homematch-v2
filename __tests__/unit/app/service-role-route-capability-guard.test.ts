@@ -33,6 +33,7 @@ describe('service-role route capability guard', () => {
     ).toEqual([
       './src/app/api/couples/disputed/route.ts',
       './src/app/api/users/search/route.ts',
+      './src/app/api/webhooks/clerk/route.ts',
       './src/app/invite/[token]/actions.ts',
       './src/app/invite/[token]/page.tsx',
     ])

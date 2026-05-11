@@ -3,8 +3,14 @@
 // retained but unhooked — it can be removed after Phase E (user migration)
 // when no legacy Supabase users remain.
 import { redirect } from 'next/navigation'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Log In | HomeMatch',
+  description: 'Sign in to your HomeMatch account.',
+})
 
 interface LoginPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>

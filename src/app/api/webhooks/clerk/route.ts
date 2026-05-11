@@ -16,13 +16,16 @@
  */
 import { NextResponse, type NextRequest } from 'next/server'
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
-import { createServiceClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import type { UserJSON } from '@clerk/nextjs/server'
 
-// Service client with explicit approved capability — webhook is verified
-// upstream by Svix signature so no per-request authz gate is needed.
+// @service-role-capability: Clerk webhook upserts/deletes user_profiles for
+// user.created/updated/deleted events; Svix-verified upstream signature is
+// the auth boundary, so per-request user-session auth doesn't apply.
+// TODO(D1 follow-up): replace with a Postgres function gated on the same
+// Svix signature header so we can drop the service-role client entirely.
 const getWebhookSupabase = () =>
-  createServiceClient({ approvedCapability: 'clerk-webhook' })
+  getServiceRoleClient({ approvedCapability: 'clerk-webhook' })
 
 // Webhooks must NEVER be cached or gated by middleware auth.
 export const dynamic = 'force-dynamic'
