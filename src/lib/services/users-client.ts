@@ -335,21 +335,14 @@ export class UserServiceClient {
     return data
   }
 
-  static async getUserSavedSearches(
-    userId: string,
-    limit = 50,
-    offset = 0
-  ): Promise<SavedSearch[]> {
-    const supabase = createClient()
-    const safeLimit = Math.max(1, Math.min(limit, 200))
-    const safeOffset = Math.max(0, offset)
+  static async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .select('created_at, filters, household_id, id, is_active, name, user_id')
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
-      .range(safeOffset, safeOffset + safeLimit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)
