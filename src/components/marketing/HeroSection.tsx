@@ -14,7 +14,7 @@ export function HeroSection() {
   return (
     <section
       data-hero
-      className="relative isolate min-h-[680px] overflow-hidden bg-[#030712] text-white sm:min-h-[720px]"
+      className="relative isolate overflow-hidden bg-[#030712] text-white"
       style={heroStyle}
       data-testid="hero"
     >
