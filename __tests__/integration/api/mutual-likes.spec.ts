@@ -68,10 +68,7 @@ const callMutualLikes = (
   headers: Record<string, string> = {}
 ) => mutualLikesGET(new NextRequest(`http://localhost${path}`, { headers }))
 
-const callInteractionsPOST = (
-  body: unknown,
-  headers: Record<string, string>
-) =>
+const callInteractionsPOST = (body: unknown, headers: Record<string, string>) =>
   interactionsPOST(
     new NextRequest('http://localhost/api/interactions', {
       method: 'POST',
@@ -257,9 +254,7 @@ describe.sequential('Integration: /api/couples/mutual-likes', () => {
       ]
 
       for (const q of dangerousQueries) {
-        const response = await callMutualLikes(
-          `/api/couples/mutual-likes?${q}`
-        )
+        const response = await callMutualLikes(`/api/couples/mutual-likes?${q}`)
         // Should not crash - server errors indicate broken code
         expect(response.status).not.toBe(500)
         expect([200, 400, 401, 422]).toContain(response.status)
@@ -502,14 +497,8 @@ describe.sequential('Integration: /api/couples/mutual-likes', () => {
             })
             .eq('id', userId2)
 
-          await supabaseAdmin
-            .from('properties')
-            .delete()
-            .eq('id', propertyId)
-          await supabaseAdmin
-            .from('households')
-            .delete()
-            .eq('id', householdId)
+          await supabaseAdmin.from('properties').delete().eq('id', propertyId)
+          await supabaseAdmin.from('households').delete().eq('id', householdId)
         }
       },
       TEST_TIMEOUT

@@ -177,12 +177,7 @@ describe.sequential(
 
     test('should reject non-GET methods', async () => {
       // The route exports explicit 405 handlers for these methods.
-      const responses = await Promise.all([
-        POST(),
-        PUT(),
-        DELETE(),
-        PATCH(),
-      ])
+      const responses = await Promise.all([POST(), PUT(), DELETE(), PATCH()])
       for (const r of responses) {
         expect(r.status).toBe(405)
       }
@@ -234,10 +229,9 @@ describe.sequential(
       const testPropertyId = 'test-property-concurrent'
       const responses = await Promise.all(
         Array.from({ length: 3 }, () =>
-          buildGet(
-            `/api/couples/check-mutual?propertyId=${testPropertyId}`,
-            { authorization: `Bearer ${authToken}` }
-          )
+          buildGet(`/api/couples/check-mutual?propertyId=${testPropertyId}`, {
+            authorization: `Bearer ${authToken}`,
+          })
         )
       )
 

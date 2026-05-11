@@ -8,13 +8,7 @@
 import { NextRequest } from 'next/server'
 import { describe, test, expect, beforeAll } from 'vitest'
 
-import {
-  GET,
-  POST,
-  PUT,
-  DELETE,
-  PATCH,
-} from '@/app/api/couples/activity/route'
+import { GET, POST, PUT, DELETE, PATCH } from '@/app/api/couples/activity/route'
 
 // Increase timeout for integration tests
 const TEST_TIMEOUT = 60000 // 60s per test

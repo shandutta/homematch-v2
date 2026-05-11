@@ -155,9 +155,7 @@ describe.sequential('Integration: /api/couples/stats (authenticated)', () => {
       const bodies = await Promise.all(
         responses.map((r) => r.json() as Promise<Record<string, unknown>>)
       )
-      const statsArray = bodies.map(
-        (b) => b.stats as Record<string, unknown>
-      )
+      const statsArray = bodies.map((b) => b.stats as Record<string, unknown>)
 
       // Check that numeric stats are consistent
       const stableFields = [
