@@ -17,6 +17,12 @@ import type {
 import { BaseService } from '@/lib/services/base'
 import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 
+// Explicit projection — replaces `select('*')` so future schema growth
+// doesn't silently bloat reads. Matches every Row column in
+// types/database.ts.neighborhoods (audit M13).
+const NEIGHBORHOOD_COLS =
+  'id, name, city, state, metro_area, median_price, walk_score, transit_score, bounds, created_at'
+
 export class NeighborhoodService
   extends BaseService
   implements INeighborhoodService
@@ -34,9 +40,7 @@ export class NeighborhoodService
     return this.executeSingleQuery('getNeighborhood', async (supabase) => {
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select(
-          'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
-        )
+        .select(NEIGHBORHOOD_COLS)
         .eq('id', neighborhoodId)
         .single()
 
@@ -120,9 +124,7 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select(
-            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
-          )
+          .select(NEIGHBORHOOD_COLS)
           .eq('city', city)
           .eq('state', state)
           .order('name')
@@ -152,9 +154,7 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select(
-            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
-          )
+          .select(NEIGHBORHOOD_COLS)
           .eq('metro_area', metroArea)
           .order('name')
 
@@ -179,9 +179,7 @@ export class NeighborhoodService
       const searchTerm = this.sanitizeInput(query)
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select(
-          'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
-        )
+        .select(NEIGHBORHOOD_COLS)
         .or(
           `name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,metro_area.ilike.%${searchTerm}%`
         )
@@ -238,10 +236,9 @@ export class NeighborhoodService
     return this.executeArrayQuery(
       'getNeighborhoodsWithStats',
       async (supabase) => {
-        let query = supabase.from('neighborhoods').select(`
-            *,
-            property_count:properties(count)
-          `)
+        let query = supabase
+          .from('neighborhoods')
+          .select(`${NEIGHBORHOOD_COLS}, property_count:properties(count)`)
 
         if (city) {
           query = query.eq('city', city)
@@ -276,12 +273,7 @@ export class NeighborhoodService
         // coverage.
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select(
-            `
-            *,
-            property_count:properties(count)
-          `
-          )
+          .select(`${NEIGHBORHOOD_COLS}, property_count:properties(count)`)
           .order('property_count', { ascending: false })
           .limit(limit)
 
@@ -307,9 +299,7 @@ export class NeighborhoodService
         // Get neighborhood details
         supabase
           .from('neighborhoods')
-          .select(
-            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
-          )
+          .select(NEIGHBORHOOD_COLS)
           .eq('id', neighborhoodId)
           .single(),
 
