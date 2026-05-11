@@ -1,5 +1,47 @@
 import { z } from 'zod'
 
+// A4 audit: catch obvious LLM-glitch strings before they reach the UI.
+// The original symptom was a property card showing "PUT FOR FAMILY HOME"
+// as an emotional hook — a fragment that survives length checks but is
+// clearly hallucination. We reject:
+//   - mostly-uppercase strings (>=60% upper alphabetic chars) — confident
+//     prose isn't shouted.
+//   - strings dominated by isolated single letters / punctuation
+//     ("P U T  F O R")
+//   - tagline-style strings shorter than 16 chars used in long-form fields.
+const HUMAN_PROSE_MIN_LENGTH = 16
+const isLikelyLLMGlitch = (value: string): boolean => {
+  const trimmed = value.trim()
+  if (!trimmed) return true
+  const alpha = trimmed.replace(/[^a-zA-Z]/g, '')
+  if (alpha.length === 0) return true
+  const upperRatio =
+    alpha.replace(/[^A-Z]/g, '').length / Math.max(alpha.length, 1)
+  if (upperRatio >= 0.6 && alpha.length >= 10) return true
+  // Detect "spaced out" letters (>= 3 single-letter tokens in a row)
+  const tokens = trimmed.split(/\s+/)
+  let singletonRun = 0
+  for (const token of tokens) {
+    if (token.length === 1 && /[a-zA-Z]/.test(token)) {
+      singletonRun += 1
+      if (singletonRun >= 3) return true
+    } else {
+      singletonRun = 0
+    }
+  }
+  return false
+}
+
+const humanProseString = (min = HUMAN_PROSE_MIN_LENGTH, max = 200) =>
+  z
+    .string()
+    .min(min, `must be at least ${min} characters`)
+    .max(max, `must be at most ${max} characters`)
+    .refine(
+      (value) => !isLikelyLLMGlitch(value),
+      'reads like LLM glitch output (all-caps, spaced letters, or empty alpha)'
+    )
+
 export type TagCategory =
   | 'architectural'
   | 'outdoor'
@@ -230,8 +272,10 @@ export const llmVibesOutputSchema = z.object({
   notableFeatures: z.array(notableFeatureSchema).min(0).max(8),
   // Aesthetics: visual analysis
   aesthetics: aestheticsSchema,
-  // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice)
-  emotionalHooks: z.array(z.string().max(200)).min(0).max(4),
+  // Emotional hooks: conversational lifestyle moments (real estate agent + friend voice).
+  // A4 audit: enforce humanProseString — rejects "PUT FOR FAMILY HOME"
+  // style LLM glitch output before it reaches the UI.
+  emotionalHooks: z.array(humanProseString(16, 200)).min(0).max(4),
   // Tags: 4-8 from the predefined categories (architectural, outdoor, interior, lifestyle, aesthetic, location)
   suggestedTags: z.array(propertyTagSchema).min(2).max(8),
 })
