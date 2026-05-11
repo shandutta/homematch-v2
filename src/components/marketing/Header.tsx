@@ -94,7 +94,7 @@ export function Header() {
             >
               <Link
                 href="/login"
-                className="group relative block overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
+                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 <span className="relative z-10">Log In</span>
@@ -111,7 +111,7 @@ export function Header() {
             >
               <Link
                 href="/signup"
-                className="group relative block overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
+                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
                 <span className="relative z-10">Sign Up</span>

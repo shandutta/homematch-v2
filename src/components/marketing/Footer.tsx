@@ -111,6 +111,7 @@ function LinkColumn({
         {links.map((link) => (
           <m.li
             key={link.href}
+            className="flex min-h-[44px] items-center justify-center lg:block lg:min-h-0"
             variants={{
               hidden: shouldReduceMotion
                 ? { opacity: 1, x: 0 }
