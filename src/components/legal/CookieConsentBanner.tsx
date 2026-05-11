@@ -128,6 +128,10 @@ export function CookieConsentBanner() {
                 Learn more
               </Link>
             </p>
+            {/* M4: CTA hierarchy now treats Reject and Accept as equal weight
+                (both share the outline variant). Prior state used variant="primary"
+                on "Accept all" only, nudging users toward broad consent — a GDPR
+                dark-pattern concern flagged in the audit. */}
             <div className="flex shrink-0 gap-1 sm:gap-2">
               <Button
                 type="button"
@@ -141,7 +145,7 @@ export function CookieConsentBanner() {
               <Button
                 type="button"
                 size="sm"
-                variant="primary"
+                variant="outline"
                 className="h-8 min-h-0 px-2 text-xs sm:h-9 sm:px-3"
                 onClick={() =>
                   handleSave({
