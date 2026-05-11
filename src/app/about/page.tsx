@@ -16,7 +16,7 @@ export default function AboutPage() {
           <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
             About
           </p>
-          <h1 className="text-3xl font-bold sm:text-4xl">
+          <h1 className="text-3xl font-bold text-balance sm:text-4xl">
             Home search, together
           </h1>
           <p className="max-w-3xl text-lg text-slate-600">
@@ -26,7 +26,7 @@ export default function AboutPage() {
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">What HomeMatch does</h2>
+          <h2 className="text-xl font-semibold text-balance">What HomeMatch does</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
               Keeps everyone aligned with shared likes, passes, and viewed
@@ -44,7 +44,7 @@ export default function AboutPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">How we think about trust</h2>
+          <h2 className="text-xl font-semibold text-balance">How we think about trust</h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
               Privacy-first by default. Read our{' '}
@@ -68,7 +68,7 @@ export default function AboutPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Not a brokerage</h2>
+          <h2 className="text-xl font-semibold text-balance">Not a brokerage</h2>
           <p className="text-slate-700">
             HomeMatch is a software product to help you organize your home
             search. We are not a real estate broker or agent, and we don’t
@@ -77,7 +77,7 @@ export default function AboutPage() {
         </section>
 
         <section className="space-y-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold">Contact</h2>
+          <h2 className="text-xl font-semibold text-balance">Contact</h2>
           <p className="text-slate-700">
             Questions, feedback, or partnership ideas? Visit{' '}
             <Link href="/contact" className="text-sky-600 underline">
