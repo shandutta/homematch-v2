@@ -1,111 +1,132 @@
 /**
- * Couples Activity API E2E Tests - Real HTTP Requests
+ * Couples Activity API integration tests.
  *
- * Tests the activity endpoint using real HTTP requests to verify
- * complete integration including auth middleware, rate limiting,
- * request parsing, business logic, and response formatting.
+ * Tests the activity endpoint by invoking the route handler directly via
+ * NextRequest, eliminating the need for a running dev server.
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest'
-import { E2EHttpClient } from '../../utils/e2e-http-client'
+import { NextRequest } from 'next/server'
+import { describe, test, expect, beforeAll } from 'vitest'
 
-// Increase timeout for integration tests making real HTTP requests
+import {
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  PATCH,
+} from '@/app/api/couples/activity/route'
+
+// Increase timeout for integration tests
 const TEST_TIMEOUT = 60000 // 60s per test
 
-describe('E2E: /api/couples/activity', () => {
-  let client: E2EHttpClient
+const requireSupabaseEnv = () => {
+  const supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
-  beforeEach(() => {
-    client = new E2EHttpClient()
-  })
+  if (!supabaseUrl || !anonKey) {
+    throw new Error('Missing Supabase configuration for integration tests')
+  }
 
-  afterEach(async () => {
-    await client.cleanup()
+  return { supabaseUrl, anonKey }
+}
+
+const getFreshAuthToken = async (
+  supabaseUrl: string,
+  anonKey: string
+): Promise<string> => {
+  const tokenRes = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: { apikey: anonKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        email: 'test1@example.com',
+        password: 'testpassword123',
+      }),
+    }
+  )
+  if (!tokenRes.ok) {
+    throw new Error(
+      `Failed to get fresh auth token (HTTP ${tokenRes.status}): ${await tokenRes.text()}`
+    )
+  }
+  const data = (await tokenRes.json()) as { access_token?: string }
+  if (!data.access_token) {
+    throw new Error('Failed to get fresh auth token: missing access_token')
+  }
+  return data.access_token
+}
+
+const callActivity = (
+  path = '/api/couples/activity',
+  headers: Record<string, string> = {}
+) => GET(new NextRequest(`http://localhost${path}`, { headers }))
+
+describe.sequential('Integration: /api/couples/activity', () => {
+  let authToken: string
+
+  beforeAll(async () => {
+    const env = requireSupabaseEnv()
+    authToken = await getFreshAuthToken(env.supabaseUrl, env.anonKey)
   })
 
   describe('Authentication', () => {
     test('should return 401 when user is not authenticated', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
-      const data = await response.json()
+      const response = await callActivity()
+      const data = (await response.json()) as Record<string, unknown>
 
       expect(response.status).toBe(401)
       expect(data.error).toBe('Unauthorized')
     })
 
     test('should accept authenticated requests', async () => {
-      try {
-        await client.authenticateAs(
-          'test-worker-1@example.com',
-          'testpassword123'
-        )
-        const response = await client.get('/api/couples/activity')
+      const response = await callActivity('/api/couples/activity', {
+        authorization: `Bearer ${authToken}`,
+      })
 
-        // Should not be 401 with valid auth, and should not be 500 (server error)
-        expect(response.status).not.toBe(401)
-        expect(response.status).not.toBe(500) // Server errors indicate broken code
-        expect(response.status).toBe(200)
-      } catch (error) {
-        // Test user may not exist yet - that's expected during setup
-        console.log(
-          'Test user authentication failed (expected during setup):',
-          error
-        )
-      }
+      expect(response.status).not.toBe(401)
+      expect(response.status).not.toBe(500)
+      expect(response.status).toBe(200)
     })
   })
 
   describe('Query Parameters', () => {
     test('should handle missing query parameters', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
-      const data = await response.json()
+      const response = await callActivity()
+      const data = (await response.json()) as Record<string, unknown>
 
-      // Should fail auth, not parameter parsing
       expect(response.status).toBe(401)
       expect(data.error).toBe('Unauthorized')
     })
 
     test('should handle limit and offset parameters correctly', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity',
-        {
-          query: { limit: '10', offset: '5' },
-        }
+      const response = await callActivity(
+        '/api/couples/activity?limit=10&offset=5'
       )
-      const data = await response.json()
+      const data = (await response.json()) as Record<string, unknown>
 
-      // Should parse parameters and fail at auth step
       expect(response.status).toBe(401)
       expect(data.error).toBe('Unauthorized')
     })
 
     test('should handle invalid parameters gracefully', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity',
-        {
-          query: { limit: 'invalid', offset: 'also-invalid' },
-        }
+      const response = await callActivity(
+        '/api/couples/activity?limit=invalid&offset=also-invalid'
       )
-      const data = await response.json()
+      const data = (await response.json()) as Record<string, unknown>
 
-      // Should not crash on invalid parameters
       expect(response.status).toBe(401)
       expect(data.error).toBe('Unauthorized')
     })
 
     test('should handle extreme parameter values', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity',
-        {
-          query: { limit: '999999', offset: '-50' },
-        }
+      const response = await callActivity(
+        '/api/couples/activity?limit=999999&offset=-50'
       )
-      const data = await response.json()
+      const data = (await response.json()) as Record<string, unknown>
 
-      // Should handle extreme values gracefully
       expect(response.status).toBe(401)
       expect(data.error).toBe('Unauthorized')
     })
@@ -113,9 +134,7 @@ describe('E2E: /api/couples/activity', () => {
 
   describe('Response Structure', () => {
     test('should return JSON response', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
+      const response = await callActivity()
 
       expect(response.headers.get('content-type')).toContain('application/json')
 
@@ -125,85 +144,53 @@ describe('E2E: /api/couples/activity', () => {
     })
 
     test('should have consistent error structure', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
-      const data = await response.json()
+      const response = await callActivity()
+      const data = (await response.json()) as Record<string, unknown>
 
       expect(response.status).toBe(401)
       expect(data).toHaveProperty('error')
       expect(typeof data.error).toBe('string')
-      expect(data.error.length).toBeGreaterThan(0)
+      expect((data.error as string).length).toBeGreaterThan(0)
     })
   })
 
   describe('Performance', () => {
     test('should respond within reasonable time', async () => {
       const startTime = Date.now()
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity'
-      )
+      const response = await callActivity()
       const endTime = Date.now()
 
       const responseTime = endTime - startTime
-      expect(responseTime).toBeLessThan(5000) // 5 second timeout
+      expect(responseTime).toBeLessThan(5000)
 
       const data = await response.json()
       expect(data).toBeDefined()
     })
 
     test('should handle concurrent requests', async () => {
-      const requests = Array.from({ length: 3 }, () =>
-        client.unauthenticatedRequest('/api/couples/activity')
+      const responses = await Promise.all(
+        Array.from({ length: 3 }, () => callActivity())
       )
-      const responses = await Promise.all(requests)
 
-      responses.forEach(async (response) => {
-        // Server errors should not be accepted
+      for (const response of responses) {
         expect(response.status).not.toBe(500)
-        expect(response.status).toBeOneOf([200, 401])
+        expect([200, 401]).toContain(response.status)
         const data = await response.json()
         expect(data).toBeDefined()
-      })
+      }
     })
   })
 
   describe('HTTP Methods', () => {
     test('should handle GET requests', async () => {
-      const response = await client.unauthenticatedRequest(
-        '/api/couples/activity',
-        {
-          method: 'GET',
-        }
-      )
-
-      expect(response.status).toBe(401) // Auth failure, not method error
+      const response = await callActivity()
+      expect(response.status).toBe(401)
     })
 
     test('should reject non-GET methods', async () => {
-      const methods: Array<'POST' | 'PUT' | 'DELETE' | 'PATCH'> = [
-        'POST',
-        'PUT',
-        'DELETE',
-        'PATCH',
-      ]
-
-      for (const method of methods) {
-        try {
-          const response = await client.unauthenticatedRequest(
-            '/api/couples/activity',
-            {
-              method,
-            }
-          )
-
-          // Should return 405 Method Not Allowed or similar - not 500
-          expect(response.status).not.toBe(500)
-          expect(response.status).toBeOneOf([405, 401])
-        } catch (error) {
-          // Some methods might throw, which is acceptable
-          expect(error).toBeDefined()
-        }
+      const responses = await Promise.all([POST(), PUT(), DELETE(), PATCH()])
+      for (const r of responses) {
+        expect(r.status).toBe(405)
       }
     })
   })
@@ -212,18 +199,16 @@ describe('E2E: /api/couples/activity', () => {
     test(
       'should not expose sensitive information in error messages',
       async () => {
-        const response = await client.unauthenticatedRequest(
-          '/api/couples/activity'
-        )
-        const data = await response.json()
+        const response = await callActivity()
+        const data = (await response.json()) as Record<string, unknown>
 
         expect(data.error).toBe('Unauthorized')
-        expect(data.error).not.toContain('password')
-        expect(data.error).not.toContain('token')
-        expect(data.error).not.toContain('secret')
-        expect(data.error).not.toContain('key')
+        const errStr = String(data.error)
+        expect(errStr).not.toContain('password')
+        expect(errStr).not.toContain('token')
+        expect(errStr).not.toContain('secret')
+        expect(errStr).not.toContain('key')
 
-        // Should not include stack traces
         expect(data).not.toHaveProperty('stack')
         expect(data).not.toHaveProperty('trace')
       },
@@ -234,27 +219,23 @@ describe('E2E: /api/couples/activity', () => {
       'should handle dangerous query parameters safely',
       async () => {
         const dangerousQueries = [
-          { limit: 'true; DROP TABLE users;--' },
-          { offset: "'; SELECT * FROM users;--" },
-          { limit: '<script>alert(1)</script>' },
-          { offset: '../../../etc/passwd' },
+          'limit=true; DROP TABLE users;--',
+          "offset='; SELECT * FROM users;--",
+          'limit=<script>alert(1)</script>',
+          'offset=../../../etc/passwd',
         ]
 
-        // Make all requests concurrently to avoid sequential timeout stacking
         const results = await Promise.allSettled(
-          dangerousQueries.map((query) =>
-            client.unauthenticatedRequest('/api/couples/activity', { query })
+          dangerousQueries.map((q) =>
+            callActivity(`/api/couples/activity?${q}`)
           )
         )
 
-        // All requests should either succeed or be rejected gracefully
         for (const result of results) {
           if (result.status === 'fulfilled') {
-            // Should not crash - server errors indicate broken code
             expect(result.value.status).not.toBe(500)
-            expect(result.value.status).toBeOneOf([200, 400, 401, 422])
+            expect([200, 400, 401, 422]).toContain(result.value.status)
           }
-          // If rejected, that's acceptable for dangerous inputs
         }
       },
       TEST_TIMEOUT
@@ -265,19 +246,13 @@ describe('E2E: /api/couples/activity', () => {
     test(
       'should have rate limiting middleware applied',
       async () => {
-        // Make multiple rapid requests to test rate limiting
-        // Reduced from 5 to 3 to prevent connection exhaustion in test environment
-        const rapidRequests = Array.from({ length: 3 }, () =>
-          client.unauthenticatedRequest('/api/couples/activity')
+        const responses = await Promise.all(
+          Array.from({ length: 3 }, () => callActivity())
         )
 
-        const responses = await Promise.all(rapidRequests)
-
-        // All should complete (rate limits are generous for tests)
-        // Server errors should not be accepted
         responses.forEach((response) => {
           expect(response.status).not.toBe(500)
-          expect(response.status).toBeOneOf([200, 401, 429])
+          expect([200, 401, 429]).toContain(response.status)
         })
       },
       TEST_TIMEOUT
@@ -286,61 +261,38 @@ describe('E2E: /api/couples/activity', () => {
 
   describe('Authenticated Scenarios', () => {
     test('should return activity data for authenticated users', async () => {
-      try {
-        await client.authenticateAs(
-          'test-worker-1@example.com',
-          'testpassword123'
-        )
+      const response = await callActivity('/api/couples/activity', {
+        authorization: `Bearer ${authToken}`,
+      })
 
-        const response = await client.get('/api/couples/activity')
+      if (response.ok) {
+        const data = (await response.json()) as Record<string, unknown>
 
-        if (response.ok) {
-          const data = await response.json()
-
-          // Should have expected structure
-          expect(data).toHaveProperty('activity')
-          expect(Array.isArray(data.activity)).toBe(true)
-          expect(data).toHaveProperty('performance')
-          expect(data.performance).toHaveProperty('totalTime')
-          expect(data.performance).toHaveProperty('count')
-          expect(data.performance).toHaveProperty('cached')
-        } else {
-          // If not OK, should still be a valid error response
-          expect(response.status).toBeOneOf([500, 503])
-          const data = await response.json()
-          expect(data).toHaveProperty('error')
-        }
-      } catch (error) {
-        // Test user authentication may fail during setup - that's acceptable
-        console.log(
-          'Test user authentication failed (expected during setup):',
-          error
-        )
+        expect(data).toHaveProperty('activity')
+        expect(Array.isArray(data.activity)).toBe(true)
+        expect(data).toHaveProperty('performance')
+        const perf = data.performance as Record<string, unknown>
+        expect(perf).toHaveProperty('totalTime')
+        expect(perf).toHaveProperty('count')
+        expect(perf).toHaveProperty('cached')
+      } else {
+        expect([500, 503]).toContain(response.status)
+        const data = (await response.json()) as Record<string, unknown>
+        expect(data).toHaveProperty('error')
       }
     })
 
     test('should handle pagination correctly when authenticated', async () => {
-      try {
-        await client.authenticateAs(
-          'test-worker-1@example.com',
-          'testpassword123'
-        )
+      const response = await callActivity(
+        '/api/couples/activity?limit=5&offset=0',
+        { authorization: `Bearer ${authToken}` }
+      )
 
-        const response = await client.get(
-          '/api/couples/activity?limit=5&offset=0'
-        )
-
-        if (response.ok) {
-          const data = await response.json()
-          expect(data.activity).toBeDefined()
-          expect(data.performance.count).toBeLessThanOrEqual(5)
-        }
-      } catch (error) {
-        // Expected during test setup
-        console.log(
-          'Test user authentication failed (expected during setup):',
-          error
-        )
+      if (response.ok) {
+        const data = (await response.json()) as Record<string, unknown>
+        expect(data.activity).toBeDefined()
+        const perf = data.performance as Record<string, unknown>
+        expect(perf.count as number).toBeLessThanOrEqual(5)
       }
     })
   })
