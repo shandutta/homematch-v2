@@ -102,13 +102,13 @@ export class UserService extends BaseService {
     return this.executeSingleQuery(
       'fetching user profile with household',
       async (supabase) => {
+        // Explicit columns per audit M13 — keeps the wire payload tight
+        // and protects against future schema growth adding wide columns
+        // that aren't used by callers of this method.
         const { data, error } = await supabase
           .from('user_profiles')
           .select(
-            `
-            *,
-            household:households(*)
-          `
+            'created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
           )
           .eq('id', userId)
           .single()
