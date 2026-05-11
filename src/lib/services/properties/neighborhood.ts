@@ -238,10 +238,14 @@ export class NeighborhoodService
     return this.executeArrayQuery(
       'getNeighborhoodsWithStats',
       async (supabase) => {
-        let query = supabase.from('neighborhoods').select(`
-            *,
-            property_count:properties(count)
-          `)
+        // Explicit projection per audit M13 — drops the `*` wildcard so the
+        // planner skips wide-row materialization and the wire payload is
+        // auditable at a glance.
+        let query = supabase
+          .from('neighborhoods')
+          .select(
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score, property_count:properties(count)'
+          )
 
         if (city) {
           query = query.eq('city', city)
@@ -273,14 +277,11 @@ export class NeighborhoodService
       async (supabase) => {
         // Intentional fallback: rank neighborhoods by property count until a
         // dedicated get_popular_neighborhoods RPC is introduced with migration
-        // coverage.
+        // coverage. Explicit projection per audit M13.
         const { data, error } = await supabase
           .from('neighborhoods')
           .select(
-            `
-            *,
-            property_count:properties(count)
-          `
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score, property_count:properties(count)'
           )
           .order('property_count', { ascending: false })
           .limit(limit)
