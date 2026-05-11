@@ -258,7 +258,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
     >
       <SpotlightCard className="h-full">
         <Card
-          className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+          className="group relative h-full overflow-hidden border-gray-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
