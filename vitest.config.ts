@@ -29,7 +29,6 @@ export default defineConfig({
       '__tests__/integration/api/activity.spec.ts',
       '__tests__/integration/api/couples-check-mutual.spec.ts',
       '__tests__/integration/api/couples-stats.spec.ts',
-      '__tests__/integration/api/health.spec.ts',
       '__tests__/integration/api/map-boundaries.integration.test.ts',
       '__tests__/integration/api/mutual-likes.spec.ts',
       '__tests__/integration/api/performance-metrics.spec.ts',
