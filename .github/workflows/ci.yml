@@ -108,13 +108,7 @@ jobs:
 
   integration-tests:
     name: Integration Tests (Supabase)
-    # Disabled: the integration test runner spawns a Next.js dev server
-    # alongside Supabase containers, which OOM'd ubuntu-latest (7GB) in CI.
-    # SKIP_DEV_SERVER=true keeps memory under budget but causes HTTP-style
-    # tests to fail. Re-enable after splitting tests into a DB-only subset
-    # (CI on ubuntu-latest) and an HTTP-needing subset (larger runner).
-    # See commits f4cb0eb, f423095 for the partial fixes.
-    if: false
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     needs: unit-tests
     timeout-minutes: 40

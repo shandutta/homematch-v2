@@ -69,7 +69,10 @@ describe.sequential('Integration: /api/neighborhoods/vibes', () => {
   })
 
   it('rejects unauthenticated requests', async () => {
-    const res = await fetch('http://localhost:3000/api/neighborhoods/vibes')
+    const req = new NextRequest(
+      'http://localhost/api/neighborhoods/vibes'
+    )
+    const res = await GET(req)
     expect(res.status).toBe(401)
   })
 

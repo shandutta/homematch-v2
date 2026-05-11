@@ -181,13 +181,12 @@ describe.sequential('Integration: /api/interactions route', () => {
 
   it('rejects unauthorized interaction requests', async () => {
     const propertyId = randomUUID()
-    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
-    const res = await fetch('http://localhost:3000/api/interactions', {
+    const req = new NextRequest('http://localhost/api/interactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ propertyId, type: 'liked' }),
     })
-    // Route should return 401 for unauthenticated requests
+    const res = await POST(req)
     expect(res.status).toBe(401)
   })
 
@@ -439,10 +438,10 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('returns 401 for unauthenticated reset requests', async () => {
-    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
-    const res = await fetch('http://localhost:3000/api/interactions/reset', {
+    const req = new NextRequest('http://localhost/api/interactions/reset', {
       method: 'DELETE',
     })
+    const res = await RESET_DELETE(req)
     expect(res.status).toBe(401)
   }, 10000)
 
