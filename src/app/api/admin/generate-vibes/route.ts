@@ -295,7 +295,12 @@ export async function POST(req: Request): Promise<Response> {
 }
 
 /**
- * Select a diverse mix of properties for testing
+ * Select a diverse mix of properties for testing.
+ *
+ * Per audit M12.3: was running one SELECT per property type serially
+ * (4 round-trips). Now fans out via Promise.all so wall-clock cost is one
+ * RTT instead of four. Same projection, same per-type cap, same client-side
+ * reshuffle, identical result set.
  */
 async function selectDiverseProperties(
   supabase: ReturnType<typeof createStandaloneClient>,
@@ -303,29 +308,32 @@ async function selectDiverseProperties(
 ): Promise<Property[]> {
   const perType = Math.ceil(count / 4)
 
-  // Get properties by type
   const types: PropertyType[] = [
     'single_family',
     'condo',
     'townhome',
     'multi_family',
   ]
+
+  const typeResults = await Promise.all(
+    types.map(async (type) => {
+      const { data } = await supabase
+        .from('properties')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
+        .eq('property_type', type)
+        .not('images', 'is', null)
+        .gte('price', 100000)
+        .order('price', { ascending: false })
+        .limit(perType * 2)
+        .overrideTypes<Property[], { merge: false }>()
+      return data ?? []
+    })
+  )
+
   const results: Property[] = []
-
-  for (const type of types) {
-    const { data } = await supabase
-      .from('properties')
-      .select(
-        'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
-      )
-      .eq('property_type', type)
-      .not('images', 'is', null)
-      .gte('price', 100000)
-      .order('price', { ascending: false })
-      .limit(perType * 2)
-      .overrideTypes<Property[], { merge: false }>()
-
-    const typedData = data ?? []
+  for (const typedData of typeResults) {
     if (typedData.length > 0) {
       // Take mix of price ranges
       const shuffled = typedData.sort(() => Math.random() - 0.5)
