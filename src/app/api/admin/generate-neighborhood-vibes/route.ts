@@ -105,49 +105,35 @@ export async function POST(req: Request) {
     })
   }
 
-  // Batch-fetch sample properties for ALL neighborhoods in one round trip
-  // instead of one query per neighborhood (N+1). Per-neighborhood stats still
-  // run via RPC; those are issued in parallel after the batched listings
-  // fetch completes.
   const neighborhoodIds = neighborhoods.map((n) => n.id)
+
   const { data: allListings } = await supabase
     .from('properties')
-    .select('neighborhood_id, address, price, bedrooms, bathrooms, property_type')
+    .select(
+      'neighborhood_id, address, price, bedrooms, bathrooms, property_type'
+    )
     .in('neighborhood_id', neighborhoodIds)
-    .limit(12 * neighborhoodIds.length)
 
   const listingsByNeighborhood = new Map<
     string,
-    Array<{
-      address: string | null
-      price: number | null
-      bedrooms: number | null
-      bathrooms: number | null
-      property_type: string | null
-    }>
+    NonNullable<typeof allListings>
   >()
-  for (const listing of allListings || []) {
+  for (const listing of allListings ?? []) {
     if (!listing.neighborhood_id) continue
     const bucket = listingsByNeighborhood.get(listing.neighborhood_id) ?? []
     if (bucket.length < 12) {
-      bucket.push({
-        address: listing.address,
-        price: listing.price,
-        bedrooms: listing.bedrooms,
-        bathrooms: listing.bathrooms,
-        property_type: listing.property_type,
-      })
+      bucket.push(listing)
       listingsByNeighborhood.set(listing.neighborhood_id, bucket)
     }
   }
 
-  // Stats RPC is per-neighborhood; issue them in parallel.
-  const statsResults = await Promise.all(
-    neighborhoods.map((n) => fetchNeighborhoodStats(supabase, n.id))
-  )
+  const contexts: NeighborhoodContext[] = []
 
-  const contexts: NeighborhoodContext[] = neighborhoods.map(
-    (neighborhood, idx) => ({
+  for (const neighborhood of neighborhoods) {
+    const listingStats = await fetchNeighborhoodStats(supabase, neighborhood.id)
+    const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
+
+    contexts.push({
       neighborhoodId: neighborhood.id,
       name: neighborhood.name,
       city: neighborhood.city,
@@ -156,18 +142,16 @@ export async function POST(req: Request) {
       medianPrice: neighborhood.median_price,
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
-      listingStats: statsResults[idx],
-      sampleProperties: (listingsByNeighborhood.get(neighborhood.id) || []).map(
-        (p) => ({
-          address: p.address,
-          price: p.price,
-          bedrooms: p.bedrooms,
-          bathrooms: p.bathrooms,
-          propertyType: p.property_type,
-        })
-      ),
+      listingStats,
+      sampleProperties: listings.map((p) => ({
+        address: p.address,
+        price: p.price,
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        propertyType: p.property_type,
+      })),
     })
-  )
+  }
 
   const service = createNeighborhoodVibesService()
   const batch = await service.generateBatch(contexts, {
