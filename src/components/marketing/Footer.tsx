@@ -16,7 +16,7 @@ function AnimatedLink({
   return (
     <Link
       href={href}
-      className="group relative inline-block transition-colors hover:text-white"
+      className="group relative inline-block rounded-sm transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
     >
       {children}
       <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
@@ -215,7 +215,7 @@ export function Footer() {
             className="text-token-xs mt-1 text-white/50 sm:mt-2"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            &copy; 2024 HomeMatch. All rights reserved.
+            &copy; {new Date().getFullYear()} HomeMatch. All rights reserved.
           </p>
         </MotionDiv>
       </div>
