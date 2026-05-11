@@ -92,8 +92,8 @@ function LinkColumn({
         },
       }}
     >
-      <m.h4
-        className="text-token-sm mb-0 font-semibold tracking-wider uppercase lg:mb-4"
+      <motion.h4
+        className="text-token-sm mb-2 font-semibold tracking-wider uppercase lg:mb-4"
         style={{ fontFamily: 'var(--font-heading)' }}
         variants={{
           hidden: shouldReduceMotion
@@ -151,10 +151,10 @@ export function Footer() {
   return (
     <footer className="bg-gradient-marketing-primary px-4 py-6 text-white sm:px-6 sm:py-8">
       <div className="container mx-auto max-w-5xl px-1 sm:px-2">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-8">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-1 sm:gap-4 lg:grid-cols-4 lg:gap-8">
           {/* Brand */}
           <MotionDiv
-            className="col-span-2 mb-6 flex flex-col items-center lg:col-span-1 lg:items-start"
+            className="col-span-3 mb-6 flex flex-col items-center sm:col-span-3 lg:col-span-1 lg:items-start"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
             whileInView={
               shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
@@ -207,9 +207,7 @@ export function Footer() {
           <LinkColumn title="Company" links={companyLinks} delay={0.2} />
 
           {/* Legal */}
-          <div className="mt-4 lg:mt-0">
-            <LinkColumn title="Legal" links={legalLinks} delay={0.3} />
-          </div>
+          <LinkColumn title="Legal" links={legalLinks} delay={0.3} />
         </div>
 
         <MotionDiv
