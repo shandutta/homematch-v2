@@ -146,6 +146,9 @@ export type ApprovedServiceRoleCapability =
   | 'household-disputes'
   | 'invite-acceptance'
   | 'invite-preview'
+  // Clerk webhook (verified upstream by Svix signature) needs to upsert
+  // user_profiles for new sign-ups, before the user has any session at all.
+  | 'clerk-webhook'
 
 type CreateServiceClientOptions = {
   approvedCapability?: ApprovedServiceRoleCapability
@@ -157,6 +160,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'household-disputes',
     'invite-acceptance',
     'invite-preview',
+    'clerk-webhook',
   ])
 
 // Alternative server client with service role for administrative operations

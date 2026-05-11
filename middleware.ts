@@ -19,7 +19,12 @@ const SECURITY_HEADERS = {
   'Cross-Origin-Resource-Policy': 'same-origin',
 }
 
-const PUBLIC_BYPASS_PATHS = ['/api/performance/metrics', '/api/health']
+const PUBLIC_BYPASS_PATHS = [
+  '/api/performance/metrics',
+  '/api/health',
+  // Clerk webhook (verified by Svix signature, must not be gated by auth).
+  '/api/webhooks/clerk',
+]
 const SUPABASE_TIMEOUT_MS = parseInt(
   process.env.MIDDLEWARE_SUPABASE_TIMEOUT_MS || '5000',
   10
