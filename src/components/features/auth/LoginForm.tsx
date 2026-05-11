@@ -343,13 +343,13 @@ export function LoginForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                loading ||
-                !supabase ||
-                (!form.formState.isValid &&
-                  // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  !isTestMode)
-              }
+              // H5 audit: don't gate the visible enabled state on
+              // form.formState.isValid. The form's own resolver runs
+              // on submit and reports errors inline, so a "Sign In"
+              // button that starts grey for a screenshot's worth of
+              // time before the user types anything is hostile UX.
+              // We still block double-submit via the `loading` flag.
+              disabled={loading}
               data-testid="signin-button"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

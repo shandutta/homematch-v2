@@ -197,8 +197,14 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 pt-1">
-          <m.button
+        {/* H8 audit: decorative preview only — the cards on the dashboard
+            have real Pass/Like buttons but here we just want to *show* what
+            they look like. Marked aria-hidden so screen readers and keyboard
+            focus skip them, and using <m.div> + role="presentation" instead
+            of <button> so they don't claim semantic interactivity. */}
+        <div className="flex gap-3 pt-1" aria-hidden="true">
+          <m.div
+            role="presentation"
             className="flex-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-400 shadow-sm transition-colors hover:border-rose-500/50 hover:bg-rose-500/20"
             whileHover={!prefersReducedMotion ? { scale: 1.02 } : undefined}
             whileTap={!prefersReducedMotion ? { scale: 0.98 } : undefined}
@@ -207,8 +213,9 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               <X className="h-4 w-4" />
               Pass
             </span>
-          </m.button>
-          <m.button
+          </m.div>
+          <m.div
+            role="presentation"
             className="flex-1 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-4 py-3 text-sm font-semibold text-emerald-400 shadow-sm transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/30"
             whileHover={!prefersReducedMotion ? { scale: 1.02 } : undefined}
             whileTap={!prefersReducedMotion ? { scale: 0.98 } : undefined}
@@ -217,7 +224,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               <Heart className="h-4 w-4" />
               Like
             </span>
-          </m.button>
+          </m.div>
         </div>
       </div>
     </m.div>

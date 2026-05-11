@@ -291,13 +291,9 @@ export function SignupForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                loading ||
-                !supabase ||
-                (!form.formState.isValid &&
-                  // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
-              }
+              // H5 audit: keep button enabled until submit; the resolver
+              // surfaces errors inline. `loading` still blocks double-submit.
+              disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Account
