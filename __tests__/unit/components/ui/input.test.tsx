@@ -135,10 +135,10 @@ describe('Input Component', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
       expect(input).toHaveClass(
-        'text-base',
-        'shadow-sm',
-        'duration-150',
-        'ease-out'
+        'text-[16px]',
+        'shadow-token-sm',
+        'duration-token-fast',
+        'ease-token-out'
       )
     })
 
