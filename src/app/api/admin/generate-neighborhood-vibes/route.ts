@@ -105,6 +105,9 @@ export async function POST(req: Request) {
     })
   }
 
+  // Per audit M12.1: properties are batch-fetched once via .in() (already done),
+  // and per-neighborhood stats RPC calls are issued in parallel via Promise.all
+  // (replaces the previous serial-await N+1 walk through neighborhoods).
   const neighborhoodIds = neighborhoods.map((n) => n.id)
 
   const { data: allListings } = await supabase
@@ -127,22 +130,20 @@ export async function POST(req: Request) {
     }
   }
 
-  // Batch-fetch neighborhood stats in parallel (RPC is per-neighborhood; no
-  // batched RPC exists in this schema). This collapses the serial N+1 walk
-  // into a single fan-out.
+  // Fan-out per-neighborhood stats RPC calls in parallel. There's no batched
+  // get_neighborhood_stats RPC in the schema; the fan-out collapses the
+  // sequential N round-trips into one wall-clock RTT (modulo client/server
+  // concurrency limits).
+  const statsResults = await Promise.all(
+    neighborhoods.map((n) => fetchNeighborhoodStats(supabase, n.id))
+  )
   const statsByNeighborhood = new Map<
     string,
     NeighborhoodStatsResult | null
   >()
-  const statsResults = await Promise.all(
-    neighborhoods.map(async (n) => ({
-      id: n.id,
-      stats: await fetchNeighborhoodStats(supabase, n.id),
-    }))
-  )
-  for (const { id, stats } of statsResults) {
-    statsByNeighborhood.set(id, stats)
-  }
+  neighborhoods.forEach((n, idx) => {
+    statsByNeighborhood.set(n.id, statsResults[idx] ?? null)
+  })
 
   const contexts: NeighborhoodContext[] = neighborhoods.map((neighborhood) => {
     const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
