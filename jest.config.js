@@ -37,8 +37,12 @@ module.exports = {
     '<rootDir>/node_modules/',
     '<rootDir>/homematch-original-analysis/',
     '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
   ],
-  modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',

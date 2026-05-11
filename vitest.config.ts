@@ -12,6 +12,7 @@ export default defineConfig({
       '**/homematch-original-analysis/**',
       '**/node_modules/**',
       '**/*.skip.*',
+      '**/.claude/worktrees/**',
       '__tests__/accessibility/household-clipboard-a11y.test.tsx',
       '__tests__/integration/ui/household-clipboard.test.tsx',
       '__tests__/integration/error-scenarios/household-clipboard-errors.test.tsx',
