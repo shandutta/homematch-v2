@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 
 // Animated link with hover underline
@@ -92,7 +92,7 @@ function LinkColumn({
         },
       }}
     >
-      <motion.h4
+      <m.h4
         className="text-token-sm mb-2 font-semibold tracking-wider uppercase lg:mb-4"
         style={{ fontFamily: 'var(--font-heading)' }}
         variants={{

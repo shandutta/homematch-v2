@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
 export function Header() {
@@ -45,7 +45,7 @@ export function Header() {
         }`}
       >
         {/* Logo with entrance animation */}
-        <motion.div
+        <m.div
           initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
           transition={
@@ -60,7 +60,7 @@ export function Header() {
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >
-            <motion.div
+            <m.div
               whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >

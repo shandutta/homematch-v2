@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { Card } from '@/components/ui/card'
@@ -38,10 +38,7 @@ const HOW_IT_WORKS_STEPS: Array<{
 
 export function HowItWorks() {
   const sectionRef = useRef<HTMLElement>(null)
-  const shouldReduceMotion = useReducedMotion()
-  const [activeStep, setActiveStep] = useState(
-    shouldReduceMotion ? Number.MAX_SAFE_INTEGER : -1
-  )
+  const [activeStep, setActiveStep] = useState(-1)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   const steps = HOW_IT_WORKS_STEPS
@@ -49,10 +46,6 @@ export function HowItWorks() {
   // Activate steps sequentially when in view
   useEffect(() => {
     if (!isInView) return
-    if (shouldReduceMotion) {
-      setActiveStep(steps.length - 1)
-      return
-    }
 
     const timers: NodeJS.Timeout[] = []
     steps.forEach((_, i) => {
@@ -67,26 +60,23 @@ export function HowItWorks() {
     })
 
     return () => timers.forEach(clearTimeout)
-  }, [isInView, steps, shouldReduceMotion])
+  }, [isInView, steps])
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
-      id="how-it-works"
-    >
-      <div className="container mx-auto px-4">
-        <MotionDiv
-          className="mx-auto text-center"
-          style={{ maxWidth: '48rem' }}
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
-          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
-        >
-          <h2
-            className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
-            style={{ fontFamily: 'var(--font-heading)' }}
+    <MotionMaxProvider>
+      <section
+        ref={sectionRef}
+        className="relative bg-transparent pt-0 pb-8 sm:pt-0 sm:pb-12"
+        id="how-it-works"
+      >
+        <div className="container mx-auto px-4">
+          <MotionDiv
+            className="mx-auto text-center"
+            style={{ maxWidth: '48rem' }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
           >
             <h2
               className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
@@ -133,10 +123,9 @@ function StepCard({
   isActive: boolean
 }) {
   const [isHovered, setIsHovered] = useState(false)
-  const shouldReduceMotion = useReducedMotion()
 
   const getIconAnimation = () => {
-    if (!isHovered || shouldReduceMotion) return {}
+    if (!isHovered) return {}
 
     switch (step.iconAnimation) {
       case 'sparkle':
@@ -163,27 +152,19 @@ function StepCard({
   }
 
   return (
-    <motion.div
-      initial={
-        shouldReduceMotion ? false : { opacity: 0, y: 24, scale: 0.95 }
-      }
+    <m.div
+      initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={
-        shouldReduceMotion
+        isActive
           ? { opacity: 1, y: 0, scale: 1 }
-          : isActive
-            ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0.5, y: 24, scale: 0.95 }
+          : { opacity: 0.5, y: 24, scale: 0.95 }
       }
-      transition={
-        shouldReduceMotion
-          ? { duration: 0 }
-          : {
-              type: 'spring',
-              stiffness: 100,
-              damping: 15,
-              delay: index * 0.1,
-            }
-      }
+      transition={{
+        type: 'spring',
+        stiffness: 100,
+        damping: 15,
+        delay: index * 0.1,
+      }}
     >
       <Card
         className="group relative h-full overflow-hidden border-white/60 bg-white p-5 shadow-[0_6px_22px_rgba(2,6,23,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(2,6,23,0.1)] sm:p-6"
@@ -195,9 +176,7 @@ function StepCard({
           className="pointer-events-none absolute inset-0 rounded-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: isActive ? 0.5 : 0 }}
-          transition={
-            shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }
-          }
+          transition={{ duration: 0.5 }}
           style={{
             background:
               'radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), transparent 60%)',
@@ -209,13 +188,9 @@ function StepCard({
           <m.div
             className="mb-2 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_6px_18px_rgba(2,26,68,0.15)]"
             animate={
-              shouldReduceMotion
-                ? { scale: 1, rotate: 0 }
-                : isActive
-                  ? { scale: 1, rotate: 0 }
-                  : { scale: 0.9, rotate: -5 }
+              isActive ? { scale: 1, rotate: 0 } : { scale: 0.9, rotate: -5 }
             }
-            whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
+            whileHover={{ scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
           >
             <m.div {...getIconAnimation()}>
@@ -233,11 +208,9 @@ function StepCard({
           <m.p
             className="mt-1.5 text-gray-700"
             style={{ fontFamily: 'var(--font-body)' }}
-            initial={shouldReduceMotion ? false : { opacity: 0 }}
-            animate={{ opacity: shouldReduceMotion || isActive ? 1 : 0.6 }}
-            transition={
-              shouldReduceMotion ? { duration: 0 } : { duration: 0.3 }
-            }
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isActive ? 1 : 0.6 }}
+            transition={{ duration: 0.3 }}
           >
             {step.description}
           </m.p>

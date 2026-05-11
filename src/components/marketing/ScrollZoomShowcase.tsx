@@ -133,7 +133,8 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                       </div>
                     </div>
                   </MotionDiv>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

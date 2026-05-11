@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
   const words = text.split(' ')
 
   return (
-    <motion.h2
+    <m.h2
       className={className}
       style={{ fontFamily: 'var(--font-heading)' }}
       initial={shouldReduceMotion ? false : 'hidden'}
@@ -48,7 +48,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
           {i < words.length - 1 && '\u00A0'}
         </m.span>
       ))}
-    </motion.h2>
+    </m.h2>
   )
 }
 
