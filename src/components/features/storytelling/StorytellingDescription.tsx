@@ -899,7 +899,7 @@ export function StorytellingDescription({
       {/* Lifestyle Story - Only show if not a mutual like (avoid redundancy) */}
       {showVibeStatement && !isMutualLike && (
         <MotionP
-          className="dark:text-hm-stone-500 text-sm leading-relaxed text-slate-500 italic"
+          className="text-token-sm dark:text-hm-stone-500 leading-relaxed text-slate-600 italic"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.3 }}
@@ -958,7 +958,7 @@ export function StorytellingDescription({
       {/* Neighborhood Perks */}
       {neighborhoodPerk && (
         <MotionP
-          className="dark:text-hm-stone-500 flex items-start gap-2 text-sm leading-relaxed text-slate-500"
+          className="text-token-sm dark:text-hm-stone-500 flex items-start gap-2 leading-relaxed text-slate-600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.4 }}

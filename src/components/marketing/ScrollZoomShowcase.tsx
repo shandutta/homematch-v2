@@ -132,9 +132,20 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                         </p>
                       </div>
                     </div>
-                  </MotionDiv>
-                ))}
-              </div>
+                    <div className="space-y-1.5">
+                      <p className="text-sm font-semibold tracking-[0.08em] text-slate-600">
+                        {beat.accent}
+                      </p>
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        {beat.title}
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        {beat.description}
+                      </p>
+                    </div>
+                  </div>
+                </MotionDiv>
+              ))}
             </div>
           </div>
         </div>

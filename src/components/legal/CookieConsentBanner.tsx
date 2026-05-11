@@ -99,14 +99,11 @@ export function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
-      <div className="mx-auto mb-1 w-full max-w-4xl px-2 sm:mb-3 sm:px-6">
-        <div className="rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-3">
-          {/* Mobile: compact one-line layout (text + action buttons stay
-              under ~64px tall so the banner never covers the auth form
-              CTA at 393x852). Desktop: full layout with policy links. */}
-          <div className="flex items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="hidden flex-1 text-xs text-slate-700 sm:flex sm:items-center sm:gap-3">
-              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+      <div className="mx-auto mb-3 w-full max-w-4xl px-4 sm:px-6">
+        <div className="rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-600 uppercase">
                 Cookies
               </span>
               <span>
