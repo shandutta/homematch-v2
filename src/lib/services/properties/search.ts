@@ -18,6 +18,17 @@ import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
 import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
+// Explicit column projections per audit M13 — search.ts is the HOT PATH
+// in the property service layer (dashboard, validation, Zillow mirroring).
+// Mirrors every column on public.properties Row so callers consuming the
+// typed Property/PropertyWithNeighborhood continue to work; the swap from
+// `*` is purely to make the wire projection auditable and to protect
+// against future schema growth adding wide columns we don't need.
+const PROPERTY_FULL_COLS =
+  'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, last_refreshed_at, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, source_fingerprint, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+const NEIGHBORHOOD_FULL_COLS =
+  'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+
 const toRoundedNumber = (value: unknown): number => {
   const numeric = Number(value ?? 0)
   return Number.isFinite(numeric) ? Math.round(numeric) : 0
@@ -98,11 +109,8 @@ export class PropertySearchService
       const selectClause =
         options.select ||
         (includeNeighborhoods
-          ? `
-          *,
-          neighborhood:neighborhoods(*)
-        `
-          : '*')
+          ? `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(${NEIGHBORHOOD_FULL_COLS})`
+          : PROPERTY_FULL_COLS)
 
       const shouldCount = options.includeCount ?? true
 
@@ -183,7 +191,7 @@ export class PropertySearchService
         const { data, error } = await supabase
           .from('properties')
           .select(
-            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+            PROPERTY_FULL_COLS
           )
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true)
@@ -252,10 +260,7 @@ export class PropertySearchService
         const { data, error } = await supabase
           .from('properties')
           .select(
-            `
-            *,
-            neighborhood:neighborhoods!inner(name, city, state)
-          `
+            `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods!inner(name, city, state)`
           )
           .eq('neighborhood.name', neighborhoodName)
           .eq('neighborhood.city', city)
@@ -324,10 +329,7 @@ export class PropertySearchService
       const { data, error } = await supabase
         .from('properties')
         .select(
-          `
-            *,
-            neighborhood:neighborhoods(name, city, state)
-          `
+          `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(name, city, state)`
         )
         .eq('is_active', true)
         .or(
@@ -364,7 +366,7 @@ export class PropertySearchService
       let query = supabase
         .from('properties')
         .select(
-          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+          PROPERTY_FULL_COLS
         )
         .eq('is_active', true)
         .neq('id', referenceProperty.id)
@@ -412,7 +414,7 @@ export class PropertySearchService
         let query = supabase
           .from('properties')
           .select(
-            'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+            PROPERTY_FULL_COLS
           )
           .eq('is_active', true)
 
