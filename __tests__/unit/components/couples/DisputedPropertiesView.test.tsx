@@ -11,11 +11,7 @@ jest.mock('@/lib/utils/toast', () => ({
   },
 }))
 
-jest.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}))
+jest.mock('framer-motion')
 
 jest.mock('@/components/ui/motion-components', () => {
   type MotionDivProps = React.HTMLAttributes<HTMLDivElement> & {

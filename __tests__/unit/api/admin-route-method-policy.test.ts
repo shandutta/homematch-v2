@@ -48,11 +48,6 @@ const ADMIN_POST_ROUTES = [
     rateLimitKey: 'admin:generate-vibes-zillow',
   },
   {
-    path: 'src/app/api/admin/ingest/zillow/route.ts',
-    secretEnv: 'ZILLOW_CRON_SECRET',
-    rateLimitKey: 'admin:ingest-zillow',
-  },
-  {
     path: 'src/app/api/admin/generate-vibes/route.ts',
     secretEnv: 'VIBES_CRON_SECRET',
     rateLimitKey: 'admin:generate-vibes',

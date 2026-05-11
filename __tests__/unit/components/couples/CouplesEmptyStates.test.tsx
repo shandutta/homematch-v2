@@ -23,20 +23,7 @@ jest.mock('next/link', () => {
 })
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode
-      [key: string]: unknown
-    }) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}))
+jest.mock('framer-motion')
 
 // Mock the motion components
 jest.mock('@/components/ui/motion-components', () => ({

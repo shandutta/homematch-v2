@@ -78,6 +78,10 @@ test.describe('local seeded auth lifecycle smoke', () => {
     page,
   }, testInfo) => {
     test.skip(
+      process.env.E2E_RUN !== '1',
+      'E2E_RUN=1 required — Tier 3 E2E specs skip by default. See p4-tdd-harness-design.md §2.2'
+    )
+    test.skip(
       !isLocalUrl(LOCAL_ONLY_SUPABASE_URL),
       `local seeded auth lifecycle smoke refuses non-local Supabase URL: ${LOCAL_ONLY_SUPABASE_URL}`
     )

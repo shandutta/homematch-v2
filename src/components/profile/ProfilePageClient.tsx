@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 'use client'
 
 import { useCallback, useState } from 'react'

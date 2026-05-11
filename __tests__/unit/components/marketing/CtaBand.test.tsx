@@ -2,19 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { CtaBand } from '@/components/marketing/CtaBand'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    h3: ({ children, ...props }: JSX.IntrinsicElements['h3']) => (
-      <h3 {...props}>{children}</h3>
-    ),
-    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
-      <span {...props}>{children}</span>
-    ),
-  },
-}))
+jest.mock('framer-motion')
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({

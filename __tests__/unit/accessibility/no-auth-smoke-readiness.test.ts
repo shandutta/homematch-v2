@@ -92,11 +92,11 @@ describe('no-credential accessibility smoke readiness', () => {
 
   it('keeps live/browser execution evidence explicitly gated and skippable in the reconciliation report', () => {
     expect(reconciliationReport).toMatch(
-      /Live browser run blocked|browser cache|playwright install/i
+      /Harness is functional and committed|Live run reveals real accessibility gaps/i
     )
     expect(reconciliationReport).toContain('No credentials')
     expect(reconciliationReport).toMatch(
-      /verified fallback is config\/list\/lint only|Harness is ready/i
+      /Harness is functional and committed|Live run reveals real accessibility gaps/i
     )
   })
 

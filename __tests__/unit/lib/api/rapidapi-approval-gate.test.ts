@@ -34,7 +34,6 @@ import {
 const GATE_SOURCE_PATH = 'src/lib/api/rapidapi-approval-gate.ts'
 
 const PROTECTED_ROUTE_FILES = [
-  'src/app/api/admin/ingest/zillow/route.ts',
   'src/app/api/admin/status-refresh/route.ts',
   'src/app/api/zillow/random-image/route.ts',
   'src/app/api/admin/generate-vibes-zillow/route.ts',

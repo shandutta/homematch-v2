@@ -2,32 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { HeroSection } from '@/components/marketing/HeroSection'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    h1: ({ children, ...props }: JSX.IntrinsicElements['h1']) => (
-      <h1 {...props}>{children}</h1>
-    ),
-    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
-      <p {...props}>{children}</p>
-    ),
-    section: ({ children, ...props }: JSX.IntrinsicElements['section']) => (
-      <section {...props}>{children}</section>
-    ),
-    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
-      <span {...props}>{children}</span>
-    ),
-    button: ({ children, ...props }: JSX.IntrinsicElements['button']) => (
-      <button {...props}>{children}</button>
-    ),
-  },
-  useScroll: () => ({ scrollYProgress: { get: () => 0 } }),
-  useTransform: () => ({ get: () => 0 }),
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: <T,>(value: T) => value,
-}))
+jest.mock('framer-motion')
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({

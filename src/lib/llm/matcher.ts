@@ -28,6 +28,8 @@ export interface MatcherOptions {
   /** Which prompt template to use. Defaults to "1" (original). Use "2" for the
    *  structured rubric-based prompt with per-dimension score breakdown. */
   promptVersion?: PromptVersion
+  /** Max LLM call attempts before falling back to mock ranking. Default: 1. */
+  maxAttempts?: number
 }
 
 const DEFAULT_MODEL = 'qwen/qwen3-vl-8b-instruct'
@@ -405,34 +407,76 @@ export async function match(
   }
 
   const model = opts.model || process.env.LLM_MODEL || DEFAULT_MODEL
-  const { content, model: usedModel } = await opts.llmClient.complete({
-    system: systemPrompt,
-    user: userPrompt,
-    model,
-  })
-  const { ranked, droppedCount } = parseLLMResponse(
-    content,
+  const maxAttempts = opts.maxAttempts ?? 1
+  let lastError: unknown = null
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const { content, model: usedModel } = await opts.llmClient.complete({
+        system: systemPrompt,
+        user: userPrompt,
+        model,
+      })
+      const { ranked, droppedCount } = parseLLMResponse(
+        content,
+        request.candidates,
+        request.top_k
+      )
+
+      if (droppedCount > 0) {
+        console.warn(
+          JSON.stringify({
+            event: 'match.llm.dropped_entries',
+            prompt_version: version,
+            dropped_count: droppedCount,
+          })
+        )
+      }
+
+      return matchResultSchema.parse({
+        ranked,
+        mode: 'llm',
+        model: usedModel,
+        generated_at: new Date().toISOString(),
+        candidate_count: request.candidates.length,
+        truncated: promptTruncated || ranked.length < request.candidates.length,
+        prompt_version: version,
+      })
+    } catch (err) {
+      lastError = err
+      if (attempt < maxAttempts) {
+        console.warn(
+          JSON.stringify({
+            event: 'match.llm.retry',
+            attempt,
+            maxAttempts,
+            error: String(err),
+          })
+        )
+      }
+    }
+  }
+
+  // All attempts failed — fall back to mock ranking
+  console.warn(
+    JSON.stringify({
+      event: 'match.llm.fallback_to_mock',
+      attempts: maxAttempts,
+      error: String(lastError),
+    })
+  )
+  const fallbackRanked = mockRank(
+    request.preferences,
     request.candidates,
     request.top_k
   )
-
-  if (droppedCount > 0) {
-    console.warn(
-      JSON.stringify({
-        event: 'match.llm.dropped_entries',
-        prompt_version: version,
-        dropped_count: droppedCount,
-      })
-    )
-  }
-
   return matchResultSchema.parse({
-    ranked,
-    mode: 'llm',
-    model: usedModel,
+    ranked: fallbackRanked,
+    mode: 'llm-fallback-mock',
+    model: null,
     generated_at: new Date().toISOString(),
     candidate_count: request.candidates.length,
-    truncated: promptTruncated || ranked.length < request.candidates.length,
+    truncated: promptTruncated || fallbackRanked.length < request.candidates.length,
     prompt_version: version,
   })
 }

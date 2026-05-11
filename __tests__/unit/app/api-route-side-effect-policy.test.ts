@@ -74,7 +74,6 @@ describe('API route side-effect policy', () => {
       { path: '/api/maps/script', category: 'paid-maps' },
       { path: '/api/maps/proxy-script', category: 'paid-maps' },
       // Paid RapidAPI / Zillow surfaces.
-      { path: '/api/admin/ingest/zillow', category: 'paid-rapidapi' },
       { path: '/api/admin/status-refresh', category: 'paid-rapidapi' },
       { path: '/api/admin/generate-vibes-zillow', category: 'paid-rapidapi' },
       { path: '/api/zillow/random-image', category: 'paid-rapidapi' },
@@ -89,7 +88,6 @@ describe('API route side-effect policy', () => {
         category: 'cron-admin',
       },
       { path: '/api/admin/generate-vibes-zillow', category: 'cron-admin' },
-      { path: '/api/admin/ingest/zillow', category: 'cron-admin' },
       { path: '/api/admin/status-refresh', category: 'cron-admin' },
       // Notification fan-out.
       { path: '/api/couples/notify', category: 'notification' },

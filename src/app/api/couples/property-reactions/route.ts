@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { requireUserFromRequest } from '@/lib/api/auth'

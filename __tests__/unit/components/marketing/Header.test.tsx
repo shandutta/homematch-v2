@@ -2,19 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { Header } from '@/components/marketing/Header'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    header: ({ children, ...props }: JSX.IntrinsicElements['header']) => (
-      <header {...props}>{children}</header>
-    ),
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    nav: ({ children, ...props }: JSX.IntrinsicElements['nav']) => (
-      <nav {...props}>{children}</nav>
-    ),
-  },
-}))
+jest.mock('framer-motion')
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({

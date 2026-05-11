@@ -29,7 +29,7 @@ const getFreshAuthToken = async (
 ): Promise<{ token: string; userId: string }> => {
   const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'test1@example.com',
+    email: 'test-worker-1@example.com',
     password: 'testpassword123',
   })
 

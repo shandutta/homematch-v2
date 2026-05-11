@@ -17,7 +17,7 @@ describe('Integration: /api/couples/check-mutual (authenticated)', () => {
       )
     }
     client = new E2EHttpClient(API_URL)
-    await client.authenticateAs('test1@example.com', 'testpassword123')
+    await client.authenticateAs('test-worker-1@example.com', 'testpassword123')
   })
 
   afterAll(async () => {

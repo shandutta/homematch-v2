@@ -182,7 +182,7 @@ export class PropertySearchService
       async (supabase) => {
         const { data, error } = await supabase
           .from('properties')
-          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
@@ -361,7 +361,7 @@ export class PropertySearchService
     return this.executeArrayQuery('getSimilarProperties', async (supabase) => {
       let query = supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
         .eq('is_active', true)
         .neq('id', referenceProperty.id)
         .gte('price', referenceProperty.price - priceTolerance)
@@ -407,7 +407,7 @@ export class PropertySearchService
       async (supabase) => {
         let query = supabase
           .from('properties')
-          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+          .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
           .eq('is_active', true)
 
         // Apply amenity filters

@@ -2,20 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MarketingPreviewCard } from '@/components/marketing/MarketingPreviewCard'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    button: ({ children, ...props }: JSX.IntrinsicElements['button']) => (
-      <button {...props}>{children}</button>
-    ),
-  },
-  useScroll: () => ({ scrollY: { get: () => 0 } }),
-  useTransform: () => ({ get: () => 0 }),
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0.5 }),
-  useSpring: <T,>(value: T) => value,
-}))
+jest.mock('framer-motion')
 
 // Mock Next.js Image
 jest.mock('next/image', () => ({

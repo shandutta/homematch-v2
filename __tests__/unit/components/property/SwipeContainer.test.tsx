@@ -37,52 +37,7 @@ type MotionButtonProps = JSX.IntrinsicElements['button'] & {
 }
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({
-      children,
-      whileHover: _whileHover,
-      whileTap: _whileTap,
-      animate: _animate,
-      initial: _initial,
-      transition: _transition,
-      style,
-      drag: _drag,
-      dragConstraints: _dragConstraints,
-      dragElastic: _dragElastic,
-      onDragStart: _onDragStart,
-      onDrag: _onDrag,
-      onDragEnd: _onDragEnd,
-      ...props
-    }: MotionDivProps) => (
-      <div {...props} style={style}>
-        {children}
-      </div>
-    ),
-    button: ({
-      children,
-      whileHover: _whileHover,
-      whileTap: _whileTap,
-      animate: _animate,
-      initial: _initial,
-      transition: _transition,
-      ...props
-    }: MotionButtonProps) => <button {...props}>{children}</button>,
-  },
-  AnimatePresence: ({ children }: { children?: ReactNode }) => <>{children}</>,
-  useMotionValue: () => ({
-    get: jest.fn(() => 0),
-    set: jest.fn(),
-  }),
-  useTransform: () => ({
-    get: jest.fn(() => 0),
-    set: jest.fn(),
-  }),
-  useAnimation: () => ({
-    start: jest.fn().mockResolvedValue(undefined),
-    set: jest.fn(),
-  }),
-}))
+jest.mock('framer-motion')
 
 // Mock the useSwipePhysics hook
 jest.mock('@/hooks/useSwipePhysics', () => ({

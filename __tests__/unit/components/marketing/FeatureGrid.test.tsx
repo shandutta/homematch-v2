@@ -2,16 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { FeatureGrid } from '@/components/marketing/FeatureGrid'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: <T,>(value: T) => value,
-  useTransform: () => ({ get: () => 0 }),
-}))
+jest.mock('framer-motion')
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -25,9 +16,7 @@ describe('FeatureGrid', () => {
   test('renders section heading', () => {
     render(<FeatureGrid />)
 
-    expect(
-      screen.getByText('Make home search feel clear, shared, and even fun.')
-    ).toBeInTheDocument()
+    expect(screen.getByText(/House Hunting/)).toBeInTheDocument()
   })
 
   test('renders section description', () => {

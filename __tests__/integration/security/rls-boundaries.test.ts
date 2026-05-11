@@ -33,11 +33,13 @@ describe('RLS Boundaries - Integration', () => {
     const tempClient = createClient(supabaseUrl, anonKey, {
       auth: { persistSession: false },
     })
-    const { data: { session }, error: signInError } =
-      await tempClient.auth.signInWithPassword({
-        email: process.env.TEST_USER_2_EMAIL || 'test-worker-2@example.com',
-        password: process.env.TEST_USER_2_PASSWORD || 'testpassword123',
-      })
+    const {
+      data: { session },
+      error: signInError,
+    } = await tempClient.auth.signInWithPassword({
+      email: process.env.TEST_USER_2_EMAIL || 'test-worker-2@example.com',
+      password: process.env.TEST_USER_2_PASSWORD || 'testpassword123',
+    })
 
     if (signInError || !session?.access_token) {
       throw new Error(
@@ -70,10 +72,7 @@ describe('RLS Boundaries - Integration', () => {
     expect(data ?? []).toEqual([])
 
     // Cleanup
-    await serviceClient
-      .from('user_profiles')
-      .delete()
-      .eq('id', testUserId)
+    await serviceClient.from('user_profiles').delete().eq('id', testUserId)
   })
 
   it('prevents authenticated user from reading another household interactions', async () => {

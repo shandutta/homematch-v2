@@ -2,7 +2,7 @@ import { beforeAll, afterEach, describe, expect, it } from 'vitest'
 import { IntegrationTestHelper } from '../../utils/integration-test-helper'
 import { randomUUID } from 'crypto'
 
-const TEST_EMAIL = process.env.TEST_USER_1_EMAIL || 'test1@example.com'
+const TEST_EMAIL = process.env.TEST_USER_1_EMAIL || 'test-worker-1@example.com'
 const TEST_PASSWORD = process.env.TEST_USER_1_PASSWORD || 'testpassword123'
 
 describe('Household creation RLS', () => {

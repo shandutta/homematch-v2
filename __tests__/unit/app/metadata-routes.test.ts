@@ -221,6 +221,7 @@ describe('metadata routes', () => {
       expect(mod.metadata).toMatchObject({
         title,
         description,
+        keywords: expect.any(String),
         alternates: { canonical },
         openGraph: {
           title,
@@ -244,7 +245,7 @@ describe('metadata routes', () => {
           images: [`${siteUrl}/twitter-image.jpg`],
         },
       })
-      expect(mod.metadata.robots).toBeUndefined()
+      expect(mod.metadata.robots).toEqual({ index: true, follow: true })
     }
   )
 

@@ -40,7 +40,10 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should accept authenticated requests', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'testpassword123')
+        await client.authenticateAs(
+          'test-worker-1@example.com',
+          'testpassword123'
+        )
         const response = await client.get('/api/couples/mutual-likes')
 
         // Should not be 401 with valid auth, and should not be 500 (server error)
@@ -279,7 +282,10 @@ describe('E2E: /api/couples/mutual-likes', () => {
   describe('Authenticated Scenarios', () => {
     test('should return mutual likes data for authenticated users', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'testpassword123')
+        await client.authenticateAs(
+          'test-worker-1@example.com',
+          'testpassword123'
+        )
 
         const response = await client.get('/api/couples/mutual-likes')
 
@@ -310,7 +316,10 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should handle includeProperties parameter when authenticated', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'testpassword123')
+        await client.authenticateAs(
+          'test-worker-1@example.com',
+          'testpassword123'
+        )
 
         // Test with properties included
         const responseWithProps = await client.get(
@@ -342,7 +351,10 @@ describe('E2E: /api/couples/mutual-likes', () => {
 
     test('should handle empty results gracefully', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'testpassword123')
+        await client.authenticateAs(
+          'test-worker-1@example.com',
+          'testpassword123'
+        )
 
         const response = await client.get('/api/couples/mutual-likes')
 
@@ -370,8 +382,8 @@ describe('E2E: /api/couples/mutual-likes', () => {
         const helper = client.getHelper()
         const serviceClient = helper.getServiceClient()
 
-        const test1 = await helper.getTestUser('test1@example.com')
-        const test2 = await helper.getTestUser('test2@example.com')
+        const test1 = await helper.getTestUser('test-worker-1@example.com')
+        const test2 = await helper.getTestUser('test-worker-2@example.com')
 
         const householdId = randomUUID()
         const propertyId = randomUUID()
@@ -438,9 +450,15 @@ describe('E2E: /api/couples/mutual-likes', () => {
           expect(createPropertyError).toBeNull()
 
           // Authenticate both users
-          await client.authenticateAs('test1@example.com', 'testpassword123')
+          await client.authenticateAs(
+            'test-worker-1@example.com',
+            'testpassword123'
+          )
           client2 = new E2EHttpClient()
-          await client2.authenticateAs('test2@example.com', 'testpassword456')
+          await client2.authenticateAs(
+            'test-worker-2@example.com',
+            'testpassword123'
+          )
 
           // Prime mutual likes cache for this household
           const emptyRes = await client.get(
@@ -536,7 +554,10 @@ describe('E2E: /api/couples/mutual-likes', () => {
   describe('Data Structure Validation', () => {
     test('should have correct mutual likes structure when authenticated and data exists', async () => {
       try {
-        await client.authenticateAs('test1@example.com', 'testpassword123')
+        await client.authenticateAs(
+          'test-worker-1@example.com',
+          'testpassword123'
+        )
 
         const response = await client.get('/api/couples/mutual-likes')
 

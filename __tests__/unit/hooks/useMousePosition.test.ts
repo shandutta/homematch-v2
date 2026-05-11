@@ -3,13 +3,7 @@ import { useMousePosition, useReducedMotion } from '@/hooks/useMousePosition'
 
 // Mock framer-motion
 const mockSet = jest.fn()
-jest.mock('framer-motion', () => ({
-  useMotionValue: () => ({
-    set: mockSet,
-    get: () => 0,
-  }),
-  useSpring: <T>(value: T) => value,
-}))
+jest.mock('framer-motion')
 
 describe('useMousePosition', () => {
   beforeEach(() => {

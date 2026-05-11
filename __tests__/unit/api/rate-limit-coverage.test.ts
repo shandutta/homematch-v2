@@ -112,10 +112,6 @@ describe('Phase 1 M5 admin cron route rate-limit coverage', () => {
       key: 'admin:status-refresh',
     },
     {
-      path: 'src/app/api/admin/ingest/zillow/route.ts',
-      key: 'admin:ingest-zillow',
-    },
-    {
       path: 'src/app/api/admin/generate-vibes/route.ts',
       key: 'admin:generate-vibes',
     },

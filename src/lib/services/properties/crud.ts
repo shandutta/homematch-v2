@@ -26,7 +26,7 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getProperty', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
         .eq('id', propertyId)
         .eq('is_active', true)
         .single()
@@ -168,7 +168,7 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByZpid', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
         .eq('zpid', zpid)
         .eq('is_active', true)
         .single()
@@ -193,7 +193,7 @@ export class PropertyCrudService extends BaseService {
     return this.executeQuery('getPropertiesByHash', async (supabase) => {
       const { data, error } = await supabase
         .from('properties')
-        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid')
+        .select('address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint')
         .eq('property_hash', hash)
         .eq('is_active', true)
         .single()

@@ -51,16 +51,7 @@ jest.mock('next/link', () => {
   }
 })
 
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children?: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}))
+jest.mock('framer-motion')
 
 const TOUCH_TARGET_MIN_PX = 44
 

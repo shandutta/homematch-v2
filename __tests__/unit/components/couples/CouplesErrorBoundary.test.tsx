@@ -4,16 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { CouplesErrorBoundary } from '@/components/couples/CouplesErrorBoundary'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({
-      children,
-      ...props
-    }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}))
+jest.mock('framer-motion')
 
 // Mock console.error
 const originalConsoleError = console.error

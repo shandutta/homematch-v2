@@ -2,17 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { HowItWorks } from '@/components/marketing/HowItWorks'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
-      <p {...props}>{children}</p>
-    ),
-  },
-  useInView: () => true,
-}))
+jest.mock('framer-motion')
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({

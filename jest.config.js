@@ -20,6 +20,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/__tests__/(.*)$': '<rootDir>/__tests__/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^framer-motion$': '<rootDir>/__mocks__/framer-motion.ts',
     '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
   },
   // Automatically use mocks from __mocks__ directory

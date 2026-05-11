@@ -32,7 +32,10 @@ jest.mock('@/lib/api/auth', () => ({
     const user = result?.user ?? result?.data?.user ?? null
     return user
       ? { user, response: null }
-      : { user: null, response: jsonMock({ error: 'Unauthorized' }, { status: 401 }) }
+      : {
+          user: null,
+          response: jsonMock({ error: 'Unauthorized' }, { status: 401 }),
+        }
   },
 }))
 
@@ -76,9 +79,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
   let supabaseMock: Record<string, jest.Mock>
 
   beforeAll(async () => {
-    const mod = await import(
-      '@/app/api/couples/property-reactions/route'
-    )
+    const mod = await import('@/app/api/couples/property-reactions/route')
     GET = mod.GET
   })
 
@@ -120,9 +121,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
 
   describe('Validation', () => {
     test('returns 400 when propertyId is missing', async () => {
-      const url = new URL(
-        'http://localhost/api/couples/property-reactions'
-      )
+      const url = new URL('http://localhost/api/couples/property-reactions')
       const request = new NextRequest(url)
       const response = await GET(request)
 
@@ -229,7 +228,8 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
       let callIndex = 0
       supabaseMock.from = jest.fn((table: string) => {
         callIndex++
-        if (table === 'user_profiles' && callIndex === 1) return userProfileChain
+        if (table === 'user_profiles' && callIndex === 1)
+          return userProfileChain
         if (table === 'user_property_interactions') return interactionsChain
         if (table === 'user_profiles' && callIndex === 3) return profilesChain
         return createChain({ data: [], error: null })
@@ -277,16 +277,15 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
       })
 
       const profilesChain = createChain({
-        data: [
-          { id: 'user-3', display_name: null },
-        ],
+        data: [{ id: 'user-3', display_name: null }],
         error: null,
       })
 
       let callIndex = 0
       supabaseMock.from = jest.fn((table: string) => {
         callIndex++
-        if (table === 'user_profiles' && callIndex === 1) return userProfileChain
+        if (table === 'user_profiles' && callIndex === 1)
+          return userProfileChain
         if (table === 'user_property_interactions') return interactionsChain
         if (table === 'user_profiles' && callIndex === 3) return profilesChain
         return createChain({ data: [], error: null })
@@ -344,9 +343,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
     })
 
     test('PUT returns method not allowed', async () => {
-      const { PUT } = await import(
-        '@/app/api/couples/property-reactions/route'
-      )
+      const { PUT } = await import('@/app/api/couples/property-reactions/route')
       await PUT()
       expect(jsonMock).toHaveBeenCalledWith(
         'Method not allowed',

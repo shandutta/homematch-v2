@@ -78,11 +78,6 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
       'Cron-gated; pulls Zillow detail via RapidAPI then calls OpenRouter.',
   },
   {
-    path: '/api/admin/ingest/zillow',
-    categories: ['paid-rapidapi', 'cron-admin'],
-    rationale: 'Cron-gated bulk Zillow ingest via RapidAPI.',
-  },
-  {
     path: '/api/admin/status-refresh',
     categories: ['paid-rapidapi', 'cron-admin'],
     rationale: 'Cron-gated Zillow status refresh via RapidAPI.',

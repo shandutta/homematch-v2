@@ -23,15 +23,15 @@ vi.mock('@/lib/supabase/client', () => ({
       auth: {
         signInWithPassword: mockSignInWithPassword,
         signInWithOAuth: mockSignInWithOAuth,
-        getUser: () =>
-          Promise.resolve({ data: { user: null }, error: null }),
+        getUser: () => Promise.resolve({ data: { user: null }, error: null }),
         getSession: () =>
           Promise.resolve({ data: { session: null }, error: null }),
       },
       from: () => ({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        then: (onFulfilled: (value: unknown) => unknown) => onFulfilled({ data: [], error: null }),
+        then: (onFulfilled: (value: unknown) => unknown) =>
+          onFulfilled({ data: [], error: null }),
       }),
     }
     return Promise.resolve(client)
