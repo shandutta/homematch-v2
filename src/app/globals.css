@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import '@clerk/ui/themes/shadcn.css';
+/* Clerk shadcn theme deferred to Phase C.1 alongside ClerkProvider reintroduction. */
 
 /* Restrict Tailwind v4 source scanning to src/ only. */
 @source '../';
