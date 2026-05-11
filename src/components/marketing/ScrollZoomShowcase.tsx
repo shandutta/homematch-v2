@@ -121,7 +121,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                         <ShieldCheck className="h-4 w-4" />
                       </div>
                       <div className="space-y-1.5">
-                        <p className="text-sm font-semibold tracking-[0.08em] text-slate-500">
+                        <p className="text-sm font-semibold tracking-[0.08em] text-slate-600">
                           {beat.accent}
                         </p>
                         <h3 className="text-lg font-semibold text-slate-900">
@@ -132,19 +132,7 @@ export function ScrollZoomShowcase({ className }: { className?: string }) {
                         </p>
                       </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <p className="text-sm font-semibold tracking-[0.08em] text-slate-600">
-                        {beat.accent}
-                      </p>
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        {beat.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        {beat.description}
-                      </p>
-                    </div>
-                  </div>
-                </MotionDiv>
+                  </MotionDiv>
               ))}
             </div>
           </div>
