@@ -477,8 +477,11 @@ describe.sequential('Integration: /api/interactions route', () => {
     expect(resetData.data.count).toBeGreaterThanOrEqual(0)
   })
 
-  // Skipped because environment variables set here do not propagate to the running server process
-  it.skip('enforces rate limiting responses', async () => {
+  // Previously skipped because the test set RATE_LIMIT_ENFORCE_IN_TESTS in
+  // its own process but the route was hit via fetch() against a separate
+  // dev-server process where that env var was never set. Now that we call
+  // the route handler directly (same process), the env var takes effect.
+  it('enforces rate limiting responses', async () => {
     const originalEnforce = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
     process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
     resetRateLimiters()

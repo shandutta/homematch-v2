@@ -133,6 +133,18 @@ export async function setup(): Promise<void> {
   // Brief pause for OS to release the port
   await new Promise<void>((r) => setTimeout(r, 500))
 
+  // Honor SKIP_DEV_SERVER (CI memory budget): if set, skip Next.js dev
+  // server entirely. Tests that need HTTP will fail explicitly; pure DB
+  // and route-handler-import tests still run.
+  if (process.env.SKIP_DEV_SERVER === 'true') {
+    console.log(
+      '[globalSetup] SKIP_DEV_SERVER=true — Next.js dev server NOT started.'
+    )
+    return async () => {
+      console.log('[globalSetup] Teardown (no dev server to stop)')
+    }
+  }
+
   // Build env for the Next.js dev server: test mode + local Supabase, no prod DB
   const devEnv: NodeJS.ProcessEnv = {
     ...process.env,

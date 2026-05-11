@@ -33,24 +33,31 @@ const getFreshAuthToken = async (
   // worker pick up the session and treat unauthenticated requests as
   // authenticated. Hack: fetch the token via raw POST to /auth/v1/token
   // so no GoTrueClient instance ever caches it.
-  const tokenRes = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: {
-      apikey: anonKey,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: 'test-worker-1@example.com',
-      password: 'testpassword123',
-    }),
-  })
+  const tokenRes = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: {
+        apikey: anonKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: 'test-worker-1@example.com',
+        password: 'testpassword123',
+      }),
+    }
+  )
   if (!tokenRes.ok) {
     const text = await tokenRes.text()
-    throw new Error(`Failed to get fresh auth token (HTTP ${tokenRes.status}): ${text}`)
+    throw new Error(
+      `Failed to get fresh auth token (HTTP ${tokenRes.status}): ${text}`
+    )
   }
   const data: { access_token?: string } = await tokenRes.json()
   if (!data.access_token) {
-    throw new Error(`Failed to get fresh auth token: no access_token in response`)
+    throw new Error(
+      `Failed to get fresh auth token: no access_token in response`
+    )
   }
   return data.access_token
 }
