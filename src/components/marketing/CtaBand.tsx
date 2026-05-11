@@ -12,7 +12,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
   const words = text.split(' ')
 
   return (
-    <m.h3
+    <motion.h2
       className={className}
       style={{ fontFamily: 'var(--font-heading)' }}
       initial={shouldReduceMotion ? false : 'hidden'}
@@ -48,7 +48,7 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
           {i < words.length - 1 && '\u00A0'}
         </m.span>
       ))}
-    </m.h3>
+    </motion.h2>
   )
 }
 
