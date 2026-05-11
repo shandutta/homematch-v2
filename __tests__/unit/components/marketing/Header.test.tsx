@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Header } from '@/components/marketing/Header'
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
     header: ({ children, ...props }: JSX.IntrinsicElements['header']) => (
       <header {...props}>{children}</header>
     ),
@@ -13,9 +13,13 @@ jest.mock('framer-motion', () => ({
     nav: ({ children, ...props }: JSX.IntrinsicElements['nav']) => (
       <nav {...props}>{children}</nav>
     ),
-  },
-  useReducedMotion: () => false,
-}))
+  }
+  return {
+    motion,
+    m: motion,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({

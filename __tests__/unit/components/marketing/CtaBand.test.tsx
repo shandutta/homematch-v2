@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { CtaBand } from '@/components/marketing/CtaBand'
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
     div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
       <div {...props}>{children}</div>
     ),
@@ -13,9 +13,13 @@ jest.mock('framer-motion', () => ({
     span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
       <span {...props}>{children}</span>
     ),
-  },
-  useReducedMotion: () => false,
-}))
+  }
+  return {
+    motion,
+    m: motion,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({

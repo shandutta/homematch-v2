@@ -128,7 +128,7 @@ describe('Input Component', () => {
     test('applies rounded corners and padding', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
-      expect(input).toHaveClass('rounded-md', 'p-2')
+      expect(input).toHaveClass('rounded-token-md', 'p-token-sm')
     })
 
     test('applies text and shadow styling', () => {
@@ -301,7 +301,7 @@ describe('Input Component', () => {
       render(<Input type="file" />)
       const input = document.querySelector('input[type="file"]')
       expect(input).toHaveClass(
-        'file:text-sm',
+        'file:text-token-sm',
         'file:border-0',
         'file:bg-transparent'
       )

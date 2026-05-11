@@ -81,3 +81,4 @@ export const useAnimation = () => ({ start: () => {}, stop: () => {} })
 export const useInView = () => false
 export const useSpring = (value: any) => value
 export const useVelocity = () => 0
+export const useReducedMotion = () => false
