@@ -1,10 +1,8 @@
+// Phase 0/1 closure: M9-dead-server-actions
 import { describe, test, expect, beforeEach, jest } from '@jest/globals'
-import {
-  login,
-  signup,
-  signOut,
-  signInWithGoogle,
-} from '@/lib/supabase/actions'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { signOut } from '@/lib/supabase/actions'
 
 const redirectMock = jest.fn()
 const revalidatePathMock = jest.fn()
@@ -39,12 +37,6 @@ jest.mock('@/lib/utils/server-url', () => ({
 
 import { __auth as supabaseAuth, createClient } from '@/lib/supabase/server'
 
-const buildFormData = (entries: Record<string, string>) => {
-  const fd = new FormData()
-  Object.entries(entries).forEach(([k, v]) => fd.append(k, v))
-  return fd
-}
-
 describe('supabase actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -55,32 +47,16 @@ describe('supabase actions', () => {
     supabaseAuth.signInWithOAuth.mockReset()
   })
 
-  test('login redirects home on success', async () => {
-    supabaseAuth.signInWithPassword.mockResolvedValue({ error: null })
+  test('only keeps wired server actions', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/supabase/actions.ts'),
+      'utf8'
+    )
 
-    await login(buildFormData({ email: 'a@b.com', password: 'pw' }))
-
-    expect(revalidatePathMock).toHaveBeenCalledWith('/', 'layout')
-    expect(redirectMock).toHaveBeenCalledWith('/')
-  })
-
-  test('login redirects to error on failure', async () => {
-    supabaseAuth.signInWithPassword.mockResolvedValue({
-      error: { message: 'boom' },
-    })
-
-    await login(buildFormData({ email: 'a@b.com', password: 'pw' }))
-
-    expect(redirectMock).toHaveBeenCalledWith('/error')
-  })
-
-  test('signup redirects home on success', async () => {
-    supabaseAuth.signUp.mockResolvedValue({ error: null })
-
-    await signup(buildFormData({ email: 'a@b.com', password: 'pw' }))
-
-    expect(revalidatePathMock).toHaveBeenCalled()
-    expect(redirectMock).toHaveBeenCalledWith('/')
+    expect(source).toContain('export async function signOut')
+    expect(source).not.toContain('export async function login')
+    expect(source).not.toContain('export async function signup')
+    expect(source).not.toContain('export async function signInWithGoogle')
   })
 
   test('signOut redirects home on success', async () => {
@@ -90,27 +66,5 @@ describe('supabase actions', () => {
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/', 'layout')
     expect(redirectMock).toHaveBeenCalledWith('/')
-  })
-
-  test('signInWithGoogle redirects to provider url', async () => {
-    supabaseAuth.signInWithOAuth.mockResolvedValue({
-      data: { url: 'http://google.test' },
-      error: null,
-    })
-
-    await signInWithGoogle()
-
-    expect(redirectMock).toHaveBeenCalledWith('http://google.test')
-  })
-
-  test('signInWithGoogle redirects to error on failure', async () => {
-    supabaseAuth.signInWithOAuth.mockResolvedValue({
-      data: {},
-      error: { message: 'fail' },
-    })
-
-    await signInWithGoogle()
-
-    expect(redirectMock).toHaveBeenCalledWith('/error')
   })
 })

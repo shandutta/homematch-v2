@@ -1,11 +1,17 @@
 // Force dynamic rendering to capture Supabase session from URL fragments or codes
 export const dynamic = 'force-dynamic'
 
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import {
   AuthLink,
   AuthPageShell,
 } from '@/components/features/auth/AuthPageShell'
 import { ResetPasswordForm } from '@/components/features/auth/ResetPasswordForm'
+
+export const metadata = createNoindexRouteMetadata({
+  title: 'Reset Password | HomeMatch',
+  description: 'Reset your HomeMatch password securely.',
+})
 
 export default function ResetPasswordPage() {
   return (

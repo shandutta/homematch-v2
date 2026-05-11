@@ -1,5 +1,6 @@
 import { jest, describe, test, expect } from '@jest/globals'
 import { screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { renderWithQuery } from '../../utils/TestQueryProvider'
 import { PropertyCard } from '@/components/property/PropertyCard'
 import { Property } from '@/lib/schemas/property'
@@ -75,33 +76,56 @@ const getStatValueByLabel = (label: string) => {
 }
 
 describe('PropertyCard Component', () => {
-  test('should render property details correctly', () => {
-    renderWithQuery(<PropertyCard property={mockProperty} />)
-    expect(screen.getByText('123 Main St')).toBeDefined()
-    expect(screen.getByText('$500,000')).toBeDefined()
-    expect(screen.getByText('Single Family')).toBeDefined()
+  test('should render property details correctly and respond to like decision', async () => {
+    const onDecision = jest.fn()
+    const user = userEvent.setup()
+    renderWithQuery(
+      <PropertyCard property={mockProperty} onDecision={onDecision} />
+    )
+    expect(screen.getByText('123 Main St')).toBeInTheDocument()
+    expect(screen.getByText('$500,000')).toBeInTheDocument()
+    expect(screen.getByText('Single Family')).toBeInTheDocument()
     // New layout uses lowercase labels: "bed", "bath", "sqft"
     expect(getStatValueByLabel('bed')).toHaveTextContent('3')
     expect(getStatValueByLabel('bath')).toHaveTextContent('2')
     expect(getStatValueByLabel('sqft')).toHaveTextContent('1,500')
+    // Behavioral: clicking Like fires the decision handler with the correct property id
+    await user.click(screen.getByLabelText('Like property'))
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
   })
 
-  test('should render Zillow link with correct href', () => {
+  test('should render Zillow link with correct href, opens in new tab, and is keyboard-accessible', async () => {
+    const user = userEvent.setup()
     renderWithQuery(<PropertyCard property={mockProperty} />)
     const zillowLink = screen.getByLabelText('View on Zillow')
-    expect(zillowLink).toBeTruthy()
-    expect(zillowLink.getAttribute('href')).toBe(
+    expect(zillowLink).toBeInTheDocument()
+    expect(zillowLink).toHaveAttribute(
+      'href',
       'https://www.zillow.com/homedetails/12345678_zpid/'
     )
+    // Behavioral: link opens in a new tab (safe external navigation)
+    expect(zillowLink).toHaveAttribute('target', '_blank')
+    // Behavioral: clicking the link does not throw and element remains in DOM
+    await user.click(zillowLink)
+    expect(zillowLink).toBeInTheDocument()
   })
 
-  test('should render action buttons when onDecision is provided', () => {
+  test('should render action buttons when onDecision is provided and both trigger decisions', async () => {
     const onDecision = jest.fn()
+    const user = userEvent.setup()
     renderWithQuery(
       <PropertyCard property={mockProperty} onDecision={onDecision} />
     )
-    expect(screen.getByLabelText('Pass property')).toBeDefined()
-    expect(screen.getByLabelText('Like property')).toBeDefined()
+    const passBtn = screen.getByLabelText('Pass property')
+    const likeBtn = screen.getByLabelText('Like property')
+    expect(passBtn).toBeInTheDocument()
+    expect(likeBtn).toBeInTheDocument()
+    // Behavioral: each button triggers onDecision with the correct interaction type
+    await user.click(passBtn)
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'skip')
+    await user.click(likeBtn)
+    expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
+    expect(onDecision).toHaveBeenCalledTimes(2)
   })
 
   test('should not render action buttons when onDecision is not provided', () => {
@@ -128,13 +152,14 @@ describe('PropertyCard Component', () => {
     expect(onDecision).toHaveBeenCalledWith('prop-1', 'liked')
   })
 
-  test('should render PropertyMap when coordinates are present', () => {
+  test('should render PropertyMap when coordinates are present', async () => {
     const propertyWithCoords: Property = {
       ...mockProperty,
       coordinates: { lat: 37.7749, lng: -122.4194 },
     }
     renderWithQuery(<PropertyCard property={propertyWithCoords} />)
-    expect(screen.getByTestId('property-map')).toBeDefined()
+    // PropertyMap is loaded via next/dynamic, so wait for it to resolve.
+    expect(await screen.findByTestId('property-map')).toBeDefined()
   })
 
   test('should not render PropertyMap when coordinates are null', () => {

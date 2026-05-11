@@ -39,25 +39,25 @@ describe('MutualLikesBadge Component', () => {
       render(<MutualLikesBadge likedByCount={2} variant="compact" />)
       // Find the badge by data-slot attribute
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-xs', 'p-token-xs')
+      expect(badge).toHaveClass('text-xs', 'p-1')
     })
 
     test('should apply default variant classes', () => {
       render(<MutualLikesBadge likedByCount={2} variant="default" />)
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-sm', 'p-token-sm')
+      expect(badge).toHaveClass('text-sm', 'p-2')
     })
 
     test('should apply large variant classes', () => {
       render(<MutualLikesBadge likedByCount={2} variant="large" />)
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-base', 'p-token-md')
+      expect(badge).toHaveClass('text-base', 'p-4')
     })
 
     test('should default to default variant when not specified', () => {
       render(<MutualLikesBadge likedByCount={2} />)
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-sm', 'p-token-sm')
+      expect(badge).toHaveClass('text-sm', 'p-2')
     })
   })
 
@@ -80,7 +80,7 @@ describe('MutualLikesBadge Component', () => {
         '-top-1',
         '-right-1',
         'bg-purple-500',
-        'text-token-xs'
+        'text-xs'
       )
     })
   })
@@ -233,7 +233,7 @@ describe('MutualLikesIndicator Component', () => {
         />
       )
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-xs', 'p-token-xs')
+      expect(badge).toHaveClass('text-xs', 'p-1')
     })
 
     test('should default to default variant when not specified', () => {
@@ -244,7 +244,7 @@ describe('MutualLikesIndicator Component', () => {
         />
       )
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('text-token-sm', 'p-token-sm')
+      expect(badge).toHaveClass('text-sm', 'p-2')
     })
   })
 

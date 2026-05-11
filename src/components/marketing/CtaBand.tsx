@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -8,14 +8,15 @@ import { GradientMeshBackground } from '@/components/marketing/GradientMeshBackg
 
 // Word reveal component for staggered text animation
 function WordReveal({ text, className }: { text: string; className?: string }) {
+  const shouldReduceMotion = useReducedMotion()
   const words = text.split(' ')
 
   return (
-    <motion.h3
+    <m.h2
       className={className}
       style={{ fontFamily: 'var(--font-heading)' }}
-      initial="hidden"
-      whileInView="visible"
+      initial={shouldReduceMotion ? false : 'hidden'}
+      whileInView={shouldReduceMotion ? undefined : 'visible'}
       viewport={{ once: true }}
       variants={{
         hidden: {},
@@ -27,27 +28,33 @@ function WordReveal({ text, className }: { text: string; className?: string }) {
       }}
     >
       {words.map((word, i) => (
-        <motion.span
+        <m.span
           key={i}
           className="inline-block"
           variants={{
-            hidden: { opacity: 0, y: 15 },
+            hidden: shouldReduceMotion
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 15 },
             visible: {
               opacity: 1,
               y: 0,
-              transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+              transition: shouldReduceMotion
+                ? { duration: 0 }
+                : { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
             },
           }}
         >
           {word}
           {i < words.length - 1 && '\u00A0'}
-        </motion.span>
+        </m.span>
       ))}
-    </motion.h3>
+    </m.h2>
   )
 }
 
 export function CtaBand() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <section className="relative overflow-hidden py-16 sm:py-20">
       {/* Gradient mesh background (darker variant) */}
@@ -60,10 +67,10 @@ export function CtaBand() {
         <MotionDiv
           className="mx-auto text-center"
           style={{ maxWidth: '56rem' }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
         >
           {/* Animated headline with word reveal */}
           <WordReveal
@@ -72,10 +79,16 @@ export function CtaBand() {
           />
 
           <MotionDiv
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+            whileInView={
+              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
+            }
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : { duration: 0.5, delay: 0.3 }
+            }
           >
             <p
               className="mx-auto mt-3 text-white/80 sm:text-lg"
@@ -88,15 +101,21 @@ export function CtaBand() {
 
           <MotionDiv
             className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-8 sm:flex-row"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={
+              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
+            }
             viewport={{ once: true }}
-            transition={{
-              type: 'spring',
-              stiffness: 100,
-              damping: 15,
-              delay: 0.5,
-            }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : {
+                    type: 'spring',
+                    stiffness: 100,
+                    damping: 15,
+                    delay: 0.5,
+                  }
+            }
           >
             {/* Primary CTA with shimmer effect */}
             <Button

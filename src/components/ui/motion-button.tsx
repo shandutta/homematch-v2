@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, ButtonHTMLAttributes } from 'react'
-import { motion, HTMLMotionProps } from 'framer-motion'
+import { m, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 type MotionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -15,17 +15,17 @@ type MotionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
  * MotionButton - A button component that supports Framer Motion animations
  * without passing motion props to DOM elements (which causes React warnings).
  *
- * This component wraps a regular HTML button inside a motion.div to provide
+ * This component wraps a regular HTML button inside a m.div to provide
  * animation capabilities while maintaining semantic button behavior.
  */
 export const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
   ({ children, className, motionProps, ...buttonProps }, ref) => {
     return (
-      <motion.div className="inline-flex" {...motionProps}>
+      <m.div className="inline-flex" {...motionProps}>
         <button ref={ref} className={cn(className)} {...buttonProps}>
           {children}
         </button>
-      </motion.div>
+      </m.div>
     )
   }
 )

@@ -17,13 +17,13 @@ import {
   slideInRight,
   fastTransition,
 } from '@/components/ui/motion-components'
-import { signOut } from '@/lib/supabase/actions'
 import { useState, useEffect, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 import { ProfileMenu } from '@/components/shared/ProfileMenu'
 import { useCurrentUserAvatar } from '@/hooks/useCurrentUserAvatar'
-import { usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { usePathname, useRouter } from 'next/navigation'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -31,11 +31,16 @@ export function Header() {
   const [isSigningOut, startTransition] = useTransition()
   const pathname = usePathname() ?? ''
   const { displayName, email, avatar, isLoading } = useCurrentUserAvatar()
+  const router = useRouter()
 
   const handleSignOut = () => {
     startTransition(async () => {
       try {
-        await signOut()
+        const supabase = await createClient()
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+        router.refresh()
+        router.push('/')
       } catch (error) {
         console.error('Sign out failed', error)
       }
@@ -124,7 +129,7 @@ export function Header() {
             <div className="flex items-center">
               <Link
                 href="/dashboard"
-                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark rounded-token-md px-token-md py-token-sm inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark px-token-md py-token-sm inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 rounded-md font-semibold text-white transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 aria-label="HomeMatch - Go to dashboard"
                 data-testid="nav-dashboard"
               >
@@ -145,7 +150,7 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      'p-token-md rounded-token-md focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                      'focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center space-x-2 rounded-md p-4 text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
                       isActive
                         ? 'relative bg-white/[0.06] text-white shadow-[0_12px_30px_rgba(0,0,0,0.25)] ring-1 ring-white/10 after:absolute after:inset-x-4 after:bottom-1 after:h-[2px] after:rounded-full after:bg-amber-400/70 after:content-[""]'
                         : 'hover:bg-token-primary/20'
@@ -164,7 +169,7 @@ export function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={toggleMobileMenu}
-                className="rounded-token-md p-token-sm transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center text-white/80 hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95 md:hidden"
+                className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 text-white/80 transition-all hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95 md:hidden"
                 aria-label="Open navigation menu"
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -223,13 +228,11 @@ export function Header() {
               style={{ touchAction: 'none' }}
             >
               {/* Mobile Menu Header */}
-              <div className="border-token-primary/20 p-token-lg flex h-16 items-center justify-between border-b">
-                <span className="text-token-lg font-semibold text-white">
-                  Menu
-                </span>
+              <div className="border-token-primary/20 flex h-16 items-center justify-between border-b p-6">
+                <span className="text-lg font-semibold text-white">Menu</span>
                 <button
                   onClick={closeMobileMenu}
-                  className="rounded-token-md p-token-sm transition-token-all hover:bg-token-primary/20 focus-visible:ring-token-primary-light inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center text-white/80 hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+                  className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 text-white/80 transition-all hover:scale-105 hover:text-white focus-visible:ring-2 focus-visible:outline-none active:scale-95"
                   aria-label="Close navigation menu"
                   type="button"
                 >
@@ -238,7 +241,7 @@ export function Header() {
               </div>
 
               {/* Mobile Menu Content */}
-              <nav className="p-token-lg">
+              <nav className="p-6">
                 <ul className="space-y-2">
                   {navigationLinks.map((link) => {
                     const Icon = link.icon
@@ -252,7 +255,7 @@ export function Header() {
                           href={link.href}
                           onClick={closeMobileMenu}
                           className={cn(
-                            'rounded-token-lg p-token-md transition-token-all focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 text-white/80 hover:text-white focus-visible:ring-2 focus-visible:outline-none',
+                            'focus-visible:ring-token-primary-light flex min-h-[52px] touch-manipulation items-center space-x-3 rounded-lg p-4 text-white/80 transition-all hover:text-white focus-visible:ring-2 focus-visible:outline-none',
                             isActive
                               ? 'bg-white/[0.06] text-white ring-1 ring-white/10'
                               : 'hover:bg-token-primary/20 active:bg-token-primary/30'
@@ -260,7 +263,7 @@ export function Header() {
                           aria-current={isActive ? 'page' : undefined}
                         >
                           <Icon className="h-6 w-6 flex-shrink-0" />
-                          <span className="text-token-lg font-medium">
+                          <span className="text-lg font-medium">
                             {link.label}
                           </span>
                         </Link>

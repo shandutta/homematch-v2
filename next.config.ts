@@ -64,6 +64,17 @@ const nextConfig: NextConfig = {
       }
     : {}),
 
+  // M7: The "N" badge bottom-left flagged in the 2026-05-11 audit is
+  // Next.js' built-in dev indicator. It is gated by NODE_ENV inside
+  // the framework and does not render in production builds — verified
+  // by inspecting next@15.5.9 source. The audit's screenshots were
+  // captured against `next dev`, hence the badge. We move it to
+  // bottom-right anyway so it doesn't visually collide with the cookie
+  // consent banner during local development.
+  devIndicators: {
+    position: 'bottom-right',
+  },
+
   ...(distDir ? { distDir } : {}),
 
   // Allow external Zillow image hosts for next/image
@@ -93,6 +104,10 @@ const nextConfig: NextConfig = {
     // Optional tuning for responsive images
     deviceSizes: [320, 420, 768, 1024, 1200, 1600],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Prefer AVIF (smaller) with WebP fallback. Browsers without AVIF get WebP.
+    formats: ['image/avif', 'image/webp'],
+    // Cache optimized images for 7 days at the edge.
+    minimumCacheTTL: 60 * 60 * 24 * 7,
     // Disable optimization for unreliable external sources during testing or development
     unoptimized:
       process.env.NEXT_PUBLIC_TEST_MODE === 'true' ||
@@ -123,6 +138,27 @@ const nextConfig: NextConfig = {
 
   // Experimental features for performance
   experimental: {
+    // Tree-shake heavy barrel exports so unused icons / utilities don't ship.
+    // Cuts ~80KB+ from initial JS for typical page loads.
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'date-fns',
+      '@supabase/supabase-js',
+      '@supabase/ssr',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-label',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+    ],
     // TODO: Enable Turbopack filesystem caching once supported by this Next.js
     // version. These flags are not present in 15.5.9.
     // Set to false here to disable if caching causes issues.

@@ -325,74 +325,30 @@ import { setupBrowserMocks } from './__tests__/utils/browser-mocks'
 // Initialize shared browser mocks
 setupBrowserMocks()
 
-// Mock framer-motion to avoid projection system issues in JSDOM
+// Mock framer-motion to avoid projection system issues in JSDOM.
+// Avoid dynamic import('react') here — Vite's import-analysis cannot resolve it
+// from worktree directories that lack their own node_modules.
 vi.mock('framer-motion', async () => {
   const actual =
     await vi.importActual<typeof import('framer-motion')>('framer-motion')
-  const React = await import('react')
 
-  // Create a simple passthrough component that renders children without animations
-  const createMotionComponent = (tag: string) => {
-    const Component = React.forwardRef<
-      HTMLElement,
-      React.HTMLAttributes<HTMLElement> & {
-        children?: React.ReactNode
-        initial?: unknown
-        animate?: unknown
-        exit?: unknown
-        transition?: unknown
-        variants?: unknown
-        whileHover?: unknown
-        whileTap?: unknown
-        whileFocus?: unknown
-        whileInView?: unknown
-        layout?: unknown
-        layoutId?: string
-        drag?: unknown
-        dragConstraints?: unknown
-        onDragEnd?: unknown
-        onDragStart?: unknown
-        onAnimationStart?: unknown
-        onAnimationComplete?: unknown
-      }
-    >((props, ref) => {
-      // Strip framer-motion specific props
-      const {
-        initial: _initial,
-        animate: _animate,
-        exit: _exit,
-        transition: _transition,
-        variants: _variants,
-        whileHover: _whileHover,
-        whileTap: _whileTap,
-        whileFocus: _whileFocus,
-        whileInView: _whileInView,
-        layout: _layout,
-        layoutId: _layoutId,
-        drag: _drag,
-        dragConstraints: _dragConstraints,
-        onDragEnd: _onDragEnd,
-        onDragStart: _onDragStart,
-        onAnimationStart: _onAnimationStart,
-        onAnimationComplete: _onAnimationComplete,
-        ...htmlProps
-      } = props
-      return React.createElement(tag, { ...htmlProps, ref })
-    })
-    Component.displayName = `motion.${tag}`
-    return Component
-  }
+  type WithChildren = { children?: unknown }
+  const passthrough = ({ children }: WithChildren) => children
 
   const motion = new Proxy(actual.motion, {
-    get: (_, tag: string) => createMotionComponent(tag),
+    get: (_: unknown, tag: string) => {
+      const MockMotion = ({ children }: WithChildren) => children
+      MockMotion.displayName = `motion.${tag}`
+      return MockMotion
+    },
   })
 
   return {
     ...actual,
     motion,
-    AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
-    LazyMotion: ({ children }: { children?: React.ReactNode }) => children,
-    MotionConfig: ({ children }: { children?: React.ReactNode }) => children,
+    AnimatePresence: passthrough,
+    LazyMotion: passthrough,
+    MotionConfig: passthrough,
     domAnimation: {},
     domMax: {},
   }
@@ -808,6 +764,7 @@ try {
 
 // Global test isolation: each test gets a clean database state
 import { beforeEach, afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
 let _testStartTime = 0
 
@@ -817,5 +774,9 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // No delay needed for sequential tests
+  // Tear down rendered DOM so subsequent tests don't see duplicate elements
+  // (we run vitest with singleThread + pool='threads', so the jsdom instance
+  // is shared across files). Without this, getByText() across tests that
+  // render the same component throws "Found multiple elements".
+  cleanup()
 })

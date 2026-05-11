@@ -4,75 +4,7 @@ import type { Property, Neighborhood } from '@/lib/schemas/property'
 import type { PropertyVibes } from '@/lib/schemas/property-vibes'
 
 // Mock framer-motion to avoid animation complexity in tests
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({
-      children,
-      className,
-      ...props
-    }: JSX.IntrinsicElements['div'] & {
-      initial?: unknown
-      animate?: unknown
-      transition?: unknown
-      whileHover?: unknown
-    }) => {
-      const {
-        initial: _initial,
-        animate: _animate,
-        transition: _transition,
-        whileHover: _whileHover,
-        ...restProps
-      } = props
-      return (
-        <div className={className} {...restProps}>
-          {children}
-        </div>
-      )
-    },
-    p: ({
-      children,
-      className,
-      ...props
-    }: JSX.IntrinsicElements['p'] & {
-      initial?: unknown
-      animate?: unknown
-      transition?: unknown
-    }) => {
-      const {
-        initial: _initial,
-        animate: _animate,
-        transition: _transition,
-        ...restProps
-      } = props
-      return (
-        <p className={className} {...restProps}>
-          {children}
-        </p>
-      )
-    },
-    span: ({
-      children,
-      className,
-      ...props
-    }: JSX.IntrinsicElements['span'] & {
-      initial?: unknown
-      animate?: unknown
-      transition?: unknown
-    }) => {
-      const {
-        initial: _initial,
-        animate: _animate,
-        transition: _transition,
-        ...restProps
-      } = props
-      return (
-        <span className={className} {...restProps}>
-          {children}
-        </span>
-      )
-    },
-  },
-}))
+jest.mock('framer-motion')
 
 const mockProperty: Property = {
   id: '123e4567-e89b-12d3-a456-426614174000',

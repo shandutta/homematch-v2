@@ -2,16 +2,7 @@ import { render } from '@testing-library/react'
 import { GradientMeshBackground } from '@/components/marketing/GradientMeshBackground'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0.5 }),
-  useSpring: <T,>(value: T) => value,
-  useTransform: () => ({ get: () => 0 }),
-}))
+jest.mock('framer-motion')
 
 describe('GradientMeshBackground', () => {
   beforeEach(() => {

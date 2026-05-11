@@ -1,30 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
-import { getUserFromRequest } from '@/lib/api/auth'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await getUserFromRequest(supabase, request)
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
     const searchParams = request.nextUrl.searchParams
     const propertyId = searchParams.get('propertyId')
 
     if (!propertyId) {
-      return NextResponse.json(
-        { error: 'Property ID is required' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Property ID is required')
     }
 
     // Check if this would create a mutual like
@@ -36,7 +29,7 @@ export async function GET(request: NextRequest) {
       )
 
     if (!wouldBeMutual || !partnerUserId) {
-      return NextResponse.json({
+      return noStoreJson({
         isMutual: false,
       })
     }
@@ -74,28 +67,25 @@ export async function GET(request: NextRequest) {
           : undefined,
     }
 
-    return NextResponse.json(response)
+    return noStoreJson(response)
   } catch (error) {
     console.error('Error checking mutual like:', error)
-    return NextResponse.json(
-      { error: 'Failed to check mutual like' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to check mutual like', error)
   }
 }
 
 // Explicitly reject unsupported methods to avoid hanging requests in tests/E2E
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function PATCH() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function OPTIONS() {
   return NextResponse.json({}, { status: 200 })

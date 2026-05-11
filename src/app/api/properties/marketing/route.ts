@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server'
 import { withPerformanceTracking } from '@/lib/utils/performance'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 // Explicitly reject unsupported methods to avoid hanging requests in tests/E2E
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function PATCH() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 export async function OPTIONS() {
   return NextResponse.json({}, { status: 200 })
@@ -63,7 +64,10 @@ const MARKETING_CARDS: MarketingCard[] = [
 ]
 
 async function getMarketingProperties(): Promise<NextResponse> {
-  return NextResponse.json(MARKETING_CARDS, { status: 200 })
+  return NextResponse.json(MARKETING_CARDS, {
+    status: 200,
+    headers: { 'Cache-Control': 'public, max-age=3600' },
+  })
 }
 
 export const GET = withPerformanceTracking(

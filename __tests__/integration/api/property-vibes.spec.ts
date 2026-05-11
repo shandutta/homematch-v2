@@ -27,20 +27,32 @@ const getFreshAuthToken = async (
   supabaseUrl: string,
   anonKey: string
 ): Promise<{ token: string; userId: string }> => {
-  const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'test1@example.com',
-    password: 'testpassword123',
-  })
-
-  if (error || !data.session) {
-    throw new Error(`Failed to get fresh auth token: ${error?.message}`)
+  // Use raw fetch to /auth/v1/token so no GoTrueClient instance caches
+  // the session — supabase-js's in-memory session cache is shared across
+  // client instances in the same Vitest worker, which would leak the
+  // authenticated user into route-handler tests that expect 401.
+  const tokenRes = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: { apikey: anonKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        email: 'test-worker-1@example.com',
+        password: 'testpassword123',
+      }),
+    }
+  )
+  if (!tokenRes.ok) {
+    throw new Error(
+      `Failed to get fresh auth token (HTTP ${tokenRes.status}): ${await tokenRes.text()}`
+    )
   }
-
-  return {
-    token: data.session.access_token,
-    userId: data.user.id,
+  const data: { access_token?: string; user?: { id: string } } =
+    await tokenRes.json()
+  if (!data.access_token || !data.user) {
+    throw new Error('Failed to get fresh auth token: missing fields')
   }
+  return { token: data.access_token, userId: data.user.id }
 }
 
 describe.sequential('Integration: /api/properties/vibes', () => {
@@ -74,9 +86,8 @@ describe.sequential('Integration: /api/properties/vibes', () => {
   })
 
   it('rejects unauthenticated requests', async () => {
-    // Use a real HTTP request to avoid Supabase client caching leaking auth state
-    // when calling route handlers directly in Vitest.
-    const res = await fetch('http://localhost:3000/api/properties/vibes')
+    const req = new NextRequest('http://localhost/api/properties/vibes')
+    const res = await GET(req)
     expect(res.status).toBe(401)
   })
 

@@ -30,14 +30,7 @@ jest.mock('@/components/ui/skeleton', () => ({
   ),
 }))
 
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
-}))
+jest.mock('framer-motion')
 
 jest.mock('next/image', () => ({
   __esModule: true,

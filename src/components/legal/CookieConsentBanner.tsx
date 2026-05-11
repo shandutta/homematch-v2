@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -31,6 +32,8 @@ export function CookieConsentBanner() {
   const [isOpen, setIsOpen] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [draft, setDraft] = useState<CookieConsentDraft>(getDefaultConsent())
+  const manageSettingsButtonRef = useRef<HTMLButtonElement>(null)
+  const settingsPanelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const stored = getCookieConsent()
@@ -46,6 +49,12 @@ export function CookieConsentBanner() {
     }
   }, [])
 
+  useEffect(() => {
+    if (showDetails) {
+      settingsPanelRef.current?.focus()
+    }
+  }, [showDetails])
+
   const adSenseEnabled =
     process.env.NEXT_PUBLIC_ADSENSE_ENABLED !== 'false' &&
     process.env.NODE_ENV === 'production'
@@ -55,15 +64,26 @@ export function CookieConsentBanner() {
       setDraft((current) => ({ ...current, [key]: checked }))
     }
 
+  const closeDetailsAndReturnFocus = () => {
+    setShowDetails(false)
+    requestAnimationFrame(() => manageSettingsButtonRef.current?.focus())
+  }
+
+  const handleDetailsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeDetailsAndReturnFocus()
+    }
+  }
+
   const handleSave = async (nextDraft: CookieConsentDraft) => {
     saveCookieConsent(nextDraft)
     setIsOpen(false)
     setShowDetails(false)
 
     if (nextDraft.analytics) {
-      const { initPerformanceTracker } = await import(
-        '@/lib/utils/performance-tracker'
-      )
+      const { initPerformanceTracker } =
+        await import('@/lib/utils/performance-tracker')
       initPerformanceTracker()
     }
   }
@@ -79,14 +99,17 @@ export function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
-      <div className="mx-auto mb-3 w-full max-w-4xl px-4 sm:px-6">
-        <div className="rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+      <div className="mx-auto mb-1 w-full max-w-4xl px-2 sm:mb-3 sm:px-6">
+        <div className="rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-3">
+          {/* Mobile: compact one-line layout (text + action buttons stay
+              under ~64px tall so the banner never covers the auth form
+              CTA at 393x852). Desktop: full layout with policy links. */}
+          <div className="flex items-center gap-2 sm:flex-row sm:justify-between">
+            <p className="hidden flex-1 text-xs text-slate-700 sm:flex sm:items-center sm:gap-3">
+              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-600 uppercase">
                 Cookies
               </span>
-              <p className="text-xs text-slate-700">
+              <span>
                 We use essential cookies. Optional cookies improve performance
                 and ads. See the{' '}
                 <Link href="/cookies" className="text-sky-600 underline">
@@ -97,23 +120,33 @@ export function CookieConsentBanner() {
                   Privacy Policy
                 </Link>
                 .
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 sm:items-center sm:justify-end">
+              </span>
+            </p>
+            <p className="flex-1 text-xs text-slate-700 sm:hidden">
+              Cookies?{' '}
+              <Link href="/cookies" className="text-sky-600 underline">
+                Learn more
+              </Link>
+            </p>
+            {/* M4: CTA hierarchy now treats Reject and Accept as equal weight
+                (both share the outline variant). Prior state used variant="primary"
+                on "Accept all" only, nudging users toward broad consent — a GDPR
+                dark-pattern concern flagged in the audit. */}
+            <div className="flex shrink-0 gap-1 sm:gap-2">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                className="h-9 min-h-0 px-3 text-xs"
+                className="h-8 min-h-0 px-2 text-xs sm:h-9 sm:px-3"
                 onClick={() => handleSave(getDefaultConsent())}
               >
-                Reject non-essential
+                Reject
               </Button>
               <Button
                 type="button"
                 size="sm"
-                variant="primary"
-                className="h-9 min-h-0 px-3 text-xs"
+                variant="outline"
+                className="h-8 min-h-0 px-2 text-xs sm:h-9 sm:px-3"
                 onClick={() =>
                   handleSave({
                     preferences: true,
@@ -125,19 +158,35 @@ export function CookieConsentBanner() {
                 Accept all
               </Button>
               <Button
+                ref={manageSettingsButtonRef}
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-9 min-h-0 px-2 text-xs"
+                className="h-8 min-h-0 px-2 text-xs sm:h-9"
                 onClick={() => setShowDetails((current) => !current)}
+                aria-expanded={showDetails}
+                aria-controls="cookie-banner-settings"
               >
-                {showDetails ? 'Hide settings' : 'Manage settings'}
+                <span className="hidden sm:inline">
+                  {showDetails ? 'Hide settings' : 'Manage settings'}
+                </span>
+                <span className="sm:hidden" aria-label="Manage settings">
+                  ⋮
+                </span>
               </Button>
             </div>
           </div>
 
           {showDetails ? (
-            <div className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
+            <div
+              id="cookie-banner-settings"
+              ref={settingsPanelRef}
+              role="group"
+              aria-label="Cookie settings"
+              tabIndex={-1}
+              onKeyDown={handleDetailsKeyDown}
+              className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-slate-900">
@@ -195,7 +244,7 @@ export function CookieConsentBanner() {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setShowDetails(false)}
+                  onClick={closeDetailsAndReturnFocus}
                 >
                   Cancel
                 </Button>

@@ -21,7 +21,7 @@ import { useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useResetInteractions } from '@/hooks/useInteractions'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 interface AccountSectionProps {
   user: User
@@ -33,7 +33,6 @@ export function AccountSection({ user }: AccountSectionProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSigningOut, startTransition] = useTransition()
   const router = useRouter()
-  const supabase = createClient()
   const resetInteractions = useResetInteractions()
 
   const handleSignOut = () => {
@@ -43,6 +42,7 @@ export function AccountSection({ user }: AccountSectionProps) {
 
     startTransition(async () => {
       try {
+        const supabase = await createClient()
         const { error: signOutError } = await supabase.auth.signOut()
 
         if (signOutError) {
@@ -150,7 +150,7 @@ export function AccountSection({ user }: AccountSectionProps) {
     <div className="space-y-6">
       <AnimatePresence>
         {error && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -161,11 +161,11 @@ export function AccountSection({ user }: AccountSectionProps) {
                 {error}
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </m.div>
         )}
 
         {successMessage && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -176,7 +176,7 @@ export function AccountSection({ user }: AccountSectionProps) {
                 {successMessage}
               </AlertDescription>
             </Alert>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

@@ -7,7 +7,7 @@ import {
   useTransform,
   useMotionValue,
   useSpring,
-  motion,
+  m,
 } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Bed, Bath, MapPin, Heart, X, ShieldCheck } from 'lucide-react'
@@ -69,12 +69,11 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
   }
 
   return (
-    <motion.div
+    <m.div
       ref={cardRef}
       className={cn(
-        'relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 shadow-[0_18px_44px_rgba(0,0,0,0.3),0_0_40px_rgba(56,189,248,0.08)] backdrop-blur-xl transition-shadow duration-300',
-        isHovered &&
-          'shadow-[0_24px_60px_rgba(0,0,0,0.4),0_0_60px_rgba(56,189,248,0.12)]',
+        'shadow-card-glow relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 backdrop-blur-xl transition-shadow duration-300',
+        isHovered && 'shadow-card-glow-hover',
         className
       )}
       style={{
@@ -88,7 +87,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
       onMouseLeave={handleMouseLeave}
     >
       {/* Subtle glow effect on hover */}
-      <motion.div
+      <m.div
         className="pointer-events-none absolute inset-0 rounded-[24px] opacity-0 transition-opacity duration-300"
         style={{
           background:
@@ -109,7 +108,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-black/20 to-transparent" />
 
         {/* Price badge */}
-        <motion.div
+        <m.div
           className="absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold text-slate-900 shadow-lg backdrop-blur-sm"
           animate={
             isHovered && !prefersReducedMotion
@@ -119,7 +118,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           $975,000
-        </motion.div>
+        </m.div>
 
         {/* Floating feature badges */}
         <div className="pointer-events-none absolute inset-0">
@@ -168,11 +167,16 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
       {/* Card content */}
       <div className="space-y-4 p-6 pb-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
-            Listing · Lake Merritt
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
+              Example Listing
+            </p>
+            <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold tracking-[0.14em] text-amber-300 uppercase">
+              Example
+            </span>
+          </div>
           <h3 className="text-xl font-semibold text-white">
-            1200 Lakeview Dr, Oakland, CA 94610
+            123 Sample Street, Anytown, USA
           </h3>
         </div>
 
@@ -193,8 +197,14 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 pt-1">
-          <motion.button
+        {/* H8 audit: decorative preview only — the cards on the dashboard
+            have real Pass/Like buttons but here we just want to *show* what
+            they look like. Marked aria-hidden so screen readers and keyboard
+            focus skip them, and using <m.div> + role="presentation" instead
+            of <button> so they don't claim semantic interactivity. */}
+        <div className="flex gap-3 pt-1" aria-hidden="true">
+          <m.div
+            role="presentation"
             className="flex-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-400 shadow-sm transition-colors hover:border-rose-500/50 hover:bg-rose-500/20"
             whileHover={!prefersReducedMotion ? { scale: 1.02 } : undefined}
             whileTap={!prefersReducedMotion ? { scale: 0.98 } : undefined}
@@ -203,8 +213,9 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               <X className="h-4 w-4" />
               Pass
             </span>
-          </motion.button>
-          <motion.button
+          </m.div>
+          <m.div
+            role="presentation"
             className="flex-1 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-4 py-3 text-sm font-semibold text-emerald-400 shadow-sm transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/30"
             whileHover={!prefersReducedMotion ? { scale: 1.02 } : undefined}
             whileTap={!prefersReducedMotion ? { scale: 0.98 } : undefined}
@@ -213,9 +224,9 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               <Heart className="h-4 w-4" />
               Like
             </span>
-          </motion.button>
+          </m.div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

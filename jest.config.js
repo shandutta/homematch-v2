@@ -4,7 +4,6 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.ts',
     '<rootDir>/__tests__/test-env.ts',
-    '<rootDir>/__tests__/setupSentry.ts',
   ],
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -20,6 +19,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/__tests__/(.*)$': '<rootDir>/__tests__/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^framer-motion$': '<rootDir>/__mocks__/framer-motion.ts',
     '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
   },
   // Automatically use mocks from __mocks__ directory
@@ -36,6 +36,12 @@ module.exports = {
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/homematch-original-analysis/',
+    '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
+  ],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.worktrees/',
+    '<rootDir>/.claude/worktrees/',
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

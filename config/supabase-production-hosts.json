@@ -1,0 +1,4 @@
+{
+  "description": "Non-secret production Supabase hostnames used by scripts/guard-supabase-env.js when .env.prod is intentionally absent from the repo. Store hostnames only; never put API keys, passwords, database URLs, or service-role secrets here.",
+  "hosts": ["lpwlbbowavozpywnpamn.supabase.co"]
+}

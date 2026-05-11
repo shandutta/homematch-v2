@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-auth-client-consolidation
 import { describe, test, expect } from '@jest/globals'
 import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
 

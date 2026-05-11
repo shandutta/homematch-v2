@@ -55,4 +55,20 @@ describe('buildNeighborhoodVibePrompt', () => {
     expect(userPrompt).toContain('avg 3.3bd 2.0ba')
     expect(userPrompt).toContain('avg 1,551 sqft')
   })
+
+  test('guards neighborhood copy against generic LLM real-estate language', () => {
+    const { systemPrompt, userPrompt } = buildNeighborhoodVibePrompt({
+      neighborhoodId: 'n1',
+      name: 'Rockridge',
+      city: 'Oakland',
+      state: 'CA',
+      sampleProperties: [],
+    })
+
+    expect(systemPrompt).toContain('NEVER USE')
+    expect(systemPrompt).toContain('hidden gem')
+    expect(systemPrompt).toContain('do not invent businesses')
+    expect(userPrompt).toContain('evidence')
+    expect(userPrompt).toContain('uncertain')
+  })
 })

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { CouplesRealtime } from '@/lib/realtime/couples-realtime'
+// Sprint 4 bundle: import the type for refs but defer the runtime module
+// (uses @supabase/supabase-js realtime channels, ~80KB) until the hook
+// actually decides to connect. Pages that mount the hook but bail before
+// the user has a household never pay the realtime cost.
+import type { CouplesRealtime } from '@/lib/realtime/couples-realtime'
 // import { useToast } from '@/hooks/use-toast'
 
 interface MutualLikeData {
@@ -77,7 +81,7 @@ export function useCouplesRealtime(options: UseCouplesRealtimeOptions = {}) {
       try {
         setState((prev) => ({ ...prev, connectionStatus: 'connecting' }))
 
-        const supabase = createClient()
+        const supabase = await createClient()
         const {
           data: { user },
         } = await supabase.auth.getUser()
@@ -102,6 +106,10 @@ export function useCouplesRealtime(options: UseCouplesRealtimeOptions = {}) {
         if (!mounted) return
 
         householdIdRef.current = userProfile.household_id
+        const { CouplesRealtime } = await import(
+          '@/lib/realtime/couples-realtime'
+        )
+        if (!mounted) return
         realtimeRef.current = new CouplesRealtime()
 
         // Subscribe to real-time updates

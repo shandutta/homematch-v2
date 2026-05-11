@@ -1,0 +1,41 @@
+{
+  "generated_at_utc": "2026-05-07T19:52:14Z",
+  "verdict": "P1 stalled; four workers blocked to stop false-running state",
+  "root_causes": [
+    "Four Phase 1 workers were still marked running in kanban.db, but ps showed no active work-kanban-task/hermes kanban processes.",
+    "Worker logs show primary auth failed and Hermes switched to fallback deepseek-v4-pro; fallback hung/reconnected for ~180-200s and exited without artifacts.",
+    "One ops worker failed trying to create a worktree at an already-used branch/path; another backend worker spent time searching/reading then provider stalled.",
+    "The dispatcher left tasks in running status after worker interruption, so the board looked active while no actual work was happening."
+  ],
+  "blocked_tasks": [
+    {
+      "id": "t_9bc5020e",
+      "title": "P1 auth architecture audit and deletion map",
+      "assignee": "analyst",
+      "age_minutes": 46.6
+    },
+    {
+      "id": "t_d7a73e15",
+      "title": "P1 DB architecture audit",
+      "assignee": "backend-eng",
+      "age_minutes": 46.6
+    },
+    {
+      "id": "t_124c4ac0",
+      "title": "P1 middleware/API speed and dead-code audit",
+      "assignee": "backend-eng",
+      "age_minutes": 46.6
+    },
+    {
+      "id": "t_b08f7ec4",
+      "title": "P1 Vercel/local dev/Docker decision",
+      "assignee": "ops",
+      "age_minutes": 46.6
+    }
+  ],
+  "next_repair": [
+    "Do not respawn the same broad P1 tasks.",
+    "Create smaller P1 artifact tasks with hard 10-15 minute caps, starting with the two Phase 0 gates: local dev guard bypass and Maps endpoint auth hardening.",
+    "Use direct targeted code tasks/artifacts rather than long provider-dependent audit workers."
+  ]
+}

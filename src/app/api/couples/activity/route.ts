@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 // Explicitly reject unsupported methods to avoid hanging requests in tests
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function PATCH() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+  return ApiErrorHandler.methodNotAllowed()
 }
 
 export async function OPTIONS() {
@@ -31,15 +34,9 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createApiClient(request)
 
-      // Get the current user
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
+      const auth = await requireUserFromRequest(supabase, request)
 
-      if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+      if (!auth.user) return auth.response
 
       // Parse query parameters
       const searchParams = request.nextUrl.searchParams
@@ -68,7 +65,7 @@ export async function GET(request: NextRequest) {
       // Add timeout to prevent hanging
       const activityPromise = CouplesService.getHouseholdActivity(
         supabase,
-        user.id,
+        auth.user.id,
         limit,
         offset
       )
@@ -81,7 +78,7 @@ export async function GET(request: NextRequest) {
 
       const totalTime = Date.now() - startTime
 
-      return NextResponse.json({
+      return noStoreJson({
         activity,
         performance: {
           totalTime,
@@ -91,9 +88,9 @@ export async function GET(request: NextRequest) {
       })
     } catch (error) {
       console.error('Error in activity API:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch household activity' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to fetch household activity',
+        error
       )
     }
   })

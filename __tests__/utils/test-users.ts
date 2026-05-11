@@ -6,14 +6,15 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 // Test users created by setup-test-users-admin.js
+// Primary test users (indices 0-9) mapped to GoTrue workers with verified passwords
 export const TEST_USERS = {
-  USER_1: {
-    email: process.env.TEST_USER_1_EMAIL || 'test1@example.com',
+  USER_0: {
+    email: process.env.TEST_USER_1_EMAIL || 'test-worker-1@example.com',
     password: process.env.TEST_USER_1_PASSWORD || 'testpassword123',
   },
-  USER_2: {
-    email: process.env.TEST_USER_2_EMAIL || 'test2@example.com',
-    password: process.env.TEST_USER_2_PASSWORD || 'testpassword456',
+  USER_1: {
+    email: process.env.TEST_USER_2_EMAIL || 'test-worker-2@example.com',
+    password: process.env.TEST_USER_2_PASSWORD || 'testpassword123',
   },
   // Worker users for parallel execution
   WORKER_0: {

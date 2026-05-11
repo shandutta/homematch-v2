@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState, useId } from 'react'
 import { useCookieConsent } from '@/lib/cookies/use-cookie-consent'
+import {
+  ADSENSE_CLIENT_ID,
+  ADSENSE_ENABLED,
+  ADSENSE_IN_FEED_LAYOUT_KEY,
+  ADSENSE_IN_FEED_SLOT,
+} from '@/lib/adsense'
 
 // Global Set to track which ad instances have been pushed
 // This persists across React re-renders and Strict Mode double-mounting
@@ -62,7 +68,7 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
     }
   }, [adInstanceId])
 
-  if (!consent?.advertising) {
+  if (!ADSENSE_ENABLED || !consent?.advertising) {
     return null
   }
 
@@ -74,7 +80,7 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
   return (
     <div
       ref={adRef}
-      className={`bg-card rounded-token-xl shadow-token-lg relative flex flex-col overflow-hidden border border-white/10 transition-all ${className}`}
+      className={`bg-card relative flex flex-col overflow-hidden rounded-xl border border-white/10 shadow-lg transition-all ${className}`}
       data-ad-position={position}
     >
       {/* Sponsored label */}
@@ -115,9 +121,9 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
                 minHeight: isLoaded ? '380px' : '0',
               }}
               data-ad-format="fluid"
-              data-ad-layout-key="-fb+5w+4e-db+86"
-              data-ad-client="ca-pub-9556502662108721"
-              data-ad-slot="3059335227"
+              data-ad-layout-key={ADSENSE_IN_FEED_LAYOUT_KEY}
+              data-ad-client={ADSENSE_CLIENT_ID}
+              data-ad-slot={ADSENSE_IN_FEED_SLOT}
             />
           </>
         )}

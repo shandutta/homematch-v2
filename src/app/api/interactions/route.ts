@@ -1,8 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { DbInteractionType } from '@/types/app'
-import type { AppDatabase } from '@/types/app-database'
 import type { Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import {
@@ -11,41 +9,30 @@ import {
   interactionSummarySchema,
   paginationQuerySchema,
 } from '@/lib/schemas/api'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import {
   getDbFiltersForInteractionType,
   mapInteractionTypeToDb,
   normalizeInteractionType,
 } from '@/lib/utils/interaction-type'
 import { CouplesService } from '@/lib/services/couples'
-import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { requireUserFromRequest } from '@/lib/api/auth'
+import { noStoreJson } from '@/lib/api/cache-control'
 
 export async function POST(request: NextRequest) {
   try {
-    const hasRequestContext =
-      typeof request?.headers?.get === 'function' &&
-      typeof request?.cookies?.getAll === 'function'
-    const supabase = createApiClient(hasRequestContext ? request : undefined)
-    const authHeader = hasRequestContext
-      ? request.headers.get('authorization')
-      : null
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = data?.user
+    const supabase = createApiClient(request)
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
 
     // Rate limiting
-    const rateLimitResult = await apiRateLimiter.check(user.id)
-    if (!rateLimitResult.success) {
-      return ApiErrorHandler.badRequest(
-        'Too many requests. Please try again later.'
-      )
-    }
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('interactions:create', user.id)
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     let body: unknown
     try {
@@ -83,54 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let householdId = userProfile?.household_id ?? null
-    let serviceClient: SupabaseClient<AppDatabase> | null = null
-
-    const fetchHouseholdIdWithServiceRole = async () => {
-      try {
-        if (!serviceClient) {
-          serviceClient = await getServiceRoleClient()
-        }
-        const { data: serviceProfile, error: serviceProfileError } =
-          await serviceClient
-            .from('user_profiles')
-            .select('household_id')
-            .eq('id', user.id)
-            .maybeSingle()
-
-        if (serviceProfileError) {
-          console.warn(
-            '[Interactions API] Service role lookup failed:',
-            serviceProfileError.message
-          )
-          return null
-        }
-
-        return serviceProfile?.household_id ?? null
-      } catch (serviceError) {
-        console.warn(
-          '[Interactions API] Service role client error:',
-          serviceError
-        )
-        return null
-      }
-    }
-
-    const resolveHouseholdId = async () => {
-      if (householdId) return householdId
-
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        const candidate = await fetchHouseholdIdWithServiceRole()
-        if (candidate) return candidate
-        if (attempt < 2) {
-          await new Promise((resolve) => setTimeout(resolve, 200))
-        }
-      }
-
-      return null
-    }
-
-    householdId = await resolveHouseholdId()
+    const householdId = userProfile?.household_id ?? null
 
     // Clear any previous interaction for this user/property to enforce a single definitive state.
     // For "view" events we only reset existing views so likes/skips persist.
@@ -172,33 +112,10 @@ export async function POST(request: NextRequest) {
         details: insertError.details,
         hint: insertError.hint,
       })
-      return NextResponse.json(
-        { error: 'Failed to record interaction' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to record interaction',
+        insertError
       )
-    }
-
-    if (!householdId) {
-      await new Promise((resolve) => setTimeout(resolve, 250))
-      const refreshedHouseholdId = await fetchHouseholdIdWithServiceRole()
-      if (refreshedHouseholdId) {
-        householdId = refreshedHouseholdId
-        const backfillClient = serviceClient ?? (await getServiceRoleClient())
-        serviceClient = backfillClient
-        const { error: backfillError } = await backfillClient
-          .from('user_property_interactions')
-          .update({ household_id: householdId })
-          .eq('id', newInteraction.id)
-
-        if (backfillError) {
-          console.warn(
-            '[Interactions API] Failed to backfill household_id:',
-            backfillError.message
-          )
-        } else {
-          newInteraction.household_id = householdId
-        }
-      }
     }
 
     if (householdId) {
@@ -213,21 +130,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const hasRequestContext =
-      typeof request?.headers?.get === 'function' &&
-      typeof request?.cookies?.getAll === 'function'
-    const supabase = createApiClient(hasRequestContext ? request : undefined)
-    const authHeader = hasRequestContext
-      ? request.headers.get('authorization')
-      : null
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data: authData, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = authData?.user
+    const supabase = createApiClient(request)
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
 
     const { searchParams } = new URL(request.url)
@@ -238,10 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!queryParams.type) {
-      return NextResponse.json(
-        { error: 'Missing type query parameter' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Missing type query parameter')
     }
 
     if (queryParams.type === 'summary') {
@@ -269,20 +173,14 @@ export async function GET(request: NextRequest) {
         rpcResult = await Promise.race([rpcPromise, timeoutPromise])
       } catch (e) {
         console.error('Summary fetch timed out or failed:', e)
-        return NextResponse.json(
-          { error: 'Failed to fetch summary' },
-          { status: 504 }
-        )
+        return ApiErrorHandler.gatewayTimeout('Failed to fetch summary')
       }
 
       const { data, error } = rpcResult
 
       if (error) {
         console.error('Summary fetch failed:', error)
-        return NextResponse.json(
-          { error: 'Failed to fetch summary' },
-          { status: 500 }
-        )
+        return ApiErrorHandler.serverError('Failed to fetch summary', error)
       }
 
       const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -313,16 +211,13 @@ export async function GET(request: NextRequest) {
 
       // Validate response against schema
       const validatedSummary = interactionSummarySchema.parse(summaryData)
-      return NextResponse.json(validatedSummary)
+      return noStoreJson(validatedSummary)
     }
 
     const type = normalizeInteractionType(queryParams.type)
 
     if (!type) {
-      return NextResponse.json(
-        { error: 'Invalid type parameter' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Invalid type parameter')
     }
 
     const paginationQuery = paginationQuerySchema.parse({
@@ -379,7 +274,7 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.error('Interactions list fetch timed out or failed:', e)
       // Gracefully degrade instead of propagating a 504 (which the test harness retries)
-      return NextResponse.json({ items: [], nextCursor: null }, { status: 200 })
+      return noStoreJson({ items: [], nextCursor: null }, { status: 200 })
     }
 
     const { data, error } = queryResult
@@ -396,9 +291,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Interactions list failed:', error)
-      return NextResponse.json(
-        { error: `Failed to fetch ${type} properties` },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        `Failed to fetch ${type} properties`,
+        error
       )
     }
 
@@ -415,29 +310,26 @@ export async function GET(request: NextRequest) {
         ? typedData?.[typedData.length - 1]?.created_at
         : null
 
-    return NextResponse.json({ items, nextCursor })
+    return noStoreJson({ items, nextCursor })
   } catch (err) {
     console.error('GET /api/interactions unexpected error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Internal server error', err)
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
-    const authHeader = request.headers.get('authorization')
-    const bearer = authHeader?.replace('Bearer ', '')
-    const { data, error: authError } = bearer
-      ? await supabase.auth.getUser(bearer)
-      : await supabase.auth.getUser()
-    const user = data?.user
+    const { user, response } = await requireUserFromRequest(supabase, request)
 
-    if (authError || !user) {
-      return ApiErrorHandler.unauthorized()
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
     }
+
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('interactions:delete', user.id)
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     let body: unknown
     try {

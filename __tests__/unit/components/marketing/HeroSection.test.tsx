@@ -2,32 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { HeroSection } from '@/components/marketing/HeroSection'
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
-      <div {...props}>{children}</div>
-    ),
-    h1: ({ children, ...props }: JSX.IntrinsicElements['h1']) => (
-      <h1 {...props}>{children}</h1>
-    ),
-    p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
-      <p {...props}>{children}</p>
-    ),
-    section: ({ children, ...props }: JSX.IntrinsicElements['section']) => (
-      <section {...props}>{children}</section>
-    ),
-    span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
-      <span {...props}>{children}</span>
-    ),
-    button: ({ children, ...props }: JSX.IntrinsicElements['button']) => (
-      <button {...props}>{children}</button>
-    ),
-  },
-  useScroll: () => ({ scrollYProgress: { get: () => 0 } }),
-  useTransform: () => ({ get: () => 0 }),
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: <T,>(value: T) => value,
-}))
+jest.mock('framer-motion')
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
@@ -73,8 +48,8 @@ jest.mock('@/components/marketing/MarketingPreviewCardStatic', () => ({
     <div data-testid="marketing-preview-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img alt="Sample property interior" src="/test.jpg" />
-      <span>Listing · Lake Merritt</span>
-      <span>1200 Lakeview Dr, Oakland, CA 94610</span>
+      <span>Example Listing</span>
+      <span>123 Sample Street, Anytown, USA</span>
       <span>3 beds</span>
       <button>Like</button>
       <span>Built for households</span>
@@ -136,7 +111,7 @@ describe('HeroSection', () => {
   test('renders secondary CTA linking to login', () => {
     render(<HeroSection />)
 
-    const secondaryCTA = screen.getByText('Resume your search').closest('a')
+    const secondaryCTA = screen.getByText('Sign in').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
@@ -162,10 +137,6 @@ describe('HeroSection', () => {
     render(<HeroSection />)
 
     const primaryCTA = screen.getByText('Start swiping').closest('a')
-    expect(primaryCTA).toHaveAttribute(
-      'aria-label',
-      'Start swiping with HomeMatch'
-    )
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 })

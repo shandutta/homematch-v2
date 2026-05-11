@@ -1,9 +1,85 @@
 import type { Database } from './database'
 
-type PropertyRow = Database['public']['Tables']['properties']['Row']
+export type PropertyRow = Database['public']['Tables']['properties']['Row']
 type NeighborhoodRow = Database['public']['Tables']['neighborhoods']['Row']
 
+type AdminRoleAssignmentRole = 'admin'
+
+type AdminRoleAssignmentsTable = {
+  Row: {
+    user_id: string
+    role: AdminRoleAssignmentRole
+    enabled: boolean
+    created_at: string
+    created_by: string | null
+    reason: string | null
+    expires_at: string | null
+  }
+  Insert: {
+    user_id: string
+    role?: AdminRoleAssignmentRole
+    enabled?: boolean
+    created_at?: string
+    created_by?: string | null
+    reason?: string | null
+    expires_at?: string | null
+  }
+  Update: {
+    user_id?: string
+    role?: AdminRoleAssignmentRole
+    enabled?: boolean
+    created_at?: string
+    created_by?: string | null
+    reason?: string | null
+    expires_at?: string | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: 'admin_role_assignments_user_id_fkey'
+      columns: ['user_id']
+      isOneToOne: true
+      referencedRelation: 'users'
+      referencedColumns: ['id']
+    },
+    {
+      foreignKeyName: 'admin_role_assignments_created_by_fkey'
+      columns: ['created_by']
+      isOneToOne: false
+      referencedRelation: 'users'
+      referencedColumns: ['id']
+    },
+  ]
+}
+
+type AdditionalTables = {
+  admin_role_assignments: AdminRoleAssignmentsTable
+}
+
 type AdditionalFunctions = {
+  get_property_stats: {
+    Args: Record<string, never>
+    Returns: {
+      total_properties: number
+      avg_price: number
+      median_price: number
+      avg_bedrooms: number
+      avg_bathrooms: number
+      avg_square_feet: number
+      property_type_distribution: Record<string, number>
+    }
+  }
+  get_realtime_mutual_like_payload: {
+    Args: {
+      p_current_user_id: string
+      p_partner_user_id: string
+      p_property_id: string
+    }
+    Returns: Array<{
+      has_mutual_like: boolean
+      partner_name: string | null
+      property_address: string | null
+    }>
+  }
   create_household_for_user: {
     Args: {
       p_name: string | null
@@ -192,6 +268,7 @@ type AdditionalFunctions = {
 
 export type AppDatabase = Database & {
   public: Database['public'] & {
+    Tables: Database['public']['Tables'] & AdditionalTables
     Functions: Database['public']['Functions'] & AdditionalFunctions
   }
 }

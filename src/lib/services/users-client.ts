@@ -19,7 +19,7 @@ export class UserServiceClient {
     userId: string,
     updates: UserProfileUpdate
   ): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -36,11 +36,13 @@ export class UserServiceClient {
   }
 
   static async getProfile(userId: string): Promise<UserProfile | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('*')
+      .select(
+        'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+      )
       .eq('id', userId)
       .single()
 
@@ -55,7 +57,7 @@ export class UserServiceClient {
   }
 
   static async createProfile(profile: UserProfileInsert): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -77,7 +79,7 @@ export class UserServiceClient {
    * No need to call joinHousehold() after - the RPC handles that.
    */
   static async createHousehold(household: HouseholdInsert): Promise<Household> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Use the RPC function which handles RLS via SECURITY DEFINER
     // and atomically links the user profile to the household
@@ -115,7 +117,7 @@ export class UserServiceClient {
     userId: string,
     householdId: string
   ): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: existingProfile, error: existingProfileError } =
       await supabase
@@ -159,7 +161,7 @@ export class UserServiceClient {
   }
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: existingProfile, error: existingProfileError } =
       await supabase
@@ -203,10 +205,12 @@ export class UserServiceClient {
   static async getHouseholdInvitations(
     householdId: string
   ): Promise<HouseholdInvitation[]> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('household_invitations')
-      .select('*')
+      .select(
+        'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
+      )
       .eq('household_id', householdId)
       .order('created_at', { ascending: false })
 
@@ -223,7 +227,7 @@ export class UserServiceClient {
       'status' | 'token' | 'created_at' | 'expires_at' | 'id' | 'created_by'
     >
   ): Promise<HouseholdInvitation> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const {
       data: { session },
@@ -289,7 +293,7 @@ export class UserServiceClient {
   static async revokeHouseholdInvitation(
     inviteId: string
   ): Promise<HouseholdInvitation> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('household_invitations')
       .update({ status: 'revoked' })
@@ -316,7 +320,7 @@ export class UserServiceClient {
   static async createSavedSearch(
     search: SavedSearchInsert
   ): Promise<SavedSearch | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .insert(search)
@@ -331,14 +335,23 @@ export class UserServiceClient {
     return data
   }
 
-  static async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
-    const supabase = createClient()
+  static async getUserSavedSearches(
+    userId: string,
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<SavedSearch[]> {
+    // Per audit M15: support pagination. Limit clamped to [1, 200];
+    // offset clamped to >= 0. Default limit = 50.
+    const limit = Math.min(Math.max(options.limit ?? 50, 1), 200)
+    const offset = Math.max(options.offset ?? 0, 0)
+
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
-      .select('*')
+      .select('created_at, filters, household_id, id, is_active, name, user_id')
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)
@@ -352,7 +365,7 @@ export class UserServiceClient {
     searchId: string,
     updates: SavedSearchUpdate
   ): Promise<SavedSearch | null> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
       .update(updates)
@@ -369,7 +382,7 @@ export class UserServiceClient {
   }
 
   static async deleteSavedSearch(searchId: string): Promise<boolean> {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase
       .from('saved_searches')
       .update({ is_active: false })

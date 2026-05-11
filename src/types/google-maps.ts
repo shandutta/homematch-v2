@@ -94,6 +94,10 @@ declare global {
           HYBRID: string
           TERRAIN: string
         }
+        Animation?: {
+          DROP: number
+          BOUNCE: number
+        }
         event: {
           addListener: (
             instance: object,

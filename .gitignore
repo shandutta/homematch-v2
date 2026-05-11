@@ -7,6 +7,11 @@
 !.github/
 !.github/**
 !.vscode/
+!.claude/
+!.claude/**
+# Agent worktrees — isolated copies of the repo created by spawned agents.
+# Don't track these even though .claude/ is included.
+.claude/worktrees/
 
 # dependencies
 /node_modules
@@ -106,6 +111,7 @@ v1-reference/
 # Log files from scripts
 logs/
 *.log
+*.jsonl
 npm-debug.log*
 
 # Build artifacts
@@ -125,3 +131,4 @@ zen-mcp-server/
 
 # Miscellaneous Stuff
 .performance-reports/*
+.gstack/

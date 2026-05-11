@@ -2,36 +2,15 @@ import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
 import type { Property, PropertyType } from '@/lib/schemas/property'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface GenerateVibesRequest {
   propertyIds?: string[]
   count?: number
   diverseSelection?: boolean
   force?: boolean
-}
-
-interface GenerateVibesResponse {
-  ok: boolean
-  summary?: {
-    total: number
-    success: number
-    failed: number
-    skipped: number
-    totalCostUsd: number
-    totalTimeMs: number
-  }
-  results?: Array<{
-    propertyId: string
-    tagline: string
-    vibeStatement: string
-    suggestedTags: string[]
-    costUsd: number
-  }>
-  errors?: Array<{
-    propertyId: string
-    error: string
-  }>
-  error?: string
 }
 
 /**
@@ -46,9 +25,7 @@ interface GenerateVibesResponse {
  * Body (optional):
  * - propertyIds: Specific property IDs to process
  */
-export async function POST(
-  req: Request
-): Promise<NextResponse<GenerateVibesResponse>> {
+export async function POST(req: Request): Promise<Response> {
   // Authenticate - require cron secret for admin endpoints
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
   const isDev = process.env.NODE_ENV === 'development'
@@ -57,17 +34,21 @@ export async function POST(
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return ApiErrorHandler.unauthorized('Unauthorized')
+  }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-vibes'
+  )
+  if (rateLimitResponse) {
+    return rateLimitResponse
   }
 
   // Check for OpenRouter API key
   if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { ok: false, error: 'OPENROUTER_API_KEY not configured' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'OPENROUTER_API_KEY not configured'
     )
   }
 
@@ -100,7 +81,9 @@ export async function POST(
       // Fetch specific properties
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+        )
         .in('id', body.propertyIds.slice(0, 50))
         .overrideTypes<Property[], { merge: false }>()
 
@@ -113,7 +96,9 @@ export async function POST(
       // Random selection of properties with images
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+        )
         .not('images', 'is', null)
         .gte('price', 100000) // Filter out likely bad data
         .order('created_at', { ascending: false })
@@ -302,18 +287,20 @@ export async function POST(
     })
   } catch (error) {
     console.error('[generate-vibes] Error:', error)
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      error instanceof Error ? error.message : 'Unknown error',
+      error
     )
   }
 }
 
 /**
- * Select a diverse mix of properties for testing
+ * Select a diverse mix of properties for testing.
+ *
+ * Per audit M12.3: was running one SELECT per property type serially
+ * (4 round-trips). Now fans out via Promise.all so wall-clock cost is one
+ * RTT instead of four. Same projection, same per-type cap, same client-side
+ * reshuffle, identical result set.
  */
 async function selectDiverseProperties(
   supabase: ReturnType<typeof createStandaloneClient>,
@@ -321,27 +308,32 @@ async function selectDiverseProperties(
 ): Promise<Property[]> {
   const perType = Math.ceil(count / 4)
 
-  // Get properties by type
   const types: PropertyType[] = [
     'single_family',
     'condo',
     'townhome',
     'multi_family',
   ]
+
+  const typeResults = await Promise.all(
+    types.map(async (type) => {
+      const { data } = await supabase
+        .from('properties')
+        .select(
+          'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid, last_refreshed_at, source_fingerprint'
+        )
+        .eq('property_type', type)
+        .not('images', 'is', null)
+        .gte('price', 100000)
+        .order('price', { ascending: false })
+        .limit(perType * 2)
+        .overrideTypes<Property[], { merge: false }>()
+      return data ?? []
+    })
+  )
+
   const results: Property[] = []
-
-  for (const type of types) {
-    const { data } = await supabase
-      .from('properties')
-      .select('*')
-      .eq('property_type', type)
-      .not('images', 'is', null)
-      .gte('price', 100000)
-      .order('price', { ascending: false })
-      .limit(perType * 2)
-      .overrideTypes<Property[], { merge: false }>()
-
-    const typedData = data ?? []
+  for (const typedData of typeResults) {
     if (typedData.length > 0) {
       // Take mix of price ranges
       const shuffled = typedData.sort(() => Math.random() - 0.5)
@@ -358,13 +350,21 @@ async function selectDiverseProperties(
  *
  * Get vibes generation status and existing vibes count
  */
-export async function GET(req: Request): Promise<NextResponse> {
+export async function GET(req: Request): Promise<Response> {
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
   const url = new URL(req.url)
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || querySecret !== secret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return ApiErrorHandler.unauthorized('Unauthorized')
+  }
+
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-vibes'
+  )
+  if (rateLimitResponse) {
+    return rateLimitResponse
   }
 
   const supabase = createStandaloneClient()
@@ -372,14 +372,14 @@ export async function GET(req: Request): Promise<NextResponse> {
   // Note: property_vibes table is not in generated types yet
   const { count: vibesCount } = await supabase
     .from('property_vibes')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
 
   const { count: propertiesCount } = await supabase
     .from('properties')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .not('images', 'is', null)
 
-  return NextResponse.json({
+  return noStoreJson({
     ok: true,
     stats: {
       totalProperties: propertiesCount || 0,

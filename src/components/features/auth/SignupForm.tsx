@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { SignupSchema, type SignupData } from '@/lib/schemas/auth'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,7 @@ export function SignupForm() {
     'idle'
   )
   const [resendError, setResendError] = useState<string | null>(null)
-  const supabase = createClient()
+  const { client: supabase, error: configError } = useSupabaseClient()
 
   const form = useValidatedForm(SignupSchema, {
     email: '',
@@ -39,6 +39,11 @@ export function SignupForm() {
   })
 
   const handleSignup = async (data: SignupData) => {
+    if (!supabase) {
+      setError(configError)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -66,6 +71,11 @@ export function SignupForm() {
   }
 
   const handleGoogleSignup = async () => {
+    if (!supabase) {
+      setError(configError)
+      return
+    }
+
     setLoading(true)
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -82,8 +92,8 @@ export function SignupForm() {
   }
 
   const handleResendVerification = async () => {
-    if (!lastEmail) {
-      setResendError('Enter your email above first.')
+    if (!lastEmail || !supabase) {
+      setResendError(!supabase ? configError : 'Enter your email above first.')
       return
     }
 
@@ -113,7 +123,15 @@ export function SignupForm() {
 
     return (
       <Card className="bg-card/80 supports-[backdrop-filter]:bg-card/60 mx-auto w-full max-w-md shadow-lg backdrop-blur">
-        <CardContent className="space-y-4 pt-6">
+        {/* M18: success state announced via aria-live so screen readers
+            confirm the signup attempt succeeded. status role is preferred
+            over alert here because the message is informational, not an
+            error that interrupts the user. */}
+        <CardContent
+          className="space-y-4 pt-6"
+          role="status"
+          aria-live="polite"
+        >
           <Alert>
             <AlertDescription>
               {lastEmail
@@ -173,6 +191,16 @@ export function SignupForm() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {configError && (
+          <Alert data-testid="auth-config-alert">
+            <AlertDescription>
+              Authentication is unavailable in this environment. Configure
+              NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to sign
+              up.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -263,12 +291,9 @@ export function SignupForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={
-                loading ||
-                (!form.formState.isValid &&
-                  // In test mode, bypass client-side validity gating to avoid disabled submit flakiness
-                  process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
-              }
+              // H5 audit: keep button enabled until submit; the resolver
+              // surfaces errors inline. `loading` still blocks double-submit.
+              disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Account
@@ -294,7 +319,7 @@ export function SignupForm() {
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Google
+          Sign up with Google
         </Button>
       </CardContent>
     </Card>

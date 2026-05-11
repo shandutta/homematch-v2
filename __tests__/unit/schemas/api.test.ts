@@ -1,3 +1,4 @@
+// Phase 0/1 closure: M6-error-standardization
 import {
   apiSuccessSchema,
   apiErrorSchema,
@@ -352,6 +353,18 @@ describe('API Schema Validation', () => {
         expect(result.data.bedrooms_max).toBe(4)
         expect(result.data.bathrooms_min).toBe(1.5)
         expect(result.data.bathrooms_max).toBe(3)
+      }
+    })
+
+    test('should preserve zero bedroom and bathroom query bounds', () => {
+      const result = propertySearchQuerySchema.safeParse({
+        bedrooms_min: '0',
+        bathrooms_min: '0',
+      })
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.bedrooms_min).toBe(0)
+        expect(result.data.bathrooms_min).toBe(0)
       }
     })
 

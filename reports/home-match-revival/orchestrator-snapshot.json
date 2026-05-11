@@ -1,0 +1,213 @@
+{
+  "updated_at": "2026-05-07T10:36:20.105388",
+  "board": "home-match-revival",
+  "tenant": "home-match-revival",
+  "working_directory": "/home/shan/projects/homematch-v2",
+  "branch": "autonomy/6h-business-hardening",
+  "git_status": ["M reports/home-match-revival-status.html"],
+  "package": {
+    "name": "homematch-v2",
+    "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
+    "scripts": {
+      "dev": "pnpm run guard:supabase && pnpm run ensure:server-action-key && node scripts/kill-port.js 3000 && next dev --hostname 0.0.0.0 --port 3000",
+      "build": "node scripts/safe-build.js",
+      "lint": "eslint .",
+      "type-check": "pnpm exec tsc --noEmit",
+      "test:unit": "cross-env NODE_ENV=test pnpm exec jest __tests__/unit/",
+      "test:integration": "node scripts/run-integration-tests.js",
+      "test:e2e": "pnpm run test:e2e:ui-tests"
+    },
+    "deps": [
+      "@ai-sdk/openai",
+      "@hookform/resolvers",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-label",
+      "@radix-ui/react-progress",
+      "@radix-ui/react-select",
+      "@radix-ui/react-slider",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tabs",
+      "@sentry/nextjs",
+      "@supabase/ssr",
+      "@supabase/supabase-js",
+      "@tanstack/react-query",
+      "@tanstack/react-query-devtools",
+      "@vercel/speed-insights",
+      "ai",
+      "class-variance-authority",
+      "clsx",
+      "csv-parse",
+      "date-fns",
+      "express-rate-limit",
+      "framer-motion",
+      "inngest",
+      "lru-cache",
+      "lucide-react",
+      "next-themes",
+      "polygon-clipping",
+      "posthog-js",
+      "posthog-node",
+      "rate-limiter-flexible",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "react-hot-toast",
+      "sonner",
+      "tailwind-merge",
+      "web-vitals",
+      "zod",
+      "zustand"
+    ]
+  },
+  "task_counts": {
+    "running": 3,
+    "todo": 17
+  },
+  "tasks": [
+    {
+      "id": "t_8ed3dc91",
+      "title": "P0.1 repo/app stack snapshot",
+      "assignee": "ops",
+      "status": "running",
+      "priority": 120
+    },
+    {
+      "id": "t_6a439604",
+      "title": "P0.2 static route and endpoint inventory",
+      "assignee": "backend-eng",
+      "status": "running",
+      "priority": 119
+    },
+    {
+      "id": "t_ad6ff405",
+      "title": "P0.3 local command baseline",
+      "assignee": "ops",
+      "status": "running",
+      "priority": 118
+    },
+    {
+      "id": "t_6263e861",
+      "title": "P0.4 local app startup baseline",
+      "assignee": "ops",
+      "status": "todo",
+      "priority": 117
+    },
+    {
+      "id": "t_d710ab30",
+      "title": "P0.5 browser traversal baseline",
+      "assignee": "frontend-eng",
+      "status": "todo",
+      "priority": 116
+    },
+    {
+      "id": "t_35acdae2",
+      "title": "P0.6 API endpoint probe baseline",
+      "assignee": "backend-eng",
+      "status": "todo",
+      "priority": 115
+    },
+    {
+      "id": "t_23e0d896",
+      "title": "P0.7 Phase 0 synthesis and gate decision",
+      "assignee": "analyst",
+      "status": "todo",
+      "priority": 114
+    },
+    {
+      "id": "t_9bc5020e",
+      "title": "P1 auth architecture audit and deletion map",
+      "assignee": "analyst",
+      "status": "todo",
+      "priority": 96
+    },
+    {
+      "id": "t_d7a73e15",
+      "title": "P1 DB architecture audit",
+      "assignee": "backend-eng",
+      "status": "todo",
+      "priority": 95
+    },
+    {
+      "id": "t_124c4ac0",
+      "title": "P1 middleware/API speed and dead-code audit",
+      "assignee": "backend-eng",
+      "status": "todo",
+      "priority": 94
+    },
+    {
+      "id": "t_b08f7ec4",
+      "title": "P1 Vercel/local dev/Docker decision",
+      "assignee": "ops",
+      "status": "todo",
+      "priority": 93
+    },
+    {
+      "id": "t_4d997654",
+      "title": "P2 frontend design refinement pass",
+      "assignee": "frontend-eng",
+      "status": "todo",
+      "priority": 82
+    },
+    {
+      "id": "t_ff763f6d",
+      "title": "P2 couples/matching UX upgrade",
+      "assignee": "frontend-eng",
+      "status": "todo",
+      "priority": 81
+    },
+    {
+      "id": "t_1009b931",
+      "title": "P2 maps/images/metadata/SEO fixes",
+      "assignee": "frontend-eng",
+      "status": "todo",
+      "priority": 80
+    },
+    {
+      "id": "t_11342c3d",
+      "title": "P3 LLM/matching prompt hardening",
+      "assignee": "backend-eng",
+      "status": "todo",
+      "priority": 70
+    },
+    {
+      "id": "t_4b4d5b96",
+      "title": "P3 ingest pipeline review",
+      "assignee": "backend-eng",
+      "status": "todo",
+      "priority": 69
+    },
+    {
+      "id": "t_acd542ca",
+      "title": "P4 test suite triage and TDD lane",
+      "assignee": "reviewer",
+      "status": "todo",
+      "priority": 68
+    },
+    {
+      "id": "t_eface8fd",
+      "title": "P5 compliance/analytics/AdSense/Stripe plan",
+      "assignee": "researcher",
+      "status": "todo",
+      "priority": 60
+    },
+    {
+      "id": "t_fd311981",
+      "title": "P6 docs rewrite and final report",
+      "assignee": "writer",
+      "status": "todo",
+      "priority": 50
+    },
+    {
+      "id": "t_aeba612c",
+      "title": "Final merge readiness review",
+      "assignee": "reviewer",
+      "status": "todo",
+      "priority": 40
+    }
+  ]
+}

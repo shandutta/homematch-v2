@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 /**
  * GET /api/properties/vibes
@@ -17,14 +20,9 @@ export async function GET(request: NextRequest) {
     typeof request?.cookies?.getAll === 'function'
   const supabase = createApiClient(hasRequestContext ? request : undefined)
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+  const auth = await requireUserFromRequest(supabase, request)
 
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!auth.user) return auth.response
 
   const url = new URL(request.url)
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100)
@@ -62,11 +60,8 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[vibes API] Error fetching vibes:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch vibes' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to fetch vibes', error)
   }
 
-  return NextResponse.json({ data })
+  return noStoreJson({ data })
 }

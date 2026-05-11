@@ -4,11 +4,13 @@
  * Provides mutual likes data with optional property details enrichment.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
-import { getUserFromRequest } from '@/lib/api/auth'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 /**
  * GET /api/couples/mutual-likes
@@ -67,15 +69,9 @@ export async function GET(request: NextRequest) {
     try {
       const supabase = createApiClient(request)
 
-      // Get the current user
-      const {
-        data: { user },
-        error: authError,
-      } = await getUserFromRequest(supabase, request)
-
-      if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+      const auth = await requireUserFromRequest(supabase, request)
+      if (!auth.user) return auth.response
+      const { user } = auth
 
       // Parse query parameters
       const searchParams = request.nextUrl.searchParams
@@ -103,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       if (mutualLikes.length === 0) {
         const totalTime = Date.now() - startTime
-        return NextResponse.json({
+        return noStoreJson({
           mutualLikes: [],
           performance: {
             totalTime,
@@ -146,7 +142,7 @@ export async function GET(request: NextRequest) {
 
       const totalTime = Date.now() - startTime
 
-      return NextResponse.json({
+      return noStoreJson({
         mutualLikes: enrichedLikes,
         performance: {
           totalTime,
@@ -156,10 +152,7 @@ export async function GET(request: NextRequest) {
       })
     } catch (error) {
       console.error('Error in mutual-likes API:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch mutual likes' },
-        { status: 500 }
-      )
+      return ApiErrorHandler.serverError('Failed to fetch mutual likes', error)
     }
   })
 }

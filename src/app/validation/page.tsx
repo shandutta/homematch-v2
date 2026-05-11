@@ -1,7 +1,11 @@
+import { requireInternalPreviewAccess } from '@/lib/routing/internal-preview'
 import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
+import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import type { Database } from '@/types/database'
 import {
   Home,
@@ -18,6 +22,11 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = createNoindexRouteMetadata({
+  title: 'Migration validation (internal) | HomeMatch',
+  description: 'Internal database migration validation dashboard.',
+})
+
 interface DatabaseStats {
   tableName: string
   count: number
@@ -28,13 +37,16 @@ interface DatabaseStats {
 type ExtensionRow = Database['public']['Views']['pg_extension']['Row']
 
 export default async function ValidationPage() {
+  requireInternalPreviewAccess()
+
   const supabase = await createClient()
   const propertyService = new PropertyService()
   const userService = new UserService()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Use unified context for auth; userShape for display fields the legacy
+  // template expects (email, last_sign_in_at, app_metadata).
+  const userCtx = await getServerUserContext()
+  const user = await getOptionalServerUser()
 
   // Validate all database tables
   const tables: Array<keyof Database['public']['Tables']> = [
@@ -52,7 +64,7 @@ export default async function ValidationPage() {
     try {
       const { error, count } = await supabase
         .from(table)
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
 
       tableStats.push({
         tableName: table,
@@ -87,9 +99,9 @@ export default async function ValidationPage() {
   let userProfile = null
   let userServiceError = null
 
-  if (user) {
+  if (user && userCtx?.profileId) {
     try {
-      userProfile = await userService.getUserProfile(user.id)
+      userProfile = await userService.getUserProfile(userCtx.profileId)
     } catch (e) {
       userServiceError = e instanceof Error ? e.message : String(e)
     }

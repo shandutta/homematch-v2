@@ -17,7 +17,7 @@ import {
   Calendar,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 interface SavedSearchesSectionProps {
   userId: string
@@ -258,7 +258,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
             const hasNotifications = filters.notifications !== false
 
             return (
-              <motion.div
+              <m.div
                 key={search.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -326,7 +326,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             )
           })}
         </div>

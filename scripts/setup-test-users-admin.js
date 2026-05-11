@@ -16,10 +16,14 @@ const {
 // Load environment variables from .env.local (primary) and optionally override with .env.test.local if present (CI)
 const envLocalPath = path.join(__dirname, '..', '.env.local')
 const envTestPath = path.join(__dirname, '..', '.env.test.local')
+const preserveLocalSeededAuthEnv =
+  process.env.LOCAL_SEEDED_AUTH_LIFECYCLE === 'true'
 dotenv.config({ path: envLocalPath })
-// Let .env.test.local override .env.local for local/proxy test runs
+// Let .env.test.local override .env.local for local/proxy test runs, except
+// when the explicit local auth lifecycle wrapper has pinned Supabase to
+// loopback to prevent accidental remote/project data mutation.
 if (fs.existsSync(envTestPath)) {
-  dotenv.config({ path: envTestPath, override: true })
+  dotenv.config({ path: envTestPath, override: !preserveLocalSeededAuthEnv })
 }
 
 let supabaseUrl = process.env.SUPABASE_URL || 'http://127.0.0.1:54200'
@@ -119,19 +123,32 @@ const gallerySeedProperty = {
   is_active: true,
 }
 
+async function listAllAuthUsers() {
+  // Local Supabase has a bug: perPage > 10 returns "Database error finding users".
+  // Paginate in batches of 10 to collect all users.
+  const allUsers = []
+  let page = 1
+  while (true) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      perPage: 10,
+      page,
+    })
+    if (error) throw new Error(`Failed to list users: ${error.message}`)
+    if (!data?.users?.length) break
+    allUsers.push(...data.users)
+    if (data.users.length < 10) break
+    page++
+  }
+  return allUsers
+}
+
 async function ensureProfilesExist() {
   // Avoid relying solely on triggers; upsert profiles for our test users explicitly
-  const { data: userList, error: listError } =
-    await supabase.auth.admin.listUsers()
-  if (listError || !userList?.users) {
-    throw new Error(
-      `Could not list users to upsert profiles: ${
-        listError?.message || 'unknown error'
-      }`
-    )
-  }
+  const allUsers = await listAllAuthUsers().catch((err) => {
+    throw new Error(`Could not list users to upsert profiles: ${err.message}`)
+  })
 
-  const usersByEmail = new Map(userList.users.map((user) => [user.email, user]))
+  const usersByEmail = new Map(allUsers.map((user) => [user.email, user]))
 
   const profilesToUpsert = testUsers
     .map((user) => usersByEmail.get(user.email))
@@ -174,20 +191,20 @@ async function deleteExistingUser(email, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       // First, try to find the user
-      const { data: users, error: listError } =
-        await supabase.auth.admin.listUsers()
-
-      if (listError) {
+      let allUsers
+      try {
+        allUsers = await listAllAuthUsers()
+      } catch (listErr) {
         // If listing users fails, skip deletion (might be fresh database)
         if (process.env.DEBUG_TEST_SETUP) {
           console.debug(
-            `⚠️  Could not list users: ${listError.message}. Skipping deletion check.`
+            `⚠️  Could not list users: ${listErr.message}. Skipping deletion check.`
           )
         }
         return true
       }
 
-      const existingUser = users?.users?.find((u) => u.email === email)
+      const existingUser = allUsers?.find((u) => u.email === email)
 
       if (existingUser) {
         // Delete the user
@@ -238,21 +255,10 @@ async function deleteExistingUser(email, maxRetries = 3) {
 }
 
 async function getAuthUserIdByEmail(email) {
-  const perPage = 200
-  for (let page = 1; page <= 25; page++) {
-    const { data, error } = await supabase.auth.admin.listUsers({
-      page,
-      perPage,
-    })
-    if (error) throw new Error(error.message)
-
-    const user = data.users.find((u) => u.email === email)
-    if (user) return user.id
-
-    if (data.users.length < perPage) break
-  }
-
-  throw new Error(`Test user not found in auth: ${email}`)
+  const allUsers = await listAllAuthUsers()
+  const user = allUsers.find((u) => u.email === email)
+  if (!user) throw new Error(`Test user not found in auth: ${email}`)
+  return user.id
 }
 
 async function ensureGallerySeedLike() {
@@ -554,16 +560,17 @@ async function setupTestUsers() {
   await ensureGallerySeedLike()
 
   // Final verification to avoid silently missing profiles
-  const { data: latestUsers, error: latestUsersError } =
-    await supabase.auth.admin.listUsers()
-  if (latestUsersError || !latestUsers?.users) {
+  let allLatestUsers
+  try {
+    allLatestUsers = await listAllAuthUsers()
+  } catch (listErr) {
     console.error(
       '❌ Could not list users for final profile verification:',
-      latestUsersError?.message || 'unknown error'
+      listErr?.message || 'unknown error'
     )
     process.exit(1)
   }
-  const targetIds = latestUsers.users
+  const targetIds = allLatestUsers
     .filter((u) => testUsers.some((t) => t.email === u.email))
     .map((u) => u.id)
 
@@ -600,14 +607,22 @@ async function setupTestUsers() {
     )
   })
 
-  // Friendly reminder for developers running pnpm dev
+  // Friendly reminder for developers running pnpm dev. Remote/CI workers can
+  // suppress passwords in logs while still listing seeded accounts by email.
   const primaryUser = testUsers[0]
   const secondaryUser = testUsers[1]
+  const redactCredentials =
+    process.env.SETUP_TEST_USERS_REDACT_OUTPUT === 'true'
   console.log('\n🔑 Test users ready for dev login:')
-  console.log(`   ${primaryUser.email} / ${primaryUser.password}`)
-  console.log(`   ${secondaryUser.email} / ${secondaryUser.password}\n`)
+  if (redactCredentials) {
+    console.log(`   ${primaryUser.email} / [redacted]`)
+    console.log(`   ${secondaryUser.email} / [redacted]\n`)
+  } else {
+    console.log(`   ${primaryUser.email} / ${primaryUser.password}`)
+    console.log(`   ${secondaryUser.email} / ${secondaryUser.password}\n`)
+  }
 
-  if (process.env.DEBUG_TEST_SETUP) {
+  if (process.env.DEBUG_TEST_SETUP && !redactCredentials) {
     console.debug('\n✨ Test user setup complete!')
     console.debug('\n📝 Test credentials for E2E tests:')
     console.debug(`   Email: ${testUsers[0].email}`)

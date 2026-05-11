@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
 import { POST, GET, DELETE } from '@/app/api/interactions/route'
 import { DELETE as RESET_DELETE } from '@/app/api/interactions/reset/route'
 import type { Database } from '@/types/database'
-import { resetRateLimitStore } from '@/lib/utils/rate-limit'
+import { resetRateLimiters } from '@/lib/middleware/rateLimiter'
 
 // Auth token stored for use in request headers - refreshed at test start
 let currentAuthToken: string | undefined
@@ -23,20 +23,32 @@ const getFreshAuthToken = async (
   supabaseUrl: string,
   anonKey: string
 ): Promise<{ token: string; userId: string }> => {
-  const supabase = createSupabaseClient<Database>(supabaseUrl, anonKey)
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'test1@example.com',
-    password: 'testpassword123',
-  })
-
-  if (error || !data.session) {
-    throw new Error(`Failed to get fresh auth token: ${error?.message}`)
+  // Use raw fetch to /auth/v1/token so no GoTrueClient instance caches
+  // the session — supabase-js's in-memory session cache is shared across
+  // client instances in the same Vitest worker, which would leak the
+  // authenticated user into route-handler tests that expect 401.
+  const tokenRes = await fetch(
+    `${supabaseUrl}/auth/v1/token?grant_type=password`,
+    {
+      method: 'POST',
+      headers: { apikey: anonKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        email: 'test-worker-1@example.com',
+        password: 'testpassword123',
+      }),
+    }
+  )
+  if (!tokenRes.ok) {
+    throw new Error(
+      `Failed to get fresh auth token (HTTP ${tokenRes.status}): ${await tokenRes.text()}`
+    )
   }
-
-  return {
-    token: data.session.access_token,
-    userId: data.user.id,
+  const data: { access_token?: string; user?: { id: string } } =
+    await tokenRes.json()
+  if (!data.access_token || !data.user) {
+    throw new Error('Failed to get fresh auth token: missing fields')
   }
+  return { token: data.access_token, userId: data.user.id }
 }
 
 // Use sequential to prevent race conditions between tests that share testUserId
@@ -181,13 +193,12 @@ describe.sequential('Integration: /api/interactions route', () => {
 
   it('rejects unauthorized interaction requests', async () => {
     const propertyId = randomUUID()
-    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
-    const res = await fetch('http://localhost:3000/api/interactions', {
+    const req = new NextRequest('http://localhost/api/interactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ propertyId, type: 'liked' }),
     })
-    // Route should return 401 for unauthenticated requests
+    const res = await POST(req)
     expect(res.status).toBe(401)
   })
 
@@ -439,10 +450,10 @@ describe.sequential('Integration: /api/interactions route', () => {
   })
 
   it('returns 401 for unauthenticated reset requests', async () => {
-    // Use real HTTP request to test auth rejection (avoids Supabase client caching issues)
-    const res = await fetch('http://localhost:3000/api/interactions/reset', {
+    const req = new NextRequest('http://localhost/api/interactions/reset', {
       method: 'DELETE',
     })
+    const res = await RESET_DELETE(req)
     expect(res.status).toBe(401)
   }, 10000)
 
@@ -466,11 +477,14 @@ describe.sequential('Integration: /api/interactions route', () => {
     expect(resetData.data.count).toBeGreaterThanOrEqual(0)
   })
 
-  // Skipped because environment variables set here do not propagate to the running server process
-  it.skip('enforces rate limiting responses', async () => {
+  // Previously skipped because the test set RATE_LIMIT_ENFORCE_IN_TESTS in
+  // its own process but the route was hit via fetch() against a separate
+  // dev-server process where that env var was never set. Now that we call
+  // the route handler directly (same process), the env var takes effect.
+  it('enforces rate limiting responses', async () => {
     const originalEnforce = process.env.RATE_LIMIT_ENFORCE_IN_TESTS
     process.env.RATE_LIMIT_ENFORCE_IN_TESTS = 'true'
-    resetRateLimitStore()
+    resetRateLimiters()
 
     const propertyId = await createTestProperty()
     const burst = Array.from({ length: 105 }, () =>
@@ -494,7 +508,7 @@ describe.sequential('Integration: /api/interactions route', () => {
       } else {
         delete process.env.RATE_LIMIT_ENFORCE_IN_TESTS
       }
-      resetRateLimitStore()
+      resetRateLimiters()
     }
   })
 })

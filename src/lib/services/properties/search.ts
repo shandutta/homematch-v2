@@ -18,6 +18,61 @@ import { createTypedRPC } from '@/lib/services/supabase-rpc-types'
 import { PropertyFilterBuilder } from '@/lib/services/filters/PropertyFilterBuilder'
 import { buildCityStateKeys } from '@/lib/utils/postgrest'
 
+// Explicit column projections per audit M13 — search.ts is the HOT PATH
+// in the property service layer (dashboard, validation, Zillow mirroring).
+// Mirrors every column on public.properties Row so callers consuming the
+// typed Property/PropertyWithNeighborhood continue to work; the swap from
+// `*` is purely to make the wire projection auditable and to protect
+// against future schema growth adding wide columns we don't need.
+const PROPERTY_FULL_COLS =
+  'address, amenities, bathrooms, bedrooms, city, coordinates, created_at, description, id, images, is_active, last_refreshed_at, listing_status, lot_size_sqft, neighborhood_id, parking_spots, price, property_hash, property_type, source_fingerprint, square_feet, state, updated_at, year_built, zip_code, zillow_images_refreshed_at, zillow_images_refreshed_count, zillow_images_refresh_status, zpid'
+const NEIGHBORHOOD_FULL_COLS =
+  'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+
+const toRoundedNumber = (value: unknown): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric) : 0
+}
+
+const toRoundedTenth = (value: unknown): number => {
+  const numeric = Number(value ?? 0)
+  return Number.isFinite(numeric) ? Math.round(numeric * 10) / 10 : 0
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizePropertyStatsRpcRow = (row: unknown): PropertyStats => {
+  if (!isRecord(row)) {
+    return {
+      total_properties: 0,
+      avg_price: 0,
+      median_price: 0,
+      avg_bedrooms: 0,
+      avg_bathrooms: 0,
+      avg_square_feet: 0,
+      property_type_distribution: {},
+    }
+  }
+
+  const distribution = row.property_type_distribution
+  return {
+    total_properties: toRoundedNumber(row.total_properties),
+    avg_price: toRoundedNumber(row.avg_price),
+    median_price: toRoundedNumber(row.median_price),
+    avg_bedrooms: toRoundedTenth(row.avg_bedrooms),
+    avg_bathrooms: toRoundedTenth(row.avg_bathrooms),
+    avg_square_feet: toRoundedNumber(row.avg_square_feet),
+    property_type_distribution: isRecord(distribution)
+      ? Object.fromEntries(
+          Object.entries(distribution).filter(
+            (entry): entry is [string, number] => typeof entry[1] === 'number'
+          )
+        )
+      : {},
+  }
+}
+
 export class PropertySearchService
   extends BaseService
   implements IPropertySearchService
@@ -54,11 +109,8 @@ export class PropertySearchService
       const selectClause =
         options.select ||
         (includeNeighborhoods
-          ? `
-          *,
-          neighborhood:neighborhoods(*)
-        `
-          : '*')
+          ? `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(${NEIGHBORHOOD_FULL_COLS})`
+          : PROPERTY_FULL_COLS)
 
       const shouldCount = options.includeCount ?? true
 
@@ -138,7 +190,9 @@ export class PropertySearchService
       async (supabase) => {
         const { data, error } = await supabase
           .from('properties')
-          .select('*')
+          .select(
+            PROPERTY_FULL_COLS
+          )
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
@@ -206,10 +260,7 @@ export class PropertySearchService
         const { data, error } = await supabase
           .from('properties')
           .select(
-            `
-            *,
-            neighborhood:neighborhoods!inner(name, city, state)
-          `
+            `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods!inner(name, city, state)`
           )
           .eq('neighborhood.name', neighborhoodName)
           .eq('neighborhood.city', city)
@@ -247,61 +298,13 @@ export class PropertySearchService
     const result = await this.executeQuery(
       'getPropertyStats',
       async (supabase) => {
-        const { data, error } = await supabase
-          .from('properties')
-          .select('price, bedrooms, bathrooms, square_feet, property_type')
-          .eq('is_active', true)
+        const { data, error } = await supabase.rpc('get_property_stats', {})
 
         if (error) {
           this.handleSupabaseError(error, 'getPropertyStats', {})
         }
 
-        const properties = data || []
-        const totalProperties = properties.length
-
-        if (totalProperties === 0) {
-          return fallbackStats
-        }
-
-        const prices = properties.map((p) => p.price).sort((a, b) => a - b)
-        const avgPrice =
-          prices.reduce((sum, price) => sum + price, 0) / totalProperties
-        const medianPrice = prices[Math.floor(totalProperties / 2)]
-
-        const avgBedrooms =
-          properties.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
-        const avgBathrooms =
-          properties.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
-
-        const propertiesWithSquareFeet = properties.filter(
-          (p) => p.square_feet !== null
-        )
-        const avgSquareFeet =
-          propertiesWithSquareFeet.length > 0
-            ? propertiesWithSquareFeet.reduce(
-                (sum, p) => sum + (p.square_feet || 0),
-                0
-              ) / propertiesWithSquareFeet.length
-            : 0
-
-        const typeDistribution = properties.reduce<Record<string, number>>(
-          (acc, p) => {
-            const type = p.property_type || 'unknown'
-            acc[type] = (acc[type] || 0) + 1
-            return acc
-          },
-          {}
-        )
-
-        return {
-          total_properties: totalProperties,
-          avg_price: Math.round(avgPrice),
-          median_price: medianPrice,
-          avg_bedrooms: Math.round(avgBedrooms * 10) / 10,
-          avg_bathrooms: Math.round(avgBathrooms * 10) / 10,
-          avg_square_feet: Math.round(avgSquareFeet),
-          property_type_distribution: typeDistribution,
-        }
+        return normalizePropertyStatsRpcRow(data)
       }
     )
 
@@ -326,10 +329,7 @@ export class PropertySearchService
       const { data, error } = await supabase
         .from('properties')
         .select(
-          `
-            *,
-            neighborhood:neighborhoods(name, city, state)
-          `
+          `${PROPERTY_FULL_COLS}, neighborhood:neighborhoods(name, city, state)`
         )
         .eq('is_active', true)
         .or(
@@ -365,7 +365,9 @@ export class PropertySearchService
     return this.executeArrayQuery('getSimilarProperties', async (supabase) => {
       let query = supabase
         .from('properties')
-        .select('*')
+        .select(
+          PROPERTY_FULL_COLS
+        )
         .eq('is_active', true)
         .neq('id', referenceProperty.id)
         .gte('price', referenceProperty.price - priceTolerance)
@@ -411,7 +413,9 @@ export class PropertySearchService
       async (supabase) => {
         let query = supabase
           .from('properties')
-          .select('*')
+          .select(
+            PROPERTY_FULL_COLS
+          )
           .eq('is_active', true)
 
         // Apply amenity filters

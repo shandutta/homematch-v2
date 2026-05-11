@@ -304,6 +304,11 @@ jobs:
         env:
           NODE_ENV: test
           CI: true
+          # Skip the Next.js dev server (~500MB-1GB) in CI to stay under
+          # ubuntu-latest's 7GB memory budget alongside Supabase containers.
+          # Was exit-137 OOM'ing before this. HTTP-style integration tests
+          # are skipped/fail-fast; pure DB integration tests still run.
+          SKIP_DEV_SERVER: 'true'
 
       - name: Stop Supabase
         if: always()

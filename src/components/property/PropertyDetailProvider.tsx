@@ -8,10 +8,16 @@ import {
   useRef,
   ReactNode,
 } from 'react'
+import dynamic from 'next/dynamic'
 import { Property, Neighborhood } from '@/lib/schemas/property'
-import { PropertyDetailModal } from './PropertyDetailModal'
 import { useRecordInteraction } from '@/hooks/useInteractions'
 import { InteractionType } from '@/types/app'
+
+// Code-split: ~645-line modal pulled in only when a property card is opened.
+const PropertyDetailModal = dynamic(
+  () => import('./PropertyDetailModal').then((mod) => mod.PropertyDetailModal),
+  { ssr: false }
+)
 
 interface PropertyDetailContextValue {
   openPropertyDetail: (property: Property, neighborhood?: Neighborhood) => void
@@ -46,6 +52,7 @@ export function PropertyDetailProvider({
     Neighborhood | undefined
   >()
   const [isOpen, setIsOpen] = useState(false)
+  const [hasEverOpened, setHasEverOpened] = useState(false)
   const returnFocusToRef = useRef<HTMLElement | null>(null)
 
   const recordInteraction = useRecordInteraction()
@@ -60,6 +67,7 @@ export function PropertyDetailProvider({
       setSelectedProperty(property)
       setSelectedNeighborhood(neighborhood)
       setIsOpen(true)
+      setHasEverOpened(true)
     },
     []
   )
@@ -91,24 +99,26 @@ export function PropertyDetailProvider({
       value={{ openPropertyDetail, closePropertyDetail }}
     >
       {children}
-      <PropertyDetailModal
-        property={selectedProperty}
-        neighborhood={selectedNeighborhood}
-        open={isOpen}
-        onOpenChange={handleOpenChange}
-        onCloseAutoFocus={(event) => {
-          const target = returnFocusToRef.current
-          if (!target || typeof document === 'undefined') {
-            return
-          }
-          if (!document.contains(target)) {
-            return
-          }
-          event.preventDefault()
-          target.focus()
-        }}
-        onDecision={handleDecision}
-      />
+      {hasEverOpened && (
+        <PropertyDetailModal
+          property={selectedProperty}
+          neighborhood={selectedNeighborhood}
+          open={isOpen}
+          onOpenChange={handleOpenChange}
+          onCloseAutoFocus={(event) => {
+            const target = returnFocusToRef.current
+            if (!target || typeof document === 'undefined') {
+              return
+            }
+            if (!document.contains(target)) {
+              return
+            }
+            event.preventDefault()
+            target.focus()
+          }}
+          onDecision={handleDecision}
+        />
+      )}
     </PropertyDetailContext.Provider>
   )
 }

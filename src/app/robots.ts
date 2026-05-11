@@ -1,15 +1,14 @@
 import type { MetadataRoute } from 'next'
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
-  'https://homematch.pro'
+import { ROBOTS_DISALLOW_PATHS, siteUrl } from '../lib/seo/route-policy'
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: ROBOTS_DISALLOW_PATHS,
     },
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   }
 }

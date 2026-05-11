@@ -90,67 +90,38 @@ console.error = (...args: unknown[]) => {
   originalConsoleError.apply(console, args)
 }
 
-// Simple framer-motion mock for remaining edge cases
-jest.mock('framer-motion', () => {
-  // Strip motion-only props so React DOM doesn't warn during tests
-  const createMotionComponent = (element: keyof JSX.IntrinsicElements) => {
-    const MotionComponent = React.forwardRef(
-      (props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
-        const {
-          animate: _animate,
-          initial: _initial,
-          exit: _exit,
-          variants: _variants,
-          whileHover: _whileHover,
-          whileTap: _whileTap,
-          whileInView: _whileInView,
-          transition: _transition,
-          drag: _drag,
-          dragConstraints: _dragConstraints,
-          dragElastic: _dragElastic,
-          dragTransition: _dragTransition,
-          layout: _layout,
-          layoutId: _layoutId,
-          transformTemplate: _transformTemplate,
-          onUpdate: _onUpdate,
-          onAnimationComplete: _onAnimationComplete,
-          viewport: _viewport,
-          ...rest
-        } = props
+jest.mock('framer-motion')
 
-        return React.createElement(element, { ref, ...rest })
-      }
-    )
-
-    MotionComponent.displayName = `Motion(${element})`
-    return MotionComponent
-  }
-
-  return {
-    motion: {
-      div: createMotionComponent('div'),
-      span: createMotionComponent('span'),
-      section: createMotionComponent('section'),
-      article: createMotionComponent('article'),
-      button: createMotionComponent('button'),
-      h1: createMotionComponent('h1'),
-      h2: createMotionComponent('h2'),
-      h3: createMotionComponent('h3'),
-      p: createMotionComponent('p'),
-      ul: createMotionComponent('ul'),
-      li: createMotionComponent('li'),
-    },
-    AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
-    useScroll: () => ({ scrollY: { get: () => 0 } }),
-    useTransform: () => 0,
-    useMotionValue: <T>(initial: T) => ({
-      get: () => initial,
-      set: jest.fn(),
-    }),
-    useAnimation: () => ({ start: jest.fn(), stop: jest.fn() }),
-    useInView: () => false,
-  }
-})
+// Global Clerk mocks — server-side Clerk pulls @clerk/backend which uses
+// .mjs exports that ts-jest can't transform in jsdom. Most unit tests
+// don't exercise auth; they just need the imports to resolve.
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: () => Promise.resolve({ userId: null }),
+  currentUser: () => Promise.resolve(null),
+  clerkMiddleware:
+    (
+      handler: (
+        clerkAuth: () => Promise<{ userId: string | null }>,
+        request: unknown
+      ) => unknown
+    ) =>
+    async (request: unknown) =>
+      handler(() => Promise.resolve({ userId: null }), request),
+  createRouteMatcher:
+    () =>
+    () =>
+      false,
+  verifyWebhook: jest.fn(),
+}))
+jest.mock('@clerk/nextjs', () => ({
+  ClerkProvider: ({ children }: { children: unknown }) => children,
+  SignIn: () => null,
+  SignUp: () => null,
+  SignOutButton: ({ children }: { children: unknown }) => children,
+  useClerk: () => ({ signOut: jest.fn() }),
+  useAuth: () => ({ userId: null, isLoaded: true, isSignedIn: false }),
+  useUser: () => ({ user: null, isLoaded: true, isSignedIn: false }),
+}))
 
 // Add global test helpers
 global.beforeEach = global.beforeEach || (() => {})

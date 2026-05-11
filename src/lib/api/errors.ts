@@ -15,6 +15,15 @@ export type ApiSuccess<T> = {
 export type ApiResponse<T> = ApiSuccess<T> | ApiError
 
 export class ApiErrorHandler {
+  private static jsonError(
+    message: string,
+    code: string,
+    status: number,
+    init?: ResponseInit
+  ): NextResponse {
+    return NextResponse.json({ error: message, code }, { ...init, status })
+  }
+
   static badRequest(message: string, details?: unknown): NextResponse {
     return NextResponse.json(
       { error: message, code: 'BAD_REQUEST', details },
@@ -54,6 +63,33 @@ export class ApiErrorHandler {
       { error: message, code: 'SERVER_ERROR' },
       { status: 500 }
     )
+  }
+
+  static methodNotAllowed(message = 'Method not allowed'): NextResponse {
+    return this.jsonError(message, 'METHOD_NOT_ALLOWED', 405)
+  }
+
+  static tooManyRequests(
+    message = 'Too many requests. Please try again later.',
+    headers?: HeadersInit
+  ): NextResponse {
+    return this.jsonError(message, 'RATE_LIMITED', 429, { headers })
+  }
+
+  static badGateway(message = 'Bad gateway'): NextResponse {
+    return this.jsonError(message, 'BAD_GATEWAY', 502)
+  }
+
+  static payloadTooLarge(message = 'Payload too large'): NextResponse {
+    return this.jsonError(message, 'PAYLOAD_TOO_LARGE', 413)
+  }
+
+  static serviceUnavailable(message = 'Service unavailable'): NextResponse {
+    return this.jsonError(message, 'SERVICE_UNAVAILABLE', 503)
+  }
+
+  static gatewayTimeout(message = 'Gateway timeout'): NextResponse {
+    return this.jsonError(message, 'GATEWAY_TIMEOUT', 504)
   }
 
   static fromZodError(error: ZodError): NextResponse {

@@ -1,4 +1,7 @@
+// Phase 0/1 closure: M14-unused-couples-middleware
 import {
+  // Phase 0/1 closure: M14-unused-couples-middleware
+
   jest,
   describe,
   test,
@@ -6,6 +9,8 @@ import {
   beforeEach,
   afterEach,
 } from '@jest/globals'
+import { existsSync } from 'fs'
+import { join } from 'path'
 import { CouplesService } from '@/lib/services/couples'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
@@ -25,6 +30,12 @@ import type { AppDatabase } from '@/types/app-database'
  * - __tests__/integration/api/couples-routes.integration.test.ts (API routes)
  */
 describe('CouplesService', () => {
+  test('does not keep the unused CouplesMiddleware wrapper module', () => {
+    expect(
+      existsSync(join(process.cwd(), 'src/lib/services/couples-middleware.ts'))
+    ).toBe(false)
+  })
+
   // Create a mock Supabase client
   const mockSupabaseClient: SupabaseClient<AppDatabase> = createClient(
     'http://localhost:54321',

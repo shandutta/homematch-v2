@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-security-definer-paths
 import { PropertySearchService } from '@/lib/services/properties/search'
 
 type QueryResult = { data: unknown[]; error: null }

@@ -180,7 +180,7 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="group shadow-token-md hover:shadow-token-lg flex h-full flex-col rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-1">
+                <Card className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex min-h-[190px] flex-col gap-3">
                     <div className="grid grid-cols-[auto,1fr] items-start gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-sky-800 ring-1 ring-slate-200">

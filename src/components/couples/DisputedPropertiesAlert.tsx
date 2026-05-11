@@ -28,7 +28,7 @@ export function DisputedPropertiesAlert({
   useEffect(() => {
     const fetchDisputedCount = async () => {
       try {
-        const supabase = createClient()
+        const supabase = await createClient()
         const {
           data: { session },
         } = await supabase.auth.getSession()

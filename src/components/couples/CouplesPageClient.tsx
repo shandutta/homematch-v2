@@ -54,7 +54,7 @@ export function CouplesPageClient() {
     setError(null)
 
     try {
-      const supabase = createClient()
+      const supabase = await createClient()
       const {
         data: { session },
       } = await supabase.auth.getSession()

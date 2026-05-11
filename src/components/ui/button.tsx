@@ -5,26 +5,33 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-token-sm whitespace-nowrap rounded-token-md text-token-sm font-medium transition-all duration-token-fast ease-token-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 ease-out disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
         default:
           'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
         primary:
-          'bg-token-primary text-white shadow-token-sm hover:bg-token-primary-dark focus-visible:ring-token-primary-light/60 dark:focus-visible:ring-token-primary/50',
+          'bg-token-primary text-white shadow-sm hover:bg-token-primary-dark focus-visible:ring-token-primary-light/60 dark:focus-visible:ring-token-primary/50',
         destructive:
-          'bg-token-error text-white shadow-token-sm hover:bg-token-error-dark focus-visible:ring-token-error-light/20 dark:focus-visible:ring-token-error-light/40',
+          'bg-token-error text-white shadow-sm hover:bg-token-error-dark focus-visible:ring-token-error-light/20 dark:focus-visible:ring-token-error-light/40',
         outline:
-          'border bg-background shadow-token-sm hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
         secondary:
-          'bg-secondary text-secondary-foreground shadow-token-sm hover:bg-secondary/80',
+          'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
         ghost:
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         prime:
-          // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow
-          'relative overflow-hidden rounded-full text-white px-9 py-7 text-base font-semibold ' +
+          // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow.
+          // Padding + text sizing are intentionally NOT hardcoded here; they live in
+          // compoundVariants below so that `<Button variant="prime" size="lg" />` and
+          // `<Button variant="prime" size="default" />` get consistent, predictable heights.
+          // Hardcoded `px-9 py-7` in the base variant collided with size variants and
+          // caller-provided `className` overrides — a single `cn(px-4)` could only catch
+          // px-* and would leave the variant's `py-7` intact, producing inconsistent
+          // heights on the same `size="lg"` prop across Hero and CtaBand. See H7.
+          'relative overflow-hidden rounded-full text-white font-semibold ' +
           // base fill + depth (slightly bluer)
           'before:content-[""] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#0c1426_0%,#0a0f1d_100%)] before:[box-shadow:0_2px_8px_rgba(0,0,0,0.35)] ' +
           // gradient border ring (masked) — brand blue sweep
@@ -39,13 +46,39 @@ const buttonVariants = cva(
           'focus-visible:ring-2 focus-visible:ring-sky-300/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0f1d]',
       },
       size: {
-        default: 'min-h-[44px] h-11 p-token-md has-[>svg]:px-3',
-        sm: 'min-h-[44px] h-11 rounded-token-md gap-token-xs p-token-sm has-[>svg]:px-2.5',
-        lg: 'min-h-[48px] h-12 rounded-token-md p-token-lg has-[>svg]:p-token-md',
+        default: 'min-h-[44px] h-11 p-4 has-[>svg]:px-3',
+        sm: 'min-h-[44px] h-11 rounded-md gap-1 p-2 has-[>svg]:px-2.5',
+        lg: 'min-h-[48px] h-12 rounded-md p-6 has-[>svg]:p-4',
         icon: 'min-h-[44px] min-w-[44px] h-11 w-11',
-        xl: 'min-h-[48px] h-12 rounded-full p-token-xl text-token-lg',
+        xl: 'min-h-[48px] h-12 rounded-full p-8 text-lg',
       },
     },
+    compoundVariants: [
+      // Prime variant uses a fully-rounded pill shape and bumped text size at every
+      // size. Padding is set per-size so callers can rely on `size` alone to control
+      // the button's height — and caller-provided `className="px-X py-Y"` cleanly
+      // overrides both axes via Tailwind's class merging. See H7.
+      {
+        variant: 'prime',
+        size: 'default',
+        className: 'px-6 py-3 text-base',
+      },
+      {
+        variant: 'prime',
+        size: 'sm',
+        className: 'px-4 py-2 text-sm',
+      },
+      {
+        variant: 'prime',
+        size: 'lg',
+        className: 'px-8 py-4 text-base',
+      },
+      {
+        variant: 'prime',
+        size: 'xl',
+        className: 'px-10 py-5 text-lg',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',

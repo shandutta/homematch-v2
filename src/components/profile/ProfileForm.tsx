@@ -25,13 +25,24 @@ import {
   Camera,
 } from 'lucide-react'
 import { z } from 'zod'
+import dynamic from 'next/dynamic'
 import { UserServiceClient } from '@/lib/services/users-client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
-import { AvatarPicker } from '@/components/profile/AvatarPicker'
 import { AvatarData } from '@/lib/constants/avatars'
+
+// AvatarPicker only mounts once the user clicks "Change", so its Radix
+// Dialog + AvatarUploader (image upload UI) can ship lazily, saving
+// ~5-10 KB on first paint of the profile route.
+const AvatarPicker = dynamic(
+  () =>
+    import('@/components/profile/AvatarPicker').then((mod) => ({
+      default: mod.AvatarPicker,
+    })),
+  { ssr: false, loading: () => null }
+)
 
 // US phone format: (XXX) XXX-XXXX
 const US_PHONE_REGEX = /^\(\d{3}\) \d{3}-\d{4}$/
@@ -174,7 +185,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {error && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -182,7 +193,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Avatar Section */}

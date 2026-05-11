@@ -1,0 +1,57 @@
+{
+  "scope": "repo-local-db-integration-execution-policy",
+  "phase": "phase-0-1-environment-guard-follow-up",
+  "externalExecutionApprovalRequired": true,
+  "defaultState": "static-only-until-approved-environment",
+  "forbiddenWithoutExplicitHumanApproval": [
+    "live Supabase project mutation",
+    "remote database URL reset",
+    "production or real-user-data database access",
+    "paid API invocation",
+    "secret material exposure",
+    "Docker or Supabase reset execution by automated workers"
+  ],
+  "requiredSignals": {
+    "dbReset": {
+      "allowedOnlyWhen": [
+        "Supabase URL is loopback/local: http://127.0.0.1, http://localhost, supabase.local, or an explicitly documented local proxy",
+        "Docker/local Supabase is intentionally approved for the run",
+        "reset command stays routed through scripts/dev-supabase-reset.js or an equivalent local-only wrapper",
+        "no --db-url remote reset flag is present"
+      ],
+      "mustNotRunWhen": [
+        "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL points at a hosted *.supabase.co project",
+        "POSTGRES_URL/POSTGRES_PRISMA_URL/POSTGRES_HOST identifies a remote database",
+        "the task prohibits Docker, live Supabase, remote DB URLs, or secrets"
+      ]
+    },
+    "dbLint": {
+      "allowedOnlyWhen": [
+        "lint target is the checked-in migration files or an approved disposable local Supabase project",
+        "the command cannot connect to production or mutate data",
+        "any remote lint path has explicit human approval and a documented non-production project"
+      ]
+    },
+    "rollbackExecution": {
+      "allowedOnlyWhen": [
+        "rollback is executed against a disposable local database or approved non-production clone",
+        "the migration has explicit -- DOWN: notes and a named verification command",
+        "the run captures before/after evidence without exposing secrets or PII"
+      ]
+    },
+    "integrationSuite": {
+      "allowedOnlyWhen": [
+        "integration environment is local Supabase plus local seeded test users",
+        "or a safeguarded non-production remote test path is explicitly approved",
+        "ALLOW_REMOTE_SUPABASE/SUPABASE_ALLOW_REMOTE is never treated as production approval by itself",
+        "real-user data, live production auth, and paid provider calls remain disabled"
+      ]
+    }
+  },
+  "closureCriteria": [
+    "D6 static reset-readiness guard remains green",
+    "this policy guard remains green",
+    "execution evidence names the approved environment class: local, local-proxy, or non-production-remote",
+    "execution evidence names commands run and commands deliberately not run"
+  ]
+}

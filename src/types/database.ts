@@ -272,6 +272,11 @@ export type Database = {
           },
         ]
       }
+      /**
+       * @deprecated calculated_match_score was a planned match-scoring column
+       * that was never populated. No code path writes to it. Do not rely on it.
+       * To be removed when the match-scoring schema is finalized (see task t_22236a19).
+       */
       properties: {
         Row: {
           address: string
@@ -285,6 +290,7 @@ export type Database = {
           id: string
           images: string[] | null
           is_active: boolean | null
+          last_refreshed_at: string | null
           listing_status: string | null
           lot_size_sqft: number | null
           neighborhood_id: string | null
@@ -293,6 +299,7 @@ export type Database = {
           property_hash: string | null
           property_type: string | null
           square_feet: number | null
+          source_fingerprint: string | null
           state: string
           updated_at: string | null
           year_built: number | null
@@ -314,6 +321,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          last_refreshed_at?: string | null
           listing_status?: string | null
           lot_size_sqft?: number | null
           neighborhood_id?: string | null
@@ -322,6 +330,7 @@ export type Database = {
           property_hash?: string | null
           property_type?: string | null
           square_feet?: number | null
+          source_fingerprint?: string | null
           state: string
           updated_at?: string | null
           year_built?: number | null
@@ -343,6 +352,7 @@ export type Database = {
           id?: string
           images?: string[] | null
           is_active?: boolean | null
+          last_refreshed_at?: string | null
           listing_status?: string | null
           lot_size_sqft?: number | null
           neighborhood_id?: string | null
@@ -351,6 +361,7 @@ export type Database = {
           property_hash?: string | null
           property_type?: string | null
           square_feet?: number | null
+          source_fingerprint?: string | null
           state?: string
           updated_at?: string | null
           year_built?: number | null
@@ -508,6 +519,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          clerk_user_id: string | null
           created_at: string | null
           display_name: string | null
           email: string | null
@@ -518,6 +530,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          clerk_user_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
@@ -528,6 +541,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          clerk_user_id?: string | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null

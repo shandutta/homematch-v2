@@ -1,12 +1,13 @@
-import { Metadata } from 'next'
 import Link from 'next/link'
 import { CookiePreferencesPanel } from '@/components/legal/CookiePreferencesPanel'
+import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 
-export const metadata: Metadata = {
+export const metadata = createPublicRouteMetadata({
   title: 'Cookie Policy | HomeMatch',
   description:
     'Understand how cookies and similar technologies are used by HomeMatch and how you can manage preferences.',
-}
+  path: '/cookies',
+})
 
 export default function CookiesPage() {
   return (

@@ -3,8 +3,9 @@
 import { useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import {
-  motion,
+  m,
   useMotionValue,
+  useReducedMotion,
   useTransform,
   type MotionValue,
 } from 'framer-motion'
@@ -81,7 +82,7 @@ function SpotlightCard({
       style={styleVars}
     >
       {/* Spotlight overlay */}
-      <motion.div
+      <m.div
         className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
           background: useTransform(
@@ -106,8 +107,9 @@ function AnimatedIcon({
   animation: string
   isHovered: boolean
 }) {
+  const shouldReduceMotion = useReducedMotion()
   const getAnimationProps = () => {
-    if (!isHovered) return {}
+    if (!isHovered || shouldReduceMotion) return {}
 
     switch (animation) {
       case 'pulse':
@@ -143,13 +145,15 @@ function AnimatedIcon({
   }
 
   return (
-    <motion.div {...getAnimationProps()}>
+    <m.div {...getAnimationProps()}>
       <Icon className="h-6 w-6" />
-    </motion.div>
+    </m.div>
   )
 }
 
 export function FeatureGrid() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <section className="relative py-14 sm:py-16">
       {/* Clean break from Hero; align background with How It Works refined light grid */}
@@ -183,8 +187,8 @@ export function FeatureGrid() {
         <MotionDiv
           className="mx-auto text-center"
           style={{ maxWidth: '48rem' }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
           <h2
@@ -204,18 +208,19 @@ export function FeatureGrid() {
             </span>
           </h2>
           <p
-            className="mt-4 text-lg text-gray-600 sm:text-xl md:text-2xl"
+            className="mt-4 text-lg text-gray-700 sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            We turned the most stressful part of adulting into a shared game
+            Turn scattered listing opinions into a shared shortlist everyone can
+            understand.
           </p>
         </MotionDiv>
 
         {/* Feature cards container with stagger */}
-        <motion.div
+        <m.div
           className="mt-4 grid gap-6 sm:mt-8 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
-          initial="hidden"
-          whileInView="visible"
+          initial={shouldReduceMotion ? false : 'hidden'}
+          whileInView={shouldReduceMotion ? undefined : 'visible'}
           viewport={{ once: true }}
           variants={{
             hidden: {},
@@ -229,7 +234,7 @@ export function FeatureGrid() {
           {features.map((feature) => (
             <FeatureCard key={feature.title} feature={feature} />
           ))}
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )
@@ -237,35 +242,40 @@ export function FeatureGrid() {
 
 function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
   const [isHovered, setIsHovered] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
   return (
-    <motion.div
+    <m.div
       variants={{
-        hidden: { opacity: 0, y: 30, rotateX: -10 },
+        hidden: shouldReduceMotion
+          ? { opacity: 1 }
+          : { opacity: 0, y: 30, rotateX: -10 },
         visible: {
           opacity: 1,
           y: 0,
           rotateX: 0,
-          transition: {
-            type: 'spring',
-            stiffness: 100,
-            damping: 15,
-          },
+          transition: shouldReduceMotion
+            ? { duration: 0 }
+            : {
+                type: 'spring',
+                stiffness: 100,
+                damping: 15,
+              },
         },
       }}
       style={{ perspective: 1000 }}
     >
       <SpotlightCard className="h-full">
         <Card
-          className="group relative h-full overflow-hidden border-gray-200 bg-white p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+          className="group relative h-full overflow-hidden border-gray-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-6"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Animated border gradient on hover */}
-          <motion.div
+          <m.div
             className="pointer-events-none absolute inset-0 rounded-xl"
             initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
+            animate={{ opacity: isHovered && !shouldReduceMotion ? 1 : 0 }}
             transition={{ duration: 0.3 }}
             style={{
               background:
@@ -278,13 +288,15 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
 
           <div className="relative z-10">
             {/* Icon with gradient background and micro-animation */}
-            <motion.div
+            <m.div
               className="mb-4 inline-flex rounded-lg p-3 text-white"
               style={{
                 background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
               }}
               animate={
-                isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }
+                isHovered && !shouldReduceMotion
+                  ? { scale: 1.1, rotate: 5 }
+                  : { scale: 1, rotate: 0 }
               }
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
@@ -293,7 +305,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
                 animation={feature.iconAnimation}
                 isHovered={isHovered}
               />
-            </motion.div>
+            </m.div>
 
             <h3
               className="mb-2 text-lg font-semibold text-gray-900 sm:text-xl"
@@ -303,7 +315,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
             </h3>
 
             <p
-              className="text-sm text-gray-600 sm:text-base"
+              className="text-sm text-gray-700 sm:text-base"
               style={{ fontFamily: 'var(--font-body)' }}
             >
               {feature.description}
@@ -311,6 +323,6 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
           </div>
         </Card>
       </SpotlightCard>
-    </motion.div>
+    </m.div>
   )
 }

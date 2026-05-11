@@ -14,6 +14,7 @@ interface AuthPageShellProps {
   subtitle: string
   children: ReactNode
   maxWidthClassName?: string
+  valueProp?: string
 }
 
 export function AuthPageShell({
@@ -21,9 +22,14 @@ export function AuthPageShell({
   subtitle,
   children,
   maxWidthClassName = 'max-w-lg',
+  valueProp,
 }: AuthPageShellProps) {
   return (
-    <div className="gradient-grid-bg dark text-foreground relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <div className="gradient-grid-bg dark text-foreground relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-12">
+      {/* A3: overflow-hidden contains the decorative blurs below — at w-[680px]
+          centered with -translate-x-1/2, they extend ~150px past the 375px
+          mobile viewport on each side, causing horizontal scrollbars
+          otherwise. */}
       <div
         className="pointer-events-none absolute inset-0 opacity-30"
         aria-hidden="true"
@@ -39,6 +45,12 @@ export function AuthPageShell({
             {subtitle}
           </p>
         </div>
+
+        {valueProp && (
+          <div className="mx-auto w-fit rounded-full border border-amber-400/20 bg-amber-400/5 px-4 py-1.5 text-center text-xs text-amber-200/80">
+            {valueProp}
+          </div>
+        )}
 
         {children}
       </div>

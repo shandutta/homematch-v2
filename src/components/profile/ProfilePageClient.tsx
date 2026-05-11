@@ -1,13 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { User } from '@supabase/supabase-js'
 import { UserProfile, Household } from '@/types/database'
+import { UserServiceClient } from '@/lib/services/users-client'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from './ProfileForm'
-import { HouseholdSection } from './HouseholdSection'
-import { ActivityStats } from './ActivityStats'
 import {
   User as UserIcon,
   Home,
@@ -21,12 +24,37 @@ import {
   Sparkles,
   Copy,
   Check,
+  Palette,
 } from 'lucide-react'
 import Link from 'next/link'
-import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { AvatarData } from '@/lib/constants/avatars'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
+import type { TasteProfileValues } from '@/components/features/profile/TasteProfileCollector'
+
+// Lazy-load secondary tabs — only the Profile tab is rendered first paint.
+// HouseholdSection (~700 LOC) and TasteProfileCollector are the heaviest,
+// so deferring them shrinks the profile route chunk substantially.
+const HouseholdSection = dynamic(
+  () =>
+    import('./HouseholdSection').then((mod) => ({
+      default: mod.HouseholdSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const ActivityStats = dynamic(
+  () =>
+    import('./ActivityStats').then((mod) => ({ default: mod.ActivityStats })),
+  { ssr: false, loading: () => null }
+)
+const TasteProfileCollector = dynamic(
+  () =>
+    import('@/components/features/profile/TasteProfileCollector').then(
+      (mod) => ({ default: mod.TasteProfileCollector })
+    ),
+  { ssr: false, loading: () => null }
+)
 
 interface ProfilePageClientProps {
   user: User
@@ -95,6 +123,65 @@ export function ProfilePageClient({
 }: ProfilePageClientProps) {
   const [activeTab, setActiveTab] = useState('profile')
   const [codeCopied, setCodeCopied] = useState(false)
+  const [profileState, setProfileState] = useState(profile)
+
+  const handleProfileUpdate = (updated: UserProfile) => {
+    setProfileState(updated)
+  }
+
+  const handleTasteProfileSave = useCallback(
+    async (values: TasteProfileValues) => {
+      const existingPrefs =
+        typeof profileState.preferences === 'object' &&
+        profileState.preferences !== null
+          ? (profileState.preferences as Record<string, unknown>)
+          : {}
+      const updatedPreferences = {
+        ...existingPrefs,
+        tasteProfile: {
+          aesthetics: values.aesthetics,
+          lifestyle: values.lifestyle,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+      try {
+        const updated = await UserServiceClient.updateProfile(user.id, {
+          preferences: updatedPreferences,
+        })
+        setProfileState((prev) => ({
+          ...prev,
+          preferences: updated.preferences,
+        }))
+        toast.success('Taste profile saved')
+      } catch {
+        toast.error('Failed to save taste profile')
+        throw new Error('Save failed')
+      }
+    },
+    [profileState.preferences, user.id]
+  )
+
+  const tasteProfileInitialValues: TasteProfileValues | undefined = (() => {
+    const prefs = profileState.preferences
+    if (typeof prefs !== 'object' || prefs === null) return undefined
+    const raw = (prefs as Record<string, unknown>).tasteProfile
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const tp = raw as Record<string, unknown>
+    const aesthetics = Array.isArray(tp.aesthetics)
+      ? (tp.aesthetics as unknown[]).filter(
+          (a): a is string => typeof a === 'string'
+        )
+      : []
+    const ls =
+      typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+        ? (tp.lifestyle as Record<string, unknown>)
+        : {}
+    const lifestyle: Record<string, number> = {}
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'number') lifestyle[k] = v
+    }
+    return { aesthetics, lifestyle }
+  })()
 
   const preferenceRecord = isRecord(profile.preferences)
     ? profile.preferences
@@ -152,7 +239,7 @@ export function ProfilePageClient({
   return (
     <div className="gradient-grid-bg min-h-screen pb-6 text-white">
       {/* Hero Header */}
-      <motion.section
+      <m.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -169,7 +256,7 @@ export function ProfilePageClient({
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
           {/* Back navigation */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
@@ -181,17 +268,17 @@ export function ProfilePageClient({
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
             </Link>
-          </motion.div>
+          </m.div>
 
           {/* Profile header */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
           >
             {/* Left: Avatar and info */}
-            <motion.div variants={itemVariants} className="flex flex-col gap-6">
+            <m.div variants={itemVariants} className="flex flex-col gap-6">
               <div className="flex items-start gap-5">
                 {/* Avatar */}
                 <UserAvatar
@@ -237,13 +324,10 @@ export function ProfilePageClient({
                 Manage your profile, household settings, and track your property
                 search activity all in one place.
               </p>
-            </motion.div>
+            </m.div>
 
             {/* Right: Action buttons */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap gap-3"
-            >
+            <m.div variants={itemVariants} className="flex flex-wrap gap-3">
               <Link href="/settings">
                 <Button
                   variant="outline"
@@ -258,11 +342,11 @@ export function ProfilePageClient({
                   View Favorites
                 </Button>
               </Link>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Stats row */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -277,7 +361,7 @@ export function ProfilePageClient({
                   className="group block rounded-2xl focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black/0 focus-visible:outline-none"
                   aria-label={`${stat.label} details`}
                 >
-                  <motion.div
+                  <m.div
                     variants={statVariants}
                     whileHover={{ y: -2, transition: { duration: 0.2 } }}
                     className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br ${stat.gradient} p-5 backdrop-blur-sm transition-all hover:border-white/10`}
@@ -301,19 +385,19 @@ export function ProfilePageClient({
                         <Icon className="h-6 w-6" />
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 </Link>
               )
             })}
-          </motion.div>
+          </m.div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Main content */}
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[340px,1fr]">
           {/* Sidebar */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -362,23 +446,23 @@ export function ProfilePageClient({
                         >
                           <AnimatePresence mode="wait">
                             {codeCopied ? (
-                              <motion.div
+                              <m.div
                                 key="check"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
                               >
                                 <Check className="h-3.5 w-3.5 text-emerald-400" />
-                              </motion.div>
+                              </m.div>
                             ) : (
-                              <motion.div
+                              <m.div
                                 key="copy"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
                               >
                                 <Copy className="h-3.5 w-3.5" />
-                              </motion.div>
+                              </m.div>
                             )}
                           </AnimatePresence>
                         </button>
@@ -417,10 +501,10 @@ export function ProfilePageClient({
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Main content area */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
@@ -435,6 +519,7 @@ export function ProfilePageClient({
                   { value: 'profile', label: 'Profile', icon: UserIcon },
                   { value: 'household', label: 'Household', icon: Home },
                   { value: 'activity', label: 'Activity', icon: Activity },
+                  { value: 'taste', label: 'Taste', icon: Palette },
                 ].map((tab) => {
                   const Icon = tab.icon
                   return (
@@ -458,7 +543,7 @@ export function ProfilePageClient({
                       value="profile"
                       className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                     >
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
@@ -478,7 +563,7 @@ export function ProfilePageClient({
                           </div>
                         </div>
                         <ProfileForm user={user} profile={profile} />
-                      </motion.div>
+                      </m.div>
                     </TabsContent>
                   )}
 
@@ -489,13 +574,13 @@ export function ProfilePageClient({
                       className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                       data-testid="household-section"
                     >
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
                         <HouseholdSection profile={profile} />
-                      </motion.div>
+                      </m.div>
                     </TabsContent>
                   )}
 
@@ -505,19 +590,52 @@ export function ProfilePageClient({
                       value="activity"
                       className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                     >
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
                         <ActivityStats summary={activitySummary} />
-                      </motion.div>
+                      </m.div>
+                    </TabsContent>
+                  )}
+
+                  {activeTab === 'taste' && (
+                    <TabsContent
+                      key="taste"
+                      value="taste"
+                      className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                    >
+                      <m.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="card-luxury overflow-hidden p-6 sm:p-8"
+                      >
+                        <div className="mb-6 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                            <Palette className="text-hm-stone-400 h-5 w-5" />
+                          </div>
+                          <div>
+                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                              Taste Profile
+                            </h2>
+                            <p className="text-hm-stone-500 text-sm">
+                              Aesthetic preferences and lifestyle priorities
+                            </p>
+                          </div>
+                        </div>
+                        <TasteProfileCollector
+                          onSave={handleTasteProfileSave}
+                          initialValues={tasteProfileInitialValues}
+                        />
+                      </m.div>
                     </TabsContent>
                   )}
                 </AnimatePresence>
               </div>
             </Tabs>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 

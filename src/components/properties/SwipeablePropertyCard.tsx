@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { Heart, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Neighborhood, Property } from '@/lib/schemas/property'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -243,246 +244,256 @@ export function SwipeablePropertyCard({
   }
 
   return (
-    <div
-      className={cn(
-        'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-24 md:pb-16',
-        className
-      )}
-    >
-      {/* Card Stack - Background Cards */}
-      <div className="relative h-full w-full">
-        {nextProperties.map((property, index) => {
-          const stackIndex = index + 1
-          const stackScale = 1 - stackIndex * STACK_SCALE_FACTOR
-          const stackY = stackIndex * STACK_Y_OFFSET
-          const stackOpacity = Math.max(
-            STACK_MIN_OPACITY,
-            1 - stackIndex * STACK_OPACITY_FACTOR
-          )
+    <MotionMaxProvider>
+      <div
+        className={cn(
+          'relative mx-auto h-[min(560px,70vh)] w-full max-w-md pb-24 md:pb-16',
+          className
+        )}
+      >
+        {/* Card Stack - Background Cards */}
+        <div className="relative h-full w-full">
+          {nextProperties.map((property, index) => {
+            const stackIndex = index + 1
+            const stackScale = 1 - stackIndex * STACK_SCALE_FACTOR
+            const stackY = stackIndex * STACK_Y_OFFSET
+            const stackOpacity = Math.max(
+              STACK_MIN_OPACITY,
+              1 - stackIndex * STACK_OPACITY_FACTOR
+            )
 
-          return (
-            <MotionDiv
-              key={`${property.id}-stack-${stackIndex}`}
-              className="absolute h-full w-full"
-              initial={{ scale: stackScale, y: stackY, opacity: stackOpacity }}
-              animate={{ scale: stackScale, y: stackY, opacity: stackOpacity }}
-              style={{
-                zIndex: STACK_DEPTH - stackIndex,
-                transformOrigin: 'center bottom',
-              }}
-            >
-              <div className="h-full w-full transform-gpu">
-                <PropertyCard
-                  property={property}
-                  disableDetailModal
-                  fullHeight
-                  showMap={false}
-                />
-              </div>
-            </MotionDiv>
-          )
-        })}
+            return (
+              <MotionDiv
+                key={`${property.id}-stack-${stackIndex}`}
+                className="absolute h-full w-full"
+                initial={{
+                  scale: stackScale,
+                  y: stackY,
+                  opacity: stackOpacity,
+                }}
+                animate={{
+                  scale: stackScale,
+                  y: stackY,
+                  opacity: stackOpacity,
+                }}
+                style={{
+                  zIndex: STACK_DEPTH - stackIndex,
+                  transformOrigin: 'center bottom',
+                }}
+              >
+                <div className="h-full w-full transform-gpu">
+                  <PropertyCard
+                    property={property}
+                    disableDetailModal
+                    fullHeight
+                    showMap={false}
+                  />
+                </div>
+              </MotionDiv>
+            )
+          })}
 
-        {/* Current Card */}
-        <MotionDiv
-          ref={cardRef}
-          className="absolute h-full w-full cursor-grab active:cursor-grabbing"
-          style={{
-            x,
-            y,
-            rotate,
-            opacity,
-            scale,
-            zIndex: STACK_DEPTH + 1,
-            transformOrigin: 'center bottom',
-          }}
-          animate={controls}
-          drag
-          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          dragElastic={0.2}
-          dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
-          onDragStart={physicsHandleDragStart}
-          onDrag={physicsHandleDrag}
-          onDragEnd={physicsHandleDragEnd}
-          whileTap={{ scale: 0.98 }}
-          onTap={propertyDetail ? handleCardTap : undefined}
-          data-testid="swipe-card-tap-target"
-        >
-          <div className="relative h-full w-full transform-gpu">
-            <PropertyCard
-              property={currentProperty}
-              imagePriority
-              disableDetailModal
-              fullHeight
-              showMap={false}
-            />
+          {/* Current Card */}
+          <MotionDiv
+            ref={cardRef}
+            className="absolute h-full w-full cursor-grab active:cursor-grabbing"
+            style={{
+              x,
+              y,
+              rotate,
+              opacity,
+              scale,
+              zIndex: STACK_DEPTH + 1,
+              transformOrigin: 'center bottom',
+            }}
+            animate={controls}
+            drag
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
+            onDragStart={physicsHandleDragStart}
+            onDrag={physicsHandleDrag}
+            onDragEnd={physicsHandleDragEnd}
+            whileTap={{ scale: 0.98 }}
+            onTap={propertyDetail ? handleCardTap : undefined}
+            data-testid="swipe-card-tap-target"
+          >
+            <div className="relative h-full w-full transform-gpu">
+              <PropertyCard
+                property={currentProperty}
+                imagePriority
+                disableDetailModal
+                fullHeight
+                showMap={false}
+              />
 
-            {/* Decision Overlays */}
-            <AnimatePresence>
+              {/* Decision Overlays */}
+              <AnimatePresence>
+                {isDragging && (
+                  <>
+                    {/* Like Overlay */}
+                    <MotionDiv
+                      className="absolute inset-0 flex items-center justify-center rounded-xl"
+                      style={{
+                        background: `linear-gradient(135deg, ${dashboardTokens.colors.success[500]}20, ${dashboardTokens.colors.success[600]}40)`,
+                        opacity: likeOpacity,
+                      }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: dragDirection === 'right' ? 1 : 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <div className="flex items-center space-x-2 rounded-full bg-white/20 px-6 py-3 backdrop-blur-sm">
+                        <Heart className="h-8 w-8 fill-green-500 text-green-500" />
+                        <span className="text-2xl font-bold text-green-500">
+                          LIKE
+                        </span>
+                      </div>
+                    </MotionDiv>
+
+                    {/* Pass Overlay */}
+                    <MotionDiv
+                      className="absolute inset-0 flex items-center justify-center rounded-xl"
+                      style={{
+                        background: `linear-gradient(135deg, ${dashboardTokens.colors.error[500]}20, ${dashboardTokens.colors.error[600]}40)`,
+                        opacity: passOpacity,
+                      }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: dragDirection === 'left' ? 1 : 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <div className="flex items-center space-x-2 rounded-full bg-white/20 px-6 py-3 backdrop-blur-sm">
+                        <X className="h-8 w-8 text-red-500" />
+                        <span className="text-2xl font-bold text-red-500">
+                          PASS
+                        </span>
+                      </div>
+                    </MotionDiv>
+                  </>
+                )}
+              </AnimatePresence>
+
+              {/* Swipe Hints */}
+              <AnimatePresence>
+                {shouldShowHints && (
+                  <MotionDiv
+                    className="pointer-events-none absolute bottom-40 left-1/2 z-20 w-full max-w-[80%] -translate-x-1/2 md:bottom-36"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="flex items-center space-x-4 rounded-full bg-black/50 px-6 py-3 backdrop-blur-sm">
+                      <div className="flex items-center space-x-2 text-white">
+                        <ChevronLeft className="h-5 w-5 animate-pulse" />
+                        <span className="text-sm">Swipe to explore</span>
+                        <ChevronRight className="h-5 w-5 animate-pulse" />
+                      </div>
+                    </div>
+                  </MotionDiv>
+                )}
+              </AnimatePresence>
+
+              {/* Threshold Indicators */}
               {isDragging && (
                 <>
-                  {/* Like Overlay */}
-                  <MotionDiv
-                    className="absolute inset-0 flex items-center justify-center rounded-xl"
-                    style={{
-                      background: `linear-gradient(135deg, ${dashboardTokens.colors.success[500]}20, ${dashboardTokens.colors.success[600]}40)`,
-                      opacity: likeOpacity,
-                    }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: dragDirection === 'right' ? 1 : 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="flex items-center space-x-2 rounded-full bg-white/20 px-6 py-3 backdrop-blur-sm">
-                      <Heart className="h-8 w-8 fill-green-500 text-green-500" />
-                      <span className="text-2xl font-bold text-green-500">
-                        LIKE
-                      </span>
-                    </div>
-                  </MotionDiv>
-
-                  {/* Pass Overlay */}
-                  <MotionDiv
-                    className="absolute inset-0 flex items-center justify-center rounded-xl"
-                    style={{
-                      background: `linear-gradient(135deg, ${dashboardTokens.colors.error[500]}20, ${dashboardTokens.colors.error[600]}40)`,
-                      opacity: passOpacity,
-                    }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: dragDirection === 'left' ? 1 : 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="flex items-center space-x-2 rounded-full bg-white/20 px-6 py-3 backdrop-blur-sm">
-                      <X className="h-8 w-8 text-red-500" />
-                      <span className="text-2xl font-bold text-red-500">
-                        PASS
-                      </span>
-                    </div>
-                  </MotionDiv>
+                  <div className="absolute top-1/2 left-4 -translate-y-1/2 opacity-50">
+                    <div className="h-12 w-1 rounded-full bg-gradient-to-b from-red-400 to-red-600"></div>
+                  </div>
+                  <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-50">
+                    <div className="h-12 w-1 rounded-full bg-gradient-to-b from-green-400 to-green-600"></div>
+                  </div>
                 </>
               )}
-            </AnimatePresence>
+            </div>
+          </MotionDiv>
 
-            {/* Swipe Hints */}
-            <AnimatePresence>
-              {shouldShowHints && (
-                <MotionDiv
-                  className="pointer-events-none absolute bottom-40 left-1/2 z-20 w-full max-w-[80%] -translate-x-1/2 md:bottom-36"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="flex items-center space-x-4 rounded-full bg-black/50 px-6 py-3 backdrop-blur-sm">
-                    <div className="flex items-center space-x-2 text-white">
-                      <ChevronLeft className="h-5 w-5 animate-pulse" />
-                      <span className="text-sm">Swipe to explore</span>
-                      <ChevronRight className="h-5 w-5 animate-pulse" />
-                    </div>
-                  </div>
-                </MotionDiv>
-              )}
-            </AnimatePresence>
-
-            {/* Threshold Indicators */}
-            {isDragging && (
-              <>
-                <div className="absolute top-1/2 left-4 -translate-y-1/2 opacity-50">
-                  <div className="h-12 w-1 rounded-full bg-gradient-to-b from-red-400 to-red-600"></div>
+          <AnimatePresence>
+            {leavingCard && (
+              <MotionDiv
+                key={`${leavingCard.property.id}-leaving`}
+                className="pointer-events-none absolute h-full w-full"
+                data-testid="leaving-card"
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }}
+                animate={{
+                  x:
+                    leavingCard.direction === 'right'
+                      ? viewportWidth * 0.7
+                      : -viewportWidth * 0.7,
+                  rotate: leavingCard.direction === 'right' ? 18 : -18,
+                  opacity: 0,
+                  scale: 0.9,
+                }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                style={{
+                  zIndex: STACK_DEPTH + 2,
+                  transformOrigin: 'center bottom',
+                }}
+                onAnimationComplete={() => {
+                  setLeavingCard(null)
+                  isProcessingSwipeRef.current = false
+                }}
+              >
+                <div className="h-full w-full transform-gpu">
+                  <PropertyCard
+                    property={leavingCard.property}
+                    disableDetailModal
+                    fullHeight
+                    showMap={false}
+                  />
                 </div>
-                <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-50">
-                  <div className="h-12 w-1 rounded-full bg-gradient-to-b from-green-400 to-green-600"></div>
-                </div>
-              </>
+              </MotionDiv>
             )}
-          </div>
-        </MotionDiv>
+          </AnimatePresence>
+        </div>
 
-        <AnimatePresence>
-          {leavingCard && (
-            <MotionDiv
-              key={`${leavingCard.property.id}-leaving`}
-              className="pointer-events-none absolute h-full w-full"
-              data-testid="leaving-card"
-              initial={{ x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }}
-              animate={{
-                x:
-                  leavingCard.direction === 'right'
-                    ? viewportWidth * 0.7
-                    : -viewportWidth * 0.7,
-                rotate: leavingCard.direction === 'right' ? 18 : -18,
-                opacity: 0,
-                scale: 0.9,
-              }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              style={{
-                zIndex: STACK_DEPTH + 2,
-                transformOrigin: 'center bottom',
-              }}
-              onAnimationComplete={() => {
-                setLeavingCard(null)
-                isProcessingSwipeRef.current = false
-              }}
-            >
-              <div className="h-full w-full transform-gpu">
-                <PropertyCard
-                  property={leavingCard.property}
-                  disableDetailModal
-                  fullHeight
-                  showMap={false}
-                />
-              </div>
-            </MotionDiv>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="bottom-action-buttons">
-        <div className="bg-hm-obsidian-900/90 flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
-          <MotionButton
-            onClick={() => swipeCard('left')}
-            className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
-            motionProps={{
-              whileHover: { scale: 1.1 },
-              whileTap: { scale: 0.95 },
-            }}
-            aria-label="Pass on this property"
-            type="button"
-          >
-            <X size={24} strokeWidth={2.5} />
-          </MotionButton>
-
-          {onUndo && (
+        {/* Action Buttons */}
+        <div className="bottom-action-buttons">
+          <div className="bg-hm-obsidian-900/90 flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
             <MotionButton
-              onClick={onUndo}
-              className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+              onClick={() => swipeCard('left')}
+              className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
               motionProps={{
                 whileHover: { scale: 1.1 },
                 whileTap: { scale: 0.95 },
               }}
-              aria-label="Undo last action"
+              aria-label="Pass on this property"
               type="button"
             >
-              <RotateCcw size={18} strokeWidth={2.5} />
+              <X size={24} strokeWidth={2.5} />
             </MotionButton>
-          )}
 
-          <MotionButton
-            onClick={() => swipeCard('right')}
-            className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
-            motionProps={{
-              whileHover: { scale: 1.1 },
-              whileTap: { scale: 0.95 },
-            }}
-            aria-label="Like this property"
-            type="button"
-          >
-            <Heart size={24} strokeWidth={2.5} />
-          </MotionButton>
+            {onUndo && (
+              <MotionButton
+                onClick={onUndo}
+                className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+                motionProps={{
+                  whileHover: { scale: 1.1 },
+                  whileTap: { scale: 0.95 },
+                }}
+                aria-label="Undo last action"
+                type="button"
+              >
+                <RotateCcw size={18} strokeWidth={2.5} />
+              </MotionButton>
+            )}
+
+            <MotionButton
+              onClick={() => swipeCard('right')}
+              className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+              motionProps={{
+                whileHover: { scale: 1.1 },
+                whileTap: { scale: 0.95 },
+              }}
+              aria-label="Like this property"
+              type="button"
+            >
+              <Heart size={24} strokeWidth={2.5} />
+            </MotionButton>
+          </div>
         </div>
       </div>
-    </div>
+    </MotionMaxProvider>
   )
 }

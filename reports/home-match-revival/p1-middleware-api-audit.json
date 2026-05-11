@@ -1,0 +1,330 @@
+{
+  "meta": {
+    "generated_at": "2026-05-07T12:55:00Z",
+    "project": "HomeMatch V2",
+    "stack": "Next.js 15 (App Router), TypeScript, Supabase SSR",
+    "task": "P1 middleware/API speed and dead-code audit",
+    "sources": {
+      "middleware": "subagent analysis of middleware.ts + dependencies",
+      "api_routes": "automated pattern scan across all 27 API route files",
+      "dead_code": "ts-prune + depcheck + targeted grep analysis"
+    }
+  },
+  "summary": {
+    "total_findings": 112,
+    "high_severity": 18,
+    "medium_severity": 25,
+    "low_severity": 69,
+    "estimated_removable_lines": "4,500-6,800",
+    "key_themes": [
+      "Missing caching headers on 24/27 API routes",
+      "Inconsistent error handling (only 3 routes use ApiErrorHandler)",
+      "9 unused npm dependencies costing bundle size",
+      "Middleware matcher misses Next.js data fetches",
+      "Duplicate rate-limiting implementations",
+      "No CORP/COOP security headers"
+    ]
+  },
+  "findings": {
+    "middleware": [
+      {
+        "severity": "high",
+        "category": "performance",
+        "description": "Matcher config misses `_next/data` (client-side data fetches), `_next/webpack-hmr`, fonts, CSS, JS, .json, .xml, .txt files — every client-side page transition runs middleware unnecessarily",
+        "recommendation": "Add `_next/data` and additional static extensions to matcher exclusion pattern",
+        "line_refs": "middleware.ts:319-330"
+      },
+      {
+        "severity": "medium",
+        "category": "performance",
+        "description": "createServerClient is constructed on every request including public pages (/about, /contact, etc.) even when no auth cookie exists. The fast-path skips getUser() but the client is still created",
+        "recommendation": "Move createServerClient construction behind the auth-cookie check for non-API routes",
+        "line_refs": "middleware.ts:126-174"
+      },
+      {
+        "severity": "medium",
+        "category": "security",
+        "description": "Missing CORP (Cross-Origin-Resource-Policy), COOP (Cross-Origin-Opener-Policy), and Cache-Control security headers. CSP uses unsafe-eval and unsafe-inline (required for Next.js but worth documenting)",
+        "recommendation": "Add Cross-Origin-Opener-Policy: same-origin; Cross-Origin-Resource-Policy: same-origin",
+        "line_refs": "middleware.ts:7-14"
+      },
+      {
+        "severity": "medium",
+        "category": "reliability",
+        "description": "Promise.race timeout in withTimeout() never aborts the underlying Supabase fetch — TCP connections leak on timeout. The timeoutId! non-null assertion is also fragile",
+        "recommendation": "Use AbortController to cancel the fetch on timeout",
+        "line_refs": "middleware.ts:72-90"
+      },
+      {
+        "severity": "low",
+        "category": "performance",
+        "description": "cookies.getAll() called 4 times per request; getProjectFingerprint() is unmemoized (URL parsing on every request)",
+        "recommendation": "Memoize getProjectFingerprint() and reuse cookie list",
+        "line_refs": "middleware.ts:185-188,236-247"
+      },
+      {
+        "severity": "low",
+        "category": "maintainability",
+        "description": "Invalid-refresh-token cleanup code duplicated across error branch (lines 212-228) and exception branch (lines 233-247)",
+        "recommendation": "Extract into shared clearAuthCookies() helper",
+        "line_refs": "middleware.ts:212-228,233-247"
+      }
+    ],
+    "api_routes": [
+      {
+        "severity": "high",
+        "category": "caching",
+        "description": "24 of 27 API routes return no Cache-Control headers — responses are never cached by CDN or browser. Only health, maps/proxy-script, and maps/metro-boundaries set cache headers",
+        "recommendation": "Add Cache-Control headers to all GET endpoints; use 'public, max-age=N' for cacheable data, 'no-cache' for user-specific data",
+        "affected_routes": [
+          "/api/couples/*",
+          "/api/interactions/*",
+          "/api/users/*",
+          "/api/properties/*",
+          "/api/admin/*",
+          "/api/zillow/*",
+          "/api/neighborhoods/*"
+        ]
+      },
+      {
+        "severity": "high",
+        "category": "consistency",
+        "description": "Only 3 of 27 routes use the centralized ApiErrorHandler (interactions, users/avatar, interactions/reset). All other routes use raw NextResponse.json() with inline error shapes — inconsistent error format across API surface",
+        "recommendation": "Standardize on ApiErrorHandler for all routes or document the intentional divergence",
+        "affected_routes": [
+          "/api/couples/*",
+          "/api/admin/*",
+          "/api/maps/*",
+          "/api/health",
+          "/api/performance/*",
+          "/api/properties/*"
+        ]
+      },
+      {
+        "severity": "medium",
+        "category": "security",
+        "description": "19 of 27 API routes have no rate limiting. Admin cron-secret routes are unprotected by rate limit (5 routes). Several user-facing POST endpoints also lack rate limiting",
+        "recommendation": "Apply rate limiting to all POST/PUT/DELETE endpoints; admin routes should also have rate limits even with cron-secret",
+        "affected_routes": [
+          "/api/admin/* (5 routes)",
+          "/api/couples/stats",
+          "/api/couples/check-mutual",
+          "/api/couples/notify",
+          "/api/couples/disputed",
+          "/api/health",
+          "/api/properties/*",
+          "/api/zillow/*"
+        ]
+      },
+      {
+        "severity": "medium",
+        "category": "validation",
+        "description": "Only 6 of 27 routes use Zod for input validation. Several POST endpoints accept JSON bodies without validation",
+        "recommendation": "Add Zod schemas to all POST/PUT/PATCH endpoints that accept JSON bodies",
+        "affected_routes": [
+          "/api/admin/*",
+          "/api/couples/notify (has Zod, OK)",
+          "/api/interactions (has Zod, OK)",
+          "/api/properties/*"
+        ]
+      },
+      {
+        "severity": "medium",
+        "category": "reliability",
+        "description": "Only 4 routes implement timeouts for external calls (couples/activity, couples/mutual-likes, interactions/reset, interactions). Admin routes doing Zillow API calls and OpenAI calls have no timeout protection",
+        "recommendation": "Add timeouts to all routes that make external API calls (Zillow, OpenAI, Google Maps)",
+        "affected_routes": [
+          "/api/admin/*",
+          "/api/maps/*",
+          "/api/neighborhoods/vibes",
+          "/api/properties/vibes"
+        ]
+      },
+      {
+        "severity": "low",
+        "category": "observability",
+        "description": "Only 5 routes include performance tracking (startTime/Date.now() in response). No consistent latency monitoring",
+        "recommendation": "Add consistent performance tracking via withPerformanceTracking wrapper",
+        "affected_routes": ["/api/admin/*", "/api/maps/*", "/api/health"]
+      },
+      {
+        "severity": "low",
+        "category": "best_practice",
+        "description": "8 routes lack explicit 405 Method Not Allowed handlers for unsupported HTTP methods — in test environments, calling wrong method may hang",
+        "recommendation": "Add explicit 405 handlers for all routes, especially those tested in E2E/Playwright",
+        "affected_routes": [
+          "/api/couples/check-mutual",
+          "/api/couples/notify",
+          "/api/couples/stats",
+          "/api/maps/*",
+          "/api/admin/*"
+        ]
+      }
+    ],
+    "dead_code": [
+      {
+        "severity": "high",
+        "category": "unused_dependency",
+        "description": "9 npm production dependencies imported nowhere in src/: zustand, posthog-js, posthog-node, @sentry/nextjs, @ai-sdk/openai, ai, @tanstack/react-query-devtools, inngest, express-rate-limit",
+        "recommendation": "Remove from package.json to reduce bundle size and install time",
+        "estimated_savings": "~500KB+ bundle size reduction"
+      },
+      {
+        "severity": "high",
+        "category": "dead_server_action",
+        "description": "3 server actions in src/lib/supabase/actions.ts (login, signup, signInWithGoogle) are exported but never imported — forms use Supabase client directly",
+        "recommendation": "Remove dead server actions or wire them into auth forms",
+        "file": "src/lib/supabase/actions.ts"
+      },
+      {
+        "severity": "high",
+        "category": "dead_code",
+        "description": "authRateLimit exported from src/lib/middleware/rateLimiter.ts but never called — duplicate rate-limiting infrastructure",
+        "recommendation": "Remove authRateLimit; consolidate on single rate-limiting approach",
+        "file": "src/lib/middleware/rateLimiter.ts"
+      },
+      {
+        "severity": "high",
+        "category": "dead_code",
+        "description": "callRPC in src/lib/services/supabase-rpc-types.ts is a duplicate of the real RPC wrapper in utils/rpc-wrapper.ts — dead export",
+        "recommendation": "Remove dead RPC wrapper",
+        "file": "src/lib/services/supabase-rpc-types.ts"
+      },
+      {
+        "severity": "high",
+        "category": "dead_factory",
+        "description": "createZillowClient factory exported but never imported — dead factory pattern",
+        "recommendation": "Remove or wire into routes",
+        "file": "src/lib/api/zillow-client.ts"
+      },
+      {
+        "severity": "medium",
+        "category": "test_in_prod",
+        "description": "5 test-only exports in production code: __withRefreshRecovery (x2), __isMissingSupabaseConfigError, __resetSecureMapLoaderStateForTests, resetRateLimitStore",
+        "recommendation": "Move behind NODE_ENV guard or into test utils directory",
+        "affected_files": [
+          "src/lib/supabase/auth-helpers.ts",
+          "src/lib/supabase/optional-user.ts",
+          "src/lib/utils/rate-limit.ts"
+        ]
+      },
+      {
+        "severity": "medium",
+        "category": "unused_export",
+        "description": "CouplesMiddleware class exported but never instantiated anywhere in codebase",
+        "recommendation": "Remove or wire into route handlers",
+        "file": "src/lib/middleware/rateLimiter.ts"
+      },
+      {
+        "severity": "medium",
+        "category": "unused_export",
+        "description": "3 geo-selection utilities (convexHull, polygonCentroid, isPointInPolygon) only used in tests, not in production code",
+        "recommendation": "Move to test utils or remove",
+        "file": "src/lib/utils/geo-selection.ts"
+      },
+      {
+        "severity": "medium",
+        "category": "duplicate_system",
+        "description": "Two parallel rate-limiting systems: withRateLimit (middleware/rateLimiter.ts) and apiRateLimiter (utils/rate-limit.ts) — most routes use one or the other, not both",
+        "recommendation": "Consolidate on a single rate-limiting approach",
+        "files": [
+          "src/lib/middleware/rateLimiter.ts",
+          "src/lib/utils/rate-limit.ts"
+        ]
+      },
+      {
+        "severity": "low",
+        "category": "unused_export",
+        "description": "~15 coordinate conversion utilities in coordinates.ts never imported in production code",
+        "recommendation": "Audit and remove unused coordinate utilities",
+        "file": "src/lib/utils/coordinates.ts"
+      },
+      {
+        "severity": "low",
+        "category": "stale_todo",
+        "description": "Stale TODO markers in neighborhood.ts related to caching and error handling",
+        "recommendation": "Resolve or remove stale TODOs",
+        "file": "src/lib/services/properties/neighborhood.ts"
+      }
+    ]
+  },
+  "statistics": {
+    "routes_analyzed": 29,
+    "api_routes": 27,
+    "page_routes": 29,
+    "layout_routes": 5,
+    "middleware_lines": 330
+  },
+  "prioritized_actions": [
+    {
+      "rank": 1,
+      "action": "Fix middleware matcher to exclude _next/data and static assets",
+      "impact": "high",
+      "effort": "low",
+      "safe": true
+    },
+    {
+      "rank": 2,
+      "action": "Remove 9 unused npm dependencies from package.json",
+      "impact": "medium",
+      "effort": "low",
+      "safe": true
+    },
+    {
+      "rank": 3,
+      "action": "Add Cache-Control headers to all GET API endpoints",
+      "impact": "high",
+      "effort": "medium",
+      "safe": true
+    },
+    {
+      "rank": 4,
+      "action": "Add CORP and COOP security headers to middleware",
+      "impact": "medium",
+      "effort": "low",
+      "safe": true
+    },
+    {
+      "rank": 5,
+      "action": "Add rate limiting to unprotected POST endpoints and admin routes",
+      "impact": "medium",
+      "effort": "medium",
+      "safe": true
+    },
+    {
+      "rank": 6,
+      "action": "Standardize error handling on ApiErrorHandler or remove it",
+      "impact": "medium",
+      "effort": "high",
+      "safe": false
+    },
+    {
+      "rank": 7,
+      "action": "Add AbortController to middleware withTimeout()",
+      "impact": "medium",
+      "effort": "low",
+      "safe": true
+    },
+    {
+      "rank": 8,
+      "action": "Add timeouts to admin routes doing external API calls",
+      "impact": "medium",
+      "effort": "medium",
+      "safe": true
+    },
+    {
+      "rank": 9,
+      "action": "Remove dead server actions (login, signup, signInWithGoogle)",
+      "impact": "low",
+      "effort": "low",
+      "safe": true
+    },
+    {
+      "rank": 10,
+      "action": "Consolidate duplicate rate-limiting systems",
+      "impact": "low",
+      "effort": "medium",
+      "safe": false
+    }
+  ]
+}

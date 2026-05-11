@@ -202,14 +202,14 @@ describe('InFeedAd', () => {
       render(<InFeedAd />)
 
       const container = document.querySelector('[data-ad-position]')
-      expect(container).toHaveClass('rounded-token-xl')
+      expect(container).toHaveClass('rounded-xl')
     })
 
     test('has shadow styling', () => {
       render(<InFeedAd />)
 
       const container = document.querySelector('[data-ad-position]')
-      expect(container).toHaveClass('shadow-token-lg')
+      expect(container).toHaveClass('shadow-lg')
     })
 
     test('sponsored label has correct styling', () => {

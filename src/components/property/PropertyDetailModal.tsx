@@ -26,6 +26,7 @@ import {
 import { PropertyImage } from '@/components/ui/property-image'
 import { PropertyMap } from '@/components/property/PropertyMap'
 import { MutualLikesIndicator } from '@/components/features/couples/MutualLikesBadge'
+import { HouseholdReactionsPanel } from '@/components/features/couples/HouseholdReactionsPanel'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { usePropertyVibes } from '@/hooks/usePropertyVibes'
 import { useNeighborhoodVibes } from '@/hooks/useNeighborhoodVibes'
@@ -115,6 +116,63 @@ export function PropertyDetailModal({
     if (!hasMultipleImages) return
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
+
+  // Keyboard navigation: arrow keys cycle through gallery while modal is open.
+  useEffect(() => {
+    if (!open || !hasMultipleImages) return
+    if (typeof window === 'undefined') return
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return
+      const target = event.target instanceof HTMLElement ? event.target : null
+      const tagName = target?.tagName
+      if (tagName === 'INPUT' || tagName === 'TEXTAREA') return
+      if (target?.isContentEditable) return
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        showNextImage()
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        showPreviousImage()
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, hasMultipleImages, images.length])
+
+  // Preload neighbouring images so swipe/keyboard navigation feels instant.
+  useEffect(() => {
+    if (!open || !hasMultipleImages) return
+    if (typeof window === 'undefined') return
+
+    const preloadIndices = [
+      (normalizedIndex + 1) % images.length,
+      (normalizedIndex - 1 + images.length) % images.length,
+    ]
+
+    const preloadedNodes: HTMLLinkElement[] = []
+    for (const index of preloadIndices) {
+      const url = images[index]
+      if (!url) continue
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = url
+      document.head.appendChild(link)
+      preloadedNodes.push(link)
+    }
+
+    return () => {
+      preloadedNodes.forEach((node) => {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node)
+        }
+      })
+    }
+  }, [open, hasMultipleImages, normalizedIndex, images])
 
   const handleImageTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (typeof window !== 'undefined' && 'PointerEvent' in window) return
@@ -241,9 +299,9 @@ export function PropertyDetailModal({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 aria-label="Close property details"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white"
+                className="inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
               {hasImages && (
                 <div
@@ -253,7 +311,7 @@ export function PropertyDetailModal({
                   {normalizedIndex + 1} / {images.length}
                 </div>
               )}
-              <div className="h-9 w-9" aria-hidden="true" />
+              <div className="h-11 w-11" aria-hidden="true" />
             </div>
             <div
               className="relative aspect-video w-full touch-pan-y"
@@ -295,7 +353,7 @@ export function PropertyDetailModal({
                 href={buildZillowUrl(property)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 right-16 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white"
+                className="absolute top-4 right-16 z-20 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/30 text-white/80 backdrop-blur-sm transition-all hover:bg-black/50 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                 aria-label="View on Zillow"
               >
                 <ExternalLink className="h-5 w-5" />
@@ -306,7 +364,7 @@ export function PropertyDetailModal({
                   <button
                     type="button"
                     onClick={showPreviousImage}
-                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    className="pointer-events-auto inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                     aria-label="Previous image"
                     data-testid="previous-image"
                   >
@@ -315,7 +373,7 @@ export function PropertyDetailModal({
                   <button
                     type="button"
                     onClick={showNextImage}
-                    className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50"
+                    className="pointer-events-auto inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/50 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                     aria-label="Next image"
                     data-testid="next-image"
                   >
@@ -325,7 +383,7 @@ export function PropertyDetailModal({
               )}
 
               {hasMultipleImages && (
-                <div className="absolute bottom-4 left-1/2 z-10 max-w-[80%] -translate-x-1/2 overflow-x-auto rounded-full border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="absolute bottom-4 left-1/2 z-10 max-w-[80%] -translate-x-1/2 [scrollbar-width:none] overflow-x-auto rounded-full border border-white/10 bg-black/25 px-2 py-1.5 backdrop-blur-sm [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   <div className="flex items-center gap-1">
                     {images.map((_, index) => {
                       const isActive = index === normalizedIndex
@@ -337,7 +395,7 @@ export function PropertyDetailModal({
                           aria-current={isActive ? 'true' : undefined}
                           data-testid={`image-dot-${index}`}
                           onClick={() => setCurrentImageIndex(index)}
-                          className="group relative flex h-6 w-6 items-center justify-center rounded-full transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none"
+                          className="group relative inline-flex min-h-[44px] min-w-[28px] touch-manipulation items-center justify-center rounded-full px-1 py-1 transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/60 focus-visible:outline-none sm:h-6 sm:min-h-0 sm:w-6 sm:min-w-0 sm:px-0 sm:py-0"
                         >
                           <span
                             className={`block h-1.5 w-1.5 rounded-full bg-white/50 transition-all duration-200 ${
@@ -461,6 +519,14 @@ export function PropertyDetailModal({
                 ) : null}
               </div>
 
+              {/* Household partner reactions */}
+              {property.id && (
+                <HouseholdReactionsPanel
+                  propertyId={property.id}
+                  className="pt-2"
+                />
+              )}
+
               <div className="space-y-3">
                 <h3 className="font-display text-hm-stone-200 text-lg font-medium">
                   Location
@@ -471,7 +537,7 @@ export function PropertyDetailModal({
                   </p>
                   <button
                     type="button"
-                    className="text-hm-stone-300 hover:text-hm-stone-200 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium transition sm:hidden"
+                    className="text-hm-stone-300 hover:text-hm-stone-200 inline-flex min-h-[44px] touch-manipulation items-center gap-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none sm:hidden"
                     onClick={() => setIsMapExpanded((prev) => !prev)}
                     aria-label={isMapExpanded ? 'Hide map' : 'Show map'}
                     data-testid="toggle-map"

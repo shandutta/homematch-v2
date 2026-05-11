@@ -1,23 +1,35 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import {
   Geist,
   Geist_Mono,
   Fraunces,
   Plus_Jakarta_Sans,
 } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { shadcn } from '@clerk/ui/themes'
 import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { MotionProvider } from '@/components/shared/MotionProvider'
 import { PerformanceProvider } from '@/components/shared/PerformanceProvider'
 import { Toaster } from '@/components/ui/sonner'
 import { AnalyticsGate } from '@/components/legal/AnalyticsGate'
 import { AdSenseGate } from '@/components/legal/AdSenseGate'
 import { CookieConsentBanner } from '@/components/legal/CookieConsentBanner'
+import { CcpaOptOutLink } from '@/components/legal/CcpaOptOutLink'
 import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED } from '@/lib/adsense'
+import {
+  createOrganizationJsonLd,
+  createWebApplicationJsonLd,
+  SEO_KEYWORDS,
+} from '@/lib/seo/route-metadata'
 
 const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
+
+const organizationJsonLd = createOrganizationJsonLd()
+const webApplicationJsonLd = createWebApplicationJsonLd()
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -49,7 +61,57 @@ export const metadata: Metadata = {
   title: 'HomeMatch - AI-Powered Home Search',
   description:
     'Find your perfect home with AI-powered matching and personalized recommendations',
+  keywords: SEO_KEYWORDS.join(', '),
   metadataBase: new URL(siteUrl),
+  applicationName: 'HomeMatch',
+  authors: [{ name: 'HomeMatch' }],
+  creator: 'HomeMatch',
+  publisher: 'HomeMatch',
+  alternates: {
+    canonical: siteUrl,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: 'HomeMatch — Collaborative Home Search for Couples & Households',
+    description:
+      'Find your perfect home with AI-powered matching and personalized recommendations',
+    url: siteUrl,
+    siteName: 'HomeMatch',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: `${siteUrl}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: 'HomeMatch — Collaborative Home Search',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@homematch',
+    creator: '@homematch',
+    title: 'HomeMatch — Collaborative Home Search for Couples & Households',
+    description:
+      'Find your perfect home with AI-powered matching and personalized recommendations',
+    images: [`${siteUrl}/twitter-image.jpg`],
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 }
 
 export default function RootLayout({
@@ -60,10 +122,6 @@ export default function RootLayout({
   return (
     <html lang="en" data-test-mode={isTestMode ? 'true' : undefined}>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
-        />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -74,13 +132,13 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'HomeMatch',
-              url: siteUrl,
-              logo: `${siteUrl}/favicon.ico`,
-            }),
+            __html: JSON.stringify(organizationJsonLd),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webApplicationJsonLd),
           }}
         />
         {/* 
@@ -91,13 +149,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${plusJakartaSans.variable} antialiased`}
       >
-        <ErrorBoundary>
-          <PerformanceProvider>{children}</PerformanceProvider>
-        </ErrorBoundary>
-        <Toaster position="top-right" />
-        <AnalyticsGate />
-        <AdSenseGate />
-        <CookieConsentBanner />
+        <ClerkProvider appearance={{ theme: shadcn }}>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-slate-900 focus:shadow-lg focus:ring-2 focus:ring-sky-500"
+          >
+            Skip to content
+          </a>
+          <ErrorBoundary>
+            <PerformanceProvider>
+              <MotionProvider>
+                <main id="main-content">{children}</main>
+              </MotionProvider>
+            </PerformanceProvider>
+          </ErrorBoundary>
+          <Toaster position="top-right" />
+          <AnalyticsGate />
+          <AdSenseGate />
+          <CookieConsentBanner />
+          <CcpaOptOutLink />
+        </ClerkProvider>
       </body>
     </html>
   )

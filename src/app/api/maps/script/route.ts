@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 /**
  * Secure Google Maps Script Loader API
@@ -9,25 +10,19 @@ export async function GET() {
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
 
     if (!serverApiKey) {
-      return NextResponse.json(
-        { error: 'Maps service unavailable' },
-        { status: 503 }
-      )
+      return ApiErrorHandler.serviceUnavailable('Maps service unavailable')
     }
 
     // Build the script URL with restricted server key (not exposed to client)
     const _scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=places,drawing&loading=async&callback=initGoogleMaps`
 
     // Return the script URL to the client (without exposing the key)
-    return NextResponse.json({
+    return noStoreJson({
       scriptUrl: '/api/maps/proxy-script',
       status: 'ready',
     })
   } catch (error) {
     console.error('Maps script endpoint error:', error)
-    return NextResponse.json(
-      { error: 'Maps service unavailable' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Maps service unavailable', error)
   }
 }

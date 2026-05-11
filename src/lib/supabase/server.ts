@@ -1,104 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
-import { AuthApiError, type SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
-import { isInvalidRefreshTokenError } from './auth-helpers'
+import { buildSupabaseSessionCookieOptions } from './cookie-options'
 import { getSupabaseAuthStorageKey } from './storage-keys'
-
-type SupabaseAuthSubset = Pick<
-  SupabaseClient<AppDatabase>['auth'],
-  'getSession' | 'getUser' | 'signOut'
->
-
-type SupabaseAuthClient = {
-  auth: SupabaseAuthSubset
-}
-
-const clearStaleSession = async (supabase: SupabaseAuthClient) => {
-  try {
-    await supabase.auth.signOut({ scope: 'local' })
-  } catch (err) {
-    console.warn('[Supabase][Server] Failed to clear stale session', err)
-  }
-}
-
-const withRefreshRecovery = (
-  supabase: SupabaseAuthClient,
-  context: 'server' | 'api' = 'server'
-) => {
-  const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null
-
-  const describe = (error: unknown): { code?: string; message?: string } => {
-    if (error instanceof AuthApiError) {
-      return { code: error.code, message: error.message }
-    }
-    if (isRecord(error)) {
-      return {
-        code: typeof error.code === 'string' ? error.code : undefined,
-        message: typeof error.message === 'string' ? error.message : undefined,
-      }
-    }
-    return {}
-  }
-
-  const originalGetSession = supabase.auth.getSession.bind(supabase.auth)
-  const getSessionWithRecovery: typeof supabase.auth.getSession = async () => {
-    try {
-      const result = await originalGetSession()
-      if (result.error && isInvalidRefreshTokenError(result.error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
-          describe(result.error)
-        )
-        await clearStaleSession(supabase)
-        return { data: { session: null }, error: null }
-      }
-      return result
-    } catch (error) {
-      if (isInvalidRefreshTokenError(error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getSession`,
-          describe(error)
-        )
-        await clearStaleSession(supabase)
-        return { data: { session: null }, error: null }
-      }
-      throw error
-    }
-  }
-  supabase.auth.getSession = getSessionWithRecovery
-
-  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  const getUserWithRecovery: typeof supabase.auth.getUser = async () => {
-    try {
-      const result = await originalGetUser()
-      if (result.error && isInvalidRefreshTokenError(result.error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
-          describe(result.error)
-        )
-        await clearStaleSession(supabase)
-        return originalGetUser()
-      }
-      return result
-    } catch (error) {
-      if (isInvalidRefreshTokenError(error)) {
-        console.warn(
-          `[Supabase][${context}] Clearing invalid refresh token during getUser`,
-          describe(error)
-        )
-        await clearStaleSession(supabase)
-        return originalGetUser()
-      }
-      throw error
-    }
-  }
-  supabase.auth.getUser = getUserWithRecovery
-}
-
-export const __withRefreshRecovery = withRefreshRecovery
+import { withRefreshRecovery } from './refresh-recovery'
+import { isInvalidRefreshTokenError } from './auth-helpers'
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
@@ -130,15 +37,11 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, {
-                ...options,
-                // Enhanced cookie configuration for session persistence
-                httpOnly: false, // Allow client-side access for session hydration
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax', // Better cross-browser compatibility
-                maxAge: 60 * 60 * 24 * 7, // 7 days
-                path: '/',
-              })
+              cookieStore.set(
+                name,
+                value,
+                buildSupabaseSessionCookieOptions(options)
+              )
             )
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -165,7 +68,10 @@ export async function createClient() {
     }
   )
 
-  withRefreshRecovery(supabase)
+  withRefreshRecovery(supabase, {
+    logPrefix: '[Supabase][Server]',
+    context: 'server',
+  })
 
   return supabase
 }
@@ -227,31 +133,50 @@ export function createApiClient(request?: NextRequest) {
     }
   )
 
-  withRefreshRecovery(supabase, 'api')
-
-  // Monkey-patch getUser to automatically use the bearer token if available and no token is provided
-  // This ensures that client.auth.getUser() works as expected in API routes even without session persistence
-  const originalGetUser = supabase.auth.getUser.bind(supabase.auth)
-  const getUserWithBearer: typeof supabase.auth.getUser = async (
-    token?: string
-  ) => {
-    if (!token && bearerToken) {
-      return originalGetUser(bearerToken)
-    }
-    return originalGetUser(token)
-  }
-  supabase.auth.getUser = getUserWithBearer
+  withRefreshRecovery(supabase, {
+    logPrefix: '[Supabase][Server]',
+    context: 'api',
+  })
 
   return supabase
 }
 
+export type ApprovedServiceRoleCapability =
+  | 'users-search'
+  | 'household-disputes'
+  | 'invite-acceptance'
+  | 'invite-preview'
+  // Clerk webhook (verified upstream by Svix signature) needs to upsert
+  // user_profiles for new sign-ups, before the user has any session at all.
+  | 'clerk-webhook'
+
+type CreateServiceClientOptions = {
+  approvedCapability?: ApprovedServiceRoleCapability
+}
+
+const APPROVED_SERVICE_ROLE_CAPABILITIES =
+  new Set<ApprovedServiceRoleCapability>([
+    'users-search',
+    'household-disputes',
+    'invite-acceptance',
+    'invite-preview',
+    'clerk-webhook',
+  ])
+
 // Alternative server client with service role for administrative operations
 // WARNING: This uses the service role key which bypasses RLS
-// Only use for admin operations after proper authorization checks
-export async function createServiceClient() {
+// Only use for admin operations after proper authorization checks, or for an
+// explicit repo-approved capability with route-local auth/resource guards.
+export async function createServiceClient(
+  options: CreateServiceClientOptions = {}
+) {
+  const hasApprovedCapability =
+    options.approvedCapability !== undefined &&
+    APPROVED_SERVICE_ROLE_CAPABILITIES.has(options.approvedCapability)
+
   // Check if caller is authorized to use service role
-  // This should be enhanced based on your specific authorization requirements
-  const isAuthorized = await checkServiceRoleAuthorization()
+  const isAuthorized =
+    hasApprovedCapability || (await checkServiceRoleAuthorization())
 
   if (!isAuthorized) {
     throw new Error('Unauthorized access to service role client')
@@ -269,6 +194,8 @@ export async function createServiceClient() {
   )
 }
 
+const SERVICE_ROLE_AUTHORIZED_ROLES = new Set(['admin'])
+
 // Authorization check for service role usage
 async function checkServiceRoleAuthorization(): Promise<boolean> {
   try {
@@ -285,26 +212,23 @@ async function checkServiceRoleAuthorization(): Promise<boolean> {
       return false
     }
 
-    if (!user) return false
+    if (error || !user) return false
 
-    // Check if user has admin role
-    // This is a placeholder - implement your actual admin check logic
-    const { data: profile } = await client
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    const { data: assignment, error: assignmentError } = await client
+      .from('admin_role_assignments')
+      .select('role, enabled, expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-    // Only allow service role for admin users
-    // Adjust this based on your authorization model
-    const role =
-      profile &&
-      typeof profile === 'object' &&
-      'role' in profile &&
-      typeof profile.role === 'string'
-        ? profile.role
-        : undefined
-    return role === 'admin'
+    if (assignmentError || !assignment || !assignment.enabled) return false
+    if (!SERVICE_ROLE_AUTHORIZED_ROLES.has(assignment.role)) return false
+
+    if (assignment.expires_at) {
+      const expiresAt = Date.parse(assignment.expires_at)
+      if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return false
+    }
+
+    return true
   } catch {
     return false
   }

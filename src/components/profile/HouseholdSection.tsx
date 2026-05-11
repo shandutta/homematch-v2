@@ -24,7 +24,7 @@ import { UserServiceClient } from '@/lib/services/users-client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBrowserAppUrl } from '@/lib/utils/site-url'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 interface HouseholdSectionProps {
   profile: UserProfile & { household?: Household | null }
@@ -273,7 +273,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
     return (
       <div className="space-y-6">
         {(error || inviteError) && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -281,7 +281,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error || inviteError}</AlertDescription>
             </Alert>
-          </motion.div>
+          </m.div>
         )}
 
         {/* Current Household Card */}
@@ -336,23 +336,23 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 >
                   <AnimatePresence mode="wait">
                     {codeCopied ? (
-                      <motion.div
+                      <m.div
                         key="check"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
                       >
                         <Check className="h-4 w-4 text-emerald-400" />
-                      </motion.div>
+                      </m.div>
                     ) : (
-                      <motion.div
+                      <m.div
                         key="copy"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
                       >
                         <Copy className="h-4 w-4" />
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </button>
@@ -514,7 +514,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                     const styles =
                       inviteStatusStyles[status] || inviteStatusStyles.pending
                     return (
-                      <motion.div
+                      <m.div
                         key={invite.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -545,7 +545,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                             >
                               <AnimatePresence mode="wait">
                                 {linkCopied === invite.token ? (
-                                  <motion.span
+                                  <m.span
                                     key="check"
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
@@ -554,9 +554,9 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                                   >
                                     <Check className="h-3 w-3 text-emerald-400" />
                                     Copied
-                                  </motion.span>
+                                  </m.span>
                                 ) : (
-                                  <motion.span
+                                  <m.span
                                     key="copy"
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
@@ -565,7 +565,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                                   >
                                     <LinkIcon className="h-3 w-3" />
                                     Copy link
-                                  </motion.span>
+                                  </m.span>
                                 )}
                               </AnimatePresence>
                             </button>
@@ -585,7 +585,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                             &ldquo;{invite.message}&rdquo;
                           </p>
                         )}
-                      </motion.div>
+                      </m.div>
                     )
                   })}
                 </div>
@@ -601,15 +601,12 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
   return (
     <div className="space-y-6">
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Alert className="border-red-500/30 bg-red-500/10 text-red-300">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        </motion.div>
+        </m.div>
       )}
 
       {/* Create Household Card */}

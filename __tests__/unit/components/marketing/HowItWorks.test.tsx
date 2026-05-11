@@ -1,18 +1,23 @@
 import { render, screen } from '@testing-library/react'
 import { HowItWorks } from '@/components/marketing/HowItWorks'
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
     div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
       <div {...props}>{children}</div>
     ),
     p: ({ children, ...props }: JSX.IntrinsicElements['p']) => (
       <p {...props}>{children}</p>
     ),
-  },
-  useInView: () => true,
-}))
+  }
+  return {
+    motion,
+    m: motion,
+    useInView: () => true,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -120,7 +125,7 @@ describe('HowItWorks', () => {
       'bg-white',
       'p-5',
       'sm:p-6',
-      'rounded-token-xl',
+      'rounded-xl',
       'transition-all'
     )
   })
@@ -190,7 +195,7 @@ describe('HowItWorks', () => {
 
     descriptions.forEach((desc) => {
       const element = screen.getByText(desc)
-      expect(element).toHaveClass('text-gray-600')
+      expect(element).toHaveClass('text-gray-700')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-body)' })
     })
   })

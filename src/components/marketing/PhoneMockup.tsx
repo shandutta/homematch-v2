@@ -2,6 +2,7 @@
 
 import { useMotionValue, useTransform, animate } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
+import { MotionMaxProvider } from '@/components/shared/MotionMaxProvider'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Heart, X, Home } from 'lucide-react'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -534,202 +535,210 @@ export function PhoneMockup() {
   }, [])
 
   return (
-    <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
-      {/* Professional Device Frame */}
-      <div className="shadow-token-2xl blur-glass-md relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] ring-1 ring-white/60 ring-inset">
-        {/* Bezel/Inner border */}
-        <div
-          className="pointer-events-none absolute inset-0 rounded-[3rem] ring-1 ring-black/5"
-          aria-hidden="true"
-        />
-        {/* Subtle reflection */}
-        <div
-          className="pointer-events-none absolute inset-x-6 top-3 h-8 rounded-full bg-white/50 blur-[6px]"
-          aria-hidden="true"
-        />
-
-        {/* Clean camera island only (no extra speaker blocks to avoid overlap) */}
-        <div
-          className="pointer-events-none absolute top-2 left-1/2 z-30 h-6 w-40 -translate-x-1/2 rounded-full bg-zinc-900/95 shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/10"
-          aria-hidden="true"
-        />
-
-        {/* Screen */}
-        <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-[#0b0f1a] ring-1 ring-white/10">
-          {/* Premium gradient aurora backdrop with subtle grain */}
+    <MotionMaxProvider>
+      <div className="relative mx-auto w-full" style={{ maxWidth: '24rem' }}>
+        {/* Professional Device Frame */}
+        <div className="shadow-token-2xl blur-glass-md relative z-20 mx-auto h-[700px] w-[350px] rounded-[3rem] border border-zinc-300/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,246,248,0.9))] ring-1 ring-white/60 ring-inset">
+          {/* Bezel/Inner border */}
           <div
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 rounded-[3rem] ring-1 ring-black/5"
             aria-hidden="true"
-          >
-            <div
-              className="absolute inset-0 [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)] opacity-[0.85]"
-              style={{
-                background:
-                  'radial-gradient(1200px 700px at 80% -20%, rgba(56,189,248,0.18), transparent 60%),' +
-                  'radial-gradient(1000px 600px at 10% 110%, rgba(59,130,246,0.16), transparent 60%),' +
-                  'conic-gradient(from 210deg at 60% 40%, rgba(147,197,253,0.08), rgba(56,189,248,0.10), rgba(59,130,246,0.08), rgba(147,197,253,0.08))',
-                filter: 'saturate(1.1) blur(0.2px)',
-              }}
-            />
-            {/* Subtle starfield with film grain for depth */}
-            <div
-              className="absolute inset-0 opacity-80"
-              style={{
-                background:
-                  'radial-gradient(0.6px 0.6px at 8% 12%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.5px 0.5px at 14% 32%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.7px 0.7px at 22% 54%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.6px 0.6px at 28% 76%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.7px 0.7px at 36% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.5px 0.5px at 44% 42%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.8px 0.8px at 52% 64%, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.6px 0.6px at 60% 82%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.6px 0.6px at 68% 26%, rgba(255,255,255,0.7), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.5px 0.5px at 76% 48%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.7px 0.7px at 84% 70%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
-                  'radial-gradient(0.6px 0.6px at 90% 88%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%)',
-                mixBlendMode: 'screen',
-              }}
-            />
-            <div
-              className="absolute inset-0 opacity-[0.12]"
-              style={{
-                backgroundImage:
-                  'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
-                backgroundSize: '3px 3px',
-                mixBlendMode: 'overlay',
-              }}
-            />
-          </div>
-          {/* Inner vignette to focus content and add premium depth */}
+          />
+          {/* Subtle reflection */}
           <div
-            className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)] ring-white/5"
+            className="pointer-events-none absolute inset-x-6 top-3 h-8 rounded-full bg-white/50 blur-[6px]"
             aria-hidden="true"
           />
 
-          {/* Status Bar - Cleaner without timestamp */}
-          <div className="flex h-8 items-center justify-end px-5 text-[11px] text-zinc-300/90">
-            {/* Status icons area - battery, wifi, signal */}
-            <div className="flex items-center gap-1">
-              {/* Signal bars */}
-              <svg
-                width="15"
-                height="10"
-                viewBox="0 0 15 10"
-                fill="currentColor"
-                className="opacity-90"
-              >
-                <rect x="0" y="6" width="2.5" height="4" rx="0.5" />
-                <rect x="4" y="4" width="2.5" height="6" rx="0.5" />
-                <rect x="8" y="2" width="2.5" height="8" rx="0.5" />
-                <rect x="12" y="0" width="2.5" height="10" rx="0.5" />
-              </svg>
-              {/* WiFi icon */}
-              <svg
-                width="14"
-                height="10"
-                viewBox="0 0 14 10"
-                fill="currentColor"
-                className="opacity-90"
-              >
-                <path d="M7 2.5c2.5 0 4.5 1 6 2.5l-1.5 1.5c-1-1-2.5-1.5-4.5-1.5s-3.5.5-4.5 1.5L1 5C2.5 3.5 4.5 2.5 7 2.5zM7 6c1.5 0 2.5.5 3.5 1.5L9 9c-.5-.5-1-1-2-1s-1.5.5-2 1L3.5 7.5C4.5 6.5 5.5 6 7 6z" />
-              </svg>
-              {/* Battery icon */}
-              <svg
-                width="22"
-                height="10"
-                viewBox="0 0 22 10"
-                fill="none"
-                className="opacity-90"
-              >
-                <rect
-                  x="0.5"
-                  y="1.5"
-                  width="18"
-                  height="7"
-                  rx="1.5"
-                  stroke="currentColor"
-                  strokeWidth="0.8"
-                />
-                <rect
-                  x="2"
-                  y="3"
-                  width="15"
-                  height="4"
-                  rx="0.5"
-                  fill="currentColor"
-                />
-                <rect
-                  x="19"
-                  y="3.5"
-                  width="2"
-                  height="3"
-                  rx="0.5"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
-          </div>
+          {/* Clean camera island only (no extra speaker blocks to avoid overlap) */}
+          <div
+            className="pointer-events-none absolute top-2 left-1/2 z-30 h-6 w-40 -translate-x-1/2 rounded-full bg-zinc-900/95 shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/10"
+            aria-hidden="true"
+          />
 
-          {/* App Content */}
-          <div className="relative h-[calc(100%-2rem)] bg-transparent p-4">
-            {/* App Header */}
-            <h2 className="mb-2 text-center text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
-              HomeMatch
-            </h2>
-
-            {/* Card Stack */}
+          {/* Screen */}
+          <div className="relative m-[10px] h-[calc(100%-20px)] overflow-hidden rounded-[2.2rem] bg-[#0b0f1a] ring-1 ring-white/10">
+            {/* Premium gradient aurora backdrop with subtle grain */}
             <div
-              className="relative h-[500px] outline-none"
-              role="group"
-              aria-label="Swipe through property cards"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                const top = cards[0]
-                if (!top) return
-                if (e.key === 'ArrowLeft') {
-                  e.preventDefault()
-                  handleSwipe(top.id, 'left')
-                } else if (e.key === 'ArrowRight') {
-                  e.preventDefault()
-                  handleSwipe(top.id, 'right')
-                }
-              }}
+              className="pointer-events-none absolute inset-0"
+              aria-hidden="true"
             >
-              {cards.map((property, index) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  index={index}
-                  onSwipe={(direction) => handleSwipe(property.id, direction)}
-                  autoplayHint={index === 0 && !autoplayDoneRef.current}
-                  onAutoplayDone={() => {
-                    autoplayDoneRef.current = true
-                  }}
-                />
-              ))}
+              <div
+                className="absolute inset-0 [mask-image:radial-gradient(120%_100%_at_50%_0%,#000_40%,transparent_80%)] opacity-[0.85]"
+                style={{
+                  background:
+                    'radial-gradient(1200px 700px at 80% -20%, rgba(56,189,248,0.18), transparent 60%),' +
+                    'radial-gradient(1000px 600px at 10% 110%, rgba(59,130,246,0.16), transparent 60%),' +
+                    'conic-gradient(from 210deg at 60% 40%, rgba(147,197,253,0.08), rgba(56,189,248,0.10), rgba(59,130,246,0.08), rgba(147,197,253,0.08))',
+                  filter: 'saturate(1.1) blur(0.2px)',
+                }}
+              />
+              {/* Subtle starfield with film grain for depth */}
+              <div
+                className="absolute inset-0 opacity-80"
+                style={{
+                  background:
+                    'radial-gradient(0.6px 0.6px at 8% 12%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.5px 0.5px at 14% 32%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.7px 0.7px at 22% 54%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.6px 0.6px at 28% 76%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.7px 0.7px at 36% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.5px 0.5px at 44% 42%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.8px 0.8px at 52% 64%, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.6px 0.6px at 60% 82%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.6px 0.6px at 68% 26%, rgba(255,255,255,0.7), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.5px 0.5px at 76% 48%, rgba(255,255,255,0.6), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.7px 0.7px at 84% 70%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%),' +
+                    'radial-gradient(0.6px 0.6px at 90% 88%, rgba(255,255,255,0.65), rgba(255,255,255,0) 55%)',
+                  mixBlendMode: 'screen',
+                }}
+              />
+              <div
+                className="absolute inset-0 opacity-[0.12]"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
+                  backgroundSize: '3px 3px',
+                  mixBlendMode: 'overlay',
+                }}
+              />
+            </div>
+            {/* Inner vignette to focus content and add premium depth */}
+            <div
+              className="pointer-events-none absolute inset-0 rounded-[2.1rem] ring-1 [box-shadow:inset_0_0_60px_rgba(0,0,0,0.45),inset_0_0_120px_rgba(2,6,23,0.45)] ring-white/5"
+              aria-hidden="true"
+            />
 
-              {/* Empty State */}
-              {cards.length === 0 && (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center" role="status" aria-live="polite">
+            {/* Status Bar - Cleaner without timestamp */}
+            <div className="flex h-8 items-center justify-end px-5 text-[11px] text-zinc-300/90">
+              {/* Status icons area - battery, wifi, signal */}
+              <div className="flex items-center gap-1">
+                {/* Signal bars */}
+                <svg
+                  width="15"
+                  height="10"
+                  viewBox="0 0 15 10"
+                  fill="currentColor"
+                  className="opacity-90"
+                >
+                  <rect x="0" y="6" width="2.5" height="4" rx="0.5" />
+                  <rect x="4" y="4" width="2.5" height="6" rx="0.5" />
+                  <rect x="8" y="2" width="2.5" height="8" rx="0.5" />
+                  <rect x="12" y="0" width="2.5" height="10" rx="0.5" />
+                </svg>
+                {/* WiFi icon */}
+                <svg
+                  width="14"
+                  height="10"
+                  viewBox="0 0 14 10"
+                  fill="currentColor"
+                  className="opacity-90"
+                >
+                  <path d="M7 2.5c2.5 0 4.5 1 6 2.5l-1.5 1.5c-1-1-2.5-1.5-4.5-1.5s-3.5.5-4.5 1.5L1 5C2.5 3.5 4.5 2.5 7 2.5zM7 6c1.5 0 2.5.5 3.5 1.5L9 9c-.5-.5-1-1-2-1s-1.5.5-2 1L3.5 7.5C4.5 6.5 5.5 6 7 6z" />
+                </svg>
+                {/* Battery icon */}
+                <svg
+                  width="22"
+                  height="10"
+                  viewBox="0 0 22 10"
+                  fill="none"
+                  className="opacity-90"
+                >
+                  <rect
+                    x="0.5"
+                    y="1.5"
+                    width="18"
+                    height="7"
+                    rx="1.5"
+                    stroke="currentColor"
+                    strokeWidth="0.8"
+                  />
+                  <rect
+                    x="2"
+                    y="3"
+                    width="15"
+                    height="4"
+                    rx="0.5"
+                    fill="currentColor"
+                  />
+                  <rect
+                    x="19"
+                    y="3.5"
+                    width="2"
+                    height="3"
+                    rx="0.5"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* App Content */}
+            <div className="relative h-[calc(100%-2rem)] bg-transparent p-4">
+              {/* App Header */}
+              <h2 className="mb-2 text-center text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
+                HomeMatch
+              </h2>
+
+              {/* Card Stack */}
+              <div
+                className="relative h-[500px] outline-none"
+                role="group"
+                aria-label="Swipe through property cards"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  const top = cards[0]
+                  if (!top) return
+                  if (e.key === 'ArrowLeft') {
+                    e.preventDefault()
+                    handleSwipe(top.id, 'left')
+                  } else if (e.key === 'ArrowRight') {
+                    e.preventDefault()
+                    handleSwipe(top.id, 'right')
+                  }
+                }}
+              >
+                {cards.map((property, index) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    index={index}
+                    onSwipe={(direction) => handleSwipe(property.id, direction)}
+                    autoplayHint={index === 0 && !autoplayDoneRef.current}
+                    onAutoplayDone={() => {
+                      autoplayDoneRef.current = true
+                    }}
+                  />
+                ))}
+
+                {/* Empty State */}
+                {cards.length === 0 && (
+                  <div className="flex h-full items-center justify-center">
                     <div
-                      className="mb-2 flex justify-center"
-                      aria-hidden="true"
+                      className="text-center"
+                      role="status"
+                      aria-live="polite"
                     >
-                      <Home className="h-12 w-12 text-zinc-400" />
+                      <div
+                        className="mb-2 flex justify-center"
+                        aria-hidden="true"
+                      >
+                        <Home className="h-12 w-12 text-zinc-400" />
+                      </div>
+                      <p className="mt-2 text-zinc-300">
+                        Loading more homes...
+                      </p>
                     </div>
-                    <p className="mt-2 text-zinc-300">Loading more homes...</p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Camera island (single, cleaned) */}
-      <div className="absolute top-[10px] left-1/2 z-30 h-6 w-40 -translate-x-1/2 rounded-full bg-zinc-900 shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/10" />
-    </div>
+        {/* Camera island (single, cleaned) */}
+        <div className="absolute top-[10px] left-1/2 z-30 h-6 w-40 -translate-x-1/2 rounded-full bg-zinc-900 shadow-[inset_0_-1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/10" />
+      </div>
+    </MotionMaxProvider>
   )
 }

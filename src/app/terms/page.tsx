@@ -1,11 +1,12 @@
-import { Metadata } from 'next'
 import Link from 'next/link'
+import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
 
-export const metadata: Metadata = {
+export const metadata = createPublicRouteMetadata({
   title: 'Terms of Service | HomeMatch',
   description:
     'Understand the terms that govern the use of HomeMatch for collaborative home search.',
-}
+  path: '/terms',
+})
 
 export default function TermsPage() {
   return (

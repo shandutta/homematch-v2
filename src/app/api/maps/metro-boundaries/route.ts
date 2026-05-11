@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { createApiClient } from '@/lib/supabase/server'
 import type { MapNeighborhoodInput } from '@/lib/maps/geometry'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const CACHE_TTL_MS = 1000 * 60 * 60
 const metroCache = new Map<string, { expiresAt: number; data: unknown }>()
@@ -11,10 +12,7 @@ export async function GET(request: Request) {
   const debug = searchParams.get('debug') === '1'
 
   if (!metro) {
-    return NextResponse.json(
-      { error: 'Missing metro parameter' },
-      { status: 400 }
-    )
+    return ApiErrorHandler.badRequest('Missing metro parameter')
   }
 
   const cacheKey = metro.toLowerCase()
@@ -25,7 +23,7 @@ export async function GET(request: Request) {
     })
   }
 
-  const supabase = await getServiceRoleClient()
+  const supabase = createApiClient()
   const { data, error } = await supabase
     .from('neighborhoods')
     .select('id,name,city,state,bounds')
@@ -33,9 +31,9 @@ export async function GET(request: Request) {
     .order('name')
 
   if (error) {
-    return NextResponse.json(
-      { error: `Failed to load neighborhoods: ${error.message}` },
-      { status: 500 }
+    return ApiErrorHandler.serverError(
+      `Failed to load neighborhoods: ${error.message}`,
+      error
     )
   }
 

@@ -12,7 +12,7 @@ export function MarketingPreviewCardStatic({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 shadow-[0_18px_44px_rgba(0,0,0,0.3),0_0_40px_rgba(56,189,248,0.08)] backdrop-blur-xl transition-shadow duration-300 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4),0_0_60px_rgba(56,189,248,0.12)]',
+        'group shadow-card-glow hover:shadow-card-glow-hover relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0f172a]/85 backdrop-blur-xl transition-shadow duration-300',
         className
       )}
     >
@@ -59,7 +59,7 @@ export function MarketingPreviewCardStatic({
               title: 'Real listings, quick swipes',
               copy: 'Decide together in one tap.',
               icon: Heart,
-              className: 'right-2 bottom-20 sm:left-4 sm:bottom-25',
+              className: 'hidden sm:flex sm:left-4 sm:bottom-25',
             },
           ].map(({ title, copy, icon: Icon, className: positionClass }) => (
             <div
@@ -81,11 +81,16 @@ export function MarketingPreviewCardStatic({
 
       <div className="space-y-4 p-6 pb-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
-            Listing · Lake Merritt
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">
+              Example Listing
+            </p>
+            <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold tracking-[0.14em] text-amber-300 uppercase">
+              Example
+            </span>
+          </div>
           <h3 className="text-xl font-semibold text-white">
-            1200 Lakeview Dr, Oakland, CA 94610
+            123 Sample Street, Anytown, USA
           </h3>
         </div>
 
@@ -104,25 +109,21 @@ export function MarketingPreviewCardStatic({
           </div>
         </div>
 
-        <div className="flex gap-3 pt-1">
-          <button
-            type="button"
-            className="flex-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-400 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-rose-500/50 hover:bg-rose-500/20"
-          >
+        {/* Decorative preview only — these aren't real controls. Marked
+            aria-hidden so screen readers + keyboard focus skip them. */}
+        <div className="flex gap-3 pt-1" aria-hidden="true">
+          <div className="flex-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-400 shadow-sm">
             <span className="inline-flex items-center justify-center gap-2">
               <X className="h-4 w-4" />
               Pass
             </span>
-          </button>
-          <button
-            type="button"
-            className="flex-1 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-4 py-3 text-sm font-semibold text-emerald-400 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:bg-emerald-500/30"
-          >
+          </div>
+          <div className="flex-1 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-4 py-3 text-sm font-semibold text-emerald-400 shadow-sm">
             <span className="inline-flex items-center justify-center gap-2">
               <Heart className="h-4 w-4" />
               Like
             </span>
-          </button>
+          </div>
         </div>
       </div>
     </div>

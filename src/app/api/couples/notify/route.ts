@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 const notificationSchema = z.object({
   propertyId: z.string().uuid(),
@@ -12,15 +15,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('couples:notify', user.id)
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     // Parse and validate request body
     const body = await request.json()
@@ -87,15 +89,9 @@ export async function POST(request: NextRequest) {
     console.error('Error in couples notification API:', error)
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(error)
     }
 
-    return NextResponse.json(
-      { error: 'Failed to process notification' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to process notification', error)
   }
 }

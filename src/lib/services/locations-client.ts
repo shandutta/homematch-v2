@@ -17,7 +17,7 @@ export type MapNeighborhoodResponse = {
 
 export class LocationsClient {
   static async getCities(): Promise<CityOption[]> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('neighborhoods')
@@ -49,7 +49,7 @@ export class LocationsClient {
   ): Promise<NeighborhoodOption[]> {
     if (!cities.length) return []
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const cityStateKeys = buildCityStateKeys(cities)
     if (cityStateKeys.length === 0) return []
@@ -80,7 +80,7 @@ export class LocationsClient {
     const trimmed = query.trim()
     if (!trimmed) return []
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('neighborhoods')
@@ -139,7 +139,7 @@ export class LocationsClient {
   }
 
   static async getMetroAreas(): Promise<string[]> {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('neighborhoods')

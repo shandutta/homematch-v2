@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useValidatedForm } from '@/hooks/useValidatedForm'
 import { VerifyEmailSchema, type VerifyEmailData } from '@/lib/schemas/auth'
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,7 @@ import {
 import { AuthLink } from '@/components/features/auth/AuthPageShell'
 
 export function VerifyEmailForm() {
-  const supabase = createClient()
+  const { client: supabase, error: configError } = useSupabaseClient()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -47,6 +47,11 @@ export function VerifyEmailForm() {
   })
 
   const handleVerify = async (values: VerifyEmailData) => {
+    if (!supabase) {
+      setError(configError ?? 'Authentication is not configured.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -97,9 +102,9 @@ export function VerifyEmailForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
+        {(configError || error) && (
           <Alert variant="destructive" data-testid="verify-error">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{configError ?? error}</AlertDescription>
           </Alert>
         )}
         {success && (
@@ -124,7 +129,7 @@ export function VerifyEmailForm() {
                       type="email"
                       placeholder="Email you used to sign up"
                       autoComplete="email"
-                      disabled={loading}
+                      disabled={loading || Boolean(configError)}
                       data-testid="verify-email-input"
                       {...field}
                     />
@@ -147,7 +152,7 @@ export function VerifyEmailForm() {
                       autoComplete="one-time-code"
                       maxLength={6}
                       placeholder="6-digit code"
-                      disabled={loading}
+                      disabled={loading || Boolean(configError)}
                       data-testid="verify-code-input"
                       {...field}
                     />
@@ -162,6 +167,7 @@ export function VerifyEmailForm() {
               className="w-full"
               disabled={
                 loading ||
+                Boolean(configError) ||
                 (!form.formState.isValid &&
                   process.env.NEXT_PUBLIC_TEST_MODE !== 'true')
               }

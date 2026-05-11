@@ -126,4 +126,26 @@ describe('PropertyImage', () => {
     fireEvent.error(screen.getByTestId('next-image'))
     expect(screen.queryByTestId('next-image')).toBeNull()
   })
+
+  // A5: when every fallback fails the placeholder must be VISUALLY DISTINCT
+  // from a real photo so users can tell that the data is broken (not the
+  // layout). The legacy state rendered a tasteful Home icon that looked like
+  // it could be a real image; the new state shows a crossed-out image glyph,
+  // an "Image unavailable" caption, and applies a greyscale treatment.
+  it('renders a distinct broken-image state when all fallbacks fail', () => {
+    render(<PropertyImage alt="123 Main St" width={100} height={100} />)
+
+    // Exhaust the 3 local SVG fallbacks; the 3rd error trips the broken state.
+    fireEvent.error(screen.getByTestId('next-image'))
+    fireEvent.error(screen.getByTestId('next-image'))
+    fireEvent.error(screen.getByTestId('next-image'))
+
+    expect(screen.queryByTestId('next-image')).toBeNull()
+    const broken = screen.getByTestId('property-image-broken')
+    expect(broken).toBeInTheDocument()
+    expect(broken).toHaveAttribute('role', 'img')
+    expect(broken).toHaveAttribute('aria-label', 'Property image unavailable')
+    expect(broken.className).toContain('grayscale')
+    expect(screen.getByText('Image unavailable')).toBeInTheDocument()
+  })
 })

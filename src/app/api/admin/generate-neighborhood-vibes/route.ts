@@ -6,6 +6,8 @@ import {
   type NeighborhoodContext,
 } from '@/lib/services/neighborhood-vibes'
 import { type NeighborhoodStatsResult } from '@/lib/services/supabase-rpc-types'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface GenerateNeighborhoodVibesRequest {
   neighborhoodIds?: string[]
@@ -21,16 +23,18 @@ export async function POST(req: Request) {
   const querySecret = url.searchParams.get('cron_secret')
 
   if (!secret || (headerSecret !== secret && querySecret !== secret)) {
-    return NextResponse.json(
-      { ok: false, error: 'Unauthorized' },
-      { status: 401 }
-    )
+    return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
+  const rateLimitResponse = await rateLimitAdminRoute(
+    req,
+    'admin:generate-neighborhood-vibes'
+  )
+  if (rateLimitResponse) return rateLimitResponse
+
   if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { ok: false, error: 'OPENROUTER_API_KEY not configured' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'OPENROUTER_API_KEY not configured'
     )
   }
 
@@ -83,10 +87,7 @@ export async function POST(req: Request) {
       '[generate-neighborhood-vibes] Failed to load neighborhoods',
       error
     )
-    return NextResponse.json(
-      { ok: false, error: 'Failed to load neighborhoods' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to load neighborhoods', error)
   }
 
   if (!neighborhoods || neighborhoods.length === 0) {
@@ -104,19 +105,49 @@ export async function POST(req: Request) {
     })
   }
 
-  const contexts: NeighborhoodContext[] = []
+  // Per audit M12.1: properties are batch-fetched once via .in() (already done),
+  // and per-neighborhood stats RPC calls are issued in parallel via Promise.all
+  // (replaces the previous serial-await N+1 walk through neighborhoods).
+  const neighborhoodIds = neighborhoods.map((n) => n.id)
 
-  for (const neighborhood of neighborhoods) {
-    const [{ data: listings }, listingStats] = await Promise.all([
-      supabase
-        .from('properties')
-        .select('address, price, bedrooms, bathrooms, property_type')
-        .eq('neighborhood_id', neighborhood.id)
-        .limit(12),
-      fetchNeighborhoodStats(supabase, neighborhood.id),
-    ])
+  const { data: allListings } = await supabase
+    .from('properties')
+    .select(
+      'neighborhood_id, address, price, bedrooms, bathrooms, property_type'
+    )
+    .in('neighborhood_id', neighborhoodIds)
 
-    contexts.push({
+  const listingsByNeighborhood = new Map<
+    string,
+    NonNullable<typeof allListings>
+  >()
+  for (const listing of allListings ?? []) {
+    if (!listing.neighborhood_id) continue
+    const bucket = listingsByNeighborhood.get(listing.neighborhood_id) ?? []
+    if (bucket.length < 12) {
+      bucket.push(listing)
+      listingsByNeighborhood.set(listing.neighborhood_id, bucket)
+    }
+  }
+
+  // Fan-out per-neighborhood stats RPC calls in parallel. There's no batched
+  // get_neighborhood_stats RPC in the schema; the fan-out collapses the
+  // sequential N round-trips into one wall-clock RTT (modulo client/server
+  // concurrency limits).
+  const statsResults = await Promise.all(
+    neighborhoods.map((n) => fetchNeighborhoodStats(supabase, n.id))
+  )
+  const statsByNeighborhood = new Map<
+    string,
+    NeighborhoodStatsResult | null
+  >()
+  neighborhoods.forEach((n, idx) => {
+    statsByNeighborhood.set(n.id, statsResults[idx] ?? null)
+  })
+
+  const contexts: NeighborhoodContext[] = neighborhoods.map((neighborhood) => {
+    const listings = listingsByNeighborhood.get(neighborhood.id) ?? []
+    return {
       neighborhoodId: neighborhood.id,
       name: neighborhood.name,
       city: neighborhood.city,
@@ -125,16 +156,16 @@ export async function POST(req: Request) {
       medianPrice: neighborhood.median_price,
       walkScore: neighborhood.walk_score,
       transitScore: neighborhood.transit_score,
-      listingStats,
-      sampleProperties: (listings || []).map((p) => ({
+      listingStats: statsByNeighborhood.get(neighborhood.id) ?? null,
+      sampleProperties: listings.map((p) => ({
         address: p.address,
         price: p.price,
         bedrooms: p.bedrooms,
         bathrooms: p.bathrooms,
         propertyType: p.property_type,
       })),
-    })
-  }
+    }
+  })
 
   const service = createNeighborhoodVibesService()
   const batch = await service.generateBatch(contexts, {

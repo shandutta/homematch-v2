@@ -229,4 +229,48 @@ describe('PropertyDetailModal gallery', () => {
     expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 1')
     expect(screen.queryByTestId('image-dot-0')).not.toBeInTheDocument()
   })
+
+  it('cycles via ArrowRight and ArrowLeft keyboard shortcuts', async () => {
+    const user = userEvent.setup()
+    renderModal(baseProperty)
+
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 3')
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('2 / 3')
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('3 / 3')
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 3')
+
+    await user.keyboard('{ArrowLeft}')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('3 / 3')
+  })
+
+  it('preloads neighbouring images while the gallery is open', () => {
+    renderModal(baseProperty)
+
+    const preloads = Array.from(
+      document.querySelectorAll<HTMLLinkElement>('link[rel="preload"]')
+    ).map((link) => link.getAttribute('href'))
+
+    expect(preloads).toEqual(
+      expect.arrayContaining(['/image-two.jpg', '/image-three.jpg'])
+    )
+  })
+
+  it('does not respond to arrow keys when only one image exists', async () => {
+    const user = userEvent.setup()
+    const singleImageProperty: Property = {
+      ...baseProperty,
+      images: ['/only.jpg'],
+    }
+
+    renderModal(singleImageProperty)
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('image-counter')).toHaveTextContent('1 / 1')
+  })
 })

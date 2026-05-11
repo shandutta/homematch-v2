@@ -1,0 +1,23 @@
+{
+  "scope": "repo-local-launch-policy-guard",
+  "externalExecutionApprovalRequired": true,
+  "production": {
+    "emailPasswordSignup": {
+      "emailConfirmationRequired": true,
+      "captchaRequired": true,
+      "preferredCaptchaProvider": "turnstile",
+      "preVerificationSessionAllowed": false
+    }
+  },
+  "localAndE2E": {
+    "bypassAllowed": true,
+    "allowedEmailCapture": ["inbucket", "mailpit"],
+    "externalCaptchaCallsAllowed": false
+  },
+  "nonGoals": [
+    "No Supabase dashboard mutation",
+    "No CAPTCHA provider provisioning",
+    "No production secret or environment mutation",
+    "No live signup or real email execution"
+  ]
+}

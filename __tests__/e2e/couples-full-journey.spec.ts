@@ -316,6 +316,27 @@ test.describe('Couples full journey (real UI)', () => {
   }, testInfo) => {
     test.setTimeout(240000)
 
+    test.skip(
+      process.env.E2E_RUN !== '1',
+      'E2E_RUN=1 required — Tier 3 E2E specs skip by default. See p4-tdd-harness-design.md §2.2'
+    )
+
+    // Refuse production / remote Supabase: this spec mutates real data via service_role.
+    const supabaseUrl =
+      process.env.SUPABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      'http://127.0.0.1:54200'
+    test.skip(
+      !['127.0.0.1', 'localhost', 'supabase.local'].some((host) => {
+        try {
+          return new URL(supabaseUrl).hostname === host
+        } catch {
+          return false
+        }
+      }),
+      `Couples full journey E2E refuses non-local Supabase URL (got ${supabaseUrl}). Tier 3 rule: never run E2E against production Supabase.`
+    )
+
     const service = createServiceRoleClient()
 
     const inviterUser = getWorkerTestUser(testInfo.workerIndex)

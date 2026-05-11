@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import type {
   Household,
   HouseholdInvitation,
@@ -12,6 +13,14 @@ import type {
 } from '@/types/database'
 import { Users, ShieldCheck, Clock4 } from 'lucide-react'
 import { AcceptInviteForm } from './AcceptInviteForm'
+
+// @service-role-capability: invite landing page fetches by opaque token before
+// authentication; selected data is limited to invite/household and inviter display fields.
+// TODO(D1 follow-up): replace with constrained invite preview RPC.
+export const metadata = createNoindexRouteMetadata({
+  title: 'Household Invite | HomeMatch',
+  description: 'Open your private HomeMatch household invitation.',
+})
 
 type InviteRecord = HouseholdInvitation & {
   household?: Pick<Household, 'id' | 'name' | 'collaboration_mode'> | null
@@ -54,10 +63,7 @@ export default async function InvitePage({
     .eq('id', invite.created_by)
     .maybeSingle<Pick<UserProfile, 'display_name' | 'email'>>()
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getServerUserContext()
 
   const isExpired = new Date(invite.expires_at) < new Date()
   const canAccept = invite.status === 'pending' && !isExpired

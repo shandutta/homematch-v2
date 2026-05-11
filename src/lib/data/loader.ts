@@ -18,6 +18,45 @@ import {
 
 const DASHBOARD_PROPERTY_CACHE_TTL_SECONDS = 60
 
+type DashboardPropertySelectColumn =
+  keyof AppDatabase['public']['Tables']['properties']['Row']
+
+export const DASHBOARD_PROPERTY_SELECT_COLUMNS = [
+  'id',
+  'address',
+  'city',
+  'state',
+  'zip_code',
+  'price',
+  'bedrooms',
+  'bathrooms',
+  'square_feet',
+  'property_type',
+  'images',
+  'description',
+  'amenities',
+  'lot_size_sqft',
+  'parking_spots',
+  'neighborhood_id',
+  'zpid',
+  'year_built',
+  'coordinates',
+  'listing_status',
+  'property_hash',
+  'is_active',
+  'created_at',
+  'updated_at',
+] satisfies readonly DashboardPropertySelectColumn[]
+
+type DashboardSearchResult = Awaited<
+  ReturnType<PropertyService['searchProperties']>
+>
+
+const inFlightDashboardSearches = new Map<
+  string,
+  Promise<DashboardSearchResult>
+>()
+
 class StaticSupabaseClientFactory implements ISupabaseClientFactory {
   private readonly client: SupabaseClient<AppDatabase>
 
@@ -76,7 +115,6 @@ export interface DashboardData {
   properties: Property[]
   neighborhoods: Neighborhood[]
   totalProperties: number
-  scored: boolean
   userStats: {
     totalViewed: number
     totalLiked: number
@@ -96,32 +134,8 @@ export interface DashboardPreferences {
   neighborhoods?: NonNullable<PropertyFilters['neighborhoods']>
 }
 
-export const DASHBOARD_PROPERTY_SELECT = `
-  id,
-  address,
-  city,
-  state,
-  zip_code,
-  price,
-  bedrooms,
-  bathrooms,
-  square_feet,
-  property_type,
-  images,
-  description,
-  amenities,
-  lot_size_sqft,
-  parking_spots,
-  neighborhood_id,
-  zpid,
-  year_built,
-  coordinates,
-  listing_status,
-  property_hash,
-  is_active,
-  created_at,
-  updated_at
-`
+export const DASHBOARD_PROPERTY_SELECT =
+  DASHBOARD_PROPERTY_SELECT_COLUMNS.join(',')
 
 const shouldTreatAsAllCities = (
   prefs?: DashboardPreferences | null
@@ -205,11 +219,39 @@ export function buildPropertyFiltersFromPreferences(
   return filters
 }
 
+const getDashboardSearchDedupeKey = (
+  searchParams: PropertySearch,
+  options: {
+    select?: string
+    includeCount?: boolean
+    includeNeighborhoods?: boolean
+  }
+): string =>
+  JSON.stringify({
+    searchParams,
+    options,
+  })
+
+const runDedupedDashboardSearch = (
+  key: string,
+  search: () => Promise<DashboardSearchResult>
+): Promise<DashboardSearchResult> => {
+  const existing = inFlightDashboardSearches.get(key)
+  if (existing) {
+    return existing
+  }
+
+  const promise = search().finally(() => {
+    inFlightDashboardSearches.delete(key)
+  })
+  inFlightDashboardSearches.set(key, promise)
+  return promise
+}
+
 export async function loadDashboardData(
   options: {
     limit?: number
     offset?: number
-    withScoring?: boolean
     userPreferences?: DashboardPreferences | null
     includeNeighborhoods?: boolean
     includeCount?: boolean
@@ -224,7 +266,6 @@ export async function loadDashboardData(
   const {
     limit = 20,
     offset = 0,
-    withScoring = true,
     userPreferences,
     includeNeighborhoods = true,
     includeCount = true,
@@ -272,21 +313,27 @@ export async function loadDashboardData(
       includeNeighborhoods,
     }
     const shouldUseCache = useCache && !isTestMode && cachedSearchProperties
-    const searchPromise = shouldUseCache
-      ? cachedSearchProperties(
-          [
-            cacheKey || 'dashboard',
-            JSON.stringify(filters),
-            limit,
-            offset,
-            includeNeighborhoods ? '1' : '0',
-            includeCount ? '1' : '0',
-            propertySelect || '',
-          ].join('|'),
-          searchParams,
-          searchOptions
-        )
-      : propertyService.searchProperties(searchParams, searchOptions)
+    const searchDedupeKey = getDashboardSearchDedupeKey(
+      searchParams,
+      searchOptions
+    )
+    const searchPromise = runDedupedDashboardSearch(searchDedupeKey, () =>
+      shouldUseCache
+        ? cachedSearchProperties(
+            [
+              cacheKey || 'dashboard',
+              JSON.stringify(filters),
+              limit,
+              offset,
+              includeNeighborhoods ? '1' : '0',
+              includeCount ? '1' : '0',
+              propertySelect || '',
+            ].join('|'),
+            searchParams,
+            searchOptions
+          )
+        : propertyService.searchProperties(searchParams, searchOptions)
+    )
 
     const [{ properties, total }, neighborhoods] = await Promise.all([
       searchPromise,
@@ -304,7 +351,6 @@ export async function loadDashboardData(
       properties: properties || [],
       neighborhoods: neighborhoods || [],
       totalProperties: total || 0,
-      scored: withScoring,
       userStats,
     }
   } catch (_error) {
@@ -313,38 +359,11 @@ export async function loadDashboardData(
       properties: [],
       neighborhoods: [],
       totalProperties: 0,
-      scored: false,
       userStats: {
         totalViewed: 0,
         totalLiked: 0,
         totalMatches: 0,
       },
     }
-  }
-}
-
-// Load properties sorted by match score (called from dashboard)
-export async function loadScoredProperties(
-  limit: number = 10
-): Promise<Property[]> {
-  try {
-    const data = await loadDashboardData({ limit, withScoring: true })
-
-    // Sort by calculated_match_score if available, otherwise by match_score
-    return data.properties.sort((a, b) => {
-      const scoreA =
-        'calculated_match_score' in a &&
-        typeof a.calculated_match_score === 'number'
-          ? a.calculated_match_score
-          : 0
-      const scoreB =
-        'calculated_match_score' in b &&
-        typeof b.calculated_match_score === 'number'
-          ? b.calculated_match_score
-          : 0
-      return scoreB - scoreA
-    })
-  } catch (_error) {
-    return []
   }
 }

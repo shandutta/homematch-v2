@@ -1,6 +1,11 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { apiRateLimiter } from '@/lib/utils/rate-limit'
+import { requireUserFromRequest } from '@/lib/api/auth'
+import { createApiClient } from '@/lib/supabase/server'
+import { isValidLatLng } from '@/lib/utils/coordinates'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 
 const placesAutocompleteSchema = z.object({
   input: z.string().min(1).max(100),
@@ -9,6 +14,7 @@ const placesAutocompleteSchema = z.object({
       lat: z.number(),
       lng: z.number(),
     })
+    .refine(isValidLatLng, 'location must contain valid coordinates')
     .optional(),
   radius: z.number().min(1).max(50000).optional(),
   types: z.array(z.string()).optional(),
@@ -48,36 +54,35 @@ interface GooglePlacePrediction {
  * Secure Places Autocomplete API Proxy
  * Rate-limited server-side proxy for Google Maps Places Autocomplete API
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Rate limiting by IP (more restrictive for Places API due to cost)
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
-    const rateLimitResult = await apiRateLimiter.check(clientIP)
+    const supabase = createApiClient(request)
+    const auth = await requireUserFromRequest(supabase, request)
 
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
-        { status: 429 }
-      )
+    if (auth.response) {
+      return auth.response
+    }
+
+    // Rate limiting by authenticated user to avoid exposing paid Places usage to anonymous callers
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('maps:places:autocomplete', auth.user.id)
+    )
+
+    if (rateLimitResponse) {
+      return rateLimitResponse
     }
 
     const serverApiKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
 
     if (!serverApiKey) {
-      return NextResponse.json(
-        { error: 'Places service unavailable' },
-        { status: 503 }
-      )
+      return ApiErrorHandler.serviceUnavailable('Places service unavailable')
     }
 
     const body = await request.json()
     const parsed = placesAutocompleteSchema.safeParse(body)
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request parameters', details: parsed.error.issues },
-        { status: 400 }
-      )
+      return ApiErrorHandler.fromZodError(parsed.error)
     }
 
     const { input, location, radius, types, strictbounds } = parsed.data
@@ -106,7 +111,10 @@ export async function POST(request: Request) {
 
     const autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params}`
 
-    const response = await fetch(autocompleteUrl)
+    const response = await fetchWithTimeout(autocompleteUrl, {
+      timeoutMs: 10000,
+      timeoutMessage: 'Google places autocomplete request timed out',
+    })
     const data = await response.json()
 
     const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -117,10 +125,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ predictions: [] })
       }
 
-      return NextResponse.json(
-        { error: 'Places autocomplete failed', status: data?.status },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Places autocomplete failed', {
+        status: data.status,
+      })
     }
 
     // Return sanitized predictions
@@ -150,9 +157,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ predictions })
   } catch (error) {
     console.error('Places Autocomplete API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Internal server error', error)
   }
 }

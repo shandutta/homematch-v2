@@ -188,18 +188,8 @@ describe('PropertyErrorBoundary', () => {
       })
     })
 
-    it('reports to Sentry with context', () => {
-      render(
-        <PropertyErrorBoundary propertyId="prop-789">
-          <ThrowError shouldThrow={true} />
-        </PropertyErrorBoundary>
-      )
-
-      expect(mockSentry.withScope).toHaveBeenCalled()
-      expect(mockSentry.captureException).toHaveBeenCalledWith(
-        expect.any(Error)
-      )
-    })
+    // 'reports to Sentry with context' test removed: Sentry was removed
+    // from PropertyErrorBoundary (commit 0dc20e4, unused dep).
 
     it('handles missing property ID gracefully', () => {
       render(

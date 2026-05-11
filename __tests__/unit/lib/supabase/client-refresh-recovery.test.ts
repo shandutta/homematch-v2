@@ -1,3 +1,4 @@
+// Phase 0/1 closure: P1-cookie-httpOnly
 import {
   describe,
   beforeEach,
@@ -7,6 +8,7 @@ import {
   jest,
 } from '@jest/globals'
 import type { AppDatabase } from '@/types/app-database'
+import { withRefreshRecovery } from '@/lib/supabase/refresh-recovery'
 
 jest.unmock('@/lib/supabase/client')
 
@@ -40,8 +42,7 @@ describe('withRefreshRecovery (browser)', () => {
     warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     supabase = createSupabaseStub()
 
-    const { __withRefreshRecovery } = await import('@/lib/supabase/client')
-    applyRecovery = __withRefreshRecovery
+    applyRecovery = withRefreshRecovery
   })
 
   afterEach(() => {

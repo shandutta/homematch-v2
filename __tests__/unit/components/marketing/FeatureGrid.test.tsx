@@ -1,17 +1,22 @@
 import { render, screen } from '@testing-library/react'
 import { FeatureGrid } from '@/components/marketing/FeatureGrid'
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
     div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
       <div {...props}>{children}</div>
     ),
-  },
-  useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
-  useSpring: <T,>(value: T) => value,
-  useTransform: () => ({ get: () => 0 }),
-}))
+  }
+  return {
+    motion,
+    m: motion,
+    useMotionValue: () => ({ set: jest.fn(), get: () => 0 }),
+    useReducedMotion: () => false,
+    useSpring: <T,>(value: T) => value,
+    useTransform: () => ({ get: () => 0 }),
+  }
+})
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -25,15 +30,14 @@ describe('FeatureGrid', () => {
   test('renders section heading', () => {
     render(<FeatureGrid />)
 
-    expect(screen.getByText('House Hunting, But Make It')).toBeInTheDocument()
-    expect(screen.getByText('Actually Fun')).toBeInTheDocument()
+    expect(screen.getByText(/House Hunting/)).toBeInTheDocument()
   })
 
   test('renders section description', () => {
     render(<FeatureGrid />)
     expect(
       screen.getByText(
-        'We turned the most stressful part of adulting into a shared game'
+        'Turn scattered listing opinions into a shared shortlist everyone can understand.'
       )
     ).toBeInTheDocument()
   })

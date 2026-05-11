@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { withRouteDeadline } from '@/lib/api/route-deadline'
 
+// @service-role-capability: authenticated household member dispute view/update;
+// route checks requester household membership and returns no partner emails.
+// TODO(D1 follow-up): replace with household-scoped disputed-property RPCs.
 export interface DisputedProperty {
   property_id: string
   property: {
@@ -16,7 +24,6 @@ export interface DisputedProperty {
   partner1: {
     user_id: string
     user_name: string
-    user_email: string
     interaction_type: 'like' | 'dislike' | 'skip'
     created_at: string
     score_data?: Record<string, unknown>
@@ -25,7 +32,6 @@ export interface DisputedProperty {
   partner2: {
     user_id: string
     user_name: string
-    user_email: string
     interaction_type: 'like' | 'dislike' | 'skip'
     created_at: string
     score_data?: Record<string, unknown>
@@ -83,87 +89,85 @@ const getScoreNotes = (scoreData?: Record<string, unknown>) => {
   return typeof notes === 'string' ? notes : undefined
 }
 
-export async function GET(request: NextRequest) {
-  const startTime = Date.now()
+export const GET = withRouteDeadline(
+  'couples:disputed',
+  4000,
+  async function GET(request: NextRequest) {
+    const startTime = Date.now()
 
-  try {
-    const supabase = createApiClient(request)
+    try {
+      const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+      const auth = await requireUserFromRequest(supabase, request)
+      if (!auth.user) return auth.response
+      const { user } = auth
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get user's household
-    const { data: userProfile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('household_id, display_name, email')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !userProfile?.household_id) {
-      return NextResponse.json({ error: 'No household found' }, { status: 404 })
-    }
-
-    const serviceClient = await getServiceRoleClient()
-
-    // Get all household members
-    const { data: householdMembers, error: householdMembersError } =
-      await serviceClient
+      // Get user's household
+      const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('id, display_name, email')
+        .select('household_id')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError || !userProfile?.household_id) {
+        return ApiErrorHandler.notFound('No household found')
+      }
+
+      const serviceClient = await getServiceRoleClient()
+
+      // Get all household members
+      const { data: householdMembers, error: householdMembersError } =
+        await serviceClient
+          .from('user_profiles')
+          .select('id, display_name')
+          .eq('household_id', userProfile.household_id)
+
+      if (householdMembersError) {
+        console.error(
+          '[Disputed API] Error fetching household members:',
+          householdMembersError
+        )
+        return ApiErrorHandler.serverError(
+          'Failed to fetch household members',
+          householdMembersError
+        )
+      }
+
+      if (!householdMembers || householdMembers.length < 2) {
+        return noStoreJson({
+          disputedProperties: [],
+          performance: {
+            totalTime: Date.now() - startTime,
+          },
+        })
+      }
+
+      const resolvedPropertyIds = new Set<string>()
+      const { data: resolutions, error: resolutionsError } = await serviceClient
+        .from('household_property_resolutions')
+        .select('property_id')
         .eq('household_id', userProfile.household_id)
 
-    if (householdMembersError) {
-      console.error(
-        '[Disputed API] Error fetching household members:',
-        householdMembersError
-      )
-      return NextResponse.json(
-        { error: 'Failed to fetch household members' },
-        { status: 500 }
-      )
-    }
-
-    if (!householdMembers || householdMembers.length < 2) {
-      return NextResponse.json({
-        disputedProperties: [],
-        performance: {
-          totalTime: Date.now() - startTime,
-        },
-      })
-    }
-
-    const resolvedPropertyIds = new Set<string>()
-    const { data: resolutions, error: resolutionsError } = await serviceClient
-      .from('household_property_resolutions')
-      .select('property_id')
-      .eq('household_id', userProfile.household_id)
-
-    if (resolutionsError) {
-      console.error(
-        '[Disputed API] Error fetching resolutions:',
-        resolutionsError
-      )
-    } else {
-      for (const resolution of resolutions ?? []) {
-        if (resolution?.property_id && isString(resolution.property_id)) {
-          resolvedPropertyIds.add(resolution.property_id)
+      if (resolutionsError) {
+        console.error(
+          '[Disputed API] Error fetching resolutions:',
+          resolutionsError
+        )
+      } else {
+        for (const resolution of resolutions ?? []) {
+          if (resolution?.property_id && isString(resolution.property_id)) {
+            resolvedPropertyIds.add(resolution.property_id)
+          }
         }
       }
-    }
 
-    // Query to find properties with conflicting reactions (like vs dislike/skip)
-    // or properties where only one person has interacted
-    const { data: interactions, error: interactionsError } = await serviceClient
-      .from('user_property_interactions')
-      .select(
-        `
+      // Query to find properties with conflicting reactions (like vs dislike/skip)
+      // or properties where only one person has interacted
+      const { data: interactions, error: interactionsError } =
+        await serviceClient
+          .from('user_property_interactions')
+          .select(
+            `
         id,
         user_id,
         property_id,
@@ -180,209 +184,203 @@ export async function GET(request: NextRequest) {
           listing_status
         )
       `
-      )
-      .eq('household_id', userProfile.household_id)
-      .in('interaction_type', ['like', 'dislike', 'skip'])
-      .order('created_at', { ascending: false })
-
-    if (interactionsError) {
-      console.error(
-        '[Disputed API] Error fetching interactions:',
-        interactionsError
-      )
-      return NextResponse.json(
-        { error: 'Failed to fetch property interactions' },
-        { status: 500 }
-      )
-    }
-
-    // Group interactions by property_id
-    const propertiesMap = new Map<
-      string,
-      {
-        property: {
-          address: string
-          price: number
-          bedrooms: number
-          bathrooms: number
-          square_feet?: number
-          images?: string[]
-          listing_status: string
-        } | null
-        interactions: Array<{
-          user_id: string
-          interaction_type: string
-          created_at: string
-          score_data?: Record<string, unknown>
-        }>
-      }
-    >()
-
-    interactions?.forEach((interaction) => {
-      const propertyId = interaction.property_id
-
-      if (resolvedPropertyIds.has(propertyId)) return
-
-      if (!propertiesMap.has(propertyId)) {
-        const propertySource = Array.isArray(interaction.properties)
-          ? interaction.properties[0]
-          : interaction.properties
-        const propertySummary = isRecord(propertySource)
-          ? toPropertySummary(propertySource)
-          : null
-        propertiesMap.set(propertyId, {
-          property: propertySummary,
-          interactions: [],
-        })
-      }
-
-      if (!isInteractionType(interaction.interaction_type)) return
-      const createdAt = isString(interaction.created_at)
-        ? interaction.created_at
-        : new Date(0).toISOString()
-      propertiesMap.get(propertyId)!.interactions.push({
-        user_id: interaction.user_id,
-        interaction_type: interaction.interaction_type,
-        created_at: createdAt,
-        score_data: toScoreData(interaction.score_data),
-      })
-    })
-
-    // Find disputed properties (conflicting interactions)
-    const disputedProperties: DisputedProperty[] = []
-
-    propertiesMap.forEach((propData, propertyId) => {
-      // Only consider properties with interactions from multiple users
-      if (propData.interactions.length >= 2) {
-        const userInteractions = new Map()
-
-        // Get the latest interaction from each user for this property
-        propData.interactions.forEach((interaction) => {
-          if (
-            !userInteractions.has(interaction.user_id) ||
-            new Date(interaction.created_at) >
-              new Date(userInteractions.get(interaction.user_id).created_at)
-          ) {
-            userInteractions.set(interaction.user_id, interaction)
-          }
-        })
-
-        const interactionArray = Array.from(userInteractions.values())
-
-        // Check if there's a conflict (different interaction types)
-        if (interactionArray.length >= 2) {
-          const interactionTypes = new Set(
-            interactionArray.map((i) => i.interaction_type)
           )
+          .eq('household_id', userProfile.household_id)
+          .in('interaction_type', ['like', 'dislike', 'skip'])
+          .order('created_at', { ascending: false })
 
-          // Dispute if: like vs dislike/skip, or any conflicting interactions
-          const hasConflict =
-            interactionTypes.has('like') &&
-            (interactionTypes.has('dislike') || interactionTypes.has('skip'))
+      if (interactionsError) {
+        console.error(
+          '[Disputed API] Error fetching interactions:',
+          interactionsError
+        )
+        return ApiErrorHandler.serverError(
+          'Failed to fetch property interactions',
+          interactionsError
+        )
+      }
 
-          if (hasConflict) {
-            // Find the two users with conflicting interactions
-            const partner1Interaction = interactionArray[0]
-            const partner2Interaction = interactionArray[1]
+      // Group interactions by property_id
+      const propertiesMap = new Map<
+        string,
+        {
+          property: {
+            address: string
+            price: number
+            bedrooms: number
+            bathrooms: number
+            square_feet?: number
+            images?: string[]
+            listing_status: string
+          } | null
+          interactions: Array<{
+            user_id: string
+            interaction_type: string
+            created_at: string
+            score_data?: Record<string, unknown>
+          }>
+        }
+      >()
 
-            const partner1Profile = householdMembers.find(
-              (m) => m.id === partner1Interaction.user_id
+      interactions?.forEach((interaction) => {
+        const propertyId = interaction.property_id
+
+        if (resolvedPropertyIds.has(propertyId)) return
+
+        if (!propertiesMap.has(propertyId)) {
+          const propertySource = Array.isArray(interaction.properties)
+            ? interaction.properties[0]
+            : interaction.properties
+          const propertySummary = isRecord(propertySource)
+            ? toPropertySummary(propertySource)
+            : null
+          propertiesMap.set(propertyId, {
+            property: propertySummary,
+            interactions: [],
+          })
+        }
+
+        if (!isInteractionType(interaction.interaction_type)) return
+        const createdAt = isString(interaction.created_at)
+          ? interaction.created_at
+          : new Date(0).toISOString()
+        propertiesMap.get(propertyId)!.interactions.push({
+          user_id: interaction.user_id,
+          interaction_type: interaction.interaction_type,
+          created_at: createdAt,
+          score_data: toScoreData(interaction.score_data),
+        })
+      })
+
+      // Find disputed properties (conflicting interactions)
+      const disputedProperties: DisputedProperty[] = []
+
+      propertiesMap.forEach((propData, propertyId) => {
+        // Only consider properties with interactions from multiple users
+        if (propData.interactions.length >= 2) {
+          const userInteractions = new Map()
+
+          // Get the latest interaction from each user for this property
+          propData.interactions.forEach((interaction) => {
+            if (
+              !userInteractions.has(interaction.user_id) ||
+              new Date(interaction.created_at) >
+                new Date(userInteractions.get(interaction.user_id).created_at)
+            ) {
+              userInteractions.set(interaction.user_id, interaction)
+            }
+          })
+
+          const interactionArray = Array.from(userInteractions.values())
+
+          // Check if there's a conflict (different interaction types)
+          if (interactionArray.length >= 2) {
+            const interactionTypes = new Set(
+              interactionArray.map((i) => i.interaction_type)
             )
-            const partner2Profile = householdMembers.find(
-              (m) => m.id === partner2Interaction.user_id
-            )
 
-            if (partner1Profile && partner2Profile) {
-              disputedProperties.push({
-                property_id: propertyId,
-                property: propData.property ?? {
-                  address: 'Unknown Address',
-                  price: 0,
-                  bedrooms: 0,
-                  bathrooms: 0,
-                  listing_status: 'unknown',
-                },
-                partner1: {
-                  user_id: partner1Profile.id,
-                  user_name:
-                    partner1Profile.display_name ||
-                    partner1Profile.email ||
-                    'Household member',
-                  user_email: partner1Profile.email || '',
-                  interaction_type: partner1Interaction.interaction_type,
-                  created_at: partner1Interaction.created_at,
-                  score_data: partner1Interaction.score_data,
-                  notes: getScoreNotes(partner1Interaction.score_data),
-                },
-                partner2: {
-                  user_id: partner2Profile.id,
-                  user_name:
-                    partner2Profile.display_name ||
-                    partner2Profile.email ||
-                    'Household member',
-                  user_email: partner2Profile.email || '',
-                  interaction_type: partner2Interaction.interaction_type,
-                  created_at: partner2Interaction.created_at,
-                  score_data: partner2Interaction.score_data,
-                  notes: getScoreNotes(partner2Interaction.score_data),
-                },
-                status: 'pending',
-                last_updated: Math.max(
-                  new Date(partner1Interaction.created_at).getTime(),
-                  new Date(partner2Interaction.created_at).getTime()
-                ).toString(),
-              })
+            // Dispute if: like vs dislike/skip, or any conflicting interactions
+            const hasConflict =
+              interactionTypes.has('like') &&
+              (interactionTypes.has('dislike') || interactionTypes.has('skip'))
+
+            if (hasConflict) {
+              // Find the two users with conflicting interactions
+              const partner1Interaction = interactionArray[0]
+              const partner2Interaction = interactionArray[1]
+
+              const partner1Profile = householdMembers.find(
+                (m) => m.id === partner1Interaction.user_id
+              )
+              const partner2Profile = householdMembers.find(
+                (m) => m.id === partner2Interaction.user_id
+              )
+
+              if (partner1Profile && partner2Profile) {
+                disputedProperties.push({
+                  property_id: propertyId,
+                  property: propData.property ?? {
+                    address: 'Unknown Address',
+                    price: 0,
+                    bedrooms: 0,
+                    bathrooms: 0,
+                    listing_status: 'unknown',
+                  },
+                  partner1: {
+                    user_id: partner1Profile.id,
+                    user_name:
+                      partner1Profile.display_name || 'Household member',
+                    interaction_type: partner1Interaction.interaction_type,
+                    created_at: partner1Interaction.created_at,
+                    score_data: partner1Interaction.score_data,
+                    notes: getScoreNotes(partner1Interaction.score_data),
+                  },
+                  partner2: {
+                    user_id: partner2Profile.id,
+                    user_name:
+                      partner2Profile.display_name || 'Household member',
+                    interaction_type: partner2Interaction.interaction_type,
+                    created_at: partner2Interaction.created_at,
+                    score_data: partner2Interaction.score_data,
+                    notes: getScoreNotes(partner2Interaction.score_data),
+                  },
+                  status: 'pending',
+                  last_updated: Math.max(
+                    new Date(partner1Interaction.created_at).getTime(),
+                    new Date(partner2Interaction.created_at).getTime()
+                  ).toString(),
+                })
+              }
             }
           }
         }
-      }
-    })
+      })
 
-    // Sort by most recent interactions first
-    disputedProperties.sort(
-      (a, b) =>
-        new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
-    )
+      // Sort by most recent interactions first
+      disputedProperties.sort(
+        (a, b) =>
+          new Date(b.last_updated).getTime() -
+          new Date(a.last_updated).getTime()
+      )
 
-    const totalTime = Date.now() - startTime
+      const totalTime = Date.now() - startTime
 
-    return NextResponse.json({
-      disputedProperties,
-      performance: {
-        totalTime,
-        count: disputedProperties.length,
-      },
-    })
-  } catch (error) {
-    console.error('Error in disputed properties API:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch disputed properties' },
-      { status: 500 }
-    )
+      return noStoreJson({
+        disputedProperties,
+        performance: {
+          totalTime,
+          count: disputedProperties.length,
+        },
+      })
+    } catch (error) {
+      console.error('Error in disputed properties API:', error)
+      return ApiErrorHandler.serverError(
+        'Failed to fetch disputed properties',
+        error
+      )
+    }
   }
-}
+)
 
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
 
-    // Get the current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const auth = await requireUserFromRequest(supabase, request)
+    if (!auth.user) return auth.response
+    const { user } = auth
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('couples:disputed', user.id)
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await request.json()
     const { property_id, resolution_type } = body
 
     if (!property_id || !resolution_type) {
-      return NextResponse.json(
-        { error: 'Property ID and resolution type are required' },
-        { status: 400 }
+      return ApiErrorHandler.badRequest(
+        'Property ID and resolution type are required'
       )
     }
 
@@ -394,10 +392,7 @@ export async function PATCH(request: NextRequest) {
     ])
 
     if (!allowedResolutionTypes.has(resolution_type)) {
-      return NextResponse.json(
-        { error: 'Invalid resolution type' },
-        { status: 400 }
-      )
+      return ApiErrorHandler.badRequest('Invalid resolution type')
     }
 
     const { data: userProfile, error: profileError } = await supabase
@@ -407,7 +402,7 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (profileError || !userProfile?.household_id) {
-      return NextResponse.json({ error: 'No household found' }, { status: 404 })
+      return ApiErrorHandler.notFound('No household found')
     }
 
     const now = new Date().toISOString()
@@ -431,9 +426,9 @@ export async function PATCH(request: NextRequest) {
         '[Disputed API] Error saving resolution:',
         upsertError.message
       )
-      return NextResponse.json(
-        { error: 'Failed to save resolution' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        'Failed to save resolution',
+        upsertError
       )
     }
 
@@ -445,9 +440,6 @@ export async function PATCH(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error updating disputed property resolution:', error)
-    return NextResponse.json(
-      { error: 'Failed to update resolution' },
-      { status: 500 }
-    )
+    return ApiErrorHandler.serverError('Failed to update resolution', error)
   }
 }

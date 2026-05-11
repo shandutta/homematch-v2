@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
-import type { PropertyInsert } from '@/types/database'
+import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
+import type { TablesInsert } from '@/types/database'
 
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
@@ -13,6 +20,8 @@ const DEFAULT_DELAY_MS = Number(process.env.STATUS_DETAIL_DELAY_MS) || 350
 const DEFAULT_MAX_ITEMS = Number(process.env.STATUS_REFRESH_MAX_ITEMS) || 600
 const DEFAULT_MAX_RUNTIME_MS =
   Number(process.env.STATUS_REFRESH_MAX_RUNTIME_MS) || 280_000
+const STATUS_DETAIL_FETCH_TIMEOUT_MS =
+  Number(process.env.STATUS_DETAIL_FETCH_TIMEOUT_MS) || 10_000
 const DEADLINE_BUFFER_MS = Number(
   process.env.STATUS_REFRESH_DEADLINE_BUFFER_MS || 5_000
 )
@@ -75,11 +84,13 @@ async function fetchDetails(zpid: string) {
   const url = `https://${RAPIDAPI_HOST}/property?zpid=${encodeURIComponent(zpid)}`
   let attempt = 0
   while (attempt < 3) {
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       headers: {
         'X-RapidAPI-Key': RAPIDAPI_KEY!,
         'X-RapidAPI-Host': RAPIDAPI_HOST,
       },
+      timeoutMs: STATUS_DETAIL_FETCH_TIMEOUT_MS,
+      timeoutMessage: 'Zillow status detail fetch timed out',
     })
     if (res.status === 404) return { homeStatus: 'off_market' }
     if (res.status === 429) {
@@ -96,22 +107,26 @@ async function fetchDetails(zpid: string) {
 
 export async function POST(req: Request) {
   try {
-    if (!CRON_SECRET) {
-      return NextResponse.json(
-        { error: 'CRON secret not set' },
-        { status: 500 }
-      )
-    }
-    if (!RAPIDAPI_KEY) {
-      return NextResponse.json(
-        { error: 'RAPIDAPI_KEY missing' },
-        { status: 503 }
-      )
-    }
-
     const url = new URL(req.url)
     const headerSecret = req.headers.get('x-cron-secret')
     const querySecret = url.searchParams.get('cron_secret')
+
+    if (
+      !CRON_SECRET ||
+      (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET)
+    ) {
+      return ApiErrorHandler.unauthorized('unauthorized cron')
+    }
+
+    if (!RAPIDAPI_KEY) {
+      return ApiErrorHandler.serviceUnavailable('upstream unavailable')
+    }
+    if (!isPaidRapidApiApproved()) {
+      return ApiErrorHandler.serviceUnavailable(
+        RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
+      )
+    }
+
     const maxItemsInput = Number(url.searchParams.get('limit'))
     const maxItems = Math.max(
       1,
@@ -148,9 +163,11 @@ export async function POST(req: Request) {
       Math.max(1_000, Math.floor(maxRuntimeMs * 0.05))
     )
 
-    if (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET) {
-      return NextResponse.json({ error: 'unauthorized cron' }, { status: 401 })
-    }
+    const rateLimitResponse = await rateLimitAdminRoute(
+      req,
+      'admin:status-refresh'
+    )
+    if (rateLimitResponse) return rateLimitResponse
 
     const supabase = createStandaloneClient()
     const { data, error } = await supabase
@@ -167,13 +184,20 @@ export async function POST(req: Request) {
       console.error('[status-refresh] failed to load properties', {
         error: error?.message,
       })
-      return NextResponse.json(
-        { error: error?.message || 'failed to load properties' },
-        { status: 500 }
+      return ApiErrorHandler.serverError(
+        error?.message || 'failed to load properties',
+        error
       )
     }
 
-    const updates: PropertyInsert[] = []
+    const updates: {
+      id: string
+      listing_status: string
+      is_active: boolean
+      price: number
+      priceChanged: boolean
+      zpid: string
+    }[] = []
     let requests = 0
     let skipped = 0
     let rateLimitHits = 0
@@ -223,22 +247,19 @@ export async function POST(req: Request) {
           const previousActive =
             typeof row.is_active === 'boolean' ? row.is_active : null
 
+          const priceChanged =
+            typeof details.price === 'number' &&
+            Math.round(details.price) !== row.price
           const record = {
             id: row.id,
             zpid,
-            address: row.address,
-            city: row.city,
-            state: row.state,
-            zip_code: row.zip_code,
-            bedrooms: row.bedrooms,
-            bathrooms: row.bathrooms,
+            listing_status: norm.listing_status,
+            is_active: norm.is_active,
             price:
               typeof details.price === 'number'
                 ? Math.round(details.price)
                 : row.price,
-            listing_status: norm.listing_status,
-            is_active: norm.is_active,
-            updated_at: new Date().toISOString(),
+            priceChanged,
           }
 
           const statusChanged =
@@ -296,37 +317,78 @@ export async function POST(req: Request) {
           error: nextError.message,
           offset,
         })
-        return NextResponse.json(
-          {
-            error: nextError.message,
-            updated: updates.length,
-            requests,
-            skipped,
-            processed,
-          },
-          { status: 500 }
-        )
+        return ApiErrorHandler.serverError(nextError.message, nextError)
       }
 
       rows = nextPage || []
       if (rows.length === 0) break
     }
 
+    // Batch write updates grouped by (listing_status, is_active) to minimize
+    // round-trips while only touching columns that may have changed.
     if (updates.length > 0) {
-      const { error: upErr } = await supabase
-        .from('properties')
-        .upsert(updates, {
-          onConflict: 'id',
-        })
-      if (upErr) {
-        console.error('[status-refresh] upsert failed', {
-          error: upErr.message,
-          updates: updates.length,
-        })
-        return NextResponse.json(
-          { error: upErr.message, updated: updates.length, requests, skipped },
-          { status: 500 }
-        )
+      const nowIso = new Date().toISOString()
+
+      // Group by (listing_status, is_active)
+      const byStatus = new Map<
+        string,
+        { ids: string[]; listing_status: string; is_active: boolean }
+      >()
+      for (const u of updates) {
+        const key = `${u.listing_status}|${u.is_active}`
+        let group = byStatus.get(key)
+        if (!group) {
+          group = {
+            ids: [],
+            listing_status: u.listing_status,
+            is_active: u.is_active,
+          }
+          byStatus.set(key, group)
+        }
+        group.ids.push(u.id)
+      }
+
+      // One batched update per status group
+      const groupEntries = Array.from(byStatus.values())
+      for (const group of groupEntries) {
+        const { error: upErr } = await supabase
+          .from('properties')
+          .update({
+            listing_status: group.listing_status,
+            is_active: group.is_active,
+            updated_at: nowIso,
+          })
+          .in('id', group.ids)
+
+        if (upErr) {
+          console.error('[status-refresh] batch status update failed', {
+            error: upErr.message,
+            ids: group.ids.length,
+            listing_status: group.listing_status,
+          })
+          return ApiErrorHandler.serverError(upErr.message, upErr)
+        }
+      }
+
+      // Batch price changes via upsert (one round-trip for all price updates)
+      const priceUpdates = updates.filter((u) => u.priceChanged)
+      if (priceUpdates.length > 0) {
+        const priceRows = priceUpdates.map((pu) => ({
+          id: pu.id,
+          price: pu.price,
+          updated_at: nowIso,
+        }))
+        const { error: priceErr } = await supabase
+          .from('properties')
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          .upsert(priceRows as unknown as TablesInsert<'properties'>[])
+
+        if (priceErr) {
+          console.error('[status-refresh] batch price upsert failed', {
+            error: priceErr.message,
+            count: priceRows.length,
+          })
+        }
       }
     }
 
@@ -354,6 +416,6 @@ export async function POST(req: Request) {
       error: err instanceof Error ? err.message : err,
       stack: err instanceof Error ? err.stack : undefined,
     })
-    return NextResponse.json({ error: 'internal error' }, { status: 500 })
+    return ApiErrorHandler.serverError('internal error', err)
   }
 }

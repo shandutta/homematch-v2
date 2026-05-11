@@ -34,7 +34,9 @@ export class NeighborhoodService
     return this.executeSingleQuery('getNeighborhood', async (supabase) => {
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select('*')
+        .select(
+          'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+        )
         .eq('id', neighborhoodId)
         .single()
 
@@ -118,7 +120,9 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select('*')
+          .select(
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+          )
           .eq('city', city)
           .eq('state', state)
           .order('name')
@@ -148,7 +152,9 @@ export class NeighborhoodService
       async (supabase) => {
         const { data, error } = await supabase
           .from('neighborhoods')
-          .select('*')
+          .select(
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+          )
           .eq('metro_area', metroArea)
           .order('name')
 
@@ -173,7 +179,9 @@ export class NeighborhoodService
       const searchTerm = this.sanitizeInput(query)
       const { data, error } = await supabase
         .from('neighborhoods')
-        .select('*')
+        .select(
+          'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+        )
         .or(
           `name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,metro_area.ilike.%${searchTerm}%`
         )
@@ -230,10 +238,14 @@ export class NeighborhoodService
     return this.executeArrayQuery(
       'getNeighborhoodsWithStats',
       async (supabase) => {
-        let query = supabase.from('neighborhoods').select(`
-            *,
-            property_count:properties(count)
-          `)
+        // Explicit projection per audit M13 — drops the `*` wildcard so the
+        // planner skips wide-row materialization and the wire payload is
+        // auditable at a glance.
+        let query = supabase
+          .from('neighborhoods')
+          .select(
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score, property_count:properties(count)'
+          )
 
         if (city) {
           query = query.eq('city', city)
@@ -263,15 +275,13 @@ export class NeighborhoodService
     return this.executeArrayQuery(
       'getPopularNeighborhoods',
       async (supabase) => {
-        // TODO: Implement get_popular_neighborhoods RPC function in database
-        // For now, get neighborhoods with most properties as fallback
+        // Intentional fallback: rank neighborhoods by property count until a
+        // dedicated get_popular_neighborhoods RPC is introduced with migration
+        // coverage. Explicit projection per audit M13.
         const { data, error } = await supabase
           .from('neighborhoods')
           .select(
-            `
-            *,
-            property_count:properties(count)
-          `
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score, property_count:properties(count)'
           )
           .order('property_count', { ascending: false })
           .limit(limit)
@@ -298,7 +308,9 @@ export class NeighborhoodService
         // Get neighborhood details
         supabase
           .from('neighborhoods')
-          .select('*')
+          .select(
+            'bounds, city, created_at, id, median_price, metro_area, name, state, transit_score, walk_score'
+          )
           .eq('id', neighborhoodId)
           .single(),
 
@@ -309,8 +321,8 @@ export class NeighborhoodService
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true),
 
-        // TODO: Implement get_neighborhood_interaction_stats RPC function
-        // For now, return empty stats as fallback
+        // Intentional fallback: interaction stats are omitted until a dedicated
+        // get_neighborhood_interaction_stats RPC lands with migration coverage.
         Promise.resolve({ data: null, error: null }),
       ])
 

@@ -1,20 +1,25 @@
 import { render, screen } from '@testing-library/react'
 import { CtaBand } from '@/components/marketing/CtaBand'
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  motion: {
+// Mock framer-motion (m is the LazyMotion alias used by source components)
+jest.mock('framer-motion', () => {
+  const motion = {
     div: ({ children, ...props }: JSX.IntrinsicElements['div']) => (
       <div {...props}>{children}</div>
     ),
-    h3: ({ children, ...props }: JSX.IntrinsicElements['h3']) => (
-      <h3 {...props}>{children}</h3>
+    h2: ({ children, ...props }: JSX.IntrinsicElements['h2']) => (
+      <h2 {...props}>{children}</h2>
     ),
     span: ({ children, ...props }: JSX.IntrinsicElements['span']) => (
       <span {...props}>{children}</span>
     ),
-  },
-}))
+  }
+  return {
+    motion,
+    m: motion,
+    useReducedMotion: () => false,
+  }
+})
 
 // Mock Next.js Link
 jest.mock('next/link', () => ({
@@ -47,7 +52,7 @@ describe('CtaBand', () => {
   test('renders headline text', () => {
     render(<CtaBand />)
 
-    const heading = screen.getByRole('heading', { level: 3 })
+    const heading = screen.getByRole('heading', { level: 2 })
     expect(heading).toBeInTheDocument()
     expect(heading.textContent).toContain('House')
     expect(heading.textContent).toContain('Hunting')

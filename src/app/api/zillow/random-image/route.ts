@@ -1,4 +1,10 @@
-import { NextResponse } from 'next/server'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
+import {
+  isPaidRapidApiApproved,
+  RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
+} from '@/lib/api/rapidapi-approval-gate'
 
 type ZillowCard = {
   zpid: string
@@ -18,6 +24,7 @@ type ZillowCard = {
 
 const DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
 const DEFAULT_QUERY = 'San Francisco, CA'
+const ZILLOW_FETCH_TIMEOUT_MS = 10_000
 
 type ZillowSearchResult = {
   zpid?: number | string
@@ -66,7 +73,7 @@ export async function GET() {
   // This demo endpoint fetches third-party listing data/images and should not be
   // exposed on production deployments.
   if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return ApiErrorHandler.notFound('Not found')
   }
 
   const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
@@ -74,9 +81,14 @@ export async function GET() {
 
   if (!RAPIDAPI_KEY) {
     console.error('RAPIDAPI_KEY not configured')
-    return NextResponse.json(
-      { error: 'Application is not configured for Zillow API access.' },
-      { status: 503 }
+    return ApiErrorHandler.serviceUnavailable(
+      'Application is not configured for Zillow API access.'
+    )
+  }
+
+  if (!isPaidRapidApiApproved()) {
+    return ApiErrorHandler.serviceUnavailable(
+      RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE
     )
   }
 
@@ -84,20 +96,19 @@ export async function GET() {
   const searchUrl = `https://${RAPIDAPI_HOST}/propertyExtendedSearch?location=${encodeURIComponent(
     DEFAULT_QUERY
   )}&status_type=ForSale&home_type=Houses&page=1&pageSize=3`
-  const searchRes = await fetch(searchUrl, {
+  const searchRes = await fetchWithTimeout(searchUrl, {
     headers: {
       'X-RapidAPI-Key': RAPIDAPI_KEY,
       'X-RapidAPI-Host': RAPIDAPI_HOST,
     },
     cache: 'no-store',
+    timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+    timeoutMessage: 'Zillow search fetch timed out',
   })
 
   if (!searchRes.ok) {
-    return NextResponse.json(
-      {
-        error: `Zillow search failed: ${searchRes.status} ${searchRes.statusText}`,
-      },
-      { status: 502 }
+    return ApiErrorHandler.badGateway(
+      `Zillow search failed: ${searchRes.status} ${searchRes.statusText}`
     )
   }
 
@@ -115,10 +126,10 @@ export async function GET() {
     return typeof p.zpid === 'number' || typeof p.zpid === 'string'
   })
   if (candidates.length === 0) {
-    return NextResponse.json(
-      { error: 'No properties found from search query' },
-      { status: 204 }
-    )
+    return noStoreJson({
+      cards: [],
+      reason: 'No properties found from search query',
+    })
   }
 
   // take up to first 3 candidates to populate 3 phone cards
@@ -130,12 +141,14 @@ export async function GET() {
     const zpid = String(item.zpid)
     const url = `https://${RAPIDAPI_HOST}/images?zpid=${encodeURIComponent(zpid)}`
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
           'X-RapidAPI-Host': RAPIDAPI_HOST,
         },
         cache: 'no-store',
+        timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
+        timeoutMessage: 'Zillow image fetch timed out',
       })
       if (!res.ok) {
         continue
@@ -157,12 +170,12 @@ export async function GET() {
   }
 
   if (cards.length === 0) {
-    return NextResponse.json(
-      { error: 'No images returned for selected properties' },
-      { status: 204 }
-    )
+    return noStoreJson({
+      cards: [],
+      reason: 'No images returned for selected properties',
+    })
   }
 
   // If only one card, return single card for backward-compat; else return array
-  return NextResponse.json(cards.length === 1 ? cards[0] : cards)
+  return noStoreJson(cards.length === 1 ? cards[0] : cards)
 }

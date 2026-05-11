@@ -1,0 +1,483 @@
+{
+  "project": "HomeMatch V2",
+  "stack": "Next.js 15 (App Router), TypeScript, Supabase SSR",
+  "generated_at": "2026-05-07T10:35:00Z",
+  "summary": {
+    "page_routes": 29,
+    "api_routes": 28,
+    "layout_routes": 5,
+    "protected_routes": 15,
+    "public_routes": 14,
+    "user_auth_api": 12,
+    "cron_auth_api": 5,
+    "public_api": 5,
+    "rate_limited_api": 9
+  },
+  "middleware": {
+    "file": "middleware.ts",
+    "protected_prefixes": [
+      "/dashboard",
+      "/profile",
+      "/household",
+      "/settings",
+      "/validation",
+      "/couples",
+      "/properties"
+    ],
+    "public_bypass_paths": ["/api/performance/metrics", "/api/health"],
+    "auth_redirect": "/login",
+    "post_auth_redirect": "/dashboard",
+    "security_headers": {
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "strict-origin-when-cross-origin"
+    },
+    "supabase_timeout_ms": 5000
+  },
+  "page_routes": [
+    {
+      "path": "/",
+      "file": "src/app/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/about",
+      "file": "src/app/about/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/auth/auth-code-error",
+      "file": "src/app/auth/auth-code-error/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/contact",
+      "file": "src/app/contact/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/cookies",
+      "file": "src/app/cookies/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/couples",
+      "file": "src/app/couples/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/couples/decisions",
+      "file": "src/app/couples/decisions/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard",
+      "file": "src/app/dashboard/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/activity",
+      "file": "src/app/dashboard/activity/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/liked",
+      "file": "src/app/dashboard/liked/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/mutual-likes",
+      "file": "src/app/dashboard/mutual-likes/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/passed",
+      "file": "src/app/dashboard/passed/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/vibes-test",
+      "file": "src/app/dashboard/vibes-test/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/dashboard/viewed",
+      "file": "src/app/dashboard/viewed/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/demo/ads",
+      "file": "src/app/demo/ads/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/household/create",
+      "file": "src/app/household/create/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/household/join",
+      "file": "src/app/household/join/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/invite/:token",
+      "file": "src/app/invite/[token]/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/login",
+      "file": "src/app/login/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/privacy",
+      "file": "src/app/privacy/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/profile",
+      "file": "src/app/profile/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/properties/:id",
+      "file": "src/app/properties/[id]/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/reset-password",
+      "file": "src/app/reset-password/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/settings",
+      "file": "src/app/settings/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/signup",
+      "file": "src/app/signup/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/sponsor-mockups",
+      "file": "src/app/sponsor-mockups/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/terms",
+      "file": "src/app/terms/page.tsx",
+      "auth": "public"
+    },
+    {
+      "path": "/validation",
+      "file": "src/app/validation/page.tsx",
+      "auth": "authenticated"
+    },
+    {
+      "path": "/verify-email",
+      "file": "src/app/verify-email/page.tsx",
+      "auth": "public"
+    }
+  ],
+  "layout_routes": [
+    {
+      "path": "/",
+      "file": "src/app/layout.tsx"
+    },
+    {
+      "path": "/couples",
+      "file": "src/app/couples/layout.tsx"
+    },
+    {
+      "path": "/dashboard",
+      "file": "src/app/dashboard/layout.tsx"
+    },
+    {
+      "path": "/properties",
+      "file": "src/app/properties/layout.tsx"
+    },
+    {
+      "path": "/settings",
+      "file": "src/app/settings/layout.tsx"
+    }
+  ],
+  "api_routes": [
+    {
+      "path": "/api/admin/generate-neighborhood-vibes",
+      "file": "src/app/api/admin/generate-neighborhood-vibes/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "rate_limited": false,
+      "query_params": ["cron_secret", "limit", "force", "delayMs"],
+      "description": ""
+    },
+    {
+      "path": "/api/admin/generate-vibes",
+      "file": "src/app/api/admin/generate-vibes/route.ts",
+      "methods": ["GET", "POST"],
+      "auth": "cron-secret",
+      "rate_limited": false,
+      "query_params": ["cron_secret", "count", "diverse", "force"],
+      "description": ""
+    },
+    {
+      "path": "/api/admin/generate-vibes-zillow",
+      "file": "src/app/api/admin/generate-vibes-zillow/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "rate_limited": false,
+      "query_params": ["cron_secret"],
+      "description": ""
+    },
+    {
+      "path": "/api/admin/ingest/zillow",
+      "file": "src/app/api/admin/ingest/zillow/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "rate_limited": false,
+      "query_params": [
+        "cron_secret",
+        "sort",
+        "minPrice",
+        "maxPrice",
+        "maxPages"
+      ],
+      "description": ""
+    },
+    {
+      "path": "/api/admin/status-refresh",
+      "file": "src/app/api/admin/status-refresh/route.ts",
+      "methods": ["POST"],
+      "auth": "cron-secret",
+      "rate_limited": true,
+      "query_params": [
+        "cron_secret",
+        "limit",
+        "batchSize",
+        "delayMs",
+        "maxRuntimeMs"
+      ],
+      "description": ""
+    },
+    {
+      "path": "/api/couples/activity",
+      "file": "src/app/api/couples/activity/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": ["limit", "offset"],
+      "description": "Explicitly reject unsupported methods to avoid hanging requests in tests",
+      "rejected_methods": ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+      "path": "/api/couples/check-mutual",
+      "file": "src/app/api/couples/check-mutual/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": ["propertyId"],
+      "description": "Get the current user",
+      "rejected_methods": ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+      "path": "/api/couples/disputed",
+      "file": "src/app/api/couples/disputed/route.ts",
+      "methods": ["GET", "PATCH"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": [],
+      "description": ""
+    },
+    {
+      "path": "/api/couples/mutual-likes",
+      "file": "src/app/api/couples/mutual-likes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": ["includeProperties"],
+      "description": "API endpoint for retrieving properties liked by multiple household members."
+    },
+    {
+      "path": "/api/couples/notify",
+      "file": "src/app/api/couples/notify/route.ts",
+      "methods": ["POST"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": [],
+      "description": "Parse and validate request body"
+    },
+    {
+      "path": "/api/couples/stats",
+      "file": "src/app/api/couples/stats/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": [],
+      "description": "Get the current user"
+    },
+    {
+      "path": "/api/health",
+      "file": "src/app/api/health/route.ts",
+      "methods": ["GET"],
+      "auth": "public",
+      "rate_limited": false,
+      "query_params": ["expectTest"],
+      "description": "Explicitly handle non-GET methods to avoid hanging requests in tests/E2E",
+      "rejected_methods": ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+      "path": "/api/interactions",
+      "file": "src/app/api/interactions/route.ts",
+      "methods": ["GET", "POST", "DELETE"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": ["type", "cursor", "limit"],
+      "description": ""
+    },
+    {
+      "path": "/api/interactions/reset",
+      "file": "src/app/api/interactions/reset/route.ts",
+      "methods": ["DELETE"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": [],
+      "description": "Rate limiting - use stricter rate limit for destructive operations"
+    },
+    {
+      "path": "/api/maps/geocode",
+      "file": "src/app/api/maps/geocode/route.ts",
+      "methods": ["POST"],
+      "auth": "rate-limited (no user auth)",
+      "rate_limited": true,
+      "query_params": [],
+      "description": ""
+    },
+    {
+      "path": "/api/maps/metro-boundaries",
+      "file": "src/app/api/maps/metro-boundaries/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "rate_limited": false,
+      "query_params": ["metro", "debug"],
+      "description": ""
+    },
+    {
+      "path": "/api/maps/places/autocomplete",
+      "file": "src/app/api/maps/places/autocomplete/route.ts",
+      "methods": ["POST"],
+      "auth": "rate-limited (no user auth)",
+      "rate_limited": true,
+      "query_params": [],
+      "description": ""
+    },
+    {
+      "path": "/api/maps/proxy-script",
+      "file": "src/app/api/maps/proxy-script/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "rate_limited": false,
+      "query_params": [],
+      "description": ""
+    },
+    {
+      "path": "/api/maps/script",
+      "file": "src/app/api/maps/script/route.ts",
+      "methods": ["GET"],
+      "auth": "rate-limited (no user auth)",
+      "rate_limited": false,
+      "query_params": [],
+      "description": "Secure Google Maps Script Loader API"
+    },
+    {
+      "path": "/api/neighborhoods/vibes",
+      "file": "src/app/api/neighborhoods/vibes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": ["neighborhoodId", "limit", "offset"],
+      "description": ""
+    },
+    {
+      "path": "/api/performance/metrics",
+      "file": "src/app/api/performance/metrics/route.ts",
+      "methods": ["POST"],
+      "auth": "public",
+      "rate_limited": false,
+      "query_params": ["page", "metric", "rating"],
+      "description": "",
+      "rejected_methods": ["GET"]
+    },
+    {
+      "path": "/api/properties/marketing",
+      "file": "src/app/api/properties/marketing/route.ts",
+      "methods": ["GET"],
+      "auth": "none",
+      "rate_limited": false,
+      "query_params": [],
+      "description": "Explicitly reject unsupported methods to avoid hanging requests in tests/E2E",
+      "rejected_methods": ["POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    },
+    {
+      "path": "/api/properties/vibes",
+      "file": "src/app/api/properties/vibes/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": false,
+      "query_params": ["limit", "offset", "propertyId"],
+      "description": "GET /api/properties/vibes"
+    },
+    {
+      "path": "/api/users/avatar",
+      "file": "src/app/api/users/avatar/route.ts",
+      "methods": ["POST", "DELETE"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": [],
+      "description": "Validate file magic bytes match claimed MIME type"
+    },
+    {
+      "path": "/api/users/search",
+      "file": "src/app/api/users/search/route.ts",
+      "methods": ["GET"],
+      "auth": "user",
+      "rate_limited": true,
+      "query_params": ["q"],
+      "description": "Rate limiting"
+    },
+    {
+      "path": "/api/zillow/random-image",
+      "file": "src/app/api/zillow/random-image/route.ts",
+      "methods": ["GET"],
+      "auth": "public (API proxy)",
+      "rate_limited": false,
+      "query_params": [],
+      "description": "Resolve actual ZPIDs at runtime using a fixed search query: \"San Francisco, CA\"."
+    },
+    {
+      "path": "/auth/callback",
+      "file": "src/app/auth/callback/route.ts",
+      "methods": ["GET"],
+      "auth": "none",
+      "rate_limited": false,
+      "query_params": ["code", "next"],
+      "description": "Exchange code for session"
+    },
+    {
+      "path": "/supabase/:...path",
+      "file": "src/app/supabase/[...path]/route.ts",
+      "methods": [],
+      "auth": "none",
+      "rate_limited": false,
+      "query_params": [],
+      "description": ""
+    }
+  ],
+  "auth_patterns": {
+    "user": "requireUserFromRequest() or getUserFromRequest() \u2014 Supabase session cookie",
+    "cron-secret": "x-cron-secret header / cron_secret query param \u2014 for admin/scheduled jobs",
+    "public": "No auth or bypassed in middleware",
+    "none": "No auth check detected"
+  }
+}

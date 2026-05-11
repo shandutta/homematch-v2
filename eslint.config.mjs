@@ -36,6 +36,8 @@ export default [
       'out/**/*',
       'dist/**/*',
       '.corepack-cache/**/*',
+      '.claude/**/*',
+      '.worktrees/**/*',
       'homematch-original-analysis/**/*',
       'node_modules/**/*',
       '.pnpm-store/**/*',

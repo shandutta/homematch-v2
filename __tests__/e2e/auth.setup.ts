@@ -1,165 +1,50 @@
 /**
- * Global auth setup for Playwright tests
- * Creates authenticated states for each worker to enable auth caching
+ * E2E Auth Setup — verify pre-generated auth states
+ *
+ * Auth states are generated programmatically by scripts/generate-e2e-auth-states.js
+ * (Supabase SDK sign-in, no form, no cookie race). This setup step just validates
+ * the files exist and are not expired.
  */
-
 import { test as setup } from '@playwright/test'
-import type { BrowserContext, Page, TestInfo } from '@playwright/test'
-import { TEST_USERS, WORKER_TEST_USER_COUNT } from '../fixtures/test-data'
-import { createAuthHelper, createWorkerAuthHelper } from '../utils/auth-helper'
-import { getSupabaseAuthStorageKey } from '../../src/lib/supabase/storage-keys'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 
-// Auth storage file paths for each worker
-const authDir = path.join(__dirname, '../../playwright/.auth')
-const FRESH_USER_STORAGE_INDEX = 99
+const AUTH_DIR = path.join(__dirname, '../../playwright/.auth')
+const WORKER_COUNT = 8
+const FRESH_INDEX = 99
 
-setup.setTimeout(240000)
+setup('verify pre-generated auth states', async () => {
+  const files = [
+    ...Array.from({ length: WORKER_COUNT }, (_, i) => `user-worker-${i}.json`),
+    `user-worker-${FRESH_INDEX}.json`,
+  ]
 
-const resolveBaseUrl = (testInfo: TestInfo) => {
-  const fromConfig = testInfo?.project?.use?.baseURL
-  if (typeof fromConfig === 'string' && fromConfig) return fromConfig
-  return (
-    process.env.BASE_URL ||
-    process.env.PLAYWRIGHT_BASE_URL ||
-    'http://127.0.0.1:3000'
-  )
-}
-
-const resolveHostname = (baseUrl: string) => {
-  try {
-    return new URL(baseUrl).hostname || 'localhost'
-  } catch {
-    return 'localhost'
-  }
-}
-
-const waitForAuthPersisted = async ({
-  storageKey,
-  context,
-  page,
-}: {
-  storageKey: string
-  context: BrowserContext
-  page: Page
-}) => {
-  const timeoutMs = 15_000
-  const start = Date.now()
-
-  while (Date.now() - start < timeoutMs) {
-    if (page.isClosed()) {
-      throw new Error('Auth page closed before session persisted')
+  let missing = 0
+  for (const file of files) {
+    const filePath = path.join(AUTH_DIR, file)
+    if (!fs.existsSync(filePath)) {
+      console.error(`  ❌ Missing: ${file}`)
+      missing++
+      continue
     }
-
-    const [cookies, storageValue] = await Promise.all([
-      context.cookies().catch(() => []),
-      page
-        .evaluate((key: string) => {
-          try {
-            return localStorage.getItem(key)
-          } catch {
-            return null
-          }
-        }, storageKey)
-        .catch(() => null),
-    ])
-
-    const hasCookie = cookies.some(
-      (cookie) => cookie.name === storageKey && Boolean(cookie.value)
+    const state = JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+    const localStorageEntries = state.origins?.[0]?.localStorage || []
+    const hasAuthToken = localStorageEntries.some(
+      (entry) => entry.name?.includes('auth-token') && entry.value?.length > 10
     )
-
-    if (hasCookie || storageValue) return
-
-    await page.waitForTimeout(250)
+    if (!hasAuthToken) {
+      console.error(`  ❌ No auth token in: ${file}`)
+      missing++
+      continue
+    }
+    console.log(`  ✅ ${file}`)
   }
 
-  throw new Error(`Auth session not persisted (storageKey=${storageKey})`)
-}
-
-setup(
-  'authenticate users for parallel workers',
-  async ({ browser }, testInfo) => {
-    // Ensure auth directory exists
-    if (!fs.existsSync(authDir)) {
-      fs.mkdirSync(authDir, { recursive: true })
-    }
-
-    const baseUrl = resolveBaseUrl(testInfo)
-    const hostname = resolveHostname(baseUrl)
-    const storageKey = getSupabaseAuthStorageKey(hostname)
-
-    // Seed all worker test users so modulo worker indices can always reuse storage.
-    const workersToSeed = WORKER_TEST_USER_COUNT
-
-    for (let workerIndex = 0; workerIndex < workersToSeed; workerIndex++) {
-      const authFile = path.join(authDir, `user-worker-${workerIndex}.json`)
-      let lastError: unknown
-
-      for (let attempt = 1; attempt <= 2; attempt++) {
-        const context = await browser.newContext({ baseURL: baseUrl })
-        const page = await context.newPage()
-
-        const { auth, testUser } = createWorkerAuthHelper(page, { workerIndex })
-
-        console.log(
-          `Setting up auth for worker ${workerIndex} with user ${testUser.email} (attempt ${attempt}/2)`
-        )
-
-        try {
-          await auth.login(testUser)
-
-          await waitForAuthPersisted({ storageKey, context, page })
-
-          await context.storageState({ path: authFile })
-
-          console.log(`✅ Auth state saved for worker ${workerIndex}`)
-          await context.close().catch(() => {})
-          lastError = null
-          break
-        } catch (error) {
-          lastError = error
-          console.error(
-            `❌ Auth setup failed for worker ${workerIndex}:`,
-            error
-          )
-          await context.close().catch(() => {})
-
-          if (attempt < 2) {
-            await new Promise((resolve) => setTimeout(resolve, 750))
-          }
-        }
-      }
-
-      if (lastError) {
-        throw lastError
-      }
-    }
-
-    const context = await browser.newContext({ baseURL: baseUrl })
-    const page = await context.newPage()
-    const auth = createAuthHelper(page)
-
-    console.log(
-      `Setting up auth for fresh user ${TEST_USERS.freshUser.email} (storage index ${FRESH_USER_STORAGE_INDEX})`
+  if (missing > 0) {
+    throw new Error(
+      `${missing} auth state file(s) invalid or missing. Run: node scripts/generate-e2e-auth-states.js`
     )
-
-    try {
-      await auth.login(TEST_USERS.freshUser)
-      await waitForAuthPersisted({ storageKey, context, page })
-
-      const authFile = path.join(
-        authDir,
-        `user-worker-${FRESH_USER_STORAGE_INDEX}.json`
-      )
-      await context.storageState({ path: authFile })
-
-      console.log(`✅ Auth state saved for fresh user`)
-    } catch (error) {
-      console.error(`❌ Auth setup failed for fresh user:`, error)
-      throw error
-    } finally {
-      await context.close()
-    }
   }
-)
+
+  console.log(`✅ All ${files.length} E2E auth states verified`)
+})

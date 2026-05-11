@@ -15,6 +15,20 @@
 
 import { PROPERTY_TAGS } from '@/lib/schemas/property-vibes'
 
+// PII redaction for property descriptions before sending to external LLM
+const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g
+const PHONE_RE = /\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g
+const URL_RE = /\bhttps?:\/\/\S+/gi
+const REDACTION = '[REDACTED]'
+
+function redactPropertyDescription(desc: string): string {
+  if (!desc) return desc
+  return desc
+    .replace(URL_RE, REDACTION)
+    .replace(EMAIL_RE, REDACTION)
+    .replace(PHONE_RE, REDACTION)
+}
+
 // Format tags by category for the prompt
 function formatTagsForPrompt(): string {
   const sections = [
@@ -132,11 +146,11 @@ export function buildUserPrompt(
   // Add description if available
   let descriptionSection = ''
   if (property.description) {
+    // Redact PII from description before sending to external LLM provider
+    const sanitized = redactPropertyDescription(property.description)
     // Truncate very long descriptions
     const desc =
-      property.description.length > 800
-        ? property.description.slice(0, 800) + '...'
-        : property.description
+      sanitized.length > 800 ? sanitized.slice(0, 800) + '...' : sanitized
     descriptionSection = `
 
 LISTING DESCRIPTION:

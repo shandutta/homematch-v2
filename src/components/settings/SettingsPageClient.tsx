@@ -1,13 +1,46 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { User } from '@supabase/supabase-js'
 import { UserProfile } from '@/types/database'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PreferencesSection } from './PreferencesSection'
-import { NotificationsSection } from './NotificationsSection'
-import { AccountSection } from './AccountSection'
-import { SavedSearchesSection } from './SavedSearchesSection'
+import type { TasteProfileValues } from '@/components/features/profile/TasteProfileCollector'
+import { UserServiceClient } from '@/lib/services/users-client'
+
+// Lazy-load secondary tabs — only Preferences renders on first paint, so
+// deferring these shaves ~20-25 KB off the initial settings route chunk.
+// Each tab still mounts the moment the user clicks its trigger.
+const NotificationsSection = dynamic(
+  () =>
+    import('./NotificationsSection').then((mod) => ({
+      default: mod.NotificationsSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const AccountSection = dynamic(
+  () =>
+    import('./AccountSection').then((mod) => ({
+      default: mod.AccountSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const SavedSearchesSection = dynamic(
+  () =>
+    import('./SavedSearchesSection').then((mod) => ({
+      default: mod.SavedSearchesSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const TasteProfileCollector = dynamic(
+  () =>
+    import('@/components/features/profile/TasteProfileCollector').then(
+      (mod) => ({ default: mod.TasteProfileCollector })
+    ),
+  { ssr: false, loading: () => null }
+)
 import {
   Settings,
   Bell,
@@ -17,15 +50,17 @@ import {
   DollarSign,
   MapPin,
   Mail,
+  Heart,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import { m, AnimatePresence, type Variants } from 'framer-motion'
 import { MobileBottomNav } from '@/components/layouts/MobileBottomNav'
 import {
   DEFAULT_PRICE_RANGE,
   DEFAULT_SEARCH_RADIUS,
 } from '@/lib/constants/preferences'
+import { toast } from 'sonner'
 
 interface SettingsPageClientProps {
   user: User
@@ -122,13 +157,24 @@ export function SettingsPageClient({
       icon: Search,
     },
     {
+      value: 'taste-profile',
+      label: 'Taste Profile',
+      description: 'Aesthetics & lifestyle',
+      icon: Heart,
+    },
+    {
       value: 'account',
       label: 'Account',
       description: 'Security & sessions',
       icon: UserIcon,
     },
   ] satisfies ReadonlyArray<{
-    value: 'preferences' | 'notifications' | 'saved-searches' | 'account'
+    value:
+      | 'preferences'
+      | 'notifications'
+      | 'saved-searches'
+      | 'taste-profile'
+      | 'account'
     label: string
     description: string
     icon: typeof Settings
@@ -232,6 +278,59 @@ export function SettingsPageClient({
     setProfileState(updated)
   }
 
+  const handleTasteProfileSave = useCallback(
+    async (values: TasteProfileValues) => {
+      const existingPrefs =
+        typeof profileState.preferences === 'object' &&
+        profileState.preferences !== null
+          ? (profileState.preferences as Record<string, unknown>)
+          : {}
+      const updatedPreferences = {
+        ...existingPrefs,
+        tasteProfile: {
+          aesthetics: values.aesthetics,
+          lifestyle: values.lifestyle,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+      try {
+        const updated = await UserServiceClient.updateProfile(user.id, {
+          preferences: updatedPreferences,
+        })
+        setProfileState(updated)
+        toast.success('Taste profile saved')
+      } catch {
+        toast.error('Failed to save taste profile')
+        throw new Error('Save failed')
+      }
+    },
+    [profileState.preferences, user.id]
+  )
+
+  const tasteProfileInitialValues = useMemo(():
+    | TasteProfileValues
+    | undefined => {
+    const prefs = profileState.preferences
+    if (typeof prefs !== 'object' || prefs === null) return undefined
+    const raw = (prefs as Record<string, unknown>).tasteProfile
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const tp = raw as Record<string, unknown>
+    const aesthetics = Array.isArray(tp.aesthetics)
+      ? (tp.aesthetics as unknown[]).filter(
+          (a): a is string => typeof a === 'string'
+        )
+      : []
+    const ls =
+      typeof tp.lifestyle === 'object' && tp.lifestyle !== null
+        ? (tp.lifestyle as Record<string, unknown>)
+        : {}
+    const lifestyle: Record<string, number> = {}
+    for (const [k, v] of Object.entries(ls)) {
+      if (typeof v === 'number') lifestyle[k] = v
+    }
+    return { aesthetics, lifestyle }
+  }, [profileState.preferences])
+
   const [preferencesSaveState, setPreferencesSaveState] = useState<SaveState>({
     isSaving: false,
     hasUnsavedChanges: false,
@@ -286,7 +385,7 @@ export function SettingsPageClient({
   return (
     <div className="gradient-grid-bg min-h-screen pb-6 text-white">
       {/* Hero Header */}
-      <motion.section
+      <m.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -304,7 +403,7 @@ export function SettingsPageClient({
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
           {/* Back navigation */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
@@ -316,16 +415,16 @@ export function SettingsPageClient({
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
             </Link>
-          </motion.div>
+          </m.div>
 
           {/* Header content */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
           >
-            <motion.div variants={itemVariants} className="max-w-2xl space-y-4">
+            <m.div variants={itemVariants} className="max-w-2xl space-y-4">
               <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
                 Control Center
               </p>
@@ -337,9 +436,9 @@ export function SettingsPageClient({
                 Every change here immediately shapes the homes we surface for
                 you.
               </p>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Link href="/profile">
                 <Button
                   variant="outline"
@@ -349,11 +448,11 @@ export function SettingsPageClient({
                   View Profile
                 </Button>
               </Link>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Overview cards */}
-          <motion.div
+          <m.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -362,7 +461,7 @@ export function SettingsPageClient({
             {overviewCards.map((card, index) => {
               const Icon = card.icon
               return (
-                <motion.button
+                <m.button
                   key={card.label}
                   variants={itemVariants}
                   whileHover={{ y: -2, transition: { duration: 0.2 } }}
@@ -387,16 +486,16 @@ export function SettingsPageClient({
                       {card.value}
                     </p>
                   </div>
-                </motion.button>
+                </m.button>
               )
             })}
-          </motion.div>
+          </m.div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* Main content */}
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
@@ -408,7 +507,7 @@ export function SettingsPageClient({
             className="space-y-8"
           >
             {/* Tab navigation */}
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 backdrop-blur-sm sm:gap-2 sm:p-2 md:grid-cols-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-1.5 backdrop-blur-sm sm:gap-2 sm:p-2 md:grid-cols-5">
               {tabOptions.map(({ value, label, description, icon: Icon }) => (
                 <TabsTrigger
                   key={value}
@@ -437,7 +536,7 @@ export function SettingsPageClient({
                   value="preferences"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -449,7 +548,7 @@ export function SettingsPageClient({
                       onProfileUpdate={handleProfileUpdate}
                       onSaveStateChange={setPreferencesSaveState}
                     />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -458,7 +557,7 @@ export function SettingsPageClient({
                   value="notifications"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -470,7 +569,7 @@ export function SettingsPageClient({
                       onProfileUpdate={handleProfileUpdate}
                       onSaveStateChange={setNotificationsSaveState}
                     />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -479,14 +578,33 @@ export function SettingsPageClient({
                   value="saved-searches"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
                     <SavedSearchesSection userId={user.id} />
-                  </motion.div>
+                  </m.div>
+                </TabsContent>
+              )}
+
+              {activeTab === 'taste-profile' && (
+                <TabsContent
+                  value="taste-profile"
+                  className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
+                >
+                  <m.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <TasteProfileCollector
+                      onSave={handleTasteProfileSave}
+                      initialValues={tasteProfileInitialValues}
+                    />
+                  </m.div>
                 </TabsContent>
               )}
 
@@ -495,19 +613,19 @@ export function SettingsPageClient({
                   value="account"
                   className="mt-0 space-y-6 focus-visible:ring-0 focus-visible:outline-none"
                 >
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
                     <AccountSection user={user} />
-                  </motion.div>
+                  </m.div>
                 </TabsContent>
               )}
             </AnimatePresence>
           </Tabs>
-        </motion.div>
+        </m.div>
       </div>
 
       <div className="bottom-nav-spacer md:hidden" aria-hidden="true" />

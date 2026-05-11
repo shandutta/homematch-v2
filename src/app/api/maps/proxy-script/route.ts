@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 import { shouldLoadGoogleMapsMarkerLibrary } from '@/lib/maps/config'
 
 const MAPS_TEST_STUB = `
@@ -94,11 +95,13 @@ export async function GET(request: Request) {
     const librariesParam = Array.from(libraries).join(',')
 
     // Fetch the actual Google Maps script
-    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=${librariesParam}&loading=async&callback=initGoogleMaps`
+    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(serverApiKey)}&libraries=${librariesParam}&loading=async&callback=initGoogleMaps`
 
     const googleReferer = getGoogleReferer(request)
-    const response = await fetch(scriptUrl, {
+    const response = await fetchWithTimeout(scriptUrl, {
       headers: googleReferer ? { referer: googleReferer } : undefined,
+      timeoutMs: 10000,
+      timeoutMessage: 'Google Maps script request timed out',
     })
 
     if (!response.ok) {

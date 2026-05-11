@@ -135,7 +135,7 @@ describe('Input Component', () => {
       render(<Input />)
       const input = screen.getByRole('textbox')
       expect(input).toHaveClass(
-        'text-token-base',
+        'text-[16px]',
         'shadow-token-sm',
         'duration-token-fast',
         'ease-token-out'

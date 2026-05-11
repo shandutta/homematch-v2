@@ -11,8 +11,8 @@ describe('DB: households.user_count sync trigger', () => {
       const helper = new IntegrationTestHelper()
       const serviceClient = helper.getServiceClient()
 
-      const test1 = await helper.getTestUser('test1@example.com')
-      const test2 = await helper.getTestUser('test2@example.com')
+      const test1 = await helper.getTestUser('test-worker-1@example.com')
+      const test2 = await helper.getTestUser('test-worker-2@example.com')
 
       const householdId = randomUUID()
 
@@ -90,8 +90,8 @@ describe('DB: households.user_count sync trigger', () => {
       const helper = new IntegrationTestHelper()
       const serviceClient = helper.getServiceClient()
 
-      const test1 = await helper.getTestUser('test1@example.com')
-      const test2 = await helper.getTestUser('test2@example.com')
+      const test1 = await helper.getTestUser('test-worker-1@example.com')
+      const test2 = await helper.getTestUser('test-worker-2@example.com')
 
       const householdId = randomUUID()
 

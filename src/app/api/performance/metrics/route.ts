@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import { noStoreJson } from '@/lib/api/cache-control'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+import { ApiErrorHandler } from '@/lib/api/errors'
 
 interface MetricsStoreEntry {
   metrics: Array<{
@@ -41,38 +44,67 @@ interface Aggregates {
 }
 
 // Performance metric schema
+const MAX_PAYLOAD_BYTES = 64 * 1024
+const MAX_METRICS_PER_PAYLOAD = 100
+const MAX_CUSTOM_METRICS_PER_PAYLOAD = 100
+const MAX_STORED_METRIC_BATCHES = 1000
+
 const PerformanceMetricSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).max(100),
   value: z.number(),
   rating: z.enum(['good', 'needs-improvement', 'poor']),
   delta: z.number().optional(),
-  id: z.string(),
-  navigationType: z.string().optional(),
+  id: z.string().min(1).max(128),
+  navigationType: z.string().max(100).optional(),
   timestamp: z.number(),
 })
 
 const CustomMetricSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).max(100),
   value: z.number(),
-  unit: z.string().optional(),
-  tags: z.record(z.string()).optional(),
+  unit: z.string().max(32).optional(),
+  tags: z.record(z.string().max(100)).optional(),
   timestamp: z.number(),
 })
 
 const MetricsPayloadSchema = z.object({
-  metrics: z.array(PerformanceMetricSchema),
-  customMetrics: z.array(CustomMetricSchema).optional(),
-  url: z.string().url(),
-  userAgent: z.string(),
+  metrics: z.array(PerformanceMetricSchema).max(MAX_METRICS_PER_PAYLOAD),
+  customMetrics: z
+    .array(CustomMetricSchema)
+    .max(MAX_CUSTOM_METRICS_PER_PAYLOAD)
+    .optional(),
+  url: z.string().url().max(2048),
+  userAgent: z.string().max(512),
   timestamp: z.number(),
 })
 
 // In-memory storage for demo (replace with database in production)
 const metricsStore: MetricsStoreEntry[] = []
-const MAX_METRICS = 1000
+const MAX_METRICS = MAX_STORED_METRIC_BATCHES
 
 export async function POST(request: NextRequest) {
   try {
+    const contentLength = request.headers.get('content-length')
+    const contentLengthBytes = contentLength
+      ? Number.parseInt(contentLength, 10)
+      : 0
+    if (
+      Number.isFinite(contentLengthBytes) &&
+      contentLengthBytes > MAX_PAYLOAD_BYTES
+    ) {
+      return ApiErrorHandler.payloadTooLarge('Metrics payload too large')
+    }
+
+    const forwardedFor = request.headers.get('x-forwarded-for')
+    const realIp = request.headers.get('x-real-ip')
+    const ip = forwardedFor
+      ? forwardedFor.split(',')[0]?.trim()
+      : realIp || 'unknown'
+    const rateLimitResponse = await checkRateLimit(
+      rateLimitKey('performance:metrics', ip)
+    )
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await request.json()
 
     // Validate payload
@@ -121,16 +153,13 @@ export async function POST(request: NextRequest) {
     // 2. Send to monitoring service (Sentry, DataDog, etc.)
     // 3. Trigger alerts for critical performance issues
 
-    return NextResponse.json({
+    return noStoreJson({
       success: true,
       received: validatedData.metrics.length,
     })
   } catch (error) {
     console.error('Failed to process performance metrics:', error)
-    return NextResponse.json(
-      { error: 'Invalid metrics payload' },
-      { status: 400 }
-    )
+    return ApiErrorHandler.badRequest('Invalid metrics payload')
   }
 }
 
@@ -163,7 +192,7 @@ export async function GET(request: NextRequest) {
   // Calculate aggregates
   const aggregates = calculateAggregates(filtered)
 
-  return NextResponse.json({
+  return noStoreJson({
     total: filtered.length,
     metrics: filtered.slice(-100).map(({ ip: _ip, ...rest }) => rest), // Return last 100, excluding IP
     aggregates,

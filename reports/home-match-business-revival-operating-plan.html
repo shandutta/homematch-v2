@@ -1,0 +1,468 @@
+<!doctype html><meta charset="utf-8" /><style>
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    max-width: 920px;
+    margin: 40px auto;
+    padding: 0 20px;
+    line-height: 1.5;
+  }
+  code {
+    background: #f4f4f5;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  pre {
+    background: #111827;
+    color: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    overflow: auto;
+  }
+  h1,
+  h2,
+  h3 {
+    line-height: 1.15;
+  }
+</style>
+<h1>HomeMatch Business Revival Operating Plan</h1>
+<p>Updated: 2026-05-08T12:34Z</p>
+<h2>Executive intent</h2>
+<p>
+  HomeMatch is no longer being treated as a fragile dead project. The working
+  goal is to turn it into a credible business: fast, opinionated, shippable,
+  legible, monetizable, and good enough that the couples flow feels obviously
+  better than a generic property search site.
+</p>
+<p>
+  This plan expands the original scope beyond the current visible Kanban count.
+  The current <code>todo=16</code> is not the whole plan. It is only the
+  already-materialized subset. This document is the umbrella backlog and gate
+  model.
+</p>
+<h2>Operating model</h2>
+<ul>
+  <li>Telegram is the control plane. Keep updates short.</li>
+  <li>This report and Kanban are the durable memory.</li>
+  <li>
+    Active overnight execution: one repo-writing lane plus up to two read-only
+    scout lanes when RAM allows.
+  </li>
+  <li>Use git, not backups.</li>
+  <li>
+    Be aggressive on dead code once verified. Delete unused code instead of
+    preserving archaeological layers.
+  </li>
+  <li>
+    Do not deploy, spend money, change production dashboards, use real customer
+    data, or alter external accounts while Shan is sleeping unless a task has
+    explicit approval.
+  </li>
+  <li>
+    Third-party dashboards, email, Stripe, AdSense, and production settings can
+    be reviewed/planned, but credentialed external changes need a separate
+    approval checkpoint.
+  </li>
+</ul>
+<h2>2026-05-08 Shan approval update</h2>
+<p>
+  Shan granted blanket approval for HomeMatch recovery/hardening work except
+  spending money or making paid-resource/subscription changes. Tiny live probes
+  are approved. Continue using Kanban workers and autonomous execution. Test
+  credentials should be sourced from repo docs/scripts
+  (<code>scripts/setup-test-users-admin.js</code>,
+  <code>pnpm test:setup-users</code>) and, if needed, 1Password/helpers without
+  printing secrets. Add/maintain lanes for local seeded auth lifecycle
+  verification and Zillow/RapidAPI provider evaluation.
+</p>
+<h2>2026-05-08 remote Supabase test-user approval</h2>
+<p>
+  Shan approved creating/seeding test users on remote Supabase with full API
+  authority. This unblocks remote/safeguarded auth lifecycle and authenticated
+  traversal work, bounded to disposable test users/fixtures and still excluding
+  paid-resource changes. Workers should use secret-safe admin credentials, never
+  print secrets, and produce cleanup/probe evidence artifacts.
+</p>
+<h2>2026-05-08 1Password access + remote test seeding update</h2>
+<p>
+  Shan approved use of 1Password and remote Supabase test-user creation/seeding.
+  The control plane verified <code>op</code> sign-in via
+  <code>/home/shan/bin/op_auth</code> without exposing secrets. This unblocks
+  worker execution that retrieves HomeMatch Supabase/Vercel/API secrets through
+  1Password/helpers and seeds disposable remote test users/fixtures for
+  authenticated traversal/API smoke. No spending, subscriptions, paid plan
+  changes, or broad paid usage without explicit approval.
+</p>
+<h2>2026-05-08 remote Supabase deletion/reseed approval</h2>
+<p>
+  Shan approved removing existing HomeMatch Supabase users if helpful, because
+  the current population should be treated as trash/test data. Workers may
+  delete stale/test users and replace them with a clean documented seed set for
+  remote auth/API/browser probes. Shan clarified that the only real-looking
+  Gmail-created Supabase account is also test/disposable for this HomeMatch
+  recovery. Record the seed fixture contract in docs/artifacts, avoid printing
+  credentials/secrets, and pause only if an account looks outside the HomeMatch
+  test/dev context or if an action would spend money/change paid resources.
+</p>
+<h2>Current gate</h2>
+<p>
+  Phase 0 and Phase 1 still gate implementation-heavy later work. That does not
+  mean the broader plan waits. It means later-phase implementation is held while
+  scouts can safely plan, audit, and create acceptance criteria.
+</p>
+<ul>
+  <li>
+    Phase 0: prove the app works end-to-end, all routes/endpoints known, site
+    traversed, live/local gaps explicit. The current static inputs are
+    <code
+      >reports/home-match-revival/p0-full-route-api-endpoint-inventory-matrix-2026-05-08.md</code
+    >
+    and
+    <code
+      >reports/home-match-revival/p0-site-traversal-acceptance-matrix-2026-05-08.md</code
+    >. They clarify the surface area but do not close the gate without public
+    traversal, protected redirects, authenticated traversal, and safe API probe
+    evidence.
+  </li>
+  <li>
+    Phase 1: clean architecture, auth boundary, API/middleware performance, DB
+    shape, local dev, test harness, and dead code. Repo-local remediations are
+    broad, but owner decisions and environment-backed integration/E2E proof
+    remain open.
+  </li>
+  <li>
+    Phase 2+: UX/product/business upgrades, gated until Phase 0/1 are clean or
+    Shan approves a written exception.
+  </li>
+</ul>
+<p>
+  Current approval blockers: local/test DB reset and integration path beyond
+  approved remote disposable user reseeding, service-role RBAC authority,
+  durable rate-limit storage, production signup verification settings,
+  keep/hide/delete decisions for demo/internal surfaces, and mocked or approved
+  paid/external endpoint checks.
+</p>
+<h2>Full workstreams from the original instruction</h2>
+<h3>A. Full verification and site traversal</h3>
+<p>
+  Goal: know exactly what works, what is fake, what is slow, and what is broken.
+</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Build a route and API endpoint inventory from <code>src/app/**</code>,
+    middleware, route handlers, cron endpoints, image/metadata routes, and
+    server actions.
+  </li>
+  <li>Traverse the public site start to finish locally where possible.</li>
+  <li>
+    Define authenticated traversal coverage separately, because it needs a test
+    user/session.
+  </li>
+  <li>
+    Create an endpoint matrix: method, auth boundary, rate limit, outbound
+    calls, cache behavior, timeout, expected status, test coverage, live/local
+    status.
+  </li>
+  <li>Identify dead pages/routes and delete them after verification.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Every route and API has an owner, expected behavior, test status, and
+    action: keep, fix, replace, or delete.
+  </li>
+</ul>
+<h3>B. Auth strategy and dead-code cleanup</h3>
+<p>
+  Goal: decide whether to ditch existing auth for a third-party provider and
+  make the codebase simpler either way.
+</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Inventory all current auth code, Supabase auth usage, cookies, middleware,
+    route guards, service-role paths, test helpers, and dead compatibility code.
+  </li>
+  <li>
+    Compare Supabase Auth vs Clerk/Auth0/WorkOS/Better Auth for this product.
+  </li>
+  <li>
+    Recommend one path aggressively, including migration cost, UX impact, code
+    deletion opportunity, and operational risk.
+  </li>
+  <li>If moving providers, design the deletion plan before implementing.</li>
+  <li>Remove dead auth paths after the decision gate.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>One strong recommendation, not a neutral comparison.</li>
+  <li>A file-level delete/keep/migrate list.</li>
+</ul>
+<h3>C. Frontend design and product UX</h3>
+<p>
+  Goal: make the product feel sharp, snappy, and differentiated, especially for
+  couples.
+</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review all UI surfaces, flows, empty states, cards, maps, saved searches,
+    compare flows, metadata/social previews, mobile behavior, and loading
+    states.
+  </li>
+  <li>Use Shan style docs: concise, direct, not generic SaaS copy.</li>
+  <li>Identify where UX is slow, generic, confusing, or visually stale.</li>
+  <li>Propose a stronger information architecture and interaction model.</li>
+  <li>Implement Phase 2 changes only after Phase 0/1 gate opens.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Opinionated design memo plus implementation backlog by component/page.
+  </li>
+</ul>
+<h3>D. Backend DB architecture</h3>
+<p>Goal: make the schema efficient and explainable.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review tables, RLS policies, RPCs, indexes, migrations, JSONB usage,
+    relationship modeling, and query patterns.
+  </li>
+  <li>
+    Decide where schema is too clever, too generic, or too hard to explain.
+  </li>
+  <li>
+    Propose restructures for property data, couples, interactions, matching
+    inputs, saved searches, and ingest freshness.
+  </li>
+  <li>Add performance indexes or simplify schema only after tests/guards.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Strongly opinionated architecture memo with specific migrations and rollback
+    stance.
+  </li>
+</ul>
+<h3>E. Middleware and API architecture/performance</h3>
+<p>Goal: remove slowness and reduce request-path complexity.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Audit middleware matcher behavior, auth checks, rate limiting, outbound
+    fetches, cache headers, request timeouts, server/client boundaries, and
+    service-role use.
+  </li>
+  <li>Delete dead middleware and duplicate helpers.</li>
+  <li>Standardize errors and rate-limit behavior.</li>
+  <li>Add timing/perf instrumentation where useful.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    API surface is faster, easier to reason about, and covered by targeted
+    tests.
+  </li>
+</ul>
+<h3>F. Vercel/local dev/Docker</h3>
+<p>Goal: make local development boring.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review Vercel env setup, preview/prod env separation, local dev bootstrap,
+    ignored files, and deployment docs.
+  </li>
+  <li>Decide Docker: required, optional, or delete the fiction.</li>
+  <li>Provide one canonical local dev command path.</li>
+  <li>Document how to work without production secrets.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    New developer can run the app locally without guessing or leaking secrets.
+  </li>
+</ul>
+<h3>G. Test suite and real TDD</h3>
+<p>Goal: stop pretending tests are TDD and make them useful.</p>
+<p>Tasks:</p>
+<ul>
+  <li>Inventory unit, integration, and E2E tests.</li>
+  <li>Classify tests: valuable, brittle, stale, duplicate, fake, delete.</li>
+  <li>Repair the highest-value test paths first.</li>
+  <li>
+    Define TDD rules: every bug fix gets a failing test first, every feature
+    gets acceptance tests before implementation.
+  </li>
+  <li>
+    Decide what E2E can run without external credentials and what needs a seeded
+    auth path.
+  </li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Test suite has a clear taxonomy, cleanup PRs, and a TDD workflow that
+    workers can actually follow.
+  </li>
+</ul>
+<h3>H. Docs rewrite</h3>
+<p>Goal: docs should be user-facing and operator-facing, not LLM sludge.</p>
+<p>Tasks:</p>
+<ul>
+  <li>Read all docs.</li>
+  <li>Delete duplicated/outdated docs.</li>
+  <li>
+    Rewrite README, local dev, env, architecture, test, deployment, and product
+    docs.
+  </li>
+  <li>Remove LLM tells, hedging, and over-explaining.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>Docs are short, accurate, and useful.</li>
+</ul>
+<h3>I. Couples logic and matching system</h3>
+<p>Goal: make matching feel breathtakingly good, not generic.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review scoring logic, couple preference modeling, ranking explanations, LLM
+    prompt quality, taste language, and latency.
+  </li>
+  <li>
+    Replace generic prompts with product-specific taste models and structured
+    outputs.
+  </li>
+  <li>
+    Avoid paid LLM runs during the sleep window; prepare prompts/tests offline.
+  </li>
+  <li>Make recommendations explainable and fast.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Clear matching strategy, better prompts, tests/fixtures, and implementation
+    backlog.
+  </li>
+</ul>
+<h3>J. Maps, images, and metadata</h3>
+<p>Goal: property presentation should look trustworthy and share well.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review maps keys, map routes, metro boundaries, geocoding/places behavior,
+    image proxying, OG/social metadata, thumbnails, caching, and fallbacks.
+  </li>
+  <li>Fix setup gaps that are repo-local.</li>
+  <li>External key/dashboard changes require approval.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>Maps/images/metadata are correct, cached, and failure-tolerant.</li>
+</ul>
+<h3>K. Ingest pipeline</h3>
+<p>Goal: improve the pipeline even while the external API is off.</p>
+<p>Tasks:</p>
+<ul>
+  <li>
+    Review current ingest architecture, idempotency, dedupe, freshness, source
+    attribution, retries, and observability.
+  </li>
+  <li>
+    Design a better pipeline that can be turned on later without polluting the
+    DB.
+  </li>
+  <li>No external API usage during the sleep window.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>A better ingest design plus repo-local cleanup tasks.</li>
+</ul>
+<h3>L. Legal, compliance, cookies, analytics, monetization</h3>
+<p>
+  Goal: know what is shippable and what must be fixed before
+  traffic/ads/subscriptions.
+</p>
+<p>Tasks:</p>
+<ul>
+  <li>Review terms/privacy/cookie policy/consent implementation.</li>
+  <li>Review analytics setup and organic visitor tracking options.</li>
+  <li>
+    Review AdSense requirements and known concerns from dashboards/emails later
+    with approval.
+  </li>
+  <li>
+    Design Stripe subscription tiers and gating before changing Stripe account
+    state.
+  </li>
+  <li>Identify what users should pay for first.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+  <li>
+    Compliance and monetization checklist with approval gates for external
+    account actions.
+  </li>
+</ul>
+<h3>M. Missing items to add</h3>
+<ul>
+  <li>
+    Observability: structured logs, uptime checks, error reporting, slow
+    endpoint visibility.
+  </li>
+  <li>
+    Accessibility: keyboard, contrast, screen-reader sanity for core flows.
+  </li>
+  <li>
+    SEO: sitemap, robots, canonical URLs, structured data, programmatic landing
+    pages only if quality is high.
+  </li>
+  <li>
+    Data quality: freshness badges, source confidence, stale listing handling.
+  </li>
+  <li>
+    Admin tools: lightweight internal tools for ingest status, bad listing
+    review, and prompt/debug traces.
+  </li>
+  <li>
+    Growth loops: shareable couple boards, listing shortlists, invite flow.
+  </li>
+  <li>
+    Trust: explain why a match is recommended and what data may be incomplete.
+  </li>
+  <li>
+    Cost controls: LLM and Maps usage budgets, cache hit rates, rate-limit
+    observability.
+  </li>
+</ul>
+<h2>Six-hour execution priority</h2>
+<p>1. Keep current Phase 0/1 closure lanes running.</p>
+<p>
+  2. Expand Kanban so the whole OG plan exists, not just the 16 visible todos.
+</p>
+<p>
+  3. Run read-only scouts on broader workstreams while one writer closes Phase
+  0/1 repo-local blockers.
+</p>
+<p>4. Convert scout outputs into implementation tasks with gates.</p>
+<p>
+  5. Only implement Phase 2+ after gate opens or Shan explicitly allows a
+  written exception.
+</p>
+<h2>Approval gates</h2>
+<p>Needs explicit approval before execution:</p>
+<ul>
+  <li>Switching auth provider in production.</li>
+  <li>
+    External dashboard/account changes: Vercel, Supabase, Google, AdSense,
+    Analytics, Stripe.
+  </li>
+  <li>
+    Paid API calls, deploys, production data writes, or user-data exports.
+  </li>
+  <li>
+    Email/dashboard review that requires sensitive credentials, unless the task
+    is read-only and explicitly scoped.
+  </li>
+</ul>

@@ -29,7 +29,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('user_profiles')
-          .select('*')
+          .select(
+            'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+          )
           .eq('id', userId)
           .single()
 
@@ -100,13 +102,13 @@ export class UserService extends BaseService {
     return this.executeSingleQuery(
       'fetching user profile with household',
       async (supabase) => {
+        // Explicit columns per audit M13 — keeps the wire payload tight
+        // and protects against future schema growth adding wide columns
+        // that aren't used by callers of this method.
         const { data, error } = await supabase
           .from('user_profiles')
           .select(
-            `
-            *,
-            household:households(*)
-          `
+            'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
           )
           .eq('id', userId)
           .single()
@@ -164,7 +166,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('households')
-      .select('*')
+      .select(
+        'collaboration_mode, created_at, created_by, id, name, updated_at, user_count'
+      )
       .eq('id', householdId)
       .single()
 
@@ -200,7 +204,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('*')
+      .select(
+        'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+      )
       .eq('household_id', householdId)
 
     if (error) {
@@ -270,7 +276,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('household_invitations')
-          .select('*')
+          .select(
+            'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
+          )
           .eq('household_id', householdId)
           .order('created_at', { ascending: false })
 
@@ -344,7 +352,9 @@ export class UserService extends BaseService {
       async (supabase) => {
         const { data, error } = await supabase
           .from('household_invitations')
-          .select('*')
+          .select(
+            'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
+          )
           .eq('token', token)
           .single()
 
@@ -384,15 +394,25 @@ export class UserService extends BaseService {
 
   async getUserInteractions(
     userId: string,
-    limit = 50
+    options: { limit?: number; offset?: number } | number = {}
   ): Promise<UserPropertyInteraction[]> {
+    // Per audit M15: accept either a legacy `limit` number for backward
+    // compatibility, or an options object with `limit` + `offset` for
+    // pagination. Limit is clamped to [1, 200]; offset is clamped to >= 0.
+    const opts =
+      typeof options === 'number' ? { limit: options } : options
+    const limit = Math.min(Math.max(opts.limit ?? 50, 1), 200)
+    const offset = Math.max(opts.offset ?? 0, 0)
+
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('*')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(limit)
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching user interactions:', error)
@@ -408,7 +428,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('*')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('property_id', propertyId)
       .order('created_at', { ascending: false })
 
@@ -427,7 +449,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('*')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .eq('interaction_type', type)
       .order('created_at', { ascending: false })
@@ -448,7 +472,9 @@ export class UserService extends BaseService {
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
-      .select('*')
+      .select(
+        'created_at, household_id, id, interaction_type, property_id, score_data, user_id'
+      )
       .eq('user_id', userId)
       .in('interaction_type', types)
       .order('created_at', { ascending: false })
@@ -480,14 +506,23 @@ export class UserService extends BaseService {
     return data
   }
 
-  async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
+  async getUserSavedSearches(
+    userId: string,
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<SavedSearch[]> {
+    // Per audit M15: support pagination. Limit is clamped to [1, 200];
+    // offset is clamped to >= 0. Default limit = 50.
+    const limit = Math.min(Math.max(options.limit ?? 50, 1), 200)
+    const offset = Math.max(options.offset ?? 0, 0)
+
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('saved_searches')
-      .select('*')
+      .select('created_at, filters, household_id, id, is_active, name, user_id')
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)

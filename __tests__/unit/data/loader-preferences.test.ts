@@ -1,3 +1,4 @@
+// Phase 0/1 closure: DB-P2.3-P2.4-inline-typing
 import { describe, expect, test } from '@jest/globals'
 import {
   buildPropertyFiltersFromPreferences,

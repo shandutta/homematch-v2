@@ -1,65 +1,35 @@
-# HomeMatch Documentation
+# HomeMatch Docs
 
-This folder is the documentation hub for HomeMatch. Start here, then jump into the core guides.
+Start here for setup, architecture, testing, and workflows.
 
-## Start Here
+## Core Guides
 
-1. Setup: `docs/SETUP_GUIDE.md`
-2. Architecture: `docs/ARCHITECTURE.md`
-3. Testing: `docs/TESTING.md`
-4. Workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
-5. Style guide: `docs/STYLE_GUIDE.md`
+1. **Setup**: [SETUP_GUIDE.md](SETUP_GUIDE.md) — prerequisites, env, local dev paths
+2. **Architecture**: [ARCHITECTURE.md](ARCHITECTURE.md) — stack, service layer, data access
+3. **Testing**: [TESTING.md](TESTING.md) — unit, integration, E2E
+4. **Style Guide**: [STYLE_GUIDE.md](STYLE_GUIDE.md) — UI/UX conventions
+5. **Business Hardening**: [BUSINESS_HARDENING_REVIEW.md](BUSINESS_HARDENING_REVIEW.md) — product readiness
+6. **Secrets**: [secrets.md](secrets.md) — git-secrets scanning
+
+## Reference
+
+- **CI integration tests**: [CI_INTEGRATION_TESTS.md](CI_INTEGRATION_TESTS.md)
+- **Couples matching**: [COUPLES_MATCH_PLAN.md](COUPLES_MATCH_PLAN.md)
+
+## Integrations & Ops
+
+- **RapidAPI Zillow**: [RAPIDAPI_ZILLOW.md](RAPIDAPI_ZILLOW.md)
+- **Property vibes backfill**: [property-vibes-backfill.md](property-vibes-backfill.md)
 
 ## Sources of Truth
 
-- Scripts and commands: `package.json`
-- Environment variables: `.env.example`
-- Database schema and seeds: `supabase/migrations/`, `supabase/seed.sql`, `migrated_data/`
-- CI pipeline: `.github/workflows/ci.yml`
+- Commands: `package.json`
+- Environment: `.env.example`
+- Database: `supabase/migrations/`, `supabase/seed.sql`, `migrated_data/`
+- CI: `.github/workflows/ci.yml`
 
-## Documentation Map
+## Revival Reports
 
-### Core Guides
+Phase 0/1 evidence packets live in `reports/home-match-revival/` — operating plan, route inventory, traversal matrix, readiness backlogs. These are archival, not day-one product docs.
 
-- Setup and status: `docs/SETUP_GUIDE.md`
-- System architecture: `docs/ARCHITECTURE.md`
-- Testing strategy: `docs/TESTING.md`
-- Development workflows: `docs/DEVELOPMENT_WORKFLOWS.md`
-- UI/UX style guide: `docs/STYLE_GUIDE.md`
-- Auth troubleshooting: `docs/TROUBLESHOOTING_AUTH.md`
-- Project brief (short context): `docs/CONTEXT.md`
-
-### Product and Feature Specs
-
-- Couples matching flow: `docs/COUPLES_MATCH_PLAN.md`
-
-### Integrations
-
-- RapidAPI Zillow: `docs/RAPIDAPI_ZILLOW.md`
-
-### Operations
-
-- Property vibes backfill: `docs/property-vibes-backfill.md`
-- Auto-commit flow: `docs/auto-commit.md`
-- Custom SMTP setup: `docs/SMTP_SETUP.md`
-
-### Refactoring
-
-- Refactoring architecture: `docs/REFACTORING_ARCHITECTURE.md`
-- Refactoring summary: `docs/REFACTORING_SUMMARY.md`
-
-### Testing Appendix
-
-- Testing appendix index: `docs/testing/README.md`
-
-### Analysis and Reports
-
-- Project analysis (historical report): `docs/PROJECT_ANALYSIS.md`
-
-### Tasks and Tracking
-
-- Task index: `docs/tasks/README.md`
-
-### Marketing Assets
-
-- Asset credits: `docs/marketing/assets-credits.md`
+Obsolete point-in-time docs were archived or removed during the P6 rewrite. Retained artifacts live in `reports/home-match-revival/archived-docs/`.
