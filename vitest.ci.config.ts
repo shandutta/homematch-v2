@@ -11,12 +11,16 @@ export default defineConfig({
     sequence: {
       concurrent: true,
     },
+    // CI memory budget: ubuntu-latest runners have ~7GB and we share with
+    // Supabase containers (~2-3GB) + Next.js dev server (~500MB). Each
+    // vitest worker can use 500MB-1GB, so 4 workers tips over to OOM
+    // (exit 137). Cap at 2 to stay under the budget. (2026-05-11)
     pool: 'threads',
     poolOptions: {
       threads: {
         singleThread: false,
-        maxThreads: 4,
-        minThreads: 2,
+        maxThreads: 2,
+        minThreads: 1,
       },
     },
     coverage: {
