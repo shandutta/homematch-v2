@@ -270,7 +270,10 @@ describe('metadata routes', () => {
   )
 
   it('does not advertise a WebSite SearchAction until a public search route exists', async () => {
-    const { websiteJsonLd } = await import('@/app/page')
+    // Imported via createWebsiteJsonLd helper since `websiteJsonLd` is no longer
+    // a page-level export (Next.js rejects unknown page exports).
+    const { createWebsiteJsonLd } = await import('@/lib/seo/route-metadata')
+    const websiteJsonLd = createWebsiteJsonLd()
 
     expect(websiteJsonLd).toEqual({
       '@context': 'https://schema.org',
