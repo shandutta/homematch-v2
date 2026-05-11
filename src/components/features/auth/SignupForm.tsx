@@ -315,7 +315,7 @@ export function SignupForm() {
           className="w-full"
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Google
+          Sign up with Google
         </Button>
       </CardContent>
     </Card>
