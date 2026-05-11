@@ -390,9 +390,41 @@ async function legacySupabaseMiddleware(
  *
  *     if (isClerkProtectedRoute(req)) await auth.protect()
  *     return NextResponse.next()
+ *
+ * Behavior:
+ * - If a Clerk session is detected, the user is treated as authenticated
+ *   regardless of Supabase state (skip the Supabase redirect-to-login).
+ * - Otherwise, fall through to the legacy Supabase pipeline.
  */
-export default clerkMiddleware(async (_auth, request) => {
-  return legacySupabaseMiddleware(request as NextRequest)
+export default clerkMiddleware(async (clerkAuth, request) => {
+  const { userId: clerkUserId } = await clerkAuth()
+  const nextRequest = request as NextRequest
+  const pathname = nextRequest.nextUrl.pathname
+
+  // Clerk user is signed in — skip the legacy Supabase protection that would
+  // redirect them to /login, and just return security headers.
+  if (clerkUserId) {
+    // Still let API bypass paths and API routes through with security headers.
+    let response = NextResponse.next({ request: nextRequest })
+
+    // For auth pages (login/signup) when Clerk is signed in, redirect to
+    // dashboard (or the requested target).
+    if (pathname === '/login' || pathname === '/signup') {
+      const params = nextRequest.nextUrl.searchParams
+      const redirectTo =
+        getSafeRedirectPath(params.get('redirectTo')) ||
+        getSafeRedirectPath(params.get('redirect'))
+      const target = new URL(redirectTo ?? '/dashboard', request.url)
+      response = NextResponse.redirect(target)
+    }
+
+    return applySecurityHeaders(response)
+  }
+
+  // Anonymous (no Clerk session) — fall through to the legacy Supabase
+  // middleware so existing Supabase users still get their session refresh +
+  // protection logic.
+  return legacySupabaseMiddleware(nextRequest)
 })
 
 export const config = {
