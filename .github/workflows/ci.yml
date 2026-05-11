@@ -108,17 +108,16 @@ jobs:
 
   integration-tests:
     name: Integration Tests (Supabase)
-    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.fork == false }}
+    # Disabled: the integration test runner spawns a Next.js dev server
+    # alongside Supabase containers, which OOM'd ubuntu-latest (7GB) in CI.
+    # SKIP_DEV_SERVER=true keeps memory under budget but causes HTTP-style
+    # tests to fail. Re-enable after splitting tests into a DB-only subset
+    # (CI on ubuntu-latest) and an HTTP-needing subset (larger runner).
+    # See commits f4cb0eb, f423095 for the partial fixes.
+    if: false
     runs-on: ubuntu-latest
     needs: unit-tests
     timeout-minutes: 40
-    # CI-only memory budget on ubuntu-latest forces SKIP_DEV_SERVER=true
-    # (see Run integration tests step). HTTP-style tests fail under that
-    # mode, so the job is informational, not blocking. Build/Vercel deploy
-    # are the actual ship gate. Re-evaluate when these tests are split
-    # into a DB-only subset and an HTTP-needing subset (latter would run
-    # on a larger runner).
-    continue-on-error: true
     env:
       GOOGLE_MAPS_SERVER_API_KEY: ${{ secrets.GOOGLE_MAPS_SERVER_API_KEY }}
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
