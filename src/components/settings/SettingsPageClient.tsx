@@ -2,18 +2,45 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { User } from '@supabase/supabase-js'
 import { UserProfile } from '@/types/database'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PreferencesSection } from './PreferencesSection'
-import { NotificationsSection } from './NotificationsSection'
-import { AccountSection } from './AccountSection'
-import { SavedSearchesSection } from './SavedSearchesSection'
-import {
-  TasteProfileCollector,
-  type TasteProfileValues,
-} from '@/components/features/profile/TasteProfileCollector'
+import type { TasteProfileValues } from '@/components/features/profile/TasteProfileCollector'
 import { UserServiceClient } from '@/lib/services/users-client'
+
+// Lazy-load secondary tabs — only Preferences renders on first paint, so
+// deferring these shaves ~20-25 KB off the initial settings route chunk.
+// Each tab still mounts the moment the user clicks its trigger.
+const NotificationsSection = dynamic(
+  () =>
+    import('./NotificationsSection').then((mod) => ({
+      default: mod.NotificationsSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const AccountSection = dynamic(
+  () =>
+    import('./AccountSection').then((mod) => ({
+      default: mod.AccountSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const SavedSearchesSection = dynamic(
+  () =>
+    import('./SavedSearchesSection').then((mod) => ({
+      default: mod.SavedSearchesSection,
+    })),
+  { ssr: false, loading: () => null }
+)
+const TasteProfileCollector = dynamic(
+  () =>
+    import('@/components/features/profile/TasteProfileCollector').then(
+      (mod) => ({ default: mod.TasteProfileCollector })
+    ),
+  { ssr: false, loading: () => null }
+)
 import {
   Settings,
   Bell,

@@ -124,7 +124,7 @@ describe('SettingsPageClient', () => {
     expect(screen.queryByTestId('account-section')).not.toBeInTheDocument()
   })
 
-  it('honors an initial tab when provided', () => {
+  it('honors an initial tab when provided', async () => {
     render(
       <SettingsPageClient
         user={mockUser}
@@ -136,7 +136,9 @@ describe('SettingsPageClient', () => {
     expect(
       screen.getByRole('tab', { name: /saved searches/i })
     ).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('saved-searches-section')).toBeInTheDocument()
+    expect(
+      await screen.findByTestId('saved-searches-section')
+    ).toBeInTheDocument()
   })
 
   it('navigates to notifications tab when clicked', async () => {
@@ -147,7 +149,9 @@ describe('SettingsPageClient', () => {
     await user.click(notificationsTab)
 
     expect(notificationsTab).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('notifications-section')).toBeInTheDocument()
+    expect(
+      await screen.findByTestId('notifications-section')
+    ).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
     expect(
       screen.queryByTestId('saved-searches-section')
@@ -165,7 +169,9 @@ describe('SettingsPageClient', () => {
     await user.click(savedSearchesTab)
 
     expect(savedSearchesTab).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('saved-searches-section')).toBeInTheDocument()
+    expect(
+      await screen.findByTestId('saved-searches-section')
+    ).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
     expect(
       screen.queryByTestId('notifications-section')
@@ -181,7 +187,7 @@ describe('SettingsPageClient', () => {
     await user.click(accountTab)
 
     expect(accountTab).toHaveAttribute('data-state', 'active')
-    expect(screen.getByTestId('account-section')).toBeInTheDocument()
+    expect(await screen.findByTestId('account-section')).toBeInTheDocument()
     expect(screen.queryByTestId('preferences-section')).not.toBeInTheDocument()
     expect(
       screen.queryByTestId('notifications-section')
@@ -286,12 +292,15 @@ describe('SettingsPageClient', () => {
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     await user.click(screen.getByRole('tab', { name: /notifications/i }))
+    await screen.findByTestId('notifications-section')
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     await user.click(screen.getByRole('tab', { name: /saved searches/i }))
+    await screen.findByTestId('saved-searches-section')
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     await user.click(screen.getByRole('tab', { name: /account/i }))
+    await screen.findByTestId('account-section')
     expect(screen.getAllByRole('tabpanel')).toHaveLength(1)
 
     const warnedAboutAnimatePresence = warnSpy.mock.calls.some((call) =>
@@ -314,7 +323,7 @@ describe('SettingsPageClient', () => {
 
     for (const tab of tabs) {
       await user.click(screen.getByRole('tab', { name: tab.name }))
-      expect(screen.getByTestId(tab.testId)).toBeInTheDocument()
+      expect(await screen.findByTestId(tab.testId)).toBeInTheDocument()
 
       // Ensure other sections are not visible
       tabs
