@@ -45,8 +45,10 @@ function parseTypeUnionMembers(source: string): string[] {
 }
 
 function parseAllowlistMembers(source: string): string[] {
+  // Allow optional whitespace/newlines between `=` and `new Set<...>` so the
+  // regex still matches if prettier broke the line.
   const match = source.match(
-    /APPROVED_SERVICE_ROLE_CAPABILITIES = new Set<ApprovedServiceRoleCapability>\(\[([\s\S]*?)\]\)/
+    /APPROVED_SERVICE_ROLE_CAPABILITIES\s*=\s*new Set<ApprovedServiceRoleCapability>\(\[([\s\S]*?)\]\)/
   )
   if (!match) return []
   return Array.from(match[1].matchAll(/'([^']+)'/g)).map((m) => m[1])
