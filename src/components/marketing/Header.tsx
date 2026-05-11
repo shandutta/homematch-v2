@@ -51,7 +51,7 @@ export function Header() {
         >
           <Link
             href="/"
-            className="group rounded-xl px-3 py-2 text-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+            className="group rounded-xl px-3 py-2 text-white transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >

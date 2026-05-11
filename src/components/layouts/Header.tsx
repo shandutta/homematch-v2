@@ -129,7 +129,7 @@ export function Header() {
             <div className="flex items-center">
               <Link
                 href="/dashboard"
-                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark px-token-md py-token-sm inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 rounded-md font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="focus-visible:ring-token-primary-light focus-visible:ring-offset-token-primary-dark px-token-md py-token-sm inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center gap-2 rounded-md font-semibold text-white transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 aria-label="HomeMatch - Go to dashboard"
                 data-testid="nav-dashboard"
               >
