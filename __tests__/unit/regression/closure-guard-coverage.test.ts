@@ -145,7 +145,8 @@ function collectTestFiles(dir: string): string[] {
 
 function readdirSafe(dir: string): string[] {
   try {
-    return require('fs').readdirSync(dir)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/consistent-type-assertions
+    return require('fs').readdirSync(dir) as string[]
   } catch {
     return []
   }
@@ -153,6 +154,7 @@ function readdirSafe(dir: string): string[] {
 
 function statsSafe(path: string) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require('fs').statSync(path)
   } catch {
     return null

@@ -5,7 +5,7 @@ import {
   createMockProperty,
   createMockNeighborhood,
 } from '@/__tests__/factories/test-data-factory'
-import type { ReactNode } from 'react'
+// removed unused import: ReactNode
 
 // Mock the PropertyCard component
 jest.mock('@/components/property/PropertyCard', () => ({
@@ -14,7 +14,7 @@ jest.mock('@/components/property/PropertyCard', () => ({
   ),
 }))
 
-type MotionDivProps = JSX.IntrinsicElements['div'] & {
+type _MotionDivProps = JSX.IntrinsicElements['div'] & {
   whileHover?: unknown
   whileTap?: unknown
   animate?: unknown
@@ -28,7 +28,7 @@ type MotionDivProps = JSX.IntrinsicElements['div'] & {
   onDragEnd?: (...args: unknown[]) => void
 }
 
-type MotionButtonProps = JSX.IntrinsicElements['button'] & {
+type _MotionButtonProps = JSX.IntrinsicElements['button'] & {
   whileHover?: unknown
   whileTap?: unknown
   animate?: unknown

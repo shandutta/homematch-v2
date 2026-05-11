@@ -47,10 +47,12 @@ const STALE_PATTERN_MAP: Record<string, string> = {
 function collectTestFiles(dir: string): string[] {
   const results: string[] = []
   let entries: string[] = []
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   try { entries = require('fs').readdirSync(dir) } catch { return [] }
   for (const entry of entries) {
     const full = join(dir, entry)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const stat = require('fs').statSync(full)
       if (stat.isDirectory()) {
         if (EXCLUDED_DIRS.has(entry)) continue

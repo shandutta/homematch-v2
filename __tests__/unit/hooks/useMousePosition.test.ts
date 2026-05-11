@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react'
 import { useMousePosition, useReducedMotion } from '@/hooks/useMousePosition'
 
 // Mock framer-motion
-const mockSet = jest.fn()
+const _mockSet = jest.fn()
 jest.mock('framer-motion')
 
 describe('useMousePosition', () => {

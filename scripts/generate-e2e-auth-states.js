@@ -63,7 +63,9 @@ const getStorageKey = () => {
     const hostSlug = slugify(parsed.hostname, 'supabase')
     const pathSlug = slugify(parsed.pathname === '/' ? '' : parsed.pathname, '')
     projectSlug = pathSlug ? `${hostSlug}-${pathSlug}` : hostSlug
-  } catch {}
+  } catch {
+    // ignore: invalid URL falls back to default projectSlug
+  }
 
   const anonFingerprint = anonKey ? slugify(anonKey.slice(0, 8), 'anon') : 'anon'
   const hostSlug = slugify(hostname, 'localhost')

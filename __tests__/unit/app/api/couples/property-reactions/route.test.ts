@@ -113,7 +113,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
         `http://localhost/api/couples/property-reactions?propertyId=${MOCK_PROPERTY_ID}`
       )
       const request = new NextRequest(url)
-      const response = await GET(request)
+      const _response = await GET(request)
 
       expect(jsonMock).toHaveBeenCalled()
     })
@@ -123,7 +123,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
     test('returns 400 when propertyId is missing', async () => {
       const url = new URL('http://localhost/api/couples/property-reactions')
       const request = new NextRequest(url)
-      const response = await GET(request)
+      const _response = await GET(request)
 
       expect(jsonMock).toHaveBeenCalledWith(
         'propertyId is required',
@@ -149,7 +149,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
         `http://localhost/api/couples/property-reactions?propertyId=${MOCK_PROPERTY_ID}`
       )
       const request = new NextRequest(url)
-      const response = await GET(request)
+      const _response = await GET(request)
 
       expect(noStoreJsonMock).toHaveBeenCalledWith({
         reactions: [],
@@ -179,7 +179,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
         `http://localhost/api/couples/property-reactions?propertyId=${MOCK_PROPERTY_ID}`
       )
       const request = new NextRequest(url)
-      const response = await GET(request)
+      const _response = await GET(request)
 
       expect(noStoreJsonMock).toHaveBeenCalledWith({
         reactions: [],
@@ -239,9 +239,10 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
         `http://localhost/api/couples/property-reactions?propertyId=${MOCK_PROPERTY_ID}`
       )
       const request = new NextRequest(url)
-      const response = await GET(request)
+      const _response = await GET(request)
 
       const calls = noStoreJsonMock.mock.calls
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const result = calls[calls.length - 1][0] as {
         reactions: Array<{
           user_id: string
@@ -298,6 +299,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
       await GET(request)
 
       const calls = noStoreJsonMock.mock.calls
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const result = calls[calls.length - 1][0] as {
         reactions: Array<{ display_name: string }>
       }
@@ -324,6 +326,7 @@ describe('Property Reactions API - GET /api/couples/property-reactions', () => {
       // Should call serverError
       const calls = jsonMock.mock.calls
       const errorCall = calls.find(
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         (c) => c[1] && (c[1] as { status: number }).status === 500
       )
       expect(errorCall).toBeDefined()
