@@ -5,11 +5,14 @@ import type { CSSProperties } from 'react'
 import { HeroMotionEnhancer } from './HeroMotionEnhancer'
 import { MarketingPreviewCardStatic } from './MarketingPreviewCardStatic'
 
-export function HeroSection() {
+export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
   const heroStyle: CSSProperties & Record<string, string> = {
     '--spotlight-x': '50%',
     '--spotlight-y': '35%',
   }
+
+  const secondaryHref = loggedIn ? '/dashboard' : '/login'
+  const secondaryLabel = loggedIn ? 'Resume your search' : 'Sign in'
 
   return (
     <section
@@ -94,7 +97,6 @@ export function HeroSection() {
                 >
                   <Link
                     href="/signup"
-                    aria-label="Start swiping with HomeMatch"
                     data-testid="primary-cta"
                   >
                     <span className="relative z-10 flex items-center gap-2">
@@ -111,7 +113,7 @@ export function HeroSection() {
                   className="w-full border-white/30 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/10 hover:!text-white sm:w-auto"
                   asChild
                 >
-                  <Link href="/login">Resume your search</Link>
+                  <Link href={secondaryHref}>{secondaryLabel}</Link>
                 </Button>
               </div>
             </div>

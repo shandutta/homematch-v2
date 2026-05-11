@@ -41,7 +41,7 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-      <HeroSection />
+      <HeroSection loggedIn={Boolean(user)} />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks */}
       <section className="relative isolate">
