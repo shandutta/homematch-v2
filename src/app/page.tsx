@@ -13,7 +13,7 @@ export const metadata = createPublicRouteMetadata({
     'Collaborative home search for couples and households. Swipe, match, and decide on properties together with AI-powered home matching that learns what you care about.',
 })
 
-export const websiteJsonLd = createWebsiteJsonLd()
+const websiteJsonLd = createWebsiteJsonLd()
 
 export const dynamic = 'force-dynamic'
 

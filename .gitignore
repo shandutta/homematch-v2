@@ -128,3 +128,4 @@ zen-mcp-server/
 
 # Miscellaneous Stuff
 .performance-reports/*
+.gstack/
