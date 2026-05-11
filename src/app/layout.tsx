@@ -5,6 +5,8 @@ import {
   Fraunces,
   Plus_Jakarta_Sans,
 } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { shadcn } from '@clerk/ui/themes'
 import './globals.css'
 import '../styles/mobile-enhancements.css'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
@@ -147,18 +149,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${plusJakartaSans.variable} antialiased`}
       >
-        <ErrorBoundary>
-          <PerformanceProvider>
-            <MotionProvider>
-              <main>{children}</main>
-            </MotionProvider>
-          </PerformanceProvider>
-        </ErrorBoundary>
-        <Toaster position="top-right" />
-        <AnalyticsGate />
-        <AdSenseGate />
-        <CookieConsentBanner />
-        <CcpaOptOutLink />
+        <ClerkProvider appearance={{ theme: shadcn }}>
+          <ErrorBoundary>
+            <PerformanceProvider>
+              <MotionProvider>
+                <main>{children}</main>
+              </MotionProvider>
+            </PerformanceProvider>
+          </ErrorBoundary>
+          <Toaster position="top-right" />
+          <AnalyticsGate />
+          <AdSenseGate />
+          <CookieConsentBanner />
+          <CcpaOptOutLink />
+        </ClerkProvider>
       </body>
     </html>
   )
