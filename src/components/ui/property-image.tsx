@@ -2,7 +2,37 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import Image from 'next/image'
-import { Home } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
+
+/**
+ * A5: distinct visual state for properties whose remote image AND all local
+ * fallbacks have failed to load (dead Zillow CDN URLs, missing assets, etc.).
+ *
+ * The legacy placeholder rendered a Home icon on a soft gradient — which was
+ * indistinguishable from a real property image at a glance. This component
+ * gives broken images a deliberately "unavailable" treatment so users (and
+ * QA) can tell the data is bad, not the layout: a greyscale block with a
+ * crossed-out image glyph plus an "Image unavailable" caption.
+ */
+function BrokenImagePlaceholder({ className = '' }: { className?: string }) {
+  return (
+    <div
+      data-testid="property-image-broken"
+      role="img"
+      aria-label="Property image unavailable"
+      className={`flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-800 to-slate-900 grayscale ${className}`}
+    >
+      <ImageOff
+        className="h-10 w-10 text-slate-500"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+      <span className="px-2 text-center text-[11px] font-medium tracking-wide text-slate-400 uppercase">
+        Image unavailable
+      </span>
+    </div>
+  )
+}
 
 interface PropertyImageProps {
   src?: string | string[]
@@ -179,15 +209,10 @@ export function PropertyImage({
     ...(fill ? { fill: true } : { width, height }),
   }
 
+  // If all images fail, show a distinct broken-image placeholder (A5) so the
+  // bad-image state is visually obvious instead of mimicking a real photo.
   if (allFallbacksFailed) {
-    return (
-      <div
-        data-testid="property-image-placeholder"
-        className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 ${className}`}
-      >
-        <Home className="h-12 w-12 text-slate-500" />
-      </div>
-    )
+    return <BrokenImagePlaceholder className={className} />
   }
 
   if (!fill) {
