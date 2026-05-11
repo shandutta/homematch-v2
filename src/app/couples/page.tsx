@@ -1,5 +1,5 @@
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import { redirect } from 'next/navigation'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 
@@ -17,12 +17,9 @@ interface CouplesPageProps {
 
 export default async function CouplesPage({ searchParams }: CouplesPageProps) {
   const resolvedSearchParams = await searchParams
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userCtx = await getServerUserContext()
 
-  if (!user) {
+  if (!userCtx) {
     const params = new URLSearchParams()
 
     const redirectParams = new URLSearchParams()

@@ -5,7 +5,7 @@ import {
   loadDashboardData,
   type DashboardPreferences,
 } from '@/lib/data/loader'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
@@ -24,21 +24,29 @@ interface DashboardPageProps {
 export default async function DashboardPage({
   searchParams: _searchParams,
 }: DashboardPageProps) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-    error: _authError,
-  } = await supabase.auth.getUser()
+  const userCtx = await getServerUserContext()
 
-  if (!user) {
+  if (!userCtx) {
     const params = new URLSearchParams()
     params.set('redirectTo', buildDashboardRedirectTo(await _searchParams))
     redirect(`/login?${params.toString()}`)
   }
 
+  // For Clerk users without a profile row yet (webhook hasn't fired or not
+  // backfilled in Phase E), redirect to login with a query flag so we can
+  // surface a friendly message later. For now, treat as unauthenticated.
+  if (!userCtx.profileId) {
+    const params = new URLSearchParams()
+    params.set('redirectTo', buildDashboardRedirectTo(await _searchParams))
+    params.set('reason', 'profile-missing')
+    redirect(`/login?${params.toString()}`)
+  }
+
+  const profileId = userCtx.profileId
+
   try {
     const userService = new UserService()
-    const userProfile = await userService.getUserProfile(user.id)
+    const userProfile = await userService.getUserProfile(profileId)
     const dashboardPreferences = parseDashboardPreferences(
       userProfile?.preferences ?? null
     )
@@ -48,7 +56,7 @@ export default async function DashboardPage({
       includeCount: false,
       propertySelect: DASHBOARD_PROPERTY_SELECT,
       useCache: true,
-      cacheKey: user.id,
+      cacheKey: profileId,
     })
 
     // TODO: Re-enable onboarding flow once onboarding page is implemented
@@ -73,7 +81,7 @@ export default async function DashboardPage({
       <DashboardErrorBoundary>
         <EnhancedDashboardPageImpl
           initialData={dashboardData}
-          userId={user.id}
+          userId={profileId}
           // The following props are passed for future use but are currently unused in the client component
           // returning={returning}
           // userProfile={finalUserData}

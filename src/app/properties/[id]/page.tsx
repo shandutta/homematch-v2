@@ -1,5 +1,6 @@
 import { PropertyDetailRouteModal } from '@/components/property/PropertyDetailRouteModal'
 import { createClient } from '@/lib/supabase/server'
+import { getServerUserContext } from '@/lib/auth/server-context'
 import { notFound, redirect } from 'next/navigation'
 import {
   createBreadcrumbJsonLd,
@@ -44,12 +45,9 @@ export default async function PropertyPage({
   const resolvedParams = await params
   const resolvedSearchParams = await searchParams
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userCtx = await getServerUserContext()
 
-  if (!user) {
+  if (!userCtx) {
     const params = new URLSearchParams()
 
     const redirectParams = new URLSearchParams()
@@ -86,6 +84,7 @@ export default async function PropertyPage({
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   const lookupColumn = UUID_RE.test(resolvedParams.id) ? 'id' : 'zpid'
 
+  const supabase = await createClient()
   const { data: property, error } = await supabase
     .from('properties')
     .select('*, neighborhood:neighborhoods(*)')

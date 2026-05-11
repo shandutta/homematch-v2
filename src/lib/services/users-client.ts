@@ -41,7 +41,7 @@ export class UserServiceClient {
     const { data, error } = await supabase
       .from('user_profiles')
       .select(
-        'created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
+        'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at'
       )
       .eq('id', userId)
       .single()
