@@ -335,7 +335,15 @@ export class UserServiceClient {
     return data
   }
 
-  static async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
+  static async getUserSavedSearches(
+    userId: string,
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<SavedSearch[]> {
+    // Per audit M15: support pagination. Limit clamped to [1, 200];
+    // offset clamped to >= 0. Default limit = 50.
+    const limit = Math.min(Math.max(options.limit ?? 50, 1), 200)
+    const offset = Math.max(options.offset ?? 0, 0)
+
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('saved_searches')
@@ -343,6 +351,7 @@ export class UserServiceClient {
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)

@@ -394,8 +394,16 @@ export class UserService extends BaseService {
 
   async getUserInteractions(
     userId: string,
-    limit = 50
+    options: { limit?: number; offset?: number } | number = {}
   ): Promise<UserPropertyInteraction[]> {
+    // Per audit M15: accept either a legacy `limit` number for backward
+    // compatibility, or an options object with `limit` + `offset` for
+    // pagination. Limit is clamped to [1, 200]; offset is clamped to >= 0.
+    const opts =
+      typeof options === 'number' ? { limit: options } : options
+    const limit = Math.min(Math.max(opts.limit ?? 50, 1), 200)
+    const offset = Math.max(opts.offset ?? 0, 0)
+
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('user_property_interactions')
@@ -404,7 +412,7 @@ export class UserService extends BaseService {
       )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(limit)
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching user interactions:', error)
@@ -498,7 +506,15 @@ export class UserService extends BaseService {
     return data
   }
 
-  async getUserSavedSearches(userId: string): Promise<SavedSearch[]> {
+  async getUserSavedSearches(
+    userId: string,
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<SavedSearch[]> {
+    // Per audit M15: support pagination. Limit is clamped to [1, 200];
+    // offset is clamped to >= 0. Default limit = 50.
+    const limit = Math.min(Math.max(options.limit ?? 50, 1), 200)
+    const offset = Math.max(options.offset ?? 0, 0)
+
     const supabase = await this.getSupabase()
     const { data, error } = await supabase
       .from('saved_searches')
@@ -506,6 +522,7 @@ export class UserService extends BaseService {
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
     if (error) {
       console.error('Error fetching saved searches:', error)
