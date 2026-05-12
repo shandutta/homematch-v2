@@ -11,6 +11,8 @@ overrides:
   tmp@<=0.2.3: '>=0.2.4'
   postcss@<8.5.10: '>=8.5.10'
 
+pnpmfileChecksum: sha256-fFoH0BPBXb3c0AyOt4RVnlZR78J1ZKbbayq3b2qiifU=
+
 importers:
   .:
     dependencies:
