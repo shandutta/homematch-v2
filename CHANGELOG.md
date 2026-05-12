@@ -31,4 +31,3 @@ Notable changes per release. Format follows [Keep a Changelog](https://keepachan
 
 - Clerk appearance readability bugs: "Continue with Google" button text was rendering Clerk-default-white on Clerk-default-white background; "Don't have an account?" footer text rendered white-on-white. Add Tailwind `!` important modifier to every appearance element class so they win against Clerk's internal specificity.
 - Mobile Clerk widget overflow at 375×812 viewport — wrap the widget in a max-w-[440px] flex container with reduced horizontal padding.
-
