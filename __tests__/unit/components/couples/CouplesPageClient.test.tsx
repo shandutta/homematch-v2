@@ -120,9 +120,7 @@ describe('CouplesPageClient', () => {
       render(<CouplesPageClient />)
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId('network-error-state')
-        ).toBeInTheDocument()
+        expect(screen.getByTestId('network-error-state')).toBeInTheDocument()
       })
     })
   })

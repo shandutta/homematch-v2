@@ -90,8 +90,8 @@ export default async function ProfilePage() {
             We&rsquo;re setting up your profile…
           </h1>
           <p className="mt-3 text-sm text-white/70">
-            This usually takes a few seconds. If the page doesn&rsquo;t
-            refresh, please reload or contact support at{' '}
+            This usually takes a few seconds. If the page doesn&rsquo;t refresh,
+            please reload or contact support at{' '}
             <a
               className="text-cyan-300 underline"
               href="mailto:hello@homematch.pro"

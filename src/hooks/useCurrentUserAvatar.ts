@@ -88,7 +88,10 @@ export function useCurrentUserAvatar(): UserAvatarState {
           }
         } catch (e) {
           // Non-fatal — initials fallback still renders correctly.
-          console.warn('useCurrentUserAvatar: avatar preferences lookup failed:', e)
+          console.warn(
+            'useCurrentUserAvatar: avatar preferences lookup failed:',
+            e
+          )
         }
 
         if (cancelled) return
@@ -104,8 +107,7 @@ export function useCurrentUserAvatar(): UserAvatarState {
         })
       } catch (error) {
         console.error('Failed to fetch user avatar:', error)
-        if (!cancelled)
-          setState((prev) => ({ ...prev, isLoading: false }))
+        if (!cancelled) setState((prev) => ({ ...prev, isLoading: false }))
       }
     }
 

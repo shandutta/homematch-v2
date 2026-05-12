@@ -34,7 +34,10 @@ export async function ensureUserProfileForCurrentClerkUser(): Promise<
     const primary = clerkUser?.emailAddresses.find(
       (e) => e.id === clerkUser.primaryEmailAddressId
     )
-    email = primary?.emailAddress ?? clerkUser?.emailAddresses[0]?.emailAddress ?? null
+    email =
+      primary?.emailAddress ??
+      clerkUser?.emailAddresses[0]?.emailAddress ??
+      null
     const parts = [clerkUser?.firstName, clerkUser?.lastName].filter(
       (v): v is string => typeof v === 'string' && v.length > 0
     )
