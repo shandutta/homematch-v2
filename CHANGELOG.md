@@ -4,6 +4,10 @@ Notable changes per release. Format follows [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Added
+
+- Brand icon assets under `public/brand/` (`logo-icon.svg` + 120px and 512px PNG rasterizations) for the Google OAuth consent screen and other surfaces that need a static logo file. White house silhouette with a heart-shaped window cutout over a warm sunset coral gradient.
+
 ### Security
 
 - Pin `postcss >= 8.5.10` via pnpm override to patch GHSA-qx2v-qp2m-jg93 (XSS via unescaped `</style>` in CSS stringify output, moderate). Next.js 15.5.18 still resolves postcss to 8.4.31 transitively; the override forces 8.5.14 everywhere.
