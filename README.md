@@ -1,12 +1,13 @@
 # HomeMatch
 
-AI-assisted home discovery app. Households shortlist properties together. Marketing site, Supabase auth, and swipe dashboard are live; property search, ML ranking, and collaboration features are in progress.
+AI-assisted home discovery app. Households shortlist properties together. Marketing site, Clerk auth (production tenant on `clerk.homematch.pro`), and swipe dashboard are live; property search, ML ranking, and collaboration features are in progress.
 
 ## Tech Stack
 
 - Next.js 15 (App Router) + React 19 + TypeScript
 - Tailwind CSS 4 + shadcn/ui
-- Supabase (Postgres, Auth, Storage, Realtime)
+- Clerk (auth) — production tenant at `clerk.homematch.pro`
+- Supabase (Postgres, Storage, Realtime)
 - TanStack Query + Zustand
 - Zod + React Hook Form
 - Jest, Vitest, Playwright
