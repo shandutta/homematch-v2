@@ -45,34 +45,30 @@ describe('FeatureGrid', () => {
   test('renders all feature titles', () => {
     render(<FeatureGrid />)
 
-    expect(screen.getByText('AI That Gets Everyone')).toBeInTheDocument()
     expect(
-      screen.getByText('Swipe Together, Decide Together')
+      screen.getByText('One shortlist for the whole household')
     ).toBeInTheDocument()
-    expect(screen.getByText('Match on What Matters')).toBeInTheDocument()
     expect(
-      screen.getByText('Talk Like Humans, Search Like Pros')
+      screen.getByText('See your partner’s likes in real time')
     ).toBeInTheDocument()
+    expect(
+      screen.getByText('Match on vibe, not just bed and bath')
+    ).toBeInTheDocument()
+    expect(screen.getByText('Search in plain English')).toBeInTheDocument()
   })
 
   test('renders all feature descriptions', () => {
     render(<FeatureGrid />)
 
     expect(
-      screen.getByText(/Our ML learns what matters to your household/)
+      screen.getByText(/We learn what each person actually likes/)
+    ).toBeInTheDocument()
+    expect(screen.getByText(/No more screenshot chains/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Neighborhood feel, walkability, future-fit/)
     ).toBeInTheDocument()
     expect(
-      screen.getByText(
-        /Real-time collaboration means no more screenshot chains/
-      )
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Beyond bedrooms and bathrooms—we match on vibe/)
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        /"Walking distance to coffee, big kitchen, room for a dog"/
-      )
+      screen.getByText(/"Walk to coffee, big kitchen, room for a dog"/)
     ).toBeInTheDocument()
   })
 

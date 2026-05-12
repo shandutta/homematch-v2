@@ -42,9 +42,10 @@ export async function getOptionalServerUser(): Promise<User | null> {
         aud: 'authenticated',
         role: 'authenticated',
         email: primaryEmail?.emailAddress ?? undefined,
-        email_confirmed_at: primaryEmail?.verification?.status === 'verified'
-          ? new Date().toISOString()
-          : undefined,
+        email_confirmed_at:
+          primaryEmail?.verification?.status === 'verified'
+            ? new Date().toISOString()
+            : undefined,
         phone: clerkUser?.phoneNumbers[0]?.phoneNumber,
         confirmed_at: clerkUser?.createdAt
           ? new Date(clerkUser.createdAt).toISOString()
@@ -72,7 +73,10 @@ export async function getOptionalServerUser(): Promise<User | null> {
   } catch (error) {
     // Clerk lookup failed (e.g. no session). Fall through to Supabase.
     if (process.env.DEBUG_AUTH === 'true') {
-      console.warn('[OptionalUser] Clerk lookup failed, trying Supabase:', error)
+      console.warn(
+        '[OptionalUser] Clerk lookup failed, trying Supabase:',
+        error
+      )
     }
   }
 

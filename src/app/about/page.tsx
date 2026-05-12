@@ -26,7 +26,9 @@ export default function AboutPage() {
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">What HomeMatch does</h2>
+          <h2 className="text-xl font-semibold text-balance">
+            What HomeMatch does
+          </h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
               Keeps everyone aligned with shared likes, passes, and viewed
@@ -44,7 +46,9 @@ export default function AboutPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">How we think about trust</h2>
+          <h2 className="text-xl font-semibold text-balance">
+            How we think about trust
+          </h2>
           <ul className="list-disc space-y-3 pl-5 text-slate-700">
             <li>
               Privacy-first by default. Read our{' '}
@@ -68,7 +72,9 @@ export default function AboutPage() {
         </section>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-          <h2 className="text-xl font-semibold text-balance">Not a brokerage</h2>
+          <h2 className="text-xl font-semibold text-balance">
+            Not a brokerage
+          </h2>
           <p className="text-slate-700">
             HomeMatch is a software product to help you organize your home
             search. We are not a real estate broker or agent, and we don’t

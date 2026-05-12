@@ -22,30 +22,30 @@ import {
 const features = [
   {
     icon: Brain,
-    title: 'AI That Gets Everyone',
+    title: 'One shortlist for the whole household',
     description:
-      'Our ML learns what matters to your household, finding homes that check the shared boxes.',
+      'We learn what each person actually likes and surface the homes you all agree on.',
     iconAnimation: 'pulse',
   },
   {
     icon: Users,
-    title: 'Swipe Together, Decide Together',
+    title: 'See your partner’s likes in real time',
     description:
-      'Real-time collaboration means no more screenshot chains. See what they see, when they see it.',
+      'No more screenshot chains. When they swipe right, you see it the moment it happens.',
     iconAnimation: 'bounce',
   },
   {
     icon: Heart,
-    title: 'Match on What Matters',
+    title: 'Match on vibe, not just bed and bath',
     description:
-      'Beyond bedrooms and bathrooms—we match on vibe, neighborhood feel, and future potential.',
+      'Neighborhood feel, walkability, future-fit. The signals that actually decide where you live.',
     iconAnimation: 'heartbeat',
   },
   {
     icon: MessageSquare,
-    title: 'Talk Like Humans, Search Like Pros',
+    title: 'Search in plain English',
     description:
-      '"Walking distance to coffee, big kitchen, room for a dog" becomes your perfect property list.',
+      '"Walk to coffee, big kitchen, room for a dog" becomes a real filter set in one tap.',
     iconAnimation: 'typing',
   },
 ]

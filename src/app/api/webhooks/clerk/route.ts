@@ -38,12 +38,15 @@ function primaryEmailFromUserJSON(data: UserJSON): string | null {
   const match = data.email_addresses?.find(
     (e: { id: string }) => e.id === primaryId
   )
-  return match?.email_address ?? data.email_addresses?.[0]?.email_address ?? null
+  return (
+    match?.email_address ?? data.email_addresses?.[0]?.email_address ?? null
+  )
 }
 
 function displayNameFromUserJSON(data: UserJSON): string | null {
-  const parts = [data.first_name, data.last_name]
-    .filter((v): v is string => typeof v === 'string' && v.length > 0)
+  const parts = [data.first_name, data.last_name].filter(
+    (v): v is string => typeof v === 'string' && v.length > 0
+  )
   if (parts.length) return parts.join(' ')
   return data.username ?? null
 }
@@ -95,16 +98,14 @@ async function handleUserCreated(data: UserJSON) {
 
   // Brand-new user — create the profile row.
   const newProfileId = crypto.randomUUID()
-  const { error } = await supabase
-    .from('user_profiles')
-    .insert({
-      id: newProfileId,
-      clerk_user_id: data.id,
-      email,
-      display_name: displayName,
-      onboarding_completed: false,
-      preferences: {},
-    })
+  const { error } = await supabase.from('user_profiles').insert({
+    id: newProfileId,
+    clerk_user_id: data.id,
+    email,
+    display_name: displayName,
+    onboarding_completed: false,
+    preferences: {},
+  })
 
   if (error) {
     console.error(

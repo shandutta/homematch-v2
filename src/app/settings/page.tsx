@@ -61,9 +61,7 @@ export default async function SettingsPage({
       email,
       onboarding_completed: false,
       preferences: {},
-      ...(userCtx.source === 'clerk'
-        ? { clerk_user_id: userCtx.authId }
-        : {}),
+      ...(userCtx.source === 'clerk' ? { clerk_user_id: userCtx.authId } : {}),
     })
   }
 

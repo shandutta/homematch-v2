@@ -101,10 +101,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
                   asChild
                   className="group relative w-full overflow-hidden sm:w-auto"
                 >
-                  <Link
-                    href={primaryHref}
-                    data-testid="primary-cta"
-                  >
+                  <Link href={primaryHref} data-testid="primary-cta">
                     <span className="relative z-10 flex items-center gap-2">
                       <Heart className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                       {primaryLabel}
@@ -115,8 +112,8 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="w-full border-white/30 bg-white/5 text-white backdrop-blur-sm transition-all duration-300 hover:border-white/50 hover:bg-white/10 hover:!text-white sm:w-auto"
+                  variant="ghost"
+                  className="w-full bg-transparent text-white/70 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:w-auto"
                   asChild
                 >
                   <Link href={secondaryHref}>{secondaryLabel}</Link>

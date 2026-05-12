@@ -64,7 +64,9 @@ export default async function ProfilePage() {
       // For Clerk users, generate a UUID for user_profiles.id (legacy schema
       // constraint). For Supabase legacy users, userShape.id IS the UUID.
       const profileInsertId =
-        userCtx.source === 'supabase-legacy' ? userShape.id : crypto.randomUUID()
+        userCtx.source === 'supabase-legacy'
+          ? userShape.id
+          : crypto.randomUUID()
       profile = await userService.createUserProfile({
         id: profileInsertId,
         email,

@@ -137,10 +137,7 @@ export async function POST(req: Request) {
   const statsResults = await Promise.all(
     neighborhoods.map((n) => fetchNeighborhoodStats(supabase, n.id))
   )
-  const statsByNeighborhood = new Map<
-    string,
-    NeighborhoodStatsResult | null
-  >()
+  const statsByNeighborhood = new Map<string, NeighborhoodStatsResult | null>()
   neighborhoods.forEach((n, idx) => {
     statsByNeighborhood.set(n.id, statsResults[idx] ?? null)
   })

@@ -54,35 +54,37 @@ describe('CtaBand', () => {
 
     const heading = screen.getByRole('heading', { level: 2 })
     expect(heading).toBeInTheDocument()
-    expect(heading.textContent).toContain('House')
-    expect(heading.textContent).toContain('Hunting')
+    expect(heading.textContent).toContain('partner')
+    expect(heading.textContent).toContain('search')
   })
 
   test('renders description text', () => {
     render(<CtaBand />)
     expect(
-      screen.getByText(/Tasteful swiping\. Smart matches\. Real progress\./i)
+      screen.getByText(/Create your household, invite the people deciding/i)
     ).toBeInTheDocument()
   })
 
   test('renders primary CTA linking to signup', () => {
     render(<CtaBand />)
 
-    const primaryCTA = screen.getByText('Start Swiping').closest('a')
+    const primaryCTA = screen.getByText('Invite your partner').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
   })
 
   test('renders secondary CTA linking to login', () => {
     render(<CtaBand />)
 
-    const secondaryCTA = screen.getByText('Already a Member?').closest('a')
+    const secondaryCTA = screen
+      .getByText('Already swiping? Sign in')
+      .closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 
   test('primary CTA has tracking data attribute', () => {
     render(<CtaBand />)
 
-    const primaryCTA = screen.getByText('Start Swiping').closest('a')
+    const primaryCTA = screen.getByText('Invite your partner').closest('a')
     expect(primaryCTA).toHaveAttribute('data-cta', 'dopamine-cta-band')
   })
 

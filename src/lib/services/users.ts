@@ -399,8 +399,7 @@ export class UserService extends BaseService {
     // Per audit M15: accept either a legacy `limit` number for backward
     // compatibility, or an options object with `limit` + `offset` for
     // pagination. Limit is clamped to [1, 200]; offset is clamped to >= 0.
-    const opts =
-      typeof options === 'number' ? { limit: options } : options
+    const opts = typeof options === 'number' ? { limit: options } : options
     const limit = Math.min(Math.max(opts.limit ?? 50, 1), 200)
     const offset = Math.max(opts.offset ?? 0, 0)
 
