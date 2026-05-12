@@ -13,6 +13,11 @@
 # Don't track these even though .claude/ is included.
 .claude/worktrees/
 
+# Per-developer Claude Code permission/preference overrides.
+# settings.local.json is the standard Claude Code convention for state
+# that should NOT be checked in to the shared repo.
+.claude/settings.local.json
+
 # dependencies
 /node_modules
 /.pnp

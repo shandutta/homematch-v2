@@ -236,6 +236,10 @@ export default [
             'assertions.assertExists',
             'assertions.assertNotExists',
             'assertions.assertCount',
+            // rate-limiter test helpers — each calls expect() internally
+            // to validate fail-closed 429 responses without inlining the
+            // 8-line assertion at every call site.
+            'expectFailClosed',
           ],
         },
       ],

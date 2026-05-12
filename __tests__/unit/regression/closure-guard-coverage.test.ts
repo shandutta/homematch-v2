@@ -54,7 +54,11 @@ const PHASE_1_CLOSURES: Record<string, string> = {
   'M15-stale-neighborhood-todo': 'M15 stale neighborhood TODO cleanup',
   'D1-service-role-rbac': 'D1 service-role RBAC authority',
   'D2-durable-rate-limiter': 'D2 durable production rate limiter',
-  'D3-signup-verification': 'D3 production email confirmation/CAPTCHA policy',
+  // D3 closure retired 2026-05-11: the legacy SignupForm + its guard test
+  // were deleted during the /health dead-code sweep. Clerk now handles
+  // signup verification natively; there is no in-repo surface left to
+  // guard against regression.
+  // 'D3-signup-verification': 'D3 production email confirmation/CAPTCHA policy',
   'D4-env-prod-handling': 'D4 .env.prod handling model',
   'D5-numeric-constraints': 'D5 numeric constraint semantics',
   'D6-db-reset-readiness': 'D6 static DB reset/lint/integration readiness',
@@ -75,7 +79,12 @@ const PHASE_1_CLOSURES: Record<string, string> = {
   'P1-auth-client-consolidation': 'Auth client consolidation',
   'P1-internal-demo-gate': 'Internal/demo surface production gate',
   'DB-P1.2-dashboard-dedupe': 'Dashboard query in-flight dedupe',
-  'DB-P1.3-couples-rpc': 'CouplesRealtime mutual-like RPC enrichment',
+  // DB-P1.3 closure retired 2026-05-11: the useCouplesRealtime hook +
+  // couples-realtime client module were deleted during the dead-code sweep
+  // (zero consumers). The DB-side get_realtime_mutual_like_payload RPC
+  // still exists but no client-side surface needs guarding against
+  // regression of the consumer side.
+  // 'DB-P1.3-couples-rpc': 'CouplesRealtime mutual-like RPC enrichment',
   'DB-P1.4-rollback-down': 'Phase 1 rollback/DOWN static coverage',
   'DB-P2.3-P2.4-inline-typing':
     'Inline DB typing cleanup for realtime + dashboard',

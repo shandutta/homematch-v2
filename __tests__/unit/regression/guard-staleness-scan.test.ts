@@ -29,6 +29,30 @@ const KNOWN_DELETED_PATHS: string[] = [
   'src/middleware/CouplesMiddleware.ts',
   'src/lib/services/couples-middleware.ts',
   'src/server-actions/',
+  // Removed 2026-05-11 in the /health dead-code sweep (knip flagged
+  // zero importers anywhere in src/, __tests__/, scripts/). Any test
+  // that still references these paths is a leftover guard for code
+  // that no longer exists.
+  'src/app/500.tsx',
+  'src/components/dashboard/DashboardSkeleton.tsx',
+  'src/components/features/auth/SignupForm.tsx',
+  'src/components/features/couples/CouplesMilestoneCelebration.tsx',
+  'src/components/marketing/DopamineCtaPreview.tsx',
+  'src/components/marketing/ParallaxStars.tsx',
+  'src/components/marketing/ParallaxStarsCanvas.tsx',
+  'src/components/marketing/ScrollZoomShowcase.tsx',
+  'src/components/property/EnhancedPropertyMap.tsx',
+  'src/components/providers/CouplesProgressProvider.tsx',
+  'src/components/ui/alert-dialog.tsx',
+  'src/components/ui/progress.tsx',
+  'src/components/ui/sheet.tsx',
+  'src/hooks/useCouplesRealtime.ts',
+  'src/hooks/useSecureGoogleMaps.ts',
+  'src/lib/ingest/pipeline.ts',
+  'src/lib/maps/secure-client.ts',
+  'src/lib/performance/metrics.ts',
+  'src/lib/realtime/couples-realtime.ts',
+  'src/lib/services/neighborhood-vibes/backfill.ts',
 ]
 
 /** Directories under __tests__/unit/ to exclude from scanning (the meta-tests

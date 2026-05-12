@@ -393,21 +393,6 @@
   /* Design Token Based Glass-morphism Effects - Available for future use */
 
   /* Design Token Color Utilities */
-  .text-token-primary {
-    color: var(--color-token-primary-500);
-  }
-  .text-token-primary-light {
-    color: var(--color-token-primary-400);
-  }
-  .text-token-primary-dark {
-    color: var(--color-token-primary-600);
-  }
-  .text-token-error {
-    color: var(--color-token-error-500);
-  }
-  .text-token-error-light {
-    color: var(--color-token-error-400);
-  }
 
   /* Interactive State Text Colors */
 
@@ -415,31 +400,13 @@
   .bg-token-primary {
     background-color: var(--color-token-primary-500);
   }
-  .bg-token-primary-light {
-    background-color: var(--color-token-primary-100);
-  }
   .bg-token-primary-dark {
     background-color: var(--color-token-primary-600);
-  }
-  .bg-token-error {
-    background-color: var(--color-token-error-500);
-  }
-  .bg-token-error-light {
-    background-color: var(--color-token-error-400);
-  }
-  .bg-token-error-dark {
-    background-color: var(--color-token-error-600);
   }
 
   /* Overlay Background Colors */
 
   /* Gradient Background Utilities */
-  .bg-gradient-token-cta {
-    background: var(--gradient-token-cta);
-  }
-  .bg-gradient-token-mutual-likes {
-    background: var(--gradient-token-mutual-likes);
-  }
 
   /* Hover Background Colors */
   .hover\:bg-token-primary-dark:hover {
@@ -452,15 +419,6 @@
   /* Border Colors */
   .border-token-primary {
     border-color: var(--color-token-primary-500);
-  }
-  .border-token-primary-light {
-    border-color: var(--color-token-primary-200);
-  }
-  .border-token-error {
-    border-color: var(--color-token-error-500);
-  }
-  .border-token-error-light {
-    border-color: var(--color-token-error-200);
   }
 
   /* Focus Ring Colors */
@@ -508,157 +466,23 @@
   .text-token-sm {
     font-size: var(--font-size-sm);
   }
-  .text-token-base {
-    font-size: var(--font-size-base);
-  }
-  .text-token-lg {
-    font-size: var(--font-size-lg);
-  }
-  .text-token-xl {
-    font-size: var(--font-size-xl);
-  }
-  .text-token-2xl {
-    font-size: var(--font-size-2xl);
-  }
   .text-token-3xl {
     font-size: var(--font-size-3xl);
   }
-  .text-token-4xl {
-    font-size: var(--font-size-4xl);
-  }
-  .text-token-5xl {
-    font-size: var(--font-size-5xl);
-  }
 
   /* Line Height Utilities */
-  .leading-token-tight {
-    line-height: var(--line-height-tight);
-  }
-  .leading-token-normal {
-    line-height: var(--line-height-normal);
-  }
-  .leading-token-relaxed {
-    line-height: var(--line-height-relaxed);
-  }
 
   /* Letter Spacing Utilities */
-  .tracking-token-tight {
-    letter-spacing: var(--letter-spacing-tight);
-  }
-  .tracking-token-normal {
-    letter-spacing: var(--letter-spacing-normal);
-  }
-  .tracking-token-wide {
-    letter-spacing: var(--letter-spacing-wide);
-  }
 
   /* Z-Index Utilities */
-  .z-token-dropdown {
-  }
-  .z-token-modal {
-  }
-  .z-token-tooltip {
-  }
-  .z-token-toast {
-  }
 
   /* Design Token Spacing Utilities */
-  .p-token-xs {
-    padding: var(--spacing-xs);
-  }
-  .p-token-sm {
-    padding: var(--spacing-sm);
-  }
-  .p-token-md {
-    padding: var(--spacing-md);
-  }
-  .p-token-lg {
-    padding: var(--spacing-lg);
-  }
-  .p-token-xl {
-    padding: var(--spacing-xl);
-  }
-  .p-token-2xl {
-    padding: var(--spacing-2xl);
-  }
 
-  .gap-token-xs {
-    gap: var(--spacing-xs);
-  }
-  .gap-token-sm {
-    gap: var(--spacing-sm);
-  }
-  .gap-token-md {
-    gap: var(--spacing-md);
-  }
-  .gap-token-lg {
-    gap: var(--spacing-lg);
-  }
-  .gap-token-xl {
-    gap: var(--spacing-xl);
-  }
-  .gap-token-2xl {
-    gap: var(--spacing-2xl);
-  }
 
-  .m-token-xs {
-    margin: var(--spacing-xs);
-  }
-  .m-token-sm {
-    margin: var(--spacing-sm);
-  }
-  .m-token-md {
-    margin: var(--spacing-md);
-  }
-  .m-token-lg {
-    margin: var(--spacing-lg);
-  }
-  .m-token-xl {
-    margin: var(--spacing-xl);
-  }
 
-  .mt-token-xs {
-    margin-top: var(--spacing-xs);
-  }
-  .mt-token-sm {
-    margin-top: var(--spacing-sm);
-  }
-  .mt-token-md {
-    margin-top: var(--spacing-md);
-  }
-  .mt-token-lg {
-    margin-top: var(--spacing-lg);
-  }
-  .mt-token-xl {
-    margin-top: var(--spacing-xl);
-  }
 
-  .mb-token-xs {
-    margin-bottom: var(--spacing-xs);
-  }
-  .mb-token-sm {
-    margin-bottom: var(--spacing-sm);
-  }
-  .mb-token-md {
-    margin-bottom: var(--spacing-md);
-  }
-  .mb-token-lg {
-    margin-bottom: var(--spacing-lg);
-  }
-  .mb-token-xl {
-    margin-bottom: var(--spacing-xl);
-  }
 
   /* Design Token Shadow Utilities */
-  .shadow-token-sm {
-    box-shadow: var(--shadow-token-sm);
-  }
-  .shadow-token-md {
-    box-shadow: var(--shadow-token-md);
-  }
-  .shadow-token-lg {
-    box-shadow: var(--shadow-token-lg);
-  }
   .shadow-token-xl {
     box-shadow: var(--shadow-token-xl);
   }
@@ -667,134 +491,23 @@
   }
 
   /* Design Token Border Radius Utilities */
-  .rounded-token-sm {
-    border-radius: var(--border-radius-sm);
-  }
-  .rounded-token-md {
-    border-radius: var(--border-radius-md);
-  }
-  .rounded-token-lg {
-    border-radius: var(--border-radius-lg);
-  }
-  .rounded-token-xl {
-    border-radius: var(--border-radius-xl);
-  }
-  .rounded-token-2xl {
-    border-radius: var(--border-radius-2xl);
-  }
 
   /* Design Token Animation Utilities */
-  .duration-token-fast {
-    transition-duration: var(--duration-fast);
-  }
-  .duration-token-normal {
-    transition-duration: var(--duration-normal);
-  }
-  .duration-token-slow {
-    transition-duration: var(--duration-slow);
-  }
 
-  .ease-token-out {
-    transition-timing-function: var(--ease-out);
-  }
-  .ease-token-in-out {
-    transition-timing-function: var(--ease-in-out);
-  }
 
   /* Common Component Utilities */
-  .transition-token-all {
-    transition: all var(--duration-fast) var(--ease-out);
-  }
 
-  .transition-token-colors {
-    transition:
-      color var(--duration-fast) var(--ease-out),
-      background-color var(--duration-fast) var(--ease-out),
-      border-color var(--duration-fast) var(--ease-out);
-  }
 
-  .transition-token-transform {
-    transition: transform var(--duration-fast) var(--ease-out);
-  }
 
   /* Additional Design Token Text Colors */
-  .text-token-secondary {
-    color: var(--color-token-secondary-500);
-  }
-  .text-token-secondary-light {
-    color: var(--color-token-secondary-300);
-  }
-  .text-token-secondary-dark {
-    color: var(--color-token-secondary-700);
-  }
-  .text-token-muted {
-    color: var(--color-token-secondary-500);
-  }
-  .text-token-inverse {
-    color: var(--color-token-secondary-100);
-  }
 
   /* Additional Background Colors */
-  .bg-token-secondary {
-    background-color: var(--color-token-secondary-500);
-  }
-  .bg-token-secondary-light {
-    background-color: var(--color-token-secondary-100);
-  }
-  .bg-token-secondary-dark {
-    background-color: var(--color-token-secondary-800);
-  }
-  .bg-token-muted {
-    background-color: var(--color-token-secondary-200);
-  }
-  .bg-token-glass-light {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-  .bg-token-glass-medium {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  .bg-token-glass-strong {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
 
   /* Design Token State Colors */
-  .text-token-state-hover {
-    color: var(--color-token-primary-400);
-  }
-  .text-token-state-active {
-    color: var(--color-token-primary-600);
-  }
-  .text-token-state-disabled {
-    color: var(--color-token-secondary-400);
-  }
-  .text-token-state-focus {
-    color: var(--color-token-primary-500);
-  }
 
-  .bg-token-state-hover {
-    background-color: var(--color-token-secondary-100);
-  }
-  .bg-token-state-active {
-    background-color: var(--color-token-secondary-200);
-  }
-  .bg-token-state-disabled {
-    background-color: var(--color-token-secondary-100);
-  }
-  .bg-token-state-focus {
-    background-color: var(--color-token-primary-50);
-  }
 
   /* Responsive Typography */
   @media (max-width: 640px) {
-    .text-token-responsive-xl {
-      font-size: var(--font-size-lg);
-    }
-    .text-token-responsive-2xl {
-      font-size: var(--font-size-xl);
-    }
-    .text-token-responsive-3xl {
-      font-size: var(--font-size-2xl);
-    }
   }
 
   /* Hover State Utilities */
@@ -829,62 +542,16 @@
   }
 
   /* Component State Classes */
-  .component-loading {
-    opacity: 0.7;
-    cursor: wait;
-    pointer-events: none;
-  }
 
-  .component-disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
 
-  .component-error {
-    border-color: var(--color-token-error-500);
-    background-color: var(--color-token-error-50);
-  }
 
-  .component-success {
-  }
 
   /* Layout Pattern Classes */
-  .flex-center-token {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
 
-  .flex-between-token {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
 
-  .flex-start-token {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
 
-  .flex-end-token {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
 
-  .grid-auto-fit-token {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-  }
 
-  .grid-auto-fill-token {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-  }
 
   /* Animation Utilities */
   @keyframes fadeInToken {
@@ -918,63 +585,21 @@
     }
   }
 
-  .animate-fade-in-token {
-    animation: fadeInToken var(--duration-normal) var(--ease-out);
-  }
 
-  .animate-slide-in-token {
-    animation: slideInToken var(--duration-normal) var(--ease-out);
-  }
 
-  .animate-scale-in-token {
-    animation: scaleInToken var(--duration-fast) var(--ease-out);
-  }
 
   /* Accessibility Utilities */
-  .visually-hidden-token {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
-  }
 
-  .focus-visible-token:focus-visible {
-    outline: 2px solid var(--color-token-primary-500);
-    outline-offset: 2px;
-  }
 
   /* High Contrast Mode Support */
   @media (prefers-contrast: high) {
-    .text-token-primary {
-      color: var(--color-token-primary-800);
-    }
-    .text-token-secondary {
-      color: var(--color-token-secondary-800);
-    }
     .border-token-primary {
       border-color: var(--color-token-primary-800);
-    }
-    .border-token-secondary {
-      border-color: var(--color-token-secondary-800);
     }
   }
 
   /* Reduced Motion Support */
   @media (prefers-reduced-motion: reduce) {
-    .transition-token-all,
-    .transition-token-colors,
-    .transition-token-transform,
-    .animate-fade-in-token,
-    .animate-slide-in-token,
-    .animate-scale-in-token {
-      animation: none;
-      transition: none;
-    }
   }
 
   html[data-test-mode='true'] * {
@@ -990,16 +615,6 @@
 
   /* Print Styles */
   @media print {
-    .text-token-primary,
-    .text-token-secondary,
-    .text-token-error,
-    .bg-token-primary,
-    .bg-token-secondary,
-    .bg-token-error,
-    .shadow-token-sm,
-    .shadow-token-md,
-    .shadow-token-lg,
-    .shadow-token-xl,
     .shadow-token-2xl {
       box-shadow: none !important;
     }
@@ -1020,94 +635,25 @@
   }
 
   /* Interactive Element Base Classes */
-  .interactive-token-base {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius-md);
-    transition: all var(--duration-fast) var(--ease-out);
-  }
 
-  .interactive-token-base:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--color-token-primary-400);
-  }
 
   /* Layout Containers */
-  .container-token {
-    margin: 0 auto;
-    padding-left: var(--spacing-md);
-    padding-right: var(--spacing-md);
-  }
 
   @media (min-width: 640px) {
-    .container-token {
-      padding-left: var(--spacing-lg);
-      padding-right: var(--spacing-lg);
-    }
   }
 
   @media (min-width: 1024px) {
-    .container-token {
-      padding-left: var(--spacing-xl);
-      padding-right: var(--spacing-xl);
-    }
   }
 
   /* Mobile Touch Target Utilities */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
 
-  .touch-target-sm {
-    position: relative;
-    padding: 12px;
-    margin: -12px;
-  }
 
   /* Interactive element base classes ensuring accessibility */
-  .interactive-base {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
 
-  .interactive-link {
-    min-height: 44px;
-    display: inline-block;
-    padding-top: 8px;
-    padding-bottom: 8px;
-  }
 
   /* Marketing Semantic Utility Classes */
-  .text-marketing-primary {
-    color: var(--color-marketing-text-primary);
-  }
-  .text-marketing-secondary {
-    color: var(--color-marketing-text-secondary);
-  }
-  .text-marketing-error {
-    color: var(--color-marketing-error);
-  }
-  .bg-marketing-error {
-    background-color: var(--color-marketing-error-bg);
-  }
   .bg-gradient-marketing-primary {
     background: var(--gradient-marketing-primary);
-  }
-  .bg-gradient-marketing-card {
-    background: var(--gradient-marketing-card);
-  }
-  .bg-marketing-glass {
-    background-color: var(--bg-marketing-glass);
-    backdrop-filter: blur(var(--blur-glassmorphism-md));
-  }
-  .border-marketing-glass {
-    border-color: var(--border-marketing-glass);
   }
 
   /* Couples Theme Utility Classes */
@@ -1120,9 +666,6 @@
   .text-couples-accent {
     color: var(--color-couples-accent);
   }
-  .text-couples-success {
-    color: var(--color-couples-success);
-  }
   .text-couples-warning {
     color: var(--color-couples-warning);
   }
@@ -1134,9 +677,6 @@
   }
   .bg-couples-secondary {
     background-color: var(--color-couples-secondary);
-  }
-  .bg-couples-accent {
-    background-color: var(--color-couples-accent);
   }
   .bg-gradient-couples-mutual {
     background: var(--gradient-couples-mutual);
@@ -1152,17 +692,6 @@
   .blur-glass-md {
     backdrop-filter: blur(var(--blur-glassmorphism-md));
   }
-  .blur-glass-lg {
-    backdrop-filter: blur(var(--blur-glassmorphism-lg));
-  }
-  .glass-subtle {
-    background-color: rgba(255, 255, 255, var(--opacity-glass-subtle));
-    backdrop-filter: blur(var(--blur-glassmorphism-md));
-  }
-  .glass-strong {
-    background-color: rgba(255, 255, 255, var(--opacity-glass-strong));
-    backdrop-filter: blur(var(--blur-glassmorphism-lg));
-  }
 
   /* ============================================
      HomeMatch Luxury Theme Utilities
@@ -1174,14 +703,8 @@
   }
 
   /* Body font */
-  .font-body {
-    font-family: var(--font-body), system-ui, sans-serif;
-  }
 
   /* Obsidian backgrounds */
-  .bg-hm-obsidian-950 {
-    background-color: var(--hm-obsidian-950);
-  }
   .bg-hm-obsidian-900 {
     background-color: var(--hm-obsidian-900);
   }
@@ -1213,14 +736,8 @@
   .text-hm-amber-400 {
     color: var(--hm-amber-400);
   }
-  .text-hm-amber-500 {
-    color: var(--hm-amber-500);
-  }
   .bg-hm-amber-400 {
     background-color: var(--hm-amber-400);
-  }
-  .bg-hm-amber-500 {
-    background-color: var(--hm-amber-500);
   }
   .border-hm-amber-400 {
     border-color: var(--hm-amber-400);
@@ -1282,29 +799,12 @@
   }
 
   /* Refined stat separator */
-  .stat-separator::before {
-    content: '·';
-    margin: 0 0.5rem;
-    color: var(--hm-stone-500);
-  }
 
   /* Amber glow effect for buttons */
-  .glow-amber {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
-  }
 
-  .glow-amber:hover {
-    box-shadow: 0 0 30px rgba(251, 191, 36, 0.25);
-  }
 
   /* Subtle hover lift animation */
-  .hover-lift {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
 
-  .hover-lift:hover {
-    transform: translateY(-3px);
-  }
 
   /* Image zoom on hover */
   .img-zoom {

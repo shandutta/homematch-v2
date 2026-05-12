@@ -400,9 +400,20 @@ async function legacySupabaseMiddleware(
  * - Otherwise, fall through to the legacy Supabase pipeline.
  */
 export default clerkMiddleware(async (clerkAuth, request) => {
-  const { userId: clerkUserId } = await clerkAuth()
   const nextRequest = request as NextRequest
   const pathname = nextRequest.nextUrl.pathname
+
+  // Fast path for public-bypass routes: skip Clerk session resolution
+  // entirely. /api/health benchmarked at 574ms TTFB through the full
+  // middleware vs ~50ms expected for a no-DB health probe — Clerk session
+  // resolution + token validation was eating most of that. Same applies
+  // to /api/webhooks/clerk (Svix signature is its own auth) and the
+  // performance-metrics ingest beacon.
+  if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
+    return applySecurityHeaders(NextResponse.next({ request: nextRequest }))
+  }
+
+  const { userId: clerkUserId } = await clerkAuth()
 
   // Clerk user is signed in — skip the legacy Supabase protection that would
   // redirect them to /login, and just return security headers.

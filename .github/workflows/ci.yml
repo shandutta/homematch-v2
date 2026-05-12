@@ -58,6 +58,21 @@ jobs:
           set -o pipefail
           pnpm type-check | tee artifacts/type-check.log
 
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Shell lint (advisory)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm shell-lint | tee artifacts/shell-lint.log
+
+      - name: Dead-code scan (advisory)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm deadcode | tee artifacts/deadcode.log
+
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
