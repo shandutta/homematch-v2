@@ -76,14 +76,19 @@ async function handleUserCreated(data: UserJSON) {
   }
 
   if (existing) {
-    // Profile already linked — update fields from Clerk.
+    // Profile already linked — update fields from Clerk, but never
+    // overwrite an existing value with null. If Clerk replays a payload
+    // without an email/display_name (rare but legal), the prior values
+    // are still the truth — preserve them.
+    const updates: Record<string, string> = {
+      updated_at: new Date().toISOString(),
+    }
+    if (email) updates.email = email
+    if (displayName) updates.display_name = displayName
+
     const { error } = await supabase
       .from('user_profiles')
-      .update({
-        email,
-        display_name: displayName,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('id', existing.id)
 
     if (error) {
@@ -103,7 +108,8 @@ async function handleUserCreated(data: UserJSON) {
   // The webhook is idempotent on clerk_user_id, so a later user.updated
   // will overwrite this with the real value.
   const newProfileId = crypto.randomUUID()
-  const safeEmail = email ?? `unknown+${data.id}@clerk-webhook.invalid`
+  const placeholderEmail = `unknown+${data.id}@clerk-webhook.invalid`
+  const safeEmail = email ?? placeholderEmail
   const { error } = await supabase.from('user_profiles').insert({
     id: newProfileId,
     clerk_user_id: data.id,
@@ -129,13 +135,18 @@ async function handleUserUpdated(data: UserJSON) {
   const email = primaryEmailFromUserJSON(data)
   const displayName = displayNameFromUserJSON(data)
 
+  // Same defensive pattern as handleUserCreated's update branch: never
+  // overwrite an existing value with null. user.updated payloads from
+  // Clerk may legitimately omit fields that didn't change.
+  const updates: Record<string, string> = {
+    updated_at: new Date().toISOString(),
+  }
+  if (email) updates.email = email
+  if (displayName) updates.display_name = displayName
+
   const { error } = await supabase
     .from('user_profiles')
-    .update({
-      email,
-      display_name: displayName,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updates)
     .eq('clerk_user_id', data.id)
 
   if (error) {
