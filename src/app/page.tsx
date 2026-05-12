@@ -56,11 +56,11 @@ export default async function LandingPage() {
             aria-hidden
           />
           <div
-            className="absolute inset-x-0 top-0 h-full opacity-20"
+            className="absolute inset-x-0 top-0 h-full opacity-50"
             style={{
               backgroundImage:
-                'repeating-linear-gradient(0deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px), repeating-linear-gradient(90deg, rgba(2,26,68,0.08) 0px, rgba(2,26,68,0.08) 1px, transparent 1px, transparent 28px)',
-              backgroundSize: '28px 28px',
+                'repeating-linear-gradient(0deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 40px)',
+              backgroundSize: '40px 40px',
             }}
             aria-hidden
           />

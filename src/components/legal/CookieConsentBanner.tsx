@@ -99,8 +99,8 @@ export function CookieConsentBanner() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
-      <div className="mx-auto mb-1 w-full max-w-4xl px-2 sm:mb-3 sm:px-6">
-        <div className="rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-3">
+      <div className="mx-auto mb-1 w-full max-w-3xl px-2 sm:mb-2 sm:px-4">
+        <div className="rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-2">
           {/* Mobile: compact one-line layout (text + action buttons stay
               under ~64px tall so the banner never covers the auth form
               CTA at 393x852). Desktop: full layout with policy links. */}

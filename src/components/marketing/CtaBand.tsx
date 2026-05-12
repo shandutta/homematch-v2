@@ -74,15 +74,13 @@ export function CtaBand() {
         >
           {/* Animated headline with word reveal */}
           <WordReveal
-            text="Make House-Hunting Your Next Shared Game"
+            text="Bring your partner into the search."
             className="text-3xl font-bold text-white sm:text-4xl"
           />
 
           <MotionDiv
             initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-            whileInView={
-              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
-            }
+            whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={
               shouldReduceMotion
@@ -94,17 +92,15 @@ export function CtaBand() {
               className="mx-auto mt-3 text-white/80 sm:text-lg"
               style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
             >
-              Tasteful swiping. Smart matches. Real progress. Join early access
-              and start finding places everyone likes.
+              Create your household, invite the people deciding with you, and
+              stop relaying screenshots over text.
             </p>
           </MotionDiv>
 
           <MotionDiv
             className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-8 sm:flex-row"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
-            whileInView={
-              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
-            }
+            whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={
               shouldReduceMotion
@@ -126,7 +122,7 @@ export function CtaBand() {
             >
               <Link
                 href="/signup"
-                aria-label="Start Swiping"
+                aria-label="Invite your partner"
                 className="relative inline-flex w-full items-center justify-center sm:w-auto"
                 data-cta="dopamine-cta-band"
               >
@@ -141,7 +137,7 @@ export function CtaBand() {
 
                 {/* Button text with enhanced glow */}
                 <span className="relative z-10 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]">
-                  Start Swiping
+                  Invite your partner
                 </span>
 
                 {/* Subtle pulse ring on hover */}
@@ -154,11 +150,11 @@ export function CtaBand() {
 
             <Button
               size="lg"
-              variant="outline"
-              className="w-full border-2 border-white/20 bg-white/5 px-8 py-4 text-lg font-medium text-white backdrop-blur-sm transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:!text-white sm:w-auto sm:py-6"
+              variant="ghost"
+              className="w-full bg-transparent text-base font-medium text-white/70 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:w-auto"
               asChild
             >
-              <Link href="/login">Already a Member?</Link>
+              <Link href="/login">Already swiping? Sign in</Link>
             </Button>
           </MotionDiv>
         </MotionDiv>

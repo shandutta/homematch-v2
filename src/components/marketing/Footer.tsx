@@ -16,7 +16,7 @@ function AnimatedLink({
   return (
     <Link
       href={href}
-      className="group relative inline-block rounded-sm transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+      className="group relative inline-block rounded-sm transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:outline-none"
     >
       {children}
       <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
@@ -93,7 +93,7 @@ function LinkColumn({
       }}
     >
       <m.h4
-        className="text-token-sm mb-2 font-semibold tracking-wider uppercase lg:mb-4"
+        className="mb-3 text-[11px] font-semibold tracking-[0.18em] text-white/45 uppercase lg:mb-5"
         style={{ fontFamily: 'var(--font-heading)' }}
         variants={{
           hidden: shouldReduceMotion
@@ -105,7 +105,7 @@ function LinkColumn({
         {title}
       </m.h4>
       <ul
-        className="text-token-sm space-y-0 leading-none text-white/70 lg:space-y-3 lg:leading-normal"
+        className="space-y-0 text-sm leading-none text-white/85 lg:space-y-3 lg:leading-normal"
         style={{ fontFamily: 'var(--font-body)' }}
       >
         {links.map((link) => (
@@ -156,9 +156,7 @@ export function Footer() {
           <MotionDiv
             className="col-span-3 mb-6 flex flex-col items-center sm:col-span-3 lg:col-span-1 lg:items-start"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={
-              shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
-            }
+            whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={
               shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }
@@ -216,9 +214,7 @@ export function Footer() {
           whileInView={shouldReduceMotion ? undefined : { opacity: 1 }}
           viewport={{ once: true }}
           transition={
-            shouldReduceMotion
-              ? { duration: 0 }
-              : { duration: 0.5, delay: 0.4 }
+            shouldReduceMotion ? { duration: 0 } : { duration: 0.5, delay: 0.4 }
           }
         >
           <p
