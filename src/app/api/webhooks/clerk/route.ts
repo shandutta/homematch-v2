@@ -97,11 +97,17 @@ async function handleUserCreated(data: UserJSON) {
   }
 
   // Brand-new user — create the profile row.
+  // Defensive: if Clerk's event arrives without a usable email (e.g. test
+  // events from the dashboard, or a malformed payload), fall back to a
+  // synthetic placeholder so the insert satisfies the NOT NULL constraint.
+  // The webhook is idempotent on clerk_user_id, so a later user.updated
+  // will overwrite this with the real value.
   const newProfileId = crypto.randomUUID()
+  const safeEmail = email ?? `unknown+${data.id}@clerk-webhook.invalid`
   const { error } = await supabase.from('user_profiles').insert({
     id: newProfileId,
     clerk_user_id: data.id,
-    email,
+    email: safeEmail,
     display_name: displayName,
     onboarding_completed: false,
     preferences: {},
