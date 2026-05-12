@@ -165,7 +165,7 @@
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^26.1.0",
     "knip": "^6.12.2",
-    "next": "15.5.9",
+    "next": "15.5.18",
     "node-fetch": "^2.7.0",
     "node-mocks-http": "^1.17.2",
     "pg": "^8.16.3",
