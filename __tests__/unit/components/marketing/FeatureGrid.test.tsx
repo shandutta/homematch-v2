@@ -63,9 +63,7 @@ describe('FeatureGrid', () => {
     expect(
       screen.getByText(/We learn what each person actually likes/)
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(/No more screenshot chains/)
-    ).toBeInTheDocument()
+    expect(screen.getByText(/No more screenshot chains/)).toBeInTheDocument()
     expect(
       screen.getByText(/Neighborhood feel, walkability, future-fit/)
     ).toBeInTheDocument()
