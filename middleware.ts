@@ -78,7 +78,8 @@ const applySecurityHeaders = (response: NextResponse) => {
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.homematch.pro https://accounts.homematch.pro https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.homematch.pro https://accounts.homematch.pro https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
+        "worker-src 'self' blob:; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https: blob:; " +
