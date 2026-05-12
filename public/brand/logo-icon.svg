@@ -1,32 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="512" height="512">
   <defs>
-    <linearGradient id="hm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFC58A" />
       <stop offset="55%" stop-color="#FF7B6B" />
       <stop offset="100%" stop-color="#E04C6D" />
     </linearGradient>
   </defs>
-  <rect width="48" height="48" rx="14" fill="url(#hm-bg)" />
+  <rect width="48" height="48" rx="14" fill="url(#bg)" />
   <path
     fill="white"
     fill-rule="evenodd"
     d="M24 8.25
-       L9.5 21.25
-       Q8.5 22.15 8.5 23.5
-       L8.5 38.5
-       Q8.5 40 10 40
-       L38 40
-       Q39.5 40 39.5 38.5
-       L39.5 23.5
-       Q39.5 22.15 38.5 21.25
-       Z
-       M24 33.5
-       C18.5 33.5 13 28 13 22
-       C13 18.5 16 17 19 18.5
-       C21.5 19.5 23 21 24 22.5
-       C25 21 26.5 19.5 29 18.5
-       C32 17 35 18.5 35 22
-       C35 28 29.5 33.5 24 33.5
-       Z"
+       L9.5 21.25 Q8.5 22.15 8.5 23.5
+       L8.5 38.5 Q8.5 40 10 40
+       L38 40 Q39.5 40 39.5 38.5
+       L39.5 23.5 Q39.5 22.15 38.5 21.25 Z
+       M24 37.5
+       C21.5 37 17 33.5 15.5 29
+       C14 25 15.5 22 18.5 22
+       C21 22 23 23 24 25
+       C25 23 27 22 29.5 22
+       C32.5 22 34 25 32.5 29
+       C31 33.5 26.5 37 24 37.5 Z"
   />
 </svg>
