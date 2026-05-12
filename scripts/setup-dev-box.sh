@@ -163,27 +163,44 @@ install_node_pkg() {
   esac
 }
 
+node_major() {
+  local version major
+  version="$(node -v 2>/dev/null || echo "")"
+  if [[ $version =~ ^v([0-9]+) ]]; then
+    major="${BASH_REMATCH[1]}"
+    echo "$major"
+  else
+    echo "0"
+  fi
+}
+
 ensure_node() {
+  local needs_install=false
   if ! command -v node >/dev/null 2>&1; then
     log "Node.js not found; installing target ${TARGET_NODE_VERSION}..."
+    needs_install=true
+  elif (( $(node_major) < NODE_MIN_MAJOR )); then
+    log "Node.js $(node -v) detected (need ${NODE_MIN_MAJOR}+); installing target ${TARGET_NODE_VERSION}..."
+    needs_install=true
+  fi
+
+  if $needs_install; then
     install_node_with_nvm || {
       if $INSTALL_OS_DEPS; then
         install_node_pkg
       else
-        fail "Node.js is required. Install Node ${NODE_MIN_MAJOR}+ or rerun with --install-os-deps."
+        fail "Node.js ${NODE_MIN_MAJOR}+ is required. Install nvm or rerun with --install-os-deps."
       fi
     }
   fi
 
-  local version major
-  version="$(node -v)"
-  if [[ $version =~ ^v([0-9]+) ]]; then
-    major="${BASH_REMATCH[1]}"
-    if (( major < NODE_MIN_MAJOR )); then
-      fail "Node.js $version detected. Please use Node ${NODE_MIN_MAJOR}+."
-    fi
+  if (( $(node_major) < NODE_MIN_MAJOR )); then
+    fail "Node.js $(node -v) detected after install attempt. Please use Node ${NODE_MIN_MAJOR}+."
   fi
+
   # Align to target version if possible and not already matched.
+  local version
+  version="$(node -v)"
   if [[ -n "${TARGET_NODE_VERSION}" && "$version" != "v${TARGET_NODE_VERSION}" ]]; then
     if install_node_with_nvm; then
       version="v${TARGET_NODE_VERSION}"
