@@ -75,9 +75,7 @@ export function HowItWorks() {
           initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
           whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={
-            shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }
-          }
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
         >
           <h2
             className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
@@ -185,9 +183,7 @@ function StepCard({
           animate={
             shouldReduceMotion ? undefined : { opacity: isActive ? 0.5 : 0 }
           }
-          transition={
-            shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }
-          }
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
           style={{
             background:
               'radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), transparent 60%)',

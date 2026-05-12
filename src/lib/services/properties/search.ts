@@ -190,9 +190,7 @@ export class PropertySearchService
       async (supabase) => {
         const { data, error } = await supabase
           .from('properties')
-          .select(
-            PROPERTY_FULL_COLS
-          )
+          .select(PROPERTY_FULL_COLS)
           .eq('neighborhood_id', neighborhoodId)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
@@ -365,9 +363,7 @@ export class PropertySearchService
     return this.executeArrayQuery('getSimilarProperties', async (supabase) => {
       let query = supabase
         .from('properties')
-        .select(
-          PROPERTY_FULL_COLS
-        )
+        .select(PROPERTY_FULL_COLS)
         .eq('is_active', true)
         .neq('id', referenceProperty.id)
         .gte('price', referenceProperty.price - priceTolerance)
@@ -413,9 +409,7 @@ export class PropertySearchService
       async (supabase) => {
         let query = supabase
           .from('properties')
-          .select(
-            PROPERTY_FULL_COLS
-          )
+          .select(PROPERTY_FULL_COLS)
           .eq('is_active', true)
 
         // Apply amenity filters

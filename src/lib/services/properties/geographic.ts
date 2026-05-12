@@ -716,7 +716,10 @@ export class GeographicService
                 )
                 return null
               }
-              if (typeof transitScore === 'number' && transitScore >= minTransitScore) {
+              if (
+                typeof transitScore === 'number' &&
+                transitScore >= minTransitScore
+              ) {
                 return property
               }
               return null

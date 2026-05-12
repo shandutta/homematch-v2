@@ -49,9 +49,7 @@
     "tw-animate-css",
     "vite-tsconfig-paths"
   ],
-  "ignoreBinaries": [
-    "shellcheck"
-  ],
+  "ignoreBinaries": ["shellcheck"],
   "rules": {
     "files": "warn",
     "dependencies": "warn",

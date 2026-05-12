@@ -49,9 +49,7 @@ export function Header() {
           initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
           animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
           transition={
-            shouldReduceMotion
-              ? { duration: 0 }
-              : { duration: 0.5, delay: 0.1 }
+            shouldReduceMotion ? { duration: 0 } : { duration: 0.5, delay: 0.1 }
           }
         >
           <Link

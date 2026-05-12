@@ -12,17 +12,17 @@ From my Mac:
 2. `~/.ssh/config` contains:
 
    Host hetzner-dev  
-       HostName 77.42.27.28  
-       User shan  
-       IdentityAgent ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock  
+    HostName 77.42.27.28  
+    User shan  
+    IdentityAgent ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
 
 3. To connect:
 
-   ssh hetzner-dev  
+   ssh hetzner-dev
 
 4. To become root when needed:
 
-   sudo -i  
+   sudo -i
 
 Root SSH logins and password logins are disabled; only key-based SSH as user `shan` is allowed.
 
@@ -102,3 +102,4 @@ else
 fi
 
 echo "[bootstrap] Done. Open a new shell or 'source ~/.bashrc' to pick up changes."
+```

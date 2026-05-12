@@ -107,10 +107,7 @@ jest.mock('@clerk/nextjs/server', () => ({
     ) =>
     async (request: unknown) =>
       handler(() => Promise.resolve({ userId: null }), request),
-  createRouteMatcher:
-    () =>
-    () =>
-      false,
+  createRouteMatcher: () => () => false,
   verifyWebhook: jest.fn(),
 }))
 jest.mock('@clerk/nextjs', () => ({

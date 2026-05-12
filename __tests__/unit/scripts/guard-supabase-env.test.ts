@@ -162,8 +162,7 @@ describe('Supabase env guard precision', () => {
     // metacharacters (including \) before interpolating into a RegExp — the
     // .replace(/\./g) we used before tripped the CodeQL "Incomplete string
     // escaping" alert because backslashes / other metas weren't handled.
-    const escapeRegex = (s: string) =>
-      s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     expect(allOutput).not.toMatch(
       new RegExp(`(^|[^A-Z_])${escapeRegex(productionHost)}`)
     )

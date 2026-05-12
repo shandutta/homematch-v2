@@ -478,10 +478,6 @@
 
   /* Design Token Spacing Utilities */
 
-
-
-
-
   /* Design Token Shadow Utilities */
   .shadow-token-xl {
     box-shadow: var(--shadow-token-xl);
@@ -494,17 +490,13 @@
 
   /* Design Token Animation Utilities */
 
-
   /* Common Component Utilities */
-
-
 
   /* Additional Design Token Text Colors */
 
   /* Additional Background Colors */
 
   /* Design Token State Colors */
-
 
   /* Responsive Typography */
   @media (max-width: 640px) {
@@ -543,15 +535,7 @@
 
   /* Component State Classes */
 
-
-
-
   /* Layout Pattern Classes */
-
-
-
-
-
 
   /* Animation Utilities */
   @keyframes fadeInToken {
@@ -585,11 +569,7 @@
     }
   }
 
-
-
-
   /* Accessibility Utilities */
-
 
   /* High Contrast Mode Support */
   @media (prefers-contrast: high) {
@@ -636,7 +616,6 @@
 
   /* Interactive Element Base Classes */
 
-
   /* Layout Containers */
 
   @media (min-width: 640px) {
@@ -647,9 +626,7 @@
 
   /* Mobile Touch Target Utilities */
 
-
   /* Interactive element base classes ensuring accessibility */
-
 
   /* Marketing Semantic Utility Classes */
   .bg-gradient-marketing-primary {
@@ -802,9 +779,7 @@
 
   /* Amber glow effect for buttons */
 
-
   /* Subtle hover lift animation */
-
 
   /* Image zoom on hover */
   .img-zoom {
