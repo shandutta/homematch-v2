@@ -17,7 +17,18 @@ import {
 } from '@/lib/utils/interaction-type'
 import { CouplesService } from '@/lib/services/couples'
 import { requireUserFromRequest } from '@/lib/api/auth'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 import { noStoreJson } from '@/lib/api/cache-control'
+
+// user_profiles.id is a UUID. When a Clerk-authenticated user lands before
+// their webhook-created profile exists, requireUserFromRequest falls back to
+// returning the Clerk userId ("user_xxx") as user.id. Querying Supabase with
+// that string yields a 22P02 invalid-input-syntax error, which we'd previously
+// surface as a 500. Detect that fallback shape and route around it.
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const isLikelyClerkUserId = (id: string) =>
+  id.startsWith('user_') && !UUID_PATTERN.test(id)
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,9 +39,23 @@ export async function POST(request: NextRequest) {
       return response ?? ApiErrorHandler.unauthorized()
     }
 
+    // Bootstrap a user_profiles row if the Clerk webhook hasn't beaten us
+    // to it. POST needs a real UUID since it's writing data.
+    let userId = user.id
+    if (isLikelyClerkUserId(userId)) {
+      const profileId = await ensureUserProfileForCurrentClerkUser()
+      if (!profileId) {
+        return ApiErrorHandler.serverError(
+          'Failed to bootstrap user profile',
+          new Error('ensure-profile returned null')
+        )
+      }
+      userId = profileId
+    }
+
     // Rate limiting
     const rateLimitResponse = await checkRateLimit(
-      rateLimitKey('interactions:create', user.id)
+      rateLimitKey('interactions:create', userId)
     )
     if (rateLimitResponse) return rateLimitResponse
 
@@ -60,7 +85,7 @@ export async function POST(request: NextRequest) {
     const { data: userProfile, error: profileError } = await supabase
       .from('user_profiles')
       .select('household_id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .maybeSingle()
 
     if (profileError) {
@@ -77,7 +102,7 @@ export async function POST(request: NextRequest) {
     const deleteQuery = supabase
       .from('user_property_interactions')
       .delete()
-      .match({ user_id: user.id, property_id: propertyId })
+      .match({ user_id: userId, property_id: propertyId })
 
     if (dbInteractionType === 'view') {
       deleteQuery.eq('interaction_type', 'view')
@@ -97,7 +122,7 @@ export async function POST(request: NextRequest) {
     const { data: newInteraction, error: insertError } = await supabase
       .from('user_property_interactions')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         property_id: propertyId,
         household_id: householdId,
         interaction_type: dbInteractionType,
@@ -137,6 +162,25 @@ export async function GET(request: NextRequest) {
       return response ?? ApiErrorHandler.unauthorized()
     }
 
+    // If user.id is the Clerk userId (profile not yet in Supabase), bootstrap
+    // it now. After this, user.id either is a UUID or we accept the empty path.
+    let userId = user.id
+    if (isLikelyClerkUserId(userId)) {
+      const profileId = await ensureUserProfileForCurrentClerkUser()
+      if (profileId) {
+        userId = profileId
+      }
+    }
+    // Still not a UUID? Return an empty result instead of 500-ing. The user
+    // is authenticated; they just don't have any data yet.
+    if (isLikelyClerkUserId(userId)) {
+      const fallbackType = request.nextUrl.searchParams.get('type')
+      if (fallbackType === 'summary') {
+        return noStoreJson({ liked: 0, passed: 0, viewed: 0 })
+      }
+      return noStoreJson({ items: [], nextCursor: null })
+    }
+
     const { searchParams } = new URL(request.url)
     const queryParams = {
       type: searchParams.get('type'),
@@ -159,7 +203,7 @@ export async function GET(request: NextRequest) {
 
       // Add timeout for RPC call
       const rpcPromise = supabase.rpc('get_user_interaction_summary', {
-        p_user_id: user.id,
+        p_user_id: userId,
       })
 
       type SummaryResult = Awaited<typeof rpcPromise>
@@ -242,7 +286,7 @@ export async function GET(request: NextRequest) {
         property:properties (*)
       `
       )
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -326,8 +370,18 @@ export async function DELETE(request: NextRequest) {
       return response ?? ApiErrorHandler.unauthorized()
     }
 
+    let userId = user.id
+    if (isLikelyClerkUserId(userId)) {
+      const profileId = await ensureUserProfileForCurrentClerkUser()
+      if (!profileId) {
+        // Nothing to delete if we can't resolve a profile.
+        return ApiErrorHandler.success({ deleted: true, count: 0 })
+      }
+      userId = profileId
+    }
+
     const rateLimitResponse = await checkRateLimit(
-      rateLimitKey('interactions:delete', user.id)
+      rateLimitKey('interactions:delete', userId)
     )
     if (rateLimitResponse) return rateLimitResponse
 
@@ -349,7 +403,7 @@ export async function DELETE(request: NextRequest) {
     const { data: deletedRows, error } = await supabase
       .from('user_property_interactions')
       .delete()
-      .match({ user_id: user.id, property_id: propertyId })
+      .match({ user_id: userId, property_id: propertyId })
       .select()
 
     if (error) {

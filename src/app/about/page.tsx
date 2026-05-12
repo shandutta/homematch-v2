@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createPublicRouteMetadata } from '@/lib/seo/route-metadata'
+import { MarketingPageHeader } from '@/components/marketing/MarketingPageHeader'
 
 export const metadata = createPublicRouteMetadata({
   title: 'About HomeMatch | Collaborative Home Search for Households',
@@ -11,6 +12,7 @@ export const metadata = createPublicRouteMetadata({
 export default function AboutPage() {
   return (
     <main className="bg-slate-50 text-slate-900">
+      <MarketingPageHeader />
       <div className="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
         <header className="space-y-4">
           <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">

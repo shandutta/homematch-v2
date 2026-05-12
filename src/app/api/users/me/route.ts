@@ -1,0 +1,77 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Casts: user_profiles.preferences is `Json` (recursive), so we narrow once
+// to Record<string, unknown> after an isRecord-style check below.
+import type { NextRequest } from 'next/server'
+import { createApiClient } from '@/lib/supabase/server'
+import { requireUserFromRequest } from '@/lib/api/auth'
+import { ApiErrorHandler } from '@/lib/api/errors'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
+import { noStoreJson } from '@/lib/api/cache-control'
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const isLikelyClerkUserId = (id: string) =>
+  id.startsWith('user_') && !UUID_PATTERN.test(id)
+
+// GET /api/users/me — current user's profile id, email, and household_id.
+//
+// Replaces direct supabase.auth.getSession() lookups in client components.
+// Works with both Clerk cookies and the legacy Supabase bearer flow because
+// requireUserFromRequest already handles both, and we bootstrap a profile
+// row for Clerk users whose webhook hasn't fired yet.
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createApiClient(request)
+    const { user, response } = await requireUserFromRequest(supabase, request)
+
+    if (!user || response) {
+      return response ?? ApiErrorHandler.unauthorized()
+    }
+
+    let profileId = user.id
+    if (isLikelyClerkUserId(profileId)) {
+      const bootstrapped = await ensureUserProfileForCurrentClerkUser()
+      if (bootstrapped) profileId = bootstrapped
+    }
+
+    if (isLikelyClerkUserId(profileId)) {
+      // Authenticated but no profile UUID yet — return minimal shape so
+      // callers can keep moving without 500-ing.
+      return noStoreJson({
+        id: profileId,
+        email: user.email ?? null,
+        household_id: null,
+      })
+    }
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, email, display_name, household_id, preferences')
+      .eq('id', profileId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[/api/users/me] Lookup failed:', error)
+      return ApiErrorHandler.serverError('Failed to load profile', error)
+    }
+
+    const preferences =
+      data?.preferences && typeof data.preferences === 'object'
+        ? (data.preferences as Record<string, unknown>)
+        : {}
+    const preferencesDisplayName =
+      typeof preferences.display_name === 'string'
+        ? preferences.display_name
+        : null
+
+    return noStoreJson({
+      id: data?.id ?? profileId,
+      email: data?.email ?? user.email ?? null,
+      display_name: data?.display_name ?? preferencesDisplayName ?? null,
+      household_id: data?.household_id ?? null,
+    })
+  } catch (err) {
+    console.error('[/api/users/me] Unexpected error:', err)
+    return ApiErrorHandler.serverError('Failed to load profile', err)
+  }
+}

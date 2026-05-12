@@ -149,6 +149,11 @@ export type ApprovedServiceRoleCapability =
   // Clerk webhook (verified upstream by Svix signature) needs to upsert
   // user_profiles for new sign-ups, before the user has any session at all.
   | 'clerk-webhook'
+  // Just-in-time profile bootstrap when a Clerk-authenticated user arrives
+  // before the webhook has created their user_profiles row. Caller verifies
+  // the Clerk session first; this only bypasses RLS for the user_profiles
+  // insert keyed to that verified clerk_user_id.
+  | 'clerk-profile-bootstrap'
 
 type CreateServiceClientOptions = {
   approvedCapability?: ApprovedServiceRoleCapability
@@ -161,6 +166,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'invite-acceptance',
     'invite-preview',
     'clerk-webhook',
+    'clerk-profile-bootstrap',
   ])
 
 // Alternative server client with service role for administrative operations

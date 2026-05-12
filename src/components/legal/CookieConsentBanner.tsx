@@ -49,6 +49,28 @@ export function CookieConsentBanner() {
     }
   }, [])
 
+  // Reserve vertical space so the fixed banner doesn't overlap page content
+  // (QA ISSUE-008: banner covered the "Not a brokerage" card on /about and
+  // the "Review favorites" / "Household hub" cards on mobile dashboard).
+  // We use a CSS variable + body padding rather than a placeholder div so
+  // it works regardless of which page layout is mounted.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    if (isOpen) {
+      // ~80px covers the desktop and mobile banner heights with breathing room.
+      root.style.setProperty('--cookie-banner-offset', '5rem')
+      document.body.style.paddingBottom = 'var(--cookie-banner-offset)'
+    } else {
+      root.style.removeProperty('--cookie-banner-offset')
+      document.body.style.paddingBottom = ''
+    }
+    return () => {
+      root.style.removeProperty('--cookie-banner-offset')
+      document.body.style.paddingBottom = ''
+    }
+  }, [isOpen])
+
   useEffect(() => {
     if (showDetails) {
       settingsPanelRef.current?.focus()

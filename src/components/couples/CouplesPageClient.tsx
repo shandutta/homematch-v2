@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Cast on /api/users/me JSON; the endpoint is owned in this repo and its
+// response shape is enforced by the route's own typing.
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
@@ -54,47 +57,42 @@ export function CouplesPageClient() {
     setError(null)
 
     try {
-      const supabase = await createClient()
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!session?.access_token) {
-        toast.authRequired()
+      // Resolve session/profile via the unified /api/users/me endpoint —
+      // works with Clerk cookies as well as the legacy Supabase Bearer flow.
+      // (Previously we called supabase.auth.getSession() directly, which
+      // returns null for Clerk-authenticated users and fired both an
+      // authRequired toast and a network-error full-card. See QA ISSUE-004.)
+      const meRes = await fetch('/api/users/me', { credentials: 'same-origin' })
+      if (meRes.status === 401) {
+        // Genuinely unauthenticated — server-side guard will already have
+        // redirected us, but defend against direct client-only access.
         setUserHouseholdStatus('error')
         setError('Authentication required')
         return
       }
-
-      setUserId(session.user.id)
-
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('household_id')
-        .eq('id', session.user.id)
-        .maybeSingle()
-
-      if (profileError) {
-        console.error('[Couples] Profile fetch error:', profileError)
-        setUserHouseholdStatus('error')
-        setError(
-          profileError.message || 'Unknown error while loading your profile'
-        )
-        return
+      if (!meRes.ok) {
+        throw new Error('Failed to load your profile')
+      }
+      const me = (await meRes.json()) as {
+        id: string
+        household_id: string | null
       }
 
-      if (!userProfile?.household_id) {
+      setUserId(me.id)
+
+      if (!me.household_id) {
         setUserHouseholdStatus('no-household')
         setHouseholdId(null)
         return
       }
 
-      setHouseholdId(userProfile.household_id)
+      setHouseholdId(me.household_id)
 
+      const supabase = await createClient()
       const { data: household, error: householdError } = await supabase
         .from('households')
         .select('id, user_count')
-        .eq('id', userProfile.household_id)
+        .eq('id', me.household_id)
         .single()
 
       if (householdError) {
@@ -109,7 +107,7 @@ export function CouplesPageClient() {
         const { count: memberCount, error: memberCountError } = await supabase
           .from('user_profiles')
           .select('id', { count: 'exact', head: true })
-          .eq('household_id', userProfile.household_id)
+          .eq('household_id', me.household_id)
 
         if (!memberCountError && typeof memberCount === 'number') {
           householdUserCount = Math.max(householdUserCount, memberCount)
@@ -123,20 +121,15 @@ export function CouplesPageClient() {
 
       setUserHouseholdStatus('active')
 
-      const authHeaders = {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      }
-
       const [mutualLikesRes, activityRes, statsRes] = await Promise.all([
         fetch('/api/couples/mutual-likes?includeProperties=true', {
-          headers: authHeaders,
+          credentials: 'same-origin',
         }),
         fetch('/api/couples/activity?limit=10', {
-          headers: authHeaders,
+          credentials: 'same-origin',
         }),
         fetch('/api/couples/stats', {
-          headers: authHeaders,
+          credentials: 'same-origin',
         }),
       ])
 
@@ -145,7 +138,6 @@ export function CouplesPageClient() {
         activityRes.status === 401 ||
         statsRes.status === 401
       ) {
-        toast.authRequired()
         setError('Please sign in again')
         setUserHouseholdStatus('error')
         return

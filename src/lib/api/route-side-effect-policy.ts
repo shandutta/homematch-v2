@@ -195,6 +195,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
     rationale: 'Auth-gated avatar upload to Supabase storage.',
   },
   {
+    path: '/api/users/me',
+    categories: ['safe-auth-read'],
+    rationale:
+      'Auth-gated identity lookup (profile id, email, household_id). Bootstraps a user_profiles row on first read for fresh Clerk signups whose webhook is mid-flight; that bootstrap is the documented exception and is keyed to the verified Clerk session.',
+  },
+  {
     path: '/api/users/search',
     categories: ['safe-auth-read'],
     rationale:

@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Cast on /api/users/me JSON; the endpoint is owned in this repo and its
+// response shape is enforced by the route's own typing.
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { AppDatabase } from '@/types/app-database'
 import { createClient } from '@/lib/supabase/client'
 import { AvatarData } from '@/lib/constants/avatars'
 
@@ -22,8 +23,17 @@ interface UserAvatarState {
 }
 
 /**
- * Hook to get the current user's avatar data for display in Header and other components.
- * Fetches user profile data including avatar from preferences.
+ * Hook to get the current user's avatar data for display in Header and
+ * other components.
+ *
+ * Hits /api/users/me for the identity bits (works with both Clerk cookies
+ * and the legacy Supabase Bearer flow), then falls back to a direct
+ * Supabase profile lookup for the avatar JSON.
+ *
+ * Previously this called `supabase.auth.getUser()` directly. That returns
+ * null for Clerk-authenticated users (the dominant auth path), which caused
+ * the header avatar to render a literal "?" glyph instead of the user's
+ * initials (QA ISSUE-010).
  */
 export function useCurrentUserAvatar(): UserAvatarState {
   const [state, setState] = useState<UserAvatarState>({
@@ -36,90 +46,73 @@ export function useCurrentUserAvatar(): UserAvatarState {
   useEffect(() => {
     let cancelled = false
 
-    async function initClient() {
-      let supabase: SupabaseClient<AppDatabase>
+    async function fetchUserAvatar() {
       try {
-        supabase = await createClient()
-      } catch (error) {
-        console.error('Failed to initialize Supabase avatar client:', error)
-        if (!cancelled) setState((prev) => ({ ...prev, isLoading: false }))
-        return
-      }
-
-      async function fetchUserAvatar() {
-        try {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-
-          if (!user) {
+        const meRes = await fetch('/api/users/me', {
+          credentials: 'same-origin',
+        })
+        if (!meRes.ok) {
+          if (!cancelled)
             setState({
               displayName: null,
               email: null,
               avatar: null,
               isLoading: false,
             })
-            return
-          }
+          return
+        }
+        const me = (await meRes.json()) as {
+          id: string
+          email: string | null
+          display_name: string | null
+          household_id: string | null
+        }
 
-          // Fetch user profile with avatar
+        // Avatar JSON lives on user_profiles.preferences — fetch it
+        // separately so /api/users/me stays a thin identity endpoint.
+        let avatar: AvatarData | null = null
+        let preferencesDisplayName: string | null = null
+        try {
+          const supabase = await createClient()
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('preferences')
-            .eq('id', user.id)
+            .eq('id', me.id)
             .single()
-
           const preferences = isRecord(profile?.preferences)
             ? profile.preferences
             : {}
-          const displayName =
-            typeof preferences.display_name === 'string'
-              ? preferences.display_name
-              : undefined
-          const avatar = isAvatarData(preferences.avatar)
-            ? preferences.avatar
-            : null
-
-          setState({
-            displayName:
-              displayName ||
-              user.user_metadata?.full_name ||
-              user.email?.split('@')[0] ||
-              null,
-            email: user.email || null,
-            avatar,
-            isLoading: false,
-          })
-        } catch (error) {
-          console.error('Failed to fetch user avatar:', error)
-          setState((prev) => ({ ...prev, isLoading: false }))
+          if (isAvatarData(preferences.avatar)) avatar = preferences.avatar
+          if (typeof preferences.display_name === 'string') {
+            preferencesDisplayName = preferences.display_name
+          }
+        } catch (e) {
+          // Non-fatal — initials fallback still renders correctly.
+          console.warn('useCurrentUserAvatar: avatar preferences lookup failed:', e)
         }
+
+        if (cancelled) return
+        setState({
+          displayName:
+            me.display_name ||
+            preferencesDisplayName ||
+            me.email?.split('@')[0] ||
+            null,
+          email: me.email,
+          avatar,
+          isLoading: false,
+        })
+      } catch (error) {
+        console.error('Failed to fetch user avatar:', error)
+        if (!cancelled)
+          setState((prev) => ({ ...prev, isLoading: false }))
       }
-
-      fetchUserAvatar()
-
-      // Subscribe to auth changes to refresh avatar data
-      const {
-        data: { subscription: sub },
-      } = supabase.auth.onAuthStateChange(() => {
-        fetchUserAvatar()
-      })
-
-      if (cancelled) {
-        sub.unsubscribe()
-        return
-      }
-
-      subscription = sub
     }
 
-    let subscription: { unsubscribe: () => void } | null = null
-
-    initClient()
+    fetchUserAvatar()
 
     return () => {
       cancelled = true
-      subscription?.unsubscribe()
     }
   }, [])
 
