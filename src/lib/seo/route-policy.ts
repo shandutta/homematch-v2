@@ -48,10 +48,7 @@ export const REQUIRED_LEGAL_PUBLIC_PATHS = [
   '/cookies',
 ] as const
 
-export const NOINDEX_PRIVATE_PATHS = [
-  '/login',
-  '/invite/[token]',
-] as const
+export const NOINDEX_PRIVATE_PATHS = ['/login', '/invite/[token]'] as const
 
 const EXACT_AND_SLASH_PRIVATE_PATHS = [
   '/api',
