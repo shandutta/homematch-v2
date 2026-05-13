@@ -117,6 +117,12 @@ export type ApprovedServiceRoleCapability =
   | 'clerk-user-profile-write'
   | 'clerk-saved-search-write'
   | 'clerk-household-resolution-write'
+  // Phase 2b: avatar storage uploads. The avatars bucket has an RLS
+  // policy requiring (storage.foldername(name))[1] = auth.uid()::text
+  // which excludes Clerk users (auth.uid() is NULL). Routes use this
+  // capability AFTER resolving user_profiles.id, then write storage
+  // objects under a folder named for that resolved UUID.
+  | 'clerk-avatar-storage-write'
 
 type CreateServiceClientOptions = {
   approvedCapability: ApprovedServiceRoleCapability
@@ -136,6 +142,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-user-profile-write',
     'clerk-saved-search-write',
     'clerk-household-resolution-write',
+    'clerk-avatar-storage-write',
   ])
 
 /**
