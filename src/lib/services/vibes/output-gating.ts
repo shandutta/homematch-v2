@@ -246,10 +246,16 @@ export function dedupeEmotionalHooks(
     if (typeof hook !== 'string') continue
     const trimmed = hook.trim()
     if (!trimmed) continue
+    // Normalize: strip apostrophes entirely ("backyard's" → "backyards")
+    // but replace other non-alphanumerics with space so "firepit—your"
+    // and "firepit. your" both normalize to "firepit your". Stripping
+    // every non-alphanumeric without a separator glues words together
+    // and hides near-duplicates the EVAL-GATE regression suite expects
+    // to catch.
     const normalized = trimmed
       .toLowerCase()
-      .replace(/[^a-z0-9 ]/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/['‘’]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
       .trim()
     if (!normalized) continue
     if (seen.has(normalized)) continue

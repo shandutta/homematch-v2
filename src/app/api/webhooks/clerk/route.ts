@@ -17,6 +17,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { deriveDisplayNameFromEmail } from '@/lib/auth/display-name'
 import type { UserJSON } from '@clerk/nextjs/server'
 
 // @service-role-capability: Clerk webhook upserts/deletes user_profiles for
@@ -48,7 +49,11 @@ function displayNameFromUserJSON(data: UserJSON): string | null {
     (v): v is string => typeof v === 'string' && v.length > 0
   )
   if (parts.length) return parts.join(' ')
-  return data.username ?? null
+  // Fallback chain: username (legacy users) -> email local-part. The
+  // email fallback keeps display_name populated after USERNAME-DROP
+  // (Clerk dashboard toggle) so the avatar doesn't fall back to "?".
+  if (data.username) return data.username
+  return deriveDisplayNameFromEmail(primaryEmailFromUserJSON(data))
 }
 
 async function handleUserCreated(data: UserJSON) {

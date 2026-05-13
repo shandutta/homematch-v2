@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { resolveUserProfileIdFromClerkId } from '@/lib/auth/profile'
+import { deriveDisplayNameFromEmail } from '@/lib/auth/display-name'
 
 /**
  * Just-in-time user_profiles row creation for Clerk-authenticated users.
@@ -41,7 +42,17 @@ export async function ensureUserProfileForCurrentClerkUser(): Promise<
     const parts = [clerkUser?.firstName, clerkUser?.lastName].filter(
       (v): v is string => typeof v === 'string' && v.length > 0
     )
-    displayName = parts.length ? parts.join(' ') : (clerkUser?.username ?? null)
+    // Fallback chain: firstName+lastName -> firstName -> lastName ->
+    // username (legacy users with Clerk's Username field) -> email
+    // local-part. The email fallback covers USERNAME-DROP: once the
+    // Clerk dashboard toggle is flipped, new users won't have a
+    // username, but the email local-part still produces a sensible
+    // display string (avoids the avatar showing "?" / email prefix
+    // bug from the audit's Section 6 P2 finding).
+    displayName =
+      parts.length > 0
+        ? parts.join(' ')
+        : (clerkUser?.username ?? deriveDisplayNameFromEmail(email))
   } catch (e) {
     console.warn(
       '[ensureUserProfileForCurrentClerkUser] currentUser() failed:',

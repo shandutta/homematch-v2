@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`EVAL-GATE: user prompt snapshot renders stable output for the canonical fixture: canonical-property-prompt 1`] = `
+"Analyze the 6 property image(s) and extract the vibes.
+
+PROPERTY DETAILS:
+- Address: 100 Eval Way, Snapshotville, CA
+- Price: $875,000
+- Bedrooms: 3 | Bathrooms: 2
+- Square Feet: 1,850 sqft
+- Property Type: single_family
+- Year Built: 1972
+- Lot Size: 5,500 sqft lot
+- Listed Amenities: kitchen island, two-car garage, central air
+
+LISTING DESCRIPTION:
+Charming mid-century single-story with sunny breakfast nook. Email seller at [REDACTED]
+
+Respond with a JSON object matching this EXACT structure:
+{
+  "tagline": "string (10-80 chars) - punchy headline that captures what makes THIS home special. Be specific, not generic.",
+  "vibeStatement": "string (20-200 chars) - 1-2 sentences describing what daily life looks like here. NEVER start with 'This isn't' or 'More than'. Good examples: 'The kind of place where you host Sunday dinner and nobody wants to leave.' or 'Quiet mornings in the bay window, loud dinners on the deck.'",
+  "primaryVibes": [
+    {
+      "name": "string - UNIQUE vibe descriptor for THIS home (not generic like 'Modern Minimalist'). Think: 'Gallery-Ready Walls' or 'Treehouse for Grownups'",
+      "intensity": "number 0.0-1.0 - internal ranking only, not shown to users. Just vary them meaningfully.",
+      "source": "interior" | "exterior" | "both"
+    }
+  ],
+  "lifestyleFits": [
+    {
+      "category": "string - MUST be from predefined list: Remote Work Ready, Growing Family, Entertainer's Dream, Empty Nester, First-Time Buyer, Pet Paradise, Multi-Gen Living, Fitness Focused, Creative Studio, Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Indoor-Outdoor Flow",
+      "score": "number 0.0-1.0 - how well this property fits the lifestyle category",
+      "reason": "string (max 200 chars) - be specific about WHY. 'The bonus room off the garage' not 'spacious layout'"
+    }
+  ],
+  "notableFeatures": [
+    {
+      "feature": "string - specific feature (e.g., 'Double oven with gas cooktop')",
+      "location": "string - where (e.g., 'kitchen', 'primary suite')",
+      "appealFactor": "string (max 200 chars) - why it matters to buyers"
+    }
+  ],
+	  "aesthetics": {
+	    "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
+	    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
+	    "architecturalStyle": "string (max 80 chars) - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
+	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
+	  },
+	  "emotionalHooks": ["2-4 practical lifestyle moments. NO: 'morning coffee', 'sun-drenched', 'perfect for', 'mesmerizing'. YES: 'That mudroom? Lifesaver with kids and dogs.' or 'Double sinks - no more counter fights.'"],
+	  "suggestedTags": ["4-8 tags EXACTLY from AVAILABLE TAGS list above (exact spelling/case). Do not invent new tags."]
+	}
+
+	Requirements:
+	- primaryVibes: 2-4 items with UNIQUE names for this property. Vary intensities meaningfully.
+	- lifestyleFits: 2-6 items. Be specific about WHY in the reason field.
+	- notableFeatures: 2-8 specific features that would catch a buyer's eye
+	- Don’t fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
+	- emotionalHooks: 2-4 moments written like you're walking through with a friend
+	- suggestedTags: 4-8 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories."
+`;
