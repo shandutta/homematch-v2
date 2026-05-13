@@ -42,4 +42,3 @@ export function useNeighborhoodVibes(neighborhoodId: string | undefined) {
     staleTime: QUERY_STALE_TIMES.NEIGHBORHOOD_VIBES,
   })
 }
-
