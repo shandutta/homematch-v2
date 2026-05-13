@@ -1,0 +1,15 @@
+# Patterns that git-secrets should NOT flag.
+# These are well-known public placeholders or synthetic test values.
+
+# Supabase local-dev demo JWTs (iss=supabase-demo). These ship with the
+# Supabase CLI and are public on Supabase's docs site; rotating them
+# would mean breaking the local-dev DX for every contributor. The
+# matching SECRETS_SCAN_HISTORY=true CI runs were flagging legacy CI
+# workflow files (now removed: integration-tests.yml, test.yml) that
+# committed these demo JWTs inline.
+eyJpc3MiOiJzdXBhYmFzZS1kZW1vIi
+
+# Synthetic supabase/config.toml jwt_secret (sub=homematch-v2-jwt-secret).
+# Used only for local test-env JWT signing; payload is a label not a
+# subject identifier.
+eyJzdWIiOiJob21lbWF0Y2gtdjItand0LXNlY3JldCIs
