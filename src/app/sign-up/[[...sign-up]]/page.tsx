@@ -12,7 +12,7 @@ export default function SignUpPage() {
         }}
         aria-hidden
       />
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[440px] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-12">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-var(--cookie-banner-offset,0px))] w-full max-w-[440px] flex-col items-center justify-center px-3 py-2 sm:px-4 sm:py-12">
         <SignUp appearance={clerkAppearance} />
       </div>
     </main>

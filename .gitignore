@@ -137,3 +137,6 @@ zen-mcp-server/
 # Miscellaneous Stuff
 .performance-reports/*
 .gstack/
+
+# clerk configuration (can include secrets)
+/.clerk/
