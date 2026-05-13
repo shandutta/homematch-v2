@@ -137,7 +137,14 @@ describeOrSkip('Filter Builder Patterns Integration Tests', () => {
         bathrooms: 1,
         square_feet: 800,
         property_type: 'condo',
-        listing_status: 'sold',
+        // S2 (2026-05-13 audit): the trg_sync_property_is_active trigger
+        // derives is_active from listing_status. The original fixture
+        // had `listing_status: 'sold' + is_active: true`, the exact
+        // drift the audit flagged — under the trigger, that row would
+        // collapse to is_active=false and drop out of the default
+        // is_active filter. Using 'pending' keeps the listing_status
+        // varied without forcing the row inactive.
+        listing_status: 'pending',
         year_built: 2010,
         lot_size_sqft: 1500,
         parking_spots: 1,

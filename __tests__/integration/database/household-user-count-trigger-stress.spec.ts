@@ -61,7 +61,12 @@ const createUserPool = async (
     preferences: {},
   }))
 
-  const { error } = await serviceClient.from('user_profiles').insert(rows)
+  // Use UPSERT because creating an auth.users row triggers an
+  // auto-insert of the matching user_profiles row on some Supabase
+  // schemas — INSERT would collide on user_profiles_pkey.
+  const { error } = await serviceClient
+    .from('user_profiles')
+    .upsert(rows, { onConflict: 'id' })
   if (error) {
     throw new Error(
       `[stress-pool] failed to seed ${count} user_profiles: ${error.message}`
