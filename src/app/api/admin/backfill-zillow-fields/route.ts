@@ -34,7 +34,13 @@ import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/route'
 const RAPIDAPI_HOST =
   process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
+// Vercel's standard cron setup injects `Authorization: Bearer ${CRON_SECRET}`
+// from the env var named exactly `CRON_SECRET`. Accept that first so an
+// operator following the platform's default docs doesn't have to add a
+// duplicate env. Fall through to the legacy names so existing crons
+// (status-refresh, zillow) keep working.
 const CRON_SECRET =
+  process.env.CRON_SECRET ||
   process.env.BACKFILL_ZILLOW_CRON_SECRET ||
   process.env.STATUS_REFRESH_CRON_SECRET ||
   process.env.ZILLOW_CRON_SECRET
@@ -170,7 +176,14 @@ async function handle(req: Request) {
         MAX_BATCH_LIMIT
       )
     )
-    const delayInput = Number(url.searchParams.get('delayMs'))
+    // When the query param is absent (every cron call), `get()` returns
+    // null, Number(null) is 0, and `>= 0` accepts it — which would
+    // remove all throttling on the cron path and risk RapidAPI 429s.
+    // Only honor an explicit non-empty query value; otherwise fall back
+    // to DEFAULT_DELAY_MS.
+    const delayParam = url.searchParams.get('delayMs')
+    const delayInput =
+      delayParam !== null && delayParam !== '' ? Number(delayParam) : NaN
     const delayMs =
       Number.isFinite(delayInput) && delayInput >= 0
         ? delayInput
