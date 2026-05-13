@@ -128,7 +128,7 @@ function formatPrice(price: number): string {
   }).format(price)
 }
 
-function buildUserPrompt(
+export function buildUserPrompt(
   property: PropertyContext,
   imageCount: number
 ): string {
