@@ -10,6 +10,10 @@ const migrationPath = join(
   process.cwd(),
   'supabase/migrations/20260508024000_create_admin_role_assignments.sql'
 )
+const phase5DropMigrationPath = join(
+  process.cwd(),
+  'supabase/migrations/20260513070000_auth_elim_phase5_drop_authuid_policies.sql'
+)
 const serverPath = join(process.cwd(), 'src/lib/supabase/server.ts')
 
 describe('admin role assignments migration', () => {
@@ -66,5 +70,21 @@ describe('admin role assignments migration', () => {
     expect(source).not.toContain('async function checkServiceRoleAuthorization')
     expect(source).not.toContain(".from('admin_role_assignments')")
     expect(source).not.toContain('checkServiceRoleAuthorization()')
+  })
+
+  test('phase 5 retires the table outright (Supabase-auth elim, 2026-05-13)', () => {
+    // The CREATE migration above stays in history (immutable), but
+    // Phase 5 of the auth-elimination drops the table. Pinning the
+    // drop here makes the retirement explicit and catches a future
+    // resurrection at code-review time.
+    const sql = readFileSync(phase5DropMigrationPath, 'utf8')
+    const normalized = sql.replace(/\s+/g, ' ').toLowerCase()
+
+    expect(normalized).toContain(
+      'drop policy if exists admin_role_assignments_self_select on public.admin_role_assignments'
+    )
+    expect(normalized).toContain(
+      'drop table if exists public.admin_role_assignments'
+    )
   })
 })
