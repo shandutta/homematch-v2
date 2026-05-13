@@ -55,8 +55,8 @@ export default async function DashboardPage({
             We&rsquo;re still setting up your account
           </h1>
           <p className="mt-3 text-sm text-white/70">
-            Your sign-up just landed and we&rsquo;re finalizing things.
-            Refresh in a few seconds, or reach out at{' '}
+            Your sign-up just landed and we&rsquo;re finalizing things. Refresh
+            in a few seconds, or reach out at{' '}
             <a
               className="text-cyan-300 underline"
               href="mailto:hello@homematch.pro"
