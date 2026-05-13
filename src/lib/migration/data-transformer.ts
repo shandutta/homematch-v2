@@ -40,6 +40,13 @@ export interface RawPropertyData {
   longitude?: string | number
   neighborhood?: string
   property_hash?: string
+  // INGEST-001: these were hardcoded to `null` in the migration transformer
+  // even though Zillow's API returns them, which left the LLM vibe generator
+  // with zero content data for the entire 13K-property catalog and drove
+  // systematic hallucination at scale (see Section 1 of the audit report).
+  // Callers can now supply them; absent values continue to default to null.
+  description?: string | null
+  amenities?: string[] | null
 }
 
 // Transformation result types
@@ -285,10 +292,21 @@ export class DataTransformer {
         square_feet: squareFeet.value,
         property_type: propertyType || null,
         images: images.length > 0 ? images : null,
-        description: null,
+        // INGEST-001: preserve description + amenities when the raw source
+        // provides them. Defaults to null when absent (matching the legacy
+        // behavior for older fixtures).
+        description:
+          typeof raw.description === 'string' && raw.description.trim().length
+            ? raw.description.trim()
+            : null,
         coordinates: coordinates,
         neighborhood_id: null, // Set to null to avoid foreign key issues
-        amenities: null,
+        amenities:
+          Array.isArray(raw.amenities) && raw.amenities.length
+            ? raw.amenities.filter(
+                (a): a is string => typeof a === 'string' && a.trim().length > 0
+              )
+            : null,
         year_built: yearBuilt.value,
         lot_size_sqft: lotSize.value,
         parking_spots: null,
