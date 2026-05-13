@@ -39,7 +39,10 @@ describe('Phase 1 M5 route rate-limit coverage', () => {
     {
       path: 'src/app/api/interactions/route.ts',
       method: 'DELETE',
-      key: "rateLimitKey('interactions:delete', user.id)",
+      // The interactions route resolves `userId` from user.id with a
+      // Clerk-userId → profile-UUID bootstrap step, then keys the limiter
+      // off `userId` so the rate-limit bucket matches the DB rows.
+      key: "rateLimitKey('interactions:delete', userId)",
     },
   ])(
     '$path $method uses route-scoped authenticated limiter',
@@ -91,7 +94,10 @@ describe('Phase 1 route-scoped rate-limit key closure', () => {
     {
       path: 'src/app/api/interactions/route.ts',
       method: 'POST',
-      key: "rateLimitKey('interactions:create', user.id)",
+      // The interactions route resolves `userId` from user.id with a
+      // Clerk-userId → profile-UUID bootstrap step, then keys the limiter
+      // off `userId` so the rate-limit bucket matches the DB rows.
+      key: "rateLimitKey('interactions:create', userId)",
     },
   ])(
     '$path $method uses shared route-scoped key helper',

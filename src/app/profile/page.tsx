@@ -1,5 +1,6 @@
 import { getServerUserContext } from '@/lib/auth/server-context'
 import { getOptionalServerUser } from '@/lib/supabase/optional-user'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 import { redirect } from 'next/navigation'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { UserService } from '@/lib/services/users'
@@ -28,17 +29,23 @@ export default async function ProfilePage() {
 
   const userService = new UserService()
 
+  // Resolve a profile UUID. If the user is Clerk-authenticated but the
+  // webhook hasn't created their row yet, bootstrap it just-in-time so the
+  // profile page renders instead of bouncing to /error.
+  let profileId = userCtx.profileId
+  if (!profileId && userCtx.source === 'clerk') {
+    profileId = await ensureUserProfileForCurrentClerkUser()
+  }
+
   // Safely fetch profile and activity summary, handling potential errors.
-  // Use profileId (UUID) for the DB lookups; userShape.id is the auth id
-  // (Clerk userId or legacy Supabase UUID).
   let userProfile = null
   let activitySummary = null
 
-  if (userCtx.profileId) {
+  if (profileId) {
     try {
       ;[userProfile, activitySummary] = await Promise.all([
-        userService.getUserProfileWithHousehold(userCtx.profileId),
-        userService.getUserActivitySummary(userCtx.profileId),
+        userService.getUserProfileWithHousehold(profileId),
+        userService.getUserActivitySummary(profileId),
       ])
     } catch (error) {
       console.error('Error fetching user data:', error)
@@ -46,11 +53,11 @@ export default async function ProfilePage() {
     }
   }
 
-  // Create profile if it doesn't exist (OAuth users or first-time Clerk users).
-  // NOTE: For Clerk users, the webhook at /api/webhooks/clerk should normally
-  // create the profile. This is the fallback path.
+  // Last-resort path for legacy Supabase users whose row doesn't exist.
+  // (Clerk users are already covered by ensureUserProfileForCurrentClerkUser
+  // above.) Without this, legacy edge cases would still hit /error.
   let profile = userProfile
-  if (!profile) {
+  if (!profile && userCtx.source === 'supabase-legacy') {
     try {
       const metadata = userShape.user_metadata
       const emailFromMetadata =
@@ -61,31 +68,41 @@ export default async function ProfilePage() {
           ? metadata.email
           : ''
       const email = userShape.email || emailFromMetadata || userCtx.email || ''
-      // For Clerk users, generate a UUID for user_profiles.id (legacy schema
-      // constraint). For Supabase legacy users, userShape.id IS the UUID.
-      const profileInsertId =
-        userCtx.source === 'supabase-legacy'
-          ? userShape.id
-          : crypto.randomUUID()
       profile = await userService.createUserProfile({
-        id: profileInsertId,
+        id: userShape.id,
         email,
         onboarding_completed: false,
         preferences: {},
-        ...(userCtx.source === 'clerk'
-          ? { clerk_user_id: userCtx.authId }
-          : {}),
       })
     } catch (error) {
       console.error('Error creating user profile:', error)
-      // Redirect to error page if we can't create profile
-      redirect('/error?message=Failed to load profile')
     }
   }
 
-  // Ensure we have a valid profile before rendering
+  // If we still have no profile, render an inline error rather than
+  // redirecting to /error?message=Failed%20to%20load%20profile (a 404 page).
+  // See QA report ISSUE-003.
   if (!profile) {
-    redirect('/error?message=Failed to load profile')
+    return (
+      <div className="gradient-grid-bg min-h-screen">
+        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12 text-center text-white">
+          <h1 className="text-2xl font-semibold">
+            We&rsquo;re setting up your profile…
+          </h1>
+          <p className="mt-3 text-sm text-white/70">
+            This usually takes a few seconds. If the page doesn&rsquo;t refresh,
+            please reload or contact support at{' '}
+            <a
+              className="text-cyan-300 underline"
+              href="mailto:hello@homematch.pro"
+            >
+              hello@homematch.pro
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

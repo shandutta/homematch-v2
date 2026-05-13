@@ -145,6 +145,19 @@ interface DuplicateEntry {
 
 const INTENTIONAL_DUPLICATES: ReadonlyArray<DuplicateEntry> = [
   {
+    endpoint: '/api/users/me',
+    callers: [
+      'src/hooks/useCurrentUserAvatar.ts',
+      'src/components/couples/CouplesPageClient.tsx',
+    ],
+    canonical: 'src/hooks/useCurrentUserAvatar.ts',
+    reason:
+      'CouplesPageClient needs household_id and the avatar hook does not ' +
+      'expose it. Both callers were introduced during the Clerk auth fix ' +
+      '(QA ISSUE-004 / ISSUE-010) — consolidation onto a shared ' +
+      'useCurrentUser hook is tracked but not yet executed.',
+  },
+  {
     endpoint: '/api/couples/mutual-likes',
     callers: [
       'src/hooks/useCouples.ts',

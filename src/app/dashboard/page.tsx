@@ -6,6 +6,7 @@ import {
   type DashboardPreferences,
 } from '@/lib/data/loader'
 import { getServerUserContext } from '@/lib/auth/server-context'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 import { redirect } from 'next/navigation'
 import { UserService } from '@/lib/services/users'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
@@ -32,17 +33,16 @@ export default async function DashboardPage({
     redirect(`/login?${params.toString()}`)
   }
 
-  // For Clerk users without a profile row yet (webhook hasn't fired or not
-  // backfilled in Phase E), redirect to login with a query flag so we can
-  // surface a friendly message later. For now, treat as unauthenticated.
-  if (!userCtx.profileId) {
-    const params = new URLSearchParams()
-    params.set('redirectTo', buildDashboardRedirectTo(await _searchParams))
-    params.set('reason', 'profile-missing')
-    redirect(`/login?${params.toString()}`)
+  // For Clerk users without a profile row yet (webhook hasn't fired or is
+  // mid-flight), create one just-in-time. Without this we'd redirect to
+  // /login which redirects back to /dashboard — an infinite bounce.
+  let profileId = userCtx.profileId
+  if (!profileId) {
+    profileId = await ensureUserProfileForCurrentClerkUser()
   }
-
-  const profileId = userCtx.profileId
+  if (!profileId) {
+    redirect('/login?redirectTo=%2Fdashboard')
+  }
 
   try {
     const userService = new UserService()

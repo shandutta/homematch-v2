@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ArrowUpRight, Compass, Heart, Users } from 'lucide-react'
 import { HomeMatchLogo } from '@/components/shared/home-match-logo'
 
@@ -37,6 +38,12 @@ interface FooterProps {
 
 export function Footer({ variant = 'cta' }: FooterProps) {
   const currentYear = new Date().getFullYear()
+  const pathname = usePathname()
+  // Filter highlight cards to avoid linking back to the page the user is on
+  // (e.g. "Keep exploring → /dashboard" while already on /dashboard).
+  const visibleHighlightLinks = highlightLinks.filter(
+    (link) => link.href !== pathname
+  )
 
   if (variant === 'minimal') {
     return (
@@ -98,7 +105,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {highlightLinks.map((link) => {
+            {visibleHighlightLinks.map((link) => {
               const Icon = link.icon
               return (
                 <Link

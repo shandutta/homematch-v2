@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Casts: we synthesize partial Response/fetch shapes for jest mocks; full
+// Response construction is over-specified for what these unit tests assert.
 /**
  * CouplesPageClient Unit Tests
  *
  * These tests focus ONLY on simple, isolated behaviors that don't require
  * complex database mocking:
- * - Authentication check (no session → toast)
+ * - Authentication check (no session → NetworkErrorState card)
  * - Loading state (pending query → skeleton)
  *
  * State-specific tests (No Household, Waiting for Partner, Active Household)
@@ -11,6 +14,10 @@
  *
  * See: __tests__/integration/couples-page-client.test.tsx
  * Run with: pnpm run test:integration
+ *
+ * NOTE: Identity is sourced from /api/users/me (Clerk-aware) since the
+ * QA ISSUE-004 fix. Tests mock global.fetch for that endpoint and stop
+ * asserting the old `toast.authRequired()` side effect.
  */
 import {
   jest,
@@ -22,14 +29,13 @@ import {
 } from '@jest/globals'
 import { render, screen, waitFor } from '@testing-library/react'
 
-// Mock toast - only need authRequired for these tests
-const mockToastAuthRequired = jest.fn()
-
+// Toast mock — fix-001 removed the authRequired spam from the unauth path,
+// but the surface is still wired for other call sites.
 jest.mock('@/lib/utils/toast', () => ({
   toast: {
     success: jest.fn(),
     error: jest.fn(),
-    authRequired: mockToastAuthRequired,
+    authRequired: jest.fn(),
     networkError: jest.fn(),
   },
 }))
@@ -37,11 +43,8 @@ jest.mock('@/lib/utils/toast', () => ({
 // Import after mocks are set up
 import { CouplesPageClient } from '@/components/couples/CouplesPageClient'
 
-// Mock the Supabase client - minimal mock for auth and loading tests
+// Mock the Supabase client — used for household lookup once we have an id.
 const mockSupabaseClient = {
-  auth: {
-    getSession: jest.fn(),
-  },
   from: jest.fn(),
 }
 
@@ -94,53 +97,42 @@ jest.mock('@/components/couples/CouplesEmptyStates', () => ({
 }))
 
 describe('CouplesPageClient', () => {
-  const mockSession = {
-    access_token: 'test-token',
-    user: {
-      id: 'test-user-id',
-      email: 'test@example.com',
-    },
-  }
+  let originalFetch: typeof global.fetch
 
   beforeEach(() => {
     jest.clearAllMocks()
-
-    // Default: user is authenticated
-    mockSupabaseClient.auth.getSession.mockResolvedValue({
-      data: { session: mockSession },
-    })
+    originalFetch = global.fetch
   })
 
   afterEach(() => {
+    global.fetch = originalFetch
     jest.restoreAllMocks()
   })
 
   describe('Authentication', () => {
-    test('should show auth required toast when no session', async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: null },
-      })
+    test('should render NetworkErrorState when /api/users/me returns 401', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({}),
+      }) as unknown as typeof global.fetch
 
       render(<CouplesPageClient />)
 
       await waitFor(() => {
-        expect(mockToastAuthRequired).toHaveBeenCalled()
+        expect(screen.getByTestId('network-error-state')).toBeInTheDocument()
       })
     })
   })
 
   describe('Loading State', () => {
     test('should show skeleton while loading', async () => {
-      // Make the query hang (never resolves)
-      const pending = jest.fn().mockReturnValue(new Promise(() => {}))
-      mockSupabaseClient.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            single: pending,
-            maybeSingle: pending,
-          }),
-        }),
-      })
+      // /api/users/me hangs so the component never advances past loading.
+      global.fetch = jest
+        .fn()
+        .mockReturnValue(
+          new Promise(() => {})
+        ) as unknown as typeof global.fetch
 
       render(<CouplesPageClient />)
 
