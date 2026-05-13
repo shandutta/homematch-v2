@@ -255,11 +255,11 @@ Triggered by the user request "do the CSO audit everywhere — spare nothing." C
 
 Patched `~/.claude/skills/gstack/browse/src/browser-manager.ts` with `ignoreHTTPSErrors: true` to bypass the Anthropic sandbox MITM cert (`O=Anthropic; CN=sandbox-egress-production TLS Inspection CA`).
 
-| Blocker | Status | Notes |
-| ------- | ------ | ----- |
-| C1 mobile cookie banner | **Fix landed** in commit below. `/login` was already fine; `/sign-up` had the bottom 16 px of the Continue CTA under the banner strip at scrollY=0. Cause: form (1019 px) > viewport−banner_offset (772 px); centered flex couldn't help, body padding-bottom only reserves at end-of-body. Fix: tighten `py-8` → `py-2` on mobile + replace `min-h-screen` with `min-h-[calc(100svh-var(--cookie-banner-offset,0px))]`. Verified locally: 263 px gap, button hittable. |
-| C2 hostname redirect   | **Fixed.** `www → apex` 307 in place; `/dashboard` redirect uses relative path so cross-host cookie loss is impossible. |
-| C3 `/properties/[id]` UUID crash | **Middleware-fixed.** Clerk middleware 307s every variant to `/login` before any DB query. Post-auth DB-level crash not reproducible from this sandbox without Clerk creds. |
+| Blocker                          | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Notes |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| C1 mobile cookie banner          | **Fix landed** in commit below. `/login` was already fine; `/sign-up` had the bottom 16 px of the Continue CTA under the banner strip at scrollY=0. Cause: form (1019 px) > viewport−banner_offset (772 px); centered flex couldn't help, body padding-bottom only reserves at end-of-body. Fix: tighten `py-8` → `py-2` on mobile + replace `min-h-screen` with `min-h-[calc(100svh-var(--cookie-banner-offset,0px))]`. Verified locally: 263 px gap, button hittable. |
+| C2 hostname redirect             | **Fixed.** `www → apex` 307 in place; `/dashboard` redirect uses relative path so cross-host cookie loss is impossible.                                                                                                                                                                                                                                                                                                                                                 |
+| C3 `/properties/[id]` UUID crash | **Middleware-fixed.** Clerk middleware 307s every variant to `/login` before any DB query. Post-auth DB-level crash not reproducible from this sandbox without Clerk creds.                                                                                                                                                                                                                                                                                             |
 
 ### /investigate — A1 (interactions race) historical impact
 
@@ -271,9 +271,9 @@ Wired up local infra: started `dockerd`, installed Supabase CLI 2.98.2, switched
 
 Direct SQL benchmark (1000 iterations each, plpgsql DO block, single-row idempotent target):
 
-| Pattern | Total time | Per-op |
-| ------- | ---------- | ------ |
-| OLD: DELETE + INSERT (2 statements) | **346 ms** | **346 µs** |
-| NEW: UPSERT ON CONFLICT (1 statement) | **51 ms** | **51 µs** |
+| Pattern                               | Total time | Per-op     |
+| ------------------------------------- | ---------- | ---------- |
+| OLD: DELETE + INSERT (2 statements)   | **346 ms** | **346 µs** |
+| NEW: UPSERT ON CONFLICT (1 statement) | **51 ms**  | **51 µs**  |
 
 **~6.8× speedup at the SQL layer** plus one fewer network roundtrip per request. EXPLAIN confirms UPSERT is one statement (`Conflict Resolution: UPDATE`, 16 shared buffer hits, 0.141 ms steady-state). Atomic vs the prior non-atomic pair → also closes the race window the original audit flagged.
