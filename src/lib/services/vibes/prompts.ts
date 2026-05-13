@@ -89,6 +89,20 @@ INSTEAD, write practical observations like:
 AVAILABLE TAGS (pick 4-8 that genuinely apply):
 ${formatTagsForPrompt()}`
 
+export interface NeighborhoodVibesContext {
+  neighborhoodName: string
+  tagline: string
+  themes: Array<{ name: string; whyItMatters: string }>
+  localHighlights: Array<{
+    name: string
+    category: string
+    whyItMatters: string
+  }>
+  residentFits: Array<{ profile: string; reason: string }>
+  walkScore: number | null
+  transitScore: number | null
+}
+
 export interface PropertyContext {
   address: string
   city: string
@@ -102,6 +116,7 @@ export interface PropertyContext {
   lotSizeSqft: number | null
   amenities: string[] | null
   description: string | null
+  neighborhoodVibes?: NeighborhoodVibesContext | null
 }
 
 export function formatPrice(price: number): string {
@@ -143,6 +158,47 @@ export function buildUserPrompt(
     details += `\n- Listed Amenities: ${property.amenities.slice(0, 15).join(', ')}`
   }
 
+  // Add neighborhood context if available. Source: neighborhood_vibes table,
+  // which is generated from grounded listing stats + walk/transit scores. We
+  // feed it here so location-flavored tags (Walkable Neighborhood, Transit
+  // Friendly) have actual data behind them instead of LLM guesses.
+  let neighborhoodSection = ''
+  const nv = property.neighborhoodVibes
+  if (nv) {
+    const themes = nv.themes
+      .slice(0, 3)
+      .map((t) => `  - ${t.name}: ${t.whyItMatters}`)
+      .join('\n')
+    const highlights = nv.localHighlights
+      .slice(0, 3)
+      .map((h) => `  - ${h.name} (${h.category}): ${h.whyItMatters}`)
+      .join('\n')
+    const fits = nv.residentFits
+      .slice(0, 3)
+      .map((r) => `  - ${r.profile}: ${r.reason}`)
+      .join('\n')
+    const scores: string[] = []
+    if (typeof nv.walkScore === 'number') {
+      scores.push(`Walk Score ${nv.walkScore}/100`)
+    }
+    if (typeof nv.transitScore === 'number') {
+      scores.push(`Transit Score ${nv.transitScore}/100`)
+    }
+    neighborhoodSection = `
+
+NEIGHBORHOOD CONTEXT (${nv.neighborhoodName}):
+${nv.tagline}${scores.length ? `\nScores: ${scores.join(', ')}` : ''}
+Themes:
+${themes}
+Local Highlights:
+${highlights}
+Resident Fits:
+${fits}
+
+Use the neighborhood context to ground LOCATION tags. Do NOT invent walkability,
+transit, or nightlife claims unsupported by the scores or themes above.`
+  }
+
   // Add description if available
   let descriptionSection = ''
   if (property.description) {
@@ -159,7 +215,7 @@ ${desc}`
 
   return `Analyze the ${imageCount} property image(s) and extract the vibes.
 
-${details}${descriptionSection}
+${details}${neighborhoodSection}${descriptionSection}
 
 Respond with a JSON object matching this EXACT structure:
 {

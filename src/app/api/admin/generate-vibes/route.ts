@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
+import { buildNeighborhoodContextMap } from '@/lib/services/vibes/neighborhood-context-builder'
 import type { Property, PropertyType } from '@/lib/schemas/property'
 import { noStoreJson } from '@/lib/api/cache-control'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
@@ -208,12 +209,26 @@ export async function POST(req: Request): Promise<Response> {
       )
     }
 
+    // Build the neighborhood-vibes context map so the LLM gets grounded
+    // neighborhood signal (themes / walk / transit scores) instead of guessing
+    // at location tags. NEIGHBORHOOD-VIBES-WIRE.
+    const extrasByPropertyId = await buildNeighborhoodContextMap(
+      supabase,
+      propertiesToProcess
+    )
+
     // Generate vibes
     const vibesService = createVibesService()
     const batchResult = await vibesService.generateVibesBatch(
       propertiesToProcess,
       {
         delayMs: 1500,
+        extrasByPropertyId: new Map(
+          Array.from(extrasByPropertyId.entries()).map(([id, ctx]) => [
+            id,
+            { neighborhoodVibes: ctx },
+          ])
+        ),
         onProgress: (completed, total) => {
           if (isDev) {
             console.log(`[generate-vibes] Progress: ${completed}/${total}`)
