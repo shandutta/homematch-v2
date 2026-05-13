@@ -152,9 +152,8 @@ describe('DB (stress): sync_household_user_count under concurrent load', () => {
         expect(seedError).toBeNull()
 
         for (let iter = 0; iter < SWAP_ITERATIONS; iter += 1) {
-          const [from, to] = iter % 2 === 0
-            ? [householdA, householdB]
-            : [householdB, householdA]
+          const [from, to] =
+            iter % 2 === 0 ? [householdA, householdB] : [householdB, householdA]
 
           // Fire all swaps at once. The deadlock fix (20251218111000)
           // sorts the two affected households by id before locking, so
