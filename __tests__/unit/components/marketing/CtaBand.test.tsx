@@ -75,9 +75,7 @@ describe('CtaBand', () => {
   test('renders secondary CTA linking to login', () => {
     render(<CtaBand />)
 
-    const secondaryCTA = screen
-      .getByText('Already swiping? Sign in')
-      .closest('a')
+    const secondaryCTA = screen.getByText('Sign in').closest('a')
     expect(secondaryCTA).toHaveAttribute('href', '/login')
   })
 

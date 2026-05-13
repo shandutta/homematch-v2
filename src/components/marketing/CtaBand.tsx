@@ -154,7 +154,7 @@ export function CtaBand() {
               className="w-full bg-transparent text-base font-medium text-white/70 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:w-auto"
               asChild
             >
-              <Link href="/login">Already swiping? Sign in</Link>
+              <Link href="/login">Sign in</Link>
             </Button>
           </MotionDiv>
         </MotionDiv>

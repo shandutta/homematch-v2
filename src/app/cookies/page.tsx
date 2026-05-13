@@ -22,9 +22,7 @@ export default function CookiesPage() {
             We use cookies and similar technologies to keep you signed in,
             secure your account, and measure product performance.
           </p>
-          <p className="text-sm text-slate-500">
-            Last updated: January 4, 2026
-          </p>
+          <p className="text-sm text-slate-500">Last updated: May 13, 2026</p>
         </header>
 
         <section id="cookie-settings" className="space-y-6">

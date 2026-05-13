@@ -11,12 +11,13 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
     '--spotlight-y': '35%',
   }
 
-  // L1: Conditional CTAs by session state. Anonymous visitors saw
-  // "Resume your search" pointing at /login — confusing when there's
-  // nothing to resume. Now anonymous users get a clear signup entry
-  // ("Start swiping") and logged-in visitors get the resume path.
+  // AUTH-UI-DUP: aligned the anon primary label with the footer/sticky-nav
+  // ("Get Started") so the page only has two signup labels — generic
+  // "Get Started" and the partner-framed "Invite your partner" at the
+  // bottom — instead of four. Logged-in users keep the "Resume your
+  // search" entry into /dashboard.
   const primaryHref = loggedIn ? '/dashboard' : '/signup'
-  const primaryLabel = loggedIn ? 'Resume your search' : 'Start swiping'
+  const primaryLabel = loggedIn ? 'Resume your search' : 'Get Started'
   const secondaryHref = loggedIn ? '/signup' : '/login'
   const secondaryLabel = loggedIn ? 'Invite household' : 'Sign in'
 
