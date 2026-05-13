@@ -65,7 +65,7 @@ describe('zillow random image API route', () => {
   test('returns 404 in production', async () => {
     process.env.NODE_ENV = 'production'
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(404)
@@ -77,7 +77,7 @@ describe('zillow random image API route', () => {
     process.env.NODE_ENV = 'development'
     delete process.env.RAPIDAPI_KEY
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(503)
@@ -90,7 +90,7 @@ describe('zillow random image API route', () => {
       createJsonResponse({}, { status: 502, statusText: 'Bad Gateway' })
     )
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status).toBe(502)
@@ -103,7 +103,7 @@ describe('zillow random image API route', () => {
       createJsonResponse({ props: [{ zpid: null }] })
     )
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
@@ -119,7 +119,7 @@ describe('zillow random image API route', () => {
       .mockResolvedValueOnce(createJsonResponse({ props: [{ zpid: 1 }] }))
       .mockResolvedValueOnce(createJsonResponse({ images: [] }))
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
@@ -151,7 +151,7 @@ describe('zillow random image API route', () => {
         createJsonResponse({ images: ['https://example.com/img.jpg'] })
       )
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)
@@ -182,7 +182,7 @@ describe('zillow random image API route', () => {
         createJsonResponse({ images: ['https://example.com/2.jpg'] })
       )
 
-    await GET()
+    await GET(new Request('https://example.com/api/zillow/random-image'))
 
     const [body, init] = jsonMock.mock.calls.at(-1)!
     expect(init?.status ?? 200).toBe(200)

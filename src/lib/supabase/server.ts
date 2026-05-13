@@ -2,61 +2,43 @@ import { createServerClient } from '@supabase/ssr'
 import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
-import { buildSupabaseSessionCookieOptions } from './cookie-options'
-import { getSupabaseAuthStorageKey } from './storage-keys'
-import { withRefreshRecovery } from './refresh-recovery'
+
+// Phase 1 (dual-auth elimination, 2026-05-13): the previous
+// implementations wrapped both clients in `withRefreshRecovery` and
+// kept dynamic per-host cookie names so a Supabase session could
+// recover from an expired refresh token across host boundaries. Clerk
+// is now the sole identity provider — Supabase has no session to
+// recover and no auth-cookie machinery to maintain. Both clients
+// collapse to anon-keyed DB readers with `persistSession: false`.
+//
+// What stayed:
+//   - `bearerToken` extraction from the Authorization header (used by
+//     API routes that mint a JWT for direct DB query auth, NOT for
+//     Supabase auth sessions).
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
-  const cookieStore = await cookies()
   const headerStore = await headers()
+  // cookies() is still awaited so any future cookie-based use is wired up,
+  // but no cookie auth state is shipped to the client.
+  await cookies()
 
-  // Dynamic cookie name from host header
-  const host = headerStore.get('host') || 'localhost:3000'
-  const hostname = host.split(':')[0]
-  const cookieName = getSupabaseAuthStorageKey(hostname)
-
-  // Check for Authorization header (for API routes)
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
 
-  const supabase = createServerClient<AppDatabase>(
+  return createServerClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookieOptions: {
-        name: cookieName,
-        path: '/',
-        sameSite: 'lax',
-      },
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(
-                name,
-                value,
-                buildSupabaseSessionCookieOptions(options)
-              )
-            )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
+        getAll: () => [],
+        setAll: () => {},
       },
       auth: {
-        // Enable automatic token refresh and session persistence
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
       },
-      // If we have a bearer token from Authorization header, use it
       global: bearerToken
         ? {
             headers: {
@@ -66,62 +48,26 @@ export async function createClient() {
         : undefined,
     }
   )
-
-  withRefreshRecovery(supabase, {
-    logPrefix: '[Supabase][Server]',
-    context: 'server',
-  })
-
-  return supabase
 }
 
 // API Route specific client that can handle NextRequest contexts
 export function createApiClient(request?: NextRequest) {
-  let authHeader: string | null = null
-  let cookieData: { name: string; value: string }[] = []
-  let hostname = 'localhost'
-
-  if (request) {
-    // Extract auth header from NextRequest
-    authHeader = request.headers.get('authorization')
-
-    // Use Next.js cookies API for reliable cookie access
-    cookieData = request.cookies.getAll()
-
-    // Get hostname for consistent cookie naming
-    const host = request.headers.get('host') || 'localhost:3000'
-    hostname = host.split(':')[0]
-  }
-
+  const authHeader = request?.headers.get('authorization') ?? null
   const bearerToken = authHeader?.replace('Bearer ', '')
-  const cookieName = getSupabaseAuthStorageKey(hostname)
 
-  const supabase = createServerClient<AppDatabase>(
+  return createServerClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookieOptions: {
-        name: cookieName,
-        path: '/',
-        sameSite: 'lax',
-      },
       cookies: {
-        getAll() {
-          return cookieData
-        },
-        setAll(_cookiesToSet) {
-          // In API routes, we can't set cookies directly in the response here
-          // The response headers need to be set by the API route itself
-          // This is mainly for reading existing cookies
-        },
+        getAll: () => [],
+        setAll: () => {},
       },
       auth: {
-        autoRefreshToken: false, // Don't auto-refresh in API context
-        persistSession: false, // Don't persist in API context
+        autoRefreshToken: false,
+        persistSession: false,
         detectSessionInUrl: false,
-        flowType: 'pkce',
       },
-      // If we have a bearer token from Authorization header, use it
       global: bearerToken
         ? {
             headers: {
@@ -131,13 +77,6 @@ export function createApiClient(request?: NextRequest) {
         : undefined,
     }
   )
-
-  withRefreshRecovery(supabase, {
-    logPrefix: '[Supabase][Server]',
-    context: 'api',
-  })
-
-  return supabase
 }
 
 export type ApprovedServiceRoleCapability =

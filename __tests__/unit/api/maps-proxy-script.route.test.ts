@@ -16,6 +16,7 @@ describe('/api/maps/proxy-script', () => {
   ) => Promise<Response>
   const originalKey = process.env.GOOGLE_MAPS_SERVER_API_KEY
   const originalMapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+  const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL
   const originalFetch = global.fetch
 
   const getHeaderValue = (headers: HeadersInit | undefined, key: string) => {
@@ -35,11 +36,15 @@ describe('/api/maps/proxy-script', () => {
   beforeEach(() => {
     process.env.GOOGLE_MAPS_SERVER_API_KEY = 'test-maps-key'
     delete process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID
+    // Q8 audit fix (2026-05-13): proxy now pins upstream Referer to
+    // NEXT_PUBLIC_APP_URL instead of reflecting request headers.
+    process.env.NEXT_PUBLIC_APP_URL = 'https://homematch.pro'
   })
 
   afterEach(() => {
     process.env.GOOGLE_MAPS_SERVER_API_KEY = originalKey
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID = originalMapId
+    process.env.NEXT_PUBLIC_APP_URL = originalAppUrl
     global.fetch = originalFetch
   })
 
@@ -81,7 +86,7 @@ describe('/api/maps/proxy-script', () => {
     await expect(response.text()).resolves.toBe('/* maps bootstrap */')
   })
 
-  it('uses the origin header when referer is missing', async () => {
+  it('rejects cross-origin requests with 403 (Q8 hot-link protection)', async () => {
     const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
@@ -93,22 +98,19 @@ describe('/api/maps/proxy-script', () => {
 
     const request = new Request('https://homematch.pro/api/maps/proxy-script', {
       headers: {
-        origin: 'https://homematch.pro',
+        referer: 'https://attacker.example/',
+        origin: 'https://attacker.example',
       },
     })
 
     const response = await GET(request)
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-
-    const call = fetchMock.mock.calls[0]
-    expect(getHeaderValue(call?.[1]?.headers, 'referer')).toBe(
-      'https://homematch.pro/'
-    )
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(403)
+    // No upstream fetch on rejection.
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('falls back to the request url when referrer headers are invalid', async () => {
+  it('ships the env-pinned Referer upstream on legitimate same-origin requests (Q8)', async () => {
     const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
     fetchMock.mockResolvedValue(
       new Response('/* maps bootstrap */', {
@@ -119,10 +121,7 @@ describe('/api/maps/proxy-script', () => {
     global.fetch = fetchMock
 
     const request = new Request('https://homematch.pro/api/maps/proxy-script', {
-      headers: {
-        referer: 'not-a-url',
-        origin: 'also-not-a-url',
-      },
+      headers: { referer: 'https://homematch.pro/properties/abc' },
     })
 
     await GET(request)
@@ -131,6 +130,29 @@ describe('/api/maps/proxy-script', () => {
     expect(getHeaderValue(call?.[1]?.headers, 'referer')).toBe(
       'https://homematch.pro/'
     )
+  })
+
+  it('serves nothing when no env-pinned origin is set', async () => {
+    delete process.env.NEXT_PUBLIC_APP_URL
+    const fetchMock: jest.MockedFunction<FetchFn> = jest.fn()
+    fetchMock.mockResolvedValue(
+      new Response('/* maps bootstrap */', {
+        status: 200,
+        headers: { 'Content-Type': 'application/javascript' },
+      })
+    )
+    global.fetch = fetchMock
+
+    const request = new Request('https://homematch.pro/api/maps/proxy-script', {
+      headers: { referer: 'https://homematch.pro/dashboard' },
+    })
+
+    await GET(request)
+
+    const call = fetchMock.mock.calls[0]
+    // With no pinned referer, the proxy declines to send one upstream rather
+    // than reflecting the client header.
+    expect(getHeaderValue(call?.[1]?.headers, 'referer')).toBeUndefined()
   })
 
   it('includes the marker library when a map ID is configured', async () => {

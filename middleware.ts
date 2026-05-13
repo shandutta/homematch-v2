@@ -5,7 +5,30 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isProtectedPath } from '@/lib/routing/protected-routes'
-import { isInvalidRefreshTokenError } from '@/lib/supabase/auth-helpers'
+// Phase 1 (dual-auth elimination, 2026-05-13): isInvalidRefreshTokenError
+// previously lived in @/lib/supabase/auth-helpers, which was retired
+// along with refresh-recovery.ts. Inlined here as a minimal helper so the
+// legacy Supabase middleware path keeps clearing stale-token cookies
+// until Phase 3 deletes the whole branch.
+const isInvalidRefreshTokenError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') return false
+  const message =
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string'
+      ? (error as { message: string }).message.toLowerCase()
+      : ''
+  const code =
+    'code' in error && typeof (error as { code: unknown }).code === 'string'
+      ? (error as { code: string }).code
+      : ''
+  return (
+    code === 'refresh_token_not_found' ||
+    code === 'refresh_token_already_used' ||
+    message.includes('refresh token not found') ||
+    message.includes('refresh token already used') ||
+    message.includes('invalid refresh token')
+  )
+}
 import { buildSupabaseSessionCookieOptions } from '@/lib/supabase/cookie-options'
 import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
 

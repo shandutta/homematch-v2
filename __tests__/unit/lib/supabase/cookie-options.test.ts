@@ -27,13 +27,26 @@ describe('buildSupabaseSessionCookieOptions', () => {
     expect(result.path).toBe('/custom')
   })
 
-  it('sets secure: true in production', () => {
+  // M2 (2026-05-13 audit): cookie Secure defaults true regardless of
+  // NODE_ENV. Vercel preview deploys, ngrok tunnels, prod-mode local
+  // builds, and any HTTPS-fronted env all need Secure cookies; the
+  // prior NODE_ENV check left them unset there.
+  it('sets secure: true by default (regardless of NODE_ENV)', () => {
     process.env = { ...originalEnv, NODE_ENV: 'production' }
     expect(buildSupabaseSessionCookieOptions().secure).toBe(true)
   })
 
-  it('sets secure: false in non-production', () => {
+  it('keeps secure: true in development by default', () => {
     process.env = { ...originalEnv, NODE_ENV: 'development' }
+    expect(buildSupabaseSessionCookieOptions().secure).toBe(true)
+  })
+
+  it('opts out only when HOMEMATCH_INSECURE_COOKIES=1', () => {
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: 'development',
+      HOMEMATCH_INSECURE_COOKIES: '1',
+    }
     expect(buildSupabaseSessionCookieOptions().secure).toBe(false)
   })
 

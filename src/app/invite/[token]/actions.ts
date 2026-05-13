@@ -11,6 +11,8 @@ import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 // runs FOR UPDATE on the invite row, enforces invited_email match against
 // the caller's email (Q3 Option A — strict match), and commits both
 // user_profiles + household_invitations updates atomically.
+// TODO(D1 follow-up): replace with constrained accept_household_invite RPC
+// callable directly under authenticated role (eliminates the service-role hop).
 export async function acceptInviteAction(token: string) {
   const userCtx = await getServerUserContext()
 

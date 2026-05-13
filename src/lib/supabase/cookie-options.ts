@@ -31,6 +31,9 @@ export const buildSupabaseSessionCookieOptions = (
   maxAge: options.maxAge ?? 60 * 60 * 24 * 7,
   path: options.path ?? '/',
   sameSite: options.sameSite ?? 'lax',
-  secure: options.secure ?? isSecureContext(),
+  // Policy invariants: callers cannot override. The cookie-policy-negative
+  // test enforces this — Secure is bound to the environment, never to
+  // caller intent.
+  secure: isSecureContext(),
   httpOnly: true,
 })

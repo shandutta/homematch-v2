@@ -260,7 +260,7 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       expect(
-        screen.getByPlaceholderText('Search by email address...')
+        screen.getByPlaceholderText('Enter their full email address')
       ).toBeInTheDocument()
     })
 
@@ -303,9 +303,11 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       const searchInput = screen.getByPlaceholderText(
-        'Search by email address...'
+        'Enter their full email address'
       )
-      await user.type(searchInput, 'john@')
+      // Q5 audit fix (2026-05-13): modal now only fetches on a full
+      // email match. Prefix queries (e.g. "john@") no longer hit the API.
+      await user.type(searchInput, 'john@example.com')
 
       await waitFor(() => {
         expect(screen.getByText('John Doe')).toBeInTheDocument()
@@ -317,7 +319,7 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       const searchInput = screen.getByPlaceholderText(
-        'Search by email address...'
+        'Enter their full email address'
       )
       await user.type(searchInput, 'jo')
 
@@ -338,7 +340,7 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       const searchInput = screen.getByPlaceholderText(
-        'Search by email address...'
+        'Enter their full email address'
       )
       await user.type(searchInput, 'nonexistent@email.com')
 
@@ -368,9 +370,10 @@ describe('InvitePartnerModal Component', () => {
       render(<InvitePartnerModal {...defaultProps} />)
 
       const searchInput = screen.getByPlaceholderText(
-        'Search by email address...'
+        'Enter their full email address'
       )
-      await user.type(searchInput, 'selected@')
+      // Q5 audit fix: search only fires on a full email match.
+      await user.type(searchInput, 'selected@example.com')
 
       await waitFor(() => {
         expect(screen.getByText('Selected User')).toBeInTheDocument()

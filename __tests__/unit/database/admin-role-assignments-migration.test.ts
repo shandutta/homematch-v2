@@ -53,15 +53,18 @@ describe('admin role assignments migration', () => {
     expect(sql).toContain('DROP TABLE IF EXISTS public.admin_role_assignments')
   })
 
-  test('service-role authorization no longer derives authority from user_profiles.role', () => {
+  test('service-role authorization fallback is removed entirely (A3 audit fix, 2026-05-13)', () => {
+    // The previous guarantee was that the runtime fallback read from
+    // admin_role_assignments (not user_profiles.role). A3 in the
+    // 2026-05-13 audit went further: the fallback was deleted outright
+    // because every caller now declares an `approvedCapability`. This
+    // test now pins the STRONGER guarantee — the function no longer
+    // exists and the source no longer references admin_role_assignments
+    // from server.ts. Re-introducing the function should fail this test.
     const source = readFileSync(serverPath, 'utf8')
-    const authorizationBlock = source.slice(
-      source.indexOf('async function checkServiceRoleAuthorization'),
-      source.length
-    )
 
-    expect(authorizationBlock).toContain(".from('admin_role_assignments')")
-    expect(authorizationBlock).not.toContain(".from('user_profiles')")
-    expect(authorizationBlock).not.toContain("role === 'admin'")
+    expect(source).not.toContain('async function checkServiceRoleAuthorization')
+    expect(source).not.toContain(".from('admin_role_assignments')")
+    expect(source).not.toContain('checkServiceRoleAuthorization()')
   })
 })
