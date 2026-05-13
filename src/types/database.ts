@@ -1843,9 +1843,24 @@ export type NeighborhoodVibeUpdate = TablesUpdate<'neighborhood_vibes'>
 export type NeighborhoodUpdate = TablesUpdate<'neighborhoods'>
 
 // Extended types
+
+// A5 (2026-05-13 audit): the detail-page query drops the heavy `bounds`
+// polygon (~several KB on the wire) and the `created_at` timestamp that
+// no current consumer reads. `PropertyDetailNeighborhood` is the narrower
+// neighborhood shape used everywhere a PropertyWithNeighborhood comes
+// from the detail-page select. The two omitted fields become optional so
+// upstream callers that still feed the full row also pass type-check.
+export type PropertyDetailNeighborhood = Omit<
+  Neighborhood,
+  'bounds' | 'created_at'
+> & {
+  bounds?: Neighborhood['bounds'] | null
+  created_at?: Neighborhood['created_at'] | null
+}
+
 export type PropertyWithNeighborhood = Property & {
-  neighborhoods?: Neighborhood | null
-  neighborhood?: Neighborhood | null
+  neighborhoods?: PropertyDetailNeighborhood | null
+  neighborhood?: PropertyDetailNeighborhood | null
 }
 
 // User preferences (stored in user_profiles.preferences JSONB column)
