@@ -12,7 +12,7 @@ function DropdownMenu({
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
 }
 
-function DropdownMenuPortal({
+function _DropdownMenuPortal({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return (
@@ -51,7 +51,7 @@ function DropdownMenuContent({
   )
 }
 
-function DropdownMenuGroup({
+function _DropdownMenuGroup({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {
   return (
@@ -82,7 +82,7 @@ function DropdownMenuItem({
   )
 }
 
-function DropdownMenuCheckboxItem({
+function _DropdownMenuCheckboxItem({
   className,
   children,
   checked,
@@ -108,7 +108,7 @@ function DropdownMenuCheckboxItem({
   )
 }
 
-function DropdownMenuRadioGroup({
+function _DropdownMenuRadioGroup({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
   return (
@@ -119,7 +119,7 @@ function DropdownMenuRadioGroup({
   )
 }
 
-function DropdownMenuRadioItem({
+function _DropdownMenuRadioItem({
   className,
   children,
   ...props
@@ -143,7 +143,7 @@ function DropdownMenuRadioItem({
   )
 }
 
-function DropdownMenuLabel({
+function _DropdownMenuLabel({
   className,
   inset,
   ...props
@@ -176,7 +176,7 @@ function DropdownMenuSeparator({
   )
 }
 
-function DropdownMenuShortcut({
+function _DropdownMenuShortcut({
   className,
   ...props
 }: React.ComponentProps<'span'>) {
@@ -192,13 +192,13 @@ function DropdownMenuShortcut({
   )
 }
 
-function DropdownMenuSub({
+function _DropdownMenuSub({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
-function DropdownMenuSubTrigger({
+function _DropdownMenuSubTrigger({
   className,
   inset,
   children,
@@ -222,7 +222,7 @@ function DropdownMenuSubTrigger({
   )
 }
 
-function DropdownMenuSubContent({
+function _DropdownMenuSubContent({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
@@ -240,18 +240,8 @@ function DropdownMenuSubContent({
 
 export {
   DropdownMenu,
-  DropdownMenuPortal,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 }

@@ -99,7 +99,7 @@ export function buildMeceNeighborhoods(rows: MapNeighborhoodInput[]) {
   }
 }
 
-export function simplifyPolygons(polygons: PolygonRings[]): PolygonRings[] {
+function simplifyPolygons(polygons: PolygonRings[]): PolygonRings[] {
   return polygons
     .map((rings) =>
       rings
@@ -122,7 +122,7 @@ export function simplifyRingAdaptive(ring: LatLng[]): LatLng[] {
   return simplified.length >= 4 ? simplified : ring
 }
 
-export function simplifyRing(ring: LatLng[], tolerance: number): LatLng[] {
+function simplifyRing(ring: LatLng[], tolerance: number): LatLng[] {
   if (ring.length < 4) return ring
   const closed =
     ring[0]?.lat === ring[ring.length - 1]?.lat &&
@@ -134,7 +134,7 @@ export function simplifyRing(ring: LatLng[], tolerance: number): LatLng[] {
   return result
 }
 
-export function rdp(points: LatLng[], tolerance: number): LatLng[] {
+function rdp(points: LatLng[], tolerance: number): LatLng[] {
   if (points.length < 3) return points
 
   const first = points[0]!
@@ -159,11 +159,7 @@ export function rdp(points: LatLng[], tolerance: number): LatLng[] {
   return [first, last]
 }
 
-export function perpendicularDistance(
-  point: LatLng,
-  start: LatLng,
-  end: LatLng
-) {
+function perpendicularDistance(point: LatLng, start: LatLng, end: LatLng) {
   const dx = end.lng - start.lng
   const dy = end.lat - start.lat
   if (dx === 0 && dy === 0) {
@@ -178,30 +174,28 @@ export function perpendicularDistance(
   return Math.hypot(point.lng - projLng, point.lat - projLat)
 }
 
-export function normalizePolygons(
-  polygons: PolygonRings[] | null
-): PolygonRings[] {
+function normalizePolygons(polygons: PolygonRings[] | null): PolygonRings[] {
   if (!polygons) return []
   return polygons
     .map((rings) => rings.filter((ring) => ring.length >= 4))
     .filter((rings) => rings.length > 0)
 }
 
-export function toClippingRing(ring: LatLng[]): ClippingRing {
+function toClippingRing(ring: LatLng[]): ClippingRing {
   return ring.map((point) => [point.lng, point.lat])
 }
 
-export function toClippingPolygon(rings: PolygonRings): ClippingPolygon {
+function toClippingPolygon(rings: PolygonRings): ClippingPolygon {
   return rings.map((ring) => toClippingRing(ring))
 }
 
-export function toClippingMultiPolygon(
+function toClippingMultiPolygon(
   polygons: PolygonRings[]
 ): ClippingMultiPolygon {
   return polygons.map((rings) => toClippingPolygon(rings))
 }
 
-export function fromClippingMultiPolygon(
+function fromClippingMultiPolygon(
   polygons: ClippingMultiPolygon
 ): PolygonRings[] {
   return polygons
@@ -213,7 +207,7 @@ export function fromClippingMultiPolygon(
     .filter((rings) => rings.length > 0)
 }
 
-export function closeRing(ring: LatLng[]): LatLng[] | null {
+function closeRing(ring: LatLng[]): LatLng[] | null {
   if (ring.length < 3) return null
   const first = ring[0]
   const last = ring[ring.length - 1]
@@ -224,7 +218,7 @@ export function closeRing(ring: LatLng[]): LatLng[] | null {
   return ring
 }
 
-export function subtractPolygonGroups(
+function subtractPolygonGroups(
   polygons: PolygonRings[],
   clip: ClippingMultiPolygon
 ): PolygonRings[] {
@@ -236,7 +230,7 @@ export function subtractPolygonGroups(
   return normalizePolygons(fromClippingMultiPolygon(diff))
 }
 
-export function unionMultiPolygons(
+function unionMultiPolygons(
   first: ClippingMultiPolygon,
   second: ClippingMultiPolygon
 ): ClippingMultiPolygon {
@@ -245,14 +239,14 @@ export function unionMultiPolygons(
   return polygonClipping.union(first, second)
 }
 
-export function polygonGroupArea(polygons: PolygonRings[]): number {
+function polygonGroupArea(polygons: PolygonRings[]): number {
   return polygons.reduce((total, rings) => {
     const ringsArea = rings.reduce((sum, ring) => sum + ringArea(ring), 0)
     return total + Math.abs(ringsArea)
   }, 0)
 }
 
-export function ringArea(ring: LatLng[]): number {
+function ringArea(ring: LatLng[]): number {
   if (ring.length < 3) return 0
   let area = 0
   for (let i = 0; i < ring.length - 1; i += 1) {
@@ -263,7 +257,7 @@ export function ringArea(ring: LatLng[]): number {
   return area / 2
 }
 
-export function toGeoJsonMultiPolygon(
+function toGeoJsonMultiPolygon(
   polygons: PolygonRings[]
 ): MapNeighborhoodOutput['bounds'] {
   return {

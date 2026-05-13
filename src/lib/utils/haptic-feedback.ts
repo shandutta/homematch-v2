@@ -215,5 +215,3 @@ export function useHapticFeedback() {
     isAvailable: HapticFeedback.isAvailable,
   }
 }
-
-export default HapticFeedback

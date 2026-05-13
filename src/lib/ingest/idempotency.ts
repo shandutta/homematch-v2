@@ -27,7 +27,7 @@ const optionalTrimmedString = z
 
 const sourceEnum = z.enum(['zillow', 'mock', 'manual'])
 
-export type IngestSource = z.infer<typeof sourceEnum>
+type _IngestSource = z.infer<typeof sourceEnum>
 
 /**
  * Canonical record we feed into the idempotency layer. This is the smallest
@@ -214,13 +214,13 @@ function countPopulatedFields(record: IngestRecord): number {
  * The pipeline supplies one of these per dedupe key (typically loaded from a
  * Supabase `properties` row) so we can decide whether to write.
  */
-export const idempotencyRecordSchema = z.object({
+const _idempotencyRecordSchema = z.object({
   dedupe_key: z.string().min(1),
   fingerprint: z.string().length(64),
   last_seen_at: z.string().datetime({ offset: true }),
 })
 
-export type IdempotencyRecord = z.infer<typeof idempotencyRecordSchema>
+export type IdempotencyRecord = z.infer<typeof _idempotencyRecordSchema>
 
 export type IngestDecision =
   | { action: 'insert'; reason: 'new_record' }

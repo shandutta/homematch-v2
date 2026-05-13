@@ -23,7 +23,7 @@ export interface NeighborhoodVibesResult {
   modelUsed: string
 }
 
-export interface NeighborhoodVibesError {
+interface NeighborhoodVibesError {
   neighborhoodId: string
   error: string
   code?: string

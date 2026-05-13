@@ -67,9 +67,7 @@ export const neighborhoodVibesInputSchema = z.object({
   modelId: z.string(),
 })
 
-export type NeighborhoodVibesInput = z.infer<
-  typeof neighborhoodVibesInputSchema
->
+type _NeighborhoodVibesInput = z.infer<typeof neighborhoodVibesInputSchema>
 
 export const neighborhoodVibesRecordSchema = z.object({
   id: z.string().uuid(),

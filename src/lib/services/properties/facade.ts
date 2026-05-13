@@ -287,7 +287,7 @@ export class PropertyServiceFacade
  * Feature flag aware PropertyService factory
  * Allows gradual rollout of new facade implementation
  */
-export function createPropertyService(
+function _createPropertyService(
   clientFactory?: ISupabaseClientFactory
 ): PropertyServiceFacade {
   const useNewService = process.env.FEATURE_NEW_PROPERTY_SERVICE !== 'false' // Default to new service
@@ -309,4 +309,3 @@ export function createPropertyService(
  * This allows existing imports to work without modification:
  * import { PropertyService } from '@/lib/services/properties'
  */
-export { PropertyServiceFacade as PropertyService }

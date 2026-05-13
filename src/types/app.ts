@@ -22,7 +22,7 @@ export type DbInteractionType = 'view' | 'like' | 'skip' | 'dislike'
  * Represents a user interaction with a property.
  * Mirrors user_property_interactions table columns (client-facing shape).
  */
-export interface Interaction {
+interface _Interaction {
   userId: string
   propertyId: string
   type: InteractionType
@@ -59,14 +59,14 @@ export interface PageResponse<T> {
 /**
  * Type for a complete dashboard data payload
  */
-export interface DashboardData {
+interface _DashboardData {
   properties: Property[]
 }
 
 /**
  * Type for user preferences (extends the Zod schema)
  */
-export interface UserPreferencesExtended extends UserPreferences {
+interface _UserPreferencesExtended extends UserPreferences {
   max_price?: number
   min_bedrooms?: number
   min_bathrooms?: number

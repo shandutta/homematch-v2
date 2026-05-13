@@ -237,7 +237,7 @@ function setCachedResult(
  * 3. Handling errors
  * 4. Processing results with optional caching
  */
-export async function callRPC<
+async function callRPC<
   TFunctionName extends RPCFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
@@ -246,7 +246,7 @@ export async function callRPC<
   params: TParams,
   options: RPCWrapperOptions<RPCResultValue<TFunctionName>>
 ): Promise<RPCResultValue<TFunctionName>>
-export async function callRPC<
+async function callRPC<
   TFunctionName extends RPCFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
@@ -255,7 +255,7 @@ export async function callRPC<
   params: TParams,
   options: RPCWrapperOptions<RPCResultValue<TFunctionName> | null>
 ): Promise<RPCResultValue<TFunctionName> | null>
-export async function callRPC<
+async function callRPC<
   TFunctionName extends RPCFunctionName,
   TParams extends Parameters<TypedSupabaseRPC[TFunctionName]>[0],
 >(
@@ -418,7 +418,7 @@ type BatchRPCCall<K extends RPCFunctionName = RPCFunctionName> = {
 /**
  * Execute multiple RPC calls in parallel with individual error handling
  */
-export async function callBatchRPC(
+async function _callBatchRPC(
   supabase: SupabaseClient<AppDatabase>,
   calls: BatchRPCCall[]
 ): Promise<unknown[]> {
@@ -448,14 +448,14 @@ export async function callBatchRPC(
 /**
  * Clear all cached RPC results
  */
-export function clearRPCCache(): void {
+function _clearRPCCache(): void {
   rpcCache.clear()
 }
 
 /**
  * Clear cache for specific pattern
  */
-export function clearRPCCachePattern(pattern: string): void {
+function _clearRPCCachePattern(pattern: string): void {
   const keys = Array.from(rpcCache.keys())
   keys
     .filter((key) => key.toString().includes(pattern))
@@ -467,7 +467,7 @@ export function clearRPCCachePattern(pattern: string): void {
 /**
  * Get cache statistics
  */
-export function getRPCCacheStats(): {
+function _getRPCCacheStats(): {
   size: number
   max: number
   calculatedSize: number

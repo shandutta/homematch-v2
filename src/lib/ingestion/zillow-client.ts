@@ -11,10 +11,10 @@ import {
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
 
-export const RAPIDAPI_DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
-export const RAPIDAPI_DEFAULT_DELAY_MS = 350
-export const RAPIDAPI_DEFAULT_TIMEOUT_MS = 10_000
-export const RAPIDAPI_DEFAULT_MAX_REQUESTS = 1000
+const RAPIDAPI_DEFAULT_HOST = 'us-housing-market-data1.p.rapidapi.com'
+const RAPIDAPI_DEFAULT_DELAY_MS = 350
+const RAPIDAPI_DEFAULT_TIMEOUT_MS = 10_000
+const RAPIDAPI_DEFAULT_MAX_REQUESTS = 1000
 
 export type RapidApiClientOptions = {
   apiKey?: string

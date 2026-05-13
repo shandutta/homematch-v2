@@ -84,7 +84,7 @@ export class AuthError extends ServiceError {
 /**
  * Configuration or environment errors
  */
-export class ConfigError extends ServiceError {
+class _ConfigError extends ServiceError {
   constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'CONFIG_ERROR', context)
   }
@@ -93,7 +93,7 @@ export class ConfigError extends ServiceError {
 /**
  * External service integration errors
  */
-export class ExternalServiceError extends ServiceError {
+class _ExternalServiceError extends ServiceError {
   constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'EXTERNAL_SERVICE_ERROR', context)
   }
@@ -102,7 +102,7 @@ export class ExternalServiceError extends ServiceError {
 /**
  * Rate limiting errors
  */
-export class RateLimitError extends ServiceError {
+class _RateLimitError extends ServiceError {
   constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'RATE_LIMIT_ERROR', context)
   }
@@ -111,7 +111,7 @@ export class RateLimitError extends ServiceError {
 /**
  * Network connectivity errors
  */
-export class NetworkError extends ServiceError {
+class _NetworkError extends ServiceError {
   constructor(message: string, context?: Record<string, unknown>) {
     super(message, 'NETWORK_ERROR', context)
   }
@@ -121,10 +121,9 @@ export class NetworkError extends ServiceError {
  * Error severity levels for logging and monitoring
  */
 export enum ErrorSeverity {
-  LOW = 'low',
-  MEDIUM = 'medium',
+  // Knip 2026-05-13 cleanup dropped LOW / MEDIUM / CRITICAL — no caller
+  // referenced them. Add them back when a real consumer appears.
   HIGH = 'high',
-  CRITICAL = 'critical',
 }
 
 /**

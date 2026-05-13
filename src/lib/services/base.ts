@@ -29,7 +29,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 /**
  * Default Supabase client factory
  */
-export class DefaultSupabaseClientFactory implements ISupabaseClientFactory {
+class DefaultSupabaseClientFactory implements ISupabaseClientFactory {
   async createClient(
     _config?: ClientConfig
   ): Promise<SupabaseClient<AppDatabase>> {
@@ -245,7 +245,7 @@ export abstract class BaseService implements IBaseService {
  * Decorator for automatic error handling
  * Wraps service methods with standardized error handling
  */
-export function withErrorHandling<T extends unknown[], R>(
+function _withErrorHandling<T extends unknown[], R>(
   operation: string,
   returnType: 'single' | 'array' | 'boolean' = 'single'
 ) {
@@ -286,7 +286,7 @@ export function withErrorHandling<T extends unknown[], R>(
 /**
  * Method decorator for logging method calls
  */
-export function logMethodCall() {
+function _logMethodCall() {
   return function (
     target: object,
     propertyKey: string,
@@ -308,7 +308,7 @@ export function logMethodCall() {
 /**
  * Method decorator for parameter validation
  */
-export function validateParams(requiredParams: string[]) {
+function _validateParams(requiredParams: string[]) {
   return function (
     target: object,
     propertyKey: string,
@@ -338,7 +338,7 @@ export function validateParams(requiredParams: string[]) {
  * Legacy adapter for gradual migration
  * Wraps old service methods to use new error handling
  */
-export class LegacyServiceAdapter {
+class _LegacyServiceAdapter {
   /**
    * Wraps a legacy service method with new error handling
    */

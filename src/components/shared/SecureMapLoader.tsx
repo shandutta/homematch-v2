@@ -191,7 +191,7 @@ function MapErrorFallback({ error }: { error: string }) {
 }
 
 // Utility function to check if Google Maps is loaded
-export function isGoogleMapsAvailable(): boolean {
+function _isGoogleMapsAvailable(): boolean {
   return typeof window !== 'undefined' && Boolean(window.google?.maps)
 }
 

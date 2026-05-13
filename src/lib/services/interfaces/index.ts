@@ -88,7 +88,7 @@ export interface IPropertyStatsService {
  * Geographic and spatial operations
  * Handles: PostGIS queries, radius searches, spatial relationships
  */
-export interface IGeographicService {
+interface IGeographicService {
   getPropertiesWithinRadius(
     lat: number,
     lng: number,
@@ -125,12 +125,12 @@ export interface IGeographicService {
   getTransitScore(lat: number, lng: number): Promise<number>
 }
 
-export interface BoundingBox {
+interface BoundingBox {
   northEast: { lat: number; lng: number }
   southWest: { lat: number; lng: number }
 }
 
-export interface GeographicStats {
+interface GeographicStats {
   total_properties: number
   avg_price: number
   price_density: Array<{
@@ -166,21 +166,21 @@ export interface PropertyStats {
 // CLIENT FACTORY INTERFACES
 // ============================================================================
 
-export enum ClientContext {
+enum ClientContext {
   BROWSER = 'browser',
   SERVER = 'server',
   API = 'api',
   SERVICE = 'service',
 }
 
-export interface ClientConfig {
+interface ClientConfig {
   context?: ClientContext
   request?: NextRequest
   authToken?: string
   customOptions?: Record<string, unknown>
 }
 
-export interface ISupabaseClientFactory {
+interface ISupabaseClientFactory {
   createClient(config?: ClientConfig): SupabaseClient<AppDatabase>
   getInstance(): ISupabaseClientFactory
 }
@@ -189,7 +189,7 @@ export interface ISupabaseClientFactory {
 // ERROR HANDLING INTERFACES
 // ============================================================================
 
-export interface ServiceError {
+interface ServiceError {
   code: string
   message: string
   details?: Record<string, unknown>
@@ -202,13 +202,13 @@ export interface ServiceError {
   }
 }
 
-export interface ServiceResponse<T> {
+interface _ServiceResponse<T> {
   data: T | null
   error: ServiceError | null
   success: boolean
 }
 
-export interface IErrorHandler {
+interface _IErrorHandler {
   handleError(
     error: unknown,
     serviceName: string,
@@ -223,7 +223,7 @@ export interface IErrorHandler {
 // BASE SERVICE INTERFACE
 // ============================================================================
 
-export interface IBaseService {
+interface _IBaseService {
   getSupabase(config?: ClientConfig): Promise<SupabaseClient<AppDatabase>>
 }
 
@@ -254,7 +254,7 @@ export interface IPropertyService
 // SERVICE FACTORY INTERFACE
 // ============================================================================
 
-export interface IServiceFactory {
+interface _IServiceFactory {
   createPropertyService(
     clientFactory?: ISupabaseClientFactory
   ): IPropertyService
@@ -276,14 +276,14 @@ export interface IServiceFactory {
 // MIGRATION HELPERS
 // ============================================================================
 
-export interface MigrationFlags {
+interface MigrationFlags {
   useNewPropertyService?: boolean
   useUnifiedClientFactory?: boolean
   useNewErrorHandling?: boolean
   useSpecializedServices?: boolean
 }
 
-export interface MigrationConfig {
+interface _MigrationConfig {
   flags: MigrationFlags
   rollbackStrategy: 'immediate' | 'gradual' | 'scheduled'
   validateCompatibility: boolean
@@ -293,14 +293,14 @@ export interface MigrationConfig {
 // FILTER BUILDER INTERFACES
 // ============================================================================
 
-export interface FilterConfig {
+interface FilterConfig {
   field: string
   operator: 'eq' | 'gte' | 'lte' | 'in' | 'contains' | 'ilike'
   value: unknown
   condition?: 'AND' | 'OR'
 }
 
-export interface IFilterBuilder {
+interface _IFilterBuilder {
   applyFilters<T>(query: T, filters: FilterConfig[]): T
   buildFilterFromSearch(searchParams: PropertySearch): FilterConfig[]
 }
@@ -309,14 +309,14 @@ export interface IFilterBuilder {
 // TESTING INTERFACES
 // ============================================================================
 
-export interface ServiceTestConfig {
+interface ServiceTestConfig {
   mockSupabaseClient?: boolean
   mockResponses?: Record<string, unknown>
   enableLogging?: boolean
   validateContracts?: boolean
 }
 
-export interface ITestableService {
+interface _ITestableService {
   configure(config: ServiceTestConfig): void
   resetMocks(): void
   getMockCallHistory(): Array<{

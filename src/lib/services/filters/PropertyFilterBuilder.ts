@@ -37,7 +37,7 @@ const getNonNullFilterValue = (
 /**
  * Filter operation types supported by the PropertyFilterBuilder
  */
-export type FilterOperation = 'gte' | 'lte' | 'eq' | 'in' | 'contains'
+type FilterOperation = 'gte' | 'lte' | 'eq' | 'in' | 'contains'
 
 /**
  * Configuration for a single filter rule
@@ -248,4 +248,4 @@ export class PropertyFilterBuilder {
 /**
  * Default singleton instance for consistent usage across the application
  */
-export const propertyFilterBuilder = new PropertyFilterBuilder()
+const _propertyFilterBuilder = new PropertyFilterBuilder()

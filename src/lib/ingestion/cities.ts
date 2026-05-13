@@ -5,7 +5,7 @@
  * I4-rebuilt `discover` step both consume this. Add a new city here, not
  * in the script copies.
  */
-export const BAY_AREA_CITIES = [
+const BAY_AREA_CITIES = [
   'SAN FRANCISCO',
   'OAKLAND',
   'BERKELEY',
@@ -58,7 +58,7 @@ export type BayAreaCity = (typeof BAY_AREA_CITIES)[number]
 
 export const BAY_AREA_CITY_SET = new Set<string>(BAY_AREA_CITIES)
 
-export const isBayAreaCity = (city: string): city is BayAreaCity =>
+const _isBayAreaCity = (city: string): city is BayAreaCity =>
   BAY_AREA_CITY_SET.has(city.trim().toUpperCase())
 
 /**

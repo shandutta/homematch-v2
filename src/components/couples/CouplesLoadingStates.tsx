@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/motion-components'
 
 // Enhanced skeleton with warm theme
-export function CouplesHeroSkeleton() {
+function CouplesHeroSkeleton() {
   return (
     <Card className="relative overflow-hidden border-pink-500/20">
       <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-rose-500/20" />
@@ -59,7 +59,7 @@ export function CouplesHeroSkeleton() {
   )
 }
 
-export function CouplesMutualLikesSkeleton() {
+function CouplesMutualLikesSkeleton() {
   return (
     <Card className="card-glassmorphism-style border-pink-500/20">
       <CardHeader>
@@ -101,7 +101,7 @@ export function CouplesMutualLikesSkeleton() {
   )
 }
 
-export function CouplesActivitySkeleton() {
+function CouplesActivitySkeleton() {
   return (
     <Card className="card-glassmorphism-style">
       <CardHeader>
@@ -132,7 +132,7 @@ export function CouplesActivitySkeleton() {
   )
 }
 
-export function CouplesStatsSkeleton() {
+function CouplesStatsSkeleton() {
   return (
     <Card className="card-glassmorphism-style">
       <CardHeader>

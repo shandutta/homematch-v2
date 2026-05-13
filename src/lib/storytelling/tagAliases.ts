@@ -1,4 +1,4 @@
-export const STORYTELLING_TAG_ALIASES: Record<string, string> = {
+const STORYTELLING_TAG_ALIASES: Record<string, string> = {
   'Love Nest': 'Shared Retreat',
   'Urban Love Nest': 'City Hideaway',
   'Couples Retreat': 'Shared Retreat',

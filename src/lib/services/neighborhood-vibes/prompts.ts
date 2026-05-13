@@ -142,4 +142,4 @@ export function buildNeighborhoodVibePrompt(context: NeighborhoodContext): {
   return { systemPrompt, userPrompt }
 }
 
-export type NeighborhoodVibePromptResult = NeighborhoodVibesOutput
+type _NeighborhoodVibePromptResult = NeighborhoodVibesOutput

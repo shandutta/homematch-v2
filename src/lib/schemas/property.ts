@@ -270,22 +270,18 @@ export {
 
 // Export types
 export type Property = z.infer<typeof propertySchema>
-export type PropertyInsert = z.infer<typeof propertyInsertSchema>
-export type PropertyUpdate = z.infer<typeof propertyUpdateSchema>
+type _PropertyInsert = z.infer<typeof propertyInsertSchema>
+type _PropertyUpdate = z.infer<typeof propertyUpdateSchema>
 export type Neighborhood = z.infer<typeof neighborhoodSchema>
-export type NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>
-export type NeighborhoodUpdate = z.infer<typeof neighborhoodUpdateSchema>
+type _NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>
+type _NeighborhoodUpdate = z.infer<typeof neighborhoodUpdateSchema>
 
-export type PropertyWithNeighborhood = z.infer<
-  typeof propertyWithNeighborhoodSchema
->
+type _PropertyWithNeighborhood = z.infer<typeof propertyWithNeighborhoodSchema>
 export type PropertyFilters = z.infer<typeof propertyFiltersSchema>
-export type PropertySort = z.infer<typeof propertySortSchema>
-export type PropertyPagination = z.infer<typeof propertyPaginationSchema>
+type _PropertySort = z.infer<typeof propertySortSchema>
+type _PropertyPagination = z.infer<typeof propertyPaginationSchema>
 export type PropertySearch = z.infer<typeof propertySearchSchema>
 
-// Re-export coordinate types for backward compatibility
-export type {
-  LatLng as Coordinates,
-  BoundingBox,
-} from '@/lib/utils/coordinates'
+// Knip 2026-05-13 cleanup dropped the unused legacy Coordinates and
+// BoundingBox re-exports. Consumers should import these directly from
+// @/lib/utils/coordinates if needed.

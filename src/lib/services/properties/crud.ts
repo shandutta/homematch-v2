@@ -262,7 +262,7 @@ export class PropertyCrudService extends BaseService {
 /**
  * Creates a PropertyCrudService with optional client factory injection
  */
-export function createPropertyCrudService(
+function _createPropertyCrudService(
   clientFactory?: ISupabaseClientFactory
 ): PropertyCrudService {
   return new PropertyCrudService(clientFactory)
@@ -276,7 +276,7 @@ export function createPropertyCrudService(
  * Legacy function wrapper for existing consumers
  * Allows gradual migration from old PropertyService usage
  */
-export class PropertyCrudLegacyAdapter {
+class _PropertyCrudLegacyAdapter {
   private service: PropertyCrudService
 
   constructor(clientFactory?: ISupabaseClientFactory) {

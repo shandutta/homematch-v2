@@ -117,7 +117,7 @@ export async function getServerUserContext(): Promise<ServerUserContext | null> 
  * Returns null if no profileId can be resolved (e.g. Clerk user before
  * webhook fires, or unauthenticated request).
  */
-export async function getServerUserContextWithProfile(): Promise<
+async function _getServerUserContextWithProfile(): Promise<
   (ServerUserContext & { profileId: string }) | null
 > {
   const ctx = await getServerUserContext()

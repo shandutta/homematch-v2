@@ -3,7 +3,7 @@
  * Fixes the issue where all neighborhoods defaulted to "CA"
  */
 
-export const METRO_AREA_STATE_MAPPING: Record<string, string> = {
+const METRO_AREA_STATE_MAPPING: Record<string, string> = {
   // California metros
   'San Francisco–Oakland–San Jose': 'CA',
   'Los Angeles–Long Beach–Anaheim': 'CA',

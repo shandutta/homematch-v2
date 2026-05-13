@@ -80,7 +80,7 @@ async function clerkUserToSupabaseShape(): Promise<User | null> {
  * Retries without an explicit token when the first lookup fails to smooth
  * over occasional header parsing issues.
  */
-export async function getUserFromRequest(
+async function getUserFromRequest(
   supabase: AuthUserReader,
   request: NextRequest
 ): Promise<AuthUserResult> {

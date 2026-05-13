@@ -9,15 +9,6 @@
 // Export everything from the new facade implementation
 export * from './properties/index'
 
-// Re-export types that might be imported from here
-export type {
-  Property,
-  PropertyInsert,
-  PropertyUpdate,
-  PropertyWithNeighborhood,
-  Neighborhood,
-  NeighborhoodInsert,
-  NeighborhoodUpdate,
-} from '@/types/database'
-
-export type { PropertySearch } from '@/lib/schemas/property'
+// Knip 2026-05-13 cleanup dropped the unused legacy type re-exports.
+// Consumers should import types directly from @/types/database or
+// @/lib/schemas/property.

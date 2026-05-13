@@ -9,12 +9,12 @@ export interface GoogleMapInstance {
   setOptions?: (options: unknown) => void
 }
 
-export interface GoogleMarkerInstance {
+interface GoogleMarkerInstance {
   setMap: (map: GoogleMapInstance | null) => void
   addListener: (event: string, handler: () => void) => void
 }
 
-export interface GoogleAdvancedMarkerInstance {
+interface GoogleAdvancedMarkerInstance {
   addListener: (event: string, handler: () => void) => void
 }
 
@@ -22,7 +22,7 @@ export type GoogleAnyMarkerInstance =
   | GoogleMarkerInstance
   | GoogleAdvancedMarkerInstance
 
-export interface GoogleInfoWindowInstance {
+interface GoogleInfoWindowInstance {
   open: (
     mapOrOptions:
       | GoogleMapInstance
@@ -41,7 +41,7 @@ export interface GooglePolygonInstance {
   addListener: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
-export interface GoogleLatLngBoundsInstance {
+interface GoogleLatLngBoundsInstance {
   extend: (point: unknown) => void
 }
 

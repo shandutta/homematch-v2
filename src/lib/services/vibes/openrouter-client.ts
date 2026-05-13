@@ -21,7 +21,7 @@ export interface ChatMessage {
   content: string | ChatMessageContent[]
 }
 
-export interface ChatMessageContent {
+interface ChatMessageContent {
   type: 'text' | 'image_url'
   text?: string
   image_url?: {
@@ -316,7 +316,7 @@ export class OpenRouterClient {
 /**
  * Custom error class for OpenRouter API errors
  */
-export class OpenRouterError extends Error {
+class OpenRouterError extends Error {
   public status?: number
 
   constructor(message: string, status?: number) {

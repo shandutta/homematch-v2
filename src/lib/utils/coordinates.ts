@@ -20,7 +20,7 @@ export type LatLng = {
 export type PolygonRings = LatLng[][]
 export type MultiPolygonRings = PolygonRings[]
 
-export type LngLat = {
+type _LngLat = {
   lng: number
   lat: number
 }
@@ -32,12 +32,12 @@ export type GeoJSONPoint = {
   coordinates: CoordinateTuple
 }
 
-export type GeoJSONPolygon = {
+type _GeoJSONPolygon = {
   type: 'Polygon'
   coordinates: CoordinateTuple[][]
 }
 
-export type GeoJSONMultiPolygon = {
+type _GeoJSONMultiPolygon = {
   type: 'MultiPolygon'
   coordinates: CoordinateTuple[][][]
 }
@@ -69,7 +69,7 @@ export const latLngSchema = z.object({
   lng: z.number().min(-180).max(180, 'Longitude must be between -180 and 180'),
 })
 
-export const coordinateTupleSchema = z.tuple([
+const coordinateTupleSchema = z.tuple([
   z.number().min(-180).max(180, 'Longitude must be between -180 and 180'),
   z.number().min(-90).max(90, 'Latitude must be between -90 and 90'),
 ])

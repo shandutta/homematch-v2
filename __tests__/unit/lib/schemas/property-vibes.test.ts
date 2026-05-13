@@ -7,7 +7,6 @@ import {
   FIT_TIERS,
   getTierDisplay,
   lifestyleFitSchema,
-  LIFESTYLE_TAGS,
   llmVibesInputSchema,
   llmVibesOutputSchema,
   notableFeatureSchema,
@@ -38,10 +37,6 @@ describe('property-vibes constants and helpers', () => {
         PROPERTY_TAGS.aesthetic.length +
         PROPERTY_TAGS.location.length
       expect(ALL_PROPERTY_TAGS).toHaveLength(expectedCount)
-    })
-
-    it('exposes LIFESTYLE_TAGS as alias for ALL_PROPERTY_TAGS', () => {
-      expect(LIFESTYLE_TAGS).toBe(ALL_PROPERTY_TAGS)
     })
   })
 
