@@ -13,3 +13,10 @@ eyJpc3MiOiJzdXBhYmFzZS1kZW1vIi
 # Used only for local test-env JWT signing; payload is a label not a
 # subject identifier.
 eyJzdWIiOiJob21lbWF0Y2gtdjItand0LXNlY3JldCIs
+
+# Local-Supabase test-user auth tokens (iss=http://127.0.0.1:54321/auth/v1).
+# Historical .test-auth-token files committed these expired tokens for
+# integration-test runs against the local Supabase instance. They cannot
+# authenticate against any production Supabase project and have all
+# expired (exp=Nov 2025).
+eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEi
