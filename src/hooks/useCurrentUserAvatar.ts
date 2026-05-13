@@ -15,6 +15,12 @@ const isAvatarData = (value: unknown): value is AvatarData =>
   (value.type === 'preset' || value.type === 'custom') &&
   typeof value.value === 'string'
 
+// user_profiles.id is a UUID. /api/users/me may return a Clerk-userId
+// fallback (`user_...`) when profile bootstrap is mid-flight; skip the
+// Supabase query in that case to avoid Postgres 22P02 errors.
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface UserAvatarState {
   displayName: string | null
   email: string | null
@@ -70,28 +76,35 @@ export function useCurrentUserAvatar(): UserAvatarState {
 
         // Avatar JSON lives on user_profiles.preferences — fetch it
         // separately so /api/users/me stays a thin identity endpoint.
+        // Skip the query if `me.id` is the Clerk-userId fallback shape
+        // (`user_...`) that /api/users/me returns while a profile bootstrap
+        // is mid-flight. Passing a non-UUID into `.eq('id', ...)` triggers
+        // Postgres 22P02 (invalid_text_representation), which would force
+        // the warning path on every mount until the webhook arrives.
         let avatar: AvatarData | null = null
         let preferencesDisplayName: string | null = null
-        try {
-          const supabase = await createClient()
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('preferences')
-            .eq('id', me.id)
-            .single()
-          const preferences = isRecord(profile?.preferences)
-            ? profile.preferences
-            : {}
-          if (isAvatarData(preferences.avatar)) avatar = preferences.avatar
-          if (typeof preferences.display_name === 'string') {
-            preferencesDisplayName = preferences.display_name
+        if (UUID_PATTERN.test(me.id)) {
+          try {
+            const supabase = await createClient()
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('preferences')
+              .eq('id', me.id)
+              .single()
+            const preferences = isRecord(profile?.preferences)
+              ? profile.preferences
+              : {}
+            if (isAvatarData(preferences.avatar)) avatar = preferences.avatar
+            if (typeof preferences.display_name === 'string') {
+              preferencesDisplayName = preferences.display_name
+            }
+          } catch (e) {
+            // Non-fatal — initials fallback still renders correctly.
+            console.warn(
+              'useCurrentUserAvatar: avatar preferences lookup failed:',
+              e
+            )
           }
-        } catch (e) {
-          // Non-fatal — initials fallback still renders correctly.
-          console.warn(
-            'useCurrentUserAvatar: avatar preferences lookup failed:',
-            e
-          )
         }
 
         if (cancelled) return
