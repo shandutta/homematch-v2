@@ -426,7 +426,10 @@ export default clerkMiddleware(async (clerkAuth, request) => {
   // to /api/webhooks/clerk (Svix signature is its own auth) and the
   // performance-metrics ingest beacon.
   if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
-    return applySecurityHeaders(NextResponse.next({ request: nextRequest }), nextRequest)
+    return applySecurityHeaders(
+      NextResponse.next({ request: nextRequest }),
+      nextRequest
+    )
   }
 
   // M3 (2026-05-13 audit): wrap clerkAuth() in a timeout. Without it,
