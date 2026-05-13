@@ -27,14 +27,15 @@ interface GenerateVibesRequest {
  * - propertyIds: Specific property IDs to process
  */
 export async function POST(req: Request): Promise<Response> {
-  // Authenticate - require cron secret for admin endpoints
+  // Authenticate - require cron secret for admin endpoints.
+  // Header-only: URL query params leak to access logs, Referer headers,
+  // and browser history.
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
   const isDev = process.env.NODE_ENV === 'development'
   const url = new URL(req.url)
   const headerSecret = req.headers.get('x-cron-secret')
-  const querySecret = url.searchParams.get('cron_secret')
 
-  if (!secret || (headerSecret !== secret && querySecret !== secret)) {
+  if (!secret || headerSecret !== secret) {
     return ApiErrorHandler.unauthorized('Unauthorized')
   }
 
@@ -367,10 +368,10 @@ async function selectDiverseProperties(
  */
 export async function GET(req: Request): Promise<Response> {
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
-  const url = new URL(req.url)
-  const querySecret = url.searchParams.get('cron_secret')
+  const headerSecret = req.headers.get('x-cron-secret')
 
-  if (!secret || querySecret !== secret) {
+  // Header-only auth (no URL query fallback) to avoid logging the secret.
+  if (!secret || headerSecret !== secret) {
     return ApiErrorHandler.unauthorized('Unauthorized')
   }
 

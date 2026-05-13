@@ -59,18 +59,18 @@ export default async function InvitePage({
 
   const { data: inviterProfile } = await serviceClient
     .from('user_profiles')
-    .select('display_name, email')
+    .select('display_name')
     .eq('id', invite.created_by)
-    .maybeSingle<Pick<UserProfile, 'display_name' | 'email'>>()
+    .maybeSingle<Pick<UserProfile, 'display_name'>>()
 
   const user = await getServerUserContext()
 
   const isExpired = new Date(invite.expires_at) < new Date()
   const canAccept = invite.status === 'pending' && !isExpired
-  const inviterName =
-    inviterProfile?.display_name ||
-    inviterProfile?.email ||
-    'A household member'
+  // Never surface the inviter's email on the public-facing invite page —
+  // the URL is reachable by anyone with the token. Fall back to a generic
+  // label when no display_name is set.
+  const inviterName = inviterProfile?.display_name || 'A household member'
   const statusLabel = isExpired
     ? 'Expired'
     : invite.status === 'pending'
