@@ -169,10 +169,21 @@ export class RelaxedPropertyTransformer {
         square_feet: squareFeet.value,
         property_type: propertyType,
         images: images.length > 0 ? images : null,
-        description: null,
+        // INGEST-001: same fix as data-transformer.ts. Preserve raw
+        // description + amenities when present so the LLM vibe generator
+        // has real source data to ground its claims in.
+        description:
+          typeof raw.description === 'string' && raw.description.trim().length
+            ? raw.description.trim()
+            : null,
         coordinates,
         neighborhood_id: null, // Set to null to avoid foreign key issues
-        amenities: null,
+        amenities:
+          Array.isArray(raw.amenities) && raw.amenities.length
+            ? raw.amenities.filter(
+                (a): a is string => typeof a === 'string' && a.trim().length > 0
+              )
+            : null,
         year_built: yearBuilt.value,
         lot_size_sqft: lotSize.value,
         parking_spots: null,

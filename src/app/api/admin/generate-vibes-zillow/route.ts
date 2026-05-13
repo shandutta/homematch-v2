@@ -63,7 +63,98 @@ interface ZillowPropertyResponse {
   description?: string
   latitude?: number
   longitude?: number
+  // INGEST-001: Zillow's response also includes structured amenity fields.
+  // The previous code hardcoded `amenities: null` on the LLM input which is
+  // a major contributor to the systematic hallucination findings in Section
+  // 1 of the audit. Capturing the common ones so extractAmenities() can map
+  // them into a single string[].
+  appliances?: string[]
+  interiorFeatures?: string[]
+  exteriorFeatures?: string[]
+  parkingFeatures?: string[]
+  coolingFeatures?: string[]
+  heatingFeatures?: string[]
+  flooring?: string[] | string
+  view?: string[] | string
+  homeFacts?: Array<{ factLabel?: string; factValue?: string }>
+  atAGlanceFacts?: Array<{ factLabel?: string; factValue?: string }>
+  hasGarage?: boolean
+  hasPool?: boolean
+  hasFireplace?: boolean
   [key: string]: unknown
+}
+
+/**
+ * INGEST-001: pull a string[] of amenity-like signals out of a Zillow
+ * property payload. The shape varies by listing — some fields are arrays,
+ * some are scalars, and homeFacts is a label/value pair list — so we
+ * normalize everything into a deduped, trimmed string[].
+ *
+ * Returns null when nothing was extracted, matching the schema's null
+ * sentinel and preventing downstream code from interpreting an empty
+ * array as "no amenities" vs "data unavailable".
+ */
+export function extractAmenities(z: ZillowPropertyResponse): string[] | null {
+  const items: string[] = []
+
+  const pushArr = (v: unknown) => {
+    if (Array.isArray(v)) {
+      for (const entry of v) {
+        if (typeof entry === 'string' && entry.trim()) items.push(entry.trim())
+      }
+    } else if (typeof v === 'string' && v.trim()) {
+      items.push(v.trim())
+    }
+  }
+
+  pushArr(z.appliances)
+  pushArr(z.interiorFeatures)
+  pushArr(z.exteriorFeatures)
+  pushArr(z.parkingFeatures)
+  pushArr(z.coolingFeatures)
+  pushArr(z.heatingFeatures)
+  pushArr(z.flooring)
+  pushArr(z.view)
+
+  if (z.hasGarage) items.push('Garage')
+  if (z.hasPool) items.push('Pool')
+  if (z.hasFireplace) items.push('Fireplace')
+
+  // Codex P2 (PR #38): `z.homeFacts || z.atAGlanceFacts` was buggy because
+  // an empty array is truthy in JavaScript. Listings with
+  // `homeFacts: []` and a populated `atAGlanceFacts` would skip the fallback
+  // and lose the amenity facts entirely. Pick whichever array actually has
+  // entries.
+  const homeFacts = Array.isArray(z.homeFacts) ? z.homeFacts : null
+  const atAGlance = Array.isArray(z.atAGlanceFacts) ? z.atAGlanceFacts : null
+  const facts =
+    homeFacts && homeFacts.length > 0 ? homeFacts : (atAGlance ?? null)
+  if (Array.isArray(facts)) {
+    for (const fact of facts) {
+      if (
+        fact &&
+        typeof fact.factLabel === 'string' &&
+        typeof fact.factValue === 'string' &&
+        fact.factValue.trim()
+      ) {
+        items.push(`${fact.factLabel.trim()}: ${fact.factValue.trim()}`)
+      }
+    }
+  }
+
+  if (!items.length) return null
+
+  // Dedupe case-insensitively but keep the first-encountered casing.
+  const seen = new Set<string>()
+  const unique: string[] = []
+  for (const item of items) {
+    const key = item.toLowerCase()
+    if (!seen.has(key)) {
+      seen.add(key)
+      unique.push(item)
+    }
+  }
+  return unique
 }
 
 /**
@@ -428,7 +519,10 @@ export async function POST(req: Request): Promise<NextResponse> {
               coordinates: [zillowData.longitude, zillowData.latitude],
             }
           : null,
-      amenities: null,
+      // INGEST-001: extract amenities from Zillow's structured fields
+      // rather than hardcoding null. The LLM vibe generator now has real
+      // amenity data to ground its tag/feature claims in.
+      amenities: extractAmenities(zillowData),
       neighborhood_id: null,
       property_hash: null,
       is_active: true,
