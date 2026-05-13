@@ -9,9 +9,9 @@ const publicPageRoutes = [
   { path: '/cookies', name: 'cookies' },
   { path: '/login', name: 'login auth support' },
   { path: '/signup', name: 'signup auth support' },
-  { path: '/reset-password', name: 'reset password auth support' },
-  { path: '/verify-email', name: 'verify email auth support' },
-  { path: '/auth/auth-code-error', name: 'auth error support' },
+  // /reset-password, /verify-email, /auth/auth-code-error retired in
+  // Phase 4 of the Supabase-auth elimination (2026-05-13) — Clerk owns
+  // those flows on its hosted pages.
 ] as const
 
 const anonymousProtectedRoutes = [

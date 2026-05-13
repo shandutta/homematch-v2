@@ -26,12 +26,13 @@ export const SignupSchema = z
     path: ['confirmPassword'],
   })
 
-export type LoginData = z.infer<typeof LoginSchema>
+// Phase 4 (Supabase-auth elim, 2026-05-13): LoginData / VerifyEmailData
+// type aliases were retired with the LoginForm + VerifyEmailForm. The
+// Zod schemas themselves stay because auth-security-policy-guard.test.ts
+// exercises them as security-policy fixtures.
 type _SignupData = z.infer<typeof SignupSchema>
 
 export const VerifyEmailSchema = z.object({
   email: z.string().email('Invalid email address'),
   token: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your email'),
 })
-
-export type VerifyEmailData = z.infer<typeof VerifyEmailSchema>

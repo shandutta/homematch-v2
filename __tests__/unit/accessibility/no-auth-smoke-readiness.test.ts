@@ -27,15 +27,15 @@ const e2eSpec = fs.readFileSync(e2eSpecPath, 'utf8')
 const playwrightConfig = fs.readFileSync(playwrightConfigPath, 'utf8')
 const reconciliationReport = fs.readFileSync(reconciliationReportPath, 'utf8')
 
+// /verify-email, /reset-password, /auth/auth-code-error retired in
+// Phase 4 of the Supabase-auth elimination (2026-05-13) — Clerk owns
+// those flows on its hosted pages.
 const publicNoCredentialRoutes = [
   '/',
   '/about',
   '/contact',
   '/login',
   '/signup',
-  '/verify-email',
-  '/reset-password',
-  '/auth/auth-code-error',
   '/terms',
   '/privacy',
   '/cookies',

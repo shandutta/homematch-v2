@@ -64,24 +64,9 @@ const publicProbeRoutes: AccessibilityProbeRoute[] = [
     posture: 'public-no-credential',
     matrixLabel: 'Auth signup',
   },
-  {
-    path: '/reset-password',
-    routeFile: 'src/app/reset-password/page.tsx',
-    posture: 'public-no-credential',
-    matrixLabel: 'Auth support',
-  },
-  {
-    path: '/verify-email',
-    routeFile: 'src/app/verify-email/page.tsx',
-    posture: 'public-no-credential',
-    matrixLabel: 'Auth support',
-  },
-  {
-    path: '/auth/auth-code-error',
-    routeFile: 'src/app/auth/auth-code-error/page.tsx',
-    posture: 'public-no-credential',
-    matrixLabel: 'Auth support',
-  },
+  // /reset-password, /verify-email, /auth/auth-code-error retired in
+  // Phase 4 of the Supabase-auth elimination (2026-05-13) — Clerk owns
+  // password reset and email verification on its own hosted pages.
 ]
 
 const protectedProbeRoutes: AccessibilityProbeRoute[] = [

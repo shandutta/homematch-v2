@@ -50,9 +50,6 @@ export const REQUIRED_LEGAL_PUBLIC_PATHS = [
 
 export const NOINDEX_PRIVATE_PATHS = [
   '/login',
-  '/reset-password',
-  '/verify-email',
-  '/auth/auth-code-error',
   '/invite/[token]',
 ] as const
 

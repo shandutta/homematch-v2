@@ -10,15 +10,15 @@ const matrixPath = path.join(
 )
 const matrix = fs.readFileSync(matrixPath, 'utf8')
 
+// /verify-email, /reset-password, /auth/auth-code-error retired in
+// Phase 4 of the Supabase-auth elimination (2026-05-13) — Clerk owns
+// password reset and email verification on its own hosted pages.
 const requiredPublicRoutes = [
   '/',
   '/about',
   '/contact',
   '/login',
   '/signup',
-  '/verify-email',
-  '/reset-password',
-  '/auth/auth-code-error',
   '/terms',
   '/privacy',
   '/cookies',
@@ -46,9 +46,6 @@ const routeFiles = [
   'src/app/contact/page.tsx',
   'src/app/login/page.tsx',
   'src/app/signup/page.tsx',
-  'src/app/verify-email/page.tsx',
-  'src/app/reset-password/page.tsx',
-  'src/app/auth/auth-code-error/page.tsx',
   'src/app/terms/page.tsx',
   'src/app/privacy/page.tsx',
   'src/app/cookies/page.tsx',

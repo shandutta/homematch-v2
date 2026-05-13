@@ -1,8 +1,7 @@
-// Phase 3 (Supabase-auth elimination, 2026-05-13): the legacy
-// `buildSupabaseSessionCookieOptions` re-export was dropped along
-// with the legacy Supabase middleware path. Tests that need the cookie
-// helper import it from '@/lib/supabase/cookie-options' directly until
-// Phase 4 removes that file too.
+// Phase 4 (Supabase-auth elimination, 2026-05-13): cookie-options +
+// storage-keys helpers were deleted along with the legacy Supabase
+// middleware path. This shim only re-exports what Next.js / tests
+// still need.
 export { config } from '../middleware'
 // Re-export the default clerkMiddleware export as `middleware` for tests that
 // import from this path. With Clerk's wrapper, the runtime export is the
