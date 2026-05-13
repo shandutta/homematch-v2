@@ -124,10 +124,16 @@ export class PropertySearchService
       // migration, future test/integration runs writing to prod could leak
       // test rows back in. Drop the well-known patterns at query time so
       // they never reach the prod feed.
+      //
+      // Codex P2 (PR #37): the zpid filter has to be null-safe. In SQL,
+      // `NOT (zpid LIKE 'dev-%')` evaluates to NULL when zpid IS NULL, and
+      // a NULL WHERE clause filters the row out — which would drop every
+      // legitimate listing that has no zpid. Use an .or() with an explicit
+      // is-null arm so null-zpid rows are kept.
       query = query
         .not('state', 'eq', 'TS')
         .not('city', 'eq', 'Test City')
-        .not('zpid', 'like', 'dev-%')
+        .or('zpid.is.null,zpid.not.like.dev-%')
 
       // Apply filters using the filter builder
       query = this.filterBuilder.applyFilters(query, filters)
