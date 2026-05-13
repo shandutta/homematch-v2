@@ -241,7 +241,21 @@ describe('VibesService', () => {
     )
   })
 
-  test('toInsertRecord stores suggested tags as-is', () => {
+  test('toInsertRecord gates suggested_tags through the LLM-001 output-gating rules', () => {
+    // LLM-001: tags whose required input signal is absent are dropped at
+    // toInsertRecord time. The unfiltered tag list lives in raw_output;
+    // suggested_tags is the curated, defensible subset.
+    //
+    // Given:
+    //   - validVibesOutput.suggestedTags = ['Ranch Style', "Chef's Kitchen",
+    //     'Remote Work Ready', 'Natural Light Filled']
+    //   - one image (image-dependent tags fail the >= 4 gate)
+    //   - mockProperty year_built is null in the fixture
+    // We expect:
+    //   - "Chef's Kitchen" kept (no gating rule applies)
+    //   - "Ranch Style" dropped (era tag, year_built null)
+    //   - "Remote Work Ready" dropped (ALWAYS_DROPPED — no signal exists)
+    //   - "Natural Light Filled" dropped (multi-image, only 1 image)
     const property = mockProperty()
     const result: VibesGenerationResult = {
       propertyId: property.id,
@@ -269,7 +283,11 @@ describe('VibesService', () => {
       property,
       result.rawOutput
     )
-    expect(insert.suggested_tags).toEqual(validVibesOutput.suggestedTags)
+    expect(insert.suggested_tags).toEqual(["Chef's Kitchen"])
+    // CONFIDENCE-001: confidence is now computed from input completeness,
+    // not the hardcoded 0.85 that lived on every prior row.
+    expect(insert.confidence).not.toBe(0.85)
+    expect(typeof insert.confidence).toBe('number')
   })
 
   test('generateVibes throws on invalid JSON', async () => {
