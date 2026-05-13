@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { DbInteractionType } from '@/types/app'
 import type { Property } from '@/types/database'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -97,11 +98,23 @@ export async function POST(request: NextRequest) {
 
     const householdId = userProfile?.household_id ?? null
 
+    // @service-role-capability: Phase 2 of the Supabase-auth elimination —
+    // Clerk users have no Supabase session, so the anon-key client's
+    // auth.uid() is NULL and the user_property_interactions UPSERT is
+    // RLS-blocked. We've already verified the Clerk session above
+    // (requireUserFromRequest → ensureUserProfileForCurrentClerkUser
+    // resolved userId to a real user_profiles.id), so write under
+    // service-role with the resolved user_id explicitly in the row.
+    // TODO(D1 follow-up): replace with a constrained
+    // upsert_user_interaction_for_user_id RPC.
+    const writeClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-interactions-write',
+    })
+
     // Schema (since 20260508015000) enforces UNIQUE(user_id, property_id), so
     // there's at most one row per user/property. Use UPSERT on that conflict
     // target rather than DELETE+INSERT — the old pattern was non-atomic and
-    // could collide with itself on rapid duplicate POSTs. (Supersedes the
-    // /review M1 let/const lint fix on the old delete pattern.)
+    // could collide with itself on rapid duplicate POSTs.
     //
     // Semantics:
     //   - like / dislike / skip: explicit user decision, override anything.
@@ -109,7 +122,7 @@ export async function POST(request: NextRequest) {
     //     We upsert with ignoreDuplicates so a view-after-decision is a no-op.
     const isOverridingType = dbInteractionType !== 'view'
 
-    const upsertResult = await supabase
+    const upsertResult = await writeClient
       .from('user_property_interactions')
       .upsert(
         {
@@ -144,7 +157,9 @@ export async function POST(request: NextRequest) {
     // current state rather than a hollow response.
     let newInteraction = upsertResult.data
     if (!newInteraction) {
-      const { data: existing } = await supabase
+      // Use the service-role client here too — same auth.uid() problem
+      // for the re-fetch.
+      const { data: existing } = await writeClient
         .from('user_property_interactions')
         .select()
         .match({ user_id: userId, property_id: propertyId })
@@ -414,8 +429,17 @@ export async function DELETE(request: NextRequest) {
 
     const { propertyId } = parsed.data
 
+    // @service-role-capability: same auth.uid() problem as the POST path —
+    // Clerk users hit RLS without a Supabase session. Service-role with
+    // explicit user_id in the WHERE clause.
+    // TODO(D1 follow-up): replace with a constrained
+    // delete_user_interaction_for_user_id RPC.
+    const writeClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-interactions-write',
+    })
+
     // Use select() to get back deleted rows and verify the delete worked
-    const { data: deletedRows, error } = await supabase
+    const { data: deletedRows, error } = await writeClient
       .from('user_property_interactions')
       .delete()
       .match({ user_id: userId, property_id: propertyId })
