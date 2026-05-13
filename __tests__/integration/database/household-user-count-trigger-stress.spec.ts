@@ -31,12 +31,31 @@ const createUserPool = async (
   serviceClient: ReturnType<IntegrationTestHelper['getServiceClient']>,
   count: number
 ): Promise<Pool> => {
+  // user_profiles.id still FKs auth.users.id on the test DB (some
+  // historic profile inserts skipped the FK on prod via a Clerk-aware
+  // bootstrap, but the FK is still enforced in supabase/migrations).
+  // Create real auth.users via admin API so the synthetic pool can
+  // hold user_profiles rows without tripping the constraint.
   const ids: string[] = []
-  for (let i = 0; i < count; i += 1) ids.push(randomUUID())
+  const runId = randomUUID().slice(0, 8)
+  for (let i = 0; i < count; i += 1) {
+    const email = `stress-${runId}-${i}@trigger-stress.invalid`
+    const { data, error } = await serviceClient.auth.admin.createUser({
+      email,
+      password: randomUUID(),
+      email_confirm: true,
+    })
+    if (error || !data.user) {
+      throw new Error(
+        `[stress-pool] failed to create auth user ${email}: ${error?.message ?? 'no user returned'}`
+      )
+    }
+    ids.push(data.user.id)
+  }
 
   const rows = ids.map((id, i) => ({
     id,
-    email: `stress-${id.slice(0, 8)}-${i}@trigger-stress.invalid`,
+    email: `stress-${runId}-${i}@trigger-stress.invalid`,
     display_name: `stress-${i}`,
     onboarding_completed: false,
     preferences: {},
@@ -57,6 +76,11 @@ const createUserPool = async (
         .update({ household_id: null })
         .in('id', ids)
       await serviceClient.from('user_profiles').delete().in('id', ids)
+      // Tear down the auth.users rows too so back-to-back test runs
+      // don't accumulate stress-* users in the local Supabase.
+      await Promise.all(
+        ids.map((id) => serviceClient.auth.admin.deleteUser(id))
+      )
     },
   }
 }
