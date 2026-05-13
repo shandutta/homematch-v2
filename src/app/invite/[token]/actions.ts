@@ -36,7 +36,9 @@ export async function acceptInviteAction(token: string) {
 
   const userEmail = userCtx.email ?? ''
 
-  const serviceClient = await getServiceRoleClient()
+  const serviceClient = await getServiceRoleClient({
+    approvedCapability: 'invite-acceptance',
+  })
 
   type AcceptInviteRow = {
     success: boolean

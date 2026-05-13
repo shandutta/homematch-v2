@@ -34,17 +34,14 @@ const SUPABASE_TIMEOUT_MS = parseInt(
 )
 
 // Clerk route matcher for protected pages.
-// Mirrors PROTECTED_PATH_PREFIXES in src/lib/routing/protected-routes.ts.
-// Clerk uses path-to-regexp glob syntax.
-const isClerkProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/profile(.*)',
-  '/household(.*)',
-  '/settings(.*)',
-  '/validation(.*)',
-  '/couples(.*)',
-  '/properties(.*)',
-])
+// M5 (2026-05-13 audit): derived from the single PROTECTED_PATH_PREFIXES
+// source so a new route is added in one place. The trailing `(.*)` makes
+// it path-prefix matching to mirror `isProtectedPath`'s `startsWith` form.
+import { PROTECTED_PATH_PREFIXES } from '@/lib/routing/protected-routes'
+
+const isClerkProtectedRoute = createRouteMatcher(
+  PROTECTED_PATH_PREFIXES.map((prefix) => `${prefix}(.*)`)
+)
 
 const hasSupabasePublicConfig = () =>
   Boolean(
@@ -69,10 +66,28 @@ const getSafeRedirectPath = (value: string | null) => {
   return decoded
 }
 
-const applySecurityHeaders = (response: NextResponse) => {
+const applySecurityHeaders = (
+  response: NextResponse,
+  request?: NextRequest
+) => {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) =>
     response.headers.set(key, value)
   )
+
+  // A6 (2026-05-13 audit): emit a request ID for log correlation. If the
+  // edge (Vercel, Cloudflare) already attached one, preserve it; otherwise
+  // mint a fresh UUID. Available to handlers via the request headers
+  // (read with request.headers.get('x-request-id')) and surfaced to the
+  // client on the response so issues can be reported back with the ID.
+  const incomingId =
+    request?.headers.get('x-request-id') ||
+    request?.headers.get('x-vercel-id') ||
+    null
+  const requestId = incomingId ?? crypto.randomUUID()
+  response.headers.set('x-request-id', requestId)
+  if (request && !request.headers.get('x-request-id')) {
+    request.headers.set('x-request-id', requestId)
+  }
 
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(
@@ -142,11 +157,11 @@ async function legacySupabaseMiddleware(
     process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
 
   if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
-    return applySecurityHeaders(supabaseResponse)
+    return applySecurityHeaders(supabaseResponse, request)
   }
 
   if (isApiRoute) {
-    return applySecurityHeaders(supabaseResponse)
+    return applySecurityHeaders(supabaseResponse, request)
   }
 
   const redirectAnonymousProtectedPage = () => {
@@ -167,7 +182,7 @@ async function legacySupabaseMiddleware(
       return redirectAnonymousProtectedPage()
     }
 
-    return applySecurityHeaders(supabaseResponse)
+    return applySecurityHeaders(supabaseResponse, request)
   }
 
   // Dynamic cookie name based on hostname
@@ -182,7 +197,7 @@ async function legacySupabaseMiddleware(
       return redirectAnonymousProtectedPage()
     }
 
-    return applySecurityHeaders(supabaseResponse)
+    return applySecurityHeaders(supabaseResponse, request)
   }
 
   const supabaseTimeoutController = new AbortController()
@@ -367,7 +382,7 @@ async function legacySupabaseMiddleware(
   }
 
   // Add security headers
-  const response = applySecurityHeaders(supabaseResponse)
+  const response = applySecurityHeaders(supabaseResponse, request)
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
@@ -411,10 +426,36 @@ export default clerkMiddleware(async (clerkAuth, request) => {
   // to /api/webhooks/clerk (Svix signature is its own auth) and the
   // performance-metrics ingest beacon.
   if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
-    return applySecurityHeaders(NextResponse.next({ request: nextRequest }))
+    return applySecurityHeaders(NextResponse.next({ request: nextRequest }), nextRequest)
   }
 
-  const { userId: clerkUserId } = await clerkAuth()
+  // M3 (2026-05-13 audit): wrap clerkAuth() in a timeout. Without it,
+  // Clerk SDK slowness (token verification, JWKS fetch, network blip)
+  // hangs every request through middleware. Default 5s matches the
+  // Supabase auth timeout above; override via env for tighter SLAs.
+  const clerkTimeoutMs = parseInt(
+    process.env.MIDDLEWARE_CLERK_TIMEOUT_MS || '5000',
+    10
+  )
+  let clerkUserId: string | null = null
+  try {
+    const clerkResult = await Promise.race([
+      clerkAuth(),
+      new Promise<{ userId: null }>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Clerk auth timeout')),
+          clerkTimeoutMs
+        )
+      ),
+    ])
+    clerkUserId = clerkResult.userId ?? null
+  } catch (err) {
+    console.warn(
+      '[Middleware] Clerk auth failed/timed out — treating as unauthenticated:',
+      err instanceof Error ? err.message : err
+    )
+    clerkUserId = null
+  }
 
   // Clerk user is signed in — skip the legacy Supabase protection that would
   // redirect them to /login, and just return security headers.
@@ -433,7 +474,7 @@ export default clerkMiddleware(async (clerkAuth, request) => {
       response = NextResponse.redirect(target)
     }
 
-    return applySecurityHeaders(response)
+    return applySecurityHeaders(response, nextRequest)
   }
 
   // Anonymous (no Clerk session) — fall through to the legacy Supabase

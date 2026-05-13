@@ -6,17 +6,19 @@ import {
 } from '@/lib/supabase/server'
 
 interface GetServiceRoleClientOptions {
-  approvedCapability?: ApprovedServiceRoleCapability
+  approvedCapability: ApprovedServiceRoleCapability
 }
 
 /**
- * Creates a Supabase client with the service role key.
- * Only use on the server for trusted operations after the shared service-role
- * authorization gate passes. Accepts an optional `approvedCapability` to
- * bypass the admin role check for repo-approved use cases like webhooks.
+ * Returns a Supabase client backed by the service-role key.
+ *
+ * A3 (2026-05-13 audit): `approvedCapability` is required at the type
+ * level AND verified against an allowlist in `createServiceClient`. Every
+ * call site declares the gate it operates under; new code can't silently
+ * acquire RLS-bypassing access.
  */
 export async function getServiceRoleClient(
-  options: GetServiceRoleClientOptions = {}
+  options: GetServiceRoleClientOptions
 ): Promise<SupabaseClient<AppDatabase>> {
   return createServiceClient(options)
 }

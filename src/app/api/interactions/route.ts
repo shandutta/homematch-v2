@@ -325,9 +325,15 @@ export async function GET(request: NextRequest) {
     try {
       queryResult = await Promise.race([query, timeoutPromise])
     } catch (e) {
+      // A4 (2026-05-13 audit): the prior fallback returned 200 with an empty
+      // list to dodge a test-harness retry loop. That hid real failures from
+      // monitoring and from real users (who saw an empty list instead of
+      // an error). Return 504 with a structured error and let the test
+      // harness be fixed separately if it retries on 504.
       console.error('Interactions list fetch timed out or failed:', e)
-      // Gracefully degrade instead of propagating a 504 (which the test harness retries)
-      return noStoreJson({ items: [], nextCursor: null }, { status: 200 })
+      const message =
+        e instanceof Error ? e.message : 'Interactions list fetch failed'
+      return ApiErrorHandler.gatewayTimeout(message)
     }
 
     const { data, error } = queryResult

@@ -41,7 +41,9 @@ export default async function InvitePage({
   const resolvedParams = await params
   const token = resolvedParams.token
 
-  const serviceClient = await getServiceRoleClient()
+  const serviceClient = await getServiceRoleClient({
+    approvedCapability: 'invite-preview',
+  })
   const { data: invite, error } = await serviceClient
     .from('household_invitations')
     .select(

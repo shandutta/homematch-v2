@@ -53,7 +53,9 @@ export const GET = withRouteDeadline(
       // Use service role client to bypass RLS for user lookup. RLS only
       // allows users to view their own profile, but the invite UX needs an
       // exact-email match against onboarded peers.
-      const serviceClient = await getServiceRoleClient()
+      const serviceClient = await getServiceRoleClient({
+        approvedCapability: 'users-search',
+      })
 
       // Exact match only; returns at most one row.
       const { data: users, error } = await serviceClient

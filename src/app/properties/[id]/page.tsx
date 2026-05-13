@@ -85,6 +85,11 @@ export default async function PropertyPage({
   const lookupColumn = UUID_RE.test(resolvedParams.id) ? 'id' : 'zpid'
 
   const supabase = await createClient()
+  // A5 (2026-05-13 audit): TODO ship a `PropertyDetailView` type narrower
+  // than `PropertyWithNeighborhood` so we can drop the unused
+  // `neighborhood.bounds` polygon (~several KB per request) and ingest-only
+  // property fields. Type refactor blocked the inline projection — see
+  // audit doc for status.
   const { data: property, error } = await supabase
     .from('properties')
     .select('*, neighborhood:neighborhoods(*)')

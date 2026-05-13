@@ -5,7 +5,6 @@ import type { NextRequest } from 'next/server'
 import { buildSupabaseSessionCookieOptions } from './cookie-options'
 import { getSupabaseAuthStorageKey } from './storage-keys'
 import { withRefreshRecovery } from './refresh-recovery'
-import { isInvalidRefreshTokenError } from './auth-helpers'
 
 // Default server client for Server Components and normal server contexts
 export async function createClient() {
@@ -169,7 +168,7 @@ export type ApprovedServiceRoleCapability =
   | 'clerk-household-write'
 
 type CreateServiceClientOptions = {
-  approvedCapability?: ApprovedServiceRoleCapability
+  approvedCapability: ApprovedServiceRoleCapability
 }
 
 const APPROVED_SERVICE_ROLE_CAPABILITIES =
@@ -184,23 +183,24 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-household-write',
   ])
 
-// Alternative server client with service role for administrative operations
-// WARNING: This uses the service role key which bypasses RLS
-// Only use for admin operations after proper authorization checks, or for an
-// explicit repo-approved capability with route-local auth/resource guards.
-export async function createServiceClient(
-  options: CreateServiceClientOptions = {}
-) {
-  const hasApprovedCapability =
-    options.approvedCapability !== undefined &&
-    APPROVED_SERVICE_ROLE_CAPABILITIES.has(options.approvedCapability)
-
-  // Check if caller is authorized to use service role
-  const isAuthorized =
-    hasApprovedCapability || (await checkServiceRoleAuthorization())
-
-  if (!isAuthorized) {
-    throw new Error('Unauthorized access to service role client')
+/**
+ * Service-role client. Bypasses RLS — every call site must pass a
+ * declared `approvedCapability` from the allowlist above. The TS type
+ * makes the param required; the runtime check guards against `as any`
+ * casts and dynamic invocations.
+ *
+ * A3 (2026-05-13 audit): the previous admin-runtime fallback (querying
+ * admin_role_assignments) was removed. No live caller used it, and
+ * having a fallback means new code can silently acquire the key without
+ * declaring intent. To re-enable, add an `'admin-runtime'` capability
+ * here AND the fallback function — make it explicit.
+ */
+export async function createServiceClient(options: CreateServiceClientOptions) {
+  if (!APPROVED_SERVICE_ROLE_CAPABILITIES.has(options.approvedCapability)) {
+    throw new Error(
+      `Unknown service-role capability: ${String(options.approvedCapability)}. ` +
+        `Add it to APPROVED_SERVICE_ROLE_CAPABILITIES in src/lib/supabase/server.ts.`
+    )
   }
 
   return createServerClient<AppDatabase>(
@@ -213,44 +213,4 @@ export async function createServiceClient(
       },
     }
   )
-}
-
-const SERVICE_ROLE_AUTHORIZED_ROLES = new Set(['admin'])
-
-// Authorization check for service role usage
-async function checkServiceRoleAuthorization(): Promise<boolean> {
-  try {
-    // Get the current user from the regular client
-    const client = await createClient()
-    const {
-      data: { user },
-      error,
-    } = await client.auth.getUser()
-
-    // Handle invalid refresh token gracefully
-    if (error && isInvalidRefreshTokenError(error)) {
-      console.warn('[Server] Invalid refresh token in service role check')
-      return false
-    }
-
-    if (error || !user) return false
-
-    const { data: assignment, error: assignmentError } = await client
-      .from('admin_role_assignments')
-      .select('role, enabled, expires_at')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (assignmentError || !assignment || !assignment.enabled) return false
-    if (!SERVICE_ROLE_AUTHORIZED_ROLES.has(assignment.role)) return false
-
-    if (assignment.expires_at) {
-      const expiresAt = Date.parse(assignment.expires_at)
-      if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) return false
-    }
-
-    return true
-  } catch {
-    return false
-  }
 }
