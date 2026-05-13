@@ -21,6 +21,11 @@ import {
 } from './openrouter-client'
 import { buildVibesMessages, type PropertyContext } from './prompts'
 import {
+  computeConfidence,
+  dedupeEmotionalHooks,
+  gateTagsAgainstInput,
+} from './output-gating'
+import {
   selectStrategicImages,
   type ImageSelectionResult,
 } from './image-selector'
@@ -722,6 +727,25 @@ export class VibesService {
     rawOutput: string
   ): PropertyVibesInsert {
     const vibes = result.vibes
+    const imageCount = result.images.selectedImages.length
+
+    // LLM-001: gate the LLM's tag list against actually-available input
+    // signals. Tags claiming "Walkable Neighborhood" / "Pet Paradise" /
+    // "Hardwood Throughout" etc. without supporting data are dropped here
+    // before the row is persisted. See output-gating.ts for the full rule set.
+    const gateInput = {
+      imageCount,
+      hasDescription:
+        typeof property.description === 'string' &&
+        property.description.trim().length > 0,
+      hasAmenities:
+        Array.isArray(property.amenities) && property.amenities.length > 0,
+      yearBuilt: property.year_built ?? null,
+      lotSizeSqft: property.lot_size_sqft ?? null,
+      price: property.price,
+      bedrooms: property.bedrooms,
+    }
+    const gated = gateTagsAgainstInput(vibes.suggestedTags, gateInput)
 
     return {
       property_id: result.propertyId,
@@ -729,8 +753,10 @@ export class VibesService {
       vibe_statement: vibes.vibeStatement,
       feature_highlights: vibes.notableFeatures,
       lifestyle_fits: vibes.lifestyleFits,
-      suggested_tags: vibes.suggestedTags,
-      emotional_hooks: vibes.emotionalHooks,
+      suggested_tags: gated.kept,
+      // LLM-TEMPLATING-001: drop near-duplicate hooks (same beat phrased
+      // twice on one card).
+      emotional_hooks: dedupeEmotionalHooks(vibes.emotionalHooks),
       primary_vibes: vibes.primaryVibes,
       aesthetics: vibes.aesthetics,
       input_data: {
@@ -758,7 +784,10 @@ export class VibesService {
       images_analyzed: result.images.selectedImages.map((img) => img.url),
       source_data_hash: VibesService.generateSourceHash(property),
       generation_cost_usd: result.usage.estimatedCostUsd,
-      confidence: 0.85, // Could be computed from model response
+      // CONFIDENCE-001: compute from input completeness instead of the prior
+      // fixed 0.85 constant. The catalog had 11,133 rows with confidence
+      // exactly 0.85, which made the column unusable as a filter.
+      confidence: computeConfidence(gateInput),
     }
   }
 
