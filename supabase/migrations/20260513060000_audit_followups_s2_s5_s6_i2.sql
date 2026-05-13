@@ -67,6 +67,10 @@ ALTER TABLE public.properties
 -- just `bathrooms > 0`, which evaluates false for NULL).
 -- ============================================================================
 
+-- Drop NOT NULL so the unknown-value sentinel can land as NULL.
+ALTER TABLE public.properties
+  ALTER COLUMN bathrooms DROP NOT NULL;
+
 UPDATE public.properties
    SET bathrooms = NULL
  WHERE bathrooms = 0;
