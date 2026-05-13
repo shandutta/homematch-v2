@@ -1,10 +1,17 @@
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { requireUserFromRequest } from '@/lib/api/auth'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 import { rateLimit } from '@/lib/middleware/rateLimiter'
 import { withRouteDeadline } from '@/lib/api/route-deadline'
 import type { Json } from '@/types/database'
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const isLikelyClerkUserId = (id: string) =>
+  id.startsWith('user_') && !UUID_PATTERN.test(id)
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp']
@@ -66,6 +73,21 @@ export const POST = withRouteDeadline(
         await requireUserFromRequest(supabase, request)
       if (unauthorizedResponse) {
         return unauthorizedResponse
+      }
+
+      // Phase 2 (Supabase-auth elim): resolve Clerk user.id → user_profiles.id
+      // before any user_profiles write. Without this, .eq('id', user.id)
+      // fails because user.id is "user_xxx" not a UUID.
+      let userId = user.id
+      if (isLikelyClerkUserId(userId)) {
+        const profileId = await ensureUserProfileForCurrentClerkUser()
+        if (!profileId) {
+          return ApiErrorHandler.serverError(
+            'Failed to bootstrap user profile',
+            new Error('ensure-profile returned null')
+          )
+        }
+        userId = profileId
       }
 
       // Parse multipart form data
@@ -144,18 +166,28 @@ export const POST = withRouteDeadline(
       // Append cache buster to URL
       const cacheBustedUrl = `${publicUrl}?t=${timestamp}`
 
+      // @service-role-capability: Phase 2 (Supabase-auth elim). Clerk
+      // users have no Supabase session, so auth.uid() is NULL on the
+      // anon client and user_profiles RLS blocks the read+update.
+      // We have resolved userId from the Clerk session above; write
+      // under service-role with the resolved id explicitly.
+      // TODO(D1 follow-up): replace with avatar_set_for_user_id RPC.
+      const writeClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-user-profile-write',
+      })
+
       // Update user preferences with custom avatar
-      const { data: profile } = await supabase
+      const { data: profile } = await writeClient
         .from('user_profiles')
         .select('preferences')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
       const currentPreferences = isJsonRecord(profile?.preferences)
         ? profile.preferences
         : {}
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await writeClient
         .from('user_profiles')
         .update({
           preferences: {
@@ -166,7 +198,7 @@ export const POST = withRouteDeadline(
             },
           },
         })
-        .eq('id', user.id)
+        .eq('id', userId)
 
       if (updateError) {
         console.error('Profile update error:', updateError)
@@ -206,12 +238,30 @@ export const DELETE = withRouteDeadline(
         return unauthorizedResponse
       }
 
+      // Phase 2 (Supabase-auth elim): resolve Clerk user.id → user_profiles.id
+      let userId = user.id
+      if (isLikelyClerkUserId(userId)) {
+        const profileId = await ensureUserProfileForCurrentClerkUser()
+        if (!profileId) {
+          // No profile to clear an avatar from.
+          return ApiErrorHandler.success({ deleted: true })
+        }
+        userId = profileId
+      }
+
+      // @service-role-capability: Phase 2 (Supabase-auth elim) — same
+      // auth.uid()-is-null problem as the POST path. Write under
+      // service-role with explicit userId.
+      const writeClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-user-profile-write',
+      })
+
       // Clear avatar from preferences FIRST
       // This ensures users don't see a broken avatar URL
-      const { data: profile } = await supabase
+      const { data: profile } = await writeClient
         .from('user_profiles')
         .select('preferences')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
       if (!profile) {
@@ -225,12 +275,12 @@ export const DELETE = withRouteDeadline(
       // Remove avatar from preferences
       const { avatar: _, ...preferencesWithoutAvatar } = currentPreferences
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await writeClient
         .from('user_profiles')
         .update({
           preferences: preferencesWithoutAvatar,
         })
-        .eq('id', user.id)
+        .eq('id', userId)
 
       if (updateError) {
         console.error('Profile update error:', updateError)

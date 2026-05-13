@@ -143,8 +143,13 @@ export async function POST(request: NextRequest) {
     }
     const parsed = parsePreferences(raw)
 
+    // Phase 2 (Supabase-auth elim): this route does both a read AND a
+    // write of user_profiles for the current Clerk user. The capability
+    // used to be 'clerk-profile-read' which technically passed the
+    // allowlist check but was semantically wrong for the .update() call.
+    // Use 'clerk-user-profile-write' which covers both.
     const sr = await getServiceRoleClient({
-      approvedCapability: 'clerk-profile-read',
+      approvedCapability: 'clerk-user-profile-write',
     })
 
     // Merge the new preference fields on top of whatever is already stored.

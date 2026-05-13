@@ -105,6 +105,18 @@ export type ApprovedServiceRoleCapability =
   // /api/households/join) verify the Clerk session, resolve the
   // user_profiles.id, then call this RPC with the explicit user_id.
   | 'clerk-household-write'
+  // Phase 2 (Supabase-auth elimination): write paths that previously
+  // depended on auth.uid()=user_id RLS policies on
+  // user_property_interactions / user_profiles / saved_searches /
+  // household_property_resolutions. Clerk users have no Supabase
+  // session, so auth.uid() is NULL on the anon-key client and the
+  // upsert/update is RLS-blocked. Clerk-aware routes verify the
+  // Clerk session, resolve user_profiles.id, then write under
+  // service-role with the resolved user_id explicitly in the row.
+  | 'clerk-interactions-write'
+  | 'clerk-user-profile-write'
+  | 'clerk-saved-search-write'
+  | 'clerk-household-resolution-write'
 
 type CreateServiceClientOptions = {
   approvedCapability: ApprovedServiceRoleCapability
@@ -120,6 +132,10 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-profile-bootstrap',
     'clerk-profile-read',
     'clerk-household-write',
+    'clerk-interactions-write',
+    'clerk-user-profile-write',
+    'clerk-saved-search-write',
+    'clerk-household-resolution-write',
   ])
 
 /**

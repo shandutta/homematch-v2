@@ -37,6 +37,15 @@ describe('service-role route capability guard', () => {
       // / household_invitations table under service-role. HOUSEHOLD-001.
       './src/app/api/households/invitations/route.ts',
       './src/app/api/households/route.ts',
+      // Phase 2 (Supabase-auth elim): POST/DELETE writes to
+      // user_property_interactions cannot reach Clerk-authed users via
+      // anon-key (auth.uid() is NULL → RLS blocks). Route already
+      // resolves user.id → user_profiles.id via ensureUserProfileForCurrentClerkUser,
+      // then writes under service-role with the explicit user_id.
+      './src/app/api/interactions/route.ts',
+      // Phase 2 (Supabase-auth elim): avatar POST + DELETE update
+      // user_profiles.preferences. Same auth.uid() problem.
+      './src/app/api/users/avatar/route.ts',
       // /api/users/me: anon-key Supabase client cannot read user_profiles
       // for Clerk users (RLS blocks because auth.uid() is null). Service-role
       // SELECT is scoped to the already-verified profile UUID.
