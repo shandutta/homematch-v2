@@ -7,10 +7,10 @@ import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 
 // @service-role-capability: authenticated invite acceptance; delegates the
-// transactional accept to the accept_household_invite RPC so both row updates
-// (user_profiles.household_id + household_invitations.status) commit together.
-// Email-match enforcement is a product decision tracked in the 2026-05-13
-// audit (Q3); when added, it gates the RPC call upstream.
+// transactional accept to accept_household_invite (20260513030000). The RPC
+// runs FOR UPDATE on the invite row, enforces invited_email match against
+// the caller's email (Q3 Option A — strict match), and commits both
+// user_profiles + household_invitations updates atomically.
 export async function acceptInviteAction(token: string) {
   const userCtx = await getServerUserContext()
 
@@ -34,6 +34,8 @@ export async function acceptInviteAction(token: string) {
     }
   }
 
+  const userEmail = userCtx.email ?? ''
+
   const serviceClient = await getServiceRoleClient()
 
   type AcceptInviteRow = {
@@ -42,13 +44,13 @@ export async function acceptInviteAction(token: string) {
     household_id: string | null
   }
 
-  // The RPC is declared in 20260513020100; until types/database.ts is
+  // The RPC is declared in 20260513030000; until types/database.ts is
   // regenerated (`supabase gen types`), bypass the generated Functions
   // union with a narrow cast that preserves the response shape.
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const rpc = serviceClient.rpc as unknown as (
     fn: 'accept_household_invite',
-    args: { p_token: string; p_profile_id: string }
+    args: { p_token: string; p_profile_id: string; p_user_email: string }
   ) => Promise<{
     data: AcceptInviteRow[] | null
     error: { message: string } | null
@@ -57,6 +59,7 @@ export async function acceptInviteAction(token: string) {
   const { data, error } = await rpc('accept_household_invite', {
     p_token: token,
     p_profile_id: profileId,
+    p_user_email: userEmail,
   })
 
   if (error) {
