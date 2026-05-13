@@ -23,9 +23,7 @@ export default function TermsPage() {
             These terms govern your use of HomeMatch. By accessing or using the
             service, you agree to them.
           </p>
-          <p className="text-sm text-slate-500">
-            Last updated: May 13, 2026
-          </p>
+          <p className="text-sm text-slate-500">Last updated: May 13, 2026</p>
         </header>
 
         <section className="space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
