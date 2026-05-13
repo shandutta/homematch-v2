@@ -5,7 +5,7 @@
  * Using Qwen 3 VL which supports more images than NVIDIA free tier.
  */
 
-export interface SelectedImage {
+interface SelectedImage {
   url: string
   category: string
   index: number
@@ -227,7 +227,7 @@ export function selectStrategicImages(
  * Validate that image URLs are accessible
  * (Optional - can be used for pre-validation)
  */
-export async function validateImageUrls(
+async function _validateImageUrls(
   images: SelectedImage[],
   timeoutMs: number = 5000
 ): Promise<SelectedImage[]> {

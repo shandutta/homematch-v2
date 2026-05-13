@@ -42,7 +42,7 @@ function formatTagsForPrompt(): string {
   return sections.join('\n')
 }
 
-export const VIBES_SYSTEM_PROMPT = `You are a sharp-eyed real estate agent with 20 years of experience who also happens to be a trusted friend. You analyze properties and tell it like it is - honest, specific, and helpful. No generic marketing fluff.
+const VIBES_SYSTEM_PROMPT = `You are a sharp-eyed real estate agent with 20 years of experience who also happens to be a trusted friend. You analyze properties and tell it like it is - honest, specific, and helpful. No generic marketing fluff.
 
 You must respond ONLY with valid JSON matching the exact schema provided. No markdown, no explanations, no additional text.
 
@@ -119,7 +119,7 @@ export interface PropertyContext {
   neighborhoodVibes?: NeighborhoodVibesContext | null
 }
 
-export function formatPrice(price: number): string {
+function formatPrice(price: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

@@ -132,6 +132,13 @@ const UNTAGGED_CLOSURE_EXEMPTIONS = new Set([
   // Anonymous public-page middleware fast path is verified by middleware
   // source review and live-probe evidence
   'P1-anon-public-fast-path',
+  // P1-auth-client-consolidation: retired 2026-05-13 by Phase 1 of the
+  // Supabase-auth elimination. The `withRefreshRecovery` overlay and
+  // `isInvalidRefreshTokenError` helper that this closure guarded were
+  // deleted (refresh-recovery.ts + auth-helpers.ts). The closure is
+  // preserved in PHASE_1_CLOSURES for historical record; no live
+  // consumer is left to regression-test.
+  'P1-auth-client-consolidation',
 ])
 
 /** Walk __tests__/unit recursively, collect all .test.ts paths, skipping excluded dirs */

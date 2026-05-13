@@ -167,7 +167,7 @@ export interface VibesGenerationResult {
   repairApplied: boolean
 }
 
-export interface VibesGenerationError {
+interface VibesGenerationError {
   propertyId: string
   error: string
   code?: string

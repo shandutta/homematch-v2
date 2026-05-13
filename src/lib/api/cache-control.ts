@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 
-export const USER_SPECIFIC_NO_STORE_CACHE_CONTROL =
+const USER_SPECIFIC_NO_STORE_CACHE_CONTROL =
   'private, no-store, no-cache, must-revalidate, max-age=0'
 
-export function withUserSpecificNoStoreHeaders<T>(
+function withUserSpecificNoStoreHeaders<T>(
   response: NextResponse<T>
 ): NextResponse<T>
-export function withUserSpecificNoStoreHeaders(response: undefined): undefined
-export function withUserSpecificNoStoreHeaders<T>(
+function withUserSpecificNoStoreHeaders(response: undefined): undefined
+function withUserSpecificNoStoreHeaders<T>(
   response: NextResponse<T> | undefined
 ): NextResponse<T> | undefined {
   response?.headers?.set?.(

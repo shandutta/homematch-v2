@@ -13,10 +13,8 @@ export async function GET() {
       return ApiErrorHandler.serviceUnavailable('Maps service unavailable')
     }
 
-    // Build the script URL with restricted server key (not exposed to client)
-    const _scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${serverApiKey}&libraries=places,drawing&loading=async&callback=initGoogleMaps`
-
-    // Return the script URL to the client (without exposing the key)
+    // The proxy fetches the actual Google Maps script server-side so the
+    // API key never reaches the browser. We only expose the proxy URL.
     return noStoreJson({
       scriptUrl: '/api/maps/proxy-script',
       status: 'ready',

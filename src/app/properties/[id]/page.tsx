@@ -85,9 +85,16 @@ export default async function PropertyPage({
   const lookupColumn = UUID_RE.test(resolvedParams.id) ? 'id' : 'zpid'
 
   const supabase = await createClient()
+  // A5 (2026-05-13 audit): drops `neighborhood.bounds` (PostGIS polygon,
+  // ~several KB on the wire) and `created_at` from the hot detail-page
+  // query. PropertyDetailNeighborhood (defined in types/database.ts)
+  // captures the narrowed shape; neighborhoodSchema in lib/schemas
+  // accepts both narrowed and full shapes via .nullish() on those keys.
   const { data: property, error } = await supabase
     .from('properties')
-    .select('*, neighborhood:neighborhoods(*)')
+    .select(
+      '*, neighborhood:neighborhoods(id, name, city, state, metro_area, median_price, walk_score, transit_score)'
+    )
     .eq(lookupColumn, resolvedParams.id)
     .eq('is_active', true)
     .maybeSingle()

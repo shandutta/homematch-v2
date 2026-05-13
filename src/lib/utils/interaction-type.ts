@@ -67,8 +67,6 @@ export function getDbFiltersForInteractionType(
 /**
  * Converts a DB interaction value to the UI InteractionType.
  */
-export function mapDbInteractionToUi(
-  dbType: DbInteractionType
-): InteractionType {
+function _mapDbInteractionToUi(dbType: DbInteractionType): InteractionType {
   return DB_TO_UI_MAP[dbType]
 }

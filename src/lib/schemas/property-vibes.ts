@@ -172,11 +172,7 @@ export const ALL_PROPERTY_TAGS: ReadonlyArray<string> = [
   ...PROPERTY_TAGS.location,
 ]
 
-export type PropertyTag = string
-
-// Legacy alias for backwards compatibility
-export const LIFESTYLE_TAGS = ALL_PROPERTY_TAGS
-export type LifestyleTag = PropertyTag
+type _PropertyTag = string
 
 // Lifestyle fit tiers (replacing arbitrary percentages)
 export type FitTier = 'perfect' | 'strong' | 'good' | 'possible'
@@ -305,7 +301,7 @@ export const llmVibesInputSchema = z.object({
 })
 
 // Database record schema
-export const propertyVibesSchema = z.object({
+const propertyVibesSchema = z.object({
   id: z.string().uuid(),
   property_id: z.string().uuid(),
 
@@ -337,18 +333,18 @@ export const propertyVibesSchema = z.object({
 })
 
 // Insert schema (omit auto-generated fields)
-export const propertyVibesInsertSchema = propertyVibesSchema.omit({
+const _propertyVibesInsertSchema = propertyVibesSchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
 })
 
 // Export types
-export type Vibe = z.infer<typeof vibeSchema>
-export type LifestyleFit = z.infer<typeof lifestyleFitSchema>
-export type NotableFeature = z.infer<typeof notableFeatureSchema>
-export type Aesthetics = z.infer<typeof aestheticsSchema>
+type _Vibe = z.infer<typeof vibeSchema>
+type _LifestyleFit = z.infer<typeof lifestyleFitSchema>
+type _NotableFeature = z.infer<typeof notableFeatureSchema>
+type _Aesthetics = z.infer<typeof aestheticsSchema>
 export type LLMVibesOutput = z.infer<typeof llmVibesOutputSchema>
-export type LLMVibesInput = z.infer<typeof llmVibesInputSchema>
+type _LLMVibesInput = z.infer<typeof llmVibesInputSchema>
 export type PropertyVibes = z.infer<typeof propertyVibesSchema>
-export type PropertyVibesInsert = z.infer<typeof propertyVibesInsertSchema>
+export type PropertyVibesInsert = z.infer<typeof _propertyVibesInsertSchema>

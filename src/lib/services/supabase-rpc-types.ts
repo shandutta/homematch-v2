@@ -21,14 +21,14 @@ interface BaseRPCParams {
 type FunctionReturn<TName extends keyof AppDatabase['public']['Functions']> =
   AppDatabase['public']['Functions'][TName]['Returns']
 
-export interface GetPropertiesWithinRadiusParams extends BaseRPCParams {
+interface GetPropertiesWithinRadiusParams extends BaseRPCParams {
   center_lat: number
   center_lng: number
   radius_km: number
   result_limit: number
 }
 
-export interface GetPropertiesInBoundsParams extends BaseRPCParams {
+interface GetPropertiesInBoundsParams extends BaseRPCParams {
   north_lat: number
   south_lat: number
   east_lng: number
@@ -36,66 +36,66 @@ export interface GetPropertiesInBoundsParams extends BaseRPCParams {
   result_limit: number
 }
 
-export interface CalculateDistanceParams extends BaseRPCParams {
+interface CalculateDistanceParams extends BaseRPCParams {
   lat1: number
   lng1: number
   lat2: number
   lng2: number
 }
 
-export interface GetWalkabilityScoreParams extends BaseRPCParams {
+interface GetWalkabilityScoreParams extends BaseRPCParams {
   center_lat: number
   center_lng: number
 }
 
-export interface GetTransitScoreParams extends BaseRPCParams {
+interface GetTransitScoreParams extends BaseRPCParams {
   center_lat: number
   center_lng: number
 }
 
-export interface GetNeighborhoodStatsParams extends BaseRPCParams {
+interface GetNeighborhoodStatsParams extends BaseRPCParams {
   neighborhood_uuid: string
 }
 
-export interface GetUserInteractionSummaryParams extends BaseRPCParams {
+interface GetUserInteractionSummaryParams extends BaseRPCParams {
   p_user_id: string
 }
 
-export interface GetMarketTrendsParams extends BaseRPCParams {
+interface GetMarketTrendsParams extends BaseRPCParams {
   timeframe: 'weekly' | 'monthly' | 'quarterly'
   months_back: number
 }
 
-export interface GetPropertyMarketComparisonsParams extends BaseRPCParams {
+interface GetPropertyMarketComparisonsParams extends BaseRPCParams {
   target_property_id: string
   radius_km: number
 }
 
-export interface GetMarketVelocityParams extends BaseRPCParams {
+interface GetMarketVelocityParams extends BaseRPCParams {
   target_neighborhood_id: string | null
 }
 
-export interface GetSimilarPropertiesParams extends BaseRPCParams {
+interface GetSimilarPropertiesParams extends BaseRPCParams {
   target_property_id: string
   radius_km: number
   result_limit: number
 }
 
-export interface GetNeighborhoodsInBoundsParams extends BaseRPCParams {
+interface GetNeighborhoodsInBoundsParams extends BaseRPCParams {
   north_lat: number
   south_lat: number
   east_lng: number
   west_lng: number
 }
 
-export interface GetPropertiesByDistanceParams extends BaseRPCParams {
+interface GetPropertiesByDistanceParams extends BaseRPCParams {
   center_lat: number
   center_lng: number
   max_distance_km: number
   result_limit: number
 }
 
-export interface GetPropertyClustersParams extends BaseRPCParams {
+interface GetPropertyClustersParams extends BaseRPCParams {
   north_lat: number
   south_lat: number
   east_lng: number
@@ -103,17 +103,17 @@ export interface GetPropertyClustersParams extends BaseRPCParams {
   zoom_level: number
 }
 
-export interface GetPropertiesInPolygonParams extends BaseRPCParams {
+interface GetPropertiesInPolygonParams extends BaseRPCParams {
   polygon_points: Array<{ lat: number; lng: number }>
   result_limit: number
 }
 
-export interface GetPropertiesAlongRouteParams extends BaseRPCParams {
+interface GetPropertiesAlongRouteParams extends BaseRPCParams {
   waypoints: Array<{ lat: number; lng: number }>
   corridor_width_km: number
 }
 
-export interface GetGeographicDensityParams extends BaseRPCParams {
+interface GetGeographicDensityParams extends BaseRPCParams {
   north_lat: number
   south_lat: number
   east_lng: number
@@ -121,22 +121,22 @@ export interface GetGeographicDensityParams extends BaseRPCParams {
   grid_size_deg: number
 }
 
-export interface GetNearestAmenitiesParams extends BaseRPCParams {
+interface GetNearestAmenitiesParams extends BaseRPCParams {
   center_lat: number
   center_lng: number
   amenity_types: string[]
   search_radius_km: number
 }
 
-export interface GeocodeAddressParams extends BaseRPCParams {
+interface GeocodeAddressParams extends BaseRPCParams {
   address_text: string
 }
 
-export interface GetPropertyCoordinatesParams extends BaseRPCParams {
+interface GetPropertyCoordinatesParams extends BaseRPCParams {
   property_id: string
 }
 
-export interface BackfillPropertyNeighborhoodsParams extends BaseRPCParams {
+interface BackfillPropertyNeighborhoodsParams extends BaseRPCParams {
   target_zpids?: string[] | null
   target_ids?: string[] | null
   batch_limit?: number | null
@@ -146,7 +146,7 @@ export interface BackfillPropertyNeighborhoodsParams extends BaseRPCParams {
 // RPC FUNCTION RETURN TYPES
 // ============================================================================
 
-export interface InteractionSummaryRow {
+interface _InteractionSummaryRow {
   interaction_type: string
   count: number
 }
@@ -162,20 +162,20 @@ export interface NeighborhoodStatsResult {
   avg_square_feet: number | string | null
 }
 
-export interface MarketTrend {
+interface _MarketTrend {
   period: string
   avg_price: number
   total_listings: number
   price_change_percent: number
 }
 
-export interface MarketVelocityResult {
+interface _MarketVelocityResult {
   avg_days_on_market: number
   total_sold: number
   velocity_score: number
 }
 
-export interface PropertyCluster {
+interface _PropertyCluster {
   lat: number
   lng: number
   count: number
@@ -196,7 +196,7 @@ export interface GeographicDensityResult {
 }
 
 // Define neighborhood result type for get_neighborhoods_in_bounds
-export interface NeighborhoodBounds {
+interface _NeighborhoodBounds {
   id: string
   name: string
   city: string
@@ -210,7 +210,7 @@ export interface NeighborhoodBounds {
 }
 
 // Define error types for RPC responses
-export interface SupabaseRPCError {
+interface SupabaseRPCError {
   message: string
   details?: string
   hint?: string
@@ -218,7 +218,7 @@ export interface SupabaseRPCError {
 }
 
 // Generic RPC Response type
-export interface RPCResponse<T> {
+interface RPCResponse<T> {
   data: T | null
   error: SupabaseRPCError | null
 }
@@ -230,12 +230,12 @@ export interface PropertyWithDistance {
   distance_km: number
 }
 
-export interface DistanceResult {
+interface _DistanceResult {
   property: Property
   distance_km: number
 }
 
-export interface GeocodeResult {
+interface _GeocodeResult {
   latitude: number | null
   longitude: number | null
   formatted_address: string
@@ -251,7 +251,7 @@ export interface AmenityResult {
   longitude: number
 }
 
-export interface PropertyCoordinatesResult {
+interface _PropertyCoordinatesResult {
   latitude: number
   longitude: number
   property_id: string

@@ -138,5 +138,3 @@ export function InFeedAd({ position = 0, className = '' }: InFeedAdProps) {
     </div>
   )
 }
-
-export default InFeedAd

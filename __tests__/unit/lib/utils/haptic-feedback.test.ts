@@ -6,7 +6,7 @@ import {
   expect,
   jest,
 } from '@jest/globals'
-import HapticFeedback, { useHapticFeedback } from '@/lib/utils/haptic-feedback'
+import { HapticFeedback, useHapticFeedback } from '@/lib/utils/haptic-feedback'
 
 const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
 

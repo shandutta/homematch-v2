@@ -1680,7 +1680,7 @@ type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
-export type Tables<
+type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
@@ -1734,7 +1734,7 @@ export type TablesInsert<
       : never
     : never
 
-export type TablesUpdate<
+type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
@@ -1759,7 +1759,7 @@ export type TablesUpdate<
       : never
     : never
 
-export type Enums<
+type _Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
@@ -1776,7 +1776,7 @@ export type Enums<
     ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
-export type CompositeTypes<
+type _CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
@@ -1793,7 +1793,7 @@ export type CompositeTypes<
     ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
-export const Constants = {
+const _Constants = {
   graphql_public: {
     Enums: {},
   },
@@ -1825,27 +1825,41 @@ export type HouseholdInvitationUpdate = TablesUpdate<'household_invitations'>
 export type UserPropertyInteraction = Tables<'user_property_interactions'>
 export type UserPropertyInteractionInsert =
   TablesInsert<'user_property_interactions'>
-export type UserPropertyInteractionUpdate =
-  TablesUpdate<'user_property_interactions'>
+type _UserPropertyInteractionUpdate = TablesUpdate<'user_property_interactions'>
 
 export type SavedSearch = Tables<'saved_searches'>
 export type SavedSearchInsert = TablesInsert<'saved_searches'>
 export type SavedSearchUpdate = TablesUpdate<'saved_searches'>
 
-export type PropertyVibe = Tables<'property_vibes'>
-export type PropertyVibeInsert = TablesInsert<'property_vibes'>
-export type PropertyVibeUpdate = TablesUpdate<'property_vibes'>
+type _PropertyVibe = Tables<'property_vibes'>
+type _PropertyVibeInsert = TablesInsert<'property_vibes'>
+type _PropertyVibeUpdate = TablesUpdate<'property_vibes'>
 
-export type NeighborhoodVibe = Tables<'neighborhood_vibes'>
-export type NeighborhoodVibeInsert = TablesInsert<'neighborhood_vibes'>
-export type NeighborhoodVibeUpdate = TablesUpdate<'neighborhood_vibes'>
+type _NeighborhoodVibe = Tables<'neighborhood_vibes'>
+type _NeighborhoodVibeInsert = TablesInsert<'neighborhood_vibes'>
+type _NeighborhoodVibeUpdate = TablesUpdate<'neighborhood_vibes'>
 
 export type NeighborhoodUpdate = TablesUpdate<'neighborhoods'>
 
 // Extended types
+
+// A5 (2026-05-13 audit): the detail-page query drops the heavy `bounds`
+// polygon (~several KB on the wire) and the `created_at` timestamp that
+// no current consumer reads. `PropertyDetailNeighborhood` is the narrower
+// neighborhood shape used everywhere a PropertyWithNeighborhood comes
+// from the detail-page select. The two omitted fields become optional so
+// upstream callers that still feed the full row also pass type-check.
+type PropertyDetailNeighborhood = Omit<
+  Neighborhood,
+  'bounds' | 'created_at'
+> & {
+  bounds?: Neighborhood['bounds'] | null
+  created_at?: Neighborhood['created_at'] | null
+}
+
 export type PropertyWithNeighborhood = Property & {
-  neighborhoods?: Neighborhood | null
-  neighborhood?: Neighborhood | null
+  neighborhoods?: PropertyDetailNeighborhood | null
+  neighborhood?: PropertyDetailNeighborhood | null
 }
 
 // User preferences (stored in user_profiles.preferences JSONB column)

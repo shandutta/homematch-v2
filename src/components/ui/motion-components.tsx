@@ -34,7 +34,7 @@ export const MotionSpan = forwardRef<
 })
 MotionSpan.displayName = 'MotionSpan'
 
-export const MotionSection = forwardRef<
+const MotionSection = forwardRef<
   HTMLElement,
   React.ComponentProps<typeof m.section>
 >((props, ref) => {
@@ -43,7 +43,7 @@ export const MotionSection = forwardRef<
 })
 MotionSection.displayName = 'MotionSection'
 
-export const MotionArticle = forwardRef<
+const MotionArticle = forwardRef<
   HTMLElement,
   React.ComponentProps<typeof m.article>
 >((props, ref) => {
@@ -52,7 +52,7 @@ export const MotionArticle = forwardRef<
 })
 MotionArticle.displayName = 'MotionArticle'
 
-export const MotionH1 = forwardRef<
+const MotionH1 = forwardRef<
   HTMLHeadingElement,
   React.ComponentProps<typeof m.h1>
 >((props, ref) => {
@@ -61,7 +61,7 @@ export const MotionH1 = forwardRef<
 })
 MotionH1.displayName = 'MotionH1'
 
-export const MotionH2 = forwardRef<
+const MotionH2 = forwardRef<
   HTMLHeadingElement,
   React.ComponentProps<typeof m.h2>
 >((props, ref) => {
@@ -70,7 +70,7 @@ export const MotionH2 = forwardRef<
 })
 MotionH2.displayName = 'MotionH2'
 
-export const MotionH3 = forwardRef<
+const MotionH3 = forwardRef<
   HTMLHeadingElement,
   React.ComponentProps<typeof m.h3>
 >((props, ref) => {
@@ -88,7 +88,7 @@ export const MotionP = forwardRef<
 })
 MotionP.displayName = 'MotionP'
 
-export const MotionUl = forwardRef<
+const MotionUl = forwardRef<
   HTMLUListElement,
   React.ComponentProps<typeof m.ul>
 >((props, ref) => {
@@ -97,13 +97,12 @@ export const MotionUl = forwardRef<
 })
 MotionUl.displayName = 'MotionUl'
 
-export const MotionLi = forwardRef<
-  HTMLLIElement,
-  React.ComponentProps<typeof m.li>
->((props, ref) => {
-  const filteredProps = filterMotionProps(props)
-  return <m.li ref={ref} {...filteredProps} />
-})
+const MotionLi = forwardRef<HTMLLIElement, React.ComponentProps<typeof m.li>>(
+  (props, ref) => {
+    const filteredProps = filterMotionProps(props)
+    return <m.li ref={ref} {...filteredProps} />
+  }
+)
 MotionLi.displayName = 'MotionLi'
 
 // Common animation variants using design tokens
@@ -142,13 +141,13 @@ export const normalTransition: Transition = {
   ease: 'easeInOut',
 }
 
-export const smoothTransition: Transition = {
+const _smoothTransition: Transition = {
   duration: 0.5, // --duration-smooth: 500ms
   ease: 'easeInOut',
 }
 
 // Pre-built motion components with design system integration
-export const FadeInContainer = forwardRef<
+const FadeInContainer = forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof MotionDiv>
 >(({ children, ...props }, ref) => (
@@ -167,7 +166,7 @@ export const FadeInContainer = forwardRef<
 
 FadeInContainer.displayName = 'FadeInContainer'
 
-export const SlideUpContainer = forwardRef<
+const SlideUpContainer = forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof MotionDiv>
 >(({ children, ...props }, ref) => (

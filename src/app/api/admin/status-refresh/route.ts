@@ -109,12 +109,11 @@ export async function POST(req: Request) {
   try {
     const url = new URL(req.url)
     const headerSecret = req.headers.get('x-cron-secret')
-    const querySecret = url.searchParams.get('cron_secret')
 
-    if (
-      !CRON_SECRET ||
-      (headerSecret !== CRON_SECRET && querySecret !== CRON_SECRET)
-    ) {
+    // Header-only auth: URL query params leak to access logs, Referer
+    // headers, and browser history. Senders must use the x-cron-secret
+    // header — the legacy ?cron_secret= query param is rejected.
+    if (!CRON_SECRET || headerSecret !== CRON_SECRET) {
       return ApiErrorHandler.unauthorized('unauthorized cron')
     }
 

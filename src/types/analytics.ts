@@ -3,7 +3,7 @@
  * Replaces all 'any' types with proper type definitions
  */
 
-export interface GtagEvent {
+interface GtagEvent {
   event_category?: string
   event_label?: string
   value?: number
@@ -16,12 +16,12 @@ export interface GtagFunction {
   (command: string, ...params: unknown[]): void
 }
 
-export interface WindowWithAnalytics {
+interface _WindowWithAnalytics {
   gtag?: GtagFunction
   __REACT_HYDRATION_TIME__?: number
 }
 
-export interface ErrorReportData {
+interface _ErrorReportData {
   formName?: string
   error?: string
   userAgent?: string
@@ -30,7 +30,7 @@ export interface ErrorReportData {
   stack?: string
 }
 
-export interface PerformanceReportData {
+interface _PerformanceReportData {
   metrics: Array<{
     name: string
     value: number

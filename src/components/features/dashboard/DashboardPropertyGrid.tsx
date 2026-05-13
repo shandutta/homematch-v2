@@ -318,8 +318,6 @@ export function DashboardPropertyGrid({
   )
 }
 
-export default DashboardPropertyGrid
-
 function PropertyViewTracker({
   children,
   propertyId,

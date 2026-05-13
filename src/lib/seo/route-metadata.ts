@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-export const siteUrl =
+const siteUrl =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
   'https://homematch.pro'
 

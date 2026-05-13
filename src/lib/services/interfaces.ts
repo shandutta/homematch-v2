@@ -64,7 +64,7 @@ export interface IBaseService {
 /**
  * Property CRUD operations interface
  */
-export interface IPropertyCrudService extends IBaseService {
+interface IPropertyCrudService extends IBaseService {
   getProperty(propertyId: string): Promise<Property | null>
   getPropertyWithNeighborhood(
     propertyId: string
@@ -148,7 +148,7 @@ export interface INeighborhoodService extends IBaseService {
 /**
  * User profile management interface
  */
-export interface IUserService extends IBaseService {
+interface IUserService extends IBaseService {
   getUserProfile(userId: string): Promise<UserProfile | null>
   createUserProfile(profile: UserProfileInsert): Promise<UserProfile | null>
   updateUserProfile(
@@ -163,7 +163,7 @@ export interface IUserService extends IBaseService {
 /**
  * Household management interface
  */
-export interface IHouseholdService extends IBaseService {
+interface IHouseholdService extends IBaseService {
   createHousehold(household: HouseholdInsert): Promise<Household | null>
   getHousehold(householdId: string): Promise<Household | null>
   updateHousehold(
@@ -176,7 +176,7 @@ export interface IHouseholdService extends IBaseService {
 /**
  * User interactions interface
  */
-export interface IInteractionService extends IBaseService {
+interface IInteractionService extends IBaseService {
   recordInteraction(
     interaction: UserPropertyInteractionInsert
   ): Promise<UserPropertyInteraction | null>
@@ -196,7 +196,7 @@ export interface IInteractionService extends IBaseService {
 /**
  * Saved searches interface
  */
-export interface ISavedSearchService extends IBaseService {
+interface ISavedSearchService extends IBaseService {
   createSavedSearch(search: SavedSearchInsert): Promise<SavedSearch | null>
   getSavedSearches(userId: string): Promise<SavedSearch[]>
   updateSavedSearch(
@@ -209,7 +209,7 @@ export interface ISavedSearchService extends IBaseService {
 /**
  * Comprehensive property service interface (facade pattern)
  */
-export interface IPropertyService
+interface _IPropertyService
   extends IPropertyCrudService, IPropertySearchService, INeighborhoodService {
   // Inherits all methods from the component interfaces
 }
@@ -217,7 +217,7 @@ export interface IPropertyService
 /**
  * Comprehensive user service interface
  */
-export interface IUserServiceFull
+interface _IUserServiceFull
   extends
     IUserService,
     IHouseholdService,
@@ -229,7 +229,7 @@ export interface IUserServiceFull
 /**
  * Service method context for error tracking
  */
-export interface IServiceMethodContext {
+interface IServiceMethodContext {
   serviceName: string
   methodName: string
   params: Record<string, unknown>
@@ -241,7 +241,7 @@ export interface IServiceMethodContext {
 /**
  * Service metrics interface for monitoring
  */
-export interface IServiceMetrics {
+interface _IServiceMetrics {
   recordMethodCall(context: IServiceMethodContext): void
   recordMethodSuccess(context: IServiceMethodContext, duration: number): void
   recordMethodError(
@@ -254,7 +254,7 @@ export interface IServiceMetrics {
 /**
  * Cache interface for service layer caching
  */
-export interface IServiceCache {
+interface _IServiceCache {
   get<T>(key: string): Promise<T | null>
   set<T>(key: string, value: T, ttlSeconds?: number): Promise<void>
   delete(key: string): Promise<void>
@@ -264,7 +264,7 @@ export interface IServiceCache {
 /**
  * Feature flag interface for gradual rollouts
  */
-export interface IFeatureFlags {
+interface _IFeatureFlags {
   isEnabled(flag: string, userId?: string): Promise<boolean>
   getValue<T>(flag: string, defaultValue: T, userId?: string): Promise<T>
 }
@@ -272,7 +272,7 @@ export interface IFeatureFlags {
 // CLIENT FACTORY INTERFACES
 // ============================================================================
 
-export enum ClientContext {
+enum ClientContext {
   BROWSER = 'browser',
   SERVER = 'server',
   API = 'api',
@@ -290,7 +290,7 @@ export interface ClientConfig {
 // ERROR HANDLING INTERFACES
 // ============================================================================
 
-export interface ServiceError {
+interface ServiceError {
   code: string
   message: string
   details?: Record<string, unknown>
@@ -303,13 +303,13 @@ export interface ServiceError {
   }
 }
 
-export interface ServiceResponse<T> {
+interface _ServiceResponse<T> {
   data: T | null
   error: ServiceError | null
   success: boolean
 }
 
-export interface IErrorHandler {
+interface _IErrorHandler {
   handleError(
     error: unknown,
     serviceName: string,

@@ -154,16 +154,19 @@ export const neighborhoodSchema = z.object({
   city: z.string().min(1).max(100),
   state: z.string().min(2).max(50),
   metro_area: z.string().max(100).nullable(),
+  // A5 (2026-05-13 audit): bounds is a PostGIS polygon — several KB on
+  // the wire. The detail-page query drops it. Made optional+nullable so
+  // safeParse accepts both shapes (full neighborhood row vs detail view).
   bounds: z
     .object({
       type: z.literal('Polygon'),
       coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
     })
-    .nullable(), // PostGIS POLYGON type as GeoJSON
+    .nullish(), // PostGIS POLYGON type as GeoJSON; optional in detail view
   median_price: z.number().min(0).nullable(),
   walk_score: z.number().min(0).max(100).nullable(),
   transit_score: z.number().min(0).max(100).nullable(),
-  created_at: timestampSchema.nullable(),
+  created_at: timestampSchema.nullish(),
 })
 
 export const neighborhoodInsertSchema = neighborhoodSchema
@@ -267,22 +270,18 @@ export {
 
 // Export types
 export type Property = z.infer<typeof propertySchema>
-export type PropertyInsert = z.infer<typeof propertyInsertSchema>
-export type PropertyUpdate = z.infer<typeof propertyUpdateSchema>
+type _PropertyInsert = z.infer<typeof propertyInsertSchema>
+type _PropertyUpdate = z.infer<typeof propertyUpdateSchema>
 export type Neighborhood = z.infer<typeof neighborhoodSchema>
-export type NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>
-export type NeighborhoodUpdate = z.infer<typeof neighborhoodUpdateSchema>
+type _NeighborhoodInsert = z.infer<typeof neighborhoodInsertSchema>
+type _NeighborhoodUpdate = z.infer<typeof neighborhoodUpdateSchema>
 
-export type PropertyWithNeighborhood = z.infer<
-  typeof propertyWithNeighborhoodSchema
->
+type _PropertyWithNeighborhood = z.infer<typeof propertyWithNeighborhoodSchema>
 export type PropertyFilters = z.infer<typeof propertyFiltersSchema>
-export type PropertySort = z.infer<typeof propertySortSchema>
-export type PropertyPagination = z.infer<typeof propertyPaginationSchema>
+type _PropertySort = z.infer<typeof propertySortSchema>
+type _PropertyPagination = z.infer<typeof propertyPaginationSchema>
 export type PropertySearch = z.infer<typeof propertySearchSchema>
 
-// Re-export coordinate types for backward compatibility
-export type {
-  LatLng as Coordinates,
-  BoundingBox,
-} from '@/lib/utils/coordinates'
+// Knip 2026-05-13 cleanup dropped the unused legacy Coordinates and
+// BoundingBox re-exports. Consumers should import these directly from
+// @/lib/utils/coordinates if needed.

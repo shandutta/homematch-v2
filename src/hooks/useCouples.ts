@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 /**
  * @module useCouples
  * @description React hooks for managing couples' shared property interactions and mutual likes.
@@ -184,54 +183,6 @@ export function useHouseholdActivity(limit = 20, offset = 0) {
  * @complexity O(n) where n is the number of mutual likes
  * @callsTo useMutualLikes (parent hook)
  */
-export function useMutualLikeCheck(propertyId: string) {
-  const { data: mutualLikes = [] } = useMutualLikes()
-
-  const mutualLike = mutualLikes.find((ml) => ml.property_id === propertyId)
-
-  return {
-    isMutuallyLiked: !!mutualLike,
-    likedByCount: mutualLike?.liked_by_count || 0,
-    mutualLike,
-  }
-}
-
 /**
  * Represents a household member's reaction to a specific property.
  */
-export interface PropertyReaction {
-  user_id: string
-  display_name: string
-  interaction_type: 'like' | 'dislike' | 'skip' | 'view'
-  created_at: string
-}
-
-/**
- * Hook to fetch household member reactions for a specific property.
- * Returns null when user has no household.
- */
-export function usePropertyReactions(propertyId: string | undefined) {
-  return useQuery<PropertyReaction[], Error>({
-    queryKey: ['couples', 'property-reactions', propertyId],
-    queryFn: async () => {
-      if (!propertyId) return []
-
-      const response = await fetch(
-        `/api/couples/property-reactions?propertyId=${encodeURIComponent(propertyId)}`,
-        { credentials: 'include' }
-      )
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Please sign in to view household reactions')
-        }
-        throw new Error('Failed to fetch household reactions')
-      }
-
-      const data = await response.json()
-      return (data.reactions || []) as PropertyReaction[]
-    },
-    staleTime: QUERY_STALE_TIMES.INTERACTION_SUMMARY,
-    enabled: typeof window !== 'undefined' && !!propertyId,
-  })
-}

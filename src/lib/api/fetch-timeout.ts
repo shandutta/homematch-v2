@@ -48,7 +48,7 @@ export async function fetchWithTimeout(
   }
 }
 
-export function isFetchTimeoutError(error: unknown): boolean {
+function _isFetchTimeoutError(error: unknown): boolean {
   return (
     error instanceof FetchTimeoutError ||
     (error instanceof Error &&

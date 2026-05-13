@@ -1,6 +1,60 @@
 import { NextResponse } from 'next/server'
 import { fetchWithTimeout } from '@/lib/api/fetch-timeout'
 import { shouldLoadGoogleMapsMarkerLibrary } from '@/lib/maps/config'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+
+const getRequestIp = (request: Request): string => {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown'
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+/**
+ * Stable upstream Referer pinned to NEXT_PUBLIC_APP_URL. Pinning server-side
+ * prevents an attacker who hits this proxy directly from spoofing the Referer
+ * sent to Google in order to satisfy a key-allowlist on the upstream side.
+ */
+const getPinnedGoogleReferer = (): string | null => {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (!appUrl) return null
+  try {
+    return `${new URL(appUrl).origin}/`
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Optional defense-in-depth: if the request has a Referer, require it to
+ * match our app origin (or a Vercel preview URL for the same project). If
+ * Referer is absent — common with strict privacy modes — we still serve,
+ * but the IP rate limit still applies.
+ */
+const isSameOriginRequest = (request: Request): boolean => {
+  const referer = request.headers.get('referer')
+  if (!referer) return true
+  let candidateOrigin: string
+  try {
+    candidateOrigin = new URL(referer).origin
+  } catch {
+    return false
+  }
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (appUrl) {
+    try {
+      if (candidateOrigin === new URL(appUrl).origin) return true
+    } catch {
+      // ignore
+    }
+  }
+  // Allow same-host as the request itself (covers dev, Vercel previews).
+  try {
+    if (candidateOrigin === new URL(request.url).origin) return true
+  } catch {
+    // ignore
+  }
+  return false
+}
 
 const MAPS_TEST_STUB = `
   (function() {
@@ -32,36 +86,6 @@ const MAPS_TEST_STUB = `
   })()
 `
 
-/**
- * Google Maps Script Proxy
- * Proxies the Google Maps JavaScript API without exposing the API key
- */
-function getGoogleReferer(request: Request): string | null {
-  const refererHeader = request.headers.get('referer')
-  if (refererHeader) {
-    try {
-      return `${new URL(refererHeader).origin}/`
-    } catch {
-      // Ignore invalid referer header
-    }
-  }
-
-  const originHeader = request.headers.get('origin')
-  if (originHeader) {
-    try {
-      return `${new URL(originHeader).origin}/`
-    } catch {
-      // Ignore invalid origin header
-    }
-  }
-
-  try {
-    return `${new URL(request.url).origin}/`
-  } catch {
-    return null
-  }
-}
-
 export async function GET(request: Request) {
   try {
     const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true'
@@ -69,6 +93,25 @@ export async function GET(request: Request) {
     if (isTestMode) {
       return new NextResponse(MAPS_TEST_STUB, {
         status: 200,
+        headers: {
+          'Content-Type': 'application/javascript',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      })
+    }
+
+    // Per-IP rate limit — this endpoint is unauthenticated and proxies a
+    // paid Google API, so without a cap any anonymous client can drain quota.
+    const rateLimited = await checkRateLimit(
+      rateLimitKey('maps:proxy-script', getRequestIp(request))
+    )
+    if (rateLimited) return rateLimited
+
+    // Block hot-linking from other origins. If a request has no Referer
+    // (some privacy modes) we still serve.
+    if (!isSameOriginRequest(request)) {
+      return new NextResponse('// Forbidden', {
+        status: 403,
         headers: {
           'Content-Type': 'application/javascript',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -97,7 +140,7 @@ export async function GET(request: Request) {
     // Fetch the actual Google Maps script
     const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(serverApiKey)}&libraries=${librariesParam}&loading=async&callback=initGoogleMaps`
 
-    const googleReferer = getGoogleReferer(request)
+    const googleReferer = getPinnedGoogleReferer()
     const response = await fetchWithTimeout(scriptUrl, {
       headers: googleReferer ? { referer: googleReferer } : undefined,
       timeoutMs: 10000,

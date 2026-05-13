@@ -23,7 +23,7 @@ import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
  * For places that need the Clerk userId directly (no profile lookup),
  * call `auth()` directly.
  */
-export async function resolveUserProfileId(): Promise<string | null> {
+async function _resolveUserProfileId(): Promise<string | null> {
   const { userId: clerkUserId } = await auth()
   if (!clerkUserId) return null
 

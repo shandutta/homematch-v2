@@ -92,7 +92,10 @@ export function InvitePartnerModal({
   }, [open, householdId, fetchPendingInvites])
 
   const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim() || searchQuery.length < 3) {
+    const query = searchQuery.trim()
+    // Server requires an exact email (no prefix scan, per Q5 audit fix).
+    // Skip the call until the input looks like a full address.
+    if (!query || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(query)) {
       setSearchResults([])
       return
     }
@@ -100,7 +103,7 @@ export function InvitePartnerModal({
     setSearchLoading(true)
     try {
       const res = await fetch(
-        `/api/users/search?q=${encodeURIComponent(searchQuery.trim())}`
+        `/api/users/search?q=${encodeURIComponent(query)}`
       )
       if (res.ok) {
         const data = await res.json()
@@ -264,7 +267,7 @@ export function InvitePartnerModal({
               <div className="relative">
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
-                  placeholder="Search by email address..."
+                  placeholder="Enter their full email address"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"

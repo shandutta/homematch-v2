@@ -156,30 +156,24 @@ export const supabaseWebhookSchema = z.object({
 })
 
 // Export types
-export type ApiSuccess = z.infer<typeof apiSuccessSchema>
-export type ApiError = z.infer<typeof apiErrorSchema>
-export type ApiResponse = z.infer<typeof apiResponseSchema>
+type _ApiSuccess = z.infer<typeof apiSuccessSchema>
+type _ApiError = z.infer<typeof apiErrorSchema>
+type _ApiResponse = z.infer<typeof apiResponseSchema>
 
-export type PaginationQuery = z.infer<typeof paginationQuerySchema>
-export type PaginatedResponse = z.infer<typeof paginatedResponseSchema>
+type _PaginationQuery = z.infer<typeof paginationQuerySchema>
+type _PaginatedResponse = z.infer<typeof paginatedResponseSchema>
 
-export type InteractionType = z.infer<typeof interactionTypeSchema>
-export type CreateInteractionRequest = z.infer<
-  typeof createInteractionRequestSchema
->
-export type InteractionSummary = z.infer<typeof interactionSummarySchema>
-export type InteractionListResponse = z.infer<
-  typeof interactionListResponseSchema
->
-export type DeleteInteractionRequest = z.infer<
-  typeof interactionDeleteRequestSchema
->
+type _InteractionType = z.infer<typeof interactionTypeSchema>
+type _CreateInteractionRequest = z.infer<typeof createInteractionRequestSchema>
+type _InteractionSummary = z.infer<typeof interactionSummarySchema>
+type _InteractionListResponse = z.infer<typeof interactionListResponseSchema>
+type _DeleteInteractionRequest = z.infer<typeof interactionDeleteRequestSchema>
 
-export type PropertySearchQuery = z.infer<typeof propertySearchQuerySchema>
-export type MarketingProperty = z.infer<typeof marketingPropertySchema>
-export type MarketingPropertiesResponse = z.infer<
+type _PropertySearchQuery = z.infer<typeof propertySearchQuerySchema>
+type _MarketingProperty = z.infer<typeof marketingPropertySchema>
+type _MarketingPropertiesResponse = z.infer<
   typeof marketingPropertiesResponseSchema
 >
 
-export type UpdateProfileRequest = z.infer<typeof updateProfileRequestSchema>
-export type SupabaseWebhook = z.infer<typeof supabaseWebhookSchema>
+type _UpdateProfileRequest = z.infer<typeof updateProfileRequestSchema>
+type _SupabaseWebhook = z.infer<typeof supabaseWebhookSchema>

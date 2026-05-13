@@ -32,14 +32,14 @@ export const SPRING_CONFIG: SpringConfig = {
 }
 
 // Specialized spring configs for different animations
-export const SNAP_BACK_CONFIG: SpringConfig = {
+const SNAP_BACK_CONFIG: SpringConfig = {
   type: 'spring',
   stiffness: 400,
   damping: 35,
   mass: 0.6,
 }
 
-export const EXIT_CONFIG: TweenConfig = {
+const EXIT_CONFIG: TweenConfig = {
   type: 'tween',
   ease: 'easeOut',
   duration: 0.16,

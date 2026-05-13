@@ -174,7 +174,6 @@ export default function VibesTestPage() {
       if (params.diverse != null)
         searchParams.set('diverse', params.diverse.toString())
       if (params.force) searchParams.set('force', 'true')
-      searchParams.set('cron_secret', cronSecret)
 
       const body = params.propertyIds
         ? JSON.stringify({
@@ -183,11 +182,15 @@ export default function VibesTestPage() {
           })
         : undefined
 
+      // Send cron secret in header, not URL (avoid history/log leakage).
+      const headers: Record<string, string> = { 'x-cron-secret': cronSecret }
+      if (body) headers['Content-Type'] = 'application/json'
+
       const response = await fetch(
         `/api/admin/generate-vibes?${searchParams.toString()}`,
         {
           method: 'POST',
-          headers: body ? { 'Content-Type': 'application/json' } : undefined,
+          headers,
           body,
         }
       )
@@ -212,14 +215,15 @@ export default function VibesTestPage() {
   // Generate vibes from Zillow listing
   const zillowMutation = useMutation({
     mutationFn: async (input: string) => {
-      const response = await fetch(
-        `/api/admin/generate-vibes-zillow?cron_secret=${cronSecret}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ zillowUrl: input }),
-        }
-      )
+      const response = await fetch(`/api/admin/generate-vibes-zillow`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Cron secret in header (not URL) to avoid history/log leakage.
+          'x-cron-secret': cronSecret,
+        },
+        body: JSON.stringify({ zillowUrl: input }),
+      })
       const data: unknown = await response.json()
       const parsed = isZillowVibesResponse(data)
         ? data

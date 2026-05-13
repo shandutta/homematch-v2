@@ -5,16 +5,7 @@
  * Maintains backward compatibility with existing PropertyService imports.
  */
 
-export { PropertyCrudService } from './crud'
-export {
-  PropertyServiceFacade as PropertyService,
-  createPropertyService,
-} from './facade'
+export { PropertyServiceFacade as PropertyService } from './facade'
 
-// Re-export types for convenience
-export type {
-  IPropertyCrudService,
-  IPropertySearchService,
-  INeighborhoodService,
-  PropertySearchResult,
-} from '@/lib/services/interfaces'
+// Knip 2026-05-13 cleanup dropped the unused interface re-exports.
+// Consumers should import directly from @/lib/services/interfaces.

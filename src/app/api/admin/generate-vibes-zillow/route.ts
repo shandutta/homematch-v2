@@ -465,13 +465,12 @@ function extractImages(data: ZillowPropertyResponse): string[] {
  * Does NOT save to database - just returns the generated vibes for preview.
  */
 export async function POST(req: Request): Promise<NextResponse> {
-  // Authenticate
+  // Authenticate. Header-only — URL query params leak to access logs,
+  // Referer headers, and browser history.
   const secret = process.env.VIBES_CRON_SECRET || process.env.ZILLOW_CRON_SECRET
-  const url = new URL(req.url)
   const headerSecret = req.headers.get('x-cron-secret')
-  const querySecret = url.searchParams.get('cron_secret')
 
-  if (!secret || (headerSecret !== secret && querySecret !== secret)) {
+  if (!secret || headerSecret !== secret) {
     return ApiErrorHandler.unauthorized('Unauthorized')
   }
 

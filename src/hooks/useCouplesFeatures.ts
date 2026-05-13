@@ -197,7 +197,7 @@ export function useNotifyInteraction() {
 /**
  * Hook to manually refetch all couples-related data
  */
-export function useRefreshCouplesData() {
+function useRefreshCouplesData() {
   const queryClient = useQueryClient()
 
   return useCallback(async () => {

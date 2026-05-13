@@ -10,7 +10,7 @@ const propertyTypeEnum = z.enum([
   'other',
 ])
 
-export const matchPreferencesSchema = z.object({
+const matchPreferencesSchema = z.object({
   price_min: z.number().min(0).optional(),
   price_max: z.number().min(0).optional(),
   bedrooms_min: z.number().min(0).max(20).optional(),
@@ -25,7 +25,7 @@ export const matchPreferencesSchema = z.object({
   free_text: z.string().max(2000).optional(),
 })
 
-export const matchCandidatePropertySchema = z.object({
+const matchCandidatePropertySchema = z.object({
   id: z.string().uuid(),
   address: z.string().max(255),
   city: z.string().max(100),
@@ -48,7 +48,7 @@ export const matchRequestSchema = z.object({
   top_k: z.number().int().min(1).max(50).default(10),
 })
 
-export const matchCitationSchema = z.object({
+const matchCitationSchema = z.object({
   field: z.enum([
     'price',
     'bedrooms',
@@ -87,6 +87,6 @@ export type MatchCandidateProperty = z.infer<
   typeof matchCandidatePropertySchema
 >
 export type MatchRequest = z.infer<typeof matchRequestSchema>
-export type MatchCitation = z.infer<typeof matchCitationSchema>
+type _MatchCitation = z.infer<typeof matchCitationSchema>
 export type RankedProperty = z.infer<typeof rankedPropertySchema>
 export type MatchResult = z.infer<typeof matchResultSchema>

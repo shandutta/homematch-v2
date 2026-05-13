@@ -9,7 +9,7 @@ export const QUERY_STALE_TIMES: Record<string, number> = {
   STATIC_DATA: 60 * 60 * 1000, // 1 hour
 }
 
-export const QUERY_CACHE_TIMES: Record<string, number> = {
+const QUERY_CACHE_TIMES: Record<string, number> = {
   DEFAULT: 10 * 60 * 1000, // 10 minutes
   EXTENDED: 30 * 60 * 1000, // 30 minutes
   LONG: 60 * 60 * 1000, // 1 hour

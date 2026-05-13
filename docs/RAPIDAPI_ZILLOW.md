@@ -26,41 +26,21 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com  # optional; code defaults 
 - `GET /property-details` / `GET /property` — details and status
 - `GET /images` — full image gallery
 
-## Pipeline CLI
+## CLI scripts
 
-Unified CLI for all data operations:
+Standalone scripts under `scripts/`. Each requires `RAPIDAPI_KEY` in `.env.local`, plus `HOMEMATCH_ALLOW_PAID_RAPIDAPI=1` for any path that issues paid calls (gated by `src/lib/api/rapidapi-approval-gate.ts`).
 
-```bash
-pnpm exec tsx scripts/pipeline.ts <subcommand> [args]
-```
+| Command                                              | Description                                                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm refresh:zillow-status`                         | Status refresh + price update for existing listings. Tunable via `STATUS_REFRESH_MAX_ITEMS` and `STATUS_DETAIL_DELAY_MS`. |
+| `pnpm exec tsx scripts/fetch-zillow-images.ts`       | Fetch the full image gallery for a property and write to `public/images/properties/`.                                     |
+| `pnpm exec tsx scripts/update-seed-zillow-images.ts` | Update seed data with current image URLs.                                                                                 |
+| `pnpm report:zillow-coverage`                        | Coverage report — DB rows vs RapidAPI availability.                                                                       |
+| `pnpm cleanup:properties:ba`                         | Hard-delete properties outside the Bay-area city allowlist. Service-role; destructive.                                    |
 
-Subcommands:
+Runtime status refresh is also exposed at `POST /api/admin/status-refresh` (admin-gated).
 
-| Command         | Description                              | Example                                                                                 |
-| --------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| `discover`      | Stage 1: fetch + upsert listings         | `pnpm exec tsx scripts/pipeline.ts discover --sort=Newest --maxPages=10`                |
-| `verify`        | Stage 3: status refresh + price update   | `pnpm exec tsx scripts/pipeline.ts verify --limit=600 --delayMs=350`                    |
-| `enrich-images` | Image enrichment for a property          | `pnpm exec tsx scripts/pipeline.ts enrich-images --zpid=12345678`                       |
-| `coverage`      | Coverage gap report (DB vs RapidAPI)     | `pnpm exec tsx scripts/pipeline.ts coverage --locations="Oakland, CA;SF, CA" --showAll` |
-| `dry-run`       | Estimate request count without executing | `pnpm exec tsx scripts/pipeline.ts dry-run --maxPages=10`                               |
-
-Or use npm scripts:
-
-```bash
-pnpm pipeline:discover --sort=Newest --maxPages=10
-pnpm pipeline:verify --limit=600
-pnpm pipeline:enrich-images --zpid=12345678
-pnpm pipeline:coverage --showAll
-pnpm pipeline:dry-run
-```
-
-**Legacy scripts** (still available for backward compatibility):
-
-- `pnpm exec tsx scripts/ingest-zillow.ts`
-- `pnpm exec tsx scripts/refresh-zillow-status.ts`
-- `pnpm exec tsx scripts/report-zillow-coverage.ts`
-
-Source modules: `src/lib/ingestion/zillow.ts`, `src/lib/ingestion/zillow-images.ts`, `src/lib/ingest/pipeline.ts`. Legacy client: `src/lib/api/zillow-client.ts`.
+Pure ingest helpers (idempotency keys, freshness TTLs) live in `src/lib/ingest/{idempotency.ts,freshness.ts}`. There is no orchestrator/`pipeline.ts` in this branch — the previous unified CLI was removed; the standalone scripts above are the current path.
 
 ## Rate Limits
 

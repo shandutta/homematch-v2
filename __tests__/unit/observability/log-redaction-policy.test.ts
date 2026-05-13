@@ -144,7 +144,7 @@ describe('observability log redaction policy', () => {
     // src/lib/utils.ts exports a thin `logger` that prefixes args and forwards
     // to the matching console method. The policy is: this logger is a
     // pass-through and does not perform redaction; callers MUST narrow error
-    // payloads themselves (see `describeAuthError` in refresh-recovery.ts for
+    // payloads themselves (see `describeAuthError` (removed in Phase 1 auth elimination) for
     // the canonical narrowing pattern). We guard the contract by asserting
     // the source contains no transformation of args before the console call.
     it('logger forwards args verbatim with a level prefix and performs no redaction itself', () => {

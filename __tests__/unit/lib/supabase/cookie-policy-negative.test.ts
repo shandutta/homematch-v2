@@ -3,14 +3,15 @@
  *
  * The positive policy lives in src/lib/supabase/cookie-options.ts:
  *   - httpOnly is forced true (browser JS must never read session cookies).
- *   - secure is bound to NODE_ENV === 'production'.
+ *   - secure defaults true (M2 audit fix, 2026-05-13). The previous policy
+ *     bound Secure to NODE_ENV === 'production', which left preview deploys
+ *     and HTTPS-fronted dev/staging without Secure cookies. The new default
+ *     opts in to Secure everywhere; HOMEMATCH_INSECURE_COOKIES=1 is the
+ *     explicit escape hatch for plain-HTTP local dev.
  *   - sameSite defaults to 'lax' (caller may tighten to 'strict').
  *
  * These tests exist to ensure no caller can weaken the policy by passing
- * conflicting options through the spread, and to pin the dev-only exception
- * (Secure attribute is intentionally off when NODE_ENV is not 'production',
- * including 'test' and 'development' — required so local HTTP dev sessions
- * work without TLS).
+ * conflicting options through the spread.
  */
 // Phase 0/1 closure: P1-cookie-httpOnly
 import { buildSupabaseSessionCookieOptions } from '@/lib/supabase/cookie-options'
@@ -48,7 +49,7 @@ describe('Supabase session cookie policy — negative guards', () => {
     })
   })
 
-  describe('secure is bound to NODE_ENV and cannot be overridden', () => {
+  describe('secure default is true and cannot be overridden by caller', () => {
     it('caller cannot disable Secure in production', () => {
       process.env = { ...originalEnv, NODE_ENV: 'production' }
       expect(buildSupabaseSessionCookieOptions({ secure: false }).secure).toBe(
@@ -56,23 +57,43 @@ describe('Supabase session cookie policy — negative guards', () => {
       )
     })
 
-    it('caller cannot fake Secure in development (dev-only exception)', () => {
+    it('caller cannot disable Secure in development either (M2 audit fix)', () => {
       process.env = { ...originalEnv, NODE_ENV: 'development' }
-      expect(buildSupabaseSessionCookieOptions({ secure: true }).secure).toBe(
-        false
+      expect(buildSupabaseSessionCookieOptions({ secure: false }).secure).toBe(
+        true
       )
     })
 
-    it('NODE_ENV=test is treated as non-production (Secure off in unit tests)', () => {
+    it('NODE_ENV=test still gets Secure on by default (M2 audit fix)', () => {
       process.env = { ...originalEnv, NODE_ENV: 'test' }
-      expect(buildSupabaseSessionCookieOptions().secure).toBe(false)
+      expect(buildSupabaseSessionCookieOptions().secure).toBe(true)
     })
 
-    it('unset NODE_ENV is treated as non-production', () => {
+    it('unset NODE_ENV still gets Secure on by default (M2 audit fix)', () => {
       const env = { ...originalEnv }
       delete env.NODE_ENV
       process.env = env
+      expect(buildSupabaseSessionCookieOptions().secure).toBe(true)
+    })
+
+    it('HOMEMATCH_INSECURE_COOKIES=1 is the only escape hatch (plain-HTTP local dev)', () => {
+      process.env = {
+        ...originalEnv,
+        NODE_ENV: 'development',
+        HOMEMATCH_INSECURE_COOKIES: '1',
+      }
       expect(buildSupabaseSessionCookieOptions().secure).toBe(false)
+    })
+
+    it('HOMEMATCH_INSECURE_COOKIES=1 overrides caller attempts to force Secure too', () => {
+      process.env = {
+        ...originalEnv,
+        NODE_ENV: 'development',
+        HOMEMATCH_INSECURE_COOKIES: '1',
+      }
+      expect(buildSupabaseSessionCookieOptions({ secure: true }).secure).toBe(
+        false
+      )
     })
   })
 

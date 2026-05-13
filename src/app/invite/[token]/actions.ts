@@ -6,9 +6,13 @@ import { getServerUserContext } from '@/lib/auth/server-context'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 
-// @service-role-capability: authenticated invite acceptance; validates token
-// status/expiry and requester identity before household/profile mutations.
-// TODO(D1 follow-up): replace with atomic accept_household_invite RPC.
+// @service-role-capability: authenticated invite acceptance; delegates the
+// transactional accept to accept_household_invite (20260513030000). The RPC
+// runs FOR UPDATE on the invite row, enforces invited_email match against
+// the caller's email (Q3 Option A — strict match), and commits both
+// user_profiles + household_invitations updates atomically.
+// TODO(D1 follow-up): replace with constrained accept_household_invite RPC
+// callable directly under authenticated role (eliminates the service-role hop).
 export async function acceptInviteAction(token: string) {
   const userCtx = await getServerUserContext()
 
@@ -32,58 +36,53 @@ export async function acceptInviteAction(token: string) {
     }
   }
 
-  const serviceClient = await getServiceRoleClient()
-  const { data: invite, error } = await serviceClient
-    .from('household_invitations')
-    .select(
-      'accepted_at, accepted_by, created_at, created_by, expires_at, household_id, id, invited_email, invited_name, message, status, token, updated_at'
-    )
-    .eq('token', token)
-    .single()
+  const userEmail = userCtx.email ?? ''
 
-  if (error || !invite) {
-    return { success: false, error: 'Invitation not found.' }
+  const serviceClient = await getServiceRoleClient({
+    approvedCapability: 'invite-acceptance',
+  })
+
+  type AcceptInviteRow = {
+    success: boolean
+    error: string | null
+    household_id: string | null
   }
 
-  if (invite.status !== 'pending') {
-    return { success: false, error: 'This invitation has already been used.' }
+  // The RPC is declared in 20260513030000; until types/database.ts is
+  // regenerated (`supabase gen types`), bypass the generated Functions
+  // union with a narrow cast that preserves the response shape.
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const rpc = serviceClient.rpc as unknown as (
+    fn: 'accept_household_invite',
+    args: { p_token: string; p_profile_id: string; p_user_email: string }
+  ) => Promise<{
+    data: AcceptInviteRow[] | null
+    error: { message: string } | null
+  }>
+
+  const { data, error } = await rpc('accept_household_invite', {
+    p_token: token,
+    p_profile_id: profileId,
+    p_user_email: userEmail,
+  })
+
+  if (error) {
+    console.error('[acceptInviteAction] RPC error:', error)
+    return { success: false, error: 'Failed to accept invitation.' }
   }
 
-  const now = new Date()
-  if (new Date(invite.expires_at) < now) {
-    await serviceClient
-      .from('household_invitations')
-      .update({ status: 'expired' })
-      .eq('id', invite.id)
-    return { success: false, error: 'This invitation has expired.' }
+  // Postgres functions returning TABLE come back as an array of rows.
+  const row = Array.isArray(data) ? data[0] : null
+  if (!row) {
+    return { success: false, error: 'Failed to accept invitation.' }
   }
 
-  const { data: profile } = await serviceClient
-    .from('user_profiles')
-    .select('household_id')
-    .eq('id', profileId)
-    .single()
-
-  if (profile?.household_id && profile.household_id !== invite.household_id) {
+  if (!row.success) {
     return {
       success: false,
-      error: 'Leave your current household before accepting a new invitation.',
+      error: row.error ?? 'Failed to accept invitation.',
     }
   }
-
-  await serviceClient
-    .from('user_profiles')
-    .update({ household_id: invite.household_id })
-    .eq('id', profileId)
-
-  await serviceClient
-    .from('household_invitations')
-    .update({
-      status: 'accepted',
-      accepted_by: profileId,
-      accepted_at: now.toISOString(),
-    })
-    .eq('id', invite.id)
 
   revalidatePath('/profile')
 

@@ -42,7 +42,7 @@ type ProfileWithHousehold = UserProfile & { household?: Household | null }
  * `@clerk/nextjs/server`). The `clerkUserId` value should come from that
  * verified session.
  */
-export async function lookupProfileIdByClerkUserId(
+async function _lookupProfileIdByClerkUserId(
   clerkUserId: string
 ): Promise<string | null> {
   try {

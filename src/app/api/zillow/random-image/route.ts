@@ -5,6 +5,13 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
+import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
+
+const getRequestIp = (request: Request): string => {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown'
+  return request.headers.get('x-real-ip') || 'unknown'
+}
 
 type ZillowCard = {
   zpid: string
@@ -69,12 +76,18 @@ function pickRandom<T>(arr: T[]): T {
 }
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-export async function GET() {
+export async function GET(request: Request) {
   // This demo endpoint fetches third-party listing data/images and should not be
   // exposed on production deployments.
   if (process.env.NODE_ENV === 'production') {
     return ApiErrorHandler.notFound('Not found')
   }
+
+  // Per-IP rate limit — preview environments still issue paid RapidAPI calls.
+  const rateLimited = await checkRateLimit(
+    rateLimitKey('zillow:random-image', getRequestIp(request))
+  )
+  if (rateLimited) return rateLimited
 
   const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
   const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || DEFAULT_HOST

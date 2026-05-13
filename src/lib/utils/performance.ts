@@ -75,7 +75,7 @@ class PerformanceMonitor {
   }
 }
 
-export const performanceMonitor = new PerformanceMonitor()
+const performanceMonitor = new PerformanceMonitor()
 let performanceSequence = 0
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

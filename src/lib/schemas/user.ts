@@ -195,26 +195,24 @@ export const savedSearchUpdateSchema = savedSearchSchema
 
 // Export types for use in other files
 export type UserPreferences = z.infer<typeof userPreferencesSchema>
-export type UserProfile = z.infer<typeof userProfileSchema>
-export type UserProfileInsert = z.infer<typeof userProfileInsertSchema>
-export type UserProfileUpdate = z.infer<typeof userProfileUpdateSchema>
+type _UserProfile = z.infer<typeof userProfileSchema>
+type _UserProfileInsert = z.infer<typeof userProfileInsertSchema>
+type _UserProfileUpdate = z.infer<typeof userProfileUpdateSchema>
 
-export type Household = z.infer<typeof householdSchema>
-export type HouseholdInsert = z.infer<typeof householdInsertSchema>
-export type HouseholdUpdate = z.infer<typeof householdUpdateSchema>
+type _Household = z.infer<typeof householdSchema>
+type _HouseholdInsert = z.infer<typeof householdInsertSchema>
+type _HouseholdUpdate = z.infer<typeof householdUpdateSchema>
 
-export type ScoreData = z.infer<typeof scoreDataSchema>
-export type UserPropertyInteraction = z.infer<
-  typeof userPropertyInteractionSchema
->
-export type UserPropertyInteractionInsert = z.infer<
+type _ScoreData = z.infer<typeof scoreDataSchema>
+type _UserPropertyInteraction = z.infer<typeof userPropertyInteractionSchema>
+type _UserPropertyInteractionInsert = z.infer<
   typeof userPropertyInteractionInsertSchema
 >
-export type UserPropertyInteractionUpdate = z.infer<
+type _UserPropertyInteractionUpdate = z.infer<
   typeof userPropertyInteractionUpdateSchema
 >
 
-export type SearchFilters = z.infer<typeof searchFiltersSchema>
-export type SavedSearch = z.infer<typeof savedSearchSchema>
-export type SavedSearchInsert = z.infer<typeof savedSearchInsertSchema>
-export type SavedSearchUpdate = z.infer<typeof savedSearchUpdateSchema>
+type _SearchFilters = z.infer<typeof searchFiltersSchema>
+type _SavedSearch = z.infer<typeof savedSearchSchema>
+type _SavedSearchInsert = z.infer<typeof savedSearchInsertSchema>
+type _SavedSearchUpdate = z.infer<typeof savedSearchUpdateSchema>

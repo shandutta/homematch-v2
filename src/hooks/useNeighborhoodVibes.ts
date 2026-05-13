@@ -42,22 +42,3 @@ export function useNeighborhoodVibes(neighborhoodId: string | undefined) {
     staleTime: QUERY_STALE_TIMES.NEIGHBORHOOD_VIBES,
   })
 }
-
-export function useNeighborhoodVibesList(limit = 20, offset = 0) {
-  return useQuery<NeighborhoodVibesRecord[], Error>({
-    queryKey: [...neighborhoodVibeKeys.all, 'list', limit, offset],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/neighborhoods/vibes?limit=${limit}&offset=${offset}`
-      )
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch neighborhood vibes list')
-      }
-
-      const result: NeighborhoodVibesApiResponse = await response.json()
-      return result.data ?? []
-    },
-    staleTime: QUERY_STALE_TIMES.NEIGHBORHOOD_VIBES,
-  })
-}

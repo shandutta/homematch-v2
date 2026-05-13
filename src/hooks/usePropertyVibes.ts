@@ -10,7 +10,7 @@ const buildPropertyVibesKey = (
   propertyId: string
 ): readonly ['property-vibes', string] => [vibesAllKey[0], propertyId]
 
-export const vibesKeys = {
+const vibesKeys = {
   all: vibesAllKey,
   property: buildPropertyVibesKey,
 }
@@ -50,20 +50,3 @@ export function usePropertyVibes(propertyId: string | undefined) {
  * Fetches vibes for multiple properties in a single request.
  * Useful for prefetching vibes for a list of properties.
  */
-export function usePropertyVibesList(limit = 20, offset = 0) {
-  return useQuery<PropertyVibes[], Error>({
-    queryKey: [...vibesKeys.all, 'list', limit, offset],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/properties/vibes?limit=${limit}&offset=${offset}`
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch property vibes list')
-      }
-
-      const result: VibesApiResponse = await response.json()
-      return result.data ?? []
-    },
-    staleTime: QUERY_STALE_TIMES.PROPERTY_VIBES,
-  })
-}

@@ -113,7 +113,9 @@ export const GET = withRouteDeadline(
         return ApiErrorHandler.notFound('No household found')
       }
 
-      const serviceClient = await getServiceRoleClient()
+      const serviceClient = await getServiceRoleClient({
+        approvedCapability: 'household-disputes',
+      })
 
       // Get all household members
       const { data: householdMembers, error: householdMembersError } =
@@ -406,7 +408,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const now = new Date().toISOString()
-    const serviceClient = await getServiceRoleClient()
+    const serviceClient = await getServiceRoleClient({
+      approvedCapability: 'household-disputes',
+    })
     const { error: upsertError } = await serviceClient
       .from('household_property_resolutions')
       .upsert(

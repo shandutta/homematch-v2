@@ -97,54 +97,59 @@ export async function POST(request: NextRequest) {
 
     const householdId = userProfile?.household_id ?? null
 
-    // Clear any previous interaction for this user/property to enforce a single definitive state.
-    // For "view" events we only reset existing views so likes/skips persist.
-    // /review M1: reassign on chain instead of relying on PostgREST builder
-    // mutation. The mutation pattern works today but is brittle to future
-    // supabase-js refactors (and to readers who assume `const` means the
-    // value is also frozen).
-    let deleteQuery = supabase
+    // Schema (since 20260508015000) enforces UNIQUE(user_id, property_id), so
+    // there's at most one row per user/property. Use UPSERT on that conflict
+    // target rather than DELETE+INSERT — the old pattern was non-atomic and
+    // could collide with itself on rapid duplicate POSTs. (Supersedes the
+    // /review M1 let/const lint fix on the old delete pattern.)
+    //
+    // Semantics:
+    //   - like / dislike / skip: explicit user decision, override anything.
+    //   - view: passive signal, must NOT clobber an existing like/dislike/skip.
+    //     We upsert with ignoreDuplicates so a view-after-decision is a no-op.
+    const isOverridingType = dbInteractionType !== 'view'
+
+    const upsertResult = await supabase
       .from('user_property_interactions')
-      .delete()
-      .match({ user_id: userId, property_id: propertyId })
-
-    if (dbInteractionType === 'view') {
-      deleteQuery = deleteQuery.eq('interaction_type', 'view')
-    }
-
-    const { error: deleteError } = await deleteQuery
-
-    if (deleteError) {
-      // Not fatal; insert might still succeed if no matching row existed
-      console.warn(
-        '[Interactions API] Delete error (non-fatal):',
-        deleteError.message
+      .upsert(
+        {
+          user_id: userId,
+          property_id: propertyId,
+          household_id: householdId,
+          interaction_type: dbInteractionType,
+        },
+        {
+          onConflict: 'user_id,property_id',
+          ignoreDuplicates: !isOverridingType,
+        }
       )
-    }
-
-    // Insert the new interaction
-    const { data: newInteraction, error: insertError } = await supabase
-      .from('user_property_interactions')
-      .insert({
-        user_id: userId,
-        property_id: propertyId,
-        household_id: householdId,
-        interaction_type: dbInteractionType,
-      })
       .select()
-      .single()
+      .maybeSingle()
 
-    if (insertError) {
-      console.error('[Interactions API] Insert error:', {
-        code: insertError.code,
-        message: insertError.message,
-        details: insertError.details,
-        hint: insertError.hint,
+    if (upsertResult.error) {
+      console.error('[Interactions API] Upsert error:', {
+        code: upsertResult.error.code,
+        message: upsertResult.error.message,
+        details: upsertResult.error.details,
+        hint: upsertResult.error.hint,
       })
       return ApiErrorHandler.serverError(
         'Failed to record interaction',
-        insertError
+        upsertResult.error
       )
+    }
+
+    // ignoreDuplicates returns null on conflict-skip (a view arriving after an
+    // existing like/skip/dislike). Fetch the existing row so callers see the
+    // current state rather than a hollow response.
+    let newInteraction = upsertResult.data
+    if (!newInteraction) {
+      const { data: existing } = await supabase
+        .from('user_property_interactions')
+        .select()
+        .match({ user_id: userId, property_id: propertyId })
+        .maybeSingle()
+      newInteraction = existing
     }
 
     if (householdId) {
@@ -320,9 +325,15 @@ export async function GET(request: NextRequest) {
     try {
       queryResult = await Promise.race([query, timeoutPromise])
     } catch (e) {
+      // A4 (2026-05-13 audit): the prior fallback returned 200 with an empty
+      // list to dodge a test-harness retry loop. That hid real failures from
+      // monitoring and from real users (who saw an empty list instead of
+      // an error). Return 504 with a structured error and let the test
+      // harness be fixed separately if it retries on 504.
       console.error('Interactions list fetch timed out or failed:', e)
-      // Gracefully degrade instead of propagating a 504 (which the test harness retries)
-      return noStoreJson({ items: [], nextCursor: null }, { status: 200 })
+      const message =
+        e instanceof Error ? e.message : 'Interactions list fetch failed'
+      return ApiErrorHandler.gatewayTimeout(message)
     }
 
     const { data, error } = queryResult
