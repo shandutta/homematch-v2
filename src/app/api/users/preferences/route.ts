@@ -74,7 +74,11 @@ const parsePreferences = (raw: unknown): PreferencesBody => {
     out.priceRange = [raw.priceRange[0], raw.priceRange[1]]
   }
 
-  if (typeof raw.bedrooms === 'number' && raw.bedrooms >= 0 && raw.bedrooms <= 20) {
+  if (
+    typeof raw.bedrooms === 'number' &&
+    raw.bedrooms >= 0 &&
+    raw.bedrooms <= 20
+  ) {
     out.bedrooms = Math.floor(raw.bedrooms)
   }
   if (
@@ -164,7 +168,8 @@ export async function POST(request: NextRequest) {
     if (parsed.cities !== undefined) mergedPreferences.cities = parsed.cities
     if (parsed.priceRange !== undefined)
       mergedPreferences.priceRange = parsed.priceRange
-    if (parsed.bedrooms !== undefined) mergedPreferences.bedrooms = parsed.bedrooms
+    if (parsed.bedrooms !== undefined)
+      mergedPreferences.bedrooms = parsed.bedrooms
     if (parsed.bathrooms !== undefined)
       mergedPreferences.bathrooms = parsed.bathrooms
     if (parsed.householdType !== undefined)

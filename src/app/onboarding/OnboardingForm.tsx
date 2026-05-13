@@ -234,26 +234,29 @@ export function OnboardingForm() {
         </Label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(
-            ['solo', 'couple', 'family', 'roommates'] as const satisfies readonly HouseholdType[]
-          ).map(
-            (t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setHouseholdType(t)}
-                disabled={disabled}
-                aria-pressed={householdType === t}
-                className={[
-                  'rounded-xl border px-3 py-2 text-sm capitalize transition',
-                  householdType === t
-                    ? 'border-cyan-300 bg-cyan-300/20 text-white'
-                    : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]',
-                ].join(' ')}
-              >
-                {t === 'roommates' ? 'Roommates' : t}
-              </button>
-            )
-          )}
+            [
+              'solo',
+              'couple',
+              'family',
+              'roommates',
+            ] as const satisfies readonly HouseholdType[]
+          ).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setHouseholdType(t)}
+              disabled={disabled}
+              aria-pressed={householdType === t}
+              className={[
+                'rounded-xl border px-3 py-2 text-sm capitalize transition',
+                householdType === t
+                  ? 'border-cyan-300 bg-cyan-300/20 text-white'
+                  : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]',
+              ].join(' ')}
+            >
+              {t === 'roommates' ? 'Roommates' : t}
+            </button>
+          ))}
         </div>
       </section>
 

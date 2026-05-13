@@ -48,7 +48,9 @@ export default async function OnboardingPage() {
   // If we somehow can't resolve a profile, fall through to the form and
   // let the API route surface a clean error on submit. Better than
   // blocking the user on a setup race.
-  const profile = profileId ? await getUserProfileForServerAuth(profileId) : null
+  const profile = profileId
+    ? await getUserProfileForServerAuth(profileId)
+    : null
 
   // Already onboarded? Skip straight to the dashboard.
   if (profile?.onboarding_completed === true) {
@@ -67,16 +69,15 @@ export default async function OnboardingPage() {
           </h1>
           <p className="max-w-xl text-base text-white/70">
             We&rsquo;ll use this to filter the homes you see and to help your
-            household agree faster. You can change everything later in
-            Settings.
+            household agree faster. You can change everything later in Settings.
           </p>
         </header>
 
         <OnboardingForm />
 
         <p className="text-xs text-white/50">
-          Skipping is fine, but you&rsquo;ll see a generic feed until you set
-          a city.
+          Skipping is fine, but you&rsquo;ll see a generic feed until you set a
+          city.
         </p>
       </div>
     </main>
