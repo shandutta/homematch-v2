@@ -12,7 +12,7 @@
  *   their clerk_user_id.
  */
 import { auth } from '@clerk/nextjs/server'
-import { createClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 /**
  * Resolve the current request's Clerk userId to a user_profiles.id (UUID).
@@ -37,8 +37,14 @@ export async function resolveUserProfileId(): Promise<string | null> {
 export async function resolveUserProfileIdFromClerkId(
   clerkUserId: string
 ): Promise<string | null> {
+  // PROD-RLS-001: anon-key client gets 0 rows for Clerk users because
+  // RLS expects auth.uid()=id and Clerk's session isn't propagated. The
+  // caller has already verified the Clerk session (it's how they got
+  // `clerkUserId`), so we scope the bypass to that verified key.
   try {
-    const supabase = await createClient()
+    const supabase = await getServiceRoleClient({
+      approvedCapability: 'clerk-profile-read',
+    })
     const { data, error } = await supabase
       .from('user_profiles')
       .select('id')

@@ -154,6 +154,12 @@ export type ApprovedServiceRoleCapability =
   // the Clerk session first; this only bypasses RLS for the user_profiles
   // insert keyed to that verified clerk_user_id.
   | 'clerk-profile-bootstrap'
+  // Server-component reads of user_profiles for the currently-authenticated
+  // Clerk user. RLS expects `auth.uid() = id`, but the anon-key server
+  // client has no propagated Clerk session, so it returns 0 rows for Clerk
+  // users. Caller MUST verify the Clerk session via auth() first; the read
+  // is then scoped to the row that the verified Clerk session attests to.
+  | 'clerk-profile-read'
 
 type CreateServiceClientOptions = {
   approvedCapability?: ApprovedServiceRoleCapability
@@ -167,6 +173,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'invite-preview',
     'clerk-webhook',
     'clerk-profile-bootstrap',
+    'clerk-profile-read',
   ])
 
 // Alternative server client with service role for administrative operations

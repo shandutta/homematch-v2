@@ -18,6 +18,7 @@
  */
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 
 export interface ServerUserContext {
   /** Clerk userId ("user_2xY...") or Supabase auth UUID (legacy) */
@@ -47,7 +48,14 @@ export async function getServerUserContext(): Promise<ServerUserContext | null> 
   try {
     const { userId: clerkUserId } = await auth()
     if (clerkUserId) {
-      const supabase = await createClient()
+      // PROD-RLS-001: server components use the anon-key client, which has
+      // no propagated Clerk session, so RLS on user_profiles returns 0 rows
+      // for Clerk users. The clerk-profile-read capability scopes the
+      // bypass to "the row this verified Clerk session attests to" — keyed
+      // by the just-verified clerk_user_id.
+      const supabase = await getServiceRoleClient({
+        approvedCapability: 'clerk-profile-read',
+      })
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('id, email')
