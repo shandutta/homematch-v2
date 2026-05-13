@@ -74,6 +74,25 @@ describe('extractAmenities', () => {
     expect(out).toEqual(['Year Built: 1956'])
   })
 
+  // Codex P2 (PR #38): empty arrays are truthy in JS, so the old
+  // `homeFacts || atAGlanceFacts` fallback silently lost data when
+  // homeFacts was [].
+  it('falls back to atAGlanceFacts when homeFacts is an empty array', () => {
+    const out = extractAmenities({
+      homeFacts: [],
+      atAGlanceFacts: [{ factLabel: 'Year Built', factValue: '1972' }],
+    })
+    expect(out).toEqual(['Year Built: 1972'])
+  })
+
+  it('prefers populated homeFacts over atAGlanceFacts', () => {
+    const out = extractAmenities({
+      homeFacts: [{ factLabel: 'Lot', factValue: '6,000 sqft' }],
+      atAGlanceFacts: [{ factLabel: 'Year Built', factValue: '1972' }],
+    })
+    expect(out).toEqual(['Lot: 6,000 sqft'])
+  })
+
   it('deduplicates case-insensitively, keeping first-encountered casing', () => {
     const out = extractAmenities({
       appliances: ['Dishwasher', 'DISHWASHER'],

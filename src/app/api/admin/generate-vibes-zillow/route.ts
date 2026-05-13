@@ -120,7 +120,15 @@ export function extractAmenities(z: ZillowPropertyResponse): string[] | null {
   if (z.hasPool) items.push('Pool')
   if (z.hasFireplace) items.push('Fireplace')
 
-  const facts = z.homeFacts || z.atAGlanceFacts
+  // Codex P2 (PR #38): `z.homeFacts || z.atAGlanceFacts` was buggy because
+  // an empty array is truthy in JavaScript. Listings with
+  // `homeFacts: []` and a populated `atAGlanceFacts` would skip the fallback
+  // and lose the amenity facts entirely. Pick whichever array actually has
+  // entries.
+  const homeFacts = Array.isArray(z.homeFacts) ? z.homeFacts : null
+  const atAGlance = Array.isArray(z.atAGlanceFacts) ? z.atAGlanceFacts : null
+  const facts =
+    homeFacts && homeFacts.length > 0 ? homeFacts : (atAGlance ?? null)
   if (Array.isArray(facts)) {
     for (const fact of facts) {
       if (
