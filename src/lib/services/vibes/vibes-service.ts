@@ -19,7 +19,11 @@ import {
   DEFAULT_VIBES_MODEL,
   type UsageInfo,
 } from './openrouter-client'
-import { buildVibesMessages, type PropertyContext } from './prompts'
+import {
+  buildVibesMessages,
+  type NeighborhoodVibesContext,
+  type PropertyContext,
+} from './prompts'
 import {
   selectStrategicImages,
   type ImageSelectionResult,
@@ -482,7 +486,10 @@ export class VibesService {
   /**
    * Generate vibes for a single property
    */
-  async generateVibes(property: Property): Promise<VibesGenerationResult> {
+  async generateVibes(
+    property: Property,
+    extras?: { neighborhoodVibes?: NeighborhoodVibesContext | null }
+  ): Promise<VibesGenerationResult> {
     const startTime = Date.now()
 
     // Select strategic images
@@ -516,6 +523,7 @@ export class VibesService {
       lotSizeSqft: property.lot_size_sqft,
       amenities: property.amenities,
       description: property.description,
+      neighborhoodVibes: extras?.neighborhoodVibes ?? null,
     }
 
     // Build prompts
@@ -641,6 +649,13 @@ export class VibesService {
         index: number,
         total: number
       ) => Promise<Property | void> | Property | void
+      // Optional per-property extras keyed by property.id. Currently used to
+      // pass neighborhood_vibes context into the LLM prompt
+      // (NEIGHBORHOOD-VIBES-WIRE).
+      extrasByPropertyId?: Map<
+        string,
+        { neighborhoodVibes?: NeighborhoodVibesContext | null }
+      >
     }
   ): Promise<BatchGenerationResult> {
     const delayMs = options?.delayMs ?? 1000
@@ -664,7 +679,8 @@ export class VibesService {
         )
         if (prepared) property = prepared
 
-        const result = await this.generateVibes(property)
+        const extras = options?.extrasByPropertyId?.get(property.id)
+        const result = await this.generateVibes(property, extras)
         results.success.push(result)
         results.totalCostUsd += result.usage.estimatedCostUsd
       } catch (error) {

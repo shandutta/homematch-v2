@@ -327,7 +327,8 @@ describe('VibesService', () => {
       expect.objectContaining({
         id: 'prop-a',
         images: ['https://example.com/prepared.jpg'],
-      })
+      }),
+      undefined
     )
     expect(result.success).toHaveLength(2)
     expect(result.failed).toHaveLength(0)
