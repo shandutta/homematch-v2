@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getServerUserContext } from '@/lib/auth/server-context'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
 
 // @service-role-capability: authenticated invite acceptance; validates token
 // status/expiry and requester identity before household/profile mutations.
@@ -15,18 +16,21 @@ export async function acceptInviteAction(token: string) {
     redirect(`/login?redirectTo=/invite/${token}`)
   }
 
-  // For brand-new Clerk users without a profile row yet, we can't link them
-  // to a household. Surface a clear error so the client surfaces a useful
-  // message; the webhook should fix this soon for Clerk-native users.
-  if (!userCtx.profileId) {
+  // HOUSEHOLD-001: for brand-new Clerk users whose webhook hasn't fired yet,
+  // bootstrap the profile row just-in-time rather than failing. Previously
+  // this returned an "Your profile is still being set up" error and left the
+  // user stuck on the invite landing page.
+  let profileId = userCtx.profileId
+  if (!profileId && userCtx.source === 'clerk') {
+    profileId = await ensureUserProfileForCurrentClerkUser()
+  }
+  if (!profileId) {
     return {
       success: false,
       error:
         'Your profile is still being set up. Please refresh in a moment and try again.',
     }
   }
-
-  const profileId = userCtx.profileId
 
   const serviceClient = await getServiceRoleClient()
   const { data: invite, error } = await serviceClient

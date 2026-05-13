@@ -160,6 +160,13 @@ export type ApprovedServiceRoleCapability =
   // users. Caller MUST verify the Clerk session via auth() first; the read
   // is then scoped to the row that the verified Clerk session attests to.
   | 'clerk-profile-read'
+  // Household write operations (create / join / invite) for the
+  // currently-authenticated Clerk user. The legacy RPCs read auth.uid() and
+  // auth.users, neither of which works for Clerk sessions. The Clerk-aware
+  // API routes (/api/households, /api/households/[id]/invitations,
+  // /api/households/join) verify the Clerk session, resolve the
+  // user_profiles.id, then call this RPC with the explicit user_id.
+  | 'clerk-household-write'
 
 type CreateServiceClientOptions = {
   approvedCapability?: ApprovedServiceRoleCapability
@@ -174,6 +181,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-webhook',
     'clerk-profile-bootstrap',
     'clerk-profile-read',
+    'clerk-household-write',
   ])
 
 // Alternative server client with service role for administrative operations

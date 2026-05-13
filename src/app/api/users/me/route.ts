@@ -3,6 +3,7 @@
 // to Record<string, unknown> after an isRecord-style check below.
 import type { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
@@ -13,6 +14,14 @@ const UUID_PATTERN =
 const isLikelyClerkUserId = (id: string) =>
   id.startsWith('user_') && !UUID_PATTERN.test(id)
 
+// @service-role-capability: anon-key Supabase client cannot read user_profiles
+// for Clerk users because RLS expects auth.uid() = id and Clerk's session is
+// not propagated to the anon-key client. Caller verified the Clerk session
+// above via requireUserFromRequest, so the service-role SELECT is bounded to
+// the already-resolved profile UUID.
+// TODO(D1 follow-up): replace with a fully Clerk-aware Supabase JWT setup so
+// the anon-key client can satisfy RLS and we can drop the service-role
+// wrapper entirely.
 // GET /api/users/me — current user's profile id, email, and household_id.
 //
 // Replaces direct supabase.auth.getSession() lookups in client components.
@@ -44,7 +53,16 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const { data, error } = await supabase
+    // API-USERS-ME-001: the anon-key Supabase client is RLS-blocked for
+    // Clerk-authenticated users (auth.uid() is null), so the SELECT below
+    // used to return null `display_name` even when the DB had it. We
+    // already verified the Clerk session above via requireUserFromRequest,
+    // so route the read through the service-role client scoped to the
+    // already-resolved profile UUID.
+    const sr = await getServiceRoleClient({
+      approvedCapability: 'clerk-profile-read',
+    })
+    const { data, error } = await sr
       .from('user_profiles')
       .select('id, email, display_name, household_id, preferences')
       .eq('id', profileId)

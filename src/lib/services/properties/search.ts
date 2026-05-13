@@ -120,6 +120,15 @@ export class PropertySearchService
         .select(selectClause, shouldCount ? { count: 'exact' } : undefined)
         .eq('is_active', true)
 
+      // SEED-001 defensive filter: even with the seed_001_deactivate_test_properties
+      // migration, future test/integration runs writing to prod could leak
+      // test rows back in. Drop the well-known patterns at query time so
+      // they never reach the prod feed.
+      query = query
+        .not('state', 'eq', 'TS')
+        .not('city', 'eq', 'Test City')
+        .not('zpid', 'like', 'dev-%')
+
       // Apply filters using the filter builder
       query = this.filterBuilder.applyFilters(query, filters)
 

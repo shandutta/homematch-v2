@@ -32,6 +32,16 @@ describe('service-role route capability guard', () => {
         .sort()
     ).toEqual([
       './src/app/api/couples/disputed/route.ts',
+      // Clerk-aware household write routes — verify Clerk session then pass
+      // the resolved profile UUID to the new create_household_by_user_id RPC
+      // / household_invitations table under service-role. HOUSEHOLD-001.
+      './src/app/api/households/invitations/route.ts',
+      './src/app/api/households/route.ts',
+      // /api/users/me: anon-key Supabase client cannot read user_profiles
+      // for Clerk users (RLS blocks because auth.uid() is null). Service-role
+      // SELECT is scoped to the already-verified profile UUID.
+      // API-USERS-ME-001.
+      './src/app/api/users/me/route.ts',
       './src/app/api/users/search/route.ts',
       './src/app/api/webhooks/clerk/route.ts',
       './src/app/invite/[token]/actions.ts',
