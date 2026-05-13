@@ -111,26 +111,47 @@ async function fetchZillowDetail(zpid: string): Promise<{
   }
 }
 
+// Codex P1: PostgREST/Supabase responses are capped by max_rows (the repo
+// config sets 1000). For a 13K backfill, a single unpaginated select
+// silently returns only the first chunk. We paginate explicitly using
+// .range(from, to), ordered by id so each page is stable.
+const PAGE_SIZE = 1000
+
+interface TargetRow {
+  id: string
+  zpid: string
+  description: string | null
+  amenities: string[] | null
+}
+
 async function loadProperties(
   supabase: ReturnType<typeof createStandaloneClient>,
   limit: number | null
-): Promise<Array<{ id: string; zpid: string }>> {
-  // Only rows that actually need a backfill:
-  //   - zpid present (we can ask Zillow about them)
-  //   - description or amenities are NULL
-  // Service-role read bypasses RLS — this script is admin-only.
-  const query = supabase
-    .from('properties')
-    .select('id, zpid')
-    .not('zpid', 'is', null)
-    .or('description.is.null,amenities.is.null')
+): Promise<TargetRow[]> {
+  const out: TargetRow[] = []
+  let offset = 0
+  for (;;) {
+    const remaining = limit != null ? limit - out.length : Number.POSITIVE_INFINITY
+    if (remaining <= 0) break
+    const pageSize = Math.min(PAGE_SIZE, remaining)
+    const { data, error } = await supabase
+      .from('properties')
+      .select('id, zpid, description, amenities')
+      .not('zpid', 'is', null)
+      .or('description.is.null,amenities.is.null')
+      .order('id', { ascending: true })
+      .range(offset, offset + pageSize - 1)
 
-  const { data, error } = limit ? await query.limit(limit) : await query
-  if (error) throw error
-  return (data ?? []).filter(
-    (row): row is { id: string; zpid: string } =>
-      typeof row.id === 'string' && typeof row.zpid === 'string'
-  )
+    if (error) throw error
+    const page = (data ?? []).filter(
+      (row): row is TargetRow =>
+        typeof row.id === 'string' && typeof row.zpid === 'string'
+    )
+    out.push(...page)
+    if (page.length < pageSize) break
+    offset += page.length
+  }
+  return out
 }
 
 async function main() {
@@ -152,15 +173,22 @@ async function main() {
   let updated = 0
 
   for (let i = 0; i < targets.length; i++) {
-    const { id, zpid } = targets[i]!
-    const result = await fetchZillowDetail(zpid)
+    const target = targets[i]!
+    const result = await fetchZillowDetail(target.zpid)
 
     if (!result) {
       failed += 1
     } else {
+      // Codex P2: only write fields that are actually NULL on this row.
+      // Without this guard we'd overwrite curated `description` on
+      // mixed-null rows whose `amenities` is the only null column.
       const patch: PropertiesUpdate = {}
-      if (result.description) patch.description = result.description
-      if (result.amenities) patch.amenities = result.amenities
+      if (target.description === null && result.description) {
+        patch.description = result.description
+      }
+      if (target.amenities === null && result.amenities) {
+        patch.amenities = result.amenities
+      }
 
       if (Object.keys(patch).length === 0) {
         skipped += 1
@@ -169,9 +197,12 @@ async function main() {
         const { error } = await supabase
           .from('properties')
           .update(patch)
-          .eq('id', id)
+          .eq('id', target.id)
         if (error) {
-          console.warn(`[backfill] update failed id=${id}:`, error.message)
+          console.warn(
+            `[backfill] update failed id=${target.id}:`,
+            error.message
+          )
           failed += 1
         } else {
           updated += 1
