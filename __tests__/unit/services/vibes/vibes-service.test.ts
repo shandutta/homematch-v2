@@ -276,6 +276,7 @@ describe('VibesService', () => {
       processingTimeMs: 1,
       rawOutput: JSON.stringify(validVibesOutput),
       repairApplied: false,
+      modelUsed: 'google/gemini-2.5-flash',
     }
 
     const insert = VibesService.toInsertRecord(
@@ -323,6 +324,7 @@ describe('VibesService', () => {
         processingTimeMs: 1,
         rawOutput: JSON.stringify(validVibesOutput),
         repairApplied: false,
+        modelUsed: 'test-model',
       })
     )
 

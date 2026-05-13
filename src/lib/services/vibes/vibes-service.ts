@@ -159,6 +159,11 @@ export interface VibesGenerationResult {
   usage: UsageInfo
   processingTimeMs: number
   rawOutput: string
+  // The actually-used model name as reported by the OpenRouter response.
+  // Persisted to property_vibes.model_used so audit queries reflect what
+  // ran instead of the constant default. Falls back to the default
+  // when the upstream response omits it.
+  modelUsed: string
   repairApplied: boolean
 }
 
@@ -554,6 +559,7 @@ export class VibesService {
     let repairApplied = false
     let lastError: unknown = null
     let lastPreview: string | null = null
+    let modelUsed: string = DEFAULT_VIBES_MODEL
     const usageTotals: UsageInfo = {
       promptTokens: 0,
       completionTokens: 0,
@@ -583,6 +589,12 @@ export class VibesService {
       }
 
       rawOutput = rawContent
+      // OpenRouter echoes the actually-served model id (sometimes a
+      // routed equivalent of the requested one). Capture it for the
+      // audit-trail column.
+      if (typeof response.model === 'string' && response.model.length > 0) {
+        modelUsed = response.model
+      }
 
       try {
         const parsedResult = VibesService.parseJsonWithRepair(rawContent)
@@ -638,6 +650,7 @@ export class VibesService {
       processingTimeMs,
       rawOutput,
       repairApplied,
+      modelUsed,
     }
   }
 
@@ -793,10 +806,10 @@ export class VibesService {
           url: img.url,
           category: img.category,
         })),
-        modelId: DEFAULT_VIBES_MODEL,
+        modelId: result.modelUsed,
       },
       raw_output: rawOutput,
-      model_used: DEFAULT_VIBES_MODEL,
+      model_used: result.modelUsed,
       images_analyzed: result.images.selectedImages.map((img) => img.url),
       source_data_hash: VibesService.generateSourceHash(property),
       generation_cost_usd: result.usage.estimatedCostUsd,
