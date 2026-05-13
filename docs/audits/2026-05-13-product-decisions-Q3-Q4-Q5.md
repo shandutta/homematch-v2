@@ -44,8 +44,8 @@ If emails match, accept silently. If they don't, show "This invite was sent to a
 ### Owner sign-off
 
 - [ ] Decided: A / B / C
-- [ ] Approved by: ******\_\_\_\_******
-- [ ] Date: ******\_\_\_\_******
+- [ ] Approved by:
+- [ ] Date:
 
 ---
 
@@ -92,9 +92,9 @@ Replace OpenRouter with a locally-run model (or Vercel AI SDK with a redacted pr
 ### Owner sign-off
 
 - [ ] Decided: A / B / C / D
-- [ ] If A: regex set reviewed by: ******\_\_\_\_******
-- [ ] If C: confirm no one depends on the workflow output: ******\_\_\_\_******
-- [ ] Date: ******\_\_\_\_******
+- [ ] If A: regex set reviewed by:
+- [ ] If C: confirm no one depends on the workflow output:
+- [ ] Date:
 
 ---
 
@@ -134,9 +134,9 @@ Caller computes `sha256(email_lower)` client-side and sends the hash. Server com
 ### Owner sign-off
 
 - [ ] Decided: A / B / C
-- [ ] If A: confirm UX impact acceptable: ******\_\_\_\_******
-- [ ] If C: confirm budget for the migration: ******\_\_\_\_******
-- [ ] Date: ******\_\_\_\_******
+- [ ] If A: confirm UX impact acceptable:
+- [ ] If C: confirm budget for the migration:
+- [ ] Date:
 
 ---
 
