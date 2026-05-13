@@ -81,6 +81,43 @@ interface ZillowPropertyResponse {
   hasGarage?: boolean
   hasPool?: boolean
   hasFireplace?: boolean
+  // INGEST-001 v2: live RapidAPI responses nest the amenity fields under
+  // resoFacts (RESO MLS standard fields). Top-level fields are kept for
+  // backward compatibility with the simpler shape some properties
+  // returned, but resoFacts is where the actual data is for the modern
+  // listings (verified against the prod 10-row sample on 2026-05-13 —
+  // every property had top-level nulls and rich resoFacts entries).
+  resoFacts?: {
+    appliances?: string[]
+    interiorFeatures?: string[]
+    exteriorFeatures?: string[]
+    parkingFeatures?: string[]
+    cooling?: string[]
+    coolingFeatures?: string[]
+    heating?: string[]
+    heatingFeatures?: string[]
+    flooring?: string[] | string
+    view?: string[] | string
+    fireplaceFeatures?: string[]
+    poolFeatures?: string[]
+    spaFeatures?: string[]
+    laundryFeatures?: string[]
+    patioAndPorchFeatures?: string[]
+    lotFeatures?: string[]
+    communityFeatures?: string[]
+    associationAmenities?: string[]
+    accessibilityFeatures?: string[]
+    waterSource?: string[] | string
+    sewer?: string[] | string
+    roofType?: string[] | string
+    foundationDetails?: string[] | string
+    architecturalStyle?: string[] | string
+    hasGarage?: boolean
+    hasPool?: boolean
+    hasFireplace?: boolean
+    homeFacts?: Array<{ factLabel?: string; factValue?: string }>
+    atAGlanceFacts?: Array<{ factLabel?: string; factValue?: string }>
+  }
   [key: string]: unknown
 }
 
@@ -96,6 +133,7 @@ interface ZillowPropertyResponse {
  */
 export function extractAmenities(z: ZillowPropertyResponse): string[] | null {
   const items: string[] = []
+  const reso = z.resoFacts
 
   const pushArr = (v: unknown) => {
     if (Array.isArray(v)) {
@@ -107,28 +145,67 @@ export function extractAmenities(z: ZillowPropertyResponse): string[] | null {
     }
   }
 
+  // Walk both the top level (legacy/simpler responses) and the resoFacts
+  // sub-object (RESO standard fields, where modern Zillow responses
+  // actually carry the data). The 10-row prod validation on 2026-05-13
+  // surfaced every amenity field at resoFacts.* with all top-level
+  // counterparts NULL.
   pushArr(z.appliances)
+  pushArr(reso?.appliances)
   pushArr(z.interiorFeatures)
+  pushArr(reso?.interiorFeatures)
   pushArr(z.exteriorFeatures)
+  pushArr(reso?.exteriorFeatures)
   pushArr(z.parkingFeatures)
+  pushArr(reso?.parkingFeatures)
   pushArr(z.coolingFeatures)
+  pushArr(reso?.coolingFeatures)
+  pushArr(reso?.cooling)
   pushArr(z.heatingFeatures)
+  pushArr(reso?.heatingFeatures)
+  pushArr(reso?.heating)
   pushArr(z.flooring)
+  pushArr(reso?.flooring)
   pushArr(z.view)
+  pushArr(reso?.view)
+  pushArr(reso?.fireplaceFeatures)
+  pushArr(reso?.poolFeatures)
+  pushArr(reso?.spaFeatures)
+  pushArr(reso?.laundryFeatures)
+  pushArr(reso?.patioAndPorchFeatures)
+  pushArr(reso?.lotFeatures)
+  pushArr(reso?.communityFeatures)
+  pushArr(reso?.associationAmenities)
+  pushArr(reso?.accessibilityFeatures)
+  pushArr(reso?.waterSource)
+  pushArr(reso?.sewer)
+  pushArr(reso?.roofType)
+  pushArr(reso?.foundationDetails)
+  pushArr(reso?.architecturalStyle)
 
-  if (z.hasGarage) items.push('Garage')
-  if (z.hasPool) items.push('Pool')
-  if (z.hasFireplace) items.push('Fireplace')
+  if (z.hasGarage || reso?.hasGarage) items.push('Garage')
+  if (z.hasPool || reso?.hasPool) items.push('Pool')
+  if (z.hasFireplace || reso?.hasFireplace) items.push('Fireplace')
 
   // Codex P2 (PR #38): `z.homeFacts || z.atAGlanceFacts` was buggy because
   // an empty array is truthy in JavaScript. Listings with
   // `homeFacts: []` and a populated `atAGlanceFacts` would skip the fallback
   // and lose the amenity facts entirely. Pick whichever array actually has
-  // entries.
-  const homeFacts = Array.isArray(z.homeFacts) ? z.homeFacts : null
-  const atAGlance = Array.isArray(z.atAGlanceFacts) ? z.atAGlanceFacts : null
-  const facts =
-    homeFacts && homeFacts.length > 0 ? homeFacts : (atAGlance ?? null)
+  // entries — checking both top-level and resoFacts since modern responses
+  // nest these too.
+  const factsCandidates = [
+    Array.isArray(z.homeFacts) && z.homeFacts.length > 0 ? z.homeFacts : null,
+    Array.isArray(z.atAGlanceFacts) && z.atAGlanceFacts.length > 0
+      ? z.atAGlanceFacts
+      : null,
+    Array.isArray(reso?.homeFacts) && reso.homeFacts.length > 0
+      ? reso.homeFacts
+      : null,
+    Array.isArray(reso?.atAGlanceFacts) && reso.atAGlanceFacts.length > 0
+      ? reso.atAGlanceFacts
+      : null,
+  ]
+  const facts = factsCandidates.find((f): f is NonNullable<typeof f> => !!f)
   if (Array.isArray(facts)) {
     for (const fact of facts) {
       if (

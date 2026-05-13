@@ -7,6 +7,12 @@
       "maxDuration": 300
     }
   },
+  "crons": [
+    {
+      "path": "/api/admin/backfill-zillow-fields",
+      "schedule": "0 7 * * 1"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -81,8 +81,19 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   'anthropic/claude-3-sonnet': { input: 3, output: 15 },
 }
 
-// Default model for vibes generation (Qwen 3 VL - cheap and good quality)
-export const DEFAULT_VIBES_MODEL = 'qwen/qwen3-vl-8b-instruct'
+// Default model for vibes generation.
+//
+// Picked gemini-2.5-flash over the earlier qwen3-vl-8b after the prod
+// audit (qa-report-prod-2026-05-13-full-tour.md, Section 1) found
+// systematic hallucination in qwen output. Gemini Flash follows the
+// "do not claim what isn't supported" instruction more reliably,
+// supports the JSON schema mode the prompt requires, and is still cheap
+// (~$0.075/$0.30 per 1M tokens) — ~$10 to re-generate the full 11K
+// existing vibes rows.
+//
+// Override per-request via the OPENROUTER_MODEL env var or by passing
+// `defaultModel` to createOpenRouterClient.
+export const DEFAULT_VIBES_MODEL = 'google/gemini-2.5-flash'
 
 export class OpenRouterClient {
   private apiKey: string

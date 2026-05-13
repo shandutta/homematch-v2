@@ -78,6 +78,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
       'Cron-gated; pulls Zillow detail via RapidAPI then calls OpenRouter.',
   },
   {
+    path: '/api/admin/backfill-zillow-fields',
+    categories: ['paid-rapidapi', 'cron-admin'],
+    rationale:
+      'Cron-gated weekly backfill of NULL description/amenities on existing properties via RapidAPI. Anti-redundancy companion to scripts/backfill-zillow-description-amenities.ts so newly-ingested rows whose initial Zillow payload was empty get re-fetched without manual intervention.',
+  },
+  {
     path: '/api/admin/status-refresh',
     categories: ['paid-rapidapi', 'cron-admin'],
     rationale: 'Cron-gated Zillow status refresh via RapidAPI.',

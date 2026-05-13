@@ -109,6 +109,47 @@ describe('extractAmenities', () => {
     expect(out).toEqual(['Dishwasher'])
   })
 
+  it('reads from resoFacts.* when top-level fields are absent (modern RESO shape)', () => {
+    // Verified against live prod payload 2026-05-13: every modern Zillow
+    // listing returns top-level appliances/interiorFeatures/etc. as null
+    // and the actual data lives under resoFacts.
+    const out = extractAmenities({
+      resoFacts: {
+        appliances: ['Dishwasher', 'Gas Range'],
+        interiorFeatures: ['Storage', 'Updated Kitchen'],
+        cooling: ['Central Air'],
+        heating: ['Forced Air'],
+        flooring: ['Engineered Wood'],
+        fireplaceFeatures: ['Brick'],
+        poolFeatures: ['Community'],
+        laundryFeatures: ['Laundry Room'],
+        patioAndPorchFeatures: ['Deck', 'Patio'],
+        lotFeatures: ['Back Yard', 'Landscaped'],
+        roofType: 'Composition',
+        hasGarage: true,
+        hasFireplace: true,
+      },
+    })
+    expect(out).toContain('Dishwasher')
+    expect(out).toContain('Updated Kitchen')
+    expect(out).toContain('Central Air')
+    expect(out).toContain('Engineered Wood')
+    expect(out).toContain('Composition')
+    expect(out).toContain('Garage')
+    expect(out).toContain('Fireplace')
+    expect(out).not.toContain('Pool') // hasPool not set
+  })
+
+  it('merges top-level and resoFacts entries, deduping across both', () => {
+    const out = extractAmenities({
+      appliances: ['Dishwasher'],
+      resoFacts: {
+        appliances: ['DISHWASHER', 'Microwave'],
+      },
+    })
+    expect(out).toEqual(['Dishwasher', 'Microwave'])
+  })
+
   it('drops non-string entries from arrays', () => {
     const out = extractAmenities({
       interiorFeatures: [
