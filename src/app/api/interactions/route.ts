@@ -99,13 +99,17 @@ export async function POST(request: NextRequest) {
 
     // Clear any previous interaction for this user/property to enforce a single definitive state.
     // For "view" events we only reset existing views so likes/skips persist.
-    const deleteQuery = supabase
+    // /review M1: reassign on chain instead of relying on PostgREST builder
+    // mutation. The mutation pattern works today but is brittle to future
+    // supabase-js refactors (and to readers who assume `const` means the
+    // value is also frozen).
+    let deleteQuery = supabase
       .from('user_property_interactions')
       .delete()
       .match({ user_id: userId, property_id: propertyId })
 
     if (dbInteractionType === 'view') {
-      deleteQuery.eq('interaction_type', 'view')
+      deleteQuery = deleteQuery.eq('interaction_type', 'view')
     }
 
     const { error: deleteError } = await deleteQuery

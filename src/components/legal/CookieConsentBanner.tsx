@@ -54,20 +54,35 @@ export function CookieConsentBanner() {
   // the "Review favorites" / "Household hub" cards on mobile dashboard).
   // We use a CSS variable + body padding rather than a placeholder div so
   // it works regardless of which page layout is mounted.
+  //
+  // /review L4: stash the prior body padding before overriding so we
+  // restore the host app's value on cleanup instead of clobbering it.
+  // (Today nothing else sets body.style.paddingBottom — this is defensive
+  // for future code that might.)
+  const previousBodyPaddingBottom = useRef<string | null>(null)
+
   useEffect(() => {
     if (typeof document === 'undefined') return
     const root = document.documentElement
     if (isOpen) {
       // ~80px covers the desktop and mobile banner heights with breathing room.
       root.style.setProperty('--cookie-banner-offset', '5rem')
+      if (previousBodyPaddingBottom.current === null) {
+        previousBodyPaddingBottom.current = document.body.style.paddingBottom
+      }
       document.body.style.paddingBottom = 'var(--cookie-banner-offset)'
     } else {
       root.style.removeProperty('--cookie-banner-offset')
-      document.body.style.paddingBottom = ''
+      document.body.style.paddingBottom =
+        previousBodyPaddingBottom.current ?? ''
+      previousBodyPaddingBottom.current = null
     }
     return () => {
       root.style.removeProperty('--cookie-banner-offset')
-      document.body.style.paddingBottom = ''
+      if (previousBodyPaddingBottom.current !== null) {
+        document.body.style.paddingBottom = previousBodyPaddingBottom.current
+        previousBodyPaddingBottom.current = null
+      }
     }
   }, [isOpen])
 

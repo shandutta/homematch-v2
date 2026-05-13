@@ -25,8 +25,8 @@ export async function ensureUserProfileForCurrentClerkUser(): Promise<
   const existing = await resolveUserProfileIdFromClerkId(clerkUserId)
   if (existing) return existing
 
-  // No row yet — create one. Pull the freshest user data from Clerk so we
-  // don't insert an unknown@... placeholder unnecessarily.
+  // No row yet — create one. Pull the freshest user data from Clerk so the
+  // insert has a real email and display name.
   let email: string | null = null
   let displayName: string | null = null
   try {
@@ -49,6 +49,23 @@ export async function ensureUserProfileForCurrentClerkUser(): Promise<
     )
   }
 
+  // /review M2: fail-closed if Clerk doesn't surface an email. The
+  // previous behavior wrote `unknown+<id>@clerk-webhook.invalid` so the
+  // insert satisfied a (now-relaxed) NOT NULL constraint, but transactional
+  // senders reading user_profiles.email between bootstrap and webhook
+  // arrival would hard-bounce. The webhook itself is idempotent and will
+  // populate the row when a real email lands — returning null here just
+  // means the caller falls through to its "no profile yet" branch one more
+  // request, which is much better than poisoning the row with a dead
+  // address.
+  if (!email) {
+    console.warn(
+      '[ensureUserProfileForCurrentClerkUser] no email on Clerk user; ' +
+        'deferring bootstrap to webhook to avoid a placeholder address'
+    )
+    return null
+  }
+
   const supabase = await getServiceRoleClient({
     approvedCapability: 'clerk-profile-bootstrap',
   })
@@ -63,11 +80,10 @@ export async function ensureUserProfileForCurrentClerkUser(): Promise<
   if (raceCheck?.id) return raceCheck.id
 
   const newProfileId = crypto.randomUUID()
-  const placeholderEmail = `unknown+${clerkUserId}@clerk-webhook.invalid`
   const { error } = await supabase.from('user_profiles').insert({
     id: newProfileId,
     clerk_user_id: clerkUserId,
-    email: email ?? placeholderEmail,
+    email,
     display_name: displayName,
     onboarding_completed: false,
     preferences: {},

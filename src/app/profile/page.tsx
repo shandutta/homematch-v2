@@ -1,6 +1,7 @@
 import { getServerUserContext } from '@/lib/auth/server-context'
 import { getOptionalServerUser } from '@/lib/supabase/optional-user'
 import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
+import { getUserProfileForServerAuth } from '@/lib/auth/server-profile'
 import { redirect } from 'next/navigation'
 import { ProfilePageClient } from '@/components/profile/ProfilePageClient'
 import { UserService } from '@/lib/services/users'
@@ -43,8 +44,13 @@ export default async function ProfilePage() {
 
   if (profileId) {
     try {
+      // PROD-RLS-001: the profile read goes through the service-role-backed
+      // helper because server components can't propagate the Clerk session
+      // to an anon-key client (UserService.getUserProfileWithHousehold) and
+      // RLS would return 0 rows. The activity summary aggregates from a
+      // table that already has Clerk-aware RLS, so it stays on UserService.
       ;[userProfile, activitySummary] = await Promise.all([
-        userService.getUserProfileWithHousehold(profileId),
+        getUserProfileForServerAuth(profileId),
         userService.getUserActivitySummary(profileId),
       ])
     } catch (error) {
