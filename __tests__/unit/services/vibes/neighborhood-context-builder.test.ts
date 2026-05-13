@@ -13,13 +13,17 @@ import { buildNeighborhoodContextMap } from '@/lib/services/vibes/neighborhood-c
 type SelectFn = jest.Mock
 
 interface StubResponse {
-  data: unknown[] | null
+  data?: unknown[] | null
+  error?: { message: string } | null
 }
 
 const stubFrom = (responses: Record<string, StubResponse>) => {
   return jest.fn((table: string) => {
     const select: SelectFn = jest.fn(() => ({
-      in: jest.fn(async () => responses[table] ?? { data: [] }),
+      in: jest.fn(async () => {
+        const r = responses[table] ?? { data: [] }
+        return { data: r.data ?? null, error: r.error ?? null }
+      }),
     }))
     return { select }
   })
@@ -107,6 +111,36 @@ describe('buildNeighborhoodContextMap', () => {
     expect(ctx?.residentFits).toHaveLength(1)
     expect(result.get('p2')).toEqual(ctx)
     expect(result.has('p3')).toBe(false)
+  })
+
+  it('throws when neighborhood_vibes lookup errors', async () => {
+    const from = stubFrom({
+      neighborhood_vibes: { error: { message: 'connection reset' } },
+      neighborhoods: { data: [] },
+    })
+    const supabase = { from } as unknown as Parameters<
+      typeof buildNeighborhoodContextMap
+    >[0]
+    await expect(
+      buildNeighborhoodContextMap(supabase, [
+        { id: 'p1', neighborhood_id: 'n1' },
+      ])
+    ).rejects.toThrow(/connection reset/)
+  })
+
+  it('throws when neighborhoods lookup errors', async () => {
+    const from = stubFrom({
+      neighborhood_vibes: { data: [] },
+      neighborhoods: { error: { message: 'rls denied' } },
+    })
+    const supabase = { from } as unknown as Parameters<
+      typeof buildNeighborhoodContextMap
+    >[0]
+    await expect(
+      buildNeighborhoodContextMap(supabase, [
+        { id: 'p1', neighborhood_id: 'n1' },
+      ])
+    ).rejects.toThrow(/rls denied/)
   })
 
   it('drops malformed JSON entries silently', async () => {

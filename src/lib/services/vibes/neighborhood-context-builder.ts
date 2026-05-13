@@ -104,7 +104,11 @@ export async function buildNeighborhoodContextMap(
   )
   if (neighborhoodIds.length === 0) return out
 
-  const [{ data: vibesRows }, { data: neighborhoodRows }] = await Promise.all([
+  // Propagate Supabase errors instead of falling through to an empty
+  // neighborhood map — a silent failure here would re-introduce the
+  // ungrounded LOCATION tags that this module exists to prevent (Codex
+  // review feedback on PR #41).
+  const [vibesResult, neighborhoodsResult] = await Promise.all([
     supabase
       .from('neighborhood_vibes')
       .select(
@@ -116,6 +120,20 @@ export async function buildNeighborhoodContextMap(
       .select('id, name, walk_score, transit_score')
       .in('id', neighborhoodIds),
   ])
+
+  if (vibesResult.error) {
+    throw new Error(
+      `Failed to load neighborhood_vibes: ${vibesResult.error.message}`
+    )
+  }
+  if (neighborhoodsResult.error) {
+    throw new Error(
+      `Failed to load neighborhoods: ${neighborhoodsResult.error.message}`
+    )
+  }
+
+  const vibesRows = vibesResult.data
+  const neighborhoodRows = neighborhoodsResult.data
 
   const neighborhoodMeta = new Map<
     string,
