@@ -44,8 +44,8 @@ If emails match, accept silently. If they don't, show "This invite was sent to a
 ### Owner sign-off
 
 - [ ] Decided: A / B / C
-- [ ] Approved by: ________________
-- [ ] Date: ________________
+- [ ] Approved by: ******\_\_\_\_******
+- [ ] Date: ******\_\_\_\_******
 
 ---
 
@@ -92,9 +92,9 @@ Replace OpenRouter with a locally-run model (or Vercel AI SDK with a redacted pr
 ### Owner sign-off
 
 - [ ] Decided: A / B / C / D
-- [ ] If A: regex set reviewed by: ________________
-- [ ] If C: confirm no one depends on the workflow output: ________________
-- [ ] Date: ________________
+- [ ] If A: regex set reviewed by: ******\_\_\_\_******
+- [ ] If C: confirm no one depends on the workflow output: ******\_\_\_\_******
+- [ ] Date: ******\_\_\_\_******
 
 ---
 
@@ -111,7 +111,7 @@ Require the caller to know the full email address. Return one or zero results. N
 
 - **Pros:** Enumeration is gone. The endpoint still works for the "invite a specific person" UX, which is its actual purpose.
 - **Cons:** Loses the typeahead experience. Users have to type the whole email before they see "Found" or "Not found."
-- **Effort:** ~15 min. Change `.ilike('email', \`${query}%\`)` to `.eq('email', query.toLowerCase())`.
+- **Effort:** ~15 min. Change `.ilike('email', \`${query}%\`)`to`.eq('email', query.toLowerCase())`.
 
 **B. Return only `display_name`, never email.**
 Keep prefix search, but strip `email` and `household_id` from the response. The caller knows whether a user exists; they don't see the address.
@@ -134,9 +134,9 @@ Caller computes `sha256(email_lower)` client-side and sends the hash. Server com
 ### Owner sign-off
 
 - [ ] Decided: A / B / C
-- [ ] If A: confirm UX impact acceptable: ________________
-- [ ] If C: confirm budget for the migration: ________________
-- [ ] Date: ________________
+- [ ] If A: confirm UX impact acceptable: ******\_\_\_\_******
+- [ ] If C: confirm budget for the migration: ******\_\_\_\_******
+- [ ] Date: ******\_\_\_\_******
 
 ---
 
