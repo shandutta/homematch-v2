@@ -131,7 +131,8 @@ async function loadProperties(
   const out: TargetRow[] = []
   let offset = 0
   for (;;) {
-    const remaining = limit != null ? limit - out.length : Number.POSITIVE_INFINITY
+    const remaining =
+      limit != null ? limit - out.length : Number.POSITIVE_INFINITY
     if (remaining <= 0) break
     const pageSize = Math.min(PAGE_SIZE, remaining)
     const { data, error } = await supabase
