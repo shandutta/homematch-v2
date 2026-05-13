@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+// Casts: API route JSON responses are owned in this repo and their shapes are
+// enforced by the route handler. Casting once at the boundary beats threading
+// a Zod schema through every call site.
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
@@ -74,42 +78,48 @@ export class UserServiceClient {
 
   // Household Operations
   /**
-   * Creates a household for the current user using the RPC function.
-   * This atomically creates the household AND links the user's profile to it.
-   * No need to call joinHousehold() after - the RPC handles that.
+   * Creates a household for the current user via the Clerk-aware
+   * /api/households route, which calls the new
+   * create_household_by_user_id(UUID, TEXT) RPC under service-role with the
+   * verified profile UUID.
+   *
+   * HOUSEHOLD-001: previously this called supabase.rpc('create_household_for_user')
+   * which read auth.uid() — null for Clerk users — and 400'd every request,
+   * blocking the matching feature for every Clerk signup.
    */
   static async createHousehold(household: HouseholdInsert): Promise<Household> {
-    const supabase = await createClient()
-
-    // Use the RPC function which handles RLS via SECURITY DEFINER
-    // and atomically links the user profile to the household
-    const { data: householdId, error: rpcError } = await supabase.rpc(
-      'create_household_for_user',
-      { p_name: household.name || null }
-    )
-
-    if (rpcError) {
-      throw new Error(`Failed to create household: ${rpcError.message}`)
+    const res = await fetch('/api/households', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: household.name || null }),
+    })
+    if (!res.ok) {
+      const message = await res
+        .json()
+        .then((j) => (typeof j?.error === 'string' ? j.error : null))
+        .catch(() => null)
+      throw new Error(
+        message || `Failed to create household: HTTP ${res.status}`
+      )
     }
-
-    const resolvedHouseholdId =
-      typeof householdId === 'string' ? householdId : null
-
+    const body = (await res.json()) as { id?: string }
+    const resolvedHouseholdId = typeof body.id === 'string' ? body.id : null
     if (!resolvedHouseholdId) {
       throw new Error('Failed to create household: no ID returned')
     }
 
-    // Fetch the created household to return full data
+    // Fetch the created household to return full data. RLS allows the
+    // member to SELECT their own household, so the anon client is fine here.
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('households')
       .select()
       .eq('id', resolvedHouseholdId)
       .single()
-
     if (error) {
       throw new Error(`Failed to fetch created household: ${error.message}`)
     }
-
     return data
   }
 
@@ -221,73 +231,43 @@ export class UserServiceClient {
     return data || []
   }
 
+  /**
+   * Creates a household invitation via the Clerk-aware
+   * /api/households/invitations route.
+   *
+   * HOUSEHOLD-001: the prior anon-client path called supabase.auth.getSession()
+   * (null for Clerk users) and INSERTed via the anon-key client (RLS-blocked).
+   * Both checks failed for every Clerk-authenticated user.
+   */
   static async createHouseholdInvitation(
     invite: Omit<
       HouseholdInvitationInsert,
       'status' | 'token' | 'created_at' | 'expires_at' | 'id' | 'created_by'
     >
   ): Promise<HouseholdInvitation> {
-    const supabase = await createClient()
-
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
-
-    if (sessionError || !session?.user) {
-      throw new Error('Authentication required to send invitations')
+    const res = await fetch('/api/households/invitations', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        household_id: invite.household_id,
+        invited_email: invite.invited_email?.trim().toLowerCase() || null,
+        invited_name: invite.invited_name?.trim() || null,
+        message: invite.message?.trim() || null,
+      }),
+    })
+    if (!res.ok) {
+      const message = await res
+        .json()
+        .then((j) => (typeof j?.error === 'string' ? j.error : null))
+        .catch(() => null)
+      throw new Error(message || `Failed to create invite: HTTP ${res.status}`)
     }
-
-    // Verify the user belongs to the household to avoid RLS failures
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('household_id')
-      .eq('id', session.user.id)
-      .single()
-
-    if (profileError || !profile?.household_id) {
-      throw new Error('You need to join a household before sending invites')
+    const body = (await res.json()) as { invitation?: HouseholdInvitation }
+    if (!body.invitation) {
+      throw new Error('Failed to create invite: no invitation returned')
     }
-
-    if (profile.household_id !== invite.household_id) {
-      throw new Error('You can only send invites for your household')
-    }
-
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-    const token =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2)
-
-    const payload: HouseholdInvitationInsert = {
-      household_id: invite.household_id,
-      invited_email: invite.invited_email?.trim().toLowerCase() || null,
-      invited_name: invite.invited_name?.trim() || null,
-      message: invite.message?.trim() || null,
-      created_by: session.user.id,
-      status: 'pending',
-      token,
-      expires_at: expiresAt.toISOString(),
-    }
-
-    const { data, error } = await supabase
-      .from('household_invitations')
-      .insert(payload)
-      .select()
-      .single()
-
-    if (error) {
-      const message = error.message || 'Failed to create invite'
-      if (
-        error.code === '42501' ||
-        message.toLowerCase().includes('row-level security')
-      ) {
-        throw new Error('You must belong to this household to send invites.')
-      }
-      throw new Error(`Failed to create invite: ${message}`)
-    }
-
-    return data
+    return body.invitation
   }
 
   static async revokeHouseholdInvitation(

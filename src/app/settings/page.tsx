@@ -1,5 +1,7 @@
 import { getServerUserContext } from '@/lib/auth/server-context'
 import { getOptionalServerUser } from '@/lib/supabase/optional-user'
+import { ensureUserProfileForCurrentClerkUser } from '@/lib/auth/ensure-profile'
+import { getUserProfileForServerAuth } from '@/lib/auth/server-profile'
 import { redirect } from 'next/navigation'
 import { SettingsPageClient } from '@/components/settings/SettingsPageClient'
 import { UserService } from '@/lib/services/users'
@@ -36,15 +38,22 @@ export default async function SettingsPage({
     redirect(`/login?${params.toString()}`)
   }
 
-  const userService = new UserService()
-  const userProfile = userCtx.profileId
-    ? await userService.getUserProfile(userCtx.profileId)
-    : null
+  // SETTINGS-001 fix: resolve the profile UUID (bootstrapping if the Clerk
+  // webhook hasn't fired yet), then read user_profiles via the
+  // service-role-backed helper. The previous anon-client path was
+  // RLS-blocked for every Clerk user, returned null, and crashed
+  // SettingsPageClient on its first `profile.preferences` access.
+  let profileId = userCtx.profileId
+  if (!profileId && userCtx.source === 'clerk') {
+    profileId = await ensureUserProfileForCurrentClerkUser()
+  }
 
-  // Create profile if it doesn't exist (OAuth users or first-time Clerk users
-  // whose webhook hasn't fired).
-  let profile = userProfile
-  if (!profile) {
+  let profile = profileId ? await getUserProfileForServerAuth(profileId) : null
+
+  // Last-resort path for legacy Supabase users without a profile row.
+  // Clerk users are already covered by ensureUserProfileForCurrentClerkUser.
+  if (!profile && userCtx.source === 'supabase-legacy') {
+    const userService = new UserService()
     const metadata = userShape.user_metadata
     const emailFromMetadata =
       metadata &&
@@ -54,22 +63,44 @@ export default async function SettingsPage({
         ? metadata.email
         : ''
     const email = userShape.email || emailFromMetadata || userCtx.email || ''
-    const profileInsertId =
-      userCtx.source === 'supabase-legacy' ? userShape.id : crypto.randomUUID()
     profile = await userService.createUserProfile({
-      id: profileInsertId,
+      id: userShape.id,
       email,
       onboarding_completed: false,
       preferences: {},
-      ...(userCtx.source === 'clerk' ? { clerk_user_id: userCtx.authId } : {}),
     })
+  }
+
+  // Inline fallback — mirrors /profile rather than crashing the client
+  // component on a null `profile.preferences` access.
+  if (!profile) {
+    return (
+      <div className="gradient-grid-bg dark min-h-screen">
+        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12 text-center text-white">
+          <h1 className="text-2xl font-semibold">
+            Settings are loading&hellip;
+          </h1>
+          <p className="mt-3 text-sm text-white/70">
+            Your account is still being set up. Refresh in a few seconds, or
+            contact{' '}
+            <a
+              className="text-cyan-300 underline"
+              href="mailto:hello@homematch.pro"
+            >
+              hello@homematch.pro
+            </a>{' '}
+            if this stays.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="gradient-grid-bg dark min-h-screen">
       <SettingsPageClient
         user={userShape}
-        profile={profile!}
+        profile={profile}
         initialTab={resolvedSearchParams?.tab}
       />
     </div>
