@@ -18,10 +18,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import type { NeighborhoodVibesContext } from './prompts'
 
-type NeighborhoodVibesContextMap = Map<
-  string,
-  NeighborhoodVibesContext | null
->
+type NeighborhoodVibesContextMap = Map<string, NeighborhoodVibesContext | null>
 
 interface PropertyForNeighborhoodLookup {
   id: string
@@ -37,9 +34,7 @@ const asString = (v: unknown): string | null =>
 const asNumber = (v: unknown): number | null =>
   typeof v === 'number' && Number.isFinite(v) ? v : null
 
-const parseThemes = (
-  raw: unknown
-): NeighborhoodVibesContext['themes'] => {
+const parseThemes = (raw: unknown): NeighborhoodVibesContext['themes'] => {
   if (!Array.isArray(raw)) return []
   return raw
     .filter(isRecord)
@@ -48,9 +43,7 @@ const parseThemes = (
       const why = asString(r.whyItMatters)
       return name && why ? { name, whyItMatters: why } : null
     })
-    .filter(
-      (t): t is NeighborhoodVibesContext['themes'][number] => Boolean(t)
-    )
+    .filter((t): t is NeighborhoodVibesContext['themes'][number] => Boolean(t))
 }
 
 const parseHighlights = (
@@ -67,15 +60,12 @@ const parseHighlights = (
         ? { name, category, whyItMatters: why }
         : null
     })
-    .filter(
-      (h): h is NeighborhoodVibesContext['localHighlights'][number] =>
-        Boolean(h)
+    .filter((h): h is NeighborhoodVibesContext['localHighlights'][number] =>
+      Boolean(h)
     )
 }
 
-const parseFits = (
-  raw: unknown
-): NeighborhoodVibesContext['residentFits'] => {
+const parseFits = (raw: unknown): NeighborhoodVibesContext['residentFits'] => {
   if (!Array.isArray(raw)) return []
   return raw
     .filter(isRecord)
@@ -84,8 +74,8 @@ const parseFits = (
       const reason = asString(r.reason)
       return profile && reason ? { profile, reason } : null
     })
-    .filter(
-      (f): f is NeighborhoodVibesContext['residentFits'][number] => Boolean(f)
+    .filter((f): f is NeighborhoodVibesContext['residentFits'][number] =>
+      Boolean(f)
     )
 }
 

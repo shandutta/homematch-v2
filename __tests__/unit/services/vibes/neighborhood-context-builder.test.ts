@@ -40,9 +40,7 @@ describe('buildNeighborhoodContextMap', () => {
     const from = stubFrom({
       neighborhood_vibes: { data: [] },
       neighborhoods: {
-        data: [
-          { id: 'n1', name: 'Foo', walk_score: 80, transit_score: 60 },
-        ],
+        data: [{ id: 'n1', name: 'Foo', walk_score: 80, transit_score: 60 }],
       },
     })
     const supabase = { from } as unknown as Parameters<

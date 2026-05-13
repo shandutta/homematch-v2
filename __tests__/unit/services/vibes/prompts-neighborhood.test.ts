@@ -81,9 +81,7 @@ describe('buildUserPrompt — neighborhood context section', () => {
           neighborhoodName: 'Bar',
           tagline: 'placeholder',
           themes: [{ name: 't', whyItMatters: 'why' }],
-          localHighlights: [
-            { name: 'h', category: 'c', whyItMatters: 'why' },
-          ],
+          localHighlights: [{ name: 'h', category: 'c', whyItMatters: 'why' }],
           residentFits: [{ profile: 'p', reason: 'r' }],
           walkScore: null,
           transitScore: null,
