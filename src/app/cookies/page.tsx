@@ -23,7 +23,7 @@ export default function CookiesPage() {
             secure your account, and measure product performance.
           </p>
           <p className="text-sm text-slate-500">
-            Last updated: January 4, 2026
+            Last updated: May 13, 2026
           </p>
         </header>
 

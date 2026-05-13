@@ -104,7 +104,7 @@ describe('HeroSection', () => {
   test('renders primary CTA linking to signup', () => {
     render(<HeroSection />)
 
-    const primaryCTA = screen.getByText('Start swiping').closest('a')
+    const primaryCTA = screen.getByText('Get Started').closest('a')
     expect(primaryCTA).toHaveAttribute('href', '/signup')
   })
 
@@ -136,7 +136,7 @@ describe('HeroSection', () => {
   test('primary CTA has accessibility attributes', () => {
     render(<HeroSection />)
 
-    const primaryCTA = screen.getByText('Start swiping').closest('a')
+    const primaryCTA = screen.getByText('Get Started').closest('a')
     expect(primaryCTA).toHaveAttribute('data-testid', 'primary-cta')
   })
 })

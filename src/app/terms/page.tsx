@@ -24,7 +24,7 @@ export default function TermsPage() {
             service, you agree to them.
           </p>
           <p className="text-sm text-slate-500">
-            Last updated: January 4, 2026
+            Last updated: May 13, 2026
           </p>
         </header>
 
