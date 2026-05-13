@@ -42,6 +42,9 @@ describe('service-role route capability guard', () => {
       // SELECT is scoped to the already-verified profile UUID.
       // API-USERS-ME-001.
       './src/app/api/users/me/route.ts',
+      // ONBOARDING-001: preference update for the /onboarding flow.
+      // Same Clerk + service-role pattern as the other write routes.
+      './src/app/api/users/preferences/route.ts',
       './src/app/api/users/search/route.ts',
       './src/app/api/webhooks/clerk/route.ts',
       './src/app/invite/[token]/actions.ts',

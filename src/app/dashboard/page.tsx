@@ -73,6 +73,17 @@ export default async function DashboardPage({
   try {
     const userService = new UserService()
     const userProfile = await userService.getUserProfile(profileId)
+
+    // ONBOARDING-001: brand-new users with onboarding_completed=false get
+    // routed through /onboarding so we can collect a city + price range
+    // before the dashboard tries to render personalized recommendations.
+    // The recommendation feed has no signal to personalize against
+    // otherwise, which is the "random walk of 160 cards" finding from
+    // Section 3 of the audit.
+    if (userProfile && userProfile.onboarding_completed === false) {
+      redirect('/onboarding')
+    }
+
     const dashboardPreferences = parseDashboardPreferences(
       userProfile?.preferences ?? null
     )
@@ -84,11 +95,6 @@ export default async function DashboardPage({
       useCache: true,
       cacheKey: profileId,
     })
-
-    // TODO: Re-enable onboarding flow once onboarding page is implemented
-    // if (!finalUserData?.onboarding_completed) {
-    //   redirect('/onboarding');
-    // }
 
     // const returning = (await searchParams)?.returning === 'true';
 

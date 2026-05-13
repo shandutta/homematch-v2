@@ -213,6 +213,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
       'Auth-gated identity lookup (profile id, email, household_id). Bootstraps a user_profiles row on first read for fresh Clerk signups whose webhook is mid-flight; that bootstrap is the documented exception and is keyed to the verified Clerk session.',
   },
   {
+    path: '/api/users/preferences',
+    categories: ['mutating-auth'],
+    rationale:
+      'Clerk-aware preference update used by the /onboarding flow. Verifies the Clerk session, bootstraps the user_profiles row if needed, then updates preferences + onboarding_completed under service-role with the resolved profile UUID (ONBOARDING-001).',
+  },
+  {
     path: '/api/users/search',
     categories: ['safe-auth-read'],
     rationale:
