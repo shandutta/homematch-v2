@@ -2,37 +2,26 @@
 // clerkMiddleware passes a Request that we widen to NextRequest because
 // the Clerk types are not aware of Next's extensions.
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { isProtectedPath } from '@/lib/routing/protected-routes'
-// Phase 1 (dual-auth elimination, 2026-05-13): isInvalidRefreshTokenError
-// previously lived in @/lib/supabase/auth-helpers, which was retired
-// along with refresh-recovery.ts. Inlined here as a minimal helper so the
-// legacy Supabase middleware path keeps clearing stale-token cookies
-// until Phase 3 deletes the whole branch.
-const isInvalidRefreshTokenError = (error: unknown): boolean => {
-  if (!error || typeof error !== 'object') return false
-  const message =
-    'message' in error &&
-    typeof (error as { message: unknown }).message === 'string'
-      ? (error as { message: string }).message.toLowerCase()
-      : ''
-  const code =
-    'code' in error && typeof (error as { code: unknown }).code === 'string'
-      ? (error as { code: string }).code
-      : ''
-  return (
-    code === 'refresh_token_not_found' ||
-    code === 'refresh_token_already_used' ||
-    message.includes('refresh token not found') ||
-    message.includes('refresh token already used') ||
-    message.includes('invalid refresh token')
-  )
-}
-import { buildSupabaseSessionCookieOptions } from '@/lib/supabase/cookie-options'
-import { getSupabaseAuthStorageKey } from '@/lib/supabase/storage-keys'
+import {
+  isProtectedPath,
+  PROTECTED_PATH_PREFIXES,
+} from '@/lib/routing/protected-routes'
 
-export { buildSupabaseSessionCookieOptions }
+// Phase 3 (Supabase-auth elimination, 2026-05-13): the legacy
+// Supabase session-refresh middleware path has been removed. Clerk is
+// the sole identity provider, so anonymous users no longer need a
+// per-host cookie read, a Supabase server-client per request, or a
+// refresh-token recovery branch. What remains:
+//
+//   - security headers + per-request CSP nonce
+//   - Clerk session resolution (with a timeout fallback)
+//   - protected-path → /login redirect for anonymous traffic
+//   - /login + /signup → dashboard redirect for already-signed-in users
+//
+// The `/login` page itself still exists; Phase 4 of the migration
+// deletes it (and the cookie-options / storage-keys helpers that fed
+// the old refresh-recovery path).
 
 const SECURITY_HEADERS = {
   'X-Frame-Options': 'DENY',
@@ -51,26 +40,14 @@ const PUBLIC_BYPASS_PATHS = [
   // Clerk webhook (verified by Svix signature, must not be gated by auth).
   '/api/webhooks/clerk',
 ]
-const SUPABASE_TIMEOUT_MS = parseInt(
-  process.env.MIDDLEWARE_SUPABASE_TIMEOUT_MS || '5000',
-  10
-)
 
 // Clerk route matcher for protected pages.
 // M5 (2026-05-13 audit): derived from the single PROTECTED_PATH_PREFIXES
 // source so a new route is added in one place. The trailing `(.*)` makes
 // it path-prefix matching to mirror `isProtectedPath`'s `startsWith` form.
-import { PROTECTED_PATH_PREFIXES } from '@/lib/routing/protected-routes'
-
 const isClerkProtectedRoute = createRouteMatcher(
   PROTECTED_PATH_PREFIXES.map((prefix) => `${prefix}(.*)`)
 )
-
-const hasSupabasePublicConfig = () =>
-  Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
 
 const getSafeRedirectPath = (value: string | null) => {
   if (!value) return null
@@ -118,8 +95,7 @@ const applySecurityHeaders = (
     // (`'nonce-${nonce}'`) plus their transitively-loaded scripts
     // (`'strict-dynamic'`). Next.js automatically attaches the nonce to
     // its own inline scripts (hydration, RSC streaming, head metadata
-    // when it sees the `x-nonce` request header set in the legacy
-    // middleware path or via the wrapper below.
+    // when it sees the `x-nonce` request header set by the wrapper below.
     //
     // Why each piece is here:
     //   - 'nonce-${nonce}'      explicit trust for the per-request nonce
@@ -176,308 +152,33 @@ const generateNonce = (): string => {
   return btoa(binary)
 }
 
-const createSupabaseTimeoutFetch = (signal: AbortSignal): typeof fetch => {
-  return (input, init) =>
-    fetch(input, {
-      ...init,
-      signal,
-    })
-}
-
-const isSupabaseAuthTimeoutError = (error: unknown) => {
-  if (error instanceof Error) {
-    return (
-      error.message.toLowerCase().includes('timeout') ||
-      error.name === 'AbortError'
-    )
-  }
-
-  return String(error).toLowerCase().includes('timeout')
-}
-
-/**
- * Inner middleware logic — the legacy Supabase session refresh + protection
- * pipeline. Wrapped by clerkMiddleware below.
- *
- * Why both auths coexist (Phase C transition window):
- * - Clerk gates *new* protected routes via `auth.protect()` (called above
- *   inside clerkMiddleware) but only after users sign up via Clerk's UI.
- * - Existing users still have Supabase sessions until Phase E (user data
- *   migration) ships. This Supabase path keeps them logged in.
- * - Once migration completes, this entire function can collapse to just
- *   security headers + Clerk's auth.protect().
- */
-async function legacySupabaseMiddleware(
-  request: NextRequest
-): Promise<NextResponse> {
-  const pathname = request.nextUrl.pathname
-  let supabaseResponse = NextResponse.next({ request })
-  const isApiRoute = pathname.startsWith('/api/')
-  const isTestMode =
-    process.env.NODE_ENV === 'test' ||
-    process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-  const shouldLog =
-    process.env.DEBUG_MIDDLEWARE === 'true' ||
-    process.env.DEBUG_MIDDLEWARE_AUTH === 'true'
-
-  if (PUBLIC_BYPASS_PATHS.some((path) => pathname.startsWith(path))) {
-    return applySecurityHeaders(supabaseResponse, request)
-  }
-
-  if (isApiRoute) {
-    return applySecurityHeaders(supabaseResponse, request)
-  }
-
-  const redirectAnonymousProtectedPage = () => {
-    // Resolve against request.url (the actual incoming host) so cookies
-    // stay scoped to the host the user is on (e.g. 127.0.0.1 vs localhost,
-    // or www.* vs apex). Cloning request.nextUrl sometimes normalizes the
-    // host and causes session loss across the redirect.
-    const target = new URL('/login', request.url)
-    target.searchParams.set(
-      'redirectTo',
-      `${request.nextUrl.pathname}${request.nextUrl.search}`
-    )
-    return NextResponse.redirect(target)
-  }
-
-  if (!hasSupabasePublicConfig()) {
-    if (isProtectedPath(pathname) && !isApiRoute) {
-      return redirectAnonymousProtectedPage()
-    }
-
-    return applySecurityHeaders(supabaseResponse, request)
-  }
-
-  // Dynamic cookie name based on hostname
-  const hostname = request.nextUrl.hostname
-  const cookieName = getSupabaseAuthStorageKey(hostname)
-  const hasAuthCookie = request.cookies
-    .getAll()
-    .some((c) => c.name === cookieName)
-
-  if (!hasAuthCookie) {
-    if (isProtectedPath(pathname)) {
-      return redirectAnonymousProtectedPage()
-    }
-
-    return applySecurityHeaders(supabaseResponse, request)
-  }
-
-  const supabaseTimeoutController = new AbortController()
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookieOptions: {
-        name: cookieName,
-        path: '/',
-        sameSite: 'lax',
-      },
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(
-          cookiesToSet: Array<{
-            name: string
-            value: string
-            options?: Record<string, unknown>
-          }>
-        ) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(
-              name,
-              value,
-              buildSupabaseSessionCookieOptions(options)
-            )
-          })
-        },
-      },
-      auth: {
-        // Enable automatic token refresh
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-      global: {
-        fetch: createSupabaseTimeoutFetch(supabaseTimeoutController.signal),
-      },
-    }
+const redirectToLogin = (request: NextRequest): NextResponse => {
+  // Resolve against request.url (the actual incoming host) so cookies
+  // stay scoped to the host the user is on (e.g. 127.0.0.1 vs localhost,
+  // or www.* vs apex). Cloning request.nextUrl sometimes normalizes the
+  // host and causes session loss across the redirect.
+  const target = new URL('/login', request.url)
+  target.searchParams.set(
+    'redirectTo',
+    `${request.nextUrl.pathname}${request.nextUrl.search}`
   )
-
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  let user = null
-  let authError = null
-
-  try {
-    // Check if the auth cookie exists to avoid unnecessary Supabase calls
-    const hasAuthCookie = request.cookies
-      .getAll()
-      .some((c) => c.name === cookieName)
-
-    if (!hasAuthCookie && !isApiRoute) {
-      // No auth cookie and not an API route (which might use headers)
-      // We can skip getUser() safely
-      user = null
-    } else if (isApiRoute && isTestMode) {
-      // Skip auth check for API routes in test mode
-      if (shouldLog) {
-        console.log(
-          '[Middleware] Skipping auth check for API route in test mode:',
-          request.nextUrl.pathname
-        )
-      }
-      // user remains null, which is fine as API routes extract token from headers
-    } else {
-      const authTimeout = setTimeout(() => {
-        supabaseTimeoutController.abort(new Error('Supabase auth timeout'))
-      }, SUPABASE_TIMEOUT_MS)
-
-      try {
-        const result = await supabase.auth.getUser()
-        user = result.data.user
-        authError = result.error
-      } finally {
-        clearTimeout(authTimeout)
-      }
-    }
-
-    // Handle invalid refresh token errors gracefully
-    if (authError && isInvalidRefreshTokenError(authError)) {
-      console.warn(
-        '[Middleware] Invalid refresh token detected - treating as unauthenticated'
-      )
-      user = null
-      authError = null
-      // Clear ALL auth-related cookies to prevent repeated errors
-      const allCookies = request.cookies.getAll()
-      allCookies.forEach((cookie) => {
-        if (
-          cookie.name.startsWith('sb-') &&
-          cookie.name.includes('-auth-token')
-        ) {
-          supabaseResponse.cookies.delete(cookie.name)
-        }
-      })
-    }
-  } catch (e) {
-    // Handle thrown exceptions for invalid refresh tokens
-    if (isInvalidRefreshTokenError(e)) {
-      console.warn(
-        '[Middleware] Invalid refresh token exception - treating as unauthenticated'
-      )
-      user = null
-      // Clear ALL auth-related cookies
-      const allCookies = request.cookies.getAll()
-      allCookies.forEach((cookie) => {
-        if (
-          cookie.name.startsWith('sb-') &&
-          cookie.name.includes('-auth-token')
-        ) {
-          supabaseResponse.cookies.delete(cookie.name)
-        }
-      })
-    } else if (isSupabaseAuthTimeoutError(e)) {
-      console.warn(
-        '[Middleware] Supabase auth timed out - continuing as unauthenticated'
-      )
-      user = null
-      authError = null
-    } else {
-      throw e
-    }
-  }
-
-  if (shouldLog) {
-    const cookieNames = request.cookies.getAll().map((c) => c.name)
-    const hasSupabaseAuthCookie = cookieNames.some(
-      (name) => name.startsWith('sb-') && name.includes('-auth-token')
-    )
-
-    console.log('[Middleware][Auth]', {
-      path: request.nextUrl.pathname,
-      userPresent: Boolean(user),
-      authError: authError?.message ?? null,
-      cookieCount: cookieNames.length,
-      hasSupabaseAuthCookie,
-    })
-  }
-
-  // Protected routes - redirect to login if not authenticated
-  if (isProtectedPath(request.nextUrl.pathname) && !user) {
-    // Resolve against request.url so the redirect stays on the same host
-    // (preserves auth cookies). See redirectAnonymousProtectedPage for
-    // the same fix earlier in this file.
-    const target = new URL('/login', request.url)
-    target.searchParams.set(
-      'redirectTo',
-      `${request.nextUrl.pathname}${request.nextUrl.search}`
-    )
-    return NextResponse.redirect(target)
-  }
-
-  // Auth routes - redirect to dashboard if already authenticated
-  const authPaths = ['/login', '/signup']
-  const isAuthPath = authPaths.some((path) => request.nextUrl.pathname === path)
-
-  if (isAuthPath && user) {
-    const redirectTo =
-      getSafeRedirectPath(request.nextUrl.searchParams.get('redirectTo')) ||
-      getSafeRedirectPath(request.nextUrl.searchParams.get('redirect'))
-
-    if (redirectTo) {
-      return NextResponse.redirect(new URL(redirectTo, request.nextUrl))
-    }
-
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-
-  // Add security headers
-  const response = applySecurityHeaders(supabaseResponse, request)
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object instead of the supabaseResponse object
-
-  return response
+  return NextResponse.redirect(target)
 }
 
 /**
- * Top-level middleware wrapping with Clerk.
+ * Top-level middleware wrapped with Clerk.
  *
- * Phase C.1 (coexistence): Clerk and Supabase auth both run. Clerk handles
- * NEW sign-ups via /sign-in /sign-up; Supabase keeps existing users logged in.
- * Phase E (user data migration) is the bridge to single-source-of-truth Clerk.
+ * Phase 3 (Supabase-auth elimination, 2026-05-13): Clerk is the only
+ * identity source — the legacy Supabase session-refresh branch is gone.
  *
- * Clerk's `auth.protect()` is intentionally NOT called here yet — that would
- * lock existing Supabase users out of protected routes during the transition.
- * Instead, the legacy Supabase path still handles route protection. Once
- * Phase E completes, swap the body to:
- *
- *     if (isClerkProtectedRoute(req)) await auth.protect()
- *     return NextResponse.next()
- *
- * Behavior:
- * - If a Clerk session is detected, the user is treated as authenticated
- *   regardless of Supabase state (skip the Supabase redirect-to-login).
- * - Otherwise, fall through to the legacy Supabase pipeline.
+ * Flow:
+ * - Public-bypass paths skip Clerk session resolution entirely.
+ * - Clerk session is resolved with a timeout fallback (failure → anon).
+ * - Signed-in users on /login or /signup get redirected to /dashboard
+ *   (or a sanitized ?redirectTo target).
+ * - Anonymous users hitting protected pages redirect to /login.
+ * - API routes always pass through with security headers; route handlers
+ *   re-verify the Clerk session themselves.
  */
 export default clerkMiddleware(async (clerkAuth, request) => {
   const nextRequest = request as NextRequest
@@ -508,8 +209,8 @@ export default clerkMiddleware(async (clerkAuth, request) => {
 
   // M3 (2026-05-13 audit): wrap clerkAuth() in a timeout. Without it,
   // Clerk SDK slowness (token verification, JWKS fetch, network blip)
-  // hangs every request through middleware. Default 5s matches the
-  // Supabase auth timeout above; override via env for tighter SLAs.
+  // hangs every request through middleware. Default 5s; override via
+  // env for tighter SLAs.
   const clerkTimeoutMs = parseInt(
     process.env.MIDDLEWARE_CLERK_TIMEOUT_MS || '5000',
     10
@@ -534,14 +235,10 @@ export default clerkMiddleware(async (clerkAuth, request) => {
     clerkUserId = null
   }
 
-  // Clerk user is signed in — skip the legacy Supabase protection that would
-  // redirect them to /login, and just return security headers.
   if (clerkUserId) {
-    // Still let API bypass paths and API routes through with security headers.
+    // Signed-in: redirect away from /login + /signup, otherwise pass through.
     let response = NextResponse.next({ request: nextRequest })
 
-    // For auth pages (login/signup) when Clerk is signed in, redirect to
-    // dashboard (or the requested target).
     if (pathname === '/login' || pathname === '/signup') {
       const params = nextRequest.nextUrl.searchParams
       const redirectTo =
@@ -554,10 +251,27 @@ export default clerkMiddleware(async (clerkAuth, request) => {
     return applySecurityHeaders(response, nextRequest)
   }
 
-  // Anonymous (no Clerk session) — fall through to the legacy Supabase
-  // middleware so existing Supabase users still get their session refresh +
-  // protection logic.
-  return legacySupabaseMiddleware(nextRequest)
+  // Anonymous from here on.
+  //
+  // API routes always pass through — every API handler re-verifies the
+  // Clerk session via requireUserFromRequest, and many public endpoints
+  // (search, properties feed) are intentionally anon-readable.
+  if (pathname.startsWith('/api/')) {
+    return applySecurityHeaders(
+      NextResponse.next({ request: nextRequest }),
+      nextRequest
+    )
+  }
+
+  // Anonymous + protected page → /login.
+  if (isProtectedPath(pathname)) {
+    return redirectToLogin(nextRequest)
+  }
+
+  return applySecurityHeaders(
+    NextResponse.next({ request: nextRequest }),
+    nextRequest
+  )
 })
 
 export const config = {

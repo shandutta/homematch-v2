@@ -119,13 +119,18 @@ describe('storage upload policy guard', () => {
       expect(magicCheckIndex).toBeLessThan(uploadCallIndex)
     })
 
-    test('scopes storage paths to user.id with a server-derived extension only', () => {
-      // Storage path must be `${user.id}/avatar.${ext}`. Locking down the
-      // exact template prevents future drift toward path components sourced
-      // from formData (e.g., file.name) which would enable traversal /
-      // collision attacks across users.
+    test('scopes storage paths to the resolved profile UUID with a server-derived extension only', () => {
+      // Phase 2b (Supabase-auth elim): storage path is now
+      // `${userId}/avatar.${ext}` where userId is the resolved
+      // user_profiles.id (a UUID). Pre-Phase-2b it was Clerk's raw
+      // `user_xxx` id which failed the bucket's auth.uid()::text RLS
+      // and would have failed any future migration that walks the
+      // bucket by UUID. Locking down the exact template prevents
+      // future drift toward path components sourced from formData
+      // (e.g., file.name) which would enable traversal / collision
+      // attacks across users.
       expect(avatarSource).toMatch(
-        /const\s+filePath\s*=\s*`\$\{user\.id\}\/avatar\.\$\{ext\}`/
+        /const\s+filePath\s*=\s*`\$\{userId\}\/avatar\.\$\{ext\}`/
       )
 
       // ext must be derived from the server-validated MIME type, never from
