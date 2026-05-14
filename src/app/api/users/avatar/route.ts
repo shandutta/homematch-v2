@@ -90,6 +90,17 @@ export const POST = withRouteDeadline(
         userId = profileId
       }
 
+      // @service-role-capability: Phase 2b avatar storage write. The
+      // avatars-bucket RLS policy requires
+      // (storage.foldername(name))[1] = auth.uid()::text which is NULL
+      // for Clerk users → uploads silently fail. Use service-role,
+      // folder name = resolved user_profiles.id.
+      // TODO(D1 follow-up): replace with avatar_upload_for_user_id RPC
+      // (storage operations via plpgsql + signed URL).
+      const storageClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-avatar-storage-write',
+      })
+
       // Parse multipart form data
       const formData = await request.formData()
       const fileEntry = formData.get('file')
@@ -123,11 +134,15 @@ export const POST = withRouteDeadline(
       // Get file extension from mime type
       const ext =
         file.type.split('/')[1] === 'jpeg' ? 'jpg' : file.type.split('/')[1]
-      const filePath = `${user.id}/avatar.${ext}`
+      // Folder is the resolved user_profiles.id (UUID). Phase 2a/2b: this
+      // used to be Clerk's "user_xxx" id for Clerk users, which failed
+      // the bucket RLS check and would have failed any future migration
+      // that walks the bucket by uuid.
+      const filePath = `${userId}/avatar.${ext}`
 
       // UPLOAD FIRST, then delete old files (fixes race condition)
       // This ensures we have the new file before removing the old one
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await storageClient.storage
         .from(BUCKET_NAME)
         .upload(filePath, arrayBuffer, {
           contentType: file.type,
@@ -140,9 +155,9 @@ export const POST = withRouteDeadline(
       }
 
       // Delete any OTHER avatar files for this user (different extensions)
-      const { data: existingFiles } = await supabase.storage
+      const { data: existingFiles } = await storageClient.storage
         .from(BUCKET_NAME)
-        .list(user.id)
+        .list(userId)
 
       if (existingFiles && existingFiles.length > 0) {
         // Get the filename we just uploaded
@@ -150,10 +165,10 @@ export const POST = withRouteDeadline(
         // Find files to delete (other avatars with different extensions)
         const filesToDelete = existingFiles
           .filter((f) => f.name !== uploadedFilename)
-          .map((f) => `${user.id}/${f.name}`)
+          .map((f) => `${userId}/${f.name}`)
 
         if (filesToDelete.length > 0) {
-          await supabase.storage.from(BUCKET_NAME).remove(filesToDelete)
+          await storageClient.storage.from(BUCKET_NAME).remove(filesToDelete)
         }
       }
 
@@ -161,7 +176,7 @@ export const POST = withRouteDeadline(
       const timestamp = Date.now()
       const {
         data: { publicUrl },
-      } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath)
+      } = storageClient.storage.from(BUCKET_NAME).getPublicUrl(filePath)
 
       // Append cache buster to URL
       const cacheBustedUrl = `${publicUrl}?t=${timestamp}`
@@ -203,7 +218,7 @@ export const POST = withRouteDeadline(
       if (updateError) {
         console.error('Profile update error:', updateError)
         // Try to clean up uploaded file
-        await supabase.storage.from(BUCKET_NAME).remove([filePath])
+        await storageClient.storage.from(BUCKET_NAME).remove([filePath])
         return ApiErrorHandler.serverError('Failed to update profile')
       }
 
@@ -256,6 +271,15 @@ export const DELETE = withRouteDeadline(
         approvedCapability: 'clerk-user-profile-write',
       })
 
+      // @service-role-capability: Phase 2b avatar storage cleanup. The
+      // avatars-bucket RLS requires auth.uid() which is NULL for Clerk
+      // sessions, so a list/remove on the anon client returns 0 rows
+      // and leaves orphaned files. Service-role + resolved userId fixes it.
+      // TODO(D1 follow-up): replace with avatar_delete_for_user_id RPC.
+      const storageClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-avatar-storage-write',
+      })
+
       // Clear avatar from preferences FIRST
       // This ensures users don't see a broken avatar URL
       const { data: profile } = await writeClient
@@ -288,16 +312,15 @@ export const DELETE = withRouteDeadline(
       }
 
       // Then delete all avatar files for this user from storage
-      const { data: existingFiles, error: listError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .list(user.id)
+      const { data: existingFiles, error: listError } =
+        await storageClient.storage.from(BUCKET_NAME).list(userId)
 
       if (listError) {
         // Log but don't fail - preferences already cleared
         console.warn('Failed to list avatar files for cleanup:', listError)
       } else if (existingFiles && existingFiles.length > 0) {
-        const filesToDelete = existingFiles.map((f) => `${user.id}/${f.name}`)
-        const { error: deleteError } = await supabase.storage
+        const filesToDelete = existingFiles.map((f) => `${userId}/${f.name}`)
+        const { error: deleteError } = await storageClient.storage
           .from(BUCKET_NAME)
           .remove(filesToDelete)
 

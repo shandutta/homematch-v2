@@ -1,7 +1,10 @@
-// Phase C of Clerk migration: /login redirects to Clerk's /sign-in.
-// The legacy LoginForm at @/components/features/auth/LoginForm.tsx is
-// retained but unhooked — it can be removed after Phase E (user migration)
-// when no legacy Supabase users remain.
+// Phase 4 (Supabase-auth elim, 2026-05-13): /login is a redirect-only
+// stub now — LoginForm + ResetPasswordForm + VerifyEmailForm and the
+// /reset-password + /verify-email + /auth/* pages were retired with
+// the Supabase session machinery. This page survives so existing
+// `/login` links in marketing + nav components continue to work; it
+// just translates the legacy `redirectTo` param to Clerk's
+// `redirect_url` and forwards to /sign-in.
 import { redirect } from 'next/navigation'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
 
