@@ -6,6 +6,7 @@
 
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
@@ -78,10 +79,25 @@ export async function GET(request: NextRequest) {
       const includePropertyDetails =
         searchParams.get('includeProperties') !== 'false'
 
+      // @service-role-capability: Phase 5 dropped the user_profiles self-read
+      // policy that CouplesService.getUserHousehold relied on (and the
+      // user_property_interactions self-read policy that
+      // getMutualLikesFallback relied on). Clerk users have no Supabase
+      // session anyway, so the anon-key reads return 0 rows. The Clerk
+      // session is already verified above; passing the service-role client
+      // scopes the reads through user_id / household_id WHERE clauses
+      // resolved from that verified session.
+      // TODO(D1 follow-up): replace with a constrained
+      // get_mutual_likes_for_user_id RPC that the service can call
+      // through anon-key.
+      const readClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-couples-read',
+      })
+
       // Get mutual likes for the user's household (now cached and optimized)
       // Add timeout to prevent hanging
       const mutualLikesPromise = CouplesService.getMutualLikes(
-        supabase,
+        readClient,
         user.id
       )
 

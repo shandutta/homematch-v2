@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { CouplesService } from '@/lib/services/couples'
 import { withRateLimit } from '@/lib/middleware/rateLimiter'
 import { noStoreJson } from '@/lib/api/cache-control'
@@ -61,10 +62,21 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // @service-role-capability: Phase 5 — CouplesService.getUserHousehold
+      // reads user_profiles; the activity RPC + fallback also read
+      // user_property_interactions/households. All RLS-deny under
+      // anon-key post-Phase-5. Verified Clerk session above; scope reads
+      // through user.id.
+      // TODO(D1 follow-up): replace with a constrained
+      // get_household_activity_for_user_id RPC.
+      const readClient = await getServiceRoleClient({
+        approvedCapability: 'clerk-couples-read',
+      })
+
       // Get household activity (cached and optimized)
       // Add timeout to prevent hanging
       const activityPromise = CouplesService.getHouseholdActivity(
-        supabase,
+        readClient,
         auth.user.id,
         limit,
         offset

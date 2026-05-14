@@ -31,7 +31,18 @@ describe('service-role route capability guard', () => {
         .map((filePath) => filePath.replace(process.cwd(), '.'))
         .sort()
     ).toEqual([
+      // Phase 5 (Supabase-auth elim): every couples-read route below calls
+      // into CouplesService, which reads user_profiles
+      // (getUserHousehold) + user_property_interactions (fallback/joins) —
+      // all RLS-deny under anon-key once the self-read policies were
+      // dropped. Routes verify the Clerk session, then pass a service-role
+      // client into the service scoped via the verified user.id.
+      './src/app/api/couples/activity/route.ts',
+      './src/app/api/couples/check-mutual/route.ts',
       './src/app/api/couples/disputed/route.ts',
+      './src/app/api/couples/mutual-likes/route.ts',
+      './src/app/api/couples/notify/route.ts',
+      './src/app/api/couples/stats/route.ts',
       // Clerk-aware household write routes — verify Clerk session then pass
       // the resolved profile UUID to the new create_household_by_user_id RPC
       // / household_invitations table under service-role. HOUSEHOLD-001.
