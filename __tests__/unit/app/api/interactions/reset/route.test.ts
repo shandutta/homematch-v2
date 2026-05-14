@@ -236,7 +236,9 @@ describe('interactions reset API route', () => {
       })
     )
 
-    expect(writeClientMock.from).toHaveBeenCalledWith('user_property_interactions')
+    expect(writeClientMock.from).toHaveBeenCalledWith(
+      'user_property_interactions'
+    )
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-1')
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-2')
 
