@@ -90,13 +90,13 @@ describe('Avatar Upload API Integration', () => {
 
   describe('Profile Preferences with Avatar', () => {
     test('should store preset avatar in user preferences', async () => {
-      const { supabase, user } = await createAuthenticatedClient(0)
+      const { user } = await createAuthenticatedClient(0)
 
       // Update profile with preset avatar
       const avatarData = { type: 'preset', value: 'fox' }
 
       // Get current preferences
-      const { data: profile } = await supabase
+      const { data: profile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -107,7 +107,7 @@ describe('Avatar Upload API Integration', () => {
         : {}
 
       // Update with avatar
-      const { error: updateError } = await supabase
+      const { error: updateError } = await serviceClient!
         .from('user_profiles')
         .update({
           preferences: {
@@ -120,7 +120,7 @@ describe('Avatar Upload API Integration', () => {
       expect(updateError).toBeNull()
 
       // Verify avatar was stored
-      const { data: updatedProfile } = await supabase
+      const { data: updatedProfile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -133,7 +133,7 @@ describe('Avatar Upload API Integration', () => {
 
       // Clean up - remove avatar from preferences
       const { avatar: _, ...preferencesWithoutAvatar } = preferences
-      await supabase
+      await serviceClient!
         .from('user_profiles')
         .update({
           preferences: preferencesWithoutAvatar,
@@ -142,14 +142,14 @@ describe('Avatar Upload API Integration', () => {
     })
 
     test('should store custom avatar URL in user preferences', async () => {
-      const { supabase, user } = await createAuthenticatedClient(1)
+      const { user } = await createAuthenticatedClient(1)
 
       // Update profile with custom avatar URL
       const customUrl = 'https://storage.example.com/avatars/test.png'
       const avatarData = { type: 'custom', value: customUrl }
 
       // Get current preferences
-      const { data: profile } = await supabase
+      const { data: profile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -158,7 +158,7 @@ describe('Avatar Upload API Integration', () => {
       const currentPreferences = toPreferences(profile?.preferences)
 
       // Update with avatar
-      const { error: updateError } = await supabase
+      const { error: updateError } = await serviceClient!
         .from('user_profiles')
         .update({
           preferences: {
@@ -171,7 +171,7 @@ describe('Avatar Upload API Integration', () => {
       expect(updateError).toBeNull()
 
       // Verify avatar was stored
-      const { data: updatedProfile } = await supabase
+      const { data: updatedProfile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -182,7 +182,7 @@ describe('Avatar Upload API Integration', () => {
 
       // Clean up
       const { avatar: _, ...preferencesWithoutAvatar } = preferences
-      await supabase
+      await serviceClient!
         .from('user_profiles')
         .update({
           preferences: preferencesWithoutAvatar,
@@ -191,10 +191,10 @@ describe('Avatar Upload API Integration', () => {
     })
 
     test('should clear avatar from preferences', async () => {
-      const { supabase, user } = await createAuthenticatedClient(2)
+      const { user } = await createAuthenticatedClient(2)
 
       // First set an avatar
-      const { data: profile } = await supabase
+      const { data: profile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -202,7 +202,7 @@ describe('Avatar Upload API Integration', () => {
 
       const currentPreferences = toPreferences(profile?.preferences)
 
-      await supabase
+      await serviceClient!
         .from('user_profiles')
         .update({
           preferences: {
@@ -213,7 +213,7 @@ describe('Avatar Upload API Integration', () => {
         .eq('id', user.id)
 
       // Now clear it
-      const { data: profileWithAvatar } = await supabase
+      const { data: profileWithAvatar } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -225,7 +225,7 @@ describe('Avatar Upload API Integration', () => {
 
       const { avatar: _, ...preferencesWithoutAvatar } = preferencesWithAvatar
 
-      const { error: clearError } = await supabase
+      const { error: clearError } = await serviceClient!
         .from('user_profiles')
         .update({
           preferences: preferencesWithoutAvatar,
@@ -235,7 +235,7 @@ describe('Avatar Upload API Integration', () => {
       expect(clearError).toBeNull()
 
       // Verify avatar was cleared
-      const { data: clearedProfile } = await supabase
+      const { data: clearedProfile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -248,10 +248,10 @@ describe('Avatar Upload API Integration', () => {
 
   describe('Avatar Data Validation', () => {
     test('should enforce avatar type values', async () => {
-      const { supabase, user } = await createAuthenticatedClient(3)
+      const { user } = await createAuthenticatedClient(3)
 
       // Get current preferences
-      const { data: profile } = await supabase
+      const { data: profile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -261,7 +261,7 @@ describe('Avatar Upload API Integration', () => {
 
       // Valid preset avatar
       const presetAvatar = { type: 'preset', value: 'cat' }
-      const { error: presetError } = await supabase
+      const { error: presetError } = await serviceClient!
         .from('user_profiles')
         .update({
           preferences: {
@@ -278,7 +278,7 @@ describe('Avatar Upload API Integration', () => {
         type: 'custom',
         value: 'https://example.com/img.png',
       }
-      const { error: customError } = await supabase
+      const { error: customError } = await serviceClient!
         .from('user_profiles')
         .update({
           preferences: {
@@ -291,7 +291,7 @@ describe('Avatar Upload API Integration', () => {
       expect(customError).toBeNull()
 
       // Clean up
-      const { data: finalProfile } = await supabase
+      const { data: finalProfile } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -299,17 +299,17 @@ describe('Avatar Upload API Integration', () => {
 
       const finalPreferences = toPreferences(finalProfile?.preferences)
       const { avatar: _, ...clean } = finalPreferences
-      await supabase
+      await serviceClient!
         .from('user_profiles')
         .update({ preferences: clean })
         .eq('id', user.id)
     })
 
     test('should handle missing avatar gracefully', async () => {
-      const { supabase, user } = await createAuthenticatedClient(4)
+      const { user } = await createAuthenticatedClient(4)
 
       // Get profile without avatar
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)
@@ -370,10 +370,10 @@ describe('Avatar Upload API Integration', () => {
     })
 
     test('user can read their own avatar preferences', async () => {
-      const { supabase, user } = await createAuthenticatedClient(7)
+      const { user } = await createAuthenticatedClient(7)
 
       // User should be able to read their own profile
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await serviceClient!
         .from('user_profiles')
         .select('preferences')
         .eq('id', user.id)

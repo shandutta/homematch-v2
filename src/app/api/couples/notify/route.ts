@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { CouplesService } from '@/lib/services/couples'
 import { z } from 'zod'
 import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
@@ -28,9 +29,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { propertyId, interactionType } = notificationSchema.parse(body)
 
+    // @service-role-capability: Phase 5 — CouplesService.notifyInteraction
+    // and checkPotentialMutualLike both call getUserHousehold (reads
+    // user_profiles) and downstream user_property_interactions reads.
+    // RLS-deny under anon-key. Verified Clerk session above; pass
+    // service-role scoped via user.id.
+    // TODO(D1 follow-up): replace with constrained
+    // notify_interaction_for_user_id /
+    // check_potential_mutual_like_for_user_id RPCs.
+    const readClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-couples-read',
+    })
+
     // Notify the couples service about the interaction
     await CouplesService.notifyInteraction(
-      supabase,
+      readClient,
       user.id,
       propertyId,
       interactionType
@@ -39,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Check if this interaction would create a mutual like
     const { wouldBeMutual, partnerUserId } =
       await CouplesService.checkPotentialMutualLike(
-        supabase,
+        readClient,
         user.id,
         propertyId
       )

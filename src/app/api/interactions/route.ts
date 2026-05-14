@@ -81,9 +81,24 @@ export async function POST(request: NextRequest) {
 
     const dbInteractionType = mapInteractionTypeToDb(normalizedType)
 
+    // @service-role-capability: Phase 2 of the Supabase-auth elimination —
+    // Clerk users have no Supabase session, so the anon-key client's
+    // auth.uid() is NULL and the user_property_interactions UPSERT is
+    // RLS-blocked. We've already verified the Clerk session above
+    // (requireUserFromRequest → ensureUserProfileForCurrentClerkUser
+    // resolved userId to a real user_profiles.id), so write under
+    // service-role with the resolved user_id explicitly in the row.
+    // Phase 5 also dropped the user_profiles self-read policy, so the
+    // household_id lookup has to come through service-role too.
+    // TODO(D1 follow-up): replace with a constrained
+    // upsert_user_interaction_for_user_id RPC.
+    const writeClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-interactions-write',
+    })
+
     // Attach household_id for couples features (mutual likes, activity, stats)
     // Best-effort: if the profile is missing or inaccessible, fall back to null.
-    const { data: userProfile, error: profileError } = await supabase
+    const { data: userProfile, error: profileError } = await writeClient
       .from('user_profiles')
       .select('household_id')
       .eq('id', userId)
@@ -97,19 +112,6 @@ export async function POST(request: NextRequest) {
     }
 
     const householdId = userProfile?.household_id ?? null
-
-    // @service-role-capability: Phase 2 of the Supabase-auth elimination —
-    // Clerk users have no Supabase session, so the anon-key client's
-    // auth.uid() is NULL and the user_property_interactions UPSERT is
-    // RLS-blocked. We've already verified the Clerk session above
-    // (requireUserFromRequest → ensureUserProfileForCurrentClerkUser
-    // resolved userId to a real user_profiles.id), so write under
-    // service-role with the resolved user_id explicitly in the row.
-    // TODO(D1 follow-up): replace with a constrained
-    // upsert_user_interaction_for_user_id RPC.
-    const writeClient = await getServiceRoleClient({
-      approvedCapability: 'clerk-interactions-write',
-    })
 
     // Schema (since 20260508015000) enforces UNIQUE(user_id, property_id), so
     // there's at most one row per user/property. Use UPSERT on that conflict

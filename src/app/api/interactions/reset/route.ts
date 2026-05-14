@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { ApiErrorHandler } from '@/lib/api/errors'
 import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { CouplesService } from '@/lib/services/couples'
@@ -20,9 +21,19 @@ export async function DELETE(request: NextRequest) {
     )
     if (rateLimitResponse) return rateLimitResponse
 
+    // @service-role-capability: Phase 5 dropped the user_property_interactions
+    // self-write policy. Clerk users hold no Supabase session anyway. Delete
+    // under service-role with explicit user_id WHERE — same pattern as the
+    // single-property /api/interactions DELETE.
+    // TODO(D1 follow-up): replace with a constrained
+    // reset_user_interactions_for_user_id RPC.
+    const writeClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-interactions-write',
+    })
+
     // Delete all interactions for this user
     // Add timeout to prevent hanging
-    const deletePromise = supabase
+    const deletePromise = writeClient
       .from('user_property_interactions')
       .delete()
       .eq('user_id', user.id)

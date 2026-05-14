@@ -2,6 +2,21 @@
 // Casts: API route JSON responses are owned in this repo and their shapes are
 // enforced by the route handler. Casting once at the boundary beats threading
 // a Zod schema through every call site.
+//
+// TODO(D1 follow-up, post-Phase-5): every method below that calls
+// `createClient()` and then hits `user_profiles`, `households`,
+// `saved_searches`, or `household_invitations` directly is broken for
+// Clerk users. The browser anon-key client has no Supabase session, so
+// `auth.uid()` is NULL — pre-Phase-5 it returned 0 rows via the
+// `auth.uid() = id`/`= user_id` policies; post-Phase-5 (RLS policies
+// dropped) it RLS-denies outright. Same end-user outcome (broken),
+// just made explicit by Phase 5. Migrate each method to a Clerk-aware
+// /api/* route that bridges through service-role + capability
+// allowlist (see /api/households for the pattern). Codex flagged
+// `createHousehold` (post-create read), `joinHousehold` /
+// `leaveHousehold` (profile read+update), `updateProfile`,
+// `getProfile`, `createProfile`, `getHouseholdInvitations`,
+// `revokeHouseholdInvitation`, and all four `*SavedSearch*` methods.
 'use client'
 
 import { createClient } from '@/lib/supabase/client'

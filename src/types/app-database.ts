@@ -3,57 +3,12 @@ import type { Database } from './database'
 type PropertyRow = Database['public']['Tables']['properties']['Row']
 type NeighborhoodRow = Database['public']['Tables']['neighborhoods']['Row']
 
-type AdminRoleAssignmentRole = 'admin'
+// Phase 5 (Supabase-auth elim, 2026-05-13): admin_role_assignments was
+// retired alongside the auth.uid() RLS policies. No live caller queried
+// the table; the A3 audit removed the admin-runtime fallback earlier in
+// the cycle. Type retired with the table.
 
-type AdminRoleAssignmentsTable = {
-  Row: {
-    user_id: string
-    role: AdminRoleAssignmentRole
-    enabled: boolean
-    created_at: string
-    created_by: string | null
-    reason: string | null
-    expires_at: string | null
-  }
-  Insert: {
-    user_id: string
-    role?: AdminRoleAssignmentRole
-    enabled?: boolean
-    created_at?: string
-    created_by?: string | null
-    reason?: string | null
-    expires_at?: string | null
-  }
-  Update: {
-    user_id?: string
-    role?: AdminRoleAssignmentRole
-    enabled?: boolean
-    created_at?: string
-    created_by?: string | null
-    reason?: string | null
-    expires_at?: string | null
-  }
-  Relationships: [
-    {
-      foreignKeyName: 'admin_role_assignments_user_id_fkey'
-      columns: ['user_id']
-      isOneToOne: true
-      referencedRelation: 'users'
-      referencedColumns: ['id']
-    },
-    {
-      foreignKeyName: 'admin_role_assignments_created_by_fkey'
-      columns: ['created_by']
-      isOneToOne: false
-      referencedRelation: 'users'
-      referencedColumns: ['id']
-    },
-  ]
-}
-
-type AdditionalTables = {
-  admin_role_assignments: AdminRoleAssignmentsTable
-}
+type AdditionalTables = Record<string, never>
 
 type AdditionalFunctions = {
   get_property_stats: {

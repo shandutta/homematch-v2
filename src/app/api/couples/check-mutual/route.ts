@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
+import { getServiceRoleClient } from '@/lib/supabase/service-role-client'
 import { requireUserFromRequest } from '@/lib/api/auth'
 import { CouplesService } from '@/lib/services/couples'
 import { noStoreJson } from '@/lib/api/cache-control'
@@ -20,10 +21,21 @@ export async function GET(request: NextRequest) {
       return ApiErrorHandler.badRequest('Property ID is required')
     }
 
+    // @service-role-capability: Phase 5 — checkPotentialMutualLike and
+    // getHouseholdStats both call getUserHousehold (user_profiles read);
+    // partner-profile lookup also hits user_profiles. RLS-deny under
+    // anon-key. Verified Clerk session above; scope reads via user.id /
+    // partnerUserId returned by the service.
+    // TODO(D1 follow-up): replace with a constrained
+    // check_mutual_for_user_id RPC that returns partner display data too.
+    const readClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-couples-read',
+    })
+
     // Check if this would create a mutual like
     const { wouldBeMutual, partnerUserId } =
       await CouplesService.checkPotentialMutualLike(
-        supabase,
+        readClient,
         user.id,
         propertyId
       )
@@ -35,13 +47,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get partner details
-    const { data: partnerProfile } = await supabase
+    const { data: partnerProfile } = await readClient
       .from('user_profiles')
       .select('display_name, email')
       .eq('id', partnerUserId)
       .single()
 
-    // Get property details
+    // Get property details (properties stays on anon-key — RLS unchanged)
     const { data: property } = await supabase
       .from('properties')
       .select('address')
@@ -49,7 +61,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     // Get current household stats to check for streaks/milestones
-    const stats = await CouplesService.getHouseholdStats(supabase, user.id)
+    const stats = await CouplesService.getHouseholdStats(readClient, user.id)
 
     const response = {
       isMutual: true,

@@ -78,24 +78,9 @@ const noindexMetadataCases = [
     title: 'Log In | HomeMatch',
     description: 'Sign in to your HomeMatch account.',
   },
-  {
-    route: '/reset-password',
-    importPath: '@/app/reset-password/page',
-    title: 'Reset Password | HomeMatch',
-    description: 'Reset your HomeMatch password securely.',
-  },
-  {
-    route: '/verify-email',
-    importPath: '@/app/verify-email/page',
-    title: 'Verify Email | HomeMatch',
-    description: 'Verify your HomeMatch email address securely.',
-  },
-  {
-    route: '/auth/auth-code-error',
-    importPath: '@/app/auth/auth-code-error/page',
-    title: 'Authentication Error | HomeMatch',
-    description: 'Authentication failed. Request a new HomeMatch sign-in link.',
-  },
+  // /reset-password, /verify-email, /auth/auth-code-error retired in
+  // Phase 4 of the Supabase-auth elimination (2026-05-13) — Clerk owns
+  // those flows on its hosted pages.
   {
     route: '/invite/[token]',
     importPath: '@/app/invite/[token]/page',

@@ -117,6 +117,20 @@ export type ApprovedServiceRoleCapability =
   | 'clerk-user-profile-write'
   | 'clerk-saved-search-write'
   | 'clerk-household-resolution-write'
+  // Phase 2b: avatar storage uploads. The avatars bucket has an RLS
+  // policy requiring (storage.foldername(name))[1] = auth.uid()::text
+  // which excludes Clerk users (auth.uid() is NULL). Routes use this
+  // capability AFTER resolving user_profiles.id, then write storage
+  // objects under a folder named for that resolved UUID.
+  | 'clerk-avatar-storage-write'
+  // Phase 5: couples-read paths (mutual likes, activity, stats) for
+  // Clerk users. CouplesService.getUserHousehold reads user_profiles
+  // and the fallback reads user_property_interactions — both
+  // RLS-deny post-Phase-5 under anon-key. Routes verify the Clerk
+  // session, then pass a service-role client into CouplesService; all
+  // reads are scoped via user_id / household_id derived from that
+  // verified session.
+  | 'clerk-couples-read'
 
 type CreateServiceClientOptions = {
   approvedCapability: ApprovedServiceRoleCapability
@@ -136,6 +150,8 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-user-profile-write',
     'clerk-saved-search-write',
     'clerk-household-resolution-write',
+    'clerk-avatar-storage-write',
+    'clerk-couples-read',
   ])
 
 /**

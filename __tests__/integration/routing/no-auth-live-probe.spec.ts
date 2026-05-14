@@ -39,11 +39,8 @@ const publicPageRoutes: ProbeCase[] = [
     reason: 'public login form; no submit',
   },
   { path: '/privacy', expectedStatuses: [200], reason: 'public privacy page' },
-  {
-    path: '/reset-password',
-    expectedStatuses: [200],
-    reason: 'public reset form; no email submit',
-  },
+  // /reset-password retired in Phase 4 of the Supabase-auth elimination
+  // (2026-05-13) — Clerk owns password reset on its hosted pages.
   {
     path: '/signup',
     expectedStatuses: [200],
@@ -55,16 +52,9 @@ const publicPageRoutes: ProbeCase[] = [
     reason: 'public sponsorship mockup page; render only',
   },
   { path: '/terms', expectedStatuses: [200], reason: 'public terms page' },
-  {
-    path: '/verify-email',
-    expectedStatuses: [200],
-    reason: 'public verify-email page; display only',
-  },
-  {
-    path: '/auth/auth-code-error',
-    expectedStatuses: [200],
-    reason: 'public auth error page',
-  },
+  // /verify-email and /auth/auth-code-error retired in Phase 4 of the
+  // Supabase-auth elimination (2026-05-13) — Clerk owns email
+  // verification and surfaces auth errors on its own hosted pages.
   {
     path: '/robots.txt',
     expectedStatuses: [200],

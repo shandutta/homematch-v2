@@ -40,10 +40,17 @@ jest.mock('@/lib/services/couples', () => ({
 
 const createApiClientMock = jest.fn()
 const mockRequireUserFromRequest = jest.fn()
+const getServiceRoleClientMock = jest.fn()
 
 jest.mock('@/lib/supabase/server', () => ({
   __esModule: true,
   createApiClient: (...args: unknown[]) => createApiClientMock(...args),
+}))
+
+jest.mock('@/lib/supabase/service-role-client', () => ({
+  __esModule: true,
+  getServiceRoleClient: (...args: unknown[]) =>
+    getServiceRoleClientMock(...args),
 }))
 
 jest.mock('@/lib/api/auth', () => ({
@@ -60,6 +67,13 @@ type SupabaseMock = {
 }
 
 const supabaseMock: SupabaseMock = {
+  auth: {
+    getUser: jest.fn(),
+  },
+  from: jest.fn(),
+}
+
+const writeClientMock: SupabaseMock = {
   auth: {
     getUser: jest.fn(),
   },
@@ -102,6 +116,9 @@ describe('interactions reset API route', () => {
     createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockReset()
+    getServiceRoleClientMock.mockReset()
+    getServiceRoleClientMock.mockResolvedValue(writeClientMock)
+    writeClientMock.from.mockReset()
   })
 
   test('returns 401 when unauthenticated', async () => {
@@ -161,7 +178,7 @@ describe('interactions reset API route', () => {
       data: null,
       error: { message: 'db error' },
     })
-    supabaseMock.from.mockReturnValue(chain)
+    writeClientMock.from.mockReturnValue(chain)
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -183,7 +200,7 @@ describe('interactions reset API route', () => {
 
     const chain = createDeleteChain({ data: null, error: null })
     chain.select = jest.fn(() => Promise.reject(new Error('boom')))
-    supabaseMock.from.mockReturnValue(chain)
+    writeClientMock.from.mockReturnValue(chain)
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -211,7 +228,7 @@ describe('interactions reset API route', () => {
       ],
       error: null,
     })
-    supabaseMock.from.mockReturnValue(chain)
+    writeClientMock.from.mockReturnValue(chain)
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -219,7 +236,9 @@ describe('interactions reset API route', () => {
       })
     )
 
-    expect(supabaseMock.from).toHaveBeenCalledWith('user_property_interactions')
+    expect(writeClientMock.from).toHaveBeenCalledWith(
+      'user_property_interactions'
+    )
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-1')
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-2')
 

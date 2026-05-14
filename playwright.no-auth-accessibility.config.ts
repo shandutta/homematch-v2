@@ -32,7 +32,6 @@ export default defineConfig({
       NEXT_PUBLIC_ADSENSE_ENABLED: 'false',
       NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54200',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'no-credential-smoke-key',
-      MIDDLEWARE_SUPABASE_TIMEOUT_MS: '250',
     },
   },
 })
