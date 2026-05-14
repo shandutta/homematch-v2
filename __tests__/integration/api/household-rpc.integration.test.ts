@@ -85,8 +85,13 @@ describe('create_household_for_user RPC', () => {
       })
       expect(signInError).toBeNull()
 
-      // Verify user has no household initially
-      const { data: profileBefore } = await anonClient
+      // Verify user has no household initially. Phase 5 of the Supabase-auth
+      // elimination (2026-05-13) retired the "Users can view their own
+      // profile" RLS policy, so even an authenticated anon-key client gets
+      // RLS-deny on user_profiles. Use the service-role client for the
+      // verification reads — the call we're testing (the RPC) still uses
+      // the anon-keyed signed-in client below.
+      const { data: profileBefore } = await serviceClient
         .from('user_profiles')
         .select('household_id')
         .eq('id', testUserId)
@@ -117,8 +122,8 @@ describe('create_household_for_user RPC', () => {
       expect(household?.created_by).toBe(testUserId)
       expect(household?.user_count).toBe(1)
 
-      // Verify user profile was updated
-      const { data: profileAfter } = await anonClient
+      // Verify user profile was updated (service-role for same reason).
+      const { data: profileAfter } = await serviceClient
         .from('user_profiles')
         .select('household_id')
         .eq('id', testUserId)
