@@ -37,6 +37,10 @@ describe('service-role route capability guard', () => {
       // / household_invitations table under service-role. HOUSEHOLD-001.
       './src/app/api/households/invitations/route.ts',
       './src/app/api/households/route.ts',
+      // Phase 5 (Supabase-auth elim): /api/interactions/reset deletes every
+      // row for the resolved user_id. Same auth.uid() / RLS-deny problem as
+      // the single-property DELETE — service-role with explicit user_id.
+      './src/app/api/interactions/reset/route.ts',
       // Phase 2 (Supabase-auth elim): POST/DELETE writes to
       // user_property_interactions cannot reach Clerk-authed users via
       // anon-key (auth.uid() is NULL → RLS blocks). Route already
