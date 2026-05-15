@@ -1045,6 +1045,11 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: { deleted_household_id: string | null }[]
       }
+      // D1 follow-up — couples-read consolidation (migration 20260515144429).
+      get_user_household_id: {
+        Args: { p_user_id: string }
+        Returns: string | null
+      }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:

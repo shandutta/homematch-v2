@@ -166,19 +166,30 @@ export class CouplesService {
    * @param {string} userId - The unique identifier of the user
    * @returns {Promise<string | null>} The household ID or null if user has no household
    * @complexity O(1) - Single database query
-   * @description Fetches household association from user_profiles table
+   * @description Resolves household association via the D1 RPC
+   * get_user_household_id (migration 20260515144429). The RPC is
+   * SECURITY DEFINER and only service_role can EXECUTE, so callers
+   * still need to pass a service-role client today; the indirection
+   * is here so the trust gate can move into the function later
+   * without touching every couples-read route.
    */
   private static async getUserHousehold(
     supabase: SupabaseClient<AppDatabase>,
     userId: string
   ): Promise<string | null> {
-    const { data: userProfile } = await supabase
-      .from('user_profiles')
-      .select('household_id')
-      .eq('id', userId)
-      .single()
+    const { data, error } = await supabase.rpc('get_user_household_id', {
+      p_user_id: userId,
+    })
 
-    return userProfile?.household_id || null
+    if (error) {
+      console.warn(
+        '[CouplesService] getUserHousehold RPC error:',
+        error.message
+      )
+      return null
+    }
+
+    return data ?? null
   }
 
   /**
