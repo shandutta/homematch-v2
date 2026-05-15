@@ -29,20 +29,21 @@ begin;
 --   - like / dislike / skip: override any existing row (including a view)
 -- Returns the row that ended up in the table (the existing one for a
 -- view-after-decision, or the newly-inserted/updated row otherwise).
+--
+-- Returns SETOF user_property_interactions rather than RETURNS TABLE(...)
+-- with named columns. In PL/pgSQL a RETURNS TABLE column list shadows the
+-- target table's columns inside the function body, which produces 42702
+-- "column reference is ambiguous" on `on conflict (user_id, property_id)`.
+-- SETOF avoids the shadowing and hands back the full row shape, which is
+-- also what the original `.from().upsert().select()` returned, so callers
+-- see no change.
 create or replace function public.upsert_user_interaction_for_user_id(
   p_user_id uuid,
   p_property_id uuid,
   p_household_id uuid,
   p_interaction_type text
 )
-returns table(
-  user_id uuid,
-  property_id uuid,
-  household_id uuid,
-  interaction_type text,
-  created_at timestamptz,
-  updated_at timestamptz
-)
+returns setof public.user_property_interactions
 language plpgsql
 volatile
 security definer
@@ -72,8 +73,7 @@ begin
         end;
 
   return query
-    select upi.user_id, upi.property_id, upi.household_id,
-           upi.interaction_type, upi.created_at, upi.updated_at
+    select upi.*
     from public.user_property_interactions upi
     where upi.user_id = p_user_id
       and upi.property_id = p_property_id;

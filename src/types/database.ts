@@ -1034,14 +1034,8 @@ export type Database = {
           p_household_id: string | null
           p_interaction_type: string
         }
-        Returns: {
-          user_id: string
-          property_id: string
-          household_id: string | null
-          interaction_type: string
-          created_at: string
-          updated_at: string
-        }[]
+        // RETURNS SETOF public.user_property_interactions — full row shape.
+        Returns: Database['public']['Tables']['user_property_interactions']['Row'][]
       }
       delete_user_interaction_for_user_id: {
         Args: { p_user_id: string; p_property_id: string }
