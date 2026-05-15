@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 
-// Lazy-loading Supabase browser client: @supabase/ssr + realtime-js are
-// bundled into a separate async chunk. Routes that never call createClient()
-// (landing / static pages) never download the realtime payload.
+// Lazy-loading Supabase browser client: @supabase/supabase-js + realtime-js
+// are bundled into a separate async chunk. Routes that never call
+// createClient() (landing / static pages) never download the realtime
+// payload.
 
 let _clientPromise: Promise<SupabaseClient<AppDatabase>> | null = null
 
@@ -13,7 +14,10 @@ async function _createRealClient(): Promise<SupabaseClient<AppDatabase>> {
   // Clerk is the sole identity provider; Supabase has no session to
   // refresh and no per-host auth cookies to keep distinct. This client
   // remains for direct DB queries via the anon key.
-  const { createBrowserClient } = await import('@supabase/ssr')
+  // Phase 6 (2026-05-15): replaced @supabase/ssr's createBrowserClient
+  // with @supabase/supabase-js's createClient — no cookie bridge to
+  // maintain once auth is gone.
+  const { createClient } = await import('@supabase/supabase-js')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -24,7 +28,7 @@ async function _createRealClient(): Promise<SupabaseClient<AppDatabase>> {
     )
   }
 
-  return createBrowserClient<AppDatabase>(supabaseUrl, supabaseAnonKey, {
+  return createClient<AppDatabase>(supabaseUrl, supabaseAnonKey, {
     auth: {
       detectSessionInUrl: false,
       autoRefreshToken: false,
