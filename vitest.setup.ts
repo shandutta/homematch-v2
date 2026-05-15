@@ -33,7 +33,6 @@ type UndiciFetchArgs = Parameters<typeof undiciFetch>
 type UndiciFetchInput = UndiciFetchArgs[0]
 type UndiciFetchInit = UndiciFetchArgs[1]
 type SupabaseModule = typeof import('@supabase/supabase-js')
-type SupabaseSsrModule = typeof import('@supabase/ssr')
 type SupabaseCreateClient = SupabaseModule['createClient']
 type CachedSupabaseClient = ReturnType<SupabaseCreateClient>
 type SupabaseCreateClientOptions = Parameters<SupabaseCreateClient>[2]
@@ -113,28 +112,6 @@ vi.mock('@supabase/supabase-js', async () => {
       key: string,
       options?: SupabaseCreateClientOptions
     ) => createCachedClient(actual.createClient, url, key, options),
-  }
-})
-
-// Also mock @supabase/ssr to use consistent auth options
-vi.mock('@supabase/ssr', async () => {
-  const actual = await vi.importActual<SupabaseSsrModule>('@supabase/ssr')
-  const supabaseJs = await vi.importActual<SupabaseModule>(
-    '@supabase/supabase-js'
-  )
-
-  return {
-    ...actual,
-    createBrowserClient: (
-      url: string,
-      key: string,
-      options?: SupabaseCreateClientOptions
-    ) => createCachedClient(supabaseJs.createClient, url, key, options),
-    createServerClient: (
-      url: string,
-      key: string,
-      options?: SupabaseCreateClientOptions
-    ) => createCachedClient(supabaseJs.createClient, url, key, options),
   }
 })
 

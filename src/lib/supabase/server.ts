@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { AppDatabase } from '@/types/app-database'
 import { cookies, headers } from 'next/headers'
 import type { NextRequest } from 'next/server'
@@ -10,6 +10,12 @@ import type { NextRequest } from 'next/server'
 // is now the sole identity provider — Supabase has no session to
 // recover and no auth-cookie machinery to maintain. Both clients
 // collapse to anon-keyed DB readers with `persistSession: false`.
+//
+// Phase 6 (2026-05-15): with no Supabase auth session left to plumb,
+// @supabase/ssr's cookie-bridge no longer earns its keep. Switched to
+// @supabase/supabase-js directly. The `cookies: {...}` config it
+// required is gone; ssr stays in package.json only until the
+// dependency cleanup lands.
 //
 // What stayed:
 //   - `bearerToken` extraction from the Authorization header (used by
@@ -26,14 +32,10 @@ export async function createClient() {
   const authHeader = headerStore.get('authorization')
   const bearerToken = authHeader?.replace('Bearer ', '')
 
-  return createServerClient<AppDatabase>(
+  return createSupabaseClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        getAll: () => [],
-        setAll: () => {},
-      },
       auth: {
         autoRefreshToken: false,
         persistSession: false,
@@ -55,14 +57,10 @@ export function createApiClient(request?: NextRequest) {
   const authHeader = request?.headers.get('authorization') ?? null
   const bearerToken = authHeader?.replace('Bearer ', '')
 
-  return createServerClient<AppDatabase>(
+  return createSupabaseClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        getAll: () => [],
-        setAll: () => {},
-      },
       auth: {
         autoRefreshToken: false,
         persistSession: false,
@@ -174,13 +172,14 @@ export async function createServiceClient(options: CreateServiceClientOptions) {
     )
   }
 
-  return createServerClient<AppDatabase>(
+  return createSupabaseClient<AppDatabase>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {
-        getAll: () => [],
-        setAll: () => {},
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
       },
     }
   )

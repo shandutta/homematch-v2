@@ -78,7 +78,13 @@ describe('service-role route capability guard', () => {
     for (const filePath of routesUsingServiceRole) {
       const source = readFileSync(filePath, 'utf8')
       expect(source).toContain('@service-role-capability:')
-      expect(source).toContain('TODO(D1 follow-up): replace with')
+      // Originally the guard required a TODO(D1 follow-up) marker so every
+      // service-role usage carried a plan to move into a constrained RPC.
+      // Some routes now call the D1 RPC and the TODO is gone — they carry
+      // a `D1 done:` marker instead to keep this guard meaningful.
+      const hasTodo = source.includes('TODO(D1 follow-up): replace with')
+      const hasD1Done = source.includes('D1 done:')
+      expect(hasTodo || hasD1Done).toBe(true)
     }
   })
 })

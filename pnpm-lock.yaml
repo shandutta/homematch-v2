@@ -55,9 +55,6 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.1.12
         version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@supabase/ssr':
-        specifier: 0.6.1
-        version: 0.6.1(@supabase/supabase-js@2.53.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@supabase/supabase-js':
         specifier: 2.53.0
         version: 2.53.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -3683,14 +3680,6 @@ packages:
       {
         integrity: sha512-HQKRnwAqdVqJW/P9TjKVK+/ETpW4yQ8tyDPPtRMKOH4Uh3vQD74vmj353CYs8+YwVBKubeUOOEpI9CT8mT4obw==,
       }
-
-  '@supabase/ssr@0.6.1':
-    resolution:
-      {
-        integrity: sha512-QtQgEMvaDzr77Mk3vZ3jWg2/y+D8tExYF7vcJT+wQ8ysuvOeGGjYbZlvj5bHYsj/SpC0bihcisnwPrM4Gp5G4g==,
-      }
-    peerDependencies:
-      '@supabase/supabase-js': ^2.43.4
 
   '@supabase/storage-js@2.105.4':
     resolution:
@@ -11365,10 +11354,10 @@ packages:
         integrity: sha512-buUzX4sXC4efFX6xg2bw6/eZsCUh8qQwSavC4D9HpONMFlRbcHhD8Je5qwYdCpViR6q0qla2wPP+t91a2vgolg==,
       }
 
-  third-party-web@0.29.0:
+  third-party-web@0.29.2:
     resolution:
       {
-        integrity: sha512-nBDSJw5B7Sl1YfsATG2XkW5qgUPODbJhXw++BKygi9w6O/NKS98/uY/nR/DxDq2axEjL6halHW1v+jhm/j1DBQ==,
+        integrity: sha512-fegtha91tq2DHphyoiBXVHjVi2YG9zFaRnboT9C28tO1en9Y3wJsfspuy40F+u5wl3hHVbw7cnd1b67kEGHb8g==,
       }
 
   throat@5.0.0:
@@ -13943,7 +13932,7 @@ snapshots:
   '@paulirish/trace_engine@0.0.53':
     dependencies:
       legacy-javascript: 0.0.1
-      third-party-web: 0.29.0
+      third-party-web: 0.29.2
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -14820,11 +14809,6 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-
-  '@supabase/ssr@0.6.1(@supabase/supabase-js@2.53.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))':
-    dependencies:
-      '@supabase/supabase-js': 2.53.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      cookie: 1.1.1
 
   '@supabase/storage-js@2.105.4':
     dependencies:
@@ -19951,7 +19935,7 @@ snapshots:
 
   third-party-web@0.26.7: {}
 
-  third-party-web@0.29.0: {}
+  third-party-web@0.29.2: {}
 
   throat@5.0.0: {}
 

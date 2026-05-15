@@ -145,7 +145,6 @@ const nextConfig: NextConfig = {
       'framer-motion',
       'date-fns',
       '@supabase/supabase-js',
-      '@supabase/ssr',
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
       '@radix-ui/react-checkbox',
@@ -193,9 +192,8 @@ const nextConfig: NextConfig = {
   // @supabase/supabase-js references process.version for Node-fetch detection
   // in a branch that does not execute on the Edge runtime, but Next.js still
   // flags it via its Edge static check. The warning is purely cosmetic — the
-  // module is used in middleware.ts via @supabase/ssr and works correctly in
-  // production. Filter just this specific warning so other Edge issues stay
-  // visible.
+  // module works correctly in production. Filter just this specific warning
+  // so other Edge issues stay visible.
   webpack: (config) => {
     config.ignoreWarnings = [
       ...(config.ignoreWarnings ?? []),

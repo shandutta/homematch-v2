@@ -90,8 +90,10 @@ export async function POST(request: NextRequest) {
     // service-role with the resolved user_id explicitly in the row.
     // Phase 5 also dropped the user_profiles self-read policy, so the
     // household_id lookup has to come through service-role too.
-    // TODO(D1 follow-up): replace with a constrained
-    // upsert_user_interaction_for_user_id RPC.
+    // D1 done: the upsert SQL itself now lives in
+    // upsert_user_interaction_for_user_id (SECURITY DEFINER); the
+    // route still passes through service-role since the trust boundary
+    // is the Clerk session verified above.
     const writeClient = await getServiceRoleClient({
       approvedCapability: 'clerk-interactions-write',
     })
@@ -114,60 +116,36 @@ export async function POST(request: NextRequest) {
     const householdId = userProfile?.household_id ?? null
 
     // Schema (since 20260508015000) enforces UNIQUE(user_id, property_id), so
-    // there's at most one row per user/property. Use UPSERT on that conflict
-    // target rather than DELETE+INSERT — the old pattern was non-atomic and
-    // could collide with itself on rapid duplicate POSTs.
-    //
-    // Semantics:
+    // there's at most one row per user/property. The D1 RPC owns the
+    // upsert + view-after-decision semantics in one atomic SQL block:
     //   - like / dislike / skip: explicit user decision, override anything.
-    //   - view: passive signal, must NOT clobber an existing like/dislike/skip.
-    //     We upsert with ignoreDuplicates so a view-after-decision is a no-op.
-    const isOverridingType = dbInteractionType !== 'view'
+    //   - view: passive signal, no-op if a like/dislike/skip already exists.
+    const { data: upsertedRows, error: upsertError } = await writeClient.rpc(
+      'upsert_user_interaction_for_user_id',
+      {
+        p_user_id: userId,
+        p_property_id: propertyId,
+        p_household_id: householdId,
+        p_interaction_type: dbInteractionType,
+      }
+    )
 
-    const upsertResult = await writeClient
-      .from('user_property_interactions')
-      .upsert(
-        {
-          user_id: userId,
-          property_id: propertyId,
-          household_id: householdId,
-          interaction_type: dbInteractionType,
-        },
-        {
-          onConflict: 'user_id,property_id',
-          ignoreDuplicates: !isOverridingType,
-        }
-      )
-      .select()
-      .maybeSingle()
-
-    if (upsertResult.error) {
-      console.error('[Interactions API] Upsert error:', {
-        code: upsertResult.error.code,
-        message: upsertResult.error.message,
-        details: upsertResult.error.details,
-        hint: upsertResult.error.hint,
+    if (upsertError) {
+      console.error('[Interactions API] Upsert RPC error:', {
+        code: upsertError.code,
+        message: upsertError.message,
+        details: upsertError.details,
+        hint: upsertError.hint,
       })
       return ApiErrorHandler.serverError(
         'Failed to record interaction',
-        upsertResult.error
+        upsertError
       )
     }
 
-    // ignoreDuplicates returns null on conflict-skip (a view arriving after an
-    // existing like/skip/dislike). Fetch the existing row so callers see the
-    // current state rather than a hollow response.
-    let newInteraction = upsertResult.data
-    if (!newInteraction) {
-      // Use the service-role client here too — same auth.uid() problem
-      // for the re-fetch.
-      const { data: existing } = await writeClient
-        .from('user_property_interactions')
-        .select()
-        .match({ user_id: userId, property_id: propertyId })
-        .maybeSingle()
-      newInteraction = existing
-    }
+    const newInteraction = Array.isArray(upsertedRows)
+      ? (upsertedRows[0] ?? null)
+      : null
 
     if (householdId) {
       CouplesService.clearHouseholdCache(householdId)
@@ -434,40 +412,39 @@ export async function DELETE(request: NextRequest) {
     // @service-role-capability: same auth.uid() problem as the POST path —
     // Clerk users hit RLS without a Supabase session. Service-role with
     // explicit user_id in the WHERE clause.
-    // TODO(D1 follow-up): replace with a constrained
-    // delete_user_interaction_for_user_id RPC.
+    // D1 done: the actual DELETE lives in
+    // delete_user_interaction_for_user_id (SECURITY DEFINER).
     const writeClient = await getServiceRoleClient({
       approvedCapability: 'clerk-interactions-write',
     })
 
-    // Use select() to get back deleted rows and verify the delete worked
-    const { data: deletedRows, error } = await writeClient
-      .from('user_property_interactions')
-      .delete()
-      .match({ user_id: userId, property_id: propertyId })
-      .select()
+    const { data: deletedRows, error } = await writeClient.rpc(
+      'delete_user_interaction_for_user_id',
+      { p_user_id: userId, p_property_id: propertyId }
+    )
 
     if (error) {
       console.error('[Interactions DELETE] Error:', error)
       return ApiErrorHandler.serverError('Failed to delete interaction', error)
     }
 
-    if (!deletedRows || deletedRows.length === 0) {
+    const rows = Array.isArray(deletedRows) ? deletedRows : []
+    if (rows.length === 0) {
       console.warn(
-        '[Interactions DELETE] No rows deleted - interaction may not exist or RLS blocked'
+        '[Interactions DELETE] No rows deleted - interaction may not exist'
       )
     }
 
     const householdIdsToClear = new Set(
-      (deletedRows ?? [])
-        .map((row) => row.household_id)
+      rows
+        .map((row) => row.deleted_household_id)
         .filter((id): id is string => Boolean(id))
     )
     householdIdsToClear.forEach((id) => CouplesService.clearHouseholdCache(id))
 
     return ApiErrorHandler.success({
       deleted: true,
-      count: deletedRows?.length ?? 0,
+      count: rows.length,
     })
   } catch (err) {
     console.error('[Interactions DELETE] Unexpected error:', err)

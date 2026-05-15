@@ -105,10 +105,17 @@ export class UserService extends BaseService {
         // Explicit columns per audit M13 — keeps the wire payload tight
         // and protects against future schema growth adding wide columns
         // that aren't used by callers of this method.
+        //
+        // Embed disambiguator (`!household_id`): Phase 6 added a second
+        // FK between user_profiles and households (households.created_by
+        // → user_profiles.id), and PostgREST returns
+        // "more than one relationship was found" if you don't say which
+        // FK to traverse. Pinning to the household_id column keeps the
+        // embed pointed at the user's own household.
         const { data, error } = await supabase
           .from('user_profiles')
           .select(
-            'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
+            'clerk_user_id, created_at, display_name, email, household_id, id, onboarding_completed, preferences, updated_at, household:households!household_id(collaboration_mode, created_at, created_by, id, name, updated_at, user_count)'
           )
           .eq('id', userId)
           .single()

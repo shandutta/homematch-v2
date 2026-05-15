@@ -6,6 +6,11 @@ import { checkRateLimit, rateLimitKey } from '@/lib/middleware/rateLimiter'
 import { CouplesService } from '@/lib/services/couples'
 import { requireUserFromRequest } from '@/lib/api/auth'
 
+type DeletedRow = { deleted_household_id: string | null }
+
+const isDeletedRow = (value: unknown): value is DeletedRow =>
+  typeof value === 'object' && value !== null && 'deleted_household_id' in value
+
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createApiClient(request)
@@ -21,23 +26,22 @@ export async function DELETE(request: NextRequest) {
     )
     if (rateLimitResponse) return rateLimitResponse
 
-    // @service-role-capability: Phase 5 dropped the user_property_interactions
-    // self-write policy. Clerk users hold no Supabase session anyway. Delete
-    // under service-role with explicit user_id WHERE — same pattern as the
-    // single-property /api/interactions DELETE.
-    // TODO(D1 follow-up): replace with a constrained
-    // reset_user_interactions_for_user_id RPC.
+    // @service-role-capability: Phase 5 dropped the
+    // user_property_interactions self-write policy. Clerk users hold no
+    // Supabase session anyway. D1 done: actual DELETE lives in
+    // reset_user_interactions_for_user_id (SECURITY DEFINER) — we still
+    // come in under service-role since the trust boundary is the Clerk
+    // session verified above, not the DB-level authenticated grant.
     const writeClient = await getServiceRoleClient({
       approvedCapability: 'clerk-interactions-write',
     })
 
-    // Delete all interactions for this user
-    // Add timeout to prevent hanging
-    const deletePromise = writeClient
-      .from('user_property_interactions')
-      .delete()
-      .eq('user_id', user.id)
-      .select('id, household_id')
+    // Delete all interactions for this user via the D1 RPC.
+    // Add timeout to prevent hanging.
+    const deletePromise = writeClient.rpc(
+      'reset_user_interactions_for_user_id',
+      { p_user_id: user.id }
+    )
 
     type DeleteResult = Awaited<typeof deletePromise>
 
@@ -64,16 +68,20 @@ export async function DELETE(request: NextRequest) {
       return ApiErrorHandler.serverError('Failed to reset interactions', error)
     }
 
+    const rows = Array.isArray(deletedRows)
+      ? deletedRows.filter(isDeletedRow)
+      : []
+
     const householdIdsToClear = new Set(
-      (deletedRows ?? [])
-        .map((row) => row.household_id)
+      rows
+        .map((row) => row.deleted_household_id)
         .filter((id): id is string => Boolean(id))
     )
     householdIdsToClear.forEach((id) => CouplesService.clearHouseholdCache(id))
 
     return ApiErrorHandler.success({
       deleted: true,
-      count: deletedRows?.length ?? 0,
+      count: rows.length,
     })
   } catch (err) {
     console.error('[Interactions RESET] Unexpected error:', err)
