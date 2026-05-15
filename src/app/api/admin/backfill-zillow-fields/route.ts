@@ -207,31 +207,41 @@ async function handle(req: Request) {
       if (!result) {
         failed += 1
       } else {
-        // Only write columns that are currently NULL — never overwrite
-        // curated values. Same guard the script uses.
-        const patch: Record<string, unknown> = {}
+        // Only fill columns that are currently NULL — never overwrite
+        // curated values. The target snapshot was read by
+        // loadPageOfTargets minutes ago; checking it alone is a TOCTOU
+        // race (a concurrent curation write would be clobbered). Re-check
+        // at write time with an `IS NULL` filter on the column itself,
+        // and update each column independently so filling one gap can
+        // never overwrite a column curated since the snapshot.
+        const now = new Date().toISOString()
+        let wrote = false
+        let writeFailed = false
+
         if (target.description === null && result.description) {
-          patch.description = result.description
+          const { data, error } = await supabase
+            .from('properties')
+            .update({ description: result.description, updated_at: now })
+            .eq('id', target.id)
+            .is('description', null)
+            .select('id')
+          if (error) writeFailed = true
+          else if (data && data.length > 0) wrote = true
         }
         if (target.amenities === null && result.amenities) {
-          patch.amenities = result.amenities
-        }
-        if (Object.keys(patch).length === 0) {
-          skipped += 1
-        } else {
-          patch.updated_at = new Date().toISOString()
-          /* eslint-disable @typescript-eslint/consistent-type-assertions */
-          // Cast: the supabase generated types narrow update payloads
-          // to a structural Update<TableName> shape; the dynamic patch
-          // here is constrained to the two columns above.
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('properties')
-            .update(patch as Record<string, never>)
+            .update({ amenities: result.amenities, updated_at: now })
             .eq('id', target.id)
-          /* eslint-enable @typescript-eslint/consistent-type-assertions */
-          if (error) failed += 1
-          else updated += 1
+            .is('amenities', null)
+            .select('id')
+          if (error) writeFailed = true
+          else if (data && data.length > 0) wrote = true
         }
+
+        if (writeFailed) failed += 1
+        else if (wrote) updated += 1
+        else skipped += 1
       }
       if (delayMs > 0) await sleep(delayMs)
     }

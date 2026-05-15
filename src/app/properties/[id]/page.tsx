@@ -120,7 +120,7 @@ export default async function PropertyPage({
     zipCode: property.zip_code,
     price: property.price,
     bedrooms: property.bedrooms,
-    bathrooms: property.bathrooms,
+    bathrooms: property.bathrooms ?? 0,
     squareFeet: property.square_feet,
     propertyType: property.property_type,
     description: property.description,

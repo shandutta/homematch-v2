@@ -387,9 +387,9 @@ export class PropertySearchService
         .lte('bedrooms', referenceProperty.bedrooms + bedroomRange)
         .gte(
           'bathrooms',
-          Math.max(0, referenceProperty.bathrooms - bathroomRange)
+          Math.max(0, (referenceProperty.bathrooms ?? 0) - bathroomRange)
         )
-        .lte('bathrooms', referenceProperty.bathrooms + bathroomRange)
+        .lte('bathrooms', (referenceProperty.bathrooms ?? 0) + bathroomRange)
 
       if (referenceProperty.property_type) {
         query = query.eq('property_type', referenceProperty.property_type)

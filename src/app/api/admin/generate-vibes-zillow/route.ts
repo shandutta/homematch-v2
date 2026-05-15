@@ -498,13 +498,23 @@ export async function POST(req: Request): Promise<NextResponse> {
     )
   }
 
-  // Parse request
+  // Parse request. zpid legitimately arrives as a JSON number
+  // ({"zpid": 12345678}), so coerce string|number to a string here and
+  // reject other types with a 400 — extractZpid() must never receive a
+  // non-string (it calls .trim()).
   let zillowInput: string
   try {
     const body = await req.json()
-    zillowInput = body.zillowUrl || body.zpid
-    if (!zillowInput) {
+    const raw: unknown = body.zillowUrl || body.zpid
+    if (raw === undefined || raw === null || raw === '') {
       throw new Error('Missing zillowUrl or zpid')
+    }
+    if (typeof raw === 'string') {
+      zillowInput = raw
+    } else if (typeof raw === 'number' && Number.isFinite(raw)) {
+      zillowInput = String(raw)
+    } else {
+      throw new Error('zillowUrl or zpid must be a string or number')
     }
   } catch {
     return ApiErrorHandler.badRequest(

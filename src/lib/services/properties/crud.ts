@@ -237,7 +237,7 @@ export class PropertyCrudService extends BaseService {
       }
     }
 
-    if ('bathrooms' in property && property.bathrooms !== undefined) {
+    if ('bathrooms' in property && property.bathrooms != null) {
       if (property.bathrooms < 0 || property.bathrooms > 20) {
         throw new Error('Bathrooms must be between 0 and 20')
       }

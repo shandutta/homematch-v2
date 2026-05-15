@@ -363,7 +363,8 @@ export class NeighborhoodService
       const avgBedrooms =
         propertyData.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
       const avgBathrooms =
-        propertyData.reduce((sum, p) => sum + p.bathrooms, 0) / totalProperties
+        propertyData.reduce((sum, p) => sum + (p.bathrooms ?? 0), 0) /
+        totalProperties
 
       const propertiesWithSquareFeet = propertyData.filter(
         (p) => p.square_feet !== null

@@ -267,6 +267,9 @@ export function EnhancedPropertyCard({
             listing_status: normalizeListingStatus(property.listing_status),
             // Ensure coordinates is handled properly
             coordinates: property.coordinates || null,
+            // bathrooms is nullable on the DB row; the storytelling
+            // schema expects a number — treat unknown as 0 for display.
+            bathrooms: property.bathrooms ?? 0,
           }}
           neighborhood={
             typeof neighborhood === 'object' ? neighborhood : undefined
