@@ -86,10 +86,7 @@ grant execute on function public.upsert_user_interaction_for_user_id(
 
 comment on function public.upsert_user_interaction_for_user_id(
   uuid, uuid, uuid, text
-) is
-  'D1 follow-up: consolidates POST /api/interactions upsert logic. ' ||
-  'view-after-decision is a no-op; like/dislike/skip overrides. ' ||
-  'Trust boundary is the caller (route verifies Clerk session).';
+) is 'D1 follow-up: consolidates POST /api/interactions upsert logic. view-after-decision is a no-op; like/dislike/skip overrides. Trust boundary is the caller (route verifies Clerk session).';
 
 -- ---------------------------------------------------------------
 -- 2) delete_user_interaction_for_user_id
@@ -120,9 +117,7 @@ grant execute on function public.delete_user_interaction_for_user_id(
 
 comment on function public.delete_user_interaction_for_user_id(
   uuid, uuid
-) is
-  'D1 follow-up: single-property DELETE for /api/interactions. ' ||
-  'Returns the deleted row''s household_id for cache invalidation.';
+) is 'D1 follow-up: single-property DELETE for /api/interactions. Returns the deleted row''s household_id for cache invalidation.';
 
 -- ---------------------------------------------------------------
 -- 3) reset_user_interactions_for_user_id
@@ -152,8 +147,6 @@ grant execute on function public.reset_user_interactions_for_user_id(
 
 comment on function public.reset_user_interactions_for_user_id(
   uuid
-) is
-  'D1 follow-up: reset-all DELETE for /api/interactions/reset. ' ||
-  'Returns deleted rows'' household_ids for cache invalidation.';
+) is 'D1 follow-up: reset-all DELETE for /api/interactions/reset. Returns deleted rows'' household_ids for cache invalidation.';
 
 commit;
