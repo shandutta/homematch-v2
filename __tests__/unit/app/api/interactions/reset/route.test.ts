@@ -165,7 +165,10 @@ describe('interactions reset API route', () => {
     })
     mockCheckRateLimit.mockResolvedValue(null)
 
-    const errorResult: RpcResult = { data: null, error: { message: 'db error' } }
+    const errorResult: RpcResult = {
+      data: null,
+      error: { message: 'db error' },
+    }
     writeClientMock.rpc.mockResolvedValue(errorResult)
 
     await route.DELETE(
