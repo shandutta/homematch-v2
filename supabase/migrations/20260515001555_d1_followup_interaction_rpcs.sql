@@ -54,6 +54,8 @@ declare
 begin
   -- Schema enforces UNIQUE(user_id, property_id); a view arriving after
   -- a like/dislike/skip is a no-op. Any other type clobbers.
+  -- user_property_interactions has no updated_at column — created_at
+  -- stays at the first-insert time on conflict.
   insert into public.user_property_interactions as upi
     (user_id, property_id, household_id, interaction_type)
   values
@@ -66,10 +68,6 @@ begin
         household_id = case
           when v_is_overriding then excluded.household_id
           else upi.household_id
-        end,
-        updated_at = case
-          when v_is_overriding then now()
-          else upi.updated_at
         end;
 
   return query

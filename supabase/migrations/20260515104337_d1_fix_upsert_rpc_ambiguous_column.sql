@@ -1,24 +1,31 @@
 -- D1 follow-up: fix the upsert_user_interaction_for_user_id RPC introduced
--- in 20260515001555. The original used `RETURNS TABLE(user_id uuid,
--- property_id uuid, household_id uuid, interaction_type text, created_at
--- timestamptz, updated_at timestamptz)` which, in PL/pgSQL, declares those
--- column names as VARIABLES in scope throughout the function body. That
--- shadowed the target table's column refs and produced
---   42702: column reference "user_id" is ambiguous
--- the moment the executor reached `on conflict (user_id, property_id)`.
--- Integration tests caught it; the route 500-ed on every POST that hit
--- this RPC.
+-- in 20260515001555. Two bugs from the original:
+--
+-- 1. RETURNS TABLE(user_id uuid, property_id uuid, household_id uuid,
+--    interaction_type text, created_at timestamptz, updated_at timestamptz)
+--    declares those column names as PL/pgSQL VARIABLES in scope throughout
+--    the function body. That shadowed the target table's column refs and
+--    produced
+--      42702: column reference "user_id" is ambiguous
+--    the moment the executor reached `on conflict (user_id, property_id)`.
+--
+-- 2. The CASE update of `upi.updated_at` referenced a column that does
+--    not exist on user_property_interactions, producing
+--      42703: column upi.updated_at does not exist
+--    on the next CI run after the 42702 fix.
 --
 -- Fix: replace the named-column RETURNS TABLE with
 --   RETURNS SETOF public.user_property_interactions
 -- which doesn't introduce shadowing variables and returns the full row
--- shape — same shape callers got from the prior .from().upsert().select().
+-- shape — same shape callers got from the prior
+-- `.from().upsert().select()`. Drop the bogus updated_at update; the
+-- column doesn't exist and there's no per-row last-modified to track on
+-- this table (created_at stays at first-insert time on conflict).
 --
 -- We edited the original 20260515001555 in place so a fresh CI run sees
 -- the corrected SQL, but prod's schema_migrations already records that
 -- version as applied so `supabase db push` won't re-run it. This
--- standalone CREATE OR REPLACE FUNCTION migration carries the correction
--- forward to prod.
+-- standalone fix-up migration carries the correction forward to prod.
 
 begin;
 
@@ -56,10 +63,6 @@ begin
         household_id = case
           when v_is_overriding then excluded.household_id
           else upi.household_id
-        end,
-        updated_at = case
-          when v_is_overriding then now()
-          else upi.updated_at
         end;
 
   return query
