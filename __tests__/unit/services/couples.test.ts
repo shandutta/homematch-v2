@@ -65,11 +65,36 @@ describe('CouplesService', () => {
   const mockUserId = 'user-123'
   const mockHouseholdId = 'household-456'
 
-  const createSingleMock = <T>(data: T, error: Error | null = null) =>
-    jest.fn<Promise<{ data: T; error: Error | null }>, []>().mockResolvedValue({
-      data,
-      error,
+  // Route rpc() calls by name. The D1 follow-up moved getUserHousehold
+  // to `get_user_household_id`, and most read methods also call another
+  // RPC for their actual data — so tests routinely need to mock two
+  // RPC names side by side. Routing through a `jest.Mock`-typed helper
+  // keeps the supabase-js rpc overload set off the call signature.
+  type RpcResult = { data: unknown; error: Error | null }
+  type RpcResponder = () => Promise<RpcResult>
+  const installRpcByName = (
+    mock: jest.Mock,
+    responders: Record<string, RpcResponder>
+  ) => {
+    mock.mockImplementation((name: string) => {
+      const responder = responders[name]
+      if (!responder) {
+        return Promise.resolve({
+          data: null,
+          error: new Error(`unmocked RPC: ${name}`),
+        })
+      }
+      return responder()
     })
+  }
+  const mockRpcByName = (responders: Record<string, RpcResponder>) =>
+    installRpcByName(rpcMock, responders)
+  const householdRpc = (
+    householdId: string | null,
+    error: Error | null = null
+  ): Record<string, RpcResponder> => ({
+    get_user_household_id: async () => ({ data: householdId, error }),
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -93,12 +118,7 @@ describe('CouplesService', () => {
 
   describe('getMutualLikes', () => {
     test('should return empty array when user has no household', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: null }),
-      }
-      fromMock.mockReturnValue(mockChain)
+      mockRpcByName(householdRpc(null))
 
       const result = await CouplesService.getMutualLikes(
         mockSupabaseClient,
@@ -108,45 +128,58 @@ describe('CouplesService', () => {
     })
 
     test('should return cached results when available', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
-      fromMock.mockReturnValue(mockChain)
-      rpcMock.mockResolvedValue({
-        data: [{ property_id: 'prop-1', liked_by_count: 2 }],
-        error: null,
+      mockRpcByName({
+        ...householdRpc(mockHouseholdId),
+        get_household_mutual_likes: async () => ({
+          data: [{ property_id: 'prop-1', liked_by_count: 2 }],
+          error: null,
+        }),
       })
 
-      // First call should populate cache
+      // First call should populate the mutual-likes cache
       const result1 = await CouplesService.getMutualLikes(
         mockSupabaseClient,
         mockUserId
       )
-      // Second call should use cache
+      // Second call should hit the cache for mutual likes
       const result2 = await CouplesService.getMutualLikes(
         mockSupabaseClient,
         mockUserId
       )
 
       expect(result1).toEqual(result2)
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledTimes(1)
+      // Caching is per-RPC: getUserHousehold is uncached (cheap lookup),
+      // but get_household_mutual_likes is cached by household_id, so the
+      // second call must not re-issue it.
+      const mutualLikesCalls = rpcMock.mock.calls.filter(
+        ([name]) => name === 'get_household_mutual_likes'
+      )
+      expect(mutualLikesCalls).toHaveLength(1)
     })
 
     test('should handle RPC errors gracefully', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
-      fromMock.mockReturnValue(mockChain)
-      rpcMock.mockResolvedValue({
-        data: null,
-        error: new Error('RPC failed'),
+      // No fallback table fixture: errors should land in the catch path
+      // and return [].
+      mockRpcByName({
+        ...householdRpc(mockHouseholdId),
+        get_household_mutual_likes: async () => ({
+          data: null,
+          error: new Error('RPC failed'),
+        }),
       })
+      // Fallback chains through .from('user_property_interactions')
+      // with .select().eq().eq(). Make .eq() return a thenable that
+      // also re-exposes .eq for the second filter.
+      const fallbackResult = { data: null, error: null }
+      const fallbackChain: Record<string, jest.Mock> = {}
+      fallbackChain.select = jest.fn(() => fallbackChain)
+      fallbackChain.eq = jest.fn(() =>
+        Object.assign(Promise.resolve(fallbackResult), {
+          eq: fallbackChain.eq,
+        })
+      )
+      fromMock.mockReturnValue(fallbackChain)
 
-      // Should fallback to empty array rather than throw
       const result = await CouplesService.getMutualLikes(
         mockSupabaseClient,
         mockUserId
@@ -160,12 +193,7 @@ describe('CouplesService', () => {
     // Unit tests focus on edge cases and error handling only.
 
     test('should return null when no household found', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: null }),
-      }
-      fromMock.mockReturnValue(mockChain)
+      mockRpcByName(householdRpc(null))
 
       const result = await CouplesService.getHouseholdStats(
         mockSupabaseClient,
@@ -176,14 +204,12 @@ describe('CouplesService', () => {
     })
 
     test('should handle database errors gracefully', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockRejectedValue(new Error('Database error')),
-      }
-      fromMock.mockReturnValue(mockChain)
+      // RPC throws → CouplesService.getUserHousehold catches and returns
+      // null; the caller's catch path produces a null/empty result.
+      rpcMock.mockImplementation(() => {
+        throw new Error('Database error')
+      })
 
-      // Should not throw, should return null or handle gracefully
       await expect(
         CouplesService.getHouseholdStats(mockSupabaseClient, mockUserId)
       ).resolves.not.toThrow()
@@ -194,14 +220,9 @@ describe('CouplesService', () => {
     const propertyId = 'prop-123'
 
     test('should return true when partner has already liked property', async () => {
-      // Mock getUserHousehold call
-      const mockUserChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
+      mockRpcByName(householdRpc(mockHouseholdId))
 
-      // Mock existing likes query
+      // Likes lookup still goes through .from('user_property_interactions')
       const mockLikesChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -210,10 +231,7 @@ describe('CouplesService', () => {
           error: null,
         }),
       }
-
-      fromMock
-        .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
-        .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
+      fromMock.mockReturnValue(mockLikesChain)
 
       const result = await CouplesService.checkPotentialMutualLike(
         mockSupabaseClient,
@@ -228,14 +246,8 @@ describe('CouplesService', () => {
     })
 
     test('should return false when no partner has liked property', async () => {
-      // Mock getUserHousehold call
-      const mockUserChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
+      mockRpcByName(householdRpc(mockHouseholdId))
 
-      // Mock existing likes query with empty result
       const mockLikesChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -244,10 +256,7 @@ describe('CouplesService', () => {
           error: null,
         }),
       }
-
-      fromMock
-        .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
-        .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
+      fromMock.mockReturnValue(mockLikesChain)
 
       const result = await CouplesService.checkPotentialMutualLike(
         mockSupabaseClient,
@@ -261,12 +270,7 @@ describe('CouplesService', () => {
     })
 
     test('should return false when user has no household', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: null }),
-      }
-      fromMock.mockReturnValue(mockChain)
+      mockRpcByName(householdRpc(null))
 
       const result = await CouplesService.checkPotentialMutualLike(
         mockSupabaseClient,
@@ -280,23 +284,14 @@ describe('CouplesService', () => {
     })
 
     test('should handle database errors gracefully', async () => {
-      // Mock getUserHousehold call
-      const mockUserChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
+      mockRpcByName(householdRpc(mockHouseholdId))
 
-      // Mock existing likes query with error
       const mockLikesChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         neq: jest.fn().mockRejectedValue(new Error('Database error')),
       }
-
-      fromMock
-        .mockReturnValueOnce(mockUserChain) // First call for getUserHousehold
-        .mockReturnValueOnce(mockLikesChain) // Second call for existing likes
+      fromMock.mockReturnValue(mockLikesChain)
 
       const result = await CouplesService.checkPotentialMutualLike(
         mockSupabaseClient,
@@ -314,14 +309,8 @@ describe('CouplesService', () => {
     const propertyId = 'prop-123'
 
     test('should not throw on like interactions', async () => {
-      // Mock getUserHousehold calls
-      const mockUserChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
+      mockRpcByName(householdRpc(mockHouseholdId))
 
-      // Mock existing likes query
       const mockLikesChain = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -330,13 +319,8 @@ describe('CouplesService', () => {
           error: null,
         }),
       }
+      fromMock.mockReturnValue(mockLikesChain)
 
-      fromMock
-        .mockReturnValueOnce(mockUserChain) // First call for notifyInteraction getUserHousehold
-        .mockReturnValueOnce(mockUserChain) // Second call for checkPotentialMutualLike getUserHousehold
-        .mockReturnValueOnce(mockLikesChain) // Third call for existing likes
-
-      // Should not throw
       await expect(
         CouplesService.notifyInteraction(
           mockSupabaseClient,
@@ -348,12 +332,7 @@ describe('CouplesService', () => {
     })
 
     test('should not check for mutual like on non-like interactions', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: mockHouseholdId }),
-      }
-      fromMock.mockReturnValue(mockChain)
+      mockRpcByName(householdRpc(mockHouseholdId))
 
       await CouplesService.notifyInteraction(
         mockSupabaseClient,
@@ -362,20 +341,20 @@ describe('CouplesService', () => {
         'dislike'
       )
 
-      // Should only call getUserHousehold once, not check for mutual likes
-      expect(mockSupabaseClient.from).toHaveBeenCalledTimes(1)
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
+      // notifyInteraction calls getUserHousehold once via the RPC; on a
+      // non-like it returns without invoking checkPotentialMutualLike,
+      // so no .from() calls happen at all.
+      expect(rpcMock).toHaveBeenCalledWith('get_user_household_id', {
+        p_user_id: mockUserId,
+      })
+      expect(fromMock).not.toHaveBeenCalled()
     })
 
     test('should handle errors gracefully', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockRejectedValue(new Error('Database error')),
-      }
-      fromMock.mockReturnValue(mockChain)
+      rpcMock.mockImplementation(() => {
+        throw new Error('Database error')
+      })
 
-      // Should not throw
       await expect(
         CouplesService.notifyInteraction(
           mockSupabaseClient,
@@ -387,12 +366,7 @@ describe('CouplesService', () => {
     })
 
     test('should return early when user has no household', async () => {
-      const mockChain = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: createSingleMock({ household_id: null }),
-      }
-      fromMock.mockReturnValue(mockChain)
+      mockRpcByName(householdRpc(null))
 
       await CouplesService.notifyInteraction(
         mockSupabaseClient,
@@ -401,8 +375,11 @@ describe('CouplesService', () => {
         'like'
       )
 
-      // Should only make one query (getUserHousehold) since there's no household
-      expect(mockSupabaseClient.from).toHaveBeenCalledTimes(1)
+      // Single household lookup; no follow-on .from() calls.
+      expect(rpcMock).toHaveBeenCalledWith('get_user_household_id', {
+        p_user_id: mockUserId,
+      })
+      expect(fromMock).not.toHaveBeenCalled()
     })
   })
 })
