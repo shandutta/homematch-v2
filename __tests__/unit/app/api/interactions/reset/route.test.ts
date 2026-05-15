@@ -64,6 +64,7 @@ type SupabaseMock = {
     getUser: jest.Mock
   }
   from: jest.Mock
+  rpc: jest.Mock
 }
 
 const supabaseMock: SupabaseMock = {
@@ -71,6 +72,7 @@ const supabaseMock: SupabaseMock = {
     getUser: jest.fn(),
   },
   from: jest.fn(),
+  rpc: jest.fn(),
 }
 
 const writeClientMock: SupabaseMock = {
@@ -78,23 +80,10 @@ const writeClientMock: SupabaseMock = {
     getUser: jest.fn(),
   },
   from: jest.fn(),
+  rpc: jest.fn(),
 }
 
-type DeleteResult = { data: unknown; error: unknown }
-type DeleteChain = {
-  delete: jest.Mock
-  eq: jest.Mock
-  select: jest.Mock
-}
-
-const createDeleteChain = (result: DeleteResult): DeleteChain => {
-  const chain: DeleteChain = {
-    delete: jest.fn(() => chain),
-    eq: jest.fn(() => chain),
-    select: jest.fn(async () => result),
-  }
-  return chain
-}
+type RpcResult = { data: unknown; error: unknown }
 
 describe('interactions reset API route', () => {
   let route: typeof import('@/app/api/interactions/reset/route')
@@ -116,9 +105,11 @@ describe('interactions reset API route', () => {
     createApiClientMock.mockReturnValue(supabaseMock)
     supabaseMock.auth.getUser.mockReset()
     supabaseMock.from.mockReset()
+    supabaseMock.rpc.mockReset()
     getServiceRoleClientMock.mockReset()
     getServiceRoleClientMock.mockResolvedValue(writeClientMock)
     writeClientMock.from.mockReset()
+    writeClientMock.rpc.mockReset()
   })
 
   test('returns 401 when unauthenticated', async () => {
@@ -167,18 +158,15 @@ describe('interactions reset API route', () => {
     expect(body.error).toBe('Rate limit exceeded. Please try again later.')
   })
 
-  test('returns 500 when delete returns an error', async () => {
+  test('returns 500 when rpc returns an error', async () => {
     mockRequireUserFromRequest.mockResolvedValue({
       user: { id: 'user-1' },
       response: null,
     })
     mockCheckRateLimit.mockResolvedValue(null)
 
-    const chain = createDeleteChain({
-      data: null,
-      error: { message: 'db error' },
-    })
-    writeClientMock.from.mockReturnValue(chain)
+    const errorResult: RpcResult = { data: null, error: { message: 'db error' } }
+    writeClientMock.rpc.mockResolvedValue(errorResult)
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -191,16 +179,14 @@ describe('interactions reset API route', () => {
     expect(body.error).toBe('Failed to reset interactions')
   })
 
-  test('returns 500 when delete throws or times out', async () => {
+  test('returns 500 when rpc throws or times out', async () => {
     mockRequireUserFromRequest.mockResolvedValue({
       user: { id: 'user-1' },
       response: null,
     })
     mockCheckRateLimit.mockResolvedValue(null)
 
-    const chain = createDeleteChain({ data: null, error: null })
-    chain.select = jest.fn(() => Promise.reject(new Error('boom')))
-    writeClientMock.from.mockReturnValue(chain)
+    writeClientMock.rpc.mockReturnValue(Promise.reject(new Error('boom')))
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -220,15 +206,15 @@ describe('interactions reset API route', () => {
     })
     mockCheckRateLimit.mockResolvedValue(null)
 
-    const chain = createDeleteChain({
+    const successResult: RpcResult = {
       data: [
-        { id: '1', household_id: 'house-1' },
-        { id: '2', household_id: 'house-1' },
-        { id: '3', household_id: 'house-2' },
+        { deleted_household_id: 'house-1' },
+        { deleted_household_id: 'house-1' },
+        { deleted_household_id: 'house-2' },
       ],
       error: null,
-    })
-    writeClientMock.from.mockReturnValue(chain)
+    }
+    writeClientMock.rpc.mockResolvedValue(successResult)
 
     await route.DELETE(
       new NextRequest('http://localhost/api/interactions/reset', {
@@ -236,8 +222,9 @@ describe('interactions reset API route', () => {
       })
     )
 
-    expect(writeClientMock.from).toHaveBeenCalledWith(
-      'user_property_interactions'
+    expect(writeClientMock.rpc).toHaveBeenCalledWith(
+      'reset_user_interactions_for_user_id',
+      { p_user_id: 'user-1' }
     )
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-1')
     expect(clearHouseholdCacheMock).toHaveBeenCalledWith('house-2')

@@ -1024,6 +1024,33 @@ export type Database = {
           interaction_type: string
         }[]
       }
+      // D1 follow-up RPCs (migration 20260515001555). Manually maintained
+      // here until the gen-types script runs next; signatures must match
+      // supabase/migrations/20260515001555_d1_followup_interaction_rpcs.sql.
+      upsert_user_interaction_for_user_id: {
+        Args: {
+          p_user_id: string
+          p_property_id: string
+          p_household_id: string | null
+          p_interaction_type: string
+        }
+        Returns: {
+          user_id: string
+          property_id: string
+          household_id: string | null
+          interaction_type: string
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      delete_user_interaction_for_user_id: {
+        Args: { p_user_id: string; p_property_id: string }
+        Returns: { deleted_household_id: string | null }[]
+      }
+      reset_user_interactions_for_user_id: {
+        Args: { p_user_id: string }
+        Returns: { deleted_household_id: string | null }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
