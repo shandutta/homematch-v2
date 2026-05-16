@@ -6,6 +6,10 @@ import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
+import {
+  computeMigrationValidation,
+  REQUIRED_EXTENSIONS,
+} from '@/lib/validation/migration-validation'
 import type { Database } from '@/types/database'
 import {
   Home,
@@ -106,11 +110,9 @@ export default async function ValidationPage() {
 
   // Check required database extensions. The pg_extension query returns
   // only matching rows, so an empty array means BOTH are absent — that
-  // is not a success. Normalize into an explicit per-extension result
-  // and treat a query error as "unknown" rather than a failure.
-  const REQUIRED_EXTENSIONS = ['postgis', 'uuid-ossp'] as const
+  // is not a success. A query error/throw is treated as "unknown".
   let extensionQueryFailed = false
-  let presentExtensions = new Set<string>()
+  let extensionRows: { extname: string }[] | null = null
   try {
     const { data: extensions, error } = await supabase
       .from('pg_extension')
@@ -119,34 +121,25 @@ export default async function ValidationPage() {
     if (error) {
       extensionQueryFailed = true
     } else {
+      // `extensions` is typed `never[]` (Supabase view select quirk);
+      // assign via an annotated binding rather than a type assertion.
       const rows: { extname: string }[] = extensions ?? []
-      presentExtensions = new Set(rows.map((e) => e.extname))
+      extensionRows = rows
     }
   } catch {
     // pg_extension might not be accessible — leave status unknown.
     extensionQueryFailed = true
   }
-  const extensionChecks = REQUIRED_EXTENSIONS.map((name) => ({
-    name,
-    present: presentExtensions.has(name),
-  }))
-  const missingExtensions = extensionQueryFailed
-    ? []
-    : extensionChecks.filter((c) => !c.present).map((c) => c.name)
 
   // Aggregate the live-check results so the overview and final banner
   // reflect reality instead of hard-coded success.
-  const validationFailures: string[] = []
-  for (const t of tableStats) {
-    if (t.error) validationFailures.push(`Table "${t.tableName}": ${t.error}`)
-  }
-  if (propertyServiceError) {
-    validationFailures.push(`PropertyService: ${propertyServiceError}`)
-  }
-  for (const name of missingExtensions) {
-    validationFailures.push(`Required extension "${name}" is not installed`)
-  }
-  const validationPassed = validationFailures.length === 0
+  const { validationPassed, validationFailures, extensionChecks } =
+    computeMigrationValidation({
+      tableStats,
+      propertyServiceError,
+      extensionRows,
+      extensionQueryFailed,
+    })
   const tableCount = (name: string) =>
     tableStats.find((t) => t.tableName === name)?.count ?? 0
 
