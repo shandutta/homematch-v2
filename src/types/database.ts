@@ -281,7 +281,7 @@ export type Database = {
         Row: {
           address: string
           amenities: string[] | null
-          bathrooms: number
+          bathrooms: number | null
           bedrooms: number
           city: string
           coordinates: unknown
@@ -312,7 +312,7 @@ export type Database = {
         Insert: {
           address: string
           amenities?: string[] | null
-          bathrooms: number
+          bathrooms?: number | null
           bedrooms: number
           city: string
           coordinates?: unknown
@@ -343,7 +343,7 @@ export type Database = {
         Update: {
           address?: string
           amenities?: string[] | null
-          bathrooms?: number
+          bathrooms?: number | null
           bedrooms?: number
           city?: string
           coordinates?: unknown

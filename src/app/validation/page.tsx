@@ -6,6 +6,10 @@ import { signOut } from '@/lib/supabase/actions'
 import { PropertyService } from '@/lib/services/properties'
 import { UserService } from '@/lib/services/users'
 import { createNoindexRouteMetadata } from '@/lib/seo/route-metadata'
+import {
+  computeMigrationValidation,
+  REQUIRED_EXTENSIONS,
+} from '@/lib/validation/migration-validation'
 import type { Database } from '@/types/database'
 import {
   Home,
@@ -17,7 +21,6 @@ import {
   PartyPopper,
   Target,
   MapPin,
-  Rocket,
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -33,8 +36,6 @@ interface DatabaseStats {
   error?: string
   schema?: unknown[]
 }
-
-type ExtensionRow = Database['public']['Views']['pg_extension']['Row']
 
 export default async function ValidationPage() {
   requireInternalPreviewAccess()
@@ -107,19 +108,40 @@ export default async function ValidationPage() {
     }
   }
 
-  // Check PostGIS extensions
-  let postgisStatus: ExtensionRow[] | null = null
+  // Check required database extensions. The pg_extension query returns
+  // only matching rows, so an empty array means BOTH are absent — that
+  // is not a success. A query error/throw is treated as "unknown".
+  let extensionQueryFailed = false
+  let extensionRows: { extname: string }[] | null = null
   try {
-    const { data: extensions } = await supabase
+    const { data: extensions, error } = await supabase
       .from('pg_extension')
       .select('extname')
-      .in('extname', ['postgis', 'uuid-ossp'])
-
-    postgisStatus = extensions ?? null
+      .in('extname', [...REQUIRED_EXTENSIONS])
+    if (error) {
+      extensionQueryFailed = true
+    } else {
+      // `extensions` is typed `never[]` (Supabase view select quirk);
+      // assign via an annotated binding rather than a type assertion.
+      const rows: { extname: string }[] = extensions ?? []
+      extensionRows = rows
+    }
   } catch {
-    // Extensions table might not be accessible, that's OK
-    postgisStatus = null
+    // pg_extension might not be accessible — leave status unknown.
+    extensionQueryFailed = true
   }
+
+  // Aggregate the live-check results so the overview and final banner
+  // reflect reality instead of hard-coded success.
+  const { validationPassed, validationFailures, extensionChecks } =
+    computeMigrationValidation({
+      tableStats,
+      propertyServiceError,
+      extensionRows,
+      extensionQueryFailed,
+    })
+  const tableCount = (name: string) =>
+    tableStats.find((t) => t.tableName === name)?.count ?? 0
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -164,6 +186,35 @@ export default async function ValidationPage() {
               <span>Migration Status Overview</span>
             </div>
           </h2>
+          <div
+            className={`mb-4 rounded-lg border-2 p-4 ${
+              validationPassed
+                ? 'border-green-200 bg-green-50'
+                : 'border-red-200 bg-red-50'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{validationPassed ? '✅' : '❌'}</span>
+              <h3
+                className={`font-semibold ${
+                  validationPassed ? 'text-green-900' : 'text-red-900'
+                }`}
+              >
+                {validationPassed
+                  ? 'All live checks passed'
+                  : `${validationFailures.length} live check${
+                      validationFailures.length === 1 ? '' : 's'
+                    } failed`}
+              </h3>
+            </div>
+            {!validationPassed && (
+              <ul className="mt-2 list-disc space-y-1 pl-8 text-sm text-red-700">
+                {validationFailures.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            )}
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
             <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4">
               <div className="text-xl font-bold text-green-600">✅ Phase 1</div>
@@ -548,28 +599,7 @@ export default async function ValidationPage() {
             </p>
           </div>
           <div className="p-6">
-            {postgisStatus ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {postgisStatus.map((ext) => (
-                  <div
-                    key={ext.extname}
-                    className="rounded-lg border-green-200 bg-green-50 p-4"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl text-green-500">✅</span>
-                      <h3 className="font-medium text-green-900">
-                        {ext.extname}
-                      </h3>
-                    </div>
-                    <p className="mt-1 text-sm text-green-700">
-                      {ext.extname === 'postgis'
-                        ? 'Geographic operations enabled'
-                        : 'UUID generation enabled'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
+            {extensionQueryFailed ? (
               <div className="rounded-lg border-blue-200 bg-blue-50 p-4">
                 <div className="mb-2 flex items-center gap-2">
                   <Info className="h-5 w-5 text-blue-500" />
@@ -578,10 +608,50 @@ export default async function ValidationPage() {
                   </h3>
                 </div>
                 <p className="text-sm text-blue-700">
-                  Cannot directly query pg_extension table (normal security
-                  restriction). Extensions are confirmed working based on
-                  successful table creation with PostGIS types.
+                  Cannot query the pg_extension table (normal security
+                  restriction). Extension status could not be verified.
                 </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {extensionChecks.map((ext) => (
+                  <div
+                    key={ext.name}
+                    className={`rounded-lg border p-4 ${
+                      ext.present
+                        ? 'border-green-200 bg-green-50'
+                        : 'border-red-200 bg-red-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-xl ${
+                          ext.present ? 'text-green-500' : 'text-red-500'
+                        }`}
+                      >
+                        {ext.present ? '✅' : '❌'}
+                      </span>
+                      <h3
+                        className={`font-medium ${
+                          ext.present ? 'text-green-900' : 'text-red-900'
+                        }`}
+                      >
+                        {ext.name}
+                      </h3>
+                    </div>
+                    <p
+                      className={`mt-1 text-sm ${
+                        ext.present ? 'text-green-700' : 'text-red-700'
+                      }`}
+                    >
+                      {ext.present
+                        ? ext.name === 'postgis'
+                          ? 'Geographic operations enabled'
+                          : 'UUID generation enabled'
+                        : 'Required extension is not installed'}
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -632,40 +702,54 @@ export default async function ValidationPage() {
           </div>
         </div>
 
-        {/* Ready for Production Banner */}
-        <div className="rounded-lg border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-6 text-center">
-          <div className="mb-2">
-            <PartyPopper className="mx-auto h-16 w-16 text-green-500" />
+        {/* Final status banner — derived from the live checks above */}
+        {validationPassed ? (
+          <div className="rounded-lg border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-6 text-center">
+            <div className="mb-2">
+              <PartyPopper className="mx-auto h-16 w-16 text-green-500" />
+            </div>
+            <h2 className="mb-2 text-2xl font-bold text-gray-900">
+              All Validation Checks Passed
+            </h2>
+            <p className="mb-4 text-gray-700">
+              {tableCount('neighborhoods').toLocaleString()} neighborhoods and{' '}
+              {tableCount('properties').toLocaleString()} properties present.
+              Database tables, services, and required extensions all responded
+              successfully.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 text-sm">
+              <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+                ✅ Tables OK
+              </span>
+              <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+                ✅ Services OK
+              </span>
+              <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
+                ✅ Extensions OK
+              </span>
+            </div>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900">
-            Migration Successfully Completed!
-          </h2>
-          <p className="mb-4 text-gray-700">
-            All 6 phases completed with 99.1% success rate. 1,123 neighborhoods
-            and 1,091 properties migrated successfully. Database validated and
-            application ready for feature development and production deployment.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 text-sm">
-            <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-              ✅ Schema Deployed
-            </span>
-            <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-              ✅ Services Ready
-            </span>
-            <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-              ✅ Data Migrated
-            </span>
-            <span className="rounded-full bg-green-100 px-3 py-1 text-green-800">
-              ✅ Validation Complete
-            </span>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-800">
-              <div className="flex items-center gap-2">
-                <Rocket className="h-4 w-4 text-blue-600" />
-                <span>Ready for Features</span>
-              </div>
-            </span>
+        ) : (
+          <div className="rounded-lg border-2 border-red-200 bg-red-50 p-6 text-center">
+            <div className="mb-2">
+              <AlertTriangle className="mx-auto h-16 w-16 text-red-500" />
+            </div>
+            <h2 className="mb-2 text-2xl font-bold text-red-900">
+              Validation Failed
+            </h2>
+            <p className="mb-4 text-red-700">
+              {validationFailures.length} live check
+              {validationFailures.length === 1 ? '' : 's'} did not pass — the
+              application is not verified as ready. Resolve the issues below and
+              reload this page.
+            </p>
+            <ul className="mx-auto inline-block list-disc space-y-1 pl-6 text-left text-sm text-red-700">
+              {validationFailures.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )
