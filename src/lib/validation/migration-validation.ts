@@ -39,8 +39,12 @@ export interface MigrationValidationInput {
 export function computeMigrationValidation(
   input: MigrationValidationInput
 ): MigrationValidation {
-  const { tableStats, propertyServiceError, extensionRows, extensionQueryFailed } =
-    input
+  const {
+    tableStats,
+    propertyServiceError,
+    extensionRows,
+    extensionQueryFailed,
+  } = input
 
   const present = new Set((extensionRows ?? []).map((row) => row.extname))
   const extensionChecks: ExtensionCheck[] = REQUIRED_EXTENSIONS.map((name) => ({
@@ -49,7 +53,9 @@ export function computeMigrationValidation(
   }))
   const missingExtensions = extensionQueryFailed
     ? []
-    : extensionChecks.filter((check) => !check.present).map((check) => check.name)
+    : extensionChecks
+        .filter((check) => !check.present)
+        .map((check) => check.name)
 
   const validationFailures: string[] = []
   for (const table of tableStats) {
