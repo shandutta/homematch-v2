@@ -91,28 +91,29 @@ const applySecurityHeaders = (
 
   if (process.env.NODE_ENV === 'production') {
     // M1 (2026-05-13 audit): nonce-based CSP. Each request mints a fresh
-    // nonce; the response CSP trusts only scripts carrying that nonce
-    // (`'nonce-${nonce}'`) plus their transitively-loaded scripts
-    // (`'strict-dynamic'`). Next.js automatically attaches the nonce to
-    // its own inline scripts (hydration, RSC streaming, head metadata
-    // when it sees the `x-nonce` request header set by the wrapper below.
+    // nonce; Next.js attaches it to its own inline scripts (hydration,
+    // RSC streaming, head metadata) when it sees the `x-nonce` request
+    // header set by the wrapper below.
     //
     // Why each piece is here:
-    //   - 'nonce-${nonce}'      explicit trust for the per-request nonce
-    //   - 'strict-dynamic'      transitive trust for scripts a nonced
-    //                           script loads (so Clerk SDK, Maps, etc.
-    //                           don't need host allowlist entries here)
+    //   - 'nonce-${nonce}'      explicit trust for Next's per-request
+    //                           inline scripts
     //   - 'wasm-unsafe-eval'    Cloudflare Turnstile + WASM modules
-    //   - 'unsafe-inline' / https:  ignored by browsers that grok
-    //                           strict-dynamic; kept so legacy browsers
-    //                           degrade gracefully (Google's recommended
-    //                           pattern). Browsers from ~2020+ ignore
-    //                           these in the presence of strict-dynamic.
+    //   - 'unsafe-inline'       legacy-browser fallback; modern browsers
+    //                           ignore it once a nonce is present
+    //   - https:                external script hosts (Clerk SDK +
+    //                           Account Portal, Cloudflare Turnstile,
+    //                           Google Maps / AdSense)
     //
-    // host-allowlist entries previously in script-src (clerk, supabase,
-    // google, cloudflare) are intentionally REMOVED — they're redundant
-    // under strict-dynamic for modern browsers and we keep the
-    // legacy-browser fallback via the `https:` clause.
+    // NOTE: 'strict-dynamic' was removed (2026-05-16). It disables host
+    // allowlisting entirely, which blocked Clerk's CDN scripts
+    // (clerk.browser.js / ui.browser.js from clerk.homematch.pro) — those
+    // <script> tags do not carry the per-request nonce, so under
+    // strict-dynamic the browser rejected them and the auth UI loaded
+    // only by luck. Relying on the `https:` source keeps Clerk, Turnstile
+    // and Google scripts working. Tightening this back to an explicit
+    // host allowlist, or a Clerk-managed CSP via clerkMiddleware's
+    // `contentSecurityPolicy` option, is possible future hardening.
     const nonce = request?.headers.get('x-nonce') ?? generateNonce()
     if (request && !request.headers.get('x-nonce')) {
       request.headers.set('x-nonce', nonce)
@@ -121,7 +122,7 @@ const applySecurityHeaders = (
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-        `script-src 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval' 'unsafe-inline' https: blob:; ` +
+        `script-src 'nonce-${nonce}' 'wasm-unsafe-eval' 'unsafe-inline' https: blob:; ` +
         "worker-src 'self' blob:; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
