@@ -385,11 +385,18 @@ export class PropertySearchService
         .lte('price', referenceProperty.price + priceTolerance)
         .gte('bedrooms', Math.max(0, referenceProperty.bedrooms - bedroomRange))
         .lte('bedrooms', referenceProperty.bedrooms + bedroomRange)
-        .gte(
-          'bathrooms',
-          Math.max(0, (referenceProperty.bathrooms ?? 0) - bathroomRange)
-        )
-        .lte('bathrooms', (referenceProperty.bathrooms ?? 0) + bathroomRange)
+
+      // bathrooms is nullable; a null reference value means "unknown", so
+      // only constrain by bathrooms when the reference count is known —
+      // otherwise the filter would collapse results to ~0 baths.
+      if (referenceProperty.bathrooms != null) {
+        query = query
+          .gte(
+            'bathrooms',
+            Math.max(0, referenceProperty.bathrooms - bathroomRange)
+          )
+          .lte('bathrooms', referenceProperty.bathrooms + bathroomRange)
+      }
 
       if (referenceProperty.property_type) {
         query = query.eq('property_type', referenceProperty.property_type)

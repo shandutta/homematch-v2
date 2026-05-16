@@ -362,9 +362,19 @@ export class NeighborhoodService
 
       const avgBedrooms =
         propertyData.reduce((sum, p) => sum + p.bedrooms, 0) / totalProperties
+      // bathrooms is nullable; null means "unknown", so average only the
+      // rows that report a bathroom count (same treatment as square_feet)
+      // rather than folding unknowns in as zero.
+      const propertiesWithBathrooms = propertyData.filter(
+        (p) => p.bathrooms !== null
+      )
       const avgBathrooms =
-        propertyData.reduce((sum, p) => sum + (p.bathrooms ?? 0), 0) /
-        totalProperties
+        propertiesWithBathrooms.length > 0
+          ? propertiesWithBathrooms.reduce(
+              (sum, p) => sum + (p.bathrooms || 0),
+              0
+            ) / propertiesWithBathrooms.length
+          : 0
 
       const propertiesWithSquareFeet = propertyData.filter(
         (p) => p.square_feet !== null
