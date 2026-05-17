@@ -208,6 +208,12 @@ export const ROUTE_SIDE_EFFECT_POLICIES: readonly RouteSideEffectPolicy[] = [
       'Clerk-aware household invitation creation. Verifies the Clerk session, confirms household membership, then inserts the invitation row under service-role. Replaces the broken anon-key path that called supabase.auth.getSession() (null for Clerk users) (HOUSEHOLD-001).',
   },
   {
+    path: '/api/households/join',
+    categories: ['mutating-auth'],
+    rationale:
+      'Clerk-aware household join. Verifies the Clerk session, resolves the user_profiles row, and updates only that profile household_id under service-role because Clerk users cannot rely on auth.uid()-based RLS.',
+  },
+  {
     path: '/api/users/avatar',
     categories: ['mutating-auth'],
     rationale: 'Auth-gated avatar upload to Supabase storage.',

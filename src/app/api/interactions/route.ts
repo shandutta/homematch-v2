@@ -196,6 +196,15 @@ export async function GET(request: NextRequest) {
       return ApiErrorHandler.badRequest('Missing type query parameter')
     }
 
+    // Clerk-authenticated users do not carry a Supabase session into the
+    // anon-key client, so RLS hides their persisted interaction rows. The
+    // request's Clerk session has already been verified and userId has been
+    // resolved to user_profiles.id, so use service-role for reads scoped by
+    // that explicit userId.
+    const readClient = await getServiceRoleClient({
+      approvedCapability: 'clerk-interactions-read',
+    })
+
     if (queryParams.type === 'summary') {
       // Aggregate counts grouped by interaction_type for current user
       // Supabase JS doesn't support SQL GROUP BY directly via .group().
@@ -206,7 +215,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Add timeout for RPC call
-      const rpcPromise = supabase.rpc('get_user_interaction_summary', {
+      const rpcPromise = readClient.rpc('get_user_interaction_summary', {
         p_user_id: userId,
       })
 
@@ -282,7 +291,7 @@ export async function GET(request: NextRequest) {
 
     // Join interactions -> properties for the current user
     // Note: selecting nested properties requires a foreign key relationship in Supabase
-    let query = supabase
+    let query = readClient
       .from('user_property_interactions')
       .select(
         `
