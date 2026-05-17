@@ -24,6 +24,11 @@ const dashboardRouteManifest: DashboardRouteExpectation[] = [
   { path: '/dashboard/activity', classification: 'protected' },
   { path: '/dashboard/liked', classification: 'protected' },
   { path: '/dashboard/mutual-likes', classification: 'protected' },
+  {
+    path: '/dashboard/shared',
+    reportPath: '/dashboard/mutual-likes',
+    classification: 'protected',
+  },
   { path: '/dashboard/passed', classification: 'protected' },
   { path: '/dashboard/viewed', classification: 'protected' },
   { path: '/dashboard/vibes-test', classification: 'protected' },

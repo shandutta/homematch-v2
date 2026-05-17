@@ -114,12 +114,7 @@ export function CouplesPageClient() {
         }
       }
 
-      if (householdUserCount < 2) {
-        setUserHouseholdStatus('waiting-partner')
-        return
-      }
-
-      setUserHouseholdStatus('active')
+      const hasConfirmedPartner = householdUserCount >= 2
 
       const [mutualLikesRes, activityRes, statsRes] = await Promise.all([
         fetch('/api/couples/mutual-likes?includeProperties=true', {
@@ -160,9 +155,25 @@ export function CouplesPageClient() {
         statsRes.json(),
       ])
 
-      setMutualLikes(mutualLikesData.mutualLikes || [])
+      const mutualLikes = mutualLikesData.mutualLikes || []
+      const stats = statsData.stats || null
+      const hasHouseholdActivity =
+        mutualLikes.length > 0 ||
+        (stats?.total_household_likes ?? 0) > 0 ||
+        (activityData.activity || []).length > 0
+
+      if (!hasConfirmedPartner && !hasHouseholdActivity) {
+        setUserHouseholdStatus('waiting-partner')
+        setMutualLikes([])
+        setActivity([])
+        setStats(stats)
+        return
+      }
+
+      setUserHouseholdStatus('active')
+      setMutualLikes(mutualLikes)
       setActivity(activityData.activity || [])
-      setStats(statsData.stats || null)
+      setStats(stats)
 
       if (retryCount > 0) {
         toast.success('Data loaded successfully!')

@@ -96,6 +96,36 @@ jest.mock('@/components/couples/CouplesEmptyStates', () => ({
   NetworkErrorState: () => <div data-testid="network-error-state" />,
 }))
 
+jest.mock('@/components/couples/CouplesHero', () => ({
+  CouplesHero: () => <div data-testid="couples-hero" />,
+}))
+
+jest.mock('@/components/couples/CouplesMutualLikesSection', () => ({
+  CouplesMutualLikesSection: ({ mutualLikes }: { mutualLikes: unknown[] }) => (
+    <div data-testid="couples-mutual-likes-section">
+      mutual-likes:{mutualLikes.length}
+    </div>
+  ),
+}))
+
+jest.mock('@/components/couples/CouplesActivityFeed', () => ({
+  CouplesActivityFeed: () => <div data-testid="couples-activity-feed" />,
+}))
+
+jest.mock('@/components/couples/CouplesStats', () => ({
+  CouplesStats: () => <div data-testid="couples-stats" />,
+}))
+
+jest.mock('@/components/couples/DisputedPropertiesAlert', () => ({
+  DisputedPropertiesAlert: () => (
+    <div data-testid="disputed-properties-alert" />
+  ),
+}))
+
+jest.mock('@/components/couples/InvitePartnerModal', () => ({
+  InvitePartnerModal: () => <div data-testid="invite-partner-modal" />,
+}))
+
 describe('CouplesPageClient', () => {
   let originalFetch: typeof global.fetch
 
@@ -137,6 +167,146 @@ describe('CouplesPageClient', () => {
       render(<CouplesPageClient />)
 
       expect(screen.getByTestId('couples-skeleton')).toBeInTheDocument()
+    })
+  })
+
+  describe('Household state resolution', () => {
+    const mockHouseholdCount = (
+      userCount: number,
+      memberCount: number | null
+    ) => {
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'households') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { id: 'household-1', user_count: userCount },
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
+
+        if (table === 'user_profiles') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: memberCount,
+                error: null,
+              }),
+            }),
+          }
+        }
+
+        throw new Error(`Unexpected table: ${table}`)
+      })
+    }
+
+    test('should render active household when mutual likes exist even if profile count is stale', async () => {
+      mockHouseholdCount(1, 1)
+      global.fetch = jest.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url === '/api/users/me') {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ id: 'user-1', household_id: 'household-1' }),
+          })
+        }
+        if (url.startsWith('/api/couples/mutual-likes')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({
+                mutualLikes: [
+                  {
+                    property_id: 'property-1',
+                    liked_by_count: 2,
+                    last_liked_at: new Date().toISOString(),
+                  },
+                ],
+              }),
+          })
+        }
+        if (url.startsWith('/api/couples/activity')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ activity: [] }),
+          })
+        }
+        if (url.startsWith('/api/couples/stats')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ stats: { total_household_likes: 2 } }),
+          })
+        }
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`))
+      }) as unknown as typeof global.fetch
+
+      render(<CouplesPageClient />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('couples-mutual-likes-section')
+        ).toHaveTextContent('mutual-likes:1')
+      })
+      expect(
+        screen.queryByTestId('waiting-partner-state')
+      ).not.toBeInTheDocument()
+    })
+
+    test('should keep waiting-for-partner state when household is genuinely solo', async () => {
+      mockHouseholdCount(1, 1)
+      global.fetch = jest.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url === '/api/users/me') {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ id: 'user-1', household_id: 'household-1' }),
+          })
+        }
+        if (url.startsWith('/api/couples/mutual-likes')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ mutualLikes: [] }),
+          })
+        }
+        if (url.startsWith('/api/couples/activity')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ activity: [] }),
+          })
+        }
+        if (url.startsWith('/api/couples/stats')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ stats: { total_household_likes: 0 } }),
+          })
+        }
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`))
+      }) as unknown as typeof global.fetch
+
+      render(<CouplesPageClient />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('waiting-partner-state')).toBeInTheDocument()
+      })
+      expect(
+        screen.queryByTestId('couples-mutual-likes-section')
+      ).not.toBeInTheDocument()
     })
   })
 })
