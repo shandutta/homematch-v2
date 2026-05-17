@@ -416,7 +416,11 @@ export function PropertyCardUI({
                 href={detailsHref}
                 className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
                 data-testid="details-cta"
-                onClick={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  window.location.assign(detailsHref)
+                }}
               >
                 Details
               </a>
