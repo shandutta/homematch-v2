@@ -83,6 +83,9 @@ const CONNECT_SRC_HOSTS = [
   'https://*.clerk.com',
   'https://clerk.homematch.pro',
   'https://accounts.homematch.pro',
+  // Clerk SDK telemetry beacon
+  'https://clerk-telemetry.com',
+  'https://*.clerk-telemetry.com',
   'https://challenges.cloudflare.com',
   'https://maps.googleapis.com',
   'https://*.googlesyndication.com',
