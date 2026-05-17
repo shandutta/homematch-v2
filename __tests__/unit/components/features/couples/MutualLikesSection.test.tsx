@@ -640,7 +640,7 @@ describe('MutualLikesSection Component', () => {
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
-          '/api/couples/mutual-likes',
+          '/api/couples/mutual-likes?includeProperties=true',
           expect.objectContaining({ credentials: 'include' })
         )
       })
