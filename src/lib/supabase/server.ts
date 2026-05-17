@@ -112,6 +112,7 @@ export type ApprovedServiceRoleCapability =
   // Clerk session, resolve user_profiles.id, then write under
   // service-role with the resolved user_id explicitly in the row.
   | 'clerk-interactions-write'
+  | 'clerk-interactions-read'
   | 'clerk-user-profile-write'
   | 'clerk-saved-search-write'
   | 'clerk-household-resolution-write'
@@ -145,6 +146,7 @@ const APPROVED_SERVICE_ROLE_CAPABILITIES =
     'clerk-profile-read',
     'clerk-household-write',
     'clerk-interactions-write',
+    'clerk-interactions-read',
     'clerk-user-profile-write',
     'clerk-saved-search-write',
     'clerk-household-resolution-write',

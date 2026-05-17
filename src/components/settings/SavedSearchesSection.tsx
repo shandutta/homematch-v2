@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { UserServiceClient } from '@/lib/services/users-client'
@@ -210,13 +211,24 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         </div>
         <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
           <Search className="text-hm-stone-500 mx-auto h-10 w-10" />
-          <p className="text-hm-stone-300 mt-4">
+          <p className="text-hm-stone-300 mt-4 font-medium">
             You haven&apos;t saved any searches yet.
           </p>
           <p className="text-hm-stone-500 mt-2 text-sm">
             Dial in filters in settings and tap &ldquo;Save search&rdquo; to
             keep getting alerts here.
           </p>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              asChild
+              className="bg-hm-gold-500 text-hm-stone-950 hover:bg-hm-gold-400"
+            >
+              <Link href="/dashboard">Browse homes</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/settings?tab=preferences">Tune filters</Link>
+            </Button>
+          </div>
         </div>
       </div>
     )

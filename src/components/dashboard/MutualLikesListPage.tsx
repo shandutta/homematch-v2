@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useMutualLikes } from '@/hooks/useCouples'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,7 +10,6 @@ import { PropertyImage } from '@/components/ui/property-image'
 import { Heart, Users, ChevronRight, Sparkles, SearchX } from 'lucide-react'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { MutualLikesBadge } from '@/components/features/couples/MutualLikesBadge'
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 import { MutualLikesComparePanel } from './MutualLikesComparePanel'
 
 const MAX_COMPARE = 3
@@ -34,7 +33,7 @@ const BED_FILTER_OPTIONS: { value: BedFilter; label: string }[] = [
 ]
 
 const SELECT_CLASS =
-  'rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-hm-stone-200 hover:border-white/20 focus:border-couples-primary/60 focus:outline-none focus:ring-1 focus:ring-couples-primary/40'
+  'rounded-md border border-hm-stone-200 bg-white/80 px-3 py-1.5 text-sm text-hm-stone-700 shadow-sm hover:border-hm-stone-300 focus:border-hm-gold-500 focus:outline-none focus:ring-1 focus:ring-hm-gold-400/50'
 
 export function MutualLikesListPage() {
   const query = useMutualLikes()
@@ -42,6 +41,11 @@ export function MutualLikesListPage() {
   const [bedFilter, setBedFilter] = useState<BedFilter>('any')
   const [compareMode, setCompareMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   const allLikes = useMemo(() => query.data ?? [], [query.data])
   const totalLikes = allLikes.length
@@ -109,7 +113,7 @@ export function MutualLikesListPage() {
     >
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
+          <h1 className="font-display text-hm-stone-900 text-2xl font-medium tracking-tight sm:text-4xl">
             Mutual Likes
           </h1>
           <p className="text-hm-stone-500 mt-2 max-w-2xl text-sm sm:text-base">
@@ -123,7 +127,10 @@ export function MutualLikesListPage() {
           asChild
           className="self-start sm:self-auto"
         >
-          <Link href="/couples" className="text-hm-stone-300 hover:text-white">
+          <Link
+            href="/couples"
+            className="text-hm-stone-600 hover:text-hm-stone-900"
+          >
             Household hub
             <ChevronRight className="ml-1 h-4 w-4" />
           </Link>
@@ -232,30 +239,26 @@ export function MutualLikesListPage() {
         </p>
       )}
 
-      {query.isLoading ? (
+      {!hasMounted || query.isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card
               key={index}
-              className="border-white/10"
-              style={{
-                backgroundColor: dashboardTokens.colors.background.cardDark,
-                borderColor: dashboardTokens.colors.secondary[700],
-              }}
+              className="border-hm-stone-200 bg-white/80 shadow-[0_14px_38px_rgba(68,64,60,0.08)]"
             >
               <CardContent className="flex items-start gap-4 p-4">
-                <Skeleton className="h-20 w-20 bg-white/10" />
+                <Skeleton className="bg-hm-stone-200/70 h-20 w-20" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4 bg-white/10" />
-                  <Skeleton className="h-4 w-1/2 bg-white/10" />
-                  <Skeleton className="h-3 w-1/3 bg-white/10" />
+                  <Skeleton className="bg-hm-stone-200/70 h-4 w-3/4" />
+                  <Skeleton className="bg-hm-stone-200/70 h-4 w-1/2" />
+                  <Skeleton className="bg-hm-stone-200/70 h-3 w-1/3" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       ) : query.error ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center backdrop-blur">
+        <div className="border-hm-stone-200 rounded-2xl border bg-white/85 px-6 py-12 text-center shadow-[0_18px_50px_rgba(68,64,60,0.08)]">
           <p className="text-hm-error text-sm font-semibold">
             Couldn’t load mutual likes
           </p>
@@ -272,11 +275,7 @@ export function MutualLikesListPage() {
         </div>
       ) : totalLikes === 0 ? (
         <Card
-          className="border-white/10"
-          style={{
-            backgroundColor: dashboardTokens.colors.background.cardDark,
-            borderColor: dashboardTokens.colors.secondary[700],
-          }}
+          className="border-hm-stone-200 bg-white/85 shadow-[0_18px_50px_rgba(68,64,60,0.08)]"
           data-testid="mutual-likes-empty"
         >
           <CardContent className="p-10 text-center">
@@ -286,7 +285,7 @@ export function MutualLikesListPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
             >
-              <div className="from-couples-primary/20 to-couples-secondary/10 relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ring-1 ring-white/10">
+              <div className="from-hm-gold-50 to-hm-ivory-100 ring-hm-gold-200 relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ring-1">
                 <MotionDiv
                   animate={{ scale: [1, 1.08, 1] }}
                   transition={{
@@ -295,18 +294,18 @@ export function MutualLikesListPage() {
                     ease: 'easeInOut',
                   }}
                 >
-                  <Heart className="text-couples-primary h-10 w-10 fill-current drop-shadow" />
+                  <Heart className="text-hm-gold-600 h-10 w-10 fill-current drop-shadow" />
                 </MotionDiv>
-                <span className="bg-couples-secondary text-hm-obsidian-900 absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full text-xs ring-2 ring-black/40">
+                <span className="bg-hm-gold-200 text-hm-stone-900 ring-hm-ivory-50 absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full text-xs ring-2">
                   <Users className="h-3.5 w-3.5" />
                 </span>
-                <Sparkles className="text-couples-secondary/80 absolute -bottom-1 -left-1 h-4 w-4" />
+                <Sparkles className="text-hm-gold-500 absolute -bottom-1 -left-1 h-4 w-4" />
               </div>
             </MotionDiv>
-            <h2 className="text-hm-stone-100 text-xl font-semibold">
+            <h2 className="text-hm-stone-900 text-xl font-semibold">
               No mutual likes yet
             </h2>
-            <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
+            <p className="text-hm-stone-600 mx-auto mt-2 max-w-xl text-sm">
               Keep swiping — when your household likes the same home it will
               appear here.
             </p>
@@ -325,26 +324,22 @@ export function MutualLikesListPage() {
         </Card>
       ) : isFilteredEmpty ? (
         <Card
-          className="border-white/10"
-          style={{
-            backgroundColor: dashboardTokens.colors.background.cardDark,
-            borderColor: dashboardTokens.colors.secondary[700],
-          }}
+          className="border-hm-stone-200 bg-white/85 shadow-[0_18px_50px_rgba(68,64,60,0.08)]"
           data-testid="mutual-likes-filtered-empty"
         >
           <CardContent className="p-10 text-center">
             <MotionDiv
-              className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.04] ring-1 ring-white/10"
+              className="bg-hm-stone-100 ring-hm-stone-200 mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ring-1"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
               <SearchX className="text-hm-stone-400 h-7 w-7" />
             </MotionDiv>
-            <h2 className="text-hm-stone-100 text-xl font-semibold">
+            <h2 className="text-hm-stone-900 text-xl font-semibold">
               No matches with current filters
             </h2>
-            <p className="text-hm-stone-300 mx-auto mt-2 max-w-xl text-sm">
+            <p className="text-hm-stone-600 mx-auto mt-2 max-w-xl text-sm">
               {totalLikes} mutual {totalLikes === 1 ? 'like' : 'likes'} hidden
               by your filter. Adjust to see them.
             </p>
@@ -371,15 +366,9 @@ export function MutualLikesListPage() {
             return (
               <Card
                 key={like.property_id}
-                className={`border-white/10 ${
-                  compareMode && isSelected
-                    ? 'ring-couples-primary/60 ring-1'
-                    : ''
+                className={`border-hm-stone-200 bg-white/90 shadow-[0_14px_42px_rgba(68,64,60,0.08)] transition-shadow hover:shadow-[0_18px_56px_rgba(68,64,60,0.12)] ${
+                  compareMode && isSelected ? 'ring-hm-gold-400/70 ring-1' : ''
                 }`}
-                style={{
-                  backgroundColor: dashboardTokens.colors.background.cardDark,
-                  borderColor: dashboardTokens.colors.secondary[700],
-                }}
                 data-testid={`mutual-like-card-${like.property_id}`}
               >
                 <CardContent className="p-4">
@@ -387,8 +376,8 @@ export function MutualLikesListPage() {
                     <label
                       className={`mb-3 flex cursor-pointer items-center gap-2 text-xs ${
                         selectionDisabled
-                          ? 'text-hm-stone-500 cursor-not-allowed'
-                          : 'text-hm-stone-300'
+                          ? 'text-hm-stone-400 cursor-not-allowed'
+                          : 'text-hm-stone-600'
                       }`}
                     >
                       <input
@@ -400,7 +389,7 @@ export function MutualLikesListPage() {
                           like.property?.address || 'property'
                         } for comparison`}
                         data-testid={`compare-checkbox-${like.property_id}`}
-                        className="h-4 w-4 rounded border-white/20 bg-white/[0.04]"
+                        className="border-hm-stone-300 h-4 w-4 rounded bg-white"
                       />
                       {isSelected
                         ? 'Selected for comparison'
@@ -415,7 +404,7 @@ export function MutualLikesListPage() {
                     className="group block"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="relative h-20 w-20 overflow-hidden rounded-lg border border-white/10">
+                      <div className="border-hm-stone-200 relative h-20 w-20 overflow-hidden rounded-lg border">
                         <PropertyImage
                           src={
                             like.property?.images || like.property?.image_urls
@@ -429,7 +418,7 @@ export function MutualLikesListPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-hm-stone-100 truncate text-sm font-semibold">
+                          <p className="text-hm-stone-900 truncate text-sm font-semibold">
                             {like.property?.address ||
                               `Property ${like.property_id.slice(0, 8)}`}
                           </p>
@@ -441,7 +430,7 @@ export function MutualLikesListPage() {
                         </div>
 
                         {like.property && (
-                          <p className="text-hm-stone-400 mt-1 text-xs">
+                          <p className="text-hm-stone-600 mt-1 text-xs">
                             ${Math.round(like.property.price / 1000)}k •{' '}
                             {like.property.bedrooms} bd •{' '}
                             {like.property.bathrooms} ba

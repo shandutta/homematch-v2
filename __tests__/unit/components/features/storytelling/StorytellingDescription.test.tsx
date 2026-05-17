@@ -125,6 +125,37 @@ describe('StorytellingDescription', () => {
     expect(screen.getByText("Chef's Kitchen")).toBeInTheDocument()
   })
 
+  it('renders LLM copy as evidence-backed notes instead of quoted romance copy', () => {
+    render(
+      <StorytellingDescription
+        property={mockProperty}
+        neighborhood={mockNeighborhood}
+        vibes={mockVibes}
+        isMutualLike={false}
+        variant="full"
+        showLifestyleTags={true}
+        showFutureVision={true}
+        showEmotionalHooks={true}
+      />
+    )
+
+    expect(screen.getByText('Evidence: Remote Work Ready')).toBeInTheDocument()
+    expect(screen.getByText('Listing/photo notes')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Dedicated office space and strong natural light for long days.'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'That island is where laptops and dinner prep share space.'
+      )
+    ).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(
+      '"That island is where laptops and dinner prep share space."'
+    )
+  })
+
   it('aliases legacy couple-focused tags from stored vibes', () => {
     const legacyVibes: PropertyVibes = {
       ...mockVibes,
@@ -167,12 +198,12 @@ describe('StorytellingDescription', () => {
 
     // Should render a mutual like message - check for one of the possible messages
     const possibleTexts = [
-      'Everyone said yes to this place',
-      'Your shared list just got a strong favorite',
-      'Shared goals, one home, endless possibilities',
-      'When everyone agrees, you know',
-      'This is where your shared plans take shape',
-      'Instant favorite for everyone',
+      'Both people saved this home for concrete reasons',
+      'Household overlap: this home made both shortlists',
+      'Worth a closer look: both people liked this listing',
+      'Shared signal: this one cleared both filters',
+      'Good candidate for a joint review',
+      'Both buyers marked this as worth discussing',
     ]
 
     const foundText = possibleTexts.some((text) => {

@@ -14,7 +14,7 @@ import {
 // per-host cookie read, a Supabase server-client per request, or a
 // refresh-token recovery branch. What remains:
 //
-//   - security headers + per-request CSP nonce
+//   - security headers + Content-Security-Policy
 //   - Clerk session resolution (with a timeout fallback)
 //   - protected-path → /login redirect for anonymous traffic
 //   - /login + /signup → dashboard redirect for already-signed-in users
@@ -40,6 +40,84 @@ const PUBLIC_BYPASS_PATHS = [
   // Clerk webhook (verified by Svix signature, must not be gated by auth).
   '/api/webhooks/clerk',
 ]
+
+// Content-Security-Policy (CSP rework, 2026-05-17).
+//
+// History: this directive previously used `'strict-dynamic'` with a
+// per-request nonce. That is fundamentally incompatible with this app's
+// statically-prerendered pages — Clerk's (and Next's) <script> tags cannot
+// receive a per-request nonce at build time, so the browser blocked
+// clerk.browser.js under strict-dynamic and the auth UI broke. Using a
+// nonce would force every page to dynamic rendering.
+//
+// So `script-src` uses an explicit host allowlist (Clerk's own documented
+// baseline). `'unsafe-inline'` covers Next's inline hydration/RSC scripts
+// (no nonce to gate them); `'wasm-unsafe-eval'` is for Cloudflare
+// Turnstile's WASM module. There is deliberately NO blanket `https:` — an
+// attacker who finds an HTML-injection point cannot load remote code from
+// an arbitrary origin, only from the listed Clerk / Turnstile / Google /
+// Vercel hosts.
+const SCRIPT_SRC_HOSTS = [
+  // Clerk SDK + Account Portal
+  'https://*.clerk.accounts.dev',
+  'https://*.clerk.com',
+  'https://clerk.homematch.pro',
+  'https://accounts.homematch.pro',
+  // Cloudflare Turnstile (Clerk bot protection)
+  'https://challenges.cloudflare.com',
+  // Google Maps JS API
+  'https://maps.googleapis.com',
+  // Google AdSense (loads transitively across these Google domains)
+  'https://*.googlesyndication.com',
+  'https://*.doubleclick.net',
+  'https://*.google.com',
+  'https://*.gstatic.com',
+  // Vercel Speed Insights
+  'https://va.vercel-scripts.com',
+].join(' ')
+
+const CONNECT_SRC_HOSTS = [
+  'https://*.supabase.co',
+  'wss://*.supabase.co',
+  'https://*.clerk.accounts.dev',
+  'https://*.clerk.com',
+  'https://clerk.homematch.pro',
+  'https://accounts.homematch.pro',
+  // Clerk SDK telemetry beacon
+  'https://clerk-telemetry.com',
+  'https://*.clerk-telemetry.com',
+  'https://challenges.cloudflare.com',
+  'https://maps.googleapis.com',
+  'https://*.googlesyndication.com',
+  'https://*.doubleclick.net',
+  'https://fundingchoicesmessages.google.com',
+  'https://*.adtrafficquality.google',
+  'https://*.google.com',
+  'https://vitals.vercel-insights.com',
+].join(' ')
+
+const FRAME_SRC_HOSTS = [
+  'https://*.clerk.accounts.dev',
+  'https://*.clerk.com',
+  'https://clerk.homematch.pro',
+  'https://accounts.homematch.pro',
+  'https://challenges.cloudflare.com',
+  'https://*.googlesyndication.com',
+  'https://*.doubleclick.net',
+  'https://fundingchoicesmessages.google.com',
+].join(' ')
+
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' ${SCRIPT_SRC_HOSTS} blob:`,
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: https: blob:",
+  `connect-src 'self' ${CONNECT_SRC_HOSTS}`,
+  `frame-src 'self' ${FRAME_SRC_HOSTS}`,
+  "frame-ancestors 'none'",
+].join('; ')
 
 // Clerk route matcher for protected pages.
 // M5 (2026-05-13 audit): derived from the single PROTECTED_PATH_PREFIXES
@@ -89,48 +167,10 @@ const applySecurityHeaders = (
     request.headers.set('x-request-id', requestId)
   }
 
+  // CSP + HSTS in production only — keeps `next dev` (React Refresh, eval)
+  // unrestricted.
   if (process.env.NODE_ENV === 'production') {
-    // M1 (2026-05-13 audit): nonce-based CSP. Each request mints a fresh
-    // nonce; the response CSP trusts only scripts carrying that nonce
-    // (`'nonce-${nonce}'`) plus their transitively-loaded scripts
-    // (`'strict-dynamic'`). Next.js automatically attaches the nonce to
-    // its own inline scripts (hydration, RSC streaming, head metadata
-    // when it sees the `x-nonce` request header set by the wrapper below.
-    //
-    // Why each piece is here:
-    //   - 'nonce-${nonce}'      explicit trust for the per-request nonce
-    //   - 'strict-dynamic'      transitive trust for scripts a nonced
-    //                           script loads (so Clerk SDK, Maps, etc.
-    //                           don't need host allowlist entries here)
-    //   - 'wasm-unsafe-eval'    Cloudflare Turnstile + WASM modules
-    //   - 'unsafe-inline' / https:  ignored by browsers that grok
-    //                           strict-dynamic; kept so legacy browsers
-    //                           degrade gracefully (Google's recommended
-    //                           pattern). Browsers from ~2020+ ignore
-    //                           these in the presence of strict-dynamic.
-    //
-    // host-allowlist entries previously in script-src (clerk, supabase,
-    // google, cloudflare) are intentionally REMOVED — they're redundant
-    // under strict-dynamic for modern browsers and we keep the
-    // legacy-browser fallback via the `https:` clause.
-    const nonce = request?.headers.get('x-nonce') ?? generateNonce()
-    if (request && !request.headers.get('x-nonce')) {
-      request.headers.set('x-nonce', nonce)
-    }
-
-    response.headers.set(
-      'Content-Security-Policy',
-      "default-src 'self'; " +
-        `script-src 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval' 'unsafe-inline' https: blob:; ` +
-        "worker-src 'self' blob:; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
-        "img-src 'self' data: https: blob:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com https://clerk.homematch.pro https://accounts.homematch.pro https://challenges.cloudflare.com https://maps.googleapis.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk.homematch.pro https://accounts.homematch.pro https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; " +
-        "frame-ancestors 'none';"
-    )
-
+    response.headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY)
     response.headers.set(
       'Strict-Transport-Security',
       'max-age=31536000; includeSubDomains; preload'
@@ -138,18 +178,6 @@ const applySecurityHeaders = (
   }
 
   return response
-}
-
-/**
- * Cryptographically random per-request nonce, base64-encoded. 16 bytes is
- * 128 bits of entropy — well above CSP's 64-bit recommendation.
- */
-const generateNonce = (): string => {
-  const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
-  let binary = ''
-  for (const b of bytes) binary += String.fromCharCode(b)
-  return btoa(binary)
 }
 
 const redirectToLogin = (request: NextRequest): NextResponse => {
@@ -183,16 +211,6 @@ const redirectToLogin = (request: NextRequest): NextResponse => {
 export default clerkMiddleware(async (clerkAuth, request) => {
   const nextRequest = request as NextRequest
   const pathname = nextRequest.nextUrl.pathname
-
-  // M1: mint a per-request CSP nonce up-front. We set it on the request
-  // headers so Next.js (which reads `x-nonce` from incoming request
-  // headers when SSR'ing) auto-applies it to its own inline scripts —
-  // hydration payload, RSC streaming chunks, JSON-LD wrappers in
-  // layout.tsx. applySecurityHeaders below picks up the same nonce off
-  // the request to write into the CSP header.
-  if (!nextRequest.headers.get('x-nonce')) {
-    nextRequest.headers.set('x-nonce', generateNonce())
-  }
 
   // Fast path for public-bypass routes: skip Clerk session resolution
   // entirely. /api/health benchmarked at 574ms TTFB through the full

@@ -71,7 +71,7 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
   return (
     <nav
       className={cn(
-        'bottom-nav safe-area-bottom fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#07132b]/92 backdrop-blur-xl md:hidden',
+        'bottom-nav safe-area-bottom border-hm-stone-600/70 bg-hm-obsidian-900/95 fixed inset-x-0 bottom-0 z-50 border-t shadow-[0_-10px_28px_rgba(52,43,37,0.10)] backdrop-blur-xl md:hidden',
         className
       )}
       aria-label="Primary"
@@ -89,8 +89,8 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
               className={cn(
                 'group focus-visible:ring-offset-background flex min-h-[52px] min-w-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-amber-400/40 focus-visible:ring-offset-2 focus-visible:outline-none',
                 isActive
-                  ? 'bg-white/[0.08] text-white shadow-[0_12px_30px_rgba(0,0,0,0.25)]'
-                  : 'text-white/60 hover:bg-white/[0.06] hover:text-white'
+                  ? 'bg-hm-obsidian-800 text-hm-stone-200 shadow-[0_8px_20px_rgba(52,43,37,0.10)]'
+                  : 'text-hm-stone-500 hover:bg-hm-obsidian-800/70 hover:text-hm-stone-200'
               )}
               aria-label={
                 item.href === '/couples' ? 'Shared Likes' : item.label
@@ -101,7 +101,7 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
               <Icon
                 className={cn(
                   'h-5 w-5 transition-transform duration-200 group-active:scale-95',
-                  isActive ? 'text-amber-300' : 'text-white/70'
+                  isActive ? 'text-hm-amber-500' : 'text-hm-stone-500'
                 )}
                 strokeWidth={2}
               />

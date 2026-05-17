@@ -119,7 +119,9 @@ describe('CouplesEmptyStates', () => {
       render(<NoHouseholdState />)
 
       expect(
-        screen.getByText(/discover mutual likes and track progress/i)
+        screen.getByText(
+          /show overlap, differences, and homes worth reviewing/i
+        )
       ).toBeInTheDocument()
     })
   })

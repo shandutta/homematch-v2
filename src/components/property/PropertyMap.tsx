@@ -238,7 +238,7 @@ export function PropertyMap({
       }}
     >
       <div
-        className={`relative h-32 w-full overflow-hidden rounded-lg border border-white/10 bg-slate-900 ${className}`}
+        className={`border-hm-stone-200 bg-hm-ivory-100 relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
         style={{ minHeight: '128px' }}
         data-testid="property-map"
       >
@@ -266,14 +266,14 @@ export function PropertyMap({
 function MapLoadingShimmer() {
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden bg-slate-900"
+      className="bg-hm-ivory-100 absolute inset-0 flex items-center justify-center overflow-hidden"
       data-testid="property-map-skeleton"
       aria-busy="true"
     >
-      <div className="absolute inset-0 animate-[shimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.06)_50%,transparent_70%)] bg-[length:200%_100%]" />
-      <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1.5 backdrop-blur-sm">
-        <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
-        <span className="text-[11px] font-medium tracking-[0.18em] text-slate-300 uppercase">
+      <div className="absolute inset-0 animate-[shimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(194,129,65,0.16)_50%,transparent_70%)] bg-[length:200%_100%]" />
+      <div className="border-hm-stone-200 relative flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1.5 backdrop-blur-sm">
+        <span className="bg-hm-gold-400 h-2 w-2 animate-pulse rounded-full" />
+        <span className="text-hm-stone-600 text-[11px] font-medium tracking-[0.18em] uppercase">
           Loading map
         </span>
       </div>
@@ -296,18 +296,18 @@ function MapErrorOverlay({
 }) {
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center bg-slate-900/90 px-4"
+      className="bg-hm-ivory-100/95 absolute inset-0 flex items-center justify-center px-4"
       data-testid="property-map-error"
     >
       <div className="text-center">
-        <MapPin className="mx-auto mb-1.5 h-6 w-6 text-amber-400/80" />
-        <p className="text-xs font-medium text-slate-200">{message}</p>
+        <MapPin className="text-hm-gold-500 mx-auto mb-1.5 h-6 w-6" />
+        <p className="text-hm-stone-700 text-xs font-medium">{message}</p>
         <a
           href={buildGoogleMapsLink(property)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200"
+          className="text-hm-gold-700 hover:text-hm-gold-800 mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
           aria-label="Open in Google Maps"
         >
           Open in Google Maps
@@ -330,20 +330,20 @@ function MapFallback({
   const hasAddressContext = Boolean(property.address || property.city)
   return (
     <div
-      className={`relative h-32 w-full overflow-hidden rounded-lg border border-white/5 bg-slate-900/60 ${className}`}
+      className={`border-hm-stone-200 bg-hm-ivory-100 relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
       data-testid="property-map-fallback"
     >
       <div className="absolute inset-0 flex items-center justify-center px-4">
         <div className="text-center">
-          <MapPin className="mx-auto mb-1.5 h-6 w-6 text-slate-500" />
-          <p className="text-xs font-medium text-slate-300">{message}</p>
+          <MapPin className="text-hm-stone-500 mx-auto mb-1.5 h-6 w-6" />
+          <p className="text-hm-stone-600 text-xs font-medium">{message}</p>
           {hasAddressContext && (
             <a
               href={buildGoogleMapsLink(property)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 hover:text-amber-200"
+              className="text-hm-gold-700 hover:text-hm-gold-800 mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
               aria-label="Open in Google Maps"
             >
               Open in Google Maps

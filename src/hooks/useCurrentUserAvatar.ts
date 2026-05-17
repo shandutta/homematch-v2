@@ -90,7 +90,7 @@ export function useCurrentUserAvatar(): UserAvatarState {
               .from('user_profiles')
               .select('preferences')
               .eq('id', me.id)
-              .single()
+              .maybeSingle()
             const preferences = isRecord(profile?.preferences)
               ? profile.preferences
               : {}

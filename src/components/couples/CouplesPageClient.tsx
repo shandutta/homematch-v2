@@ -93,7 +93,7 @@ export function CouplesPageClient() {
         .from('households')
         .select('id, user_count')
         .eq('id', me.household_id)
-        .single()
+        .maybeSingle()
 
       if (householdError) {
         console.error('[Couples] Household fetch error:', householdError)
@@ -114,12 +114,7 @@ export function CouplesPageClient() {
         }
       }
 
-      if (householdUserCount < 2) {
-        setUserHouseholdStatus('waiting-partner')
-        return
-      }
-
-      setUserHouseholdStatus('active')
+      const hasConfirmedPartner = householdUserCount >= 2
 
       const [mutualLikesRes, activityRes, statsRes] = await Promise.all([
         fetch('/api/couples/mutual-likes?includeProperties=true', {
@@ -160,9 +155,25 @@ export function CouplesPageClient() {
         statsRes.json(),
       ])
 
-      setMutualLikes(mutualLikesData.mutualLikes || [])
+      const mutualLikes = mutualLikesData.mutualLikes || []
+      const stats = statsData.stats || null
+      const hasHouseholdActivity =
+        mutualLikes.length > 0 ||
+        (stats?.total_household_likes ?? 0) > 0 ||
+        (activityData.activity || []).length > 0
+
+      if (!hasConfirmedPartner && !hasHouseholdActivity) {
+        setUserHouseholdStatus('waiting-partner')
+        setMutualLikes([])
+        setActivity([])
+        setStats(stats)
+        return
+      }
+
+      setUserHouseholdStatus('active')
+      setMutualLikes(mutualLikes)
       setActivity(activityData.activity || [])
-      setStats(statsData.stats || null)
+      setStats(stats)
 
       if (retryCount > 0) {
         toast.success('Data loaded successfully!')
@@ -262,14 +273,14 @@ export function CouplesPageClient() {
           <div className="space-y-6">
             <CouplesStats stats={stats} />
 
-            <Card className="card-glassmorphism-style border-white/10">
+            <Card className="card-glassmorphism-style border-hm-stone-600/60">
               <CardContent className="flex items-center justify-between gap-4 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-500/10">
                     <Heart className="h-5 w-5 text-pink-400" />
                   </div>
                   <div>
-                    <p className="text-primary-foreground text-sm font-semibold">
+                    <p className="text-hm-stone-200 text-sm font-semibold">
                       Stay in sync
                     </p>
                     <p className="text-primary/60 text-xs">

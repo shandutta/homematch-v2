@@ -13,7 +13,7 @@ export default function PropertiesLayout({ children }: PropertiesLayoutProps) {
   const [queryClient] = useState(() => createQueryClient())
 
   return (
-    <div className="gradient-grid-bg dark text-foreground min-h-screen">
+    <div className="gradient-grid-bg text-foreground min-h-screen">
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>{children}</ErrorBoundary>
       </QueryClientProvider>

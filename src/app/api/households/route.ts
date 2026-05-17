@@ -106,7 +106,33 @@ export async function POST(request: NextRequest) {
       return ApiErrorHandler.serverError('Failed to create household', error)
     }
 
-    return noStoreJson({ id: householdId })
+    if (!householdId) {
+      return ApiErrorHandler.serverError(
+        'Failed to create household',
+        new Error('RPC returned no household id')
+      )
+    }
+
+    const { data: household, error: householdError } = await sr
+      .from('households')
+      .select(
+        'collaboration_mode, created_at, created_by, id, name, updated_at, user_count'
+      )
+      .eq('id', householdId)
+      .maybeSingle()
+
+    if (householdError || !household) {
+      console.error(
+        '[/api/households POST] Created household read failed:',
+        householdError
+      )
+      return ApiErrorHandler.serverError(
+        'Failed to load created household',
+        householdError ?? new Error('created household not found')
+      )
+    }
+
+    return noStoreJson({ id: householdId, household })
   } catch (err) {
     console.error('[/api/households POST] Unexpected error:', err)
     return ApiErrorHandler.serverError('Failed to create household', err)

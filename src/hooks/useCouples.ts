@@ -79,9 +79,12 @@ export function useMutualLikes() {
   return useQuery<MutualLike[], Error>({
     queryKey: couplesKeys.mutualLikes(),
     queryFn: async () => {
-      const response = await fetch('/api/couples/mutual-likes', {
-        credentials: 'include',
-      })
+      const response = await fetch(
+        '/api/couples/mutual-likes?includeProperties=true',
+        {
+          credentials: 'include',
+        }
+      )
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Please sign in to view mutual likes')

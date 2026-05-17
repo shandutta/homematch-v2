@@ -26,18 +26,18 @@ interface CouplesStatsProps {
 export function CouplesStats({ stats }: CouplesStatsProps) {
   if (!stats) {
     return (
-      <Card className="card-glassmorphism-style border-couples-accent/20">
+      <Card className="card-glassmorphism-style border-hm-stone-600/60">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-xl">
             <TrendingUp className="text-couples-accent h-6 w-6" />
-            Your Journey
+            Household signals
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center">
             <TrendingUp className="text-couples-accent/30 mx-auto mb-4 h-12 w-12" />
-            <p className="text-primary/60">
-              Start exploring to see your relationship stats!
+            <p className="text-hm-stone-500">
+              Start saving homes to build household signal.
             </p>
           </div>
         </CardContent>
@@ -55,17 +55,17 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
   return (
     <div className="space-y-6">
       {/* Main Stats Card */}
-      <Card className="card-glassmorphism-style border-couples-accent/20">
+      <Card className="card-glassmorphism-style border-hm-stone-600/60">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-xl">
             <TrendingUp className="text-couples-accent h-6 w-6" />
-            Your Journey
+            Household signals
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Mutual Likes */}
+          {/* Shared likes */}
           <MotionDiv
-            className="rounded-lg border border-pink-500/20 bg-gradient-to-br from-pink-500/10 to-purple-500/10 p-4 text-center"
+            className="border-hm-stone-600/60 bg-hm-obsidian-950/70 rounded-lg border p-4 text-center"
             variants={scaleIn}
             initial="initial"
             animate="animate"
@@ -75,38 +75,38 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
               <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
               <Users className="h-5 w-5 text-purple-400" />
             </div>
-            <div className="text-primary-foreground mb-1 text-3xl font-bold">
+            <div className="text-hm-stone-200 mb-1 text-3xl font-bold">
               {stats.total_mutual_likes}
             </div>
-            <div className="text-primary/60 text-sm">Mutual Likes</div>
+            <div className="text-hm-stone-500 text-sm">Shared likes</div>
           </MotionDiv>
 
           {/* Total Household Likes */}
-          <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-950/70 flex items-center justify-between rounded-lg border p-3">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20">
                 <Users className="h-5 w-5 text-blue-400" />
               </div>
               <div>
-                <div className="text-primary-foreground font-semibold">
+                <div className="text-hm-stone-200 font-semibold">
                   {stats.total_household_likes}
                 </div>
-                <div className="text-primary/60 text-xs">Total Likes</div>
+                <div className="text-hm-stone-500 text-xs">Total saves</div>
               </div>
             </div>
           </div>
 
-          {/* Match Rate */}
-          <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
+          {/* Overlap rate */}
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-950/70 flex items-center justify-between rounded-lg border p-3">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20">
                 <Award className="h-5 w-5 text-green-400" />
               </div>
               <div>
-                <div className="text-primary-foreground font-semibold">
+                <div className="text-hm-stone-200 font-semibold">
                   {matchRate}%
                 </div>
-                <div className="text-primary/60 text-xs">Match Rate</div>
+                <div className="text-hm-stone-500 text-xs">Overlap rate</div>
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
           {/* Activity Streak */}
           {stats.activity_streak_days > 0 && (
             <MotionDiv
-              className="flex items-center justify-between rounded-lg border border-orange-500/20 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-3"
+              className="bg-hm-obsidian-950/70 flex items-center justify-between rounded-lg border border-orange-500/20 p-3"
               variants={slideInRight}
               initial="initial"
               animate="animate"
@@ -130,10 +130,10 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
                   </MotionDiv>
                 </div>
                 <div>
-                  <div className="text-primary-foreground font-semibold">
+                  <div className="text-hm-stone-200 font-semibold">
                     {stats.activity_streak_days} days
                   </div>
-                  <div className="text-primary/60 text-xs">Active Streak</div>
+                  <div className="text-hm-stone-500 text-xs">Active streak</div>
                 </div>
               </div>
               {stats.activity_streak_days >= 7 && (
@@ -146,16 +146,16 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
 
       {/* Last Mutual Like */}
       {stats.last_mutual_like_at && (
-        <Card className="card-glassmorphism-style border-pink-500/20">
+        <Card className="card-glassmorphism-style border-hm-stone-600/60">
           <CardContent className="p-4">
             <div className="text-center">
               <div className="mb-2 flex items-center justify-center gap-2">
                 <Calendar className="h-4 w-4 text-pink-400" />
-                <span className="text-primary-foreground text-sm font-medium">
+                <span className="text-hm-stone-200 text-sm font-medium">
                   Last Mutual Like
                 </span>
               </div>
-              <div className="text-primary/60 text-xs">
+              <div className="text-hm-stone-500 text-xs">
                 {formatDistanceToNow(new Date(stats.last_mutual_like_at), {
                   addSuffix: true,
                 })}
@@ -166,9 +166,9 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
       )}
 
       {/* Achievements Section */}
-      <Card className="card-glassmorphism-style border-yellow-500/20">
+      <Card className="card-glassmorphism-style border-hm-stone-600/60">
         <CardHeader>
-          <CardTitle className="text-primary-foreground flex items-center gap-2 text-lg">
+          <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-lg">
             <Award className="h-5 w-5 text-yellow-400" />
             Achievements
           </CardTitle>
@@ -187,19 +187,19 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
             </div>
             <div>
               <div
-                className={`text-sm font-medium ${stats.total_mutual_likes > 0 ? 'text-primary-foreground' : 'text-primary/40'}`}
+                className={`text-sm font-medium ${stats.total_mutual_likes > 0 ? 'text-hm-stone-200' : 'text-hm-stone-500'}`}
               >
-                First Match
+                First shared like
               </div>
-              <div className="text-primary/60 text-xs">
+              <div className="text-hm-stone-500 text-xs">
                 {stats.total_mutual_likes > 0
-                  ? 'Unlocked!'
+                  ? 'Reached'
                   : 'Get your first mutual like'}
               </div>
             </div>
           </div>
 
-          {/* High Match Rate Achievement */}
+          {/* High Overlap rate Achievement */}
           <div
             className={`flex items-center gap-3 rounded p-2 ${matchRate >= 50 ? 'bg-purple-500/10' : 'bg-gray-500/10'}`}
           >
@@ -212,12 +212,12 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
             </div>
             <div>
               <div
-                className={`text-sm font-medium ${matchRate >= 50 ? 'text-primary-foreground' : 'text-primary/40'}`}
+                className={`text-sm font-medium ${matchRate >= 50 ? 'text-hm-stone-200' : 'text-hm-stone-500'}`}
               >
-                Perfect Harmony
+                High overlap
               </div>
-              <div className="text-primary/60 text-xs">
-                {matchRate >= 50 ? 'Unlocked!' : 'Achieve 50%+ match rate'}
+              <div className="text-hm-stone-500 text-xs">
+                {matchRate >= 50 ? 'Reached' : 'Achieve 50%+ match rate'}
               </div>
             </div>
           </div>
@@ -235,13 +235,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
             </div>
             <div>
               <div
-                className={`text-sm font-medium ${stats.activity_streak_days >= 7 ? 'text-primary-foreground' : 'text-primary/40'}`}
+                className={`text-sm font-medium ${stats.activity_streak_days >= 7 ? 'text-hm-stone-200' : 'text-hm-stone-500'}`}
               >
-                On Fire
+                Consistent activity
               </div>
-              <div className="text-primary/60 text-xs">
+              <div className="text-hm-stone-500 text-xs">
                 {stats.activity_streak_days >= 7
-                  ? 'Unlocked!'
+                  ? 'Reached'
                   : '7-day activity streak'}
               </div>
             </div>

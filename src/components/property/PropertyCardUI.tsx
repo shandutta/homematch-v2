@@ -46,6 +46,7 @@ export interface PropertyCardUIProps {
   neighborhoodVibes?: NeighborhoodVibesRecord | null
   onDecision?: (propertyId: string, type: InteractionType) => void
   onCardClick?: () => void
+  detailsHref?: string
   imagePriority?: boolean
   actions?: ReactNode
   floatingAction?: ReactNode
@@ -104,6 +105,7 @@ export function PropertyCardUI({
   neighborhoodVibes,
   onDecision,
   onCardClick,
+  detailsHref,
   imagePriority = false,
   actions,
   floatingAction,
@@ -408,19 +410,33 @@ export function PropertyCardUI({
               {neighborhood?.name || property.city}, {property.state}
             </p>
           </div>
-          {shouldShowDetailsCta && (
-            <button
-              type="button"
-              className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
-              data-testid="details-cta"
-              onClick={(event) => {
-                event.stopPropagation()
-                onCardClick()
-              }}
-            >
-              Details
-            </button>
-          )}
+          {shouldShowDetailsCta &&
+            (detailsHref ? (
+              <a
+                href={detailsHref}
+                className="text-hm-stone-200 hover:text-hm-stone-300 border-hm-stone-600/70 bg-hm-obsidian-900 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                data-testid="details-cta"
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  window.location.assign(detailsHref)
+                }}
+              >
+                Details
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="text-hm-stone-200 hover:text-hm-stone-300 border-hm-stone-600/70 bg-hm-obsidian-900 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                data-testid="details-cta"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onCardClick()
+                }}
+              >
+                Details
+              </button>
+            ))}
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}
@@ -450,10 +466,10 @@ export function PropertyCardUI({
           (availableDetailViews.length === 1
             ? availableDetailViews[0] === 'story'
             : detailView === 'story')) ? (
-          <div className="border-t border-white/5 pt-4">
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+          <div className="border-hm-stone-600/60 border-t pt-4">
+            <div className="border-hm-stone-600/60 bg-hm-obsidian-900/80 rounded-xl border p-3">
               <p className="text-hm-stone-400 mb-2 text-[10px] font-semibold tracking-[0.24em] uppercase">
-                Home vibe
+                Why it may fit
               </p>
               <StorytellingDescription
                 property={property}
@@ -470,7 +486,7 @@ export function PropertyCardUI({
         ) : null}
 
         {neighborhoodVibes && (
-          <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-900/65 mt-3 rounded-lg border px-3 py-2">
             <div className="flex items-start gap-2">
               <MapPin className="text-hm-stone-500 mt-0.5 h-3 w-3" />
               <div>
@@ -495,7 +511,7 @@ export function PropertyCardUI({
             <div className="mt-4">
               <PropertyMap
                 property={property}
-                className="h-36 w-full overflow-hidden rounded-xl border border-white/10"
+                className="border-hm-stone-600/60 h-36 w-full overflow-hidden rounded-xl border"
               />
             </div>
           ) : null
@@ -503,7 +519,9 @@ export function PropertyCardUI({
 
         {/* Custom actions slot */}
         {actions && (
-          <div className="mt-auto border-t border-white/5 pt-4">{actions}</div>
+          <div className="border-hm-stone-600/60 mt-auto border-t pt-4">
+            {actions}
+          </div>
         )}
 
         {/* Trust signals: data source + last updated */}
@@ -537,7 +555,7 @@ export function PropertyCardUI({
                 e.stopPropagation()
                 triggerDecision('skip')
               }}
-              className="group bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+              className="group bg-hm-obsidian-900 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 border-hm-stone-600/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
               aria-label="Pass property"
             >
               <X
@@ -550,7 +568,7 @@ export function PropertyCardUI({
                 e.stopPropagation()
                 triggerDecision('liked')
               }}
-              className="group bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
+              className="group bg-hm-obsidian-900 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 border-hm-stone-600/70 flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none active:scale-95"
               aria-label="Like property"
               data-testid="like-button"
             >

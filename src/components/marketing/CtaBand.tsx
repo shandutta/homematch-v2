@@ -4,7 +4,6 @@ import { m, useReducedMotion } from 'framer-motion'
 import { MotionDiv } from '@/components/ui/motion-components'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { GradientMeshBackground } from '@/components/marketing/GradientMeshBackground'
 
 // Word reveal component for staggered text animation
 function WordReveal({ text, className }: { text: string; className?: string }) {
@@ -56,12 +55,9 @@ export function CtaBand() {
   const shouldReduceMotion = useReducedMotion()
 
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20">
-      {/* Gradient mesh background (darker variant) */}
-      <GradientMeshBackground variant="darker" intensity={0.8} />
-
-      {/* Top gradient fade for smooth transition from previous section */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-gray-50 to-transparent" />
+    <section className="bg-hm-ivory-100 text-hm-stone-900 relative overflow-hidden py-16 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_420px_at_50%_0%,rgba(194,129,65,0.16),transparent_65%)]" />
+      <div className="from-hm-ivory-50 pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent" />
 
       <div className="relative z-10 container mx-auto px-4">
         <MotionDiv
@@ -75,7 +71,7 @@ export function CtaBand() {
           {/* Animated headline with word reveal */}
           <WordReveal
             text="Bring your partner into the search."
-            className="text-3xl font-bold text-white sm:text-4xl"
+            className="text-hm-stone-900 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl"
           />
 
           <MotionDiv
@@ -89,7 +85,7 @@ export function CtaBand() {
             }
           >
             <p
-              className="mx-auto mt-3 text-white/80 sm:text-lg"
+              className="text-hm-stone-600 mx-auto mt-3 sm:text-lg"
               style={{ maxWidth: '42rem', fontFamily: 'var(--font-body)' }}
             >
               Create your household, invite the people deciding with you, and
@@ -128,7 +124,7 @@ export function CtaBand() {
               >
                 {/* Animated gradient background on hover */}
                 <span
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-90 group-hover:blur-lg"
+                  className="from-hm-amber-400 via-hm-amber-500 to-hm-stone-300 absolute inset-0 rounded-full bg-gradient-to-r opacity-0 blur-md transition-all duration-500 group-hover:opacity-60 group-hover:blur-lg"
                   aria-hidden="true"
                 />
 
@@ -136,7 +132,7 @@ export function CtaBand() {
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                 {/* Button text with enhanced glow */}
-                <span className="relative z-10 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]">
+                <span className="relative z-10 transition-all duration-300 group-hover:scale-105">
                   Invite your partner
                 </span>
 
@@ -151,7 +147,7 @@ export function CtaBand() {
             <Button
               size="lg"
               variant="ghost"
-              className="w-full bg-transparent text-base font-medium text-white/70 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:w-auto"
+              className="text-hm-stone-600 hover:text-hm-stone-900 w-full bg-transparent text-base font-medium transition-colors duration-200 hover:bg-white/60 sm:w-auto"
               asChild
             >
               <Link href="/login">Sign in</Link>

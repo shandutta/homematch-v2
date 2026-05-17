@@ -47,12 +47,12 @@ export function Footer({ variant = 'cta' }: FooterProps) {
 
   if (variant === 'minimal') {
     return (
-      <footer className="pb-10 text-white/70">
+      <footer className="text-hm-stone-500 pb-10">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-          <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="border-hm-stone-600/60 flex flex-col gap-4 border-t py-6 text-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <HomeMatchLogo size="sm" textClassName="text-white" />
-              <p className="text-white/60">
+              <HomeMatchLogo size="sm" textClassName="text-hm-stone-200" />
+              <p className="text-hm-stone-500">
                 &copy; {currentYear} HomeMatch. All rights reserved.
               </p>
             </div>
@@ -61,7 +61,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-white/60 transition hover:text-white"
+                  className="text-hm-stone-500 transition hover:text-white"
                 >
                   {link.label}
                 </Link>
@@ -74,30 +74,30 @@ export function Footer({ variant = 'cta' }: FooterProps) {
   }
 
   return (
-    <footer className="relative mt-2 pb-16 text-white/80">
+    <footer className="text-hm-stone-400 relative mt-2 pb-16">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04] px-6 py-12 shadow-[0_25px_90px_rgba(2,10,31,0.65)] backdrop-blur-2xl sm:px-10">
+        <div className="border-hm-stone-600/60 bg-hm-obsidian-900/80 relative overflow-hidden rounded-[32px] border px-6 py-12 shadow-[0_20px_55px_rgba(52,43,37,0.10)] backdrop-blur-2xl sm:px-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <HomeMatchLogo
                 size="sm"
-                textClassName="text-white"
+                textClassName="text-hm-stone-200"
                 className="mb-3"
               />
               <p className="text-[11px] tracking-[0.45em] text-cyan-200/80 uppercase">
                 Keep the journey going
               </p>
-              <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+              <h2 className="text-hm-stone-200 mt-3 text-2xl font-semibold sm:text-3xl">
                 Finish decisions later without losing the vibe.
               </h2>
-              <p className="mt-2 text-sm text-white/70">
+              <p className="text-hm-stone-500 mt-2 text-sm">
                 Everything you care about—mutual likes, household progress, and
                 saved searches—stays in sync across the app.
               </p>
             </div>
             <Link
               href="/profile"
-              className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-cyan-200/70 hover:bg-white/20"
+              className="group border-hm-stone-600/60 bg-hm-obsidian-800 text-hm-stone-200 inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-cyan-200/70 hover:bg-white/20"
             >
               Update profile
               <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -111,15 +111,15 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.035] p-5 transition duration-200 hover:border-cyan-200/40 hover:bg-white/[0.08]"
+                  className="border-hm-stone-600/60 bg-hm-obsidian-900/70 hover:bg-hm-obsidian-800/70 flex flex-col rounded-2xl border p-5 transition duration-200 hover:border-cyan-200/40"
                 >
-                  <div className="rounded-2xl bg-white/10 p-3 text-cyan-200">
+                  <div className="bg-hm-obsidian-800 rounded-2xl p-3 text-cyan-200">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <p className="mt-4 text-base font-semibold text-white">
+                  <p className="text-hm-stone-200 mt-4 text-base font-semibold">
                     {link.label}
                   </p>
-                  <p className="mt-1 text-sm text-white/70">
+                  <p className="text-hm-stone-500 mt-1 text-sm">
                     {link.description}
                   </p>
                 </Link>
@@ -127,14 +127,14 @@ export function Footer({ variant = 'cta' }: FooterProps) {
             })}
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
+          <div className="border-hm-stone-600/60 text-hm-stone-500 mt-10 flex flex-col gap-4 border-t pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p>&copy; {currentYear} HomeMatch. All rights reserved.</p>
             <div className="flex flex-wrap gap-4">
               {legalLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-white/70 transition hover:text-white"
+                  className="text-hm-stone-500 transition hover:text-white"
                 >
                   {link.label}
                 </Link>

@@ -380,12 +380,12 @@ const DESCRIPTION_TEMPLATES: Record<
 
 // Mutual like specific messages
 const MUTUAL_LIKE_MESSAGES = [
-  'Everyone said yes to this place',
-  'Your shared list just got a strong favorite',
-  'Shared goals, one home, endless possibilities',
-  'When everyone agrees, you know',
-  'This is where your shared plans take shape',
-  'Instant favorite for everyone',
+  'Both people saved this home for concrete reasons',
+  'Household overlap: this home made both shortlists',
+  'Worth a closer look: both people liked this listing',
+  'Shared signal: this one cleared both filters',
+  'Good candidate for a joint review',
+  'Both buyers marked this as worth discussing',
 ]
 
 type NormalizedPropertyType =
@@ -825,7 +825,7 @@ export function StorytellingDescription({
               <Sparkles className="dark:text-hm-amber-400 mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
               <div>
                 <p className="dark:text-hm-stone-200 text-[11px] font-semibold tracking-[0.2em] text-blue-700 uppercase">
-                  {normalizeStorytellingTag(futureVision.tag)}
+                  Evidence: {normalizeStorytellingTag(futureVision.tag)}
                 </p>
                 <p className="dark:text-hm-stone-400 text-[11px] leading-snug text-slate-600">
                   {futureVision.description}
@@ -936,20 +936,23 @@ export function StorytellingDescription({
         </MotionDiv>
       )}
 
-      {/* Emotional Hooks - LLM-generated lifestyle moments */}
+      {/* Evidence notes - LLM-generated lifestyle observations */}
       {showEmotionalHooks && emotionalHooks && emotionalHooks.length > 0 && (
         <MotionDiv
-          className="space-y-1"
+          className="border-hm-stone-600/60 bg-hm-obsidian-950/70 space-y-1 rounded-lg border px-3 py-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.38 }}
         >
+          <p className="text-hm-stone-500 text-[10px] font-semibold tracking-[0.18em] uppercase">
+            Listing/photo notes
+          </p>
           {emotionalHooks.slice(0, 2).map((hook, i) => (
             <p
               key={i}
-              className="dark:text-hm-stone-500 text-xs leading-relaxed text-slate-400 italic"
+              className="dark:text-hm-stone-500 text-xs leading-relaxed text-slate-500"
             >
-              &quot;{hook}&quot;
+              {hook}
             </p>
           ))}
         </MotionDiv>
@@ -979,7 +982,7 @@ export function StorytellingDescription({
           <div className="mb-1 flex items-center gap-2">
             <Sparkles className="dark:text-hm-amber-400 h-3 w-3 text-blue-600" />
             <span className="dark:text-hm-stone-200 text-xs font-semibold text-blue-800">
-              {normalizeStorytellingTag(futureVision.tag)}
+              Evidence: {normalizeStorytellingTag(futureVision.tag)}
             </span>
           </div>
           <p className="dark:text-hm-stone-400 text-xs leading-relaxed text-blue-700">

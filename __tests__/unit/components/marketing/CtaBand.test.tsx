@@ -86,10 +86,10 @@ describe('CtaBand', () => {
     expect(primaryCTA).toHaveAttribute('data-cta', 'dopamine-cta-band')
   })
 
-  test('renders GradientMeshBackground with darker variant', () => {
+  test('renders warm editorial background treatment', () => {
     render(<CtaBand />)
 
-    const gradient = screen.getByTestId('gradient-mesh-bg')
-    expect(gradient).toHaveAttribute('data-variant', 'darker')
+    const section = screen.getByRole('heading', { level: 2 }).closest('section')
+    expect(section).toHaveClass('bg-hm-ivory-100', 'text-hm-stone-900')
   })
 })

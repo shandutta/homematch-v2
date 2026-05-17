@@ -16,9 +16,9 @@ export default function CouplesLayout({ children }: CouplesLayoutProps) {
   const [queryClient] = useState(() => createQueryClient())
 
   return (
-    <div className="gradient-grid-bg dark text-foreground flex min-h-screen flex-col">
+    <div className="gradient-grid-bg text-foreground flex min-h-screen flex-col overflow-x-hidden">
       <Header />
-      <main className="mx-auto w-full max-w-6xl flex-grow px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl min-w-0 flex-grow px-4 py-8 sm:px-6">
         <QueryClientProvider client={queryClient}>
           <CouplesErrorBoundary>{children}</CouplesErrorBoundary>
         </QueryClientProvider>

@@ -60,4 +60,31 @@ describe('EVAL-GATE: user prompt snapshot', () => {
     expect(prompt).not.toContain('https://example.com')
     expect(prompt).toContain('[REDACTED]')
   })
+
+  test('pushes generated copy toward evidence instead of hype', () => {
+    const prompt = buildUserPrompt(
+      {
+        address: '100 Evidence Way',
+        city: 'Snapshotville',
+        state: 'CA',
+        price: 875_000,
+        bedrooms: 3,
+        bathrooms: 2,
+        squareFeet: 1850,
+        propertyType: 'single_family',
+        yearBuilt: 1972,
+        lotSizeSqft: 5500,
+        amenities: ['office nook', 'deck', 'two-car garage'],
+        description: 'Single-story home with office nook and rear deck.',
+      },
+      6
+    )
+
+    expect(prompt).toContain('extract buyer-relevant evidence and fit signals')
+    expect(prompt).toContain('evidence first, implication second')
+    expect(prompt).toContain(
+      'Every reason must cite a feature, room, layout, score, or neighborhood fact'
+    )
+    expect(prompt).toContain('NO: quotes, dream, perfect, magical')
+  })
 })

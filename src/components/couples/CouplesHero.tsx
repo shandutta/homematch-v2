@@ -1,8 +1,8 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Heart, Users, Sparkles, Flame, Zap } from 'lucide-react'
-import { AnimatePresence } from 'framer-motion'
+import { Heart, Users, Flame, Home } from 'lucide-react'
 import { MotionDiv } from '@/components/ui/motion-components'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { CouplesStats } from '@/lib/services/couples'
@@ -13,275 +13,102 @@ interface CouplesHeroProps {
 }
 
 export function CouplesHero({ stats, loading }: CouplesHeroProps) {
-  const floatingHeartXPositions: string[] = ['12%', '34%', '58%', '82%']
-
   if (loading) {
     return (
-      <Card className="bg-hm-obsidian-900 relative overflow-hidden rounded-xl border border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-rose-500/10" />
-        <CardContent className="relative p-8 text-center">
-          <Skeleton className="mx-auto mb-4 h-8 w-64 bg-white/5" />
-          <Skeleton className="mx-auto mb-6 h-6 w-96 bg-white/5" />
-          <div className="flex items-center justify-center gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="text-center">
-                <Skeleton className="mx-auto mb-2 h-8 w-16 bg-white/5" />
-                <Skeleton className="mx-auto h-4 w-20 bg-white/5" />
-              </div>
-            ))}
-          </div>
+      <Card className="border-hm-stone-600/60 bg-hm-obsidian-900/90 relative overflow-hidden rounded-2xl shadow-[0_14px_40px_rgba(52,43,37,0.08)]">
+        <CardContent className="p-8">
+          <Skeleton className="bg-hm-obsidian-800 mb-4 h-5 w-40" />
+          <Skeleton className="bg-hm-obsidian-800 mb-4 h-10 w-80 max-w-full" />
+          <Skeleton className="bg-hm-obsidian-800 h-5 w-full max-w-2xl" />
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className="bg-hm-obsidian-900 relative overflow-hidden rounded-xl border border-pink-500/10">
-      {/* Warm background gradient - subtle */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/5 to-rose-500/10" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent" />
-
-      {/* Floating hearts animation - more subtle */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(4)].map((_, i) => (
-          <MotionDiv
-            key={i}
-            className="absolute text-pink-400/10"
-            initial={{
-              x: floatingHeartXPositions[i % floatingHeartXPositions.length],
-              y: '100%',
-              scale: 0,
-              rotate: 0,
-            }}
-            animate={{
-              y: '-100%',
-              scale: [0, 1, 0],
-              rotate: 360,
-            }}
-            transition={{
-              duration: 10 + i,
-              repeat: Infinity,
-              delay: i * 2.5,
-              ease: 'linear',
-            }}
-          >
-            <Heart className="h-5 w-5 fill-current" />
-          </MotionDiv>
-        ))}
-      </div>
-
-      <CardContent className="relative p-8 text-center">
+    <Card className="border-hm-stone-600/60 bg-hm-obsidian-900/92 relative overflow-hidden rounded-2xl shadow-[0_16px_42px_rgba(52,43,37,0.09)]">
+      <div className="bg-hm-amber-400 absolute inset-y-0 left-0 w-1.5" />
+      <CardContent className="relative p-8">
         <MotionDiv
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.35 }}
         >
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <MotionDiv
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Heart className="h-7 w-7 fill-pink-400/80 text-pink-400/80" />
-            </MotionDiv>
-            <h1 className="font-display text-hm-stone-200 text-3xl font-medium tracking-tight">
-              Your Shared Search
-            </h1>
-            <MotionDiv
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-            >
-              <Heart className="h-7 w-7 fill-rose-400/80 text-rose-400/80" />
-            </MotionDiv>
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-950 text-hm-stone-500 mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
+            <Home className="text-hm-amber-500 h-3.5 w-3.5" />
+            Household search
           </div>
 
-          <p className="text-hm-stone-400 mx-auto mb-8 max-w-2xl text-base">
-            Find a home that works for everyone. See shared likes, track
-            progress, and keep the search moving as you narrow it down.
-          </p>
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <h1 className="font-display text-hm-stone-200 text-3xl font-medium tracking-tight sm:text-4xl">
+                Shared shortlist
+              </h1>
+              <p className="text-hm-stone-400 mt-3 max-w-2xl text-base leading-relaxed">
+                See where both people are converging, which homes still need a
+                decision, and what evidence makes each match worth discussing.
+              </p>
+            </div>
 
-          {/* Stats */}
-          <AnimatePresence mode="wait">
             {stats ? (
-              <MotionDiv
-                key="stats"
-                className="flex flex-wrap items-center justify-center gap-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-              >
-                {/* Mutual likes */}
-                <MotionDiv
-                  className="flex items-center gap-2 text-pink-400"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: 'spring', stiffness: 400 }}
-                >
-                  <MotionDiv
-                    animate={
-                      stats.total_mutual_likes > 0
-                        ? {
-                            scale: [1, 1.2, 1],
-                            rotate: [0, 10, -10, 0],
-                          }
-                        : {}
-                    }
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Heart className="h-5 w-5 fill-current" />
-                  </MotionDiv>
-                  <span className="font-display text-2xl font-medium">
-                    {stats.total_mutual_likes}
-                  </span>
-                  <span className="text-hm-stone-500 text-sm">
-                    {stats.total_mutual_likes === 1
-                      ? 'mutual like'
-                      : 'mutual likes'}
-                  </span>
-                </MotionDiv>
-
-                {/* Total likes */}
-                <MotionDiv
-                  className="flex items-center gap-2 text-purple-400"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <Users className="h-5 w-5" />
-                  <span className="font-display text-2xl font-medium">
-                    {stats.total_household_likes}
-                  </span>
-                  <span className="text-hm-stone-500 text-sm">
-                    total {stats.total_household_likes === 1 ? 'like' : 'likes'}
-                  </span>
-                </MotionDiv>
-
-                {/* Activity streak */}
-                {stats.activity_streak_days > 0 && (
-                  <MotionDiv
-                    className="text-hm-amber-400 flex items-center gap-2"
-                    whileHover={{ scale: 1.05 }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 300, delay: 0.5 }}
-                  >
-                    <MotionDiv
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 5, -5, 0],
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <Flame className="h-5 w-5" />
-                    </MotionDiv>
-                    <span className="font-display text-2xl font-medium">
-                      {stats.activity_streak_days}
-                    </span>
-                    <span className="text-hm-stone-500 text-sm">
-                      day streak
-                    </span>
-                  </MotionDiv>
-                )}
-
-                {/* Milestone celebration */}
-                {stats.total_mutual_likes >= 10 && (
-                  <MotionDiv
-                    className="text-hm-amber-400 flex items-center gap-2"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, delay: 0.7 }}
-                  >
-                    <Zap className="h-5 w-5" />
-                    <span className="text-sm font-medium">On fire!</span>
-                  </MotionDiv>
-                )}
-              </MotionDiv>
-            ) : (
-              <MotionDiv
-                key="empty"
-                className="text-center"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-              >
-                <div className="text-hm-stone-400 mb-2 flex items-center justify-center gap-2">
-                  <MotionDiv
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                  >
-                    <Sparkles className="text-hm-amber-400 h-5 w-5" />
-                  </MotionDiv>
-                  <span className="text-base">
-                    Start your search - swipe to find homes everyone likes!
-                  </span>
-                  <MotionDiv
-                    animate={{ rotate: -360 }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                  >
-                    <Sparkles className="text-hm-amber-400 h-5 w-5" />
-                  </MotionDiv>
-                </div>
-              </MotionDiv>
-            )}
-          </AnimatePresence>
-
-          {/* Encouragement message when stats exist but no mutual likes yet */}
-          {stats && stats.total_mutual_likes === 0 && (
-            <MotionDiv
-              className="text-center"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              <div className="text-hm-stone-400 mb-2 flex items-center justify-center gap-2">
-                <MotionDiv
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                >
-                  <Sparkles className="text-hm-amber-400 h-5 w-5" />
-                </MotionDiv>
-                <span className="text-base">
-                  {stats.total_household_likes > 0
-                    ? 'Great activity! Keep swiping to find your first mutual like.'
-                    : 'Start your search - swipe to find homes everyone likes!'}
-                </span>
-                <MotionDiv
-                  animate={{ rotate: -360 }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                >
-                  <Sparkles className="text-hm-amber-400 h-5 w-5" />
-                </MotionDiv>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:min-w-[420px]">
+                <StatPill
+                  icon={<Heart className="h-4 w-4 fill-current" />}
+                  value={stats.total_mutual_likes}
+                  label="mutual likes"
+                />
+                <StatPill
+                  icon={<Users className="h-4 w-4" />}
+                  value={stats.total_household_likes}
+                  label="total likes"
+                />
+                <StatPill
+                  icon={<Flame className="h-4 w-4" />}
+                  value={stats.activity_streak_days}
+                  label="day streak"
+                  muted={stats.activity_streak_days === 0}
+                />
               </div>
-
-              {stats.total_household_likes > 0 && (
-                <MotionDiv
-                  className="text-hm-stone-500 text-sm"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  You&apos;ve liked {stats.total_household_likes} properties
-                  between you
-                </MotionDiv>
-              )}
-            </MotionDiv>
-          )}
+            ) : (
+              <p className="border-hm-stone-600/60 bg-hm-obsidian-950 text-hm-stone-500 rounded-xl border px-4 py-3 text-sm">
+                Start liking homes to build a household-level read on fit.
+              </p>
+            )}
+          </div>
         </MotionDiv>
       </CardContent>
     </Card>
+  )
+}
+
+function StatPill({
+  icon,
+  value,
+  label,
+  muted = false,
+}: {
+  icon: ReactNode
+  value: number
+  label: string
+  muted?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 ${
+        muted
+          ? 'border-hm-stone-600/50 bg-hm-obsidian-950/70 text-hm-stone-500'
+          : 'border-hm-amber-400/20 bg-hm-obsidian-950 text-hm-stone-300'
+      }`}
+    >
+      <div className="text-hm-amber-500 mb-1 flex items-center gap-2">
+        {icon}
+        <span className="font-display text-hm-stone-200 text-2xl font-medium">
+          {value}
+        </span>
+      </div>
+      <p className="text-[11px] font-semibold tracking-[0.16em] uppercase">
+        {label}
+      </p>
+    </div>
   )
 }
