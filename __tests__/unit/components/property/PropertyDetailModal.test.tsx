@@ -157,6 +157,36 @@ describe('PropertyDetailModal', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('falls back to evidence-backed facts when generated copy is filler', () => {
+    mockedUsePropertyVibes.mockReturnValue({
+      data: {
+        ...mockVibes,
+        tagline:
+          'Delibero crastinus atrocitas vicissitudo varietas ago dolorum.',
+      },
+    })
+
+    render(
+      <PropertyDetailModal
+        property={{
+          ...mockProperty,
+          description:
+            'Delibero crastinus atrocitas vicissitudo varietas ago dolorum.',
+        }}
+        neighborhood={mockNeighborhood}
+        open={true}
+        onOpenChange={jest.fn()}
+      />
+    )
+
+    expect(screen.queryByText(/Delibero crastinus/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /4 bed, 4 bath single family in Test Neighborhood\. Review the listing details, map, and household reactions before deciding\./i
+      )
+    ).toBeInTheDocument()
+  })
+
   it('renders neighborhood vibes when available', () => {
     const neighborhoodVibes = {
       tagline: 'Transit-friendly and snackable streets',

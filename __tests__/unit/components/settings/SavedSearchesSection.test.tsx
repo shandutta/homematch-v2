@@ -95,6 +95,12 @@ describe('SavedSearchesSection', () => {
       expect(
         screen.getByText(/Dial in filters in settings/i)
       ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /Browse homes/i })
+      ).toHaveAttribute('href', '/dashboard')
+      expect(
+        screen.getByRole('link', { name: /Tune filters/i })
+      ).toHaveAttribute('href', '/settings?tab=preferences')
     })
   })
 

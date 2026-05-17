@@ -180,7 +180,7 @@ describe('CouplesPageClient', () => {
           return {
             select: jest.fn().mockReturnValue({
               eq: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
+                maybeSingle: jest.fn().mockResolvedValue({
                   data: { id: 'household-1', user_count: userCount },
                   error: null,
                 }),
@@ -307,6 +307,87 @@ describe('CouplesPageClient', () => {
       expect(
         screen.queryByTestId('couples-mutual-likes-section')
       ).not.toBeInTheDocument()
+    })
+
+    test('does not log PGRST116 when household row is absent but member data confirms active household', async () => {
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+
+      mockSupabaseClient.from.mockImplementation((table: string) => {
+        if (table === 'households') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                maybeSingle: jest.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
+
+        if (table === 'user_profiles') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockResolvedValue({
+                count: 2,
+                error: null,
+              }),
+            }),
+          }
+        }
+
+        throw new Error(`Unexpected table: ${table}`)
+      })
+
+      global.fetch = jest.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url === '/api/users/me') {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ id: 'user-1', household_id: 'household-1' }),
+          })
+        }
+        if (url.startsWith('/api/couples/mutual-likes')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ mutualLikes: [] }),
+          })
+        }
+        if (url.startsWith('/api/couples/activity')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ activity: [] }),
+          })
+        }
+        if (url.startsWith('/api/couples/stats')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () =>
+              Promise.resolve({ stats: { total_household_likes: 0 } }),
+          })
+        }
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`))
+      }) as unknown as typeof global.fetch
+
+      render(<CouplesPageClient />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('couples-mutual-likes-section')
+        ).toHaveTextContent('mutual-likes:0')
+      })
+      expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+        '[Couples] Household fetch error:',
+        expect.objectContaining({ code: 'PGRST116' })
+      )
     })
   })
 })

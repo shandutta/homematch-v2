@@ -30,7 +30,11 @@ describe('FeatureGrid', () => {
   test('renders section heading', () => {
     render(<FeatureGrid />)
 
-    expect(screen.getByText(/House Hunting/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        name: /House hunting, but make it\s+Actually Fun/i,
+      })
+    ).toBeInTheDocument()
   })
 
   test('renders section description', () => {

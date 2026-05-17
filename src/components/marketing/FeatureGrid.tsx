@@ -192,14 +192,14 @@ export function FeatureGrid() {
           viewport={{ once: true }}
         >
           <h2
-            className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl"
+            className="text-hm-stone-900 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl md:text-5xl lg:text-6xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            House Hunting, But Make It{' '}
+            House hunting, but make it{'\u00a0'}
             <span
               className="bg-clip-text text-transparent"
               style={{
-                background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
+                background: 'linear-gradient(135deg, #9a5f2d 0%, #44403c 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -208,7 +208,7 @@ export function FeatureGrid() {
             </span>
           </h2>
           <p
-            className="mt-4 text-lg text-gray-700 sm:text-xl md:text-2xl"
+            className="text-hm-stone-600 mt-4 text-lg sm:text-xl md:text-2xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Turn scattered listing opinions into a shared shortlist everyone can
@@ -291,7 +291,7 @@ function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
             <m.div
               className="mb-4 inline-flex rounded-lg p-3 text-white"
               style={{
-                background: 'linear-gradient(135deg, #021A44 0%, #063A9E 100%)',
+                background: 'linear-gradient(135deg, #9a5f2d 0%, #44403c 100%)',
               }}
               animate={
                 isHovered && !shouldReduceMotion

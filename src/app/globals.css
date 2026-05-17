@@ -28,35 +28,40 @@
   --font-heading: var(--font-display), Georgia, serif;
 
   /* ============================================
-     HomeMatch Luxury Theme: "Warm Obsidian"
+     HomeMatch Warm Light Product Theme
+     --------------------------------------------
+     The signed-in app is intentionally light, editorial, and real-estate
+     credible. These tokens keep the old utility names working so theme
+     changes percolate through the app instead of becoming page-level CSS
+     whack-a-mole.
      ============================================ */
 
-  /* Deep, warm backgrounds */
-  --hm-obsidian-950: #0c0a09;
-  --hm-obsidian-900: #1c1917;
-  --hm-obsidian-800: #292524;
-  --hm-obsidian-700: #44403c;
+  /* App surfaces: ivory canvas, warm cards, readable elevated controls */
+  --hm-obsidian-950: #fbf7ef;
+  --hm-obsidian-900: #fffaf2;
+  --hm-obsidian-800: #f3eadc;
+  --hm-obsidian-700: #dfd2c0;
 
-  /* Warm stone neutrals */
-  --hm-stone-50: #fafaf9;
-  --hm-stone-100: #f5f5f4;
-  --hm-stone-200: #e7e5e4;
-  --hm-stone-300: #d6d3d1;
-  --hm-stone-400: #a8a29e;
-  --hm-stone-500: #78716c;
-  --hm-stone-600: #57534e;
+  /* Warm editorial neutrals: low numbers are now ink, high numbers muted */
+  --hm-stone-50: #fffaf2;
+  --hm-stone-100: #f8f0e3;
+  --hm-stone-200: #1f1a17;
+  --hm-stone-300: #342b25;
+  --hm-stone-400: #5f554d;
+  --hm-stone-500: #81756a;
+  --hm-stone-600: #cbbdab;
 
-  /* Accent: Warm Amber/Gold */
-  --hm-amber-300: #fcd34d;
-  --hm-amber-400: #fbbf24;
-  --hm-amber-500: #f59e0b;
-  --hm-amber-600: #d97706;
+  /* Accent: brokerage-warm amber, not neon SaaS gold */
+  --hm-amber-300: #d29a35;
+  --hm-amber-400: #b7791f;
+  --hm-amber-500: #935f16;
+  --hm-amber-600: #6f4812;
 
-  /* Refined semantic colors */
-  --hm-success: #86efac;
-  --hm-success-muted: #4ade80;
-  --hm-error: #fca5a5;
-  --hm-error-muted: #f87171;
+  /* Refined semantic colors tuned for light backgrounds */
+  --hm-success: #16764b;
+  --hm-success-muted: #24945f;
+  --hm-error: #b42318;
+  --hm-error-muted: #d92d20;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -345,49 +350,22 @@
 
 /* HomeMatch Custom Components */
 @layer components {
-  /* Styles for the new dashboard look and feel - Warm Obsidian theme */
+  /* Signed-in app shell: warm light, subtle editorial depth, no dark-SaaS grid. */
   .gradient-grid-bg {
-    background-color: var(--hm-obsidian-950); /* Warm dark fallback */
+    background-color: var(--hm-obsidian-950);
     background-image:
-      /* Layer 1: Subtle warm radial gradient for depth */
       radial-gradient(
-        1200px 600px at 50% -10%,
-        rgba(251, 191, 36, 0.03) 0%,
-        rgba(251, 191, 36, 0.01) 35%,
-        rgba(255, 255, 255, 0) 65%
+        900px 420px at 50% -12%,
+        rgba(183, 121, 31, 0.12),
+        transparent 62%
       ),
-      /* Layer 2: Subtle grid pattern with warm tones */
-        repeating-linear-gradient(
-          0deg,
-          rgba(255, 255, 255, 0.02) 0px,
-          rgba(255, 255, 255, 0.02) 1px,
-          transparent 1px,
-          transparent 48px
-        ),
-      repeating-linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.02) 0px,
-        rgba(255, 255, 255, 0.02) 1px,
-        transparent 1px,
-        transparent 48px
-      ),
-      /* Layer 3: Subtle warm radial glows */
-        radial-gradient(
-          600px 300px at 85% 0%,
-          rgba(251, 191, 36, 0.04) 0%,
-          rgba(251, 191, 36, 0) 60%
-        ),
       radial-gradient(
-        700px 320px at 10% 0%,
-        rgba(120, 113, 108, 0.05) 0%,
-        rgba(120, 113, 108, 0) 60%
-      );
-    background-size:
-      100% 100%,
-      48px 48px,
-      48px 48px,
-      100% 100%,
-      100% 100%;
+        720px 360px at 88% 4%,
+        rgba(22, 118, 75, 0.055),
+        transparent 58%
+      ),
+      linear-gradient(180deg, #fffaf2 0%, #fbf7ef 42%, #f6efe3 100%);
+    color: var(--hm-stone-200);
   }
 
   /* Design Token Based Glass-morphism Effects - Available for future use */
@@ -442,20 +420,22 @@
 
   /* Enhanced glass-morphism style with design tokens */
   .card-glassmorphism-style {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 250, 242, 0.9);
     backdrop-filter: blur(8px);
     border-radius: var(--border-radius-2xl);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-token-lg);
+    border: 1px solid rgba(95, 85, 77, 0.14);
+    box-shadow: 0 12px 34px rgba(52, 43, 37, 0.09);
     transition:
       background var(--duration-normal) var(--ease-out),
       border var(--duration-normal) var(--ease-out),
-      transform var(--duration-normal) var(--ease-out);
+      transform var(--duration-normal) var(--ease-out),
+      box-shadow var(--duration-normal) var(--ease-out);
   }
 
   .card-glassmorphism-style:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 250, 242, 0.98);
+    border: 1px solid rgba(147, 95, 22, 0.2);
+    box-shadow: 0 18px 44px rgba(52, 43, 37, 0.12);
     transform: translateY(-2px);
   }
 

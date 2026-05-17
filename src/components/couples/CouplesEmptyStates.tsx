@@ -35,7 +35,7 @@ export function NoHouseholdState({
 }: NoHouseholdStateProps) {
   return (
     <Card
-      className={`card-glassmorphism-style w-full border-orange-500/20 !bg-slate-900/90 ${className}`}
+      className={`card-glassmorphism-style border-hm-stone-600/60 bg-hm-obsidian-900/90 w-full ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -58,31 +58,31 @@ export function NoHouseholdState({
             <MotionDiv
               animate={{ opacity: [0.8, 1, 0.8] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-500/30 bg-gradient-to-br from-slate-800/80 to-slate-900/80 shadow-lg shadow-orange-500/10"
+              className="from-hm-obsidian-950 to-hm-obsidian-800 relative flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-500/30 bg-gradient-to-br shadow-sm"
             >
               <Home className="h-8 w-8 text-orange-400/60" strokeWidth={1.5} />
               <UserPlus
-                className="absolute -right-2 -bottom-2 h-6 w-6 rounded-full bg-slate-900 p-1 text-orange-400"
+                className="bg-hm-obsidian-900 absolute -right-2 -bottom-2 h-6 w-6 rounded-full p-1 text-orange-500"
                 strokeWidth={2}
               />
             </MotionDiv>
           </div>
         </MotionDiv>
 
-        <h2 className="mb-3 text-2xl font-bold text-white">
+        <h2 className="text-hm-stone-200 mb-3 text-2xl font-semibold">
           {CouplesMessages.onboarding.household.create}
         </h2>
 
-        <p className="mx-auto mb-2 max-w-md text-slate-300">
+        <p className="text-hm-stone-400 mx-auto mb-2 max-w-md">
           {CouplesMessages.welcome.subtitle} - create a household to share your
           search!
         </p>
 
-        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
+        <div className="text-hm-stone-500 mb-6 flex items-center justify-center gap-2 text-sm">
           <Sparkles className="h-4 w-4" />
           <span>
-            Once everyone joins, you&apos;ll discover mutual likes and track
-            progress as a team
+            Once everyone joins, HomeMatch will show overlap, differences, and
+            homes worth reviewing together
           </span>
         </div>
 
@@ -90,7 +90,7 @@ export function NoHouseholdState({
           {onInvitePartner && (
             <Button
               onClick={onInvitePartner}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="bg-hm-stone-300 hover:bg-hm-stone-200 text-white"
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Invite Someone
@@ -101,8 +101,8 @@ export function NoHouseholdState({
             asChild
             className={
               onInvitePartner
-                ? 'border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-200'
-                : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
+                ? 'border-hm-stone-600/70 text-hm-stone-300 hover:bg-hm-obsidian-800 hover:text-hm-stone-200'
+                : 'bg-hm-stone-300 hover:bg-hm-stone-200 text-white'
             }
             variant={onInvitePartner ? 'outline' : 'default'}
           >
@@ -115,7 +115,7 @@ export function NoHouseholdState({
           <Button
             variant="outline"
             asChild
-            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-200"
+            className="border-hm-stone-600/70 text-hm-stone-300 hover:bg-hm-obsidian-800 hover:text-hm-stone-200"
           >
             <Link href="/household/join">
               <Users className="mr-2 h-4 w-4" />
@@ -136,7 +136,7 @@ export function WaitingForPartnerState({
 }: EmptyStateProps & { householdId?: string; onInvite?: () => void }) {
   return (
     <Card
-      className={`card-glassmorphism-style w-full border-purple-500/20 !bg-slate-900/90 ${className}`}
+      className={`card-glassmorphism-style border-hm-stone-600/60 bg-hm-obsidian-900/90 w-full ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -167,27 +167,27 @@ export function WaitingForPartnerState({
           </div>
         </MotionDiv>
 
-        <h2 className="mb-3 text-2xl font-bold text-white">
+        <h2 className="text-hm-stone-200 mb-3 text-2xl font-semibold">
           {CouplesMessages.onboarding.household.invite}
         </h2>
 
-        <p className="mx-auto mb-2 max-w-md text-slate-300">
+        <p className="text-hm-stone-400 mx-auto mb-2 max-w-md">
           You&apos;re all set up! Now invite someone to join your household and{' '}
           {CouplesMessages.welcome.dashboard.toLowerCase()}.
         </p>
 
-        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
+        <div className="text-hm-stone-500 mb-6 flex items-center justify-center gap-2 text-sm">
           <Coffee className="h-4 w-4" />
           <Heart className="h-4 w-4 fill-pink-400 text-pink-400" />
           <span>
-            Feel free to start exploring and save favorites while you wait
+            Start saving homes now; partner overlap will appear once they join
           </span>
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
           <Button
             onClick={onInvite}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="bg-hm-stone-300 hover:bg-hm-stone-200 text-white"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Send Invitation
@@ -196,7 +196,7 @@ export function WaitingForPartnerState({
           <Button
             variant="outline"
             asChild
-            className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+            className="border-hm-stone-600/70 text-hm-stone-300 hover:bg-hm-obsidian-800 hover:text-hm-stone-200"
           >
             <Link href="/dashboard">
               <ArrowRight className="mr-2 h-4 w-4" />
@@ -206,11 +206,11 @@ export function WaitingForPartnerState({
         </div>
 
         {householdId && (
-          <div className="mt-6 rounded-lg border border-purple-500/20 bg-purple-500/5 p-4">
-            <p className="mb-2 text-xs text-purple-400/70">
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-950/70 mt-6 rounded-lg border p-4">
+            <p className="text-hm-stone-500 mb-2 text-xs">
               Share this household ID:
             </p>
-            <code className="rounded bg-purple-900/20 px-2 py-1 font-mono text-sm text-purple-300">
+            <code className="bg-hm-obsidian-800 text-hm-stone-300 rounded px-2 py-1 font-mono text-sm">
               {householdId}
             </code>
           </div>
@@ -229,7 +229,7 @@ export function NoMutualLikesState({
 
   return (
     <Card
-      className={`card-glassmorphism-style w-full border-pink-500/20 !bg-slate-900/90 ${className}`}
+      className={`card-glassmorphism-style border-hm-stone-600/60 bg-hm-obsidian-900/90 w-full ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -290,19 +290,19 @@ export function NoMutualLikesState({
           </div>
         </MotionDiv>
 
-        <h2 className="mb-3 text-2xl font-bold text-white">
+        <h2 className="text-hm-stone-200 mb-3 text-2xl font-semibold">
           {hasIndividualLikes
             ? CouplesMessages.empty.noMutualLikes.title
             : CouplesMessages.empty.noLikes.title}
         </h2>
 
-        <p className="mx-auto mb-2 max-w-md text-slate-300">
+        <p className="text-hm-stone-400 mx-auto mb-2 max-w-md">
           {hasIndividualLikes
             ? CouplesMessages.empty.noMutualLikes.message
             : CouplesMessages.empty.noLikes.message}
         </p>
 
-        <div className="mb-6 flex items-center justify-center gap-2 text-sm text-slate-400">
+        <div className="text-hm-stone-500 mb-6 flex items-center justify-center gap-2 text-sm">
           <Star className="h-4 w-4" />
           <span>{CouplesMessages.empty.noMutualLikes.subtitle}</span>
         </div>
@@ -310,7 +310,7 @@ export function NoMutualLikesState({
         <div className="flex flex-wrap justify-center gap-3">
           <Button
             asChild
-            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+            className="bg-hm-stone-300 hover:bg-hm-stone-200 text-white"
           >
             <Link href="/dashboard">
               <Heart className="mr-2 h-4 w-4 fill-current" />
@@ -322,7 +322,7 @@ export function NoMutualLikesState({
             <Button
               variant="outline"
               asChild
-              className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10"
+              className="border-hm-stone-600/70 text-hm-stone-300 hover:bg-hm-obsidian-800 hover:text-hm-stone-200"
             >
               <Link href="/dashboard/activity">
                 <Users className="mr-2 h-4 w-4" />
@@ -333,8 +333,8 @@ export function NoMutualLikesState({
         </div>
 
         {hasIndividualLikes && (
-          <div className="mt-6 rounded-lg border border-pink-500/20 bg-pink-500/5 p-4">
-            <div className="flex items-center justify-center gap-2 text-pink-400/70">
+          <div className="border-hm-stone-600/60 bg-hm-obsidian-950/70 mt-6 rounded-lg border p-4">
+            <div className="text-hm-stone-500 flex items-center justify-center gap-2">
               <Heart className="h-4 w-4 fill-current" />
               <span className="text-sm">
                 You&apos;ve liked {stats?.total_household_likes} properties so
@@ -355,7 +355,7 @@ export function NetworkErrorState({
 }: EmptyStateProps & { onRetry: () => void }) {
   return (
     <Card
-      className={`card-glassmorphism-style w-full border-red-500/20 !bg-slate-900/90 ${className}`}
+      className={`card-glassmorphism-style border-hm-stone-600/60 bg-hm-obsidian-900/90 w-full ${className}`}
     >
       <CardContent className="p-8 text-center">
         <MotionDiv
@@ -381,17 +381,17 @@ export function NetworkErrorState({
           </div>
         </MotionDiv>
 
-        <h2 className="mb-3 text-xl font-semibold text-white">
+        <h2 className="text-hm-stone-200 mb-3 text-xl font-semibold">
           Connection Issue
         </h2>
 
-        <p className="mx-auto mb-6 max-w-md text-slate-300">
+        <p className="text-hm-stone-400 mx-auto mb-6 max-w-md">
           {CouplesMessages.error.network}
         </p>
 
         <Button
           onClick={onRetry}
-          className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+          className="bg-hm-stone-300 hover:bg-hm-stone-200 text-white"
         >
           Try Again
         </Button>

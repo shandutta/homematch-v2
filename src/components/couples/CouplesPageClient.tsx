@@ -93,7 +93,7 @@ export function CouplesPageClient() {
         .from('households')
         .select('id, user_count')
         .eq('id', me.household_id)
-        .single()
+        .maybeSingle()
 
       if (householdError) {
         console.error('[Couples] Household fetch error:', householdError)
@@ -273,14 +273,14 @@ export function CouplesPageClient() {
           <div className="space-y-6">
             <CouplesStats stats={stats} />
 
-            <Card className="card-glassmorphism-style border-white/10">
+            <Card className="card-glassmorphism-style border-hm-stone-600/60">
               <CardContent className="flex items-center justify-between gap-4 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-500/10">
                     <Heart className="h-5 w-5 text-pink-400" />
                   </div>
                   <div>
-                    <p className="text-primary-foreground text-sm font-semibold">
+                    <p className="text-hm-stone-200 text-sm font-semibold">
                       Stay in sync
                     </p>
                     <p className="text-primary/60 text-xs">

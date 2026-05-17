@@ -24,7 +24,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
   return (
     <section
       data-hero
-      className="relative isolate overflow-hidden bg-[#030712] text-white"
+      className="bg-hm-ivory-50 text-hm-stone-900 relative isolate overflow-hidden"
       style={heroStyle}
       data-testid="hero"
     >
@@ -33,7 +33,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(135deg, #030712 0%, #0f172a 50%, #030712 100%)',
+              'linear-gradient(135deg, #fdfcf8 0%, #f4ead8 52%, #fffaf0 100%)',
           }}
           aria-hidden
         />
@@ -41,7 +41,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
           className="absolute inset-0 opacity-70"
           style={{
             background:
-              'radial-gradient(1000px 520px at 18% 18%, rgba(2,26,68,0.8), transparent 65%), radial-gradient(880px 600px at 82% 12%, rgba(6,58,158,0.55), transparent 65%)',
+              'radial-gradient(1000px 520px at 18% 18%, rgba(194,129,65,0.18), transparent 65%), radial-gradient(880px 600px at 82% 12%, rgba(120,113,108,0.12), transparent 65%)',
           }}
           aria-hidden
         />
@@ -49,7 +49,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
           className="absolute inset-0 opacity-30"
           style={{
             background:
-              'radial-gradient(700px 380px at 15% 70%, rgba(56,189,248,0.18), transparent 60%), radial-gradient(900px 480px at 85% 60%, rgba(30,27,75,0.35), transparent 70%)',
+              'radial-gradient(700px 380px at 15% 70%, rgba(245,158,11,0.10), transparent 60%), radial-gradient(900px 480px at 85% 60%, rgba(68,64,60,0.08), transparent 70%)',
           }}
           aria-hidden
         />
@@ -60,7 +60,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
         style={{
           background:
-            'radial-gradient(600px circle at var(--spotlight-x) var(--spotlight-y), rgba(56,189,248,0.08), transparent 40%)',
+            'radial-gradient(600px circle at var(--spotlight-x) var(--spotlight-y), rgba(194,129,65,0.10), transparent 40%)',
         }}
         aria-hidden
       />
@@ -69,14 +69,14 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(1200px 580px at 20% 20%, rgba(56,189,248,0.12), transparent 55%), radial-gradient(1200px 720px at 80% 10%, rgba(14,165,233,0.08), transparent 60%)',
+            'radial-gradient(1200px 580px at 20% 20%, rgba(194,129,65,0.10), transparent 55%), radial-gradient(1200px 720px at 80% 10%, rgba(214,211,209,0.28), transparent 60%)',
           opacity: 0.5,
         }}
         aria-hidden
       />
 
       {/* Bottom gradient fade */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#030712] to-transparent" />
+      <div className="from-hm-ivory-50 pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t to-transparent" />
 
       <HeroMotionEnhancer />
 
@@ -85,11 +85,11 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
           <div className="grid gap-10 sm:gap-12 lg:grid-cols-[1.05fr,0.95fr] lg:items-center">
             <div className="space-y-5 sm:space-y-8">
               <div className="space-y-4">
-                <h1 className="text-4xl leading-[1.05] font-black sm:text-5xl md:text-6xl lg:text-7xl">
+                <h1 className="font-display text-hm-stone-900 text-4xl leading-[1.05] font-semibold tracking-[-0.045em] sm:text-5xl md:text-6xl lg:text-7xl">
                   Find a home that works for everyone.
                 </h1>
 
-                <p className="max-w-2xl text-lg leading-relaxed text-white/80 sm:text-xl">
+                <p className="text-hm-stone-600 max-w-2xl text-lg leading-relaxed sm:text-xl">
                   Swipe through real listings, save the ones your household
                   likes, and keep the search clear instead of stressful.
                 </p>
@@ -114,7 +114,7 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="w-full bg-transparent text-white/70 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:w-auto"
+                  className="text-hm-stone-600 hover:bg-hm-stone-100 hover:text-hm-stone-900 w-full bg-transparent transition-colors duration-200 sm:w-auto"
                   asChild
                 >
                   <Link href={secondaryHref}>{secondaryLabel}</Link>
