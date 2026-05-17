@@ -34,7 +34,7 @@ describe('UserServiceClient.createHousehold', () => {
     jest.clearAllMocks()
   })
 
-  it('POSTs the household name to /api/households and returns the created household', async () => {
+  it('POSTs the household name to /api/households and returns the API household without an anon-client reread', async () => {
     const householdId = 'house-1'
     const returnedHousehold = {
       id: householdId,
@@ -45,17 +45,8 @@ describe('UserServiceClient.createHousehold', () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ id: householdId }),
+      json: async () => ({ household: returnedHousehold }),
     })
-
-    fromMock.mockImplementation(() => ({
-      select: () => ({
-        eq: () => ({
-          single: () =>
-            Promise.resolve({ data: returnedHousehold, error: null }),
-        }),
-      }),
-    }))
 
     const result = await UserServiceClient.createHousehold({ name: 'Home' })
 
@@ -68,7 +59,7 @@ describe('UserServiceClient.createHousehold', () => {
     )
     const sentBody = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(sentBody).toEqual({ name: 'Home' })
-    expect(fromMock).toHaveBeenCalledWith('households')
+    expect(fromMock).not.toHaveBeenCalled()
     expect(result).toEqual(returnedHousehold)
   })
 
@@ -83,22 +74,14 @@ describe('UserServiceClient.createHousehold', () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ id: householdId }),
+      json: async () => ({ household: returnedHousehold }),
     })
-
-    fromMock.mockImplementation(() => ({
-      select: () => ({
-        eq: () => ({
-          single: () =>
-            Promise.resolve({ data: returnedHousehold, error: null }),
-        }),
-      }),
-    }))
 
     const result = await UserServiceClient.createHousehold({})
 
     const sentBody = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(sentBody).toEqual({ name: null })
+    expect(fromMock).not.toHaveBeenCalled()
     expect(result).toEqual(returnedHousehold)
   })
 
@@ -125,34 +108,36 @@ describe('UserServiceClient.createHousehold', () => {
 
     await expect(
       UserServiceClient.createHousehold({ name: 'Test' })
-    ).rejects.toThrow('Failed to create household: no ID returned')
+    ).rejects.toThrow('Failed to create household: no household returned')
 
     expect(fromMock).not.toHaveBeenCalled()
   })
 
-  it('throws when the post-create household SELECT fails', async () => {
-    const householdId = 'house-3'
+  it('joins a household through the Clerk-aware API route instead of direct anon-client profile writes', async () => {
+    const updatedProfile = {
+      id: 'user-1',
+      household_id: 'house-1',
+      email: 'qa@example.com',
+    }
 
     fetchMock.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({ id: householdId }),
+      json: async () => ({ profile: updatedProfile }),
     })
 
-    fromMock.mockImplementation(() => ({
-      select: () => ({
-        eq: () => ({
-          single: () =>
-            Promise.resolve({
-              data: null,
-              error: { message: 'Household not found' },
-            }),
-        }),
-      }),
-    }))
+    const result = await UserServiceClient.joinHousehold('user-1', 'house-1')
 
-    await expect(
-      UserServiceClient.createHousehold({ name: 'Test' })
-    ).rejects.toThrow('Failed to fetch created household: Household not found')
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/households/join',
+      expect.objectContaining({
+        method: 'POST',
+        credentials: 'same-origin',
+      })
+    )
+    const sentBody = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(sentBody).toEqual({ household_id: 'house-1' })
+    expect(fromMock).not.toHaveBeenCalled()
+    expect(result).toEqual(updatedProfile)
   })
 })

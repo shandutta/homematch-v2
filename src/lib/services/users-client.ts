@@ -118,71 +118,39 @@ export class UserServiceClient {
         message || `Failed to create household: HTTP ${res.status}`
       )
     }
-    const body = (await res.json()) as { id?: string }
-    const resolvedHouseholdId = typeof body.id === 'string' ? body.id : null
-    if (!resolvedHouseholdId) {
-      throw new Error('Failed to create household: no ID returned')
+    const body = (await res.json()) as { household?: Household }
+    if (!body.household) {
+      throw new Error('Failed to create household: no household returned')
     }
 
-    // Fetch the created household to return full data. RLS allows the
-    // member to SELECT their own household, so the anon client is fine here.
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('households')
-      .select()
-      .eq('id', resolvedHouseholdId)
-      .single()
-    if (error) {
-      throw new Error(`Failed to fetch created household: ${error.message}`)
-    }
-    return data
+    return body.household
   }
 
   static async joinHousehold(
-    userId: string,
+    _userId: string,
     householdId: string
   ): Promise<UserProfile> {
-    const supabase = await createClient()
+    const res = await fetch('/api/households/join', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ household_id: householdId }),
+    })
 
-    const { data: existingProfile, error: existingProfileError } =
-      await supabase
-        .from('user_profiles')
-        .select('household_id')
-        .eq('id', userId)
-        .single()
-
-    if (existingProfileError) {
-      throw new Error(
-        `Failed to load your profile before joining: ${existingProfileError.message}`
-      )
+    if (!res.ok) {
+      const message = await res
+        .json()
+        .then((j) => (typeof j?.error === 'string' ? j.error : null))
+        .catch(() => null)
+      throw new Error(message || `Failed to join household: HTTP ${res.status}`)
     }
 
-    if (existingProfile?.household_id) {
-      if (existingProfile.household_id === householdId) {
-        const profile = await this.getProfile(userId)
-        if (!profile) {
-          throw new Error('Failed to load profile after joining household')
-        }
-        return profile
-      }
-
-      throw new Error(
-        'You already belong to a household. Leave it before joining another.'
-      )
+    const body = (await res.json()) as { profile?: UserProfile }
+    if (!body.profile) {
+      throw new Error('Failed to join household: no profile returned')
     }
 
-    const { data: updatedProfile, error: updateProfileError } = await supabase
-      .from('user_profiles')
-      .update({ household_id: householdId })
-      .eq('id', userId)
-      .select()
-      .single()
-
-    if (updateProfileError) {
-      throw new Error(`Failed to join household: ${updateProfileError.message}`)
-    }
-
-    return updatedProfile
+    return body.profile
   }
 
   static async leaveHousehold(userId: string): Promise<UserProfile> {
