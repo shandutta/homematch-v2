@@ -46,6 +46,7 @@ export interface PropertyCardUIProps {
   neighborhoodVibes?: NeighborhoodVibesRecord | null
   onDecision?: (propertyId: string, type: InteractionType) => void
   onCardClick?: () => void
+  detailsHref?: string
   imagePriority?: boolean
   actions?: ReactNode
   floatingAction?: ReactNode
@@ -104,6 +105,7 @@ export function PropertyCardUI({
   neighborhoodVibes,
   onDecision,
   onCardClick,
+  detailsHref,
   imagePriority = false,
   actions,
   floatingAction,
@@ -408,19 +410,29 @@ export function PropertyCardUI({
               {neighborhood?.name || property.city}, {property.state}
             </p>
           </div>
-          {shouldShowDetailsCta && (
-            <button
-              type="button"
-              className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
-              data-testid="details-cta"
-              onClick={(event) => {
-                event.stopPropagation()
-                onCardClick()
-              }}
-            >
-              Details
-            </button>
-          )}
+          {shouldShowDetailsCta &&
+            (detailsHref ? (
+              <a
+                href={detailsHref}
+                className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                data-testid="details-cta"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Details
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="text-hm-stone-200 hover:text-hm-stone-100 inline-flex min-h-[44px] touch-manipulation items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold tracking-[0.14em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                data-testid="details-cta"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onCardClick()
+                }}
+              >
+                Details
+              </button>
+            ))}
         </div>
 
         {/* Stats - Typography-focused horizontal layout */}
