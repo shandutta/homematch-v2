@@ -2,6 +2,8 @@
 // @service-role-capability: Clerk-aware household join. The caller's Clerk
 // session is verified via requireUserFromRequest, then the service-role client
 // updates only that resolved user_profiles row.
+// D1 done: service-role is scoped to the verified profile UUID and is required
+// because Clerk-authenticated requests cannot use auth.uid()-based RLS.
 import { NextRequest } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server'
 import { getServiceRoleClient } from '@/lib/supabase/service-role-client'

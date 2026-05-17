@@ -47,6 +47,7 @@ describe('service-role route capability guard', () => {
       // the resolved profile UUID to the new create_household_by_user_id RPC
       // / household_invitations table under service-role. HOUSEHOLD-001.
       './src/app/api/households/invitations/route.ts',
+      './src/app/api/households/join/route.ts',
       './src/app/api/households/route.ts',
       // Phase 5 (Supabase-auth elim): /api/interactions/reset deletes every
       // row for the resolved user_id. Same auth.uid() / RLS-deny problem as
