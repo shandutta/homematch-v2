@@ -149,8 +149,8 @@ describe('Couples Components Accessibility Tests', () => {
       render(<MutualLikesBadge likedByCount={2} />)
 
       const badgeText = screen.getByText('Both liked!')
-      expect(badgeText).toHaveClass('text-pink-300')
-      // Pink-300 on dark backgrounds provides sufficient contrast
+      expect(badgeText).toHaveClass('text-hm-stone-800')
+      // Stone-800 on the warm badge surface provides sufficient contrast
     })
 
     test('should maintain accessibility across all variants', async () => {
