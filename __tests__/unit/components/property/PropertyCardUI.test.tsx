@@ -69,6 +69,27 @@ describe('PropertyCardUI', () => {
     expect(handleClick).toHaveBeenCalled()
   })
 
+  it('renders Details as a navigable link when detailsHref is provided', () => {
+    const handleClick = jest.fn()
+
+    render(
+      <PropertyCardUI
+        property={mockProperty}
+        onCardClick={handleClick}
+        detailsHref="/properties/prop-ui-1"
+        enableDetailsToggle
+        isClickable
+        showMap={false}
+      />
+    )
+
+    const detailsLink = screen.getByTestId('details-cta')
+    expect(detailsLink).toHaveAttribute('href', '/properties/prop-ui-1')
+
+    fireEvent.click(detailsLink)
+    expect(handleClick).not.toHaveBeenCalled()
+  })
+
   it('hides map content when showMap is false', () => {
     render(
       <PropertyCardUI

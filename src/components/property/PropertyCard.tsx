@@ -74,6 +74,7 @@ export function PropertyCard({
       neighborhoodVibes={neighborhoodVibes}
       onDecision={onDecision}
       onCardClick={handleCardClick}
+      detailsHref={`/properties/${property.id}`}
       imagePriority={imagePriority}
       actions={actions}
       floatingAction={floatingAction}
