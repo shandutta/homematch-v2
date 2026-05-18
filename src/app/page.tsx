@@ -51,7 +51,7 @@ export default async function LandingPage() {
             className="absolute inset-x-0 top-0 h-full"
             style={{
               background:
-                'radial-gradient(1200px 600px at 50% -10%, rgba(2,26,68,0.06) 0%, rgba(2,26,68,0.03) 35%, rgba(255,255,255,1) 65%)',
+                'radial-gradient(1200px 600px at 50% -10%, rgba(183,121,31,0.06) 0%, rgba(183,121,31,0.03) 35%, rgba(251,247,239,1) 65%)',
             }}
             aria-hidden
           />
@@ -59,7 +59,7 @@ export default async function LandingPage() {
             className="absolute inset-x-0 top-0 h-full opacity-50"
             style={{
               backgroundImage:
-                'repeating-linear-gradient(0deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(2,26,68,0.05) 0px, rgba(2,26,68,0.05) 1px, transparent 1px, transparent 40px)',
+                'repeating-linear-gradient(0deg, rgba(95,85,77,0.05) 0px, rgba(95,85,77,0.05) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(95,85,77,0.05) 0px, rgba(95,85,77,0.05) 1px, transparent 1px, transparent 40px)',
               backgroundSize: '40px 40px',
             }}
             aria-hidden
@@ -68,7 +68,7 @@ export default async function LandingPage() {
             className="absolute inset-x-0 top-0 h-full opacity-[0.06]"
             style={{
               backgroundImage:
-                'radial-gradient(600px 300px at 80% 0%, rgba(41,227,255,0.12) 0%, rgba(41,227,255,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(6,58,158,0.10) 0%, rgba(6,58,158,0) 60%)',
+                'radial-gradient(600px 300px at 80% 0%, rgba(210,154,53,0.12) 0%, rgba(210,154,53,0) 60%), radial-gradient(700px 320px at 15% 0%, rgba(146,95,22,0.10) 0%, rgba(146,95,22,0) 60%)',
             }}
             aria-hidden
           />

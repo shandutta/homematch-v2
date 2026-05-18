@@ -24,17 +24,17 @@ export function Header() {
       className="fixed top-0 z-50 w-full transition-shadow duration-300"
       style={{
         boxShadow: hasScrolled
-          ? '0 4px 30px rgba(0, 0, 0, 0.2)'
-          : '0 0 0 rgba(0, 0, 0, 0)',
+          ? '0 4px 24px rgba(43, 30, 18, 0.1)'
+          : '0 0 0 rgba(43, 30, 18, 0)',
       }}
     >
-      {/* Glassmorphism background layer */}
+      {/* Warm translucent background layer — fades in on scroll */}
       <m.div
-        className="absolute inset-0 border-b border-white/0 transition-colors duration-300"
+        className="absolute inset-0 border-b transition-colors duration-300"
         style={{
-          backgroundColor: `rgba(3, 7, 18, ${hasScrolled ? 0.8 : 0})`,
+          backgroundColor: `rgba(255, 250, 242, ${hasScrolled ? 0.85 : 0})`,
           backdropFilter: `blur(${hasScrolled ? 12 : 0}px)`,
-          borderColor: hasScrolled ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+          borderColor: hasScrolled ? 'rgba(95, 85, 77, 0.15)' : 'transparent',
         }}
       />
 
@@ -54,7 +54,7 @@ export function Header() {
         >
           <Link
             href="/"
-            className="group rounded-xl px-3 py-2 text-white transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+            className="group text-hm-ink focus-visible:ring-hm-focus/50 rounded-xl px-3 py-2 transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:outline-none"
             style={{ fontFamily: 'var(--font-heading)' }}
             aria-label="HomeMatch - Go to homepage"
           >
@@ -62,7 +62,7 @@ export function Header() {
               whileHover={shouldReduceMotion ? undefined : { scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              <HomeMatchLogo size="sm" textClassName="text-white" />
+              <HomeMatchLogo size="sm" textClassName="text-hm-ink" />
             </m.div>
           </Link>
         </m.div>
@@ -82,8 +82,8 @@ export function Header() {
             },
           }}
         >
-          {/* Auth buttons container - unified pill with shared animation language */}
-          <div className="flex items-center gap-1 rounded-full bg-slate-800/60 p-1 ring-1 ring-white/10 backdrop-blur-md">
+          {/* Auth buttons container - unified warm pill */}
+          <div className="bg-hm-surface/80 ring-hm-border flex items-center gap-1 rounded-full p-1 ring-1 backdrop-blur-md">
             <m.div
               variants={{
                 hidden: { opacity: 0, y: -10 },
@@ -92,12 +92,10 @@ export function Header() {
             >
               <Link
                 href="/login"
-                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full px-5 py-2 text-sm text-white/70 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-6 sm:py-2.5 sm:text-base"
+                className="text-hm-muted hover:bg-hm-ink/5 hover:text-hm-ink inline-flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm transition-all duration-300 sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
-                <span className="relative z-10">Log In</span>
-                {/* Shared glow effect on hover */}
-                <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-opacity duration-300 group-hover:opacity-100" />
+                Log In
               </Link>
             </m.div>
 
@@ -109,12 +107,10 @@ export function Header() {
             >
               <Link
                 href="/signup"
-                className="group relative inline-flex min-h-[44px] items-center overflow-hidden rounded-full bg-white/10 px-5 py-2 text-sm text-white ring-1 ring-white/20 transition-all duration-300 hover:bg-white/[0.15] hover:ring-white/30 sm:px-6 sm:py-2.5 sm:text-base"
+                className="bg-hm-ink text-hm-surface hover:bg-hm-ink-soft inline-flex min-h-[44px] items-center rounded-full px-5 py-2 text-sm transition-all duration-300 sm:px-6 sm:py-2.5 sm:text-base"
                 style={{ fontFamily: 'var(--font-body)' }}
               >
-                <span className="relative z-10">Sign Up</span>
-                {/* Shared glow effect - slightly brighter for primary CTA */}
-                <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_12px_rgba(56,189,248,0.15)] transition-opacity duration-300 group-hover:opacity-100" />
+                Sign Up
               </Link>
             </m.div>
           </div>

@@ -16,10 +16,10 @@ function AnimatedLink({
   return (
     <Link
       href={href}
-      className="group relative inline-block rounded-sm transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:outline-none"
+      className="group focus-visible:ring-hm-accent relative inline-block rounded-sm transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#2b1e12] focus-visible:outline-none"
     >
       {children}
-      <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-sky-400 to-cyan-400 transition-transform duration-300 group-hover:scale-x-100" />
+      <span className="from-hm-accent absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r to-[#d6ad63] transition-transform duration-300 group-hover:scale-x-100" />
     </Link>
   )
 }
@@ -56,7 +56,7 @@ function SocialIcon({
         animate={{ opacity: isHovered && !shouldReduceMotion ? 1 : 0 }}
         style={{
           background:
-            'radial-gradient(circle at center, rgba(56,189,248,0.3), transparent 70%)',
+            'radial-gradient(circle at center, rgba(183,121,31,0.35), transparent 70%)',
         }}
       />
       <span className="relative z-10">{children}</span>

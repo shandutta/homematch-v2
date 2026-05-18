@@ -23,7 +23,7 @@ const buttonVariants = cva(
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         prime:
-          // Dopamine CTA variant (clean border ring, dark fill) — toned to brand blue, no rainbow.
+          // Dopamine CTA variant (clean border ring, warm espresso fill).
           // Padding + text sizing are intentionally NOT hardcoded here; they live in
           // compoundVariants below so that `<Button variant="prime" size="lg" />` and
           // `<Button variant="prime" size="default" />` get consistent, predictable heights.
@@ -32,18 +32,18 @@ const buttonVariants = cva(
           // px-* and would leave the variant's `py-7` intact, producing inconsistent
           // heights on the same `size="lg"` prop across Hero and CtaBand. See H7.
           'relative overflow-hidden rounded-full text-white font-semibold ' +
-          // base fill + depth (slightly bluer)
-          'before:content-[""] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#0c1426_0%,#0a0f1d_100%)] before:[box-shadow:0_2px_8px_rgba(0,0,0,0.35)] ' +
-          // gradient border ring (masked) — brand blue sweep
+          // base fill + depth (warm espresso)
+          'before:content-[""] before:absolute before:inset-0 before:rounded-full before:[background:linear-gradient(180deg,#3a2a1c_0%,#2b1e12_100%)] before:[box-shadow:0_2px_8px_rgba(43,30,18,0.4)] ' +
+          // gradient border ring (masked) — warm burnished-amber sweep
           'after:content-[""] after:absolute after:-inset-[2px] after:rounded-full after:[padding:2px] ' +
-          'after:[background:linear-gradient(135deg,rgba(59,130,246,0.8),rgba(30,64,175,0.7),rgba(56,189,248,0.7))] ' +
+          'after:[background:linear-gradient(135deg,rgba(210,154,53,0.85),rgba(146,95,22,0.7),rgba(183,121,31,0.75))] ' +
           'after:[background-size:200%_200%] after:opacity-85 ' +
           'after:[-webkit-mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] ' +
           'after:[-webkit-mask-composite:xor] after:[mask-composite:exclude] ' +
           // interaction: hover pulse halo + scale
           'hover:scale-[1.02] active:scale-[0.99] active:translate-y-[1px] ' +
           // subtle focus ring
-          'focus-visible:ring-2 focus-visible:ring-sky-300/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0f1d]',
+          'focus-visible:ring-2 focus-visible:ring-hm-focus/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#2b1e12]',
       },
       size: {
         default: 'min-h-[44px] h-11 p-4 has-[>svg]:px-3',
