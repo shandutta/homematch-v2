@@ -137,26 +137,24 @@ export function CookieConsentBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
       <div className="mx-auto mb-1 w-full max-w-3xl px-2 sm:mb-2 sm:px-4">
-        <div className="rounded-xl border border-hm-border bg-hm-surface/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-2">
+        <div className="border-hm-border bg-hm-surface/95 rounded-xl border px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-2">
           {/* Mobile: compact one-line layout (text + action buttons stay
               under ~64px tall so the banner never covers the auth form
               CTA at 393x852). Desktop: full layout with policy links. */}
           <div className="flex items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="hidden flex-1 text-xs text-hm-ink-soft sm:flex sm:items-center sm:gap-3">
-              <span className="inline-flex w-fit items-center rounded-full border border-hm-border bg-hm-canvas px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-hm-muted uppercase">
+            <p className="text-hm-ink-soft hidden flex-1 text-xs sm:flex sm:items-center sm:gap-3">
+              <span className="border-hm-border bg-hm-canvas text-hm-muted inline-flex w-fit items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 Cookies
               </span>
               <span>
-                We use essential cookies. Optional cookies improve performance
-                and ads. See the{' '}
-                <EditorialLink href="/cookies">Cookie Policy</EditorialLink>{' '}
-                and{' '}
+                We use essential and optional cookies. See the{' '}
+                <EditorialLink href="/cookies">Cookie Policy</EditorialLink> and{' '}
                 <EditorialLink href="/privacy">Privacy Policy</EditorialLink>.
               </span>
             </p>
-            <p className="flex-1 text-xs text-hm-ink-soft sm:hidden">
-              Cookies?{' '}
-              <EditorialLink href="/cookies">Learn more</EditorialLink>
+            <p className="text-hm-ink-soft flex-1 text-xs sm:hidden">
+              We use essential and optional cookies.{' '}
+              <EditorialLink href="/cookies">Cookie Policy</EditorialLink>
             </p>
             {/* M4: CTA hierarchy now treats Reject and Accept as equal weight
                 (both share the outline variant). Prior state used variant="primary"
@@ -215,11 +213,11 @@ export function CookieConsentBanner() {
               aria-label="Cookie settings"
               tabIndex={-1}
               onKeyDown={handleDetailsKeyDown}
-              className="mt-3 grid gap-3 rounded-xl border border-hm-border bg-hm-canvas p-4 text-xs text-hm-ink-soft"
+              className="border-hm-border bg-hm-canvas text-hm-ink-soft mt-3 grid gap-3 rounded-xl border p-4 text-xs"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-hm-ink">
+                  <p className="text-hm-ink font-semibold">
                     {categoryCopy.preferences.title}
                   </p>
                   <p className="text-hm-muted">
@@ -235,7 +233,7 @@ export function CookieConsentBanner() {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-hm-ink">
+                  <p className="text-hm-ink font-semibold">
                     {categoryCopy.analytics.title}
                   </p>
                   <p className="text-hm-muted">
@@ -251,7 +249,7 @@ export function CookieConsentBanner() {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-hm-ink">
+                  <p className="text-hm-ink font-semibold">
                     {categoryCopy.advertising.title}
                   </p>
                   <p className="text-hm-muted">{advertisingDescription}</p>

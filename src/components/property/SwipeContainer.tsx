@@ -156,13 +156,13 @@ export function SwipeContainer({
         data-testid="empty-state"
       >
         <div className="text-center">
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-hm-ink text-xl font-semibold">
             {CouplesMessages.empty.noProperties.title}
           </h3>
-          <p className="mb-2 text-gray-600">
+          <p className="text-hm-muted mb-2">
             {CouplesMessages.empty.noProperties.message}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-hm-muted text-sm">
             {CouplesMessages.empty.noProperties.cta}
           </p>
         </div>
@@ -272,7 +272,7 @@ export function SwipeContainer({
           <MotionButton
             onClick={() => handleButtonSwipe('left')}
             disabled={isAnimating}
-            className="group relative flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full bg-white shadow-lg transition-all duration-200 focus-visible:ring-4 focus-visible:ring-red-400/50 focus-visible:outline-none disabled:opacity-50"
+            className="group bg-hm-surface relative flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full shadow-lg transition-all duration-200 focus-visible:ring-4 focus-visible:ring-red-400/50 focus-visible:outline-none disabled:opacity-50"
             motionProps={{
               whileHover: !isAnimating
                 ? { scale: 1.1, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }
@@ -310,7 +310,7 @@ export function SwipeContainer({
           <MotionButton
             onClick={() => handleButtonSwipe('right')}
             disabled={isAnimating}
-            className="group relative flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full bg-white shadow-lg transition-all duration-200 focus-visible:ring-4 focus-visible:ring-green-400/50 focus-visible:outline-none disabled:opacity-50"
+            className="group bg-hm-surface relative flex h-16 min-h-[64px] w-16 min-w-[64px] touch-manipulation items-center justify-center rounded-full shadow-lg transition-all duration-200 focus-visible:ring-4 focus-visible:ring-green-400/50 focus-visible:outline-none disabled:opacity-50"
             motionProps={{
               whileHover: !isAnimating
                 ? { scale: 1.1, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }
@@ -379,7 +379,7 @@ export function SwipeContainer({
 
         {/* Physics Debug Info (hidden in production) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-16 left-4 rounded bg-white/80 p-2 font-mono text-xs text-gray-500">
+          <div className="text-hm-faint absolute top-16 left-4 rounded bg-white/80 p-2 font-mono text-xs">
             <div>Direction: {dragDirection || 'none'}</div>
             <div>Animating: {isAnimating ? 'yes' : 'no'}</div>
             <div>

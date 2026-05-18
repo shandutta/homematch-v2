@@ -176,13 +176,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
         <CardContent className="space-y-3">
           {/* First Mutual Like Achievement */}
           <div
-            className={`flex items-center gap-3 rounded p-2 ${stats.total_mutual_likes > 0 ? 'bg-green-500/10' : 'bg-gray-500/10'}`}
+            className={`flex items-center gap-3 rounded p-2 ${stats.total_mutual_likes > 0 ? 'bg-green-500/10' : 'bg-hm-faint/10'}`}
           >
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${stats.total_mutual_likes > 0 ? 'bg-green-500/20' : 'bg-gray-500/20'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${stats.total_mutual_likes > 0 ? 'bg-green-500/20' : 'bg-hm-faint/20'}`}
             >
               <Heart
-                className={`h-4 w-4 ${stats.total_mutual_likes > 0 ? 'fill-current text-green-400' : 'text-gray-400'}`}
+                className={`h-4 w-4 ${stats.total_mutual_likes > 0 ? 'fill-current text-green-400' : 'text-hm-faint'}`}
               />
             </div>
             <div>
@@ -201,13 +201,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
 
           {/* High Overlap rate Achievement */}
           <div
-            className={`flex items-center gap-3 rounded p-2 ${matchRate >= 50 ? 'bg-couples-secondary/10' : 'bg-gray-500/10'}`}
+            className={`flex items-center gap-3 rounded p-2 ${matchRate >= 50 ? 'bg-couples-secondary/10' : 'bg-hm-faint/10'}`}
           >
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${matchRate >= 50 ? 'bg-couples-secondary/20' : 'bg-gray-500/20'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${matchRate >= 50 ? 'bg-couples-secondary/20' : 'bg-hm-faint/20'}`}
             >
               <TrendingUp
-                className={`h-4 w-4 ${matchRate >= 50 ? 'text-couples-secondary' : 'text-gray-400'}`}
+                className={`h-4 w-4 ${matchRate >= 50 ? 'text-couples-secondary' : 'text-hm-faint'}`}
               />
             </div>
             <div>
@@ -224,13 +224,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
 
           {/* Streak Achievement */}
           <div
-            className={`flex items-center gap-3 rounded p-2 ${stats.activity_streak_days >= 7 ? 'bg-orange-500/10' : 'bg-gray-500/10'}`}
+            className={`flex items-center gap-3 rounded p-2 ${stats.activity_streak_days >= 7 ? 'bg-orange-500/10' : 'bg-hm-faint/10'}`}
           >
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${stats.activity_streak_days >= 7 ? 'bg-orange-500/20' : 'bg-gray-500/20'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${stats.activity_streak_days >= 7 ? 'bg-orange-500/20' : 'bg-hm-faint/20'}`}
             >
               <Flame
-                className={`h-4 w-4 ${stats.activity_streak_days >= 7 ? 'text-orange-400' : 'text-gray-400'}`}
+                className={`h-4 w-4 ${stats.activity_streak_days >= 7 ? 'text-orange-400' : 'text-hm-faint'}`}
               />
             </div>
             <div>

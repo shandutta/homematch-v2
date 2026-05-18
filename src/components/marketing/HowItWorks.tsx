@@ -14,7 +14,7 @@ const HOW_IT_WORKS_STEPS: Array<{
 }> = [
   {
     icon: Sparkles,
-    title: 'Tell Us Your Vibe',
+    title: 'Tell Us Your Taste',
     description:
       'Cozy craftsman or sleek modern? Walkable cafes or quiet cul-de-sac? We learn what your household likes.',
     iconAnimation: 'sparkle',
@@ -78,13 +78,13 @@ export function HowItWorks() {
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
         >
           <h2
-            className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl"
+            className="text-hm-ink text-3xl font-bold sm:text-4xl md:text-5xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             How It Works
           </h2>
           <p
-            className="mt-3 text-lg text-gray-600 sm:text-xl"
+            className="text-hm-muted mt-3 text-lg sm:text-xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Three simple steps to go from scrolling to moving in.
@@ -172,7 +172,7 @@ function StepCard({
       }
     >
       <Card
-        className="group relative h-full overflow-hidden border-white/60 bg-white p-5 shadow-[0_6px_22px_rgba(2,6,23,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(2,6,23,0.1)] sm:p-6"
+        className="group border-hm-border bg-hm-surface relative h-full overflow-hidden p-5 shadow-[0_6px_22px_rgba(52,43,37,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(52,43,37,0.1)] sm:p-6"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -186,20 +186,20 @@ function StepCard({
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.5 }}
           style={{
             background:
-              'radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), transparent 60%)',
+              'radial-gradient(circle at 50% 0%, rgba(183,121,31,0.15), transparent 60%)',
           }}
         />
 
         <div className="relative z-10">
           {/* Icon with animation */}
           <m.div
-            className="mb-2 inline-flex rounded-xl bg-gradient-to-br from-[#021A44] to-[#063A9E] p-3 text-white shadow-[0_6px_18px_rgba(2,26,68,0.15)]"
+            className="mb-2 inline-flex rounded-xl bg-gradient-to-br from-[#b7791f] to-[#6f4812] p-3 text-white shadow-[0_6px_18px_rgba(146,95,22,0.2)]"
             animate={
               shouldReduceMotion
                 ? undefined
                 : isActive
-                  ? { scale: 1, rotate: 0 }
-                  : { scale: 0.9, rotate: -5 }
+                  ? { scale: 1 }
+                  : { scale: 0.9 }
             }
             whileHover={shouldReduceMotion ? undefined : { scale: 1.1 }}
             transition={
@@ -214,14 +214,14 @@ function StepCard({
           </m.div>
 
           <h3
-            className="text-xl font-semibold text-gray-900"
+            className="text-hm-ink text-xl font-semibold"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             {index + 1}. {step.title}
           </h3>
 
           <m.p
-            className="mt-1.5 text-gray-700"
+            className="text-hm-ink-soft mt-1.5"
             style={{ fontFamily: 'var(--font-body)' }}
             initial={shouldReduceMotion ? false : { opacity: 0 }}
             animate={

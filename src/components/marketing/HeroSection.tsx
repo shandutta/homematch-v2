@@ -86,12 +86,11 @@ export function HeroSection({ loggedIn = false }: { loggedIn?: boolean } = {}) {
             <div className="space-y-5 sm:space-y-8">
               <div className="space-y-4">
                 <h1 className="font-display text-hm-ink text-4xl leading-[1.05] font-semibold tracking-[-0.045em] sm:text-5xl md:text-6xl lg:text-7xl">
-                  Find a home that works for everyone.
+                  Find a home that works for you.
                 </h1>
 
                 <p className="text-hm-muted max-w-2xl text-lg leading-relaxed sm:text-xl">
-                  Swipe through real listings, save the ones your household
-                  likes, and keep the search clear instead of stressful.
+                  Swipe on homes and match likes with your partner.
                 </p>
               </div>
 
