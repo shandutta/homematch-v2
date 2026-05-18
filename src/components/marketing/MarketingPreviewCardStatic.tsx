@@ -45,9 +45,10 @@ export function MarketingPreviewCardStatic({
           {[
             {
               title: 'Built for households',
-              copy: 'Stay in sync on likes, tours, and moves.',
+              copy: 'Stay in sync on houses you both like.',
               icon: ShieldCheck,
-              className: 'left-2 top-2 sm:left-4 sm:top-4',
+              className:
+                'left-2 top-2 max-w-[300px] sm:left-4 sm:top-4 sm:max-w-[330px]',
             },
             {
               title: 'See nearby spots',
@@ -67,7 +68,7 @@ export function MarketingPreviewCardStatic({
                 <Icon className="text-hm-accent-strong h-4 w-4" />
                 {title}
               </div>
-              <p className="text-hm-faint text-sm">{copy}</p>
+              <p className="text-hm-ink-soft text-sm">{copy}</p>
             </div>
           ))}
         </div>
