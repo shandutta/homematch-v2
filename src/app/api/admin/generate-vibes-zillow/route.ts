@@ -8,7 +8,10 @@ import {
   isPaidRapidApiApproved,
   RAPIDAPI_PAID_APPROVAL_REQUIRED_MESSAGE,
 } from '@/lib/api/rapidapi-approval-gate'
-import { extractAmenities, type ZillowPropertyResponse } from './extract-amenities'
+import {
+  extractAmenities,
+  type ZillowPropertyResponse,
+} from './extract-amenities'
 
 const isDev = process.env.NODE_ENV === 'development'
 const ZILLOW_FETCH_TIMEOUT_MS = 10_000
