@@ -1,11 +1,9 @@
-import { redirect } from 'next/navigation'
 import { Header } from '@/components/marketing/Header'
 import { HeroSection } from '@/components/marketing/HeroSection'
 import {
   createPublicRouteMetadata,
   createWebsiteJsonLd,
 } from '@/lib/seo/route-metadata'
-import { auth } from '@clerk/nextjs/server'
 
 export const metadata = createPublicRouteMetadata({
   title: 'HomeMatch — Collaborative Home Search for Couples & Households',
@@ -15,16 +13,10 @@ export const metadata = createPublicRouteMetadata({
 
 const websiteJsonLd = createWebsiteJsonLd()
 
-export const dynamic = 'force-dynamic'
-
+// Static marketing page. Signed-in visitors are redirected to /dashboard by
+// middleware before they ever reach here, so this page does no per-request
+// auth work — it is prerendered at build time and served from the CDN.
 export default async function LandingPage() {
-  // The landing page only needs to know whether a session exists (to bounce
-  // signed-in users to /dashboard). `auth()` reads + verifies the session
-  // cookie locally — no network — whereas getOptionalServerUser() also makes
-  // a Clerk currentUser() API round-trip plus a Supabase fallback lookup,
-  // both wasted on the marketing page's hot path.
-  const { userId } = await auth()
-
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
   const [{ FeatureGrid }, { Footer }, { HowItWorks }, { CtaBand }] =
     await Promise.all([
@@ -34,11 +26,6 @@ export default async function LandingPage() {
       import('@/components/marketing/CtaBand'),
     ])
 
-  // If user is already authenticated, send them straight to the dashboard
-  if (userId) {
-    redirect('/dashboard')
-  }
-
   return (
     <>
       <Header />
@@ -46,7 +33,7 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-      <HeroSection loggedIn={Boolean(userId)} />
+      <HeroSection />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks */}
       <section className="relative isolate">
