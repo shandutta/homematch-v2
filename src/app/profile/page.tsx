@@ -99,7 +99,7 @@ export default async function ProfilePage() {
             This usually takes a few seconds. If the page doesn&rsquo;t refresh,
             please reload or contact support at{' '}
             <a
-              className="text-cyan-300 underline"
+              className="text-hm-accent underline"
               href="mailto:hello@homematch.pro"
             >
               hello@homematch.pro

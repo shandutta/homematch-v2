@@ -32,7 +32,7 @@ const PropertyMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-36 w-full animate-pulse rounded-xl border border-white/10 bg-slate-900/60" />
+      <div className="border-hm-stone-600/60 bg-hm-obsidian-800 h-36 w-full animate-pulse rounded-xl border" />
     ),
   }
 )

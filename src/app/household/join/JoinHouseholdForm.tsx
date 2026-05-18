@@ -52,23 +52,23 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-xl">
+    <Card className="w-full max-w-md rounded-3xl border border-hm-border bg-hm-surface-raised shadow-xl">
       <CardHeader className="space-y-1">
         <div className="mb-2 flex items-center gap-2">
           <Link
             href="/couples"
-            className="text-slate-500 transition hover:text-slate-700"
+            className="text-hm-faint transition hover:text-hm-muted"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-pink-500">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-hm-accent to-hm-accent-strong">
             <Users className="h-6 w-6 text-white" />
           </div>
         </div>
-        <CardTitle className="text-2xl text-slate-900">
+        <CardTitle className="text-2xl text-hm-ink">
           Join a Household
         </CardTitle>
-        <p className="text-slate-500">
+        <p className="text-hm-muted">
           Enter the household code shared with you to start searching for homes
           together.
         </p>
@@ -85,7 +85,7 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
           <div>
             <label
               htmlFor="household-code"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
+              className="mb-1.5 block text-sm font-medium text-hm-ink-soft"
             >
               Household Code
             </label>
@@ -94,10 +94,10 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
               placeholder="Paste the household code here"
               value={householdCode}
               onChange={(e) => setHouseholdCode(e.target.value)}
-              className="border-slate-200 bg-white font-mono text-slate-900 placeholder:text-slate-400"
+              className="border-hm-border bg-hm-surface-raised font-mono text-hm-ink placeholder:text-hm-faint"
               disabled={loading}
             />
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-hm-muted">
               Ask the person who invited you for the household code or check
               your invitation email.
             </p>
@@ -106,7 +106,7 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
           <Button
             type="submit"
             disabled={loading || !householdCode.trim()}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="w-full bg-gradient-to-r from-hm-accent to-hm-accent-strong hover:from-hm-accent-strong hover:to-hm-link-hover"
           >
             {loading ? (
               <>
@@ -123,10 +123,10 @@ export function JoinHouseholdForm({ userId }: JoinHouseholdFormProps) {
 
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
+              <span className="w-full border-t border-hm-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or</span>
+              <span className="bg-hm-surface-raised px-2 text-hm-muted">Or</span>
             </div>
           </div>
 

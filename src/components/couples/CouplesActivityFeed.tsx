@@ -101,14 +101,14 @@ export function CouplesActivityFeed({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-hm-stone-200 flex items-center gap-2 text-xl">
-            <Activity className="h-6 w-6 text-purple-400" />
+            <Activity className="text-couples-secondary h-6 w-6" />
             Recent Activity
           </CardTitle>
           {showViewAllLink && (
             <Button variant="ghost" size="sm" asChild>
               <Link
                 href="/dashboard/activity"
-                className="text-hm-amber-500 hover:text-hm-amber-600"
+                className="text-hm-link hover:text-hm-link-hover"
               >
                 View all activity
               </Link>

@@ -84,7 +84,7 @@ export default async function SettingsPage({
             Your account is still being set up. Refresh in a few seconds, or
             contact{' '}
             <a
-              className="text-cyan-300 underline"
+              className="text-hm-accent underline"
               href="mailto:hello@homematch.pro"
             >
               hello@homematch.pro

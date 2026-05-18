@@ -52,17 +52,17 @@ export function NoHouseholdState({
         >
           <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
             {/* Soft gradient glow background */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-transparent blur-xl" />
+            <div className="bg-hm-accent/15 absolute inset-0 rounded-full blur-xl" />
 
             {/* Icon container with subtle pulse */}
             <MotionDiv
               animate={{ opacity: [0.8, 1, 0.8] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="from-hm-obsidian-950 to-hm-obsidian-800 relative flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-500/30 bg-gradient-to-br shadow-sm"
+              className="from-hm-obsidian-950 to-hm-obsidian-800 border-hm-accent/30 relative flex h-16 w-16 items-center justify-center rounded-2xl border bg-gradient-to-br shadow-sm"
             >
-              <Home className="h-8 w-8 text-orange-400/60" strokeWidth={1.5} />
+              <Home className="text-hm-accent/60 h-8 w-8" strokeWidth={1.5} />
               <UserPlus
-                className="bg-hm-obsidian-900 absolute -right-2 -bottom-2 h-6 w-6 rounded-full p-1 text-orange-500"
+                className="bg-hm-obsidian-900 text-hm-accent absolute -right-2 -bottom-2 h-6 w-6 rounded-full p-1"
                 strokeWidth={2}
               />
             </MotionDiv>
@@ -156,13 +156,13 @@ export function WaitingForPartnerState({
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              <Heart className="h-20 w-20 fill-current text-purple-400/30" />
+              <Heart className="text-couples-secondary/30 h-20 w-20 fill-current" />
             </MotionDiv>
             <MotionDiv
               animate={{ scale: [0.8, 1.2, 0.8] }}
               transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
             >
-              <Users className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-purple-400" />
+              <Users className="text-couples-secondary absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2" />
             </MotionDiv>
           </div>
         </MotionDiv>
@@ -178,7 +178,7 @@ export function WaitingForPartnerState({
 
         <div className="text-hm-stone-500 mb-6 flex items-center justify-center gap-2 text-sm">
           <Coffee className="h-4 w-4" />
-          <Heart className="h-4 w-4 fill-pink-400 text-pink-400" />
+          <Heart className="fill-couples-primary text-couples-primary h-4 w-4" />
           <span>
             Start saving homes now; partner overlap will appear once they join
           </span>
@@ -253,7 +253,7 @@ export function NoMutualLikesState({
               }}
               transition={{ duration: 4, repeat: Infinity }}
             >
-              <Heart className="absolute top-2 left-2 h-16 w-16 fill-current text-pink-400/30" />
+              <Heart className="text-couples-primary/30 absolute top-2 left-2 h-16 w-16 fill-current" />
             </MotionDiv>
             <MotionDiv
               animate={{
@@ -262,7 +262,7 @@ export function NoMutualLikesState({
               }}
               transition={{ duration: 4, repeat: Infinity, delay: 2 }}
             >
-              <Heart className="absolute top-2 right-2 h-16 w-16 fill-current text-purple-400/30" />
+              <Heart className="text-couples-secondary/30 absolute top-2 right-2 h-16 w-16 fill-current" />
             </MotionDiv>
 
             {/* Sparkles effect */}

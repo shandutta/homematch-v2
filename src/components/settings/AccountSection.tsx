@@ -116,13 +116,13 @@ export function AccountSection({ user }: AccountSectionProps) {
       label: 'Email Address',
       value: user.email || 'Not set',
       icon: Mail,
-      color: 'text-sky-400',
+      color: 'text-hm-accent',
     },
     {
       label: 'Account ID',
       value: user.id,
       icon: Key,
-      color: 'text-violet-400',
+      color: 'text-hm-accent-strong',
       mono: true,
     },
     {
@@ -183,8 +183,8 @@ export function AccountSection({ user }: AccountSectionProps) {
       {/* Account Information */}
       <div className="space-y-4" id="account-info">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Shield className="h-5 w-5 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
+            <Shield className="h-5 w-5 text-hm-accent" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">

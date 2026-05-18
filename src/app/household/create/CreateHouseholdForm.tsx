@@ -52,23 +52,23 @@ export function CreateHouseholdForm() {
   }
 
   return (
-    <Card className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-xl">
+    <Card className="w-full max-w-md rounded-3xl border border-hm-border bg-hm-surface-raised shadow-xl">
       <CardHeader className="space-y-1">
         <div className="mb-2 flex items-center gap-2">
           <Link
             href="/couples"
-            className="text-slate-500 transition hover:text-slate-700"
+            className="text-hm-faint transition hover:text-hm-muted"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-500">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-hm-accent to-hm-accent-strong">
             <Home className="h-6 w-6 text-white" />
           </div>
         </div>
-        <CardTitle className="text-2xl text-slate-900">
+        <CardTitle className="text-2xl text-hm-ink">
           Create Your Household
         </CardTitle>
-        <p className="text-slate-500">
+        <p className="text-hm-muted">
           Start your home search together. Create a household and invite others
           to join.
         </p>
@@ -85,7 +85,7 @@ export function CreateHouseholdForm() {
           <div>
             <label
               htmlFor="household-name"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
+              className="mb-1.5 block text-sm font-medium text-hm-ink-soft"
             >
               Household Name
             </label>
@@ -94,10 +94,10 @@ export function CreateHouseholdForm() {
               placeholder="e.g., The Smith Family"
               value={householdName}
               onChange={(e) => setHouseholdName(e.target.value)}
-              className="border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+              className="border-hm-border bg-hm-surface-raised text-hm-ink placeholder:text-hm-faint"
               disabled={loading}
             />
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-hm-muted">
               Pick a name everyone in your household will recognize.
             </p>
           </div>
@@ -105,7 +105,7 @@ export function CreateHouseholdForm() {
           <Button
             type="submit"
             disabled={loading || !householdName.trim()}
-            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+            className="w-full bg-gradient-to-r from-hm-accent to-hm-accent-strong hover:from-hm-accent-strong hover:to-hm-link-hover"
           >
             {loading ? (
               <>
@@ -122,10 +122,10 @@ export function CreateHouseholdForm() {
 
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
+              <span className="w-full border-t border-hm-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or</span>
+              <span className="bg-hm-surface-raised px-2 text-hm-muted">Or</span>
             </div>
           </div>
 

@@ -248,8 +248,8 @@ export function SettingsPageClient({
       label: 'Search radius',
       value: `${searchRadius} miles`,
       icon: MapPin,
-      gradient: 'from-sky-500/20 to-sky-600/5',
-      iconColor: 'text-sky-400',
+      gradient: 'from-hm-accent/20 to-hm-accent-strong/5',
+      iconColor: 'text-hm-accent',
       tab: 'preferences',
       sectionId: 'search-radius',
     },
@@ -267,8 +267,8 @@ export function SettingsPageClient({
       label: 'Account email',
       value: user.email || 'Not set',
       icon: Mail,
-      gradient: 'from-violet-500/20 to-violet-600/5',
-      iconColor: 'text-violet-400',
+      gradient: 'from-hm-accent-strong/20 to-hm-accent-strong/5',
+      iconColor: 'text-hm-accent-strong',
       tab: 'account',
       sectionId: 'account-info',
     },
@@ -398,7 +398,7 @@ export function SettingsPageClient({
           aria-hidden="true"
         >
           <div className="absolute -top-40 left-1/3 h-[500px] w-[500px] rounded-full bg-amber-500/[0.03] blur-[100px]" />
-          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-violet-500/[0.04] blur-[80px]" />
+          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-hm-accent-strong/[0.04] blur-[80px]" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">

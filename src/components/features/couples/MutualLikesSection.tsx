@@ -116,15 +116,15 @@ export function MutualLikesSection({
         <CardHeader>
           <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
             <div className="relative">
-              <Heart className="h-5 w-5 fill-current text-pink-400/50" />
-              <Users className="absolute -top-1 -right-1 h-4 w-4 text-purple-400/50" />
+              <Heart className="text-couples-primary/50 h-5 w-5 fill-current" />
+              <Users className="text-couples-secondary/50 absolute -top-1 -right-1 h-4 w-4" />
             </div>
             <span>Shared Likes</span>
             <MotionDiv
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             >
-              <div className="h-4 w-4 rounded-full border-2 border-pink-400/30 border-t-pink-400" />
+              <div className="border-couples-primary/30 border-t-couples-primary h-4 w-4 rounded-full border-2" />
             </MotionDiv>
           </CardTitle>
         </CardHeader>

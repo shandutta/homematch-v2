@@ -134,7 +134,7 @@ export function OnboardingForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-white shadow-[0_25px_90px_rgba(2,10,31,0.5)] backdrop-blur sm:p-8"
+      className="space-y-8 rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-white shadow-[0_25px_90px_rgba(43,30,18,0.5)] backdrop-blur sm:p-8"
     >
       <section className="space-y-2">
         <Label htmlFor="cities" className="text-sm font-medium text-white">
@@ -192,7 +192,7 @@ export function OnboardingForm() {
                 className={[
                   'h-10 w-10 rounded-full border text-sm transition',
                   bedrooms === n
-                    ? 'border-cyan-300 bg-cyan-300/20 text-white'
+                    ? 'border-hm-accent bg-hm-accent/20 text-white'
                     : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]',
                 ].join(' ')}
               >
@@ -217,7 +217,7 @@ export function OnboardingForm() {
                 className={[
                   'h-10 rounded-full border px-3 text-sm transition',
                   bathrooms === n
-                    ? 'border-cyan-300 bg-cyan-300/20 text-white'
+                    ? 'border-hm-accent bg-hm-accent/20 text-white'
                     : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]',
                 ].join(' ')}
               >

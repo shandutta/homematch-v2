@@ -72,8 +72,8 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
             transition={{ ...normalTransition, delay: 0.1 }}
           >
             <div className="mb-2 flex items-center justify-center gap-2">
-              <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
-              <Users className="h-5 w-5 text-purple-400" />
+              <Heart className="fill-couples-primary text-couples-primary h-6 w-6" />
+              <Users className="text-couples-secondary h-5 w-5" />
             </div>
             <div className="text-hm-stone-200 mb-1 text-3xl font-bold">
               {stats.total_mutual_likes}
@@ -84,8 +84,8 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
           {/* Total Household Likes */}
           <div className="border-hm-stone-600/60 bg-hm-obsidian-950/70 flex items-center justify-between rounded-lg border p-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20">
-                <Users className="h-5 w-5 text-blue-400" />
+              <div className="from-hm-accent/20 to-couples-secondary/20 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r">
+                <Users className="text-hm-accent h-5 w-5" />
               </div>
               <div>
                 <div className="text-hm-stone-200 font-semibold">
@@ -150,7 +150,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="mb-2 flex items-center justify-center gap-2">
-                <Calendar className="h-4 w-4 text-pink-400" />
+                <Calendar className="text-couples-primary h-4 w-4" />
                 <span className="text-hm-stone-200 text-sm font-medium">
                   Last Mutual Like
                 </span>
@@ -201,13 +201,13 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
 
           {/* High Overlap rate Achievement */}
           <div
-            className={`flex items-center gap-3 rounded p-2 ${matchRate >= 50 ? 'bg-purple-500/10' : 'bg-gray-500/10'}`}
+            className={`flex items-center gap-3 rounded p-2 ${matchRate >= 50 ? 'bg-couples-secondary/10' : 'bg-gray-500/10'}`}
           >
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${matchRate >= 50 ? 'bg-purple-500/20' : 'bg-gray-500/20'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${matchRate >= 50 ? 'bg-couples-secondary/20' : 'bg-gray-500/20'}`}
             >
               <TrendingUp
-                className={`h-4 w-4 ${matchRate >= 50 ? 'text-purple-400' : 'text-gray-400'}`}
+                className={`h-4 w-4 ${matchRate >= 50 ? 'text-couples-secondary' : 'text-gray-400'}`}
               />
             </div>
             <div>

@@ -101,24 +101,24 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: MapPin,
         text: `${location}`,
         key: 'location',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     } else if (neighborhoods.length > 0) {
       parts.push({
         icon: MapPin,
         text: `${neighborhoods.length} neighborhoods`,
         key: 'neighborhoods',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     } else if (cities.length > 0) {
       parts.push({
         icon: MapPin,
         text: `${cities.length} cities`,
         key: 'cities',
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
       })
     }
     const priceRange = Array.isArray(filters.priceRange)
@@ -142,8 +142,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
         icon: Bed,
         text: `${bedrooms}+ beds`,
         key: 'bedrooms',
-        color: 'text-violet-400',
-        bg: 'bg-violet-500/10',
+        color: 'text-hm-accent-strong',
+        bg: 'bg-hm-accent-strong/10',
       })
     }
     const propertyTypes = Array.isArray(filters.propertyTypes)
@@ -171,8 +171,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
+            <Search className="h-5 w-5 text-hm-accent" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
@@ -197,8 +197,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
+            <Search className="h-5 w-5 text-hm-accent" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
@@ -239,8 +239,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-            <Search className="h-5 w-5 text-sky-400" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
+            <Search className="h-5 w-5 text-hm-accent" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">

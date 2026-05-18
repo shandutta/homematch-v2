@@ -83,10 +83,10 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
       label: 'Saved Searches',
       value: summary.saved_searches,
       icon: Search,
-      gradient: 'from-sky-500/20 to-sky-600/5',
-      iconBg: 'bg-sky-500/10',
-      iconColor: 'text-sky-400',
-      valueColor: 'text-sky-300',
+      gradient: 'from-hm-accent/20 to-hm-accent-strong/5',
+      iconBg: 'bg-hm-accent/10',
+      iconColor: 'text-hm-accent',
+      valueColor: 'text-hm-accent-strong',
     },
   ]
 
@@ -106,9 +106,9 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
         title: 'Balanced approach!',
         description:
           "You've liked and passed on an equal number of properties.",
-        color: 'text-sky-400',
-        bg: 'bg-sky-500/10',
-        border: 'border-sky-500/20',
+        color: 'text-hm-accent',
+        bg: 'bg-hm-accent/10',
+        border: 'border-hm-accent/20',
       }
     } else {
       return {
@@ -275,12 +275,12 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           {summary.saved_searches > 0 && (
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10">
-                  <Search className="h-4 w-4 text-sky-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-hm-accent/10">
+                  <Search className="h-4 w-4 text-hm-accent" />
                 </div>
                 <p className="text-hm-stone-400 text-sm">
                   You have{' '}
-                  <span className="font-medium text-sky-300">
+                  <span className="font-medium text-hm-accent-strong">
                     {summary.saved_searches} saved{' '}
                     {summary.saved_searches === 1 ? 'search' : 'searches'}
                   </span>{' '}

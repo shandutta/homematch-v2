@@ -253,8 +253,8 @@ export function NotificationsSection({
       key: 'email',
       title: 'Email Notifications',
       icon: <Mail className="h-5 w-5" />,
-      iconBg: 'bg-sky-500/10',
-      iconColor: 'text-sky-400',
+      iconBg: 'bg-hm-accent/10',
+      iconColor: 'text-hm-accent',
       description: `Sent to ${user.email}`,
       options: [
         {
