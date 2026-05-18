@@ -130,17 +130,17 @@ export function MutualLikesSection({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3 rounded-lg bg-hm-canvas p-3"
+              className="bg-hm-canvas flex items-center gap-3 rounded-lg p-3"
             >
-              <Skeleton className="h-16 w-16 rounded-md bg-hm-border/60" />
+              <Skeleton className="bg-hm-border/60 h-16 w-16 rounded-md" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-full bg-hm-border/60" />
+                <Skeleton className="bg-hm-border/60 h-4 w-full" />
                 <Skeleton className="h-5 w-20 bg-green-400/20" />
                 <div className="flex gap-4">
-                  <Skeleton className="h-3 w-12 bg-hm-border/60" />
-                  <Skeleton className="h-3 w-12 bg-hm-border/60" />
+                  <Skeleton className="bg-hm-border/60 h-3 w-12" />
+                  <Skeleton className="bg-hm-border/60 h-3 w-12" />
                 </div>
-                <Skeleton className="h-3 w-24 bg-hm-border/60" />
+                <Skeleton className="bg-hm-border/60 h-3 w-24" />
               </div>
             </MotionDiv>
           ))}
@@ -317,7 +317,7 @@ export function MutualLikesSection({
               <Link
                 href={`/properties/${like.property_id}?returnTo=/dashboard`}
               >
-                <div className="group hover:border-couples-primary/30 relative rounded-lg border border-hm-border bg-hm-canvas p-3 transition-all hover:bg-hm-border/60">
+                <div className="group hover:border-couples-primary/30 border-hm-border bg-hm-canvas hover:bg-hm-border/60 relative rounded-lg border p-3 transition-all">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage

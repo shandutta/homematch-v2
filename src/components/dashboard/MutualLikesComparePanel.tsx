@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PropertyImage } from '@/components/ui/property-image'
 import { X } from 'lucide-react'
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 
 export interface CompareLike {
   property_id: string
@@ -73,12 +72,8 @@ export function MutualLikesComparePanel({
 
   return (
     <Card
-      className="border-white/10"
+      className="border-hm-border"
       data-testid="mutual-likes-compare-panel"
-      style={{
-        backgroundColor: dashboardTokens.colors.background.cardDark,
-        borderColor: dashboardTokens.colors.secondary[700],
-      }}
     >
       <CardContent className="space-y-4 p-4 sm:p-5">
         <div className="flex items-center justify-between">
@@ -94,7 +89,7 @@ export function MutualLikesComparePanel({
           <Button
             variant="ghost"
             size="sm"
-            className="text-hm-ink-soft hover:text-white"
+            className="text-hm-ink-soft hover:text-hm-ink"
             onClick={onClose}
             data-testid="compare-panel-close"
           >
@@ -111,11 +106,11 @@ export function MutualLikesComparePanel({
           {selected.map((like) => (
             <div
               key={like.property_id}
-              className="space-y-2 rounded-lg border border-white/10 bg-white/[0.03] p-3"
+              className="border-hm-border bg-hm-canvas space-y-2 rounded-lg border p-3"
               data-testid={`compare-card-${like.property_id}`}
             >
               <div className="flex items-start gap-3">
-                <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-white/10">
+                <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-hm-border">
                   <PropertyImage
                     src={like.property?.images || like.property?.image_urls}
                     alt={like.property?.address || 'Property'}
@@ -141,7 +136,7 @@ export function MutualLikesComparePanel({
                   aria-label={`Remove ${
                     like.property?.address || 'property'
                   } from comparison`}
-                  className="text-hm-muted rounded-md p-1 transition-colors hover:bg-white/5 hover:text-white"
+                  className="text-hm-muted hover:bg-hm-border/50 rounded-md p-1 transition-colors hover:text-hm-ink"
                   onClick={() => onRemove(like.property_id)}
                   data-testid={`compare-remove-${like.property_id}`}
                 >
