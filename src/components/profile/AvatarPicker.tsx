@@ -121,8 +121,8 @@ export function AvatarPicker({
                     onClick={() => handlePresetSelect(avatar.id)}
                     className={cn(
                       'group relative aspect-square rounded-xl p-1 transition-all',
-                      'hover:bg-hm-canvas focus:outline-none focus-visible:ring-2 focus-visible:ring-hm-accent',
-                      isSelected && 'bg-hm-canvas ring-2 ring-hm-accent'
+                      'hover:bg-hm-canvas focus-visible:ring-hm-accent focus:outline-none focus-visible:ring-2',
+                      isSelected && 'bg-hm-canvas ring-hm-accent ring-2'
                     )}
                     title={avatar.name}
                   >
@@ -150,7 +150,7 @@ export function AvatarPicker({
                   type="button"
                   className={cn(
                     'flex w-full items-center justify-center gap-2 rounded-xl',
-                    'border-2 border-dashed border-hm-border p-4',
+                    'border-hm-border border-2 border-dashed p-4',
                     'text-hm-muted transition-colors',
                     'hover:text-hm-ink-soft hover:border-hm-border-strong hover:bg-hm-canvas'
                   )}

@@ -71,10 +71,7 @@ export function MutualLikesComparePanel({
   const likedByCounts = selected.map((like) => like.liked_by_count)
 
   return (
-    <Card
-      className="border-hm-border"
-      data-testid="mutual-likes-compare-panel"
-    >
+    <Card className="border-hm-border" data-testid="mutual-likes-compare-panel">
       <CardContent className="space-y-4 p-4 sm:p-5">
         <div className="flex items-center justify-between">
           <div>
@@ -110,7 +107,7 @@ export function MutualLikesComparePanel({
               data-testid={`compare-card-${like.property_id}`}
             >
               <div className="flex items-start gap-3">
-                <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-hm-border">
+                <div className="border-hm-border relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border">
                   <PropertyImage
                     src={like.property?.images || like.property?.image_urls}
                     alt={like.property?.address || 'Property'}
@@ -136,7 +133,7 @@ export function MutualLikesComparePanel({
                   aria-label={`Remove ${
                     like.property?.address || 'property'
                   } from comparison`}
-                  className="text-hm-muted hover:bg-hm-border/50 rounded-md p-1 transition-colors hover:text-hm-ink"
+                  className="text-hm-muted hover:bg-hm-border/50 hover:text-hm-ink rounded-md p-1 transition-colors"
                   onClick={() => onRemove(like.property_id)}
                   data-testid={`compare-remove-${like.property_id}`}
                 >

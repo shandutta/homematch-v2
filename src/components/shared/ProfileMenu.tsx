@@ -49,20 +49,20 @@ export function ProfileMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="group relative inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full p-1 transition-all duration-300 ease-out hover:scale-105 focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-hm-border/30 focus-visible:ring-offset-2 focus-visible:ring-offset-hm-canvas focus-visible:outline-none active:scale-95"
+          className="group focus-visible:ring-hm-border/30 focus-visible:ring-offset-hm-canvas relative inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-full p-1 transition-all duration-300 ease-out hover:scale-105 focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-95"
           data-testid="user-menu"
           id={triggerId}
           aria-controls={contentId}
         >
           {/* Ambient glow on hover */}
-          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-hm-ink/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <span className="from-hm-ink/10 absolute inset-0 rounded-full bg-gradient-to-br to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
           {/* Ring effect */}
-          <span className="absolute inset-0 rounded-full ring-2 ring-hm-border/10 transition-all duration-300 group-hover:ring-hm-border/25" />
+          <span className="ring-hm-border/10 group-hover:ring-hm-border/25 absolute inset-0 rounded-full ring-2 transition-all duration-300" />
 
           {isLoading ? (
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-hm-ink/10 to-hm-ink/5">
-              <User className="h-5 w-5 text-hm-muted" />
+            <span className="from-hm-ink/10 to-hm-ink/5 relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br">
+              <User className="text-hm-muted h-5 w-5" />
             </span>
           ) : (
             <UserAvatar
@@ -79,14 +79,14 @@ export function ProfileMenu({
 
       <DropdownMenuContent
         align="end"
-        className="profile-menu-content bg-hm-surface w-72 overflow-hidden rounded-2xl border border-hm-border p-0 shadow-[0_25px_60px_-12px_rgba(52,43,37,0.18)] backdrop-blur-xl"
+        className="profile-menu-content bg-hm-surface border-hm-border w-72 overflow-hidden rounded-2xl border p-0 shadow-[0_25px_60px_-12px_rgba(52,43,37,0.18)] backdrop-blur-xl"
         sideOffset={12}
         alignOffset={0}
         id={contentId}
         aria-labelledby={triggerId}
       >
         {/* User Info Header */}
-        <div className="relative overflow-hidden border-b border-hm-border bg-gradient-to-br from-hm-ink/[0.04] to-transparent px-5 py-5">
+        <div className="border-hm-border from-hm-ink/[0.04] relative overflow-hidden border-b bg-gradient-to-br to-transparent px-5 py-5">
           {/* Subtle mesh background */}
           <div className="absolute inset-0 opacity-30">
             <div className="from-hm-accent/20 absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br to-transparent blur-2xl" />
@@ -99,14 +99,14 @@ export function ProfileMenu({
               email={email}
               avatar={avatar}
               size="lg"
-              className="shadow-lg ring-2 ring-hm-border/10"
+              className="ring-hm-border/10 shadow-lg ring-2"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-semibold tracking-tight text-hm-ink">
+              <p className="text-hm-ink truncate text-[15px] font-semibold tracking-tight">
                 {displayName || 'Welcome'}
               </p>
               {displayEmail && (
-                <p className="mt-0.5 truncate text-[13px] font-light tracking-wide text-hm-muted">
+                <p className="text-hm-muted mt-0.5 truncate text-[13px] font-light tracking-wide">
                   {displayEmail}
                 </p>
               )}
@@ -119,27 +119,27 @@ export function ProfileMenu({
           <DropdownMenuItem asChild>
             <Link
               href="/profile"
-              className="group/item flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-[14px] text-hm-ink-soft transition-all duration-200 hover:bg-hm-canvas hover:text-hm-ink focus:bg-hm-canvas focus:text-hm-ink data-[highlighted]:bg-hm-canvas data-[highlighted]:text-hm-ink"
+              className="group/item text-hm-ink-soft hover:bg-hm-canvas hover:text-hm-ink focus:bg-hm-canvas focus:text-hm-ink data-[highlighted]:bg-hm-canvas data-[highlighted]:text-hm-ink flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-[14px] transition-all duration-200"
               data-testid="nav-profile"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-hm-ink/[0.08] to-hm-ink/[0.03] transition-all duration-200 group-hover/item:from-hm-ink/[0.12] group-hover/item:to-hm-ink/[0.06]">
+              <span className="from-hm-ink/[0.08] to-hm-ink/[0.03] group-hover/item:from-hm-ink/[0.12] group-hover/item:to-hm-ink/[0.06] flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
                 <User className="h-4 w-4" />
               </span>
               <span className="flex-1 font-medium">Profile</span>
-              <ChevronRight className="h-4 w-4 text-hm-faint transition-transform duration-200 group-hover/item:translate-x-0.5 group-hover/item:text-hm-muted" />
+              <ChevronRight className="text-hm-faint group-hover/item:text-hm-muted h-4 w-4 transition-transform duration-200 group-hover/item:translate-x-0.5" />
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
             <Link
               href="/settings"
-              className="group/item flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-[14px] text-hm-ink-soft transition-all duration-200 hover:bg-hm-canvas hover:text-hm-ink focus:bg-hm-canvas focus:text-hm-ink data-[highlighted]:bg-hm-canvas data-[highlighted]:text-hm-ink"
+              className="group/item text-hm-ink-soft hover:bg-hm-canvas hover:text-hm-ink focus:bg-hm-canvas focus:text-hm-ink data-[highlighted]:bg-hm-canvas data-[highlighted]:text-hm-ink flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-[14px] transition-all duration-200"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-hm-ink/[0.08] to-hm-ink/[0.03] transition-all duration-200 group-hover/item:from-hm-ink/[0.12] group-hover/item:to-hm-ink/[0.06]">
+              <span className="from-hm-ink/[0.08] to-hm-ink/[0.03] group-hover/item:from-hm-ink/[0.12] group-hover/item:to-hm-ink/[0.06] flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-200">
                 <Settings className="h-4 w-4" />
               </span>
               <span className="flex-1 font-medium">Settings</span>
-              <ChevronRight className="h-4 w-4 text-hm-faint transition-transform duration-200 group-hover/item:translate-x-0.5 group-hover/item:text-hm-muted" />
+              <ChevronRight className="text-hm-faint group-hover/item:text-hm-muted h-4 w-4 transition-transform duration-200 group-hover/item:translate-x-0.5" />
             </Link>
           </DropdownMenuItem>
         </div>
@@ -164,7 +164,7 @@ export function ProfileMenu({
                 'flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200',
                 isSigningOut
                   ? 'bg-hm-canvas'
-                  : 'bg-gradient-to-br from-hm-ink/[0.06] to-transparent group-hover/item:from-rose-500/15 group-hover/item:to-rose-500/5'
+                  : 'from-hm-ink/[0.06] bg-gradient-to-br to-transparent group-hover/item:from-rose-500/15 group-hover/item:to-rose-500/5'
               )}
             >
               <LogOut className="h-4 w-4" />
