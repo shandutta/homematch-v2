@@ -109,7 +109,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
 
         {/* Price badge */}
         <m.div
-          className="absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold text-hm-ink shadow-lg backdrop-blur-sm"
+          className="text-hm-ink absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold shadow-lg backdrop-blur-sm"
           animate={
             isHovered && !prefersReducedMotion
               ? { scale: 1.05, y: -2 }
@@ -155,7 +155,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
               <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
-                <Icon className="h-4 w-4 text-hm-amber-300" />
+                <Icon className="text-hm-amber-300 h-4 w-4" />
                 {title}
               </div>
               <p className="text-sm text-white/85">{copy}</p>

@@ -89,8 +89,8 @@ export function ProfileMenu({
         <div className="relative overflow-hidden border-b border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-transparent px-5 py-5">
           {/* Subtle mesh background */}
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br from-hm-accent/20 to-transparent blur-2xl" />
-            <div className="absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-gradient-to-br from-hm-accent-strong/10 to-transparent blur-xl" />
+            <div className="from-hm-accent/20 absolute -top-8 -right-8 h-24 w-24 rounded-full bg-gradient-to-br to-transparent blur-2xl" />
+            <div className="from-hm-accent-strong/10 absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-gradient-to-br to-transparent blur-xl" />
           </div>
 
           <div className="relative flex items-center gap-4">

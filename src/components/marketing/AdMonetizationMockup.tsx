@@ -46,24 +46,24 @@ const adConcepts: Array<{
 function renderPreview(preview: AdPreview) {
   if (preview === 'leaderboard') {
     return (
-      <div className="w-full rounded-xl border border-hm-border bg-gradient-to-r from-hm-canvas via-hm-surface to-hm-canvas p-4 shadow-[0_12px_28px_-18px_rgba(43,30,18,0.3)]">
-        <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] text-hm-accent-strong uppercase">
+      <div className="border-hm-border from-hm-canvas via-hm-surface to-hm-canvas w-full rounded-xl border bg-gradient-to-r p-4 shadow-[0_12px_28px_-18px_rgba(43,30,18,0.3)]">
+        <div className="text-hm-accent-strong flex items-center justify-between text-[11px] font-semibold tracking-[0.12em] uppercase">
           <span>Header slot</span>
-          <span className="rounded-full bg-hm-accent/15 px-2 py-0.5 text-[10px] text-hm-accent-strong">
+          <span className="bg-hm-accent/15 text-hm-accent-strong rounded-full px-2 py-0.5 text-[10px]">
             Sponsored
           </span>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-hm-border bg-hm-surface/85 px-4 py-3 text-hm-ink-soft backdrop-blur">
+        <div className="border-hm-border bg-hm-surface/85 text-hm-ink-soft mt-3 flex items-center justify-between rounded-lg border px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-hm-accent/15 text-hm-accent-strong">
+            <div className="bg-hm-accent/15 text-hm-accent-strong flex h-10 w-10 items-center justify-center rounded-full">
               Ad
             </div>
             <div>
               <p className="text-sm font-semibold">Partner headline + CTA</p>
-              <p className="text-xs text-hm-faint">Sits under hero/search</p>
+              <p className="text-hm-faint text-xs">Sits under hero/search</p>
             </div>
           </div>
-          <span className="rounded-full bg-hm-accent/90 px-3 py-1 text-xs font-semibold text-white">
+          <span className="bg-hm-accent/90 rounded-full px-3 py-1 text-xs font-semibold text-white">
             Calm
           </span>
         </div>
@@ -148,19 +148,19 @@ export function AdMonetizationMockup() {
           className="max-w-3xl"
         >
           <p
-            className="text-sm font-semibold tracking-[0.2em] text-hm-accent uppercase"
+            className="text-hm-accent text-sm font-semibold tracking-[0.2em] uppercase"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             Sponsored moments
           </p>
           <h2
-            className="mt-2 text-3xl font-bold text-hm-ink sm:text-4xl md:text-5xl"
+            className="text-hm-ink mt-2 text-3xl font-bold sm:text-4xl md:text-5xl"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
             How ads appear without killing the vibe
           </h2>
           <p
-            className="mt-4 text-lg text-hm-muted sm:text-xl"
+            className="text-hm-muted mt-4 text-lg sm:text-xl"
             style={{ fontFamily: 'var(--font-body)' }}
           >
             Light, clearly labeled sponsor spots from relevant home partners so
@@ -180,34 +180,34 @@ export function AdMonetizationMockup() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="group flex h-full flex-col rounded-2xl border border-hm-border bg-hm-surface shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <Card className="group border-hm-border bg-hm-surface flex h-full flex-col rounded-2xl border shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex min-h-[190px] flex-col gap-3">
                     <div className="grid grid-cols-[auto,1fr] items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-hm-canvas text-hm-accent-strong ring-1 ring-hm-border">
+                      <div className="bg-hm-canvas text-hm-accent-strong ring-hm-border flex h-12 w-12 items-center justify-center rounded-xl ring-1">
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="leading-tight">
                         <h3
-                          className="text-xl font-semibold text-hm-ink"
+                          className="text-hm-ink text-xl font-semibold"
                           style={{ fontFamily: 'var(--font-heading)' }}
                         >
                           {concept.title}
                         </h3>
-                        <p className="text-sm text-hm-faint">
+                        <p className="text-hm-faint text-sm">
                           {concept.placement}
                         </p>
                       </div>
                     </div>
 
                     <p
-                      className="text-[15px] leading-relaxed text-hm-muted"
+                      className="text-hm-muted text-[15px] leading-relaxed"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       {concept.description}
                     </p>
                   </div>
 
-                  <div className="mt-3 flex h-[38px] w-full items-center justify-center rounded-full bg-hm-canvas/85 px-3 text-sm font-semibold text-hm-ink-soft shadow-inner">
+                  <div className="bg-hm-canvas/85 text-hm-ink-soft mt-3 flex h-[38px] w-full items-center justify-center rounded-full px-3 text-sm font-semibold shadow-inner">
                     {concept.badge}
                   </div>
 

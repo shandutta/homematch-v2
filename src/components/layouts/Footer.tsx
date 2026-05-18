@@ -61,7 +61,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-hm-stone-500 transition hover:text-hm-ink"
+                  className="text-hm-stone-500 hover:text-hm-ink transition"
                 >
                   {link.label}
                 </Link>
@@ -84,7 +84,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 textClassName="text-hm-stone-200"
                 className="mb-3"
               />
-              <p className="text-[11px] tracking-[0.45em] text-hm-accent/80 uppercase">
+              <p className="text-hm-accent/80 text-[11px] tracking-[0.45em] uppercase">
                 Keep the journey going
               </p>
               <h2 className="text-hm-stone-200 mt-3 text-2xl font-semibold sm:text-3xl">
@@ -97,7 +97,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
             </div>
             <Link
               href="/profile"
-              className="group border-hm-stone-600/60 bg-hm-obsidian-800 text-hm-stone-200 inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-hm-accent/70 hover:bg-white/20"
+              className="group border-hm-stone-600/60 bg-hm-obsidian-800 text-hm-stone-200 hover:border-hm-accent/70 inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/20"
             >
               Update profile
               <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -111,9 +111,9 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="border-hm-stone-600/60 bg-hm-obsidian-900/70 hover:bg-hm-obsidian-800/70 flex flex-col rounded-2xl border p-5 transition duration-200 hover:border-hm-accent/40"
+                  className="border-hm-stone-600/60 bg-hm-obsidian-900/70 hover:bg-hm-obsidian-800/70 hover:border-hm-accent/40 flex flex-col rounded-2xl border p-5 transition duration-200"
                 >
-                  <div className="bg-hm-obsidian-800 rounded-2xl p-3 text-hm-accent">
+                  <div className="bg-hm-obsidian-800 text-hm-accent rounded-2xl p-3">
                     <Icon className="h-5 w-5" />
                   </div>
                   <p className="text-hm-stone-200 mt-4 text-base font-semibold">
@@ -134,7 +134,7 @@ export function Footer({ variant = 'cta' }: FooterProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-hm-stone-500 transition hover:text-hm-ink"
+                  className="text-hm-stone-500 hover:text-hm-ink transition"
                 >
                   {link.label}
                 </Link>

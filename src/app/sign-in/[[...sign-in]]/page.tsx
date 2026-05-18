@@ -3,7 +3,7 @@ import { clerkAppearance } from '@/lib/clerk-appearance'
 
 export default function SignInPage() {
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-hm-canvas text-hm-ink">
+    <main className="bg-hm-canvas text-hm-ink relative isolate min-h-screen overflow-hidden">
       <div
         className="pointer-events-none absolute inset-0"
         style={{

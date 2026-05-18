@@ -383,7 +383,7 @@ export function SettingsPageClient({
     !aggregatedSaveState.isSaving
 
   return (
-    <div className="gradient-grid-bg min-h-screen pb-6 text-hm-ink">
+    <div className="gradient-grid-bg text-hm-ink min-h-screen pb-6">
       {/* Hero Header */}
       <m.section
         initial={{ opacity: 0 }}
@@ -398,7 +398,7 @@ export function SettingsPageClient({
           aria-hidden="true"
         >
           <div className="absolute -top-40 left-1/3 h-[500px] w-[500px] rounded-full bg-amber-500/[0.03] blur-[100px]" />
-          <div className="absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-hm-accent-strong/[0.04] blur-[80px]" />
+          <div className="bg-hm-accent-strong/[0.04] absolute -top-20 right-1/4 h-[400px] w-[400px] rounded-full blur-[80px]" />
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">

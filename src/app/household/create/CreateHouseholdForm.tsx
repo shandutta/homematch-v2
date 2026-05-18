@@ -52,20 +52,20 @@ export function CreateHouseholdForm() {
   }
 
   return (
-    <Card className="w-full max-w-md rounded-3xl border border-hm-border bg-hm-surface-raised shadow-xl">
+    <Card className="border-hm-border bg-hm-surface-raised w-full max-w-md rounded-3xl border shadow-xl">
       <CardHeader className="space-y-1">
         <div className="mb-2 flex items-center gap-2">
           <Link
             href="/couples"
-            className="text-hm-faint transition hover:text-hm-muted"
+            className="text-hm-faint hover:text-hm-muted transition"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-hm-accent to-hm-accent-strong">
+          <div className="from-hm-accent to-hm-accent-strong flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br">
             <Home className="h-6 w-6 text-white" />
           </div>
         </div>
-        <CardTitle className="text-2xl text-hm-ink">
+        <CardTitle className="text-hm-ink text-2xl">
           Create Your Household
         </CardTitle>
         <p className="text-hm-muted">
@@ -85,7 +85,7 @@ export function CreateHouseholdForm() {
           <div>
             <label
               htmlFor="household-name"
-              className="mb-1.5 block text-sm font-medium text-hm-ink-soft"
+              className="text-hm-ink-soft mb-1.5 block text-sm font-medium"
             >
               Household Name
             </label>
@@ -97,7 +97,7 @@ export function CreateHouseholdForm() {
               className="border-hm-border bg-hm-surface-raised text-hm-ink placeholder:text-hm-faint"
               disabled={loading}
             />
-            <p className="mt-1.5 text-xs text-hm-muted">
+            <p className="text-hm-muted mt-1.5 text-xs">
               Pick a name everyone in your household will recognize.
             </p>
           </div>
@@ -105,7 +105,7 @@ export function CreateHouseholdForm() {
           <Button
             type="submit"
             disabled={loading || !householdName.trim()}
-            className="w-full bg-gradient-to-r from-hm-accent to-hm-accent-strong hover:from-hm-accent-strong hover:to-hm-link-hover"
+            className="from-hm-accent to-hm-accent-strong hover:from-hm-accent-strong hover:to-hm-link-hover w-full bg-gradient-to-r"
           >
             {loading ? (
               <>
@@ -122,10 +122,12 @@ export function CreateHouseholdForm() {
 
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-hm-border" />
+              <span className="border-hm-border w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-hm-surface-raised px-2 text-hm-muted">Or</span>
+              <span className="bg-hm-surface-raised text-hm-muted px-2">
+                Or
+              </span>
             </div>
           </div>
 

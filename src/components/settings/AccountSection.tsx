@@ -183,8 +183,8 @@ export function AccountSection({ user }: AccountSectionProps) {
       {/* Account Information */}
       <div className="space-y-4" id="account-info">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-            <Shield className="h-5 w-5 text-hm-accent" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Shield className="text-hm-accent h-5 w-5" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">

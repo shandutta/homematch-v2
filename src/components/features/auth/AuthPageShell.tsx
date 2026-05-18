@@ -34,8 +34,8 @@ export function AuthPageShell({
         className="pointer-events-none absolute inset-0 opacity-30"
         aria-hidden="true"
       >
-        <div className="absolute -top-40 left-1/2 h-[420px] w-[680px] -translate-x-1/2 rounded-full bg-hm-accent/10 blur-3xl" />
-        <div className="absolute -bottom-48 left-1/3 h-[380px] w-[520px] -translate-x-1/2 rounded-full bg-hm-accent/[0.07] blur-3xl" />
+        <div className="bg-hm-accent/10 absolute -top-40 left-1/2 h-[420px] w-[680px] -translate-x-1/2 rounded-full blur-3xl" />
+        <div className="bg-hm-accent/[0.07] absolute -bottom-48 left-1/3 h-[380px] w-[520px] -translate-x-1/2 rounded-full blur-3xl" />
       </div>
 
       <div className={cn('relative w-full space-y-8', maxWidthClassName)}>

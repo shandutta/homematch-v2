@@ -171,8 +171,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-            <Search className="h-5 w-5 text-hm-accent" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
@@ -197,8 +197,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-            <Search className="h-5 w-5 text-hm-accent" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
@@ -239,8 +239,8 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-            <Search className="h-5 w-5 text-hm-accent" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Search className="text-hm-accent h-5 w-5" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">

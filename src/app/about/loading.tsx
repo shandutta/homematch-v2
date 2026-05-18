@@ -13,7 +13,7 @@ export default function Loading() {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="space-y-4 rounded-2xl bg-hm-surface-raised p-6 shadow-sm ring-1 ring-hm-border sm:p-8"
+            className="bg-hm-surface-raised ring-hm-border space-y-4 rounded-2xl p-6 shadow-sm ring-1 sm:p-8"
           >
             <Skeleton className="h-6 w-48" />
             <div className="space-y-2">

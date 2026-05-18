@@ -61,7 +61,7 @@ export default async function OnboardingPage() {
     <main className="gradient-grid-bg text-foreground min-h-screen">
       <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-12 sm:px-6 sm:py-16">
         <header className="space-y-3 text-white">
-          <p className="text-xs font-semibold tracking-[0.2em] text-hm-accent/90 uppercase">
+          <p className="text-hm-accent/90 text-xs font-semibold tracking-[0.2em] uppercase">
             One minute setup
           </p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">

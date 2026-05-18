@@ -275,12 +275,12 @@ export function ActivityStats({ summary }: ActivityStatsProps) {
           {summary.saved_searches > 0 && (
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-hm-accent/10">
-                  <Search className="h-4 w-4 text-hm-accent" />
+                <div className="bg-hm-accent/10 flex h-8 w-8 items-center justify-center rounded-lg">
+                  <Search className="text-hm-accent h-4 w-4" />
                 </div>
                 <p className="text-hm-stone-400 text-sm">
                   You have{' '}
-                  <span className="font-medium text-hm-accent-strong">
+                  <span className="text-hm-accent-strong font-medium">
                     {summary.saved_searches} saved{' '}
                     {summary.saved_searches === 1 ? 'search' : 'searches'}
                   </span>{' '}

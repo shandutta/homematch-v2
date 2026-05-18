@@ -380,8 +380,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
         <div className="card-luxury overflow-hidden p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-                <MailPlus className="h-5 w-5 text-hm-accent" />
+              <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+                <MailPlus className="text-hm-accent h-5 w-5" />
               </div>
               <div>
                 <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
@@ -445,7 +445,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
                 <Button
                   onClick={handleInviteSubmit}
                   disabled={inviteSubmitting}
-                  className="bg-gradient-to-r from-hm-accent to-hm-accent-strong px-5 text-white shadow-lg shadow-hm-accent/20 transition-all hover:shadow-hm-accent/30"
+                  className="from-hm-accent to-hm-accent-strong shadow-hm-accent/20 hover:shadow-hm-accent/30 bg-gradient-to-r px-5 text-white shadow-lg transition-all"
                   data-testid="send-invite-button"
                 >
                   {inviteSubmitting ? (
@@ -661,8 +661,8 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
       {/* Join Household Card */}
       <div className="card-luxury overflow-hidden p-6 sm:p-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-hm-accent/10">
-            <Users className="h-5 w-5 text-hm-accent" />
+          <div className="bg-hm-accent/10 flex h-10 w-10 items-center justify-center rounded-xl">
+            <Users className="text-hm-accent h-5 w-5" />
           </div>
           <div>
             <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
