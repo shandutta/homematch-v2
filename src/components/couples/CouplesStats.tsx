@@ -103,9 +103,7 @@ export function CouplesStats({ stats }: CouplesStatsProps) {
                 <Award className="h-5 w-5 text-green-400" />
               </div>
               <div>
-                <div className="text-hm-ink font-semibold">
-                  {matchRate}%
-                </div>
+                <div className="text-hm-ink font-semibold">{matchRate}%</div>
                 <div className="text-hm-muted text-xs">Overlap rate</div>
               </div>
             </div>

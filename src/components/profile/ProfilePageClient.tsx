@@ -410,9 +410,7 @@ export function ProfilePageClient({
                   <Users className="text-hm-muted h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-hm-ink font-medium">
-                    Collaboration
-                  </h3>
+                  <h3 className="text-hm-ink font-medium">Collaboration</h3>
                   <p className="text-hm-muted text-xs">Household status</p>
                 </div>
               </div>

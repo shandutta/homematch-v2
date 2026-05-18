@@ -178,9 +178,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
             <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Saved Searches
             </h2>
-            <p className="text-hm-muted text-sm">
-              Manage your search alerts
-            </p>
+            <p className="text-hm-muted text-sm">Manage your search alerts</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
@@ -204,9 +202,7 @@ export function SavedSearchesSection({ userId }: SavedSearchesSectionProps) {
             <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Saved Searches
             </h2>
-            <p className="text-hm-muted text-sm">
-              Manage your search alerts
-            </p>
+            <p className="text-hm-muted text-sm">Manage your search alerts</p>
           </div>
         </div>
         <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">

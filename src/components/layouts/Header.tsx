@@ -229,9 +229,7 @@ export function Header() {
             >
               {/* Mobile Menu Header */}
               <div className="border-token-primary/20 flex h-16 items-center justify-between border-b p-6">
-                <span className="text-hm-ink text-lg font-semibold">
-                  Menu
-                </span>
+                <span className="text-hm-ink text-lg font-semibold">Menu</span>
                 <button
                   onClick={closeMobileMenu}
                   className="hover:bg-token-primary/20 focus-visible:ring-token-primary-light text-hm-muted hover:text-hm-ink inline-flex min-h-[48px] min-w-[48px] touch-manipulation items-center justify-center rounded-md p-2 transition-all hover:scale-105 focus-visible:ring-2 focus-visible:outline-none active:scale-95"

@@ -127,10 +127,7 @@ export function MutualLikesListPage() {
           asChild
           className="self-start sm:self-auto"
         >
-          <Link
-            href="/couples"
-            className="text-hm-faint hover:text-hm-ink"
-          >
+          <Link href="/couples" className="text-hm-faint hover:text-hm-ink">
             Household hub
             <ChevronRight className="ml-1 h-4 w-4" />
           </Link>
@@ -231,10 +228,7 @@ export function MutualLikesListPage() {
       )}
 
       {compareMode && selectedLikes.length === 0 && totalLikes > 0 && (
-        <p
-          className="text-hm-muted text-xs"
-          data-testid="compare-help-text"
-        >
+        <p className="text-hm-muted text-xs" data-testid="compare-help-text">
           Pick up to {MAX_COMPARE} homes to compare side-by-side.
         </p>
       )}

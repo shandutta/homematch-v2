@@ -83,7 +83,7 @@ export function CouplesActivityFeed({
             </p>
             <Button
               asChild
-              className="bg-hm-accent text-white hover:bg-hm-accent-strong"
+              className="bg-hm-accent hover:bg-hm-accent-strong text-white"
             >
               <Link href="/dashboard">
                 Start Exploring

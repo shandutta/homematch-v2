@@ -90,7 +90,7 @@ export function NoHouseholdState({
           {onInvitePartner && (
             <Button
               onClick={onInvitePartner}
-              className="bg-hm-accent text-white hover:bg-hm-accent-strong"
+              className="bg-hm-accent hover:bg-hm-accent-strong text-white"
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Invite Someone
@@ -102,7 +102,7 @@ export function NoHouseholdState({
             className={
               onInvitePartner
                 ? 'border-hm-border/70 text-hm-ink-soft hover:bg-hm-border hover:text-hm-ink'
-                : 'bg-hm-accent text-white hover:bg-hm-accent-strong'
+                : 'bg-hm-accent hover:bg-hm-accent-strong text-white'
             }
             variant={onInvitePartner ? 'outline' : 'default'}
           >
@@ -187,7 +187,7 @@ export function WaitingForPartnerState({
         <div className="flex flex-wrap justify-center gap-3">
           <Button
             onClick={onInvite}
-            className="bg-hm-accent text-white hover:bg-hm-accent-strong"
+            className="bg-hm-accent hover:bg-hm-accent-strong text-white"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Send Invitation
@@ -310,7 +310,7 @@ export function NoMutualLikesState({
         <div className="flex flex-wrap justify-center gap-3">
           <Button
             asChild
-            className="bg-hm-accent text-white hover:bg-hm-accent-strong"
+            className="bg-hm-accent hover:bg-hm-accent-strong text-white"
           >
             <Link href="/dashboard">
               <Heart className="mr-2 h-4 w-4 fill-current" />
@@ -391,7 +391,7 @@ export function NetworkErrorState({
 
         <Button
           onClick={onRetry}
-          className="bg-hm-accent text-white hover:bg-hm-accent-strong"
+          className="bg-hm-accent hover:bg-hm-accent-strong text-white"
         >
           Try Again
         </Button>

@@ -227,9 +227,7 @@ export function AccountSection({ user }: AccountSectionProps) {
             <LogOut className="text-hm-muted h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-hm-ink font-medium">
-              Session Management
-            </h3>
+            <h3 className="text-hm-ink font-medium">Session Management</h3>
             <p className="text-hm-muted text-xs">
               Sign out from your current session
             </p>

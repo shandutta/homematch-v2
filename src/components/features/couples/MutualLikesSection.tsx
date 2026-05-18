@@ -18,7 +18,6 @@ import { MotionDiv } from '@/components/ui/motion-components'
 import { MutualLikesBadge } from './MutualLikesBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/utils/toast'
-import { dashboardTokens } from '@/lib/styles/dashboard-tokens'
 import { useMutualLikes } from '@/hooks/useCouples'
 
 interface MutualLike {
@@ -106,11 +105,7 @@ export function MutualLikesSection({
   if (loading) {
     return (
       <Card
-        className={`min-h-[320px] border-white/10 ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
+        className={`border-hm-border min-h-[320px] ${className}`}
         data-testid="mutual-likes-loading"
       >
         <CardHeader>
@@ -135,17 +130,17 @@ export function MutualLikesSection({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-3 rounded-lg bg-white/5 p-3"
+              className="flex items-center gap-3 rounded-lg bg-hm-canvas p-3"
             >
-              <Skeleton className="h-16 w-16 rounded-md bg-white/10" />
+              <Skeleton className="h-16 w-16 rounded-md bg-hm-border/60" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-full bg-white/10" />
+                <Skeleton className="h-4 w-full bg-hm-border/60" />
                 <Skeleton className="h-5 w-20 bg-green-400/20" />
                 <div className="flex gap-4">
-                  <Skeleton className="h-3 w-12 bg-white/10" />
-                  <Skeleton className="h-3 w-12 bg-white/10" />
+                  <Skeleton className="h-3 w-12 bg-hm-border/60" />
+                  <Skeleton className="h-3 w-12 bg-hm-border/60" />
                 </div>
-                <Skeleton className="h-3 w-24 bg-white/10" />
+                <Skeleton className="h-3 w-24 bg-hm-border/60" />
               </div>
             </MotionDiv>
           ))}
@@ -158,10 +153,6 @@ export function MutualLikesSection({
     return (
       <Card
         className={`border-couples-accent/20 min-h-[320px] ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
         data-testid="mutual-likes-error"
       >
         <CardHeader>
@@ -207,10 +198,6 @@ export function MutualLikesSection({
     return (
       <Card
         className={`border-couples-primary/20 min-h-[320px] ${className}`}
-        style={{
-          backgroundColor: dashboardTokens.colors.background.cardDark,
-          borderColor: dashboardTokens.colors.secondary[700],
-        }}
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
@@ -290,10 +277,6 @@ export function MutualLikesSection({
   return (
     <Card
       className={`min-h-[320px] ${className}`}
-      style={{
-        backgroundColor: dashboardTokens.colors.background.cardDark,
-        borderColor: dashboardTokens.colors.secondary[700],
-      }}
       data-testid="mutual-likes-list"
     >
       <CardHeader>
@@ -334,7 +317,7 @@ export function MutualLikesSection({
               <Link
                 href={`/properties/${like.property_id}?returnTo=/dashboard`}
               >
-                <div className="group hover:border-couples-primary/30 relative rounded-lg border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10">
+                <div className="group hover:border-couples-primary/30 relative rounded-lg border border-hm-border bg-hm-canvas p-3 transition-all hover:bg-hm-border/60">
                   <div className="flex items-start gap-3">
                     <div className="relative h-16 w-16 overflow-hidden rounded-md">
                       <PropertyImage

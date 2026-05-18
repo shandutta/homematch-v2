@@ -405,9 +405,7 @@ export function HouseholdSection({ profile }: HouseholdSectionProps) {
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-hm-ink font-medium">
-                    Send a new invite
-                  </p>
+                  <p className="text-hm-ink font-medium">Send a new invite</p>
                   <p className="text-hm-muted text-sm">
                     Generate a private link someone can use to join.
                   </p>

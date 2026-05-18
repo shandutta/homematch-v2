@@ -1877,9 +1877,7 @@ export function PreferencesSection({
               <Car className="h-5 w-5 text-amber-400" />
             </div>
             <div>
-              <h3 className="text-hm-ink font-medium">
-                Must-have Features
-              </h3>
+              <h3 className="text-hm-ink font-medium">Must-have Features</h3>
               <p className="text-hm-muted text-xs">
                 Lock in specific amenities
               </p>
