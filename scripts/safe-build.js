@@ -95,6 +95,8 @@ async function main() {
   const child = spawn(pnpmCmd, ['exec', 'next', 'build'], {
     cwd: PROJECT_ROOT,
     stdio: 'inherit',
+    // Windows: spawning pnpm.cmd without a shell throws EINVAL (Node security change).
+    shell: process.platform === 'win32',
     env: {
       ...process.env,
       NEXT_DIST_DIR: distDir,
