@@ -21,7 +21,7 @@ export default async function CreateHouseholdPage() {
   // form, where profile creation will happen on first household creation.
   if (!userCtx.profileId) {
     return (
-      <div className="gradient-grid-bg dark text-foreground flex min-h-screen items-center justify-center p-4">
+      <div className="gradient-grid-bg text-foreground flex min-h-screen items-center justify-center p-4">
         <CreateHouseholdForm />
       </div>
     )
@@ -41,7 +41,7 @@ export default async function CreateHouseholdPage() {
   }
 
   return (
-    <div className="gradient-grid-bg dark text-foreground flex min-h-screen items-center justify-center p-4">
+    <div className="gradient-grid-bg text-foreground flex min-h-screen items-center justify-center p-4">
       <CreateHouseholdForm />
     </div>
   )

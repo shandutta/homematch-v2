@@ -383,7 +383,7 @@ export function SettingsPageClient({
     !aggregatedSaveState.isSaving
 
   return (
-    <div className="gradient-grid-bg min-h-screen pb-6 text-white">
+    <div className="gradient-grid-bg min-h-screen pb-6 text-hm-ink">
       {/* Hero Header */}
       <m.section
         initial={{ opacity: 0 }}

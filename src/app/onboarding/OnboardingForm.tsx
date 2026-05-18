@@ -250,7 +250,7 @@ export function OnboardingForm() {
               className={[
                 'rounded-xl border px-3 py-2 text-sm capitalize transition',
                 householdType === t
-                  ? 'border-cyan-300 bg-cyan-300/20 text-white'
+                  ? 'border-hm-accent bg-hm-accent/20 text-white'
                   : 'border-white/15 bg-white/[0.04] text-white/70 hover:bg-white/[0.08]',
               ].join(' ')}
             >

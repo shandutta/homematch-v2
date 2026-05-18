@@ -1748,7 +1748,7 @@ export function PreferencesSection({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-3">
               <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
-                <Bed className="h-4 w-4 text-sky-400" />
+                <Bed className="h-4 w-4 text-amber-400" />
                 Minimum Bedrooms
               </Label>
               <Select
@@ -1773,7 +1773,7 @@ export function PreferencesSection({
 
             <div className="space-y-3">
               <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
-                <Bath className="h-4 w-4 text-violet-400" />
+                <Bath className="h-4 w-4 text-amber-400" />
                 Minimum Bathrooms
               </Label>
               <Select
@@ -1828,8 +1828,8 @@ export function PreferencesSection({
         {/* Property Types */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
-              <Home className="h-5 w-5 text-sky-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+              <Home className="h-5 w-5 text-amber-400" />
             </div>
             <div>
               <h3 className="text-hm-stone-200 font-medium">Property Types</h3>

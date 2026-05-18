@@ -37,7 +37,7 @@ export function MarketingPreviewCardStatic({
         />
         <div className="from-hm-stone-900/60 via-hm-stone-900/10 absolute inset-0 bg-gradient-to-t to-transparent" />
 
-        <div className="absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold text-slate-900 shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
+        <div className="absolute bottom-4 left-4 rounded-full bg-white/90 px-4 py-2 text-lg font-bold text-hm-ink shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
           $975,000
         </div>
 

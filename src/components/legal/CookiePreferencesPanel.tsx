@@ -80,36 +80,36 @@ export function CookiePreferencesPanel({
 
   return (
     <div
-      className={`rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8 ${
+      className={`rounded-2xl bg-hm-surface p-6 shadow-sm ring-1 ring-hm-border sm:p-8 ${
         compact ? 'space-y-4' : 'space-y-6'
       }`}
     >
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Cookie settings</h2>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-hm-muted">
           Manage optional cookies here. Essential cookies are always on.
         </p>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-hm-border bg-hm-canvas px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-hm-ink">
               {categoryCopy.essential.title}
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-hm-muted">
               {categoryCopy.essential.description}
             </p>
           </div>
           <Switch checked disabled aria-label="Essential cookies enabled" />
         </div>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-hm-border px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-hm-ink">
               {categoryCopy.preferences.title}
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-hm-muted">
               {categoryCopy.preferences.description}
             </p>
           </div>
@@ -120,12 +120,12 @@ export function CookiePreferencesPanel({
           />
         </div>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-hm-border px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-hm-ink">
               {categoryCopy.analytics.title}
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-hm-muted">
               {categoryCopy.analytics.description}
             </p>
           </div>
@@ -136,12 +136,12 @@ export function CookiePreferencesPanel({
           />
         </div>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-hm-border px-4 py-3">
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-hm-ink">
               {categoryCopy.advertising.title}
             </p>
-            <p className="text-xs text-slate-600">{advertisingDescription}</p>
+            <p className="text-xs text-hm-muted">{advertisingDescription}</p>
           </div>
           <Switch
             checked={draft.advertising}
@@ -180,7 +180,7 @@ export function CookiePreferencesPanel({
           Reject non-essential
         </Button>
         {hasConsent && hasSaved ? (
-          <span className="text-xs text-slate-600">Preferences saved.</span>
+          <span className="text-xs text-hm-muted">Preferences saved.</span>
         ) : null}
       </div>
     </div>

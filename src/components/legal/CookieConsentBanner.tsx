@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { EditorialLink } from '@/components/editorial/EditorialLink'
 import { Switch } from '@/components/ui/switch'
 import {
   CookieConsentDraft,
@@ -137,33 +137,26 @@ export function CookieConsentBanner() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
       <div className="mx-auto mb-1 w-full max-w-3xl px-2 sm:mb-2 sm:px-4">
-        <div className="rounded-xl border border-slate-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-2">
+        <div className="rounded-xl border border-hm-border bg-hm-surface/95 px-3 py-2 shadow-lg backdrop-blur sm:px-4 sm:py-2">
           {/* Mobile: compact one-line layout (text + action buttons stay
               under ~64px tall so the banner never covers the auth form
               CTA at 393x852). Desktop: full layout with policy links. */}
           <div className="flex items-center gap-2 sm:flex-row sm:justify-between">
-            <p className="hidden flex-1 text-xs text-slate-700 sm:flex sm:items-center sm:gap-3">
-              <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-slate-600 uppercase">
+            <p className="hidden flex-1 text-xs text-hm-ink-soft sm:flex sm:items-center sm:gap-3">
+              <span className="inline-flex w-fit items-center rounded-full border border-hm-border bg-hm-canvas px-2 py-0.5 text-[10px] font-semibold tracking-[0.2em] text-hm-muted uppercase">
                 Cookies
               </span>
               <span>
                 We use essential cookies. Optional cookies improve performance
                 and ads. See the{' '}
-                <Link href="/cookies" className="text-sky-600 underline">
-                  Cookie Policy
-                </Link>{' '}
+                <EditorialLink href="/cookies">Cookie Policy</EditorialLink>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-sky-600 underline">
-                  Privacy Policy
-                </Link>
-                .
+                <EditorialLink href="/privacy">Privacy Policy</EditorialLink>.
               </span>
             </p>
-            <p className="flex-1 text-xs text-slate-700 sm:hidden">
+            <p className="flex-1 text-xs text-hm-ink-soft sm:hidden">
               Cookies?{' '}
-              <Link href="/cookies" className="text-sky-600 underline">
-                Learn more
-              </Link>
+              <EditorialLink href="/cookies">Learn more</EditorialLink>
             </p>
             {/* M4: CTA hierarchy now treats Reject and Accept as equal weight
                 (both share the outline variant). Prior state used variant="primary"
@@ -222,14 +215,14 @@ export function CookieConsentBanner() {
               aria-label="Cookie settings"
               tabIndex={-1}
               onKeyDown={handleDetailsKeyDown}
-              className="mt-3 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700"
+              className="mt-3 grid gap-3 rounded-xl border border-hm-border bg-hm-canvas p-4 text-xs text-hm-ink-soft"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-hm-ink">
                     {categoryCopy.preferences.title}
                   </p>
-                  <p className="text-slate-600">
+                  <p className="text-hm-muted">
                     {categoryCopy.preferences.description}
                   </p>
                 </div>
@@ -242,10 +235,10 @@ export function CookieConsentBanner() {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-hm-ink">
                     {categoryCopy.analytics.title}
                   </p>
-                  <p className="text-slate-600">
+                  <p className="text-hm-muted">
                     {categoryCopy.analytics.description}
                   </p>
                 </div>
@@ -258,10 +251,10 @@ export function CookieConsentBanner() {
 
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-hm-ink">
                     {categoryCopy.advertising.title}
                   </p>
-                  <p className="text-slate-600">{advertisingDescription}</p>
+                  <p className="text-hm-muted">{advertisingDescription}</p>
                 </div>
                 <Switch
                   checked={draft.advertising}
