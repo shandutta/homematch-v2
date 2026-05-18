@@ -31,7 +31,7 @@ config({ path: '.env.local' })
 config()
 
 import { createStandaloneClient } from '@/lib/supabase/standalone'
-import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/route'
+import { extractAmenities } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 import type { Database } from '@/types/database'
 
 type PropertiesUpdate = Database['public']['Tables']['properties']['Update']
