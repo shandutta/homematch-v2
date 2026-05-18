@@ -5,7 +5,7 @@ import {
   createPublicRouteMetadata,
   createWebsiteJsonLd,
 } from '@/lib/seo/route-metadata'
-import { getOptionalServerUser } from '@/lib/supabase/optional-user'
+import { auth } from '@clerk/nextjs/server'
 
 export const metadata = createPublicRouteMetadata({
   title: 'HomeMatch — Collaborative Home Search for Couples & Households',
@@ -18,7 +18,12 @@ const websiteJsonLd = createWebsiteJsonLd()
 export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
-  const user = await getOptionalServerUser()
+  // The landing page only needs to know whether a session exists (to bounce
+  // signed-in users to /dashboard). `auth()` reads + verifies the session
+  // cookie locally — no network — whereas getOptionalServerUser() also makes
+  // a Clerk currentUser() API round-trip plus a Supabase fallback lookup,
+  // both wasted on the marketing page's hot path.
+  const { userId } = await auth()
 
   // Dynamically import below-the-fold components to reduce initial bundle/TTFB
   const [{ FeatureGrid }, { Footer }, { HowItWorks }, { CtaBand }] =
@@ -30,7 +35,7 @@ export default async function LandingPage() {
     ])
 
   // If user is already authenticated, send them straight to the dashboard
-  if (user) {
+  if (userId) {
     redirect('/dashboard')
   }
 
@@ -41,7 +46,7 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
-      <HeroSection loggedIn={Boolean(user)} />
+      <HeroSection loggedIn={Boolean(userId)} />
 
       {/* Unified light pattern wrapper for FeatureGrid + HowItWorks */}
       <section className="relative isolate">
