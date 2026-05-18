@@ -238,7 +238,7 @@ export function PropertyMap({
       }}
     >
       <div
-        className={`border-hm-stone-200 bg-hm-ivory-100 relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
+        className={`border-hm-border-strong bg-hm-surface relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
         style={{ minHeight: '128px' }}
         data-testid="property-map"
       >
@@ -266,14 +266,14 @@ export function PropertyMap({
 function MapLoadingShimmer() {
   return (
     <div
-      className="bg-hm-ivory-100 absolute inset-0 flex items-center justify-center overflow-hidden"
+      className="bg-hm-surface absolute inset-0 flex items-center justify-center overflow-hidden"
       data-testid="property-map-skeleton"
       aria-busy="true"
     >
       <div className="absolute inset-0 animate-[shimmer_1.6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_30%,rgba(194,129,65,0.16)_50%,transparent_70%)] bg-[length:200%_100%]" />
-      <div className="border-hm-stone-200 relative flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1.5 backdrop-blur-sm">
-        <span className="bg-hm-gold-400 h-2 w-2 animate-pulse rounded-full" />
-        <span className="text-hm-stone-600 text-[11px] font-medium tracking-[0.18em] uppercase">
+      <div className="border-hm-border-strong relative flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1.5 backdrop-blur-sm">
+        <span className="bg-hm-accent h-2 w-2 animate-pulse rounded-full" />
+        <span className="text-hm-faint text-[11px] font-medium tracking-[0.18em] uppercase">
           Loading map
         </span>
       </div>
@@ -296,18 +296,18 @@ function MapErrorOverlay({
 }) {
   return (
     <div
-      className="bg-hm-ivory-100/95 absolute inset-0 flex items-center justify-center px-4"
+      className="bg-hm-surface/95 absolute inset-0 flex items-center justify-center px-4"
       data-testid="property-map-error"
     >
       <div className="text-center">
-        <MapPin className="text-hm-gold-500 mx-auto mb-1.5 h-6 w-6" />
-        <p className="text-hm-stone-700 text-xs font-medium">{message}</p>
+        <MapPin className="text-hm-accent mx-auto mb-1.5 h-6 w-6" />
+        <p className="text-hm-ink text-xs font-medium">{message}</p>
         <a
           href={buildGoogleMapsLink(property)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="text-hm-gold-700 hover:text-hm-gold-800 mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
+          className="text-hm-accent-strong hover:text-hm-accent-strong mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
           aria-label="Open in Google Maps"
         >
           Open in Google Maps
@@ -330,20 +330,20 @@ function MapFallback({
   const hasAddressContext = Boolean(property.address || property.city)
   return (
     <div
-      className={`border-hm-stone-200 bg-hm-ivory-100 relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
+      className={`border-hm-border-strong bg-hm-surface relative h-32 w-full overflow-hidden rounded-lg border ${className}`}
       data-testid="property-map-fallback"
     >
       <div className="absolute inset-0 flex items-center justify-center px-4">
         <div className="text-center">
-          <MapPin className="text-hm-stone-500 mx-auto mb-1.5 h-6 w-6" />
-          <p className="text-hm-stone-600 text-xs font-medium">{message}</p>
+          <MapPin className="text-hm-muted mx-auto mb-1.5 h-6 w-6" />
+          <p className="text-hm-faint text-xs font-medium">{message}</p>
           {hasAddressContext && (
             <a
               href={buildGoogleMapsLink(property)}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="text-hm-gold-700 hover:text-hm-gold-800 mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
+              className="text-hm-accent-strong hover:text-hm-accent-strong mt-2 inline-flex items-center gap-1 text-[11px] font-semibold"
               aria-label="Open in Google Maps"
             >
               Open in Google Maps

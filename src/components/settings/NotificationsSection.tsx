@@ -355,11 +355,11 @@ export function NotificationsSection({
         <div className="min-w-0 flex-1 pr-3">
           <Label
             htmlFor={`${group}-${optionKey}`}
-            className="text-hm-stone-200 cursor-pointer text-sm font-medium"
+            className="text-hm-ink cursor-pointer text-sm font-medium"
           >
             {label}
           </Label>
-          <p className="text-hm-stone-500 mt-0.5 text-xs">{helper}</p>
+          <p className="text-hm-muted mt-0.5 text-xs">{helper}</p>
         </div>
         <Switch
           id={`${group}-${optionKey}`}
@@ -392,8 +392,8 @@ export function NotificationsSection({
                   <span className={iconColor}>{icon}</span>
                 </div>
                 <div>
-                  <h3 className="text-hm-stone-200 font-medium">{title}</h3>
-                  <p className="text-hm-stone-500 text-xs">{description}</p>
+                  <h3 className="text-hm-ink font-medium">{title}</h3>
+                  <p className="text-hm-muted text-xs">{description}</p>
                 </div>
               </div>
 
@@ -418,8 +418,8 @@ export function NotificationsSection({
       {/* Save button */}
       <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-hm-stone-200 font-medium">Alert preferences</p>
-          <p className="text-hm-stone-500 text-sm">
+          <p className="text-hm-ink font-medium">Alert preferences</p>
+          <p className="text-hm-muted text-sm">
             Updates auto-save as you make changes
           </p>
         </div>

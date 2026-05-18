@@ -176,13 +176,13 @@ export function AvatarUploader({
               'bg-white/5'
             )}
           >
-            <Upload className="text-hm-stone-400 h-6 w-6" />
+            <Upload className="text-hm-muted h-6 w-6" />
           </div>
           <div className="text-center">
-            <p className="text-hm-stone-300 text-sm font-medium">
+            <p className="text-hm-ink-soft text-sm font-medium">
               Drop your photo here
             </p>
-            <p className="text-hm-stone-500 mt-1 text-xs">
+            <p className="text-hm-muted mt-1 text-xs">
               or click to browse (PNG, JPEG, WebP - max 2MB)
             </p>
           </div>
@@ -235,7 +235,7 @@ export function AvatarUploader({
           variant="outline"
           onClick={onCancel}
           disabled={state === 'uploading'}
-          className="text-hm-stone-300 border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
+          className="text-hm-ink-soft border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
         >
           Cancel
         </Button>

@@ -231,10 +231,10 @@ export function SwipeablePropertyCard({
       >
         <div className="flex h-full items-center justify-center">
           <div className="text-center">
-            <h2 className="font-display text-hm-stone-200 mb-4 text-2xl font-medium tracking-tight">
+            <h2 className="font-display text-hm-ink mb-4 text-2xl font-medium tracking-tight">
               No more properties!
             </h2>
-            <p className="text-hm-stone-400 text-lg">
+            <p className="text-hm-muted text-lg">
               Check back later for new listings.
             </p>
           </div>
@@ -450,10 +450,10 @@ export function SwipeablePropertyCard({
 
         {/* Action Buttons */}
         <div className="bottom-action-buttons">
-          <div className="bg-hm-obsidian-900/90 flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
+          <div className="bg-hm-surface/90 flex items-center gap-5 rounded-full border border-white/10 px-6 py-3 shadow-xl backdrop-blur">
             <MotionButton
               onClick={() => swipeCard('left')}
-              className="bg-hm-obsidian-800 text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+              className="bg-hm-border text-hm-error hover:border-hm-error/30 hover:bg-hm-error/10 focus-visible:ring-hm-error/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
               motionProps={{
                 whileHover: { scale: 1.1 },
                 whileTap: { scale: 0.95 },
@@ -467,7 +467,7 @@ export function SwipeablePropertyCard({
             {onUndo && (
               <MotionButton
                 onClick={onUndo}
-                className="bg-hm-obsidian-800 text-hm-stone-400 hover:border-hm-amber-400/30 hover:bg-hm-amber-400/10 hover:text-hm-amber-400 focus-visible:ring-hm-amber-400/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+                className="bg-hm-border text-hm-muted hover:border-hm-accent/30 hover:bg-hm-accent/10 hover:text-hm-accent focus-visible:ring-hm-accent/50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
                 motionProps={{
                   whileHover: { scale: 1.1 },
                   whileTap: { scale: 0.95 },
@@ -481,7 +481,7 @@ export function SwipeablePropertyCard({
 
             <MotionButton
               onClick={() => swipeCard('right')}
-              className="bg-hm-obsidian-800 text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
+              className="bg-hm-border text-hm-success hover:border-hm-success/30 hover:bg-hm-success/10 focus-visible:ring-hm-success/50 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none"
               motionProps={{
                 whileHover: { scale: 1.1 },
                 whileTap: { scale: 0.95 },

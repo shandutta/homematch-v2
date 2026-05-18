@@ -114,7 +114,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-loading"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="text-couples-primary/50 h-5 w-5 fill-current" />
               <Users className="text-couples-secondary/50 absolute -top-1 -right-1 h-4 w-4" />
@@ -165,7 +165,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-error"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="text-couples-accent/50 h-5 w-5 fill-current" />
               <Users className="text-couples-accent/50 absolute -top-1 -right-1 h-4 w-4" />
@@ -183,7 +183,7 @@ export function MutualLikesSection({
               <Heart className="text-couples-accent/30 mx-auto mb-4 h-12 w-12 fill-current" />
             </MotionDiv>
 
-            <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
+            <h3 className="text-hm-ink mb-2 text-lg font-semibold">
               Couldn&apos;t load mutual likes
             </h3>
 
@@ -214,7 +214,7 @@ export function MutualLikesSection({
         data-testid="mutual-likes-empty"
       >
         <CardHeader>
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <div className="relative">
               <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
               <Users className="text-couples-secondary absolute -top-1 -right-1 h-4 w-4" />
@@ -268,15 +268,15 @@ export function MutualLikesSection({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h3 className="text-hm-stone-100 mb-2 text-lg font-semibold">
+              <h3 className="text-hm-ink mb-2 text-lg font-semibold">
                 No mutual likes yet!
               </h3>
 
-              <p className="text-hm-stone-200 mb-1 text-sm">
+              <p className="text-hm-ink mb-1 text-sm">
                 Properties everyone likes will appear here
               </p>
 
-              <div className="text-hm-stone-300 flex items-center justify-center gap-2 text-xs">
+              <div className="text-hm-ink-soft flex items-center justify-center gap-2 text-xs">
                 <Star className="h-3 w-3" />
                 <span>Keep swiping to find your first shared favorite</span>
               </div>
@@ -298,7 +298,7 @@ export function MutualLikesSection({
     >
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-hm-stone-100 flex items-center gap-2 text-xl">
+          <CardTitle className="text-hm-ink flex items-center gap-2 text-xl">
             <Heart className="fill-couples-primary text-couples-primary h-5 w-5" />
             Shared Likes ({mutualLikes.length})
             <Users className="text-couples-secondary h-5 w-5" />
@@ -348,7 +348,7 @@ export function MutualLikesSection({
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-start justify-between gap-2">
-                        <p className="text-hm-stone-100 truncate text-sm font-medium">
+                        <p className="text-hm-ink truncate text-sm font-medium">
                           {like.property?.address ||
                             `Property ${like.property_id.slice(0, 8)}`}
                         </p>
@@ -360,7 +360,7 @@ export function MutualLikesSection({
                       </div>
 
                       {like.property && (
-                        <div className="text-hm-stone-200 flex items-center gap-3 text-xs">
+                        <div className="text-hm-ink flex items-center gap-3 text-xs">
                           <span className="text-hm-success font-semibold">
                             ${(like.property.price / 1000).toFixed(0)}k
                           </span>
@@ -369,14 +369,14 @@ export function MutualLikesSection({
                         </div>
                       )}
 
-                      <p className="text-hm-stone-300 mt-1 text-xs">
+                      <p className="text-hm-ink-soft mt-1 text-xs">
                         Liked{' '}
                         {new Date(like.last_liked_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <ChevronRight className="text-hm-stone-300 absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <ChevronRight className="text-hm-ink-soft absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
               </Link>
             </MotionDiv>

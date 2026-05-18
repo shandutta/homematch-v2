@@ -92,16 +92,16 @@ export function AvatarPicker({
             <button
               type="button"
               onClick={() => setView('presets')}
-              className="text-hm-stone-400 hover:text-hm-stone-200 absolute top-4 left-4 flex items-center gap-1 text-sm transition-colors"
+              className="text-hm-muted hover:text-hm-ink absolute top-4 left-4 flex items-center gap-1 text-sm transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
           )}
-          <DialogTitle className="text-hm-stone-200">
+          <DialogTitle className="text-hm-ink">
             {view === 'presets' ? 'Choose your avatar' : 'Upload photo'}
           </DialogTitle>
-          <DialogDescription className="text-hm-stone-400">
+          <DialogDescription className="text-hm-muted">
             {view === 'presets'
               ? 'Select an avatar that represents you'
               : 'Upload a custom profile picture'}
@@ -151,8 +151,8 @@ export function AvatarPicker({
                   className={cn(
                     'flex w-full items-center justify-center gap-2 rounded-xl',
                     'border-2 border-dashed border-white/20 p-4',
-                    'text-hm-stone-400 transition-colors',
-                    'hover:text-hm-stone-300 hover:border-white/30 hover:bg-white/5'
+                    'text-hm-muted transition-colors',
+                    'hover:text-hm-ink-soft hover:border-white/30 hover:bg-white/5'
                   )}
                   onClick={() => setView('upload')}
                 >
@@ -168,7 +168,7 @@ export function AvatarPicker({
                 type="button"
                 variant="ghost"
                 onClick={handleRemoveAvatar}
-                className="text-hm-stone-400 hover:text-hm-stone-200 hover:bg-white/5"
+                className="text-hm-muted hover:text-hm-ink hover:bg-white/5"
               >
                 <User className="mr-2 h-4 w-4" />
                 Use initials
@@ -178,7 +178,7 @@ export function AvatarPicker({
                   type="button"
                   variant="outline"
                   onClick={onClose}
-                  className="text-hm-stone-300 border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
+                  className="text-hm-ink-soft border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5 hover:text-white"
                 >
                   Cancel
                 </Button>

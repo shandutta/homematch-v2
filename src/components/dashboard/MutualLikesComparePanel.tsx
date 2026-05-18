@@ -35,7 +35,7 @@ const formatNumber = (value?: number, suffix = '') =>
   typeof value === 'number' ? `${value.toLocaleString()}${suffix}` : '—'
 
 const RowLabel = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-hm-stone-500 text-xs tracking-wide uppercase">
+  <div className="text-hm-faint text-xs tracking-wide uppercase">
     {children}
   </div>
 )
@@ -49,13 +49,13 @@ const valueClass = (
     (n): n is number => typeof n === 'number' && Number.isFinite(n)
   )
   if (filtered.length < 2 || typeof current !== 'number') {
-    return 'text-hm-stone-100'
+    return 'text-hm-ink'
   }
   const target =
     prefer === 'low' ? Math.min(...filtered) : Math.max(...filtered)
   return current === target
     ? 'text-couples-primary font-semibold'
-    : 'text-hm-stone-100'
+    : 'text-hm-ink'
 }
 
 export function MutualLikesComparePanel({
@@ -83,18 +83,18 @@ export function MutualLikesComparePanel({
       <CardContent className="space-y-4 p-4 sm:p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-hm-stone-100 text-base font-semibold">
+            <h2 className="text-hm-ink text-base font-semibold">
               Comparing {selected.length}{' '}
               {selected.length === 1 ? 'home' : 'homes'}
             </h2>
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-faint text-xs">
               Best value highlighted per row.
             </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-hm-stone-300 hover:text-white"
+            className="text-hm-ink-soft hover:text-white"
             onClick={onClose}
             data-testid="compare-panel-close"
           >
@@ -127,12 +127,12 @@ export function MutualLikesComparePanel({
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/properties/${like.property_id}?returnTo=/dashboard/mutual-likes`}
-                    className="text-hm-stone-100 block truncate text-sm font-semibold hover:underline"
+                    className="text-hm-ink block truncate text-sm font-semibold hover:underline"
                   >
                     {like.property?.address ||
                       `Property ${like.property_id.slice(0, 8)}`}
                   </Link>
-                  <p className="text-hm-stone-500 text-xs">
+                  <p className="text-hm-faint text-xs">
                     {like.liked_by_count} likes
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export function MutualLikesComparePanel({
                   aria-label={`Remove ${
                     like.property?.address || 'property'
                   } from comparison`}
-                  className="text-hm-stone-400 rounded-md p-1 transition-colors hover:bg-white/5 hover:text-white"
+                  className="text-hm-muted rounded-md p-1 transition-colors hover:bg-white/5 hover:text-white"
                   onClick={() => onRemove(like.property_id)}
                   data-testid={`compare-remove-${like.property_id}`}
                 >

@@ -1317,10 +1317,10 @@ export function PreferencesSection({
             <DollarSign className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Search Preferences
             </h2>
-            <p className="text-hm-stone-500 text-sm">
+            <p className="text-hm-muted text-sm">
               Adjust budget, rooms, and distance limits
             </p>
           </div>
@@ -1333,7 +1333,7 @@ export function PreferencesSection({
           {/* Location Preferences */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+              <Label className="text-hm-ink-soft flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-amber-400" />
                 Locations
               </Label>
@@ -1385,7 +1385,7 @@ export function PreferencesSection({
                           }
                           size="sm"
                           onClick={() => setMapOverlayMode('neighborhoods')}
-                          className="text-hm-stone-100 border-white/10 bg-white/5"
+                          className="text-hm-ink border-white/10 bg-white/5"
                           data-testid="map-overlay-neighborhoods"
                         >
                           Neighborhoods
@@ -1399,7 +1399,7 @@ export function PreferencesSection({
                           }
                           size="sm"
                           onClick={() => setMapOverlayMode('cities')}
-                          className="text-hm-stone-100 border-white/10 bg-white/5"
+                          className="text-hm-ink border-white/10 bg-white/5"
                           data-testid="map-overlay-cities"
                         >
                           Cities
@@ -1411,7 +1411,7 @@ export function PreferencesSection({
                           onValueChange={handleMapMetroChange}
                         >
                           <SelectTrigger
-                            className="text-hm-stone-200 w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
+                            className="text-hm-ink w-full min-w-[220px] rounded-xl border-white/10 bg-white/5"
                             aria-label="Metro area filter"
                             data-testid="map-metro-select"
                             disabled={mapMetroLoading}
@@ -1449,28 +1449,28 @@ export function PreferencesSection({
                       precomputed={mapNeighborhoodsPrecomputed}
                     />
                     {mapNeighborhoodsError ? (
-                      <div className="text-hm-stone-500 flex items-center justify-between text-xs">
+                      <div className="text-hm-muted flex items-center justify-between text-xs">
                         <span>{mapNeighborhoodsError}</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={retryMapNeighborhoods}
-                          className="text-hm-stone-300 hover:text-hm-stone-100"
+                          className="text-hm-ink-soft hover:text-hm-ink"
                         >
                           Retry
                         </Button>
                       </div>
                     ) : mapMetroError ? (
-                      <div className="text-hm-stone-500 text-xs">
+                      <div className="text-hm-muted text-xs">
                         {mapMetroError}
                       </div>
                     ) : (
-                      <p className="text-hm-stone-500 text-xs">
+                      <p className="text-hm-muted text-xs">
                         {`Metro: "${mapMetroArea}" (${mapNeighborhoods.length} neighborhoods)`}
                       </p>
                     )}
-                    <p className="text-hm-stone-500 text-xs">
+                    <p className="text-hm-muted text-xs">
                       Draw to ringfence areas, or click overlays to toggle
                       selections. City overlays are unioned and de-overlapped
                       from neighborhood boundaries; gaps indicate missing data.
@@ -1485,10 +1485,10 @@ export function PreferencesSection({
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                        <p className="text-hm-muted text-xs font-medium tracking-[0.12em] uppercase">
                           Cities
                         </p>
-                        <div className="text-hm-stone-500 flex items-center gap-2 text-xs">
+                        <div className="text-hm-muted flex items-center gap-2 text-xs">
                           <span>Selected only</span>
                           <Switch
                             checked={showSelectedCitiesOnly}
@@ -1501,7 +1501,7 @@ export function PreferencesSection({
                         <button
                           type="button"
                           onClick={selectAllCities}
-                          className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                          className="text-hm-muted hover:text-hm-ink transition-colors disabled:opacity-40"
                           disabled={
                             availableCities.length === 0 ||
                             citiesLoading ||
@@ -1513,7 +1513,7 @@ export function PreferencesSection({
                         <button
                           type="button"
                           onClick={clearAllCities}
-                          className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                          className="text-hm-muted hover:text-hm-ink transition-colors disabled:opacity-40"
                           disabled={!allCities && selectedCities.length === 0}
                         >
                           Clear
@@ -1530,22 +1530,22 @@ export function PreferencesSection({
                       aria-label="Search cities"
                       data-testid="city-search"
                       disabled={allCities}
-                      className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
+                      className="text-hm-ink rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
                     />
 
                     <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
                       {allCities ? (
-                        <p className="text-hm-stone-500 text-sm">
+                        <p className="text-hm-muted text-sm">
                           All cities are selected. Clear to choose specific
                           locations.
                         </p>
                       ) : citiesLoading ? (
-                        <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                        <div className="text-hm-muted flex items-center gap-2 text-sm">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Loading cities...
                         </div>
                       ) : filteredCities.length === 0 ? (
-                        <p className="text-hm-stone-500 text-sm">
+                        <p className="text-hm-muted text-sm">
                           {showSelectedCitiesOnly && selectedCities.length === 0
                             ? 'No cities selected'
                             : 'No cities found'}
@@ -1572,7 +1572,7 @@ export function PreferencesSection({
                                 onClick={(e) => e.stopPropagation()}
                                 aria-label={`${city.city}, ${city.state}`}
                               />
-                              <span className="text-hm-stone-200 text-sm">
+                              <span className="text-hm-ink text-sm">
                                 {city.city}, {city.state}
                               </span>
                             </div>
@@ -1585,10 +1585,10 @@ export function PreferencesSection({
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <p className="text-hm-stone-400 text-xs font-medium tracking-[0.12em] uppercase">
+                        <p className="text-hm-muted text-xs font-medium tracking-[0.12em] uppercase">
                           Neighborhoods
                         </p>
-                        <div className="text-hm-stone-500 flex items-center gap-2 text-xs">
+                        <div className="text-hm-muted flex items-center gap-2 text-xs">
                           <span>Selected only</span>
                           <Switch
                             checked={showSelectedNeighborhoodsOnly}
@@ -1601,7 +1601,7 @@ export function PreferencesSection({
                         <button
                           type="button"
                           onClick={selectAllNeighborhoods}
-                          className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                          className="text-hm-muted hover:text-hm-ink transition-colors disabled:opacity-40"
                           disabled={
                             availableNeighborhoods.length === 0 ||
                             neighborhoodsLoading
@@ -1612,7 +1612,7 @@ export function PreferencesSection({
                         <button
                           type="button"
                           onClick={clearAllNeighborhoods}
-                          className="text-hm-stone-500 hover:text-hm-stone-200 transition-colors disabled:opacity-40"
+                          className="text-hm-muted hover:text-hm-ink transition-colors disabled:opacity-40"
                           disabled={selectedNeighborhoods.length === 0}
                         >
                           Clear
@@ -1633,26 +1633,26 @@ export function PreferencesSection({
                       aria-label="Search neighborhoods"
                       data-testid="neighborhood-search"
                       disabled={allCities || selectedCities.length === 0}
-                      className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
+                      className="text-hm-ink rounded-xl border-white/10 bg-white/5 disabled:opacity-50"
                     />
 
                     <div className="max-h-64 space-y-3 overflow-auto rounded-xl border border-white/5 bg-white/[0.02] p-3">
                       {allCities ? (
-                        <p className="text-hm-stone-500 text-sm">
+                        <p className="text-hm-muted text-sm">
                           Neighborhood filtering is disabled when all cities are
                           selected.
                         </p>
                       ) : selectedCities.length === 0 ? (
-                        <p className="text-hm-stone-500 text-sm">
+                        <p className="text-hm-muted text-sm">
                           Choose one or more cities to see neighborhoods.
                         </p>
                       ) : neighborhoodsLoading ? (
-                        <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                        <div className="text-hm-muted flex items-center gap-2 text-sm">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Loading neighborhoods...
                         </div>
                       ) : neighborhoodGroups.length === 0 ? (
-                        <p className="text-hm-stone-500 text-sm">
+                        <p className="text-hm-muted text-sm">
                           {showSelectedNeighborhoodsOnly &&
                           selectedNeighborhoods.length === 0
                             ? 'No neighborhoods selected'
@@ -1662,7 +1662,7 @@ export function PreferencesSection({
                         neighborhoodGroups.map((group) => (
                           <div key={group.label} className="space-y-2">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                              <p className="text-hm-muted text-xs font-medium tracking-[0.1em] uppercase">
                                 {group.label}
                               </p>
                               <button
@@ -1670,7 +1670,7 @@ export function PreferencesSection({
                                 onClick={() =>
                                   selectNeighborhoodGroup(group.items)
                                 }
-                                className="text-hm-stone-500 hover:text-hm-stone-200 text-xs transition-colors"
+                                className="text-hm-muted hover:text-hm-ink text-xs transition-colors"
                               >
                                 Select all
                               </button>
@@ -1695,7 +1695,7 @@ export function PreferencesSection({
                                     onClick={(e) => e.stopPropagation()}
                                     aria-label={neighborhood.name}
                                   />
-                                  <span className="text-hm-stone-200 text-sm">
+                                  <span className="text-hm-ink text-sm">
                                     {neighborhood.name}
                                   </span>
                                 </div>
@@ -1710,7 +1710,7 @@ export function PreferencesSection({
               </TabsContent>
             </Tabs>
 
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-muted text-xs">
               Neighborhood picks override city-level matching.
             </p>
           </div>
@@ -1718,7 +1718,7 @@ export function PreferencesSection({
           {/* Price Range */}
           <div className="space-y-4" id="price-range">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+              <Label className="text-hm-ink-soft flex items-center gap-2 text-sm">
                 <DollarSign className="h-4 w-4 text-emerald-400" />
                 Price Range
               </Label>
@@ -1739,7 +1739,7 @@ export function PreferencesSection({
               step={25000}
               className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-emerald-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-emerald-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-muted text-xs">
               Drag both handles to narrow your match budget
             </p>
           </div>
@@ -1747,7 +1747,7 @@ export function PreferencesSection({
           {/* Bedrooms and Bathrooms */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-3">
-              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+              <Label className="text-hm-ink-soft flex items-center gap-2 text-sm">
                 <Bed className="h-4 w-4 text-amber-400" />
                 Minimum Bedrooms
               </Label>
@@ -1756,7 +1756,7 @@ export function PreferencesSection({
                 onValueChange={(v) => setBedrooms(Number(v))}
               >
                 <SelectTrigger
-                  className="text-hm-stone-200 w-full rounded-xl border-white/10 bg-white/5"
+                  className="text-hm-ink w-full rounded-xl border-white/10 bg-white/5"
                   aria-label="Minimum Bedrooms"
                 >
                   <SelectValue placeholder="Select bedrooms" />
@@ -1772,7 +1772,7 @@ export function PreferencesSection({
             </div>
 
             <div className="space-y-3">
-              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+              <Label className="text-hm-ink-soft flex items-center gap-2 text-sm">
                 <Bath className="h-4 w-4 text-amber-400" />
                 Minimum Bathrooms
               </Label>
@@ -1781,7 +1781,7 @@ export function PreferencesSection({
                 onValueChange={(v) => setBathrooms(Number(v))}
               >
                 <SelectTrigger
-                  className="text-hm-stone-200 w-full rounded-xl border-white/10 bg-white/5"
+                  className="text-hm-ink w-full rounded-xl border-white/10 bg-white/5"
                   aria-label="Minimum Bathrooms"
                 >
                   <SelectValue placeholder="Select bathrooms" />
@@ -1800,7 +1800,7 @@ export function PreferencesSection({
           {/* Search Radius */}
           <div className="space-y-4" id="search-radius">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label className="text-hm-stone-300 flex items-center gap-2 text-sm">
+              <Label className="text-hm-ink-soft flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-amber-400" />
                 Search Radius
               </Label>
@@ -1816,7 +1816,7 @@ export function PreferencesSection({
               step={1}
               className="[&_.relative]:bg-white/10 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:bg-gradient-to-r [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:from-amber-500 [&_[data-orientation=horizontal]>[data-orientation=horizontal]]:to-amber-400 [&_[role=slider]]:border-white/20 [&_[role=slider]]:bg-white"
             />
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-muted text-xs">
               Radius is saved now and will power geo filtering next.
             </p>
           </div>
@@ -1832,8 +1832,8 @@ export function PreferencesSection({
               <Home className="h-5 w-5 text-amber-400" />
             </div>
             <div>
-              <h3 className="text-hm-stone-200 font-medium">Property Types</h3>
-              <p className="text-hm-stone-500 text-xs">
+              <h3 className="text-hm-ink font-medium">Property Types</h3>
+              <p className="text-hm-muted text-xs">
                 Choose building styles that suit you
               </p>
             </div>
@@ -1849,11 +1849,11 @@ export function PreferencesSection({
                 <div className="min-w-0 flex-1 pr-3">
                   <Label
                     htmlFor={key}
-                    className="text-hm-stone-200 cursor-pointer text-sm font-medium"
+                    className="text-hm-ink cursor-pointer text-sm font-medium"
                   >
                     {label}
                   </Label>
-                  <p className="text-hm-stone-500 mt-0.5 truncate text-xs">
+                  <p className="text-hm-muted mt-0.5 truncate text-xs">
                     {helper}
                   </p>
                 </div>
@@ -1877,10 +1877,10 @@ export function PreferencesSection({
               <Car className="h-5 w-5 text-amber-400" />
             </div>
             <div>
-              <h3 className="text-hm-stone-200 font-medium">
+              <h3 className="text-hm-ink font-medium">
                 Must-have Features
               </h3>
-              <p className="text-hm-stone-500 text-xs">
+              <p className="text-hm-muted text-xs">
                 Lock in specific amenities
               </p>
             </div>
@@ -1895,16 +1895,16 @@ export function PreferencesSection({
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5">
-                    <Icon className="text-hm-stone-400 h-4 w-4" />
+                    <Icon className="text-hm-muted h-4 w-4" />
                   </div>
                   <div>
                     <Label
                       htmlFor={`must-${key}`}
-                      className="text-hm-stone-200 cursor-pointer text-sm font-medium"
+                      className="text-hm-ink cursor-pointer text-sm font-medium"
                     >
                       {label}
                     </Label>
-                    <p className="text-hm-stone-500 text-xs">{helper}</p>
+                    <p className="text-hm-muted text-xs">{helper}</p>
                   </div>
                 </div>
                 <Switch
@@ -1924,8 +1924,8 @@ export function PreferencesSection({
       {/* Save button */}
       <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-hm-stone-200 font-medium">Save and sync</p>
-          <p className="text-hm-stone-500 text-sm">
+          <p className="text-hm-ink font-medium">Save and sync</p>
+          <p className="text-hm-muted text-sm">
             Updates auto-save and refresh dashboard matches
           </p>
         </div>
@@ -1934,7 +1934,7 @@ export function PreferencesSection({
             type="button"
             variant="ghost"
             onClick={resetFiltersToDefaults}
-            className="text-hm-stone-300 hover:text-hm-stone-100"
+            className="text-hm-ink-soft hover:text-hm-ink"
             data-testid="reset-preferences"
           >
             Reset filters
@@ -1962,8 +1962,8 @@ export function PreferencesSection({
 
       <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.02] p-5">
         <div>
-          <p className="text-hm-stone-200 font-medium">Save this search</p>
-          <p className="text-hm-stone-500 text-sm">
+          <p className="text-hm-ink font-medium">Save this search</p>
+          <p className="text-hm-muted text-sm">
             Give it a name and reuse it from Saved Searches.
           </p>
         </div>
@@ -1973,14 +1973,14 @@ export function PreferencesSection({
             onChange={(e) => setSavedSearchName(e.target.value)}
             placeholder={generateSearchName()}
             aria-label="Saved search name"
-            className="text-hm-stone-200 rounded-xl border-white/10 bg-white/5"
+            className="text-hm-ink rounded-xl border-white/10 bg-white/5"
           />
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => setSavedSearchName(generateSearchName())}
-              className="text-hm-stone-200 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+              className="text-hm-ink border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
             >
               Auto-name
             </Button>

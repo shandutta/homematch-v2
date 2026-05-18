@@ -308,7 +308,7 @@ export function PropertyDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-hm-ivory-50 border-hm-stone-200 text-hm-stone-800 h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none p-0 shadow-[0_30px_90px_rgba(52,43,37,0.18)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+        className="bg-hm-canvas border-hm-border-strong text-hm-ink h-[100dvh] w-[100vw] max-w-[100vw] overflow-hidden rounded-none p-0 shadow-[0_30px_90px_rgba(52,43,37,0.18)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
         onCloseAutoFocus={onCloseAutoFocus}
         showCloseButton={false}
       >
@@ -317,18 +317,18 @@ export function PropertyDetailModal({
             className="min-h-0 flex-1 overflow-y-auto"
             data-testid="property-detail-scroll"
           >
-            <div className="safe-area-top bg-hm-ivory-50/95 border-hm-stone-200 sticky top-0 z-20 flex items-center justify-between border-b px-4 pt-4 pb-3 backdrop-blur sm:px-6 sm:pt-5">
+            <div className="safe-area-top bg-hm-canvas/95 border-hm-border-strong sticky top-0 z-20 flex items-center justify-between border-b px-4 pt-4 pb-3 backdrop-blur sm:px-6 sm:pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
                 aria-label="Close property details"
-                className="border-hm-stone-200 text-hm-stone-600 hover:bg-hm-stone-100 hover:text-hm-stone-900 inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full border bg-white transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+                className="border-hm-border-strong text-hm-faint hover:bg-hm-surface hover:text-hm-ink inline-flex h-11 min-h-[44px] w-11 min-w-[44px] touch-manipulation items-center justify-center rounded-full border bg-white transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               >
                 <X className="h-5 w-5" />
               </button>
               {hasImages && (
                 <div
-                  className="text-hm-stone-800 rounded-full bg-white/80 px-3 py-1 text-xs font-medium shadow-sm"
+                  className="text-hm-ink rounded-full bg-white/80 px-3 py-1 text-xs font-medium shadow-sm"
                   data-testid="image-counter"
                 >
                   {normalizedIndex + 1} / {images.length}
@@ -443,10 +443,10 @@ export function PropertyDetailModal({
 
             <div className="space-y-6 p-4 sm:p-6">
               <DialogHeader className="text-left">
-                <DialogTitle className="font-display text-hm-stone-900 text-2xl font-medium tracking-tight">
+                <DialogTitle className="font-display text-hm-ink text-2xl font-medium tracking-tight">
                   {property.address}
                 </DialogTitle>
-                <DialogDescription className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                <DialogDescription className="text-hm-muted flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
                     {neighborhoodData?.name || property.city}, {property.state}{' '}
@@ -456,70 +456,70 @@ export function PropertyDetailModal({
               </DialogHeader>
 
               <div className="grid grid-cols-3 gap-3">
-                <div className="border-hm-stone-200 rounded-xl border bg-white/85 p-4 text-center">
-                  <Bed className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
-                  <p className="text-hm-stone-900 text-2xl font-semibold">
+                <div className="border-hm-border-strong rounded-xl border bg-white/85 p-4 text-center">
+                  <Bed className="text-hm-accent mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-ink text-2xl font-semibold">
                     {formatCount(property.bedrooms)}
                   </p>
-                  <p className="text-hm-stone-500 text-xs">Beds</p>
+                  <p className="text-hm-muted text-xs">Beds</p>
                 </div>
-                <div className="border-hm-stone-200 rounded-xl border bg-white/85 p-4 text-center">
-                  <Bath className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
-                  <p className="text-hm-stone-900 text-2xl font-semibold">
+                <div className="border-hm-border-strong rounded-xl border bg-white/85 p-4 text-center">
+                  <Bath className="text-hm-accent mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-ink text-2xl font-semibold">
                     {formatCount(property.bathrooms)}
                   </p>
-                  <p className="text-hm-stone-500 text-xs">Baths</p>
+                  <p className="text-hm-muted text-xs">Baths</p>
                 </div>
-                <div className="border-hm-stone-200 rounded-xl border bg-white/85 p-4 text-center">
-                  <Square className="text-hm-amber-400 mx-auto mb-2 h-6 w-6" />
-                  <p className="text-hm-stone-900 text-2xl font-semibold">
+                <div className="border-hm-border-strong rounded-xl border bg-white/85 p-4 text-center">
+                  <Square className="text-hm-accent mx-auto mb-2 h-6 w-6" />
+                  <p className="text-hm-ink text-2xl font-semibold">
                     {formatSquareFeet(property.square_feet)}
                   </p>
-                  <p className="text-hm-stone-500 text-xs">Sq Ft</p>
+                  <p className="text-hm-muted text-xs">Sq Ft</p>
                 </div>
               </div>
 
               {property.year_built && (
-                <div className="text-hm-stone-500 flex items-center gap-2 text-sm">
+                <div className="text-hm-muted flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4" />
                   <span>Built in {property.year_built}</span>
                 </div>
               )}
 
               <div className="space-y-3">
-                <h3 className="font-display text-hm-stone-900 text-lg font-medium">
+                <h3 className="font-display text-hm-ink text-lg font-medium">
                   Vibe snapshot
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {neighborhoodVibes && (
-                    <div className="border-hm-gold-200 via-hm-ivory-50 to-hm-gold-50 relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white p-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)]">
-                      <div className="bg-hm-gold-100/70 pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full blur-2xl" />
+                    <div className="border-hm-accent/40 via-hm-canvas to-hm-accent/10 relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white p-4 shadow-[0_18px_45px_rgba(68,64,60,0.08)]">
+                      <div className="bg-hm-accent/15 pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full blur-2xl" />
                       <div className="relative flex items-start gap-3">
-                        <div className="text-hm-gold-600 border-hm-gold-200 bg-hm-gold-50 mt-0.5 rounded-full border p-2">
+                        <div className="text-hm-accent-strong border-hm-accent/40 bg-hm-accent/10 mt-0.5 rounded-full border p-2">
                           <MapPin className="h-4 w-4" />
                         </div>
                         <div className="space-y-2">
-                          <p className="text-hm-stone-400 text-[10px] font-semibold tracking-[0.2em] uppercase">
+                          <p className="text-hm-muted text-[10px] font-semibold tracking-[0.2em] uppercase">
                             Neighborhood vibe
                           </p>
-                          <p className="text-hm-stone-700 text-sm leading-relaxed">
+                          <p className="text-hm-ink text-sm leading-relaxed">
                             {neighborhoodVibes.vibe_statement}
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
-                  <div className="border-hm-stone-200 relative overflow-hidden rounded-2xl border bg-white/85 p-4 shadow-[0_14px_38px_rgba(68,64,60,0.08)]">
-                    <div className="bg-hm-stone-100 pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full blur-2xl" />
+                  <div className="border-hm-border-strong relative overflow-hidden rounded-2xl border bg-white/85 p-4 shadow-[0_14px_38px_rgba(68,64,60,0.08)]">
+                    <div className="bg-hm-surface pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full blur-2xl" />
                     <div className="relative flex items-start gap-3">
-                      <div className="text-hm-stone-600 border-hm-stone-200 bg-hm-stone-100 mt-0.5 rounded-full border p-2">
+                      <div className="text-hm-faint border-hm-border-strong bg-hm-surface mt-0.5 rounded-full border p-2">
                         <Home className="h-4 w-4" />
                       </div>
                       <div className="space-y-2">
-                        <p className="text-hm-stone-400 text-[10px] font-semibold tracking-[0.2em] uppercase">
+                        <p className="text-hm-muted text-[10px] font-semibold tracking-[0.2em] uppercase">
                           Home vibe
                         </p>
-                        <p className="text-hm-stone-700 text-sm leading-relaxed">
+                        <p className="text-hm-ink text-sm leading-relaxed">
                           {houseOneLiner}
                         </p>
                       </div>
@@ -533,7 +533,7 @@ export function PropertyDetailModal({
                         key={tag}
                         variant="secondary"
                         data-tag={tag}
-                        className="border-hm-stone-200 bg-hm-stone-100 text-hm-stone-700 rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide"
+                        className="border-hm-border-strong bg-hm-surface text-hm-ink rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide"
                       >
                         {tag}
                       </Badge>
@@ -551,16 +551,16 @@ export function PropertyDetailModal({
               )}
 
               <div className="space-y-3">
-                <h3 className="font-display text-hm-stone-900 text-lg font-medium">
+                <h3 className="font-display text-hm-ink text-lg font-medium">
                   Location
                 </h3>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-hm-stone-500 text-xs">
+                  <p className="text-hm-muted text-xs">
                     Tap for details, or open in Google Maps.
                   </p>
                   <button
                     type="button"
-                    className="text-hm-stone-600 hover:text-hm-stone-900 border-hm-stone-200 inline-flex min-h-[44px] touch-manipulation items-center gap-1 rounded-full border bg-white px-4 py-2 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none sm:hidden"
+                    className="text-hm-faint hover:text-hm-ink border-hm-border-strong inline-flex min-h-[44px] touch-manipulation items-center gap-1 rounded-full border bg-white px-4 py-2 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none sm:hidden"
                     onClick={() => setIsMapExpanded((prev) => !prev)}
                     aria-label={isMapExpanded ? 'Hide map' : 'Show map'}
                     data-testid="toggle-map"
@@ -572,23 +572,23 @@ export function PropertyDetailModal({
                 {isMapExpanded ? (
                   <PropertyMap
                     property={property}
-                    className="border-hm-stone-200 h-48 w-full rounded-xl border"
+                    className="border-hm-border-strong h-48 w-full rounded-xl border"
                   />
                 ) : (
-                  <div className="border-hm-stone-200 rounded-xl border bg-white/85 p-4">
+                  <div className="border-hm-border-strong rounded-xl border bg-white/85 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="text-hm-amber-400 rounded-full bg-amber-400/10 p-2">
+                      <div className="text-hm-accent rounded-full bg-amber-400/10 p-2">
                         <MapPin className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1 space-y-1">
-                        <p className="text-hm-stone-900 text-sm font-semibold">
+                        <p className="text-hm-ink text-sm font-semibold">
                           Map preview
                         </p>
-                        <p className="text-hm-stone-400 text-sm">
-                          <span className="text-hm-stone-700 font-medium">
+                        <p className="text-hm-muted text-sm">
+                          <span className="text-hm-ink font-medium">
                             {property.city}, {property.state}
                           </span>
-                          <span className="text-hm-stone-500">
+                          <span className="text-hm-muted">
                             {' '}
                             • {property.zip_code}
                           </span>
@@ -597,7 +597,7 @@ export function PropertyDetailModal({
                           href={buildGoogleMapsUrl(property)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-hm-gold-700 hover:text-hm-gold-800 inline-flex items-center gap-1 text-sm font-medium"
+                          className="text-hm-accent-strong hover:text-hm-accent-strong inline-flex items-center gap-1 text-sm font-medium"
                           aria-label="Open in Google Maps"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -613,7 +613,7 @@ export function PropertyDetailModal({
           </div>
 
           {onDecision && (
-            <div className="safe-area-bottom bg-hm-ivory-50/95 border-hm-stone-200 border-t backdrop-blur">
+            <div className="safe-area-bottom bg-hm-canvas/95 border-hm-border-strong border-t backdrop-blur">
               <div className="px-4 py-4 sm:px-6">
                 <div className="flex gap-4">
                   <button

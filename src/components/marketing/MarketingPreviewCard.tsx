@@ -155,7 +155,7 @@ export function MarketingPreviewCard({ className }: MarketingPreviewCardProps) {
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
               <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
-                <Icon className="text-hm-amber-300 h-4 w-4" />
+                <Icon className="text-hm-accent h-4 w-4" />
                 {title}
               </div>
               <p className="text-sm text-white/85">{copy}</p>

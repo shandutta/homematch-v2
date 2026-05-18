@@ -263,7 +263,7 @@ export function ProfilePageClient({
           >
             <Link
               href="/dashboard"
-              className="group text-hm-stone-400 hover:text-hm-stone-200 inline-flex items-center gap-2 text-sm transition-colors"
+              className="group text-hm-muted hover:text-hm-ink inline-flex items-center gap-2 text-sm transition-colors"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
@@ -295,14 +295,14 @@ export function ProfilePageClient({
 
                 {/* Name and meta */}
                 <div className="flex-1 pt-1">
-                  <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
+                  <p className="text-hm-muted text-xs font-medium tracking-[0.2em] uppercase">
                     My Profile
                   </p>
-                  <h1 className="font-heading text-hm-stone-200 mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+                  <h1 className="font-heading text-hm-ink mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
                     {displayName}
                   </h1>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="text-hm-stone-400 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
+                    <span className="text-hm-muted inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
                       <Mail className="h-3 w-3" />
                       {user.email}
                     </span>
@@ -310,7 +310,7 @@ export function ProfilePageClient({
                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${
                         hasHousehold
                           ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                          : 'text-hm-stone-400 border border-white/10 bg-white/5'
+                          : 'text-hm-muted border border-white/10 bg-white/5'
                       }`}
                     >
                       <Users className="h-3 w-3" />
@@ -320,7 +320,7 @@ export function ProfilePageClient({
                 </div>
               </div>
 
-              <p className="text-hm-stone-400 max-w-xl text-sm leading-relaxed">
+              <p className="text-hm-muted max-w-xl text-sm leading-relaxed">
                 Manage your profile, household settings, and track your property
                 search activity all in one place.
               </p>
@@ -331,7 +331,7 @@ export function ProfilePageClient({
               <Link href="/settings">
                 <Button
                   variant="outline"
-                  className="text-hm-stone-300 border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   Settings
                 </Button>
@@ -370,7 +370,7 @@ export function ProfilePageClient({
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                     <div className="relative flex items-center justify-between">
                       <div>
-                        <p className="text-hm-stone-500 text-xs font-medium tracking-[0.15em] uppercase">
+                        <p className="text-hm-muted text-xs font-medium tracking-[0.15em] uppercase">
                           {stat.label}
                         </p>
                         <p
@@ -407,13 +407,13 @@ export function ProfilePageClient({
             <div className="card-luxury overflow-hidden p-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                  <Users className="text-hm-stone-400 h-5 w-5" />
+                  <Users className="text-hm-muted h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-hm-stone-200 font-medium">
+                  <h3 className="text-hm-ink font-medium">
                     Collaboration
                   </h3>
-                  <p className="text-hm-stone-500 text-xs">Household status</p>
+                  <p className="text-hm-muted text-xs">Household status</p>
                 </div>
               </div>
 
@@ -427,22 +427,22 @@ export function ProfilePageClient({
                           Active Household
                         </p>
                       </div>
-                      <p className="text-hm-stone-200 mt-2 text-lg font-medium">
+                      <p className="text-hm-ink mt-2 text-lg font-medium">
                         {profile.household?.name}
                       </p>
                     </div>
 
                     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-                      <p className="text-hm-stone-500 text-[10px] font-medium tracking-[0.15em] uppercase">
+                      <p className="text-hm-muted text-[10px] font-medium tracking-[0.15em] uppercase">
                         Join Code
                       </p>
                       <div className="mt-2 flex items-center gap-2">
-                        <code className="text-hm-stone-400 flex-1 truncate rounded bg-white/5 px-2 py-1 font-mono text-xs">
+                        <code className="text-hm-muted flex-1 truncate rounded bg-white/5 px-2 py-1 font-mono text-xs">
                           {profile.household?.id}
                         </code>
                         <button
                           onClick={copyHouseholdCode}
-                          className="text-hm-stone-400 flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                          className="text-hm-muted flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                         >
                           <AnimatePresence mode="wait">
                             {codeCopied ? (
@@ -471,8 +471,8 @@ export function ProfilePageClient({
                   </div>
                 ) : (
                   <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-center">
-                    <Users className="text-hm-stone-500 mx-auto h-8 w-8" />
-                    <p className="text-hm-stone-400 mt-2 text-sm">
+                    <Users className="text-hm-muted mx-auto h-8 w-8" />
+                    <p className="text-hm-muted mt-2 text-sm">
                       Create or join a household to discover mutual likes and
                       collaborate on your home search.
                     </p>
@@ -485,7 +485,7 @@ export function ProfilePageClient({
                   type="button"
                   variant="outline"
                   onClick={() => setActiveTab('household')}
-                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   <Home className="mr-1.5 h-3.5 w-3.5" />
                   Household
@@ -494,7 +494,7 @@ export function ProfilePageClient({
                   type="button"
                   variant="outline"
                   onClick={() => setActiveTab('activity')}
-                  className="text-hm-stone-300 border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-white/10 bg-white/5 text-xs transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   <Activity className="mr-1.5 h-3.5 w-3.5" />
                   Activity
@@ -526,7 +526,7 @@ export function ProfilePageClient({
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="text-hm-stone-400 relative flex-1 rounded-lg px-4 py-2.5 text-sm transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-lg sm:flex-none sm:px-6"
+                      className="text-hm-muted relative flex-1 rounded-lg px-4 py-2.5 text-sm transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-lg sm:flex-none sm:px-6"
                     >
                       <Icon className="mr-2 h-4 w-4" />
                       {tab.label}
@@ -551,13 +551,13 @@ export function ProfilePageClient({
                       >
                         <div className="mb-6 flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                            <UserIcon className="text-hm-stone-400 h-5 w-5" />
+                            <UserIcon className="text-hm-muted h-5 w-5" />
                           </div>
                           <div>
-                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                            <h2 className="font-heading text-hm-ink text-xl font-semibold">
                               Profile Information
                             </h2>
-                            <p className="text-hm-stone-500 text-sm">
+                            <p className="text-hm-muted text-sm">
                               Update your personal details
                             </p>
                           </div>
@@ -614,13 +614,13 @@ export function ProfilePageClient({
                       >
                         <div className="mb-6 flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                            <Palette className="text-hm-stone-400 h-5 w-5" />
+                            <Palette className="text-hm-muted h-5 w-5" />
                           </div>
                           <div>
-                            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+                            <h2 className="font-heading text-hm-ink text-xl font-semibold">
                               Taste Profile
                             </h2>
-                            <p className="text-hm-stone-500 text-sm">
+                            <p className="text-hm-muted text-sm">
                               Aesthetic preferences and lifestyle priorities
                             </p>
                           </div>

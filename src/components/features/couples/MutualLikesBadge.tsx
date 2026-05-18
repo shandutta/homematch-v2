@@ -31,22 +31,22 @@ export function MutualLikesBadge({
 
   const BadgeContent = () => (
     <Badge
-      className={`border-hm-gold-200 bg-hm-gold-50 text-hm-stone-800 border shadow-sm ${sizeClasses[variant]} `}
+      className={`border-hm-accent/40 bg-hm-accent/10 text-hm-ink border shadow-sm ${sizeClasses[variant]} `}
       data-testid="mutual-likes-badge"
     >
       <div className="flex items-center gap-1">
         <div className="relative">
           <Heart
-            className={`${iconSizes[variant]} fill-hm-gold-500 text-hm-gold-500`}
+            className={`${iconSizes[variant]} fill-hm-accent text-hm-accent`}
           />
           {likedByCount > 2 && (
-            <span className="bg-hm-gold-300 text-hm-stone-900 absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full text-xs font-bold">
+            <span className="bg-hm-accent/40 text-hm-ink absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full text-xs font-bold">
               {likedByCount}
             </span>
           )}
         </div>
-        <span className="text-hm-stone-800 font-medium">Both liked!</span>
-        <Users className={`${iconSizes[variant]} text-hm-gold-600`} />
+        <span className="text-hm-ink font-medium">Both liked!</span>
+        <Users className={`${iconSizes[variant]} text-hm-accent-strong`} />
       </div>
     </Badge>
   )

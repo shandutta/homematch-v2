@@ -18,10 +18,10 @@ export function HouseholdActivityPage() {
     <div className="space-y-6 sm:space-y-8" data-testid="dashboard-activity">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <h1 className="font-display text-hm-stone-200 text-2xl font-medium tracking-tight sm:text-4xl">
+          <h1 className="font-display text-hm-ink text-2xl font-medium tracking-tight sm:text-4xl">
             Activity
           </h1>
-          <p className="text-hm-stone-500 mt-2 max-w-2xl text-sm sm:text-base">
+          <p className="text-hm-muted mt-2 max-w-2xl text-sm sm:text-base">
             A shared timeline of how your household is exploring listings.
           </p>
         </div>
@@ -50,7 +50,7 @@ export function HouseholdActivityPage() {
           <p className="text-hm-error text-sm font-semibold">
             Couldn’t load activity
           </p>
-          <p className="text-hm-stone-500 mt-2 text-sm">
+          <p className="text-hm-muted mt-2 text-sm">
             {query.error.message || 'Please try again.'}
           </p>
           <Button

@@ -187,10 +187,10 @@ export function AccountSection({ user }: AccountSectionProps) {
             <Shield className="text-hm-accent h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-heading text-hm-stone-200 text-xl font-semibold">
+            <h2 className="font-heading text-hm-ink text-xl font-semibold">
               Account Information
             </h2>
-            <p className="text-hm-stone-500 text-sm">Your account details</p>
+            <p className="text-hm-muted text-sm">Your account details</p>
           </div>
         </div>
 
@@ -204,12 +204,12 @@ export function AccountSection({ user }: AccountSectionProps) {
               >
                 <div className="flex items-center gap-2">
                   <Icon className={`h-4 w-4 ${item.color}`} />
-                  <p className="text-hm-stone-500 text-xs font-medium tracking-wide uppercase">
+                  <p className="text-hm-muted text-xs font-medium tracking-wide uppercase">
                     {item.label}
                   </p>
                 </div>
                 <p
-                  className={`text-hm-stone-200 mt-2 truncate text-sm ${item.mono ? 'font-mono text-xs' : ''} ${item.capitalize ? 'capitalize' : ''}`}
+                  className={`text-hm-ink mt-2 truncate text-sm ${item.mono ? 'font-mono text-xs' : ''} ${item.capitalize ? 'capitalize' : ''}`}
                   title={item.value}
                 >
                   {item.value}
@@ -224,13 +224,13 @@ export function AccountSection({ user }: AccountSectionProps) {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-            <LogOut className="text-hm-stone-400 h-5 w-5" />
+            <LogOut className="text-hm-muted h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-hm-stone-200 font-medium">
+            <h3 className="text-hm-ink font-medium">
               Session Management
             </h3>
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-muted text-xs">
               Sign out from your current session
             </p>
           </div>
@@ -240,7 +240,7 @@ export function AccountSection({ user }: AccountSectionProps) {
           onClick={handleSignOut}
           disabled={loading || isSigningOut}
           variant="outline"
-          className="text-hm-stone-300 w-full border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+          className="text-hm-ink-soft w-full border-white/10 bg-white/5 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
         >
           {isSigningOut ? (
             <>

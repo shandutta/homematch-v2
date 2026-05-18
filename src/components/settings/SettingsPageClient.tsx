@@ -410,7 +410,7 @@ export function SettingsPageClient({
           >
             <Link
               href="/dashboard"
-              className="group text-hm-stone-400 hover:text-hm-stone-200 inline-flex items-center gap-2 text-sm transition-colors"
+              className="group text-hm-muted hover:text-hm-ink inline-flex items-center gap-2 text-sm transition-colors"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span>Back to Dashboard</span>
@@ -425,13 +425,13 @@ export function SettingsPageClient({
             className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between"
           >
             <m.div variants={itemVariants} className="max-w-2xl space-y-4">
-              <p className="text-hm-stone-500 text-xs font-medium tracking-[0.2em] uppercase">
+              <p className="text-hm-muted text-xs font-medium tracking-[0.2em] uppercase">
                 Control Center
               </p>
-              <h1 className="font-heading text-hm-stone-200 text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="font-heading text-hm-ink text-3xl font-semibold tracking-tight sm:text-4xl">
                 Settings
               </h1>
-              <p className="text-hm-stone-400 text-sm leading-relaxed">
+              <p className="text-hm-muted text-sm leading-relaxed">
                 Fine-tune your search preferences, alerts, and account security.
                 Every change here immediately shapes the homes we surface for
                 you.
@@ -442,7 +442,7 @@ export function SettingsPageClient({
               <Link href="/profile">
                 <Button
                   variant="outline"
-                  className="text-hm-stone-300 border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="text-hm-ink-soft border-white/10 bg-white/5 px-5 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
                   <UserIcon className="mr-2 h-4 w-4" />
                   View Profile
@@ -475,12 +475,12 @@ export function SettingsPageClient({
                   <div className="relative">
                     <div className="flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${card.iconColor}`} />
-                      <p className="text-hm-stone-500 text-xs font-medium tracking-[0.1em] uppercase">
+                      <p className="text-hm-muted text-xs font-medium tracking-[0.1em] uppercase">
                         {card.label}
                       </p>
                     </div>
                     <p
-                      className="text-hm-stone-200 mt-1.5 truncate text-base font-medium sm:mt-2 sm:text-lg"
+                      className="text-hm-ink mt-1.5 truncate text-base font-medium sm:mt-2 sm:text-lg"
                       title={card.value}
                     >
                       {card.value}
@@ -514,14 +514,14 @@ export function SettingsPageClient({
                   value={value}
                   className="group flex h-auto min-h-[64px] w-full flex-col items-start gap-2 rounded-lg border border-transparent px-3 py-2 text-left transition-all data-[state=active]:border-white/10 data-[state=active]:bg-white/10 data-[state=active]:shadow-lg sm:min-h-[80px] sm:px-4 sm:py-3"
                 >
-                  <div className="text-hm-stone-400 flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 transition-colors group-data-[state=active]:bg-amber-500/10 group-data-[state=active]:text-amber-400 sm:h-8 sm:w-8">
+                  <div className="text-hm-muted flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 transition-colors group-data-[state=active]:bg-amber-500/10 group-data-[state=active]:text-amber-400 sm:h-8 sm:w-8">
                     <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </div>
                   <div>
-                    <p className="text-hm-stone-300 text-xs font-medium group-data-[state=active]:text-white sm:text-sm">
+                    <p className="text-hm-ink-soft text-xs font-medium group-data-[state=active]:text-white sm:text-sm">
                       {label}
                     </p>
-                    <p className="text-hm-stone-500 group-data-[state=active]:text-hm-stone-400 text-[11px] sm:text-xs">
+                    <p className="text-hm-muted group-data-[state=active]:text-hm-muted text-[11px] sm:text-xs">
                       {description}
                     </p>
                   </div>
@@ -632,7 +632,7 @@ export function SettingsPageClient({
       <div className="mx-auto mt-6 max-w-6xl px-4 pb-8 sm:px-6">
         <div className="flex flex-col gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-hm-stone-200 text-sm font-medium">
+            <p className="text-hm-ink text-sm font-medium">
               {aggregatedSaveState.isSaving
                 ? 'Saving updates...'
                 : aggregatedSaveState.hasUnsavedChanges
@@ -641,7 +641,7 @@ export function SettingsPageClient({
                     ? 'All settings saved.'
                     : 'No changes yet.'}
             </p>
-            <p className="text-hm-stone-500 text-xs">
+            <p className="text-hm-muted text-xs">
               Head back to the dashboard to keep browsing.
             </p>
           </div>
@@ -651,7 +651,7 @@ export function SettingsPageClient({
               className={
                 showReturnHighlight
                   ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-400'
-                  : 'text-hm-stone-300 border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                  : 'text-hm-ink-soft border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
               }
               variant={showReturnHighlight ? 'default' : 'outline'}
             >

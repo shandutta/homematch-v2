@@ -184,10 +184,10 @@ export function TasteProfileCollector({
     <div className="space-y-10">
       <section>
         <div className="mb-5">
-          <h3 className="text-hm-stone-200 text-base font-semibold">
+          <h3 className="text-hm-ink text-base font-semibold">
             Your aesthetic
           </h3>
-          <p className="text-hm-stone-500 mt-1 text-sm">
+          <p className="text-hm-muted mt-1 text-sm">
             Pick the home styles that speak to you. Select as many as you like.
           </p>
         </div>
@@ -235,7 +235,7 @@ export function TasteProfileCollector({
                 <p className={`text-sm font-medium ${style.accentColor}`}>
                   {style.label}
                 </p>
-                <p className="text-hm-stone-500 mt-0.5 text-xs leading-relaxed">
+                <p className="text-hm-muted mt-0.5 text-xs leading-relaxed">
                   {style.description}
                 </p>
               </m.button>
@@ -246,10 +246,10 @@ export function TasteProfileCollector({
 
       <section>
         <div className="mb-5">
-          <h3 className="text-hm-stone-200 text-base font-semibold">
+          <h3 className="text-hm-ink text-base font-semibold">
             Lifestyle priorities
           </h3>
-          <p className="text-hm-stone-500 mt-1 text-sm">
+          <p className="text-hm-muted mt-1 text-sm">
             Rate each factor from 1 to 10 based on how much it matters to you.
           </p>
         </div>
@@ -260,10 +260,10 @@ export function TasteProfileCollector({
             return (
               <div key={slider.key} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-hm-stone-200 text-sm font-medium">
+                  <p className="text-hm-ink text-sm font-medium">
                     {slider.label}
                   </p>
-                  <span className="text-hm-stone-400 ml-4 min-w-[2ch] text-right text-sm tabular-nums">
+                  <span className="text-hm-muted ml-4 min-w-[2ch] text-right text-sm tabular-nums">
                     {value}
                   </span>
                 </div>
@@ -277,10 +277,10 @@ export function TasteProfileCollector({
                   className="w-full"
                 />
                 <div className="flex justify-between">
-                  <span className="text-hm-stone-600 text-[11px]">
+                  <span className="text-hm-faint text-[11px]">
                     {slider.lowLabel}
                   </span>
-                  <span className="text-hm-stone-600 text-[11px]">
+                  <span className="text-hm-faint text-[11px]">
                     {slider.highLabel}
                   </span>
                 </div>
@@ -291,7 +291,7 @@ export function TasteProfileCollector({
       </section>
 
       <div className="flex items-center justify-between border-t border-white/5 pt-6">
-        <p className="text-hm-stone-500 text-xs">
+        <p className="text-hm-muted text-xs">
           {savedAt
             ? `Saved ${savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
             : 'Unsaved changes'}
