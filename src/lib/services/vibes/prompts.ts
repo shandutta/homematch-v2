@@ -262,7 +262,7 @@ Respond with a JSON object matching this EXACT structure:
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
 	  "emotionalHooks": ["2-4 evidence-backed buyer notes. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
-	  "suggestedTags": ["4-5 tags (default — only use 6-8 for unusually rich properties) EXACTLY from AVAILABLE TAGS list above (exact spelling/case). At least 3 of your tags MUST come from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC categories (visible features), not LIFESTYLE / LOCATION. Do not invent new tags."]
+	  "suggestedTags": ["EXACTLY 4 or 5 tags. Do NOT exceed 5. Each tag MUST be from the AVAILABLE TAGS list above (exact spelling/case). At least 3 of your tags MUST come from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC categories (visible features), not LIFESTYLE / LOCATION. Do not invent new tags."]
 }
 
 	Requirements:
