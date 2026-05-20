@@ -332,7 +332,12 @@ export async function POST(req: Request): Promise<NextResponse> {
           : typeof capRaw === 'string'
             ? Number(capRaw)
             : NaN
-      if (!Number.isFinite(cap) || !Number.isInteger(cap) || cap < 1 || cap > 60) {
+      if (
+        !Number.isFinite(cap) ||
+        !Number.isInteger(cap) ||
+        cap < 1 ||
+        cap > 60
+      ) {
         throw new Error('imageCap must be an integer between 1 and 60')
       }
       imageCapOverride = cap
