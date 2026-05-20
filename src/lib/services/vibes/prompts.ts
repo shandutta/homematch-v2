@@ -233,7 +233,7 @@ ${details}${neighborhoodSection}${descriptionSection}
 Respond with a JSON object matching this EXACT structure:
 {
   "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
-  "vibeStatement": "string (20-200 chars) - 1-2 practical sentences grounded in visible/listed facts. Name the evidence before the lifestyle implication. NEVER start with 'This isn't' or 'More than'. Good examples: 'The office nook and quiet rear bedrooms make remote-work days plausible.' or 'A kitchen island plus sliders to the deck supports casual dinners without overselling it.'",
+  "vibeStatement": "string (20-200 chars) - 1-2 practical sentences grounded in visible/listed facts. MUST name at least one of: the city, the bedroom count (as '3-bed' / 'four bedrooms'), the square footage bracket, or a SPECIFIC listed amenity. Name the evidence before the lifestyle implication. NEVER start with 'This isn't' or 'More than'. Good examples: 'The Walnut Creek condo's office nook and rear bedrooms make remote-work days plausible.' or 'In 1,500 sqft, a kitchen island plus deck sliders supports casual dinners.'",
   "primaryVibes": [
     {
       "name": "string - UNIQUE evidence-backed descriptor for THIS home (not generic like 'Modern Minimalist'). Think: 'Rear-Deck Entertaining' or 'Separated Office Nook'",
