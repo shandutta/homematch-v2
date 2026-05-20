@@ -232,7 +232,7 @@ ${details}${neighborhoodSection}${descriptionSection}
 
 Respond with a JSON object matching this EXACT structure:
 {
-  "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
+  "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. MUST contain a concrete noun (room, fixture, material, feature) — not a category or feeling. Forbidden: tagline cannot start with the city name; cannot contain any of these tag names verbatim ('Culinary Haven', 'Chef's Kitchen', 'Indoor-Outdoor Flow', 'Gallery-Ready Walls', 'Natural Light Filled', 'Remote Work Ready'). NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
   "vibeStatement": "string (20-200 chars) - 1-2 practical sentences grounded in visible/listed facts. MUST name at least one of: the city, the bedroom count (as '3-bed' / 'four bedrooms'), the square footage bracket, or a SPECIFIC listed amenity. Name the evidence before the lifestyle implication. NEVER start with 'This isn't' or 'More than'. Good examples: 'The Walnut Creek condo's office nook and rear bedrooms make remote-work days plausible.' or 'In 1,500 sqft, a kitchen island plus deck sliders supports casual dinners.'",
   "primaryVibes": [
     {
