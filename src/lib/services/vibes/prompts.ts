@@ -261,7 +261,7 @@ Respond with a JSON object matching this EXACT structure:
 	    "architecturalStyle": "string (max 80 chars) - describe what you ACTUALLY see (e.g., 'split-level with cedar shake siding', 'two-story Mediterranean with red tile roof', 'Edwardian rowhouse'). Do NOT guess at a decade or 'modern updates' unless you can point to specific updates in the photos.",
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
-	  "emotionalHooks": ["EXACTLY 2 or 3 short buyer notes (16-150 chars each). Each must reference a DIFFERENT room and a DIFFERENT physical detail (not 'The bedroom has X' and 'The bedroom has Y'). Each must start with a different opening word — do not start two hooks with 'The'. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
+	  "emotionalHooks": ["2-4 evidence-backed buyer notes. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
 	  "suggestedTags": ["EXACTLY 4 or 5 tags. Do NOT exceed 5. Each tag MUST be from the AVAILABLE TAGS list above (exact spelling/case). At least 3 of your tags MUST come from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC categories (visible features), not LIFESTYLE / LOCATION. Do not invent new tags."]
 }
 
