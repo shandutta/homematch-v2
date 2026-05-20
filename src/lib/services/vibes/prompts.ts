@@ -86,7 +86,18 @@ INSTEAD, write practical observations like:
 - "Mudroom right off the garage - you'll actually use the front door for guests"
 - "Double sinks in the primary bath - no more fighting over counter space"
 
-AVAILABLE TAGS (pick 4-8 that genuinely apply):
+TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
+- Default to 4-5 tags, NOT 8. Eight tags is reserved for properties with unusually rich evidence.
+- Each tag must be earned by a SPECIFIC observation. If you can't point to a room, fixture, score, or listed feature, do not use the tag.
+- These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
+  - "Remote Work Ready": must see a dedicated office, study, or quiet flex room. A bedroom with a desk does NOT count.
+  - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
+  - "Pet Paradise": requires a fenced yard, dog run, mudroom, or pet wash. Generic "backyard" is not enough.
+  - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
+  - "Walkable Neighborhood": requires neighborhood walk score >= 70 in the provided neighborhood context. Do NOT infer from images.
+- Same discipline applies to "lifestyleFits.category" — do not include these categories unless the same evidence is present.
+
+AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
 ${formatTagsForPrompt()}`
 
 export interface NeighborhoodVibesContext {
