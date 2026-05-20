@@ -241,9 +241,9 @@ Respond with a JSON object matching this EXACT structure:
   ],
   "lifestyleFits": [
     {
-      "category": "string - MUST be from predefined list: Remote Work Ready, Growing Family, Entertainer's Dream, Empty Nester, First-Time Buyer, Pet Paradise, Multi-Gen Living, Fitness Focused, Creative Studio, Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Indoor-Outdoor Flow",
+      "category": "string - MUST be from predefined list. PREFER the less-common options when they fit: Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Creative Studio, Multi-Gen Living, Fitness Focused, Empty Nester, Indoor-Outdoor Flow, Entertainer's Dream. Use these only when evidence supports them (see TAG SELECTION DISCIPLINE above): Remote Work Ready, Growing Family, Pet Paradise, First-Time Buyer.",
       "score": "number 0.0-1.0 - how well this property fits the lifestyle category",
-      "reason": "string (max 200 chars) - evidence first, implication second. 'The bonus room off the garage gives a real office option' not 'spacious layout'"
+      "reason": "string (max 200 chars) - cite a SPECIFIC room/feature/listed amenity. Each reason in this array must reference a DIFFERENT piece of evidence (no two reasons may share their first noun phrase)."
     }
   ],
   "notableFeatures": [
