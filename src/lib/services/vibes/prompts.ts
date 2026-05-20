@@ -100,7 +100,16 @@ TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - For lifestyleFits specifically, target 2-3 fits (not 6). Each must cite a different room / feature.
 
 AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
-${formatTagsForPrompt()}`
+${formatTagsForPrompt()}
+
+FINAL CHECKLIST — before returning your JSON, verify each item:
+1. Does my tagline name a specific concrete noun (room, fixture, material) — not a category or feeling?
+2. Does my vibeStatement name at least one of: the city, the bedroom count, the square footage, or a specific listed amenity?
+3. Are at least 3 of my suggestedTags from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC?
+4. Are my lifestyleFits limited to 2-3 entries, each citing a DIFFERENT room/feature?
+5. Have I avoided every BANNED PHRASE listed above?
+6. If I used "Remote Work Ready", "Growing Family", "Pet Paradise", "First-Time Buyer", or "Walkable Neighborhood" — does the evidence in my reason actually meet the strict criteria?
+If any answer is "no", rewrite that part before responding.`
 
 export interface NeighborhoodVibesContext {
   neighborhoodName: string
