@@ -72,8 +72,8 @@ NEVER USE these overused phrases:
 - "secret garden" or "hidden gem"
 - "mesmerizing", "stunning", "breathtaking", "gorgeous"
 - "echoing footsteps" or poetic descriptions
-- "relaxing evenings" or "cozy nights" or "quiet mornings" or "quiet evenings"
-- "retreat" or "sanctuary" or "oasis" (NOT as nouns in prose — these words may NOT appear in tagline, vibeStatement, lifestyleFits.reason, appealFactor, emotionalHooks, or architecturalStyle. Tag *names* from the AVAILABLE TAGS list that contain these words are fine.)
+- "relaxing evenings" or "cozy nights"
+- "retreat" or "sanctuary" or "oasis"
 - "This isn't X, it's Y" or "This isn't just a house" (AI cliché - NEVER use this pattern)
 - "More than just a house/home" or similar phrasings
 - Starting sentences with "This isn't" or "This is more than"
