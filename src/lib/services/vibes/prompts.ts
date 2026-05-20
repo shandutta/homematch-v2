@@ -256,7 +256,7 @@ Respond with a JSON object matching this EXACT structure:
 	  "aesthetics": {
 	    "lightingQuality": "natural_abundant" | "natural_moderate" | "artificial_warm" | "artificial_cool" | "mixed",
 	    "colorPalette": ["2-4 dominant tones you actually see, e.g., 'warm gray', 'honey oak', 'navy accents'"],
-	    "architecturalStyle": "string (max 80 chars) - be specific (e.g., '1960s ranch with modern updates' not just 'traditional')",
+	    "architecturalStyle": "string (max 80 chars) - describe what you ACTUALLY see (e.g., 'split-level with cedar shake siding', 'two-story Mediterranean with red tile roof', 'Edwardian rowhouse'). Do NOT guess at a decade or 'modern updates' unless you can point to specific updates in the photos.",
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
 	  "emotionalHooks": ["2-4 evidence-backed buyer notes. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
