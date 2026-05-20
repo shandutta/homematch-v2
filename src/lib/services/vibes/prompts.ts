@@ -89,6 +89,7 @@ INSTEAD, write practical observations like:
 TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - Default to 4-5 tags, NOT 8. Eight tags is reserved for properties with unusually rich evidence.
 - Each tag must be earned by a SPECIFIC observation. If you can't point to a room, fixture, score, or listed feature, do not use the tag.
+- PREFER tags from the ARCHITECTURAL, OUTDOOR, INTERIOR, and AESTHETIC categories — these describe what's actually visible. LIFESTYLE tags are inferences and require stronger evidence.
 - These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
   - "Remote Work Ready": must see a dedicated office, study, or quiet flex room. A bedroom with a desk does NOT count.
   - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
@@ -96,6 +97,7 @@ TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
   - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
   - "Walkable Neighborhood": requires neighborhood walk score >= 70 in the provided neighborhood context. Do NOT infer from images.
 - Same discipline applies to "lifestyleFits.category" — do not include these categories unless the same evidence is present.
+- For lifestyleFits specifically, target 2-3 fits (not 6). Each must cite a different room / feature.
 
 AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
 ${formatTagsForPrompt()}`
