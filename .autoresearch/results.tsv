@@ -1,0 +1,17 @@
+iteration	commit	metric	status	description
+0	248fc2cd	-55	baseline	starting point: qwen3-vl-8b with current prompts.ts (mean of 4 baseline runs)
+1	44ef2432	-38	keep	add evidence gates for over-used lifestyle tags (Remote Work Ready, Growing Family, etc) + default 4-5 tags
+2	7ac17eb7	-35	keep	varied architecturalStyle examples (no more 1960s-ranch parroting)
+3	86647eff	-29	keep	reorder lifestyleFits categories (under-used ones first) + no-repeated-noun-phrase rule
+4	ac8fdffd	-41	discard	tightened to absolute thresholds (price<$700k etc) — score regressed, reverted
+5	5fe8a97e	-24	keep	prefer visible-tag categories (architectural/outdoor/interior/aesthetic) + target 2-3 lifestyleFits
+6	eeeea420	-19	keep	require city / bedrooms / sqft / amenity in vibeStatement
+7	43d17f6e	13	keep	require >=3 visible-feature tags + cap suggestedTags at 4-5 + cap lifestyleFits at 2-3
+8	eeb4ffc0	8	keep	hard-cap suggestedTags at exactly 4-5 (was 'default 4-5'). Two runs: 6, 8. Best 8 vs iter7 13 — within noise
+9	21fd1bad	9	keep	forbid tagline from containing tag names verbatim — repetition dropped -7 to -3
+10	c3448f97	3	discard	expanded banned-phrase list with field-scoping — score regressed, reverted
+11	e663c5ba	3	discard	added 'quiet mornings' to banlist — score regressed -6, reverted
+12	25c93e5b	-6	discard	tightened notableFeatures (forbade Perfect for/Great for openers) — large regression, reverted
+13	0538ca95	5	discard	added 6-item self-check checklist — runs +5,+3 below baseline +9, reverted
+14	ecf39d76	-3	discard	forced emotionalHooks opener-word variation — regressed, reverted
+15	d03e8850	-7	discard	added few-shot example showing good output — regressed, reverted
