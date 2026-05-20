@@ -243,7 +243,7 @@ Respond with a JSON object matching this EXACT structure:
   ],
   "lifestyleFits": [
     {
-      "category": "string - MUST be from predefined list. PREFER the less-common options when they fit: Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Creative Studio, Multi-Gen Living, Fitness Focused, Empty Nester, Indoor-Outdoor Flow, Entertainer's Dream. Use these only when evidence supports them (see TAG SELECTION DISCIPLINE above): Remote Work Ready, Growing Family, Pet Paradise, First-Time Buyer.",
+      "category": "string - MUST be from predefined list. PREFER the less-common options: Culinary Haven, Book Lover's Nook, Hobbyist Heaven, Creative Studio, Multi-Gen Living, Fitness Focused, Empty Nester, Indoor-Outdoor Flow, Entertainer's Dream. The four 'easy' tags (Remote Work Ready, Growing Family, Pet Paradise, First-Time Buyer) require strict evidence — see TAG SELECTION DISCIPLINE above.",
       "score": "number 0.0-1.0 - how well this property fits the lifestyle category",
       "reason": "string (max 200 chars) - cite a SPECIFIC room/feature/listed amenity. Each reason in this array must reference a DIFFERENT piece of evidence (no two reasons may share their first noun phrase)."
     }
@@ -262,16 +262,16 @@ Respond with a JSON object matching this EXACT structure:
 	    "overallCondition": "pristine" | "well_maintained" | "dated_but_clean" | "needs_work"
 	  },
 	  "emotionalHooks": ["2-4 evidence-backed buyer notes. NO: quotes, dream, perfect, magical, sun-drenched, morning coffee, endless possibilities. YES: 'Mudroom storage helps with kids and dogs.' or 'Double sinks reduce weekday bathroom bottlenecks.'"],
-	  "suggestedTags": ["4-8 tags EXACTLY from AVAILABLE TAGS list above (exact spelling/case). Do not invent new tags."]
+	  "suggestedTags": ["4-5 tags (default — only use 6-8 for unusually rich properties) EXACTLY from AVAILABLE TAGS list above (exact spelling/case). At least 3 of your tags MUST come from ARCHITECTURAL / OUTDOOR / INTERIOR / AESTHETIC categories (visible features), not LIFESTYLE / LOCATION. Do not invent new tags."]
 }
 
 	Requirements:
 	- primaryVibes: 2-4 items with UNIQUE evidence-backed names for this property. Vary intensities meaningfully.
-	- lifestyleFits: 2-6 items. Every reason must cite a feature, room, layout, score, or neighborhood fact.
+	- lifestyleFits: 2-3 items (NOT 6). Every reason must cite a feature, room, layout, score, or neighborhood fact. Each lifestyleFit must use a DIFFERENT category — no duplicates within one property.
 	- notableFeatures: 2-8 specific features that would catch a buyer's eye
-	- Don’t fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
-	- emotionalHooks: 2-4 concise buyer notes, not sentimental narration
-	- suggestedTags: 4-8 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories.`
+	- Don't fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
+	- emotionalHooks: 2-4 concise buyer notes, not sentimental narration. Each hook must reference a DIFFERENT room or feature.
+	- suggestedTags: 4-5 tags ONLY from AVAILABLE TAGS above. Exact spelling/case. Pick from multiple categories. At least 3 must be visible-feature tags (not lifestyle).`
 }
 
 /**
