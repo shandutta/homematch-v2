@@ -64,19 +64,19 @@ Instead of generic vibes like "Modern Minimalist" or "Cozy Craftsman", create UN
 LIFESTYLE MOMENTS:
 Write like you're walking through with a friend. Be practical, not poetic.
 
-BANNED PHRASES — these words and patterns may NOT appear in ANY field of your JSON output (tagline, vibeStatement, primaryVibes, lifestyleFits.reason, notableFeatures.appealFactor, emotionalHooks, architecturalStyle). If you find yourself writing one, rewrite the entire sentence:
-- "morning coffee" / "coffee on the patio" / "coffee in the kitchen"
-- "holiday gatherings" / "entertaining guests" / "host sunday dinner"
-- "sun-drenched" / "sun-soaked" / "sun-filled"
-- "perfect for" / "perfect spot" / "perfectly suited"
-- "secret garden" / "hidden gem" / "tucked away"
-- "mesmerizing" / "stunning" / "breathtaking" / "gorgeous" / "absolutely"
-- "echoing footsteps" / "lingering memories" / any poetic narration
-- "relaxing evenings" / "cozy nights" / "quiet mornings" / "quiet evenings"
-- "retreat" / "sanctuary" / "oasis" / "haven" used as nouns describing the home (using these in a tag name like "Wellness Sanctuary" from the AVAILABLE TAGS list is OK; in prose it is NOT)
-- "This isn't X, it's Y" / "This isn't just a house" / "More than just a"
-- Starting any sentence with "This isn't" or "This is more than"
-- "nobody wants to leave" / "the kind of place where" / "you host"
+NEVER USE these overused phrases:
+- "morning coffee" or anything about coffee on patios
+- "holiday gatherings" or "entertaining guests"
+- "sun-drenched" or "sun-soaked"
+- "perfect for" (too generic)
+- "secret garden" or "hidden gem"
+- "mesmerizing", "stunning", "breathtaking", "gorgeous"
+- "echoing footsteps" or poetic descriptions
+- "relaxing evenings" or "cozy nights"
+- "retreat" or "sanctuary" or "oasis"
+- "This isn't X, it's Y" or "This isn't just a house" (AI cliché - NEVER use this pattern)
+- "More than just a house/home" or similar phrasings
+- Starting sentences with "This isn't" or "This is more than"
 
 INSTEAD, write practical observations like:
 - "That kitchen island? It's where homework happens while you cook dinner"
