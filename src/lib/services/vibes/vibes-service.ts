@@ -495,14 +495,31 @@ export class VibesService {
 
   /**
    * Generate vibes for a single property
+   *
+   * `extras.imageCap` overrides the maximum number of images sent to the
+   * vision model (default 18). The bake-off backfill runs with cap=40 so
+   * the LLM has more of the listing to ground its claims in; production
+   * cron keeps the cheaper default.
+   *
+   * `extras.model` overrides the OpenRouter model id for this call only
+   * (no instance-state mutation). Used by the bake-off backfill to
+   * compare e.g. qwen3.6-plus vs gemini-3-flash-preview side-by-side
+   * without spinning up a second client.
    */
   async generateVibes(
     property: Property,
-    extras?: { neighborhoodVibes?: NeighborhoodVibesContext | null }
+    extras?: {
+      neighborhoodVibes?: NeighborhoodVibesContext | null
+      imageCap?: number
+      model?: string
+    }
   ): Promise<VibesGenerationResult> {
     const startTime = Date.now()
 
-    // Select strategic images
+    // Select strategic images. imageCap defaults to 18 to preserve the
+    // pre-bake-off cron behavior; callers (backfill scripts, batch
+    // runners) can override per-call.
+    const imageCap = extras?.imageCap ?? 18
     const selectionSeed = Number.parseInt(
       crypto.createHash('md5').update(property.id).digest('hex').slice(0, 8),
       16
@@ -511,7 +528,7 @@ export class VibesService {
       property.images,
       property.property_type,
       property.lot_size_sqft,
-      18,
+      imageCap,
       selectionSeed
     )
 
@@ -573,6 +590,9 @@ export class VibesService {
         {
           ...attemptConfigs[attempt],
           responseFormat: { type: 'json_object' },
+          // Per-call model override (bake-off path). When undefined the
+          // OpenRouter client falls back to its configured default.
+          ...(extras?.model ? { model: extras.model } : {}),
         }
       )
 
@@ -669,10 +689,15 @@ export class VibesService {
       ) => Promise<Property | void> | Property | void
       // Optional per-property extras keyed by property.id. Currently used to
       // pass neighborhood_vibes context into the LLM prompt
-      // (NEIGHBORHOOD-VIBES-WIRE).
+      // (NEIGHBORHOOD-VIBES-WIRE), and to override model / imageCap during
+      // bake-off backfills.
       extrasByPropertyId?: Map<
         string,
-        { neighborhoodVibes?: NeighborhoodVibesContext | null }
+        {
+          neighborhoodVibes?: NeighborhoodVibesContext | null
+          imageCap?: number
+          model?: string
+        }
       >
     }
   ): Promise<BatchGenerationResult> {

@@ -299,6 +299,8 @@ export async function POST(req: Request): Promise<NextResponse> {
   // reject other types with a 400 — extractZpid() must never receive a
   // non-string (it calls .trim()).
   let zillowInput: string
+  let modelOverride: string | undefined
+  let imageCapOverride: number | undefined
   try {
     const body = await req.json()
     const raw: unknown = body.zillowUrl || body.zpid
@@ -312,10 +314,35 @@ export async function POST(req: Request): Promise<NextResponse> {
     } else {
       throw new Error('zillowUrl or zpid must be a string or number')
     }
-  } catch {
-    return ApiErrorHandler.badRequest(
-      'Invalid request body. Provide zillowUrl or zpid.'
-    )
+
+    // Optional per-call model + imageCap overrides for the bake-off
+    // backfill. When omitted, the VibesService defaults apply (current
+    // production behavior: gemini-2.5-flash, cap=18).
+    if (body.model !== undefined) {
+      if (typeof body.model !== 'string' || body.model.trim().length === 0) {
+        throw new Error('model must be a non-empty string')
+      }
+      modelOverride = body.model.trim()
+    }
+    if (body.imageCap !== undefined) {
+      const capRaw = body.imageCap
+      const cap =
+        typeof capRaw === 'number'
+          ? capRaw
+          : typeof capRaw === 'string'
+            ? Number(capRaw)
+            : NaN
+      if (!Number.isFinite(cap) || !Number.isInteger(cap) || cap < 1 || cap > 60) {
+        throw new Error('imageCap must be an integer between 1 and 60')
+      }
+      imageCapOverride = cap
+    }
+  } catch (parseErr) {
+    const message =
+      parseErr instanceof Error
+        ? parseErr.message
+        : 'Invalid request body. Provide zillowUrl or zpid.'
+    return ApiErrorHandler.badRequest(message)
   }
 
   // Extract zpid
@@ -387,6 +414,16 @@ export async function POST(req: Request): Promise<NextResponse> {
       square_feet: zillowData.livingArea || null,
       lot_size_sqft: zillowData.lotAreaValue || null,
       year_built: zillowData.yearBuilt || null,
+      // PARKING-NULL: Zillow's response shape in ZillowPropertyResponse
+      // (see extract-amenities.ts) exposes parking signals only as
+      // booleans (`hasGarage`) and feature strings (`parkingFeatures`,
+      // `resoFacts.parkingFeatures`). The 2026-05-13 prod sample
+      // confirmed no numeric count field (no garageParkingCapacity, no
+      // parkingCapacity, no garageSpaces) on any returned listing.
+      // Leaving null here is intentional — we don't fabricate a count
+      // from boolean evidence. The garage / parking-feature strings
+      // already flow into `amenities` via extractAmenities(), which the
+      // LLM uses for non-numeric reasoning.
       parking_spots: null,
       property_type: normalizePropertyType(
         zillowData.homeType || zillowData.propertyType || 'single_family'
@@ -419,9 +456,14 @@ export async function POST(req: Request): Promise<NextResponse> {
       console.log(`[generate-vibes-zillow] Using ${images.length} images`)
     }
 
-    // Generate vibes
+    // Generate vibes. model + imageCap overrides are threaded through to
+    // VibesService.generateVibes (bake-off path); when undefined the
+    // service falls back to the production defaults.
     const vibesService = createVibesService()
-    const result = await vibesService.generateVibes(property)
+    const result = await vibesService.generateVibes(property, {
+      model: modelOverride,
+      imageCap: imageCapOverride,
+    })
 
     if (isDev) {
       console.log(
