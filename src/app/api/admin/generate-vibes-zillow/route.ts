@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
-import { createVibesService } from '@/lib/services/vibes'
+import { createVibesService, VibesService } from '@/lib/services/vibes'
+import { createStandaloneClient } from '@/lib/supabase/standalone'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -405,9 +407,34 @@ export async function POST(req: Request): Promise<NextResponse> {
       return ApiErrorHandler.badRequest('No images found for this property')
     }
 
+    // PERSISTENCE FIX (2026-05-20): the previous version of this route built
+    // the Property object in memory with a synthetic id (`zillow-${zpid}`),
+    // generated the vibe, and returned without writing either the refreshed
+    // property fields or the new vibe to the DB. Net effect: every call
+    // burned RapidAPI + OpenRouter for an ephemeral response — `description`,
+    // `amenities`, `year_built` never landed in prod `properties`, and
+    // `property_vibes` rows kept the stale generations from the original
+    // 2026-01 bulk run. Now we look up the existing UUID by zpid (or mint a
+    // new one for first-time zpids), use that real UUID throughout, upsert
+    // the property row with the freshly-fetched Zillow fields, and after
+    // vibes generation upsert into property_vibes too.
+    const supabase = createStandaloneClient()
+    const { data: existingProperty, error: lookupError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('zpid', zpid)
+      .maybeSingle()
+    if (lookupError) {
+      console.error(
+        '[generate-vibes-zillow] zpid lookup failed:',
+        lookupError.message
+      )
+    }
+    const propertyId = existingProperty?.id ?? randomUUID()
+
     // Build property object for vibes generation
     const property: Property = {
-      id: `zillow-${zpid}`,
+      id: propertyId,
       zpid,
       address,
       city,
@@ -454,6 +481,28 @@ export async function POST(req: Request): Promise<NextResponse> {
       updated_at: new Date().toISOString(),
     }
 
+    // Upsert the refreshed property row so description / amenities /
+    // year_built actually persist. Strip created_at + updated_at from the
+    // payload — the DB has DEFAULT now() on insert and we don't want to
+    // clobber the original created_at on update; updated_at is managed by
+    // a trigger.
+    const {
+      created_at: _propCreatedAt,
+      updated_at: _propUpdatedAt,
+      ...propertyUpsertPayload
+    } = property
+    void _propCreatedAt
+    void _propUpdatedAt
+    const { error: propertyUpsertError } = await supabase
+      .from('properties')
+      .upsert(propertyUpsertPayload, { onConflict: 'id' })
+    if (propertyUpsertError) {
+      console.error(
+        '[generate-vibes-zillow] property upsert failed:',
+        propertyUpsertError.message
+      )
+    }
+
     if (isDev) {
       console.log(
         `[generate-vibes-zillow] Generating vibes for ${address}, ${city}...`
@@ -473,6 +522,28 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (isDev) {
       console.log(
         `[generate-vibes-zillow] Generated vibes in ${result.processingTimeMs}ms, cost: $${result.usage.estimatedCostUsd.toFixed(4)}`
+      )
+    }
+
+    // Persist the generated vibe so the user-facing app picks up the fresh
+    // output. Upsert on property_id so a re-run replaces the existing row
+    // (mirrors the bulk /api/admin/generate-vibes route's pattern at
+    // src/app/api/admin/generate-vibes/route.ts lines 266-272).
+    const vibeRecord = VibesService.toInsertRecord(
+      result,
+      property,
+      result.rawOutput
+    )
+    const { error: vibeUpsertError } = await supabase
+      .from('property_vibes')
+      .upsert([vibeRecord], {
+        onConflict: 'property_id',
+        ignoreDuplicates: false,
+      })
+    if (vibeUpsertError) {
+      console.error(
+        '[generate-vibes-zillow] property_vibes upsert failed:',
+        vibeUpsertError.message
       )
     }
 
