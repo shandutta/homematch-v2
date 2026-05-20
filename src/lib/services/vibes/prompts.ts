@@ -100,23 +100,7 @@ TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - For lifestyleFits specifically, target 2-3 fits (not 6). Each must cite a different room / feature.
 
 AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
-${formatTagsForPrompt()}
-
-EXAMPLE — for a 3-bed 1,500sqft Berkeley bungalow with hardwood floors and a fenced backyard, a GOOD response looks like:
-{
-  "tagline": "Built-in bookshelves frame the living room fireplace",
-  "vibeStatement": "The 3-bed Berkeley bungalow's hardwood floors and built-ins give it actual character, and the fenced rear yard handles a dog without fuss.",
-  "primaryVibes": [
-    {"name": "Bookshelf-Lined Living", "intensity": 0.75, "source": "interior"},
-    {"name": "Fenced-Yard Functional", "intensity": 0.5, "source": "exterior"}
-  ],
-  "lifestyleFits": [
-    {"category": "Book Lover's Nook", "score": 0.8, "reason": "The full-wall built-ins in the living room hold a real library."},
-    {"category": "Indoor-Outdoor Flow", "score": 0.6, "reason": "The kitchen back door opens to the fenced yard for easy dog access."}
-  ],
-  "suggestedTags": ["Craftsman Details", "Hardwood Throughout", "Built-In Character", "Garden Paradise", "Cozy & Warm"]
-}
-Note how every claim ties to a specific feature (built-ins, fenced yard, hardwood), tags lean visible/architectural, lifestyleFits use under-used categories. Apply this pattern to YOUR property.`
+${formatTagsForPrompt()}`
 
 export interface NeighborhoodVibesContext {
   neighborhoodName: string
