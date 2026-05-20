@@ -89,13 +89,14 @@ INSTEAD, write practical observations like:
 TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - Default to 4-5 tags, NOT 8. Eight tags is reserved for properties with unusually rich evidence.
 - Each tag must be earned by a SPECIFIC observation. If you can't point to a room, fixture, score, or listed feature, do not use the tag.
-- These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
-  - "Remote Work Ready": must see a dedicated office, study, or quiet flex room. A bedroom with a desk does NOT count.
-  - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
-  - "Pet Paradise": requires a fenced yard, dog run, mudroom, or pet wash. Generic "backyard" is not enough.
-  - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
-  - "Walkable Neighborhood": requires neighborhood walk score >= 70 in the provided neighborhood context. Do NOT infer from images.
-- Same discipline applies to "lifestyleFits.category" — do not include these categories unless the same evidence is present.
+- These five "easy" categories are FORBIDDEN as both suggestedTags AND lifestyleFits.category unless the listed evidence is present. When evidence is missing, leave the tag out entirely — do not substitute weaker evidence:
+  - "Remote Work Ready": REQUIRES a photo showing a dedicated office, study, library, or quiet flex room (not a bedroom-with-desk). Without that photo, omit.
+  - "Growing Family": REQUIRES bedrooms >= 4 OR (bedrooms >= 3 AND a fenced yard / play area visible in photos). If you only have 3 beds and no yard, omit.
+  - "Pet Paradise": REQUIRES a fenced yard visible in photos, OR a mudroom, OR a pet wash station, OR a listed amenity that says "fenced" / "dog". Generic "backyard" is not enough — omit.
+  - "First-Time Buyer": REQUIRES price below $700k AND square_feet below 1800. Above either threshold, omit.
+  - "Walkable Neighborhood": REQUIRES the provided NEIGHBORHOOD CONTEXT to include a Walk Score of 70+. If no neighborhood context exists, omit. Never infer walkability from images alone.
+- The exact phrase "easy entry-level" or "entry-tier" is forbidden in any reason text — those are templated phrases, not evidence.
+- Same discipline applies to all other tags too: if you can't name the specific feature in the reason / appealFactor, omit the tag.
 
 AVAILABLE TAGS (pick 4-8 that genuinely apply, default 4-5):
 ${formatTagsForPrompt()}`
