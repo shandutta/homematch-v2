@@ -250,9 +250,9 @@ Respond with a JSON object matching this EXACT structure:
   ],
   "notableFeatures": [
     {
-      "feature": "string - specific feature (e.g., 'Double oven with gas cooktop')",
-      "location": "string - where (e.g., 'kitchen', 'primary suite')",
-      "appealFactor": "string (max 200 chars) - practical buyer relevance, not romance copy"
+      "feature": "string - specific feature you can SEE in a photo or that is listed in PROPERTY DETAILS / amenities. e.g. 'Stainless gas range with vent hood', 'Built-in shelving flanking the fireplace', 'Crown molding in dining room'. Do NOT invent features. If you only have 2-3 confidently-named features, emit only 2-3.",
+      "location": "string - where (e.g., 'kitchen', 'primary suite', 'rear deck')",
+      "appealFactor": "string (max 200 chars) - one practical sentence about why a buyer would care. Cannot start with 'Perfect for' / 'Great for' / 'Ideal for'."
     }
   ],
 	  "aesthetics": {
