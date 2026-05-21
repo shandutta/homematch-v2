@@ -6,3 +6,4 @@ iteration	commit	metric	status	description
 4	487944d6	57	discard	add-constraint: hard gate on 'Remote Work Ready' tag. Helped target tag (genTag fell) but slop variance spiked this run; -9 vs best. Reverted (90b11718).
 -	b15300cb	68	recheck	variance re-run of best state (no mutation): 68 (subtotal 71, rep -3). Confirms best is stable ~66-68, not a fluke.
 5	33da1aaf	51	discard	add-constraint: gate Entertainer's Dream + ban stock hosting phrasing. Repetition was already low (-3); added text raised slop/genTag. -15 vs best. Reverted (e38dc525).
+6	9e684c3b	63	discard	remove-bloat: de-narrativize lifestyle voice (drop scene-painting examples). Slop dropped but repetition rose to -6 (terse clauses collide more); net 63, below best band. Reverted (3fe3934e).
