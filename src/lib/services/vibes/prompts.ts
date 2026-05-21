@@ -230,6 +230,14 @@ ${desc}`
 
 ${details}${neighborhoodSection}${descriptionSection}
 
+STRUCTURAL FACTS YOU MUST SURFACE (do not let photos distract you from these):
+Real listings bury headline structural facts in the details and description. If any of the following appear in the PROPERTY DETAILS, LISTED AMENITIES, or LISTING DESCRIPTION above, you MUST name them explicitly in vibeStatement and/or notableFeatures, using the listing's own words:
+- Multi-level / multi-story layouts (e.g. "two-level unit", "split-level", "main-level living")
+- Separate dwelling units: ADU, in-law unit / In-Law Floorplan, Au Pair, second residence, duplex/triplex unit count
+- The named neighborhood or district (e.g. "Crocker Highlands", "Eureka Valley", "Twin Peaks") — name it verbatim
+- Distinctive listed amenities a buyer filters on: EV charging, dog run, breakfast nook/bar, updated kitchen, panoramic/named views (Bay, Golden Gate)
+These structural facts matter MORE to a buyer than what's merely pretty in a photo. Prefer naming a real listed feature over describing a generic visible one.
+
 Respond with a JSON object matching this EXACT structure:
 {
   "tagline": "string (10-80 chars) - restrained, specific headline about a visible/listed feature. MUST contain a concrete noun (room, fixture, material, feature) — not a category or feeling. Forbidden: tagline cannot start with the city name; cannot contain any of these tag names verbatim ('Culinary Haven', 'Chef's Kitchen', 'Indoor-Outdoor Flow', 'Gallery-Ready Walls', 'Natural Light Filled', 'Remote Work Ready'). NO hype words like dream, perfect, magical, oasis, breathtaking, absolute, endless.",
