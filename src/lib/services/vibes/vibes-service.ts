@@ -254,7 +254,10 @@ export class VibesService {
     const inferred = inferTagsFromText(textParts.join('\n'))
     for (const tag of inferred) uniquePush(normalized, tag)
 
-    return normalized.slice(0, 8)
+    // Hard cap at 5 tags (was 8). Cards over-tag and the extra tags are the
+    // generic "Indoor-Outdoor Flow / Commuter Friendly" filler. See prompt
+    // "EXACTLY 4 or 5 tags" — this is the code-level guarantee.
+    return normalized.slice(0, 5)
   }
 
   private static finalizeSuggestedTags(vibes: LLMVibesOutput): LLMVibesOutput {
@@ -264,7 +267,7 @@ export class VibesService {
     }
 
     if (unique.length >= 4) {
-      return { ...vibes, suggestedTags: unique.slice(0, 8) }
+      return { ...vibes, suggestedTags: unique.slice(0, 5) }
     }
 
     const candidate: Record<string, unknown> = {
@@ -284,7 +287,7 @@ export class VibesService {
     const merged: CanonicalTag[] = [...unique]
     for (const tag of filled) uniquePush(merged, tag)
 
-    return { ...vibes, suggestedTags: merged.slice(0, 8) }
+    return { ...vibes, suggestedTags: merged.slice(0, 5) }
   }
 
   private static isRecord(value: unknown): value is Record<string, unknown> {
@@ -567,8 +570,13 @@ export class VibesService {
     )
 
     const attemptConfigs = [
-      { temperature: 0.7, maxTokens: 2000 },
-      { temperature: 0.2, maxTokens: 2000 },
+      // maxTokens 3000 (was 2000): gemini-2.5-flash is a thinking model, so
+      // the budget must cover reasoning tokens plus the richer 2-sentence
+      // vibeStatement and grounded feature reasons. Real outputs run ~300
+      // completion tokens, so this cap only guards pathological cases —
+      // typical output cost is unchanged.
+      { temperature: 0.7, maxTokens: 3000 },
+      { temperature: 0.2, maxTokens: 3000 },
     ]
 
     let parsedVibes: LLMVibesOutput | null = null
@@ -576,6 +584,7 @@ export class VibesService {
     let repairApplied = false
     let lastError: unknown = null
     let lastPreview: string | null = null
+    let lastDiag: string | null = null
     let modelUsed: string = DEFAULT_VIBES_MODEL
     const usageTotals: UsageInfo = {
       promptTokens: 0,
@@ -642,6 +651,7 @@ export class VibesService {
           rawContent.length > 2000
             ? `${rawContent.slice(0, 2000)}…`
             : rawContent
+        lastDiag = `finish_reason=${response.choices?.[0]?.finish_reason ?? '?'} completionTokens=${usage.completionTokens} contentLen=${rawContent.length}`
         repairApplied = true
       }
     }
@@ -651,6 +661,7 @@ export class VibesService {
         console.error(
           '[VibesService] Failed to parse/validate LLM response:',
           `property=${property.id}`,
+          `[${lastDiag ?? 'no-diag'}]`,
           lastPreview
         )
       }
