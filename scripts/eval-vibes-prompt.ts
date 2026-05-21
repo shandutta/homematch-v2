@@ -19,7 +19,8 @@
  * Usage:
  *   pnpm exec tsx scripts/eval-vibes-prompt.ts \
  *     [--model=qwen/qwen3-vl-8b-instruct] \
- *     [--imageCap=40]
+ *     [--imageCap=40] \
+ *     [--zpids=136710364,450237062,...]   # defaults to EVAL_ZPIDS
  *
  * Required env (sourced from .env.vercel.production.local on devbox):
  *   SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL
@@ -88,6 +89,7 @@ const GENERIC_SPAM_TAGS = [
 interface Args {
   model: string
   imageCap: number
+  zpids: string[]
 }
 
 function parseArgs(argv: string[]): Args {
@@ -98,9 +100,17 @@ function parseArgs(argv: string[]): Args {
       raw[arg.slice(2, eq)] = arg.slice(eq + 1)
     }
   }
+  // --zpids=a,b,c overrides the default EVAL_ZPIDS list. Falls back to the
+  // default when not passed (or passed empty), so existing invocations are
+  // unaffected.
+  const zpids = (raw.zpids ?? '')
+    .split(',')
+    .map((z) => z.trim())
+    .filter((z) => z.length > 0)
   return {
     model: raw.model || 'qwen/qwen3-vl-8b-instruct',
     imageCap: Number.parseInt(raw.imageCap || '40', 10),
+    zpids: zpids.length > 0 ? zpids : [...EVAL_ZPIDS],
   }
 }
 
@@ -324,7 +334,7 @@ interface PerPropertyDetail {
   error?: string
 }
 
-async function loadProperties(): Promise<Property[]> {
+async function loadProperties(zpids: string[]): Promise<Property[]> {
   const url =
     process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -342,7 +352,7 @@ async function loadProperties(): Promise<Property[]> {
   const { data, error } = await supabase
     .from('properties')
     .select('*')
-    .in('zpid', EVAL_ZPIDS as unknown as string[])
+    .in('zpid', zpids)
 
   if (error) {
     console.error('[eval] Supabase fetch failed:', error.message)
@@ -365,9 +375,9 @@ async function loadProperties(): Promise<Property[]> {
     props.push(parsed.data)
   }
 
-  // Sort to match EVAL_ZPIDS order for stable logging
+  // Sort to match the requested zpid order for stable logging
   const order = new Map<string, number>(
-    (EVAL_ZPIDS as readonly string[]).map((z, i) => [z, i] as [string, number])
+    zpids.map((z, i) => [z, i] as [string, number])
   )
   props.sort(
     (a, b) => (order.get(a.zpid ?? '') ?? 0) - (order.get(b.zpid ?? '') ?? 0)
@@ -384,7 +394,7 @@ async function main() {
     process.exit(1)
   }
 
-  const properties = await loadProperties()
+  const properties = await loadProperties(args.zpids)
 
   const client = createOpenRouterClient(
     process.env.OPENROUTER_API_KEY,
