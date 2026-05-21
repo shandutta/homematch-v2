@@ -5,6 +5,11 @@ import {
   isZillowStaticImageUrl,
   type FetchZillowImagesOptions,
 } from '@/lib/ingestion/zillow-images'
+import {
+  fetchZillowProperty as defaultFetchZillowProperty,
+  extractPropertyMetadata,
+} from '@/lib/ingestion/zillow-property'
+import type { ZillowPropertyResponse } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 import { propertySchema, type Property } from '@/lib/schemas/property'
 import { VibesService, type BatchGenerationResult } from '@/lib/services/vibes'
 import type { AppDatabase } from '@/types/app-database'
@@ -26,6 +31,7 @@ export type BackfillVibesArgs = {
   force: boolean
   propertyIds: string[] | null
   refreshImages: boolean
+  refreshMetadata: boolean
   forceImages: boolean
   minImages: number
   imageDelayMs: number
@@ -72,6 +78,11 @@ export type BackfillVibesDeps = {
   fetchZillowImageUrls?: (
     options: FetchZillowImagesOptions
   ) => Promise<string[]>
+  fetchZillowProperty?: (options: {
+    zpid: string
+    rapidApiKey: string
+    host?: string
+  }) => Promise<ZillowPropertyResponse>
   logger?: Logger
   sleep?: (ms: number) => Promise<void>
   now?: () => Date
@@ -113,8 +124,16 @@ export async function backfillVibes(
   if (args.refreshImages && !rapidApiKey) {
     throw new Error('rapidApiKey missing; required for --refreshImages=true')
   }
+  if (args.refreshMetadata && !rapidApiKey) {
+    throw new Error('rapidApiKey missing; required for --refreshMetadata=true')
+  }
 
   const fetchImages = deps.fetchZillowImageUrls ?? fetchZillowImageUrls
+  const fetchProperty = deps.fetchZillowProperty ?? defaultFetchZillowProperty
+  // Both image and metadata refresh use the per-property scan path (refresh →
+  // per-property regenerate decision). Plain vibes-only runs (nightly cron)
+  // keep the simpler batch path.
+  const perPropertyMode = args.refreshImages || args.refreshMetadata
 
   const target = args.propertyIds?.length
     ? args.propertyIds.length
@@ -161,12 +180,58 @@ export async function backfillVibes(
       throw new Error(`Failed to read properties: ${error.message}`)
     }
 
-    const parsedProperties = propertySchema.array().safeParse(data ?? [])
-    if (!parsedProperties.success) {
-      throw new Error('Invalid property payload for vibes backfill')
+    // Parse per-row instead of the whole array: a single schema-invalid row
+    // (e.g. a legacy listing with an out-of-range field) must not abort the
+    // entire backfill. Skip + warn the bad ones; the offset still advances by
+    // the raw row count so pagination never stalls or re-loops.
+    const rawRows: unknown[] = data ?? []
+    const pageRowCount = rawRows.length
+    if (pageRowCount === 0) break
+
+    const properties: Property[] = []
+    let invalidInPage = 0
+    for (const row of rawRows) {
+      const rec =
+        row && typeof row === 'object'
+          ? // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            (row as Record<string, unknown>)
+          : null
+      // The DB allows NULL bedrooms/bathrooms (≈1,387 active rows have null
+      // bathrooms) but propertySchema requires a number with 0 as the
+      // documented "unknown" sentinel. Coerce null -> 0 so these rows aren't
+      // skipped; refreshMetadata overwrites with the real Zillow value below.
+      if (rec) {
+        if (rec.bedrooms === null) rec.bedrooms = 0
+        if (rec.bathrooms === null) rec.bathrooms = 0
+      }
+      const parsed = propertySchema.safeParse(row)
+      if (parsed.success) {
+        properties.push(parsed.data)
+        continue
+      }
+      invalidInPage++
+      const rowId = rec && rec.id != null ? String(rec.id) : 'unknown'
+      const issue = parsed.error.issues[0]
+      logger.warn(
+        `[backfill-vibes] Skipping invalid property id=${rowId}: ${
+          issue
+            ? `${issue.path.join('.') || '(root)'} — ${issue.message}`
+            : 'schema validation failed'
+        }`
+      )
     }
-    const properties = parsedProperties.data
-    if (properties.length === 0) break
+    if (invalidInPage > 0) {
+      logger.warn(
+        `[backfill-vibes] Skipped ${invalidInPage}/${pageRowCount} invalid properties in this page`
+      )
+    }
+    if (properties.length === 0) {
+      // Whole page was invalid; advance past it and continue (don't break,
+      // which would prematurely end a paginated full run).
+      if (args.propertyIds) break
+      offset = pageStartOffset + pageRowCount
+      continue
+    }
     const pageIndexById = new Map(properties.map((p, idx) => [p.id, idx]))
 
     const ids = properties.map((p) => p.id)
@@ -186,7 +251,7 @@ export async function backfillVibes(
     )
 
     let toProcess = properties
-    if (!args.force && !args.refreshImages) {
+    if (!args.force && !perPropertyMode) {
       const delta = properties.filter(
         (p) => existingHashMap.get(p.id) !== currentHashMap.get(p.id)
       )
@@ -212,7 +277,7 @@ export async function backfillVibes(
         lastProcessedIndexInPage = lastIdx
       }
 
-      if (!args.refreshImages) {
+      if (!perPropertyMode) {
         logger.log(
           `[backfill-vibes] Generating batch of ${batchLimited.length} (attempted ${attempted}/${args.propertyIds?.length ?? args.limit ?? 'all'})`
         )
@@ -231,6 +296,9 @@ export async function backfillVibes(
         zillow_images_refreshed_count: number
         zillow_images_refresh_status: 'ok' | 'no_images'
       }[] = []
+      const metadataUpdatePayloads: Array<
+        Record<string, unknown> & { id: string }
+      > = []
 
       const maybeRefreshImages = async (property: Property): Promise<void> => {
         if (!args.refreshImages) return
@@ -341,8 +409,75 @@ export async function backfillVibes(
         }
       }
 
+      const maybeRefreshMetadata = async (
+        property: Property
+      ): Promise<void> => {
+        if (!args.refreshMetadata) return
+        const zpid = property.zpid
+        if (!zpid || !rapidApiKey) return
+
+        let raw: ZillowPropertyResponse
+        try {
+          raw = await fetchProperty({ zpid, rapidApiKey, host: rapidApiHost })
+        } catch (err) {
+          logger.warn(
+            `[backfill-vibes] [meta] Fetch failed zpid=${zpid} property=${property.id}: ${err instanceof Error ? err.message : String(err)}`
+          )
+          if (args.imageDelayMs > 0) await sleep(args.imageDelayMs)
+          return
+        }
+
+        const md = extractPropertyMetadata(raw)
+
+        // Merge into the in-memory property so downstream vibes generation and
+        // generateSourceHash see the enriched data. Never overwrite a good
+        // existing value with a null fetch.
+        if (md.description !== null) property.description = md.description
+        if (md.amenities !== null) property.amenities = md.amenities
+        if (md.year_built !== null) property.year_built = md.year_built
+        if (md.lot_size_sqft !== null) property.lot_size_sqft = md.lot_size_sqft
+        if (md.square_feet !== null) property.square_feet = md.square_feet
+        property.property_type = md.property_type
+        property.listing_status = md.listing_status
+        if (typeof md.price === 'number' && md.price > 0)
+          property.price = md.price
+        if (md.bedrooms !== null) property.bedrooms = md.bedrooms
+        if (md.bathrooms !== null) property.bathrooms = md.bathrooms
+        if (md.address) property.address = md.address
+        if (md.city) property.city = md.city
+        if (md.state) property.state = md.state
+        if (md.zip_code) property.zip_code = md.zip_code
+
+        // Collect a DB upsert payload (only refreshed columns + updated_at).
+        // Separate from the image upsert so each touches only its own columns.
+        metadataUpdatePayloads.push({
+          id: property.id,
+          updated_at: now().toISOString(),
+          description: property.description,
+          amenities: property.amenities,
+          year_built: property.year_built,
+          lot_size_sqft: property.lot_size_sqft,
+          square_feet: property.square_feet,
+          property_type: property.property_type,
+          listing_status: property.listing_status,
+          price: property.price,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          address: property.address,
+          city: property.city,
+          state: property.state,
+          zip_code: property.zip_code,
+        })
+
+        logger.log(
+          `[backfill-vibes] [meta] zpid=${zpid} property=${property.id}: desc=${property.description ? 'y' : 'n'} amenities=${Array.isArray(property.amenities) ? property.amenities.length : 0} year=${property.year_built ?? 'null'} status=${property.listing_status}`
+        )
+
+        if (args.imageDelayMs > 0) await sleep(args.imageDelayMs)
+      }
+
       const toGenerate: Property[] = []
-      if (args.refreshImages) scanned += batchLimited.length
+      if (perPropertyMode) scanned += batchLimited.length
 
       for (let i = 0; i < batchLimited.length; i++) {
         const property = batchLimited[i]
@@ -358,9 +493,10 @@ export async function backfillVibes(
           `[backfill-vibes] [property] ${i + 1}/${batchLimited.length} id=${property.id} zpid=${zpid ?? 'null'} imgs=${imagesCount}${label ? ` | ${label}` : ''}`
         )
 
+        await maybeRefreshMetadata(property)
         await maybeRefreshImages(property)
 
-        if (!args.refreshImages) continue
+        if (!perPropertyMode) continue
 
         const hasExisting = existingHashMap.has(property.id)
         const existingHash = existingHashMap.get(property.id)
@@ -390,6 +526,38 @@ export async function backfillVibes(
           `[backfill-vibes] [vibes] Generate property=${property.id} zpid=${zpid ?? 'null'}: ${reasons.join(', ') || 'unknown'}`
         )
         toGenerate.push(property)
+      }
+
+      // Batch upsert refreshed metadata (one round-trip). Each row carries
+      // only the refreshed columns + id, so on conflict it updates exactly
+      // those columns (description/amenities/year_built/etc.) and leaves the
+      // image columns to the separate image upsert below.
+      if (metadataUpdatePayloads.length > 0) {
+        const metaRows = metadataUpdatePayloads
+        const { error: metaErr } = await deps.supabase
+          .from('properties')
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          .upsert(metaRows as unknown as TablesInsert<'properties'>[])
+        if (metaErr) {
+          // A batch upsert is atomic — one bad row (e.g. a constraint
+          // violation) loses the whole batch's metadata. Fall back to per-row
+          // UPDATEs so the rest still persist and we learn which row failed.
+          logger.warn(
+            `[backfill-vibes] [meta] Batch metadata upsert failed (${metaErr.message}); retrying per-row`
+          )
+          for (const payload of metadataUpdatePayloads) {
+            const { error: rowErr } = await deps.supabase
+              .from('properties')
+              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+              .update(payload as unknown as TablesInsert<'properties'>)
+              .eq('id', payload.id)
+            if (rowErr) {
+              logger.warn(
+                `[backfill-vibes] [meta] Per-row metadata update failed for property=${payload.id}: ${rowErr.message}`
+              )
+            }
+          }
+        }
       }
 
       // Batch upsert all collected image updates (one round-trip total,
@@ -450,7 +618,7 @@ export async function backfillVibes(
         }
       }
 
-      const batchResult = args.refreshImages
+      const batchResult = perPropertyMode
         ? toGenerate.length > 0
           ? await deps.vibesService.generateVibesBatch(toGenerate, {
               delayMs: args.delayMs,
@@ -532,7 +700,7 @@ export async function backfillVibes(
       ) {
         offset = pageStartOffset + lastProcessedIndexInPage + 1
       } else {
-        offset = pageStartOffset + properties.length
+        offset = pageStartOffset + pageRowCount
       }
     }
 

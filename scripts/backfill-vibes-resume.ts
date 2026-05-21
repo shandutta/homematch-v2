@@ -52,6 +52,7 @@ type Args = {
   fullRefresh: boolean
   force: boolean
   refreshImages: boolean
+  refreshMetadata: boolean
   forceImages: boolean
   minImages: number
   imageDelayMs: number
@@ -73,6 +74,7 @@ function parseArgs(argv: string[]): Args {
     fullRefresh: false,
     force: false,
     refreshImages: false,
+    refreshMetadata: false,
     forceImages: false,
     minImages: 10,
     imageDelayMs: 600,
@@ -106,6 +108,10 @@ function parseArgs(argv: string[]): Args {
     raw.refreshImages != null
       ? raw.refreshImages === 'true'
       : defaults.refreshImages
+  let refreshMetadata =
+    raw.refreshMetadata != null
+      ? raw.refreshMetadata === 'true'
+      : defaults.refreshMetadata
   let forceImages =
     raw.forceImages != null ? raw.forceImages === 'true' : defaults.forceImages
   let minImages = raw.minImages ? Number(raw.minImages) : defaults.minImages
@@ -125,13 +131,14 @@ function parseArgs(argv: string[]): Args {
   if (fullRefresh) {
     force = true
     refreshImages = true
+    refreshMetadata = true
     if (raw.minImages == null) minImages = 30
   }
 
   const cursor =
     raw.cursor != null
       ? raw.cursor === 'true'
-      : fullRefresh || force || refreshImages || forceImages
+      : fullRefresh || force || refreshImages || refreshMetadata || forceImages
 
   return {
     limit: limit != null && Number.isFinite(limit) && limit > 0 ? limit : null,
@@ -144,6 +151,7 @@ function parseArgs(argv: string[]): Args {
     fullRefresh,
     force,
     refreshImages,
+    refreshMetadata,
     forceImages,
     minImages: Number.isFinite(minImages) && minImages >= 0 ? minImages : 0,
     imageDelayMs:
@@ -339,7 +347,7 @@ async function main() {
       process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
     const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
 
-    if (args.refreshImages && !RAPIDAPI_KEY) {
+    if ((args.refreshImages || args.refreshMetadata) && !RAPIDAPI_KEY) {
       throw new Error('RAPIDAPI_KEY not set; required for --refreshImages=true')
     }
 
@@ -413,6 +421,7 @@ async function main() {
           force: args.force,
           propertyIds: null,
           refreshImages: args.refreshImages,
+          refreshMetadata: args.refreshMetadata,
           forceImages: args.forceImages,
           minImages: args.minImages,
           imageDelayMs: args.imageDelayMs,
@@ -511,6 +520,7 @@ async function main() {
           fullRefresh: args.fullRefresh,
           force: args.force,
           refreshImages: args.refreshImages,
+          refreshMetadata: args.refreshMetadata,
           forceImages: args.forceImages,
           minImages: args.minImages,
           imageDelayMs: args.imageDelayMs,

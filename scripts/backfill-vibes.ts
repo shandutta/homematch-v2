@@ -12,6 +12,7 @@
  *   --delayMs=1500    Delay between properties in a batch (default 1500)
  *   --force=true      Ignore source hash and regenerate
  *   --refreshImages=true   Fetch full Zillow gallery via RapidAPI /images?zpid= and update `properties.images`
+ *   --refreshMetadata=true Fetch /property via RapidAPI and persist description/amenities/year_built/listing_status/etc. (the missing-metadata fix)
  *   --forceImages=true     Update `properties.images` even if it already looks complete
  *   --minImages=10         Skip refresh when current images >= this count (default 10)
  *   --imageDelayMs=600     Delay between image fetches (default 600)
@@ -58,6 +59,7 @@ type Args = {
   force: boolean
   propertyIds: string[] | null
   refreshImages: boolean
+  refreshMetadata: boolean
   forceImages: boolean
   minImages: number
   imageDelayMs: number
@@ -72,6 +74,7 @@ function parseArgs(argv: string[]): Args {
     force: false,
     propertyIds: null,
     refreshImages: false,
+    refreshMetadata: false,
     forceImages: false,
     minImages: 10,
     imageDelayMs: 600,
@@ -104,6 +107,10 @@ function parseArgs(argv: string[]): Args {
     raw.refreshImages != null
       ? raw.refreshImages === 'true'
       : defaults.refreshImages
+  const refreshMetadata =
+    raw.refreshMetadata != null
+      ? raw.refreshMetadata === 'true'
+      : defaults.refreshMetadata
   const forceImages =
     raw.forceImages != null ? raw.forceImages === 'true' : defaults.forceImages
   const minImages = raw.minImages ? Number(raw.minImages) : defaults.minImages
@@ -123,6 +130,7 @@ function parseArgs(argv: string[]): Args {
     force,
     propertyIds: propertyIds && propertyIds.length > 0 ? propertyIds : null,
     refreshImages,
+    refreshMetadata,
     forceImages,
     minImages: Number.isFinite(minImages) && minImages >= 0 ? minImages : 0,
     imageDelayMs:
@@ -229,6 +237,11 @@ async function main() {
     if (args.refreshImages && !RAPIDAPI_KEY) {
       throw new Error('RAPIDAPI_KEY not set; required for --refreshImages=true')
     }
+    if (args.refreshMetadata && !RAPIDAPI_KEY) {
+      throw new Error(
+        'RAPIDAPI_KEY not set; required for --refreshMetadata=true'
+      )
+    }
 
     const supabase = createStandaloneClient()
     const vibesService = createVibesService()
@@ -258,6 +271,7 @@ async function main() {
           force: args.force,
           propertyIdsCount: args.propertyIds?.length ?? 0,
           refreshImages: args.refreshImages,
+          refreshMetadata: args.refreshMetadata,
           forceImages: args.forceImages,
           minImages: args.minImages,
           imageDelayMs: args.imageDelayMs,
