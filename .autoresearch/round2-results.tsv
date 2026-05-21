@@ -9,3 +9,5 @@ iteration	commit	metric	status	description
 6	9e684c3b	63	discard	remove-bloat: de-narrativize lifestyle voice (drop scene-painting examples). Slop dropped but repetition rose to -6 (terse clauses collide more); net 63, below best band. Reverted (3fe3934e).
 7	00b37ad8	72	keep	tighten (in-place, no new block): strengthen Remote Work Ready gate to omit-by-default. genericTag near-zeroed, grounding subtotal 79 (highest). +4-6 over prev best. KEY LESSON: in-place tightening beats adding text.
 8	2f940681	66	discard	tighten (in-place): omit-by-default the other 4 easy lifestyle tags. Zeroed genericTag as intended, BUT over-conservatism cut grounding subtotal to 67-69 (vs 79). Two draws 66,64 ~ -7 vs best. Reverted (5994e6c7).
+9	f955e5ec	61	discard	tighten (in-place): force property-unique opener in lifestyleFits to attack repetition. Repetition got WORSE (-6); collisions are in tag names not openers. -11 vs best. Reverted (034bae61).
+-	-	-	STOP	Plateau: 2 consecutive discards + repetition proven model-bound (unattackable by wording). Best=72 (iter7, 00b37ad8). Stopping mutation phase to preserve budget for final confirmation; marginal EV of more iters negative.
