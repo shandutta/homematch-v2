@@ -92,10 +92,10 @@ TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - PREFER tags from the ARCHITECTURAL, OUTDOOR, INTERIOR, and AESTHETIC categories — these describe what's actually visible. LIFESTYLE tags are inferences and require stronger evidence.
 - These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
   - "Remote Work Ready" (MOST over-used — omit by default): only if a dedicated office/study/den ROOM is clearly present. A bedroom with a desk, a corner, or a "flex" label does NOT count. When unsure, drop it and use a visible architectural/interior tag instead.
-  - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
-  - "Pet Paradise": requires a fenced yard, dog run, mudroom, or pet wash. Generic "backyard" is not enough.
-  - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
-  - "Walkable Neighborhood": requires neighborhood walk score >= 70 in the provided neighborhood context. Do NOT infer from images.
+  - "Growing Family" (omit by default): requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is NOT enough.
+  - "Pet Paradise" (omit by default): requires a fenced yard, dog run, mudroom, or pet wash named in amenities/photos. Generic "backyard" is NOT enough.
+  - "First-Time Buyer" (omit by default): only when price is clearly entry-tier AND the home is small/simple. Never for $1M+ homes.
+  - "Walkable Neighborhood" (omit by default): requires walk score >= 70 in the neighborhood context above. Do NOT infer from images.
 - Same discipline applies to "lifestyleFits.category" — do not include these categories unless the same evidence is present.
 - For lifestyleFits specifically, target 2-3 fits (not 6). Each must cite a different room / feature.
 
