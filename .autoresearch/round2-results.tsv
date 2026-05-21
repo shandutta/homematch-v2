@@ -1,0 +1,2 @@
+iteration	commit	metric	status	description
+0	7892cfd8	56	baseline	round-1-optimized prompts.ts on 12 fresh listings (qwen3-vl-8b, imageCap=40). Prior mean was ~48; this run 56.
