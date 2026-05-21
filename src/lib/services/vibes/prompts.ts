@@ -237,6 +237,7 @@ Real listings bury headline structural facts in the details and description. If 
 - The named neighborhood or district (e.g. "Crocker Highlands", "Eureka Valley", "Twin Peaks") — name it verbatim
 - Distinctive listed amenities a buyer filters on: EV charging, dog run, breakfast nook/bar, updated kitchen, panoramic/named views (Bay, Golden Gate)
 These structural facts matter MORE to a buyer than what's merely pretty in a photo. Prefer naming a real listed feature over describing a generic visible one.
+When a feature is named in LISTED AMENITIES (e.g. "Breakfast Bar", "Family Room", "Dog Run", "Updated Kitchen"), echo that exact term in notableFeatures rather than paraphrasing it — buyers search on those literal words. At least half of your notableFeatures should correspond to a term that appears in the LISTED AMENITIES or LISTING DESCRIPTION above.
 
 Respond with a JSON object matching this EXACT structure:
 {
