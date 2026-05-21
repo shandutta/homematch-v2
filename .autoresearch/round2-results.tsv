@@ -7,3 +7,4 @@ iteration	commit	metric	status	description
 -	b15300cb	68	recheck	variance re-run of best state (no mutation): 68 (subtotal 71, rep -3). Confirms best is stable ~66-68, not a fluke.
 5	33da1aaf	51	discard	add-constraint: gate Entertainer's Dream + ban stock hosting phrasing. Repetition was already low (-3); added text raised slop/genTag. -15 vs best. Reverted (e38dc525).
 6	9e684c3b	63	discard	remove-bloat: de-narrativize lifestyle voice (drop scene-painting examples). Slop dropped but repetition rose to -6 (terse clauses collide more); net 63, below best band. Reverted (3fe3934e).
+7	00b37ad8	72	keep	tighten (in-place, no new block): strengthen Remote Work Ready gate to omit-by-default. genericTag near-zeroed, grounding subtotal 79 (highest). +4-6 over prev best. KEY LESSON: in-place tightening beats adding text.
