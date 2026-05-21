@@ -11,3 +11,5 @@ iteration	commit	metric	status	description
 8	2f940681	66	discard	tighten (in-place): omit-by-default the other 4 easy lifestyle tags. Zeroed genericTag as intended, BUT over-conservatism cut grounding subtotal to 67-69 (vs 79). Two draws 66,64 ~ -7 vs best. Reverted (5994e6c7).
 9	f955e5ec	61	discard	tighten (in-place): force property-unique opener in lifestyleFits to attack repetition. Repetition got WORSE (-6); collisions are in tag names not openers. -11 vs best. Reverted (034bae61).
 -	-	-	STOP	Plateau: 2 consecutive discards + repetition proven model-bound (unattackable by wording). Best=72 (iter7, 00b37ad8). Stopping mutation phase to preserve budget for final confirmation; marginal EV of more iters negative.
+FINAL	00b37ad8	62	qwen-best	Final Qwen confirmation on best prompt (00b37ad8). 3 draws on this exact state: 72 (iter7), 62 (A), 60 (B). Median=62, higher-of-final-two=62, best-observed=72. Honest centered estimate ~62, range 60-72.
+FINAL	00b37ad8	84	gemini-bar	Gemini-3-flash on same 12 listings, same prompt: 84 (subtotal 96, rep -12). Prior bar ~87.5; consistent. Gemini grounding subtotal 96 vs Qwen 66-79 — the gap is grounding capability.
