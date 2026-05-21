@@ -237,6 +237,7 @@ Real listings bury headline structural facts in the details and description. If 
 - The named neighborhood or district (e.g. "Crocker Highlands", "Eureka Valley", "Twin Peaks") — name it verbatim
 - Distinctive listed amenities a buyer filters on: EV charging, dog run, breakfast nook/bar, updated kitchen, panoramic/named views (Bay, Golden Gate)
 These structural facts matter MORE to a buyer than what's merely pretty in a photo. Prefer naming a real listed feature over describing a generic visible one.
+CAUTION: surface the structural FACT (the unit count, the level, the neighborhood name, the amenity) but NEVER copy the listing's marketing adjectives. Listing descriptions are full of banned hype ("retreat", "sanctuary", "oasis", "breathtaking", "resort-style", "magical", "stunning"). Strip those words — name the in-law unit, not the "magical retreat"; name the backyard pool, not the "resort-style oasis".
 
 Respond with a JSON object matching this EXACT structure:
 {
