@@ -276,7 +276,7 @@ Respond with a JSON object matching this EXACT structure:
 
 	Requirements:
 	- primaryVibes: 2-4 items with UNIQUE evidence-backed names for this property. Vary intensities meaningfully.
-	- lifestyleFits: 2-3 items (NOT 6). Every reason must cite a feature, room, layout, score, or neighborhood fact, and must OPEN with a noun unique to THIS property (not a stock template like "the backyard is great for"). Each lifestyleFit must use a DIFFERENT category — no duplicates within one property.
+	- lifestyleFits: 2-3 items (NOT 6). Every reason must cite a feature, room, layout, score, or neighborhood fact. Each lifestyleFit must use a DIFFERENT category — no duplicates within one property.
 	- notableFeatures: 2-8 specific features that would catch a buyer's eye
 	- Don't fixate on one repeated detail (e.g., gates/fences); balance interior + outdoor.
 	- emotionalHooks: 2-4 concise buyer notes, not sentimental narration. Each hook must reference a DIFFERENT room or feature.
