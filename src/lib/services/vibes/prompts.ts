@@ -91,7 +91,7 @@ TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - Each tag must be earned by a SPECIFIC observation. If you can't point to a room, fixture, score, or listed feature, do not use the tag.
 - PREFER tags from the ARCHITECTURAL, OUTDOOR, INTERIOR, and AESTHETIC categories — these describe what's actually visible. LIFESTYLE tags are inferences and require stronger evidence.
 - These "easy" lifestyle categories are over-used — only include them if the evidence below is met:
-  - "Remote Work Ready": must see a dedicated office, study, or quiet flex room. A bedroom with a desk does NOT count.
+  - "Remote Work Ready" (MOST over-used — omit by default): only if a dedicated office/study/den ROOM is clearly present. A bedroom with a desk, a corner, or a "flex" label does NOT count. When unsure, drop it and use a visible architectural/interior tag instead.
   - "Growing Family": requires 3+ bedrooms AND a fenced yard or play area visible. Just "3 beds" is not enough.
   - "Pet Paradise": requires a fenced yard, dog run, mudroom, or pet wash. Generic "backyard" is not enough.
   - "First-Time Buyer": only when price is clearly entry-tier for the local market AND the home is small/simple. Not for $1M+ homes.
