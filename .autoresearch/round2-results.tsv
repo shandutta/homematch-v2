@@ -1,3 +1,4 @@
 iteration	commit	metric	status	description
 0	7892cfd8	56	baseline	round-1-optimized prompts.ts on 12 fresh listings (qwen3-vl-8b, imageCap=40). Prior mean was ~48; this run 56.
 1	dcd734f5	62	keep	add-constraint: STRUCTURAL FACTS block — name multi-level/ADU/in-law/neighborhood/listed amenities verbatim. Grounding subtotal 60->68; +6 over baseline.
+2	1d6a636d	52	discard	tighten: force >=half notableFeatures to echo listed amenity terms. Slop exploded (-22 total) from added verbosity; -10 vs best. Reverted (b5e44f0e).
