@@ -3,3 +3,4 @@ iteration	commit	metric	status	description
 1	dcd734f5	62	keep	add-constraint: STRUCTURAL FACTS block — name multi-level/ADU/in-law/neighborhood/listed amenities verbatim. Grounding subtotal 60->68; +6 over baseline.
 2	1d6a636d	52	discard	tighten: force >=half notableFeatures to echo listed amenity terms. Slop exploded (-22 total) from added verbosity; -10 vs best. Reverted (b5e44f0e).
 3	b15300cb	66	keep	tighten: strip listing hype words (retreat/oasis/breathtaking) when echoing facts. Slop dropped, grounding subtotal 70 (highest). +4 over prev best.
+4	487944d6	57	discard	add-constraint: hard gate on 'Remote Work Ready' tag. Helped target tag (genTag fell) but slop variance spiked this run; -9 vs best. Reverted (90b11718).
