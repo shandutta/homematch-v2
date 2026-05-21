@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createVibesService, VibesService } from '@/lib/services/vibes'
 import { createStandaloneClient } from '@/lib/supabase/standalone'
+import { fetchZillowImageUrls } from '@/lib/ingestion/zillow-images'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 import { rateLimitAdminRoute } from '@/lib/api/admin-rate-limit'
 import { ApiErrorHandler } from '@/lib/api/errors'
@@ -83,54 +84,6 @@ async function fetchZillowProperty(
   }
 
   return response.json()
-}
-
-/**
- * Fetch images from Zillow /images endpoint (separate from /property)
- * Returns flat array of image URLs
- */
-async function fetchZillowImages(
-  zpid: string,
-  rapidApiKey: string,
-  host: string
-): Promise<string[]> {
-  const url = `https://${host}/images?zpid=${zpid}`
-
-  try {
-    const response = await fetchWithTimeout(url, {
-      headers: {
-        'X-RapidAPI-Key': rapidApiKey,
-        'X-RapidAPI-Host': host,
-      },
-      timeoutMs: ZILLOW_FETCH_TIMEOUT_MS,
-      timeoutMessage: 'Zillow image fetch timed out',
-    })
-
-    if (!response.ok) {
-      console.warn(
-        `[fetchZillowImages] Failed to fetch images: ${response.status}`
-      )
-      return []
-    }
-
-    const isRecord = (value: unknown): value is Record<string, unknown> =>
-      typeof value === 'object' && value !== null
-    const isStringArray = (value: unknown): value is string[] =>
-      Array.isArray(value) && value.every((item) => typeof item === 'string')
-
-    const data: unknown = await response.json()
-    const images =
-      isRecord(data) && isStringArray(data.images) ? data.images : []
-    if (isDev) {
-      console.log(
-        `[fetchZillowImages] Got ${images.length} images from /images endpoint`
-      )
-    }
-    return images
-  } catch (error) {
-    console.warn('[fetchZillowImages] Error fetching images:', error)
-    return []
-  }
 }
 
 /**
@@ -364,13 +317,29 @@ export async function POST(req: Request): Promise<NextResponse> {
     process.env.RAPIDAPI_HOST || 'us-housing-market-data1.p.rapidapi.com'
 
   try {
-    // Fetch property details and images in parallel
+    // Fetch property details and images in parallel.
+    // Images go through the recovered uncapped fetcher (maxImages 80, 3
+    // retries, 429 exponential backoff, dedup, 404 → []) instead of the
+    // old thin slice(0,20)/no-retry helper — so re-ingests pull the full
+    // gallery and the downstream image-selector still picks the best
+    // imageCap for the LLM.
     if (isDev) {
       console.log(`[generate-vibes-zillow] Fetching property ${zpid}...`)
     }
     const [zillowData, imagesFromEndpoint] = await Promise.all([
       fetchZillowProperty(zpid, rapidApiKey, rapidApiHost),
-      fetchZillowImages(zpid, rapidApiKey, rapidApiHost),
+      fetchZillowImageUrls({
+        zpid,
+        rapidApiKey,
+        host: rapidApiHost,
+        maxImages: 80,
+      }).catch((err): string[] => {
+        console.warn(
+          '[generate-vibes-zillow] image fetch failed:',
+          err instanceof Error ? err.message : String(err)
+        )
+        return []
+      }),
     ])
 
     // Extract address parts
@@ -382,29 +351,30 @@ export async function POST(req: Request): Promise<NextResponse> {
     const state = zillowData.address?.state || zillowData.state || 'CA'
     const zipCode = zillowData.address?.zipcode || zillowData.zipcode || '00000'
 
-    // Extract images from both sources and merge
-    // Priority: /images endpoint (most complete), then /property response fields
-    let images: string[]
+    // Extract images from both sources.
+    // Priority: dedicated /images endpoint (uncapped, most complete), then
+    // /property response fields. This is the FRESH fetch — it may legitimately
+    // come back sparse or empty (rate-limited, delisted), which the
+    // anti-clobber guard below accounts for before any DB write.
+    let freshImages: string[]
     if (imagesFromEndpoint.length > 0) {
-      // Use images from dedicated /images endpoint
-      images = imagesFromEndpoint.slice(0, 20)
+      // Use images from dedicated /images endpoint (already deduped + capped
+      // at 80 by fetchZillowImageUrls). No further slice here so the LLM
+      // image-selector sees the full gallery.
+      freshImages = imagesFromEndpoint
       if (isDev) {
         console.log(
-          `[generate-vibes-zillow] Using ${images.length} images from /images endpoint`
+          `[generate-vibes-zillow] Fetched ${freshImages.length} images from /images endpoint`
         )
       }
     } else {
       // Fall back to images from /property response
-      images = extractImages(zillowData)
+      freshImages = extractImages(zillowData)
       if (isDev) {
         console.log(
-          `[generate-vibes-zillow] Using ${images.length} images from /property response`
+          `[generate-vibes-zillow] Fetched ${freshImages.length} images from /property response`
         )
       }
-    }
-
-    if (images.length === 0) {
-      return ApiErrorHandler.badRequest('No images found for this property')
     }
 
     // PERSISTENCE FIX (2026-05-20): the previous version of this route built
@@ -421,7 +391,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const supabase = createStandaloneClient()
     const { data: existingProperty, error: lookupError } = await supabase
       .from('properties')
-      .select('id')
+      .select('id, images')
       .eq('zpid', zpid)
       .maybeSingle()
     if (lookupError) {
@@ -431,6 +401,29 @@ export async function POST(req: Request): Promise<NextResponse> {
       )
     }
     const propertyId = existingProperty?.id ?? randomUUID()
+
+    // ANTI-CLOBBER (2026-05-20): a prior patch overwrote rich stored
+    // galleries with sparse re-fetches (a 429 or delisted listing returns
+    // few/no images). Only adopt the fresh fetch when it is at least as rich
+    // as what's already stored; otherwise keep the existing gallery. Net:
+    // a richer re-fetch DOES update the DB, a poorer one NEVER does. The
+    // downstream image-selector still picks the best imageCap for the LLM.
+    const existingImages = Array.isArray(existingProperty?.images)
+      ? existingProperty.images.filter(
+          (u): u is string => typeof u === 'string'
+        )
+      : []
+    const images =
+      freshImages.length >= existingImages.length ? freshImages : existingImages
+
+    if (images.length === 0) {
+      return ApiErrorHandler.badRequest('No images found for this property')
+    }
+    if (isDev) {
+      console.log(
+        `[generate-vibes-zillow] Images: fresh=${freshImages.length} existing=${existingImages.length} → using ${images.length}`
+      )
+    }
 
     // Build property object for vibes generation
     const property: Property = {
