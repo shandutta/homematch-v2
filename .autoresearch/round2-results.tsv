@@ -4,3 +4,5 @@ iteration	commit	metric	status	description
 2	1d6a636d	52	discard	tighten: force >=half notableFeatures to echo listed amenity terms. Slop exploded (-22 total) from added verbosity; -10 vs best. Reverted (b5e44f0e).
 3	b15300cb	66	keep	tighten: strip listing hype words (retreat/oasis/breathtaking) when echoing facts. Slop dropped, grounding subtotal 70 (highest). +4 over prev best.
 4	487944d6	57	discard	add-constraint: hard gate on 'Remote Work Ready' tag. Helped target tag (genTag fell) but slop variance spiked this run; -9 vs best. Reverted (90b11718).
+-	b15300cb	68	recheck	variance re-run of best state (no mutation): 68 (subtotal 71, rep -3). Confirms best is stable ~66-68, not a fluke.
+5	33da1aaf	51	discard	add-constraint: gate Entertainer's Dream + ban stock hosting phrasing. Repetition was already low (-3); added text raised slop/genTag. -15 vs best. Reverted (e38dc525).
