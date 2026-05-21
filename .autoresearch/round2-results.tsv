@@ -8,3 +8,4 @@ iteration	commit	metric	status	description
 5	33da1aaf	51	discard	add-constraint: gate Entertainer's Dream + ban stock hosting phrasing. Repetition was already low (-3); added text raised slop/genTag. -15 vs best. Reverted (e38dc525).
 6	9e684c3b	63	discard	remove-bloat: de-narrativize lifestyle voice (drop scene-painting examples). Slop dropped but repetition rose to -6 (terse clauses collide more); net 63, below best band. Reverted (3fe3934e).
 7	00b37ad8	72	keep	tighten (in-place, no new block): strengthen Remote Work Ready gate to omit-by-default. genericTag near-zeroed, grounding subtotal 79 (highest). +4-6 over prev best. KEY LESSON: in-place tightening beats adding text.
+8	2f940681	66	discard	tighten (in-place): omit-by-default the other 4 easy lifestyle tags. Zeroed genericTag as intended, BUT over-conservatism cut grounding subtotal to 67-69 (vs 79). Two draws 66,64 ~ -7 vs best. Reverted (5994e6c7).
