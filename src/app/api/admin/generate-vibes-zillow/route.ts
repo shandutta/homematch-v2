@@ -482,17 +482,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
 
     // Upsert the refreshed property row so description / amenities /
-    // year_built actually persist. Strip created_at + updated_at from the
-    // payload — the DB has DEFAULT now() on insert and we don't want to
-    // clobber the original created_at on update; updated_at is managed by
-    // a trigger.
-    const {
-      created_at: _propCreatedAt,
-      updated_at: _propUpdatedAt,
-      ...propertyUpsertPayload
-    } = property
+    // year_built actually persist. Strip only created_at so an update doesn't
+    // clobber the original creation time (the column has DEFAULT now() for the
+    // insert case). Keep updated_at in the payload and set it to now — this
+    // table has no BEFORE UPDATE trigger, so without an explicit value the
+    // refresh timestamp would go stale.
+    const { created_at: _propCreatedAt, ...propertyUpsertPayload } = property
     void _propCreatedAt
-    void _propUpdatedAt
+    propertyUpsertPayload.updated_at = new Date().toISOString()
     const { error: propertyUpsertError } = await supabase
       .from('properties')
       .upsert(propertyUpsertPayload, { onConflict: 'id' })
