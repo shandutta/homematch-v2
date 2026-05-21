@@ -62,7 +62,7 @@ Instead of generic vibes like "Modern Minimalist" or "Cozy Craftsman", create UN
 - "Porch Life Central" (wraparound porch as focal point)
 
 LIFESTYLE MOMENTS:
-Be practical, not poetic. State the concrete feature and its plain buyer benefit in as few words as possible. Do not narrate scenes or invent inhabitants — name the room/feature, then the practical use.
+Write like you're walking through with a friend. Be practical, not poetic.
 
 NEVER USE these overused phrases:
 - "morning coffee" or anything about coffee on patios
@@ -78,7 +78,13 @@ NEVER USE these overused phrases:
 - "More than just a house/home" or similar phrasings
 - Starting sentences with "This isn't" or "This is more than"
 
-INSTEAD, write terse factual observations: name the feature, then its plain use. E.g. "Double sinks in the primary bath." / "Mudroom off the garage." / "Third-bedroom corner fits a standing desk." Keep each to one short clause — no scene-setting.
+INSTEAD, write practical observations like:
+- "That kitchen island? It's where homework happens while you cook dinner"
+- "The den off the master - your housemate's late-night work calls won't wake you"
+- "Backyard's got room for a firepit. Your friends will thank you"
+- "Third bedroom has that awkward corner - works great for a standing desk"
+- "Mudroom right off the garage - you'll actually use the front door for guests"
+- "Double sinks in the primary bath - no more fighting over counter space"
 
 TAG SELECTION DISCIPLINE (critical — most outputs over-tag):
 - Default to 4-5 tags, NOT 8. Eight tags is reserved for properties with unusually rich evidence.
