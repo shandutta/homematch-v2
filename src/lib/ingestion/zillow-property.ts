@@ -38,13 +38,27 @@ type ListingStatus = NonNullable<Property['listing_status']>
 const isPropertyType = (value: string): value is PropertyType =>
   PROPERTY_TYPE_VALUES.some((item) => item === value)
 
+// Zillow homeType values that don't match our enum verbatim. Without these,
+// TOWNHOUSE/APARTMENT/LOT silently fall back to single_family (and the enrich
+// path would even overwrite discover.ts's correct 'townhome' mapping).
+const PROPERTY_TYPE_ALIASES: Record<string, PropertyType> = {
+  townhouse: 'townhome',
+  apartment: 'condo',
+  lot: 'land',
+  vacant_land: 'land',
+  mobile: 'manufactured',
+  mobile_home: 'manufactured',
+  manufactured_home: 'manufactured',
+}
+
 export function normalizePropertyType(
   value: string | null | undefined
 ): PropertyType {
   const normalized = (value || 'single_family')
     .toLowerCase()
     .replace(/\s+/g, '_')
-  return isPropertyType(normalized) ? normalized : 'single_family'
+  if (isPropertyType(normalized)) return normalized
+  return PROPERTY_TYPE_ALIASES[normalized] ?? 'single_family'
 }
 
 /**

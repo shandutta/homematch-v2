@@ -92,14 +92,14 @@ const HOME_TYPE_TO_SCHEMA: Record<string, string> = {
   LAND: 'land',
 }
 
-const normalizeHomeType = (raw: string | undefined): string =>
+export const normalizeHomeType = (raw: string | undefined): string =>
   HOME_TYPE_TO_SCHEMA[(raw ?? '').toUpperCase()] ?? 'single_family'
 
 // Emit only active|pending|sold — the intersection of the DB CHECK
 // (active|pending|sold|off_market|new_listing) and the Zod propertySchema enum
 // (active|pending|sold|for_sale|removed). A "new" ForSale listing is active;
 // off-market collapses to sold. Avoids rows the read parse would later reject.
-const normalizeListingStatus = (raw: string | undefined): string => {
+export const normalizeListingStatus = (raw: string | undefined): string => {
   const v = (raw ?? '').toLowerCase()
   if (v.includes('pend')) return 'pending'
   if (v.includes('sold') || v.includes('off')) return 'sold'
@@ -110,7 +110,7 @@ const normalizeListingStatus = (raw: string | undefined): string => {
 // a full `address` string like "50 Cascade Walk, San Francisco, CA 94116".
 // Parse the city + state + zip out of it (the city allowlist filter and the
 // schema's zip_code min(5) both depend on these).
-function parseAddress(address: string | undefined): {
+export function parseAddress(address: string | undefined): {
   city: string
   state: string
   zip: string
@@ -126,7 +126,7 @@ function parseAddress(address: string | undefined): {
   return { city, state: m?.[1] ?? '', zip: m?.[2] ?? '' }
 }
 
-const isBayAreaCity = (city: string): boolean =>
+export const isBayAreaCity = (city: string): boolean =>
   !!city && BAY_AREA_CITY_SET.has(city.trim().toUpperCase())
 
 export async function runDiscover(

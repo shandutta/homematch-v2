@@ -155,8 +155,10 @@ async function main() {
   if (!args.dryRun) {
     try {
       const supabase = createStandaloneClient()
+      // .bind is required: extracting supabase.rpc unbound loses `this` (the
+      // client's internal `rest` handle) and throws at call time.
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const rpc = supabase.rpc as unknown as (
+      const rpc = supabase.rpc.bind(supabase) as unknown as (
         fn: string,
         params?: Record<string, unknown>
       ) => Promise<{ data: unknown; error: { message: string } | null }>
