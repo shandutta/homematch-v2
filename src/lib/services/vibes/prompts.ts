@@ -116,6 +116,22 @@ export interface NeighborhoodVibesContext {
   transitScore: number | null
 }
 
+export interface PropertyMarketContext {
+  daysOnMarket?: number | null
+  hoaFeeMonthly?: number | null
+  priceHistory?: Array<{
+    date?: string
+    price?: number
+    event?: string
+  }> | null
+  schools?: Array<{
+    name?: string
+    rating?: number
+    level?: string
+    distance?: number
+  }> | null
+}
+
 export interface PropertyContext {
   address: string
   city: string
@@ -130,6 +146,7 @@ export interface PropertyContext {
   amenities: string[] | null
   description: string | null
   neighborhoodVibes?: NeighborhoodVibesContext | null
+  market?: PropertyMarketContext | null
 }
 
 function formatPrice(price: number): string {
@@ -226,9 +243,53 @@ LISTING DESCRIPTION:
 ${desc}`
   }
 
+  // Market context (days on market, recent price event, top school, HOA).
+  // Sourced from grounded /property data — safe to cite, never fabricate.
+  let marketSection = ''
+  const mkt = property.market
+  if (mkt) {
+    const lines: string[] = []
+    if (typeof mkt.daysOnMarket === 'number') {
+      lines.push(`On market: ${mkt.daysOnMarket} day(s)`)
+    }
+    if (Array.isArray(mkt.priceHistory) && mkt.priceHistory.length > 0) {
+      const recent = mkt.priceHistory[0]
+      if (recent && (recent.event || typeof recent.price === 'number')) {
+        const when = recent.date ? ` (${recent.date})` : ''
+        const amt =
+          typeof recent.price === 'number' ? ` at ${formatPrice(recent.price)}` : ''
+        lines.push(
+          `Most recent listing event: ${recent.event ?? 'price update'}${amt}${when}`
+        )
+      }
+    }
+    if (Array.isArray(mkt.schools) && mkt.schools.length > 0) {
+      const top = mkt.schools
+        .filter((s) => typeof s.rating === 'number')
+        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))[0]
+      if (top && typeof top.rating === 'number' && top.name) {
+        const lvl = top.level ? ` ${top.level}` : ''
+        const dist =
+          typeof top.distance === 'number' ? `, ${top.distance}mi` : ''
+        lines.push(
+          `Top-rated nearby school: ${top.name}${lvl} — ${top.rating}/10${dist}`
+        )
+      }
+    }
+    if (typeof mkt.hoaFeeMonthly === 'number' && mkt.hoaFeeMonthly > 0) {
+      lines.push(`HOA: ${formatPrice(mkt.hoaFeeMonthly)}/month`)
+    }
+    if (lines.length > 0) {
+      marketSection = `
+
+MARKET CONTEXT (grounded facts — weave in naturally ONLY where it adds buyer value, e.g. a recent price cut or a strong school; never force all of these, never fabricate):
+- ${lines.join('\n- ')}`
+    }
+  }
+
   return `Analyze the ${imageCount} property image(s) and extract buyer-relevant evidence and fit signals.
 
-${details}${neighborhoodSection}${descriptionSection}
+${details}${neighborhoodSection}${descriptionSection}${marketSection}
 
 STRUCTURAL FACTS YOU MUST SURFACE (do not let photos distract you from these):
 Real listings bury headline structural facts in the details and description. If any of the following appear in the PROPERTY DETAILS, LISTED AMENITIES, or LISTING DESCRIPTION above, you MUST name them explicitly in vibeStatement and/or notableFeatures, using the listing's own words:

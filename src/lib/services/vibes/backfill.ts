@@ -447,6 +447,18 @@ export async function backfillVibes(
         if (md.city) property.city = md.city
         if (md.state) property.state = md.state
         if (md.zip_code) property.zip_code = md.zip_code
+        // Listing-enrichment fields — assigned directly (incl. null) since each
+        // fetch reflects current reality (price cuts, relisting, etc.).
+        property.price_history = md.price_history
+        property.tax_history = md.tax_history
+        property.schools = md.schools
+        property.zestimate = md.zestimate
+        property.rent_zestimate = md.rent_zestimate
+        property.listed_at = md.listed_at
+        property.days_on_market = md.days_on_market
+        property.hoa_fee = md.hoa_fee
+        property.broker_name = md.broker_name
+        property.agent_name = md.agent_name
 
         // Collect a DB upsert payload (only refreshed columns + updated_at).
         // Separate from the image upsert so each touches only its own columns.
@@ -467,6 +479,16 @@ export async function backfillVibes(
           city: property.city,
           state: property.state,
           zip_code: property.zip_code,
+          price_history: property.price_history,
+          tax_history: property.tax_history,
+          schools: property.schools,
+          zestimate: property.zestimate,
+          rent_zestimate: property.rent_zestimate,
+          listed_at: property.listed_at,
+          days_on_market: property.days_on_market,
+          hoa_fee: property.hoa_fee,
+          broker_name: property.broker_name,
+          agent_name: property.agent_name,
         })
 
         logger.log(

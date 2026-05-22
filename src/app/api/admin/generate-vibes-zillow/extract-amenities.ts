@@ -1,3 +1,29 @@
+export interface ZillowSchool {
+  name?: string
+  rating?: number
+  level?: string
+  distance?: number
+  grades?: string
+  type?: string
+}
+
+export interface ZillowPriceHistoryEntry {
+  date?: string
+  time?: number
+  price?: number
+  event?: string
+  priceChangeRate?: number
+  pricePerSquareFoot?: number
+}
+
+export interface ZillowTaxHistoryEntry {
+  time?: number
+  taxPaid?: number
+  taxIncreaseRate?: number
+  value?: number
+  valueIncreaseRate?: number
+}
+
 export interface ZillowPropertyResponse {
   zpid?: number | string
   address?: {
@@ -18,7 +44,23 @@ export interface ZillowPropertyResponse {
   yearBuilt?: number
   homeType?: string
   propertyType?: string
+  homeStatus?: string
   imgSrc?: string
+  // Listing-enrichment fields (inline in /property; previously discarded).
+  schools?: ZillowSchool[]
+  priceHistory?: ZillowPriceHistoryEntry[]
+  taxHistory?: ZillowTaxHistoryEntry[]
+  zestimate?: number
+  rentZestimate?: number
+  datePosted?: string
+  monthlyHoaFee?: number
+  hoaFee?: number
+  attributionInfo?: {
+    brokerName?: string
+    agentName?: string
+    agentPhoneNumber?: string
+    brokerPhoneNumber?: string
+  }
   // Simple flat array of URLs (most common)
   images?: string[]
   // Complex nested structure with multiple sizes
@@ -87,6 +129,9 @@ export interface ZillowPropertyResponse {
     hasGarage?: boolean
     hasPool?: boolean
     hasFireplace?: boolean
+    hoaFee?: number | string
+    monthlyHoaFee?: number | string
+    associationFee?: number | string
     homeFacts?: Array<{ factLabel?: string; factValue?: string }>
     atAGlanceFacts?: Array<{ factLabel?: string; factValue?: string }>
   }

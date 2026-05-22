@@ -22,8 +22,8 @@ RAPIDAPI_HOST=us-housing-market-data1.p.rapidapi.com  # optional; code defaults 
 
 ## Common Endpoints
 
-- `GET /propertyExtendedSearch` — property discovery
-- `GET /property-details` / `GET /property` — details and status
+- `GET /propertyExtendedSearch` — property discovery (search; returns thin rows: `address` + `propertyType`, no separate `city`/`zipcode`)
+- `GET /property` — full metadata + status; also returns inline enrichment we capture: `schools[]`, `priceHistory[]`, `taxHistory[]`, `zestimate`, `rentZestimate`, `datePosted`, HOA, `attributionInfo`
 - `GET /images` — full image gallery
 
 ## CLI scripts

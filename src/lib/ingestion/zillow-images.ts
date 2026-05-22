@@ -1,9 +1,10 @@
 /**
- * ⚠️ DEPRECATED — consolidated into src/lib/providers/zillow/
+ * Zillow image-gallery fetcher (RapidAPI `/images?zpid=`).
  *
- * - Images: src/lib/providers/zillow/client.ts (fetchImages)
- *
- * This file is kept for backward compatibility only.
+ * This is the ACTIVE implementation used by the ingest/backfill pipeline
+ * (a previous header claimed it was consolidated into src/lib/providers/zillow/,
+ * which does not exist). Pairs with zillow-property.ts (/property metadata) and
+ * discover.ts (/propertyExtendedSearch).
  */
 
 const DEFAULT_RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'

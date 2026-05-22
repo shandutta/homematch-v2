@@ -23,6 +23,7 @@ import {
   buildVibesMessages,
   type NeighborhoodVibesContext,
   type PropertyContext,
+  type PropertyMarketContext,
 } from './prompts'
 import {
   computeConfidence,
@@ -294,6 +295,24 @@ export class VibesService {
     return typeof value === 'object' && value != null && !Array.isArray(value)
   }
 
+  // Build the prompt's market-context block from the enrichment columns
+  // (jsonb arrays are stored loosely-typed, so read them defensively).
+  private static toMarketContext(p: Property): PropertyMarketContext | null {
+    const ph = Array.isArray(p.price_history) ? p.price_history : null
+    const sc = Array.isArray(p.schools) ? p.schools : null
+    const dom = typeof p.days_on_market === 'number' ? p.days_on_market : null
+    const hoa = typeof p.hoa_fee === 'number' ? p.hoa_fee : null
+    if (dom === null && hoa === null && !ph && !sc) return null
+    return {
+      daysOnMarket: dom,
+      hoaFeeMonthly: hoa,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      priceHistory: ph as PropertyMarketContext['priceHistory'],
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      schools: sc as PropertyMarketContext['schools'],
+    }
+  }
+
   private static clampString(
     value: unknown,
     maxLength: number
@@ -554,6 +573,7 @@ export class VibesService {
       amenities: property.amenities,
       description: property.description,
       neighborhoodVibes: extras?.neighborhoodVibes ?? null,
+      market: VibesService.toMarketContext(property),
     }
 
     // Build prompts

@@ -15,6 +15,9 @@
 import {
   extractAmenities,
   type ZillowPropertyResponse,
+  type ZillowSchool,
+  type ZillowPriceHistoryEntry,
+  type ZillowTaxHistoryEntry,
 } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
 
@@ -166,6 +169,45 @@ export type ZillowPropertyMetadata = {
   city: string | null
   state: string | null
   zip_code: string | null
+  // Listing-enrichment fields (inline in /property; previously discarded).
+  price_history: ZillowPriceHistoryEntry[] | null
+  tax_history: ZillowTaxHistoryEntry[] | null
+  schools: ZillowSchool[] | null
+  zestimate: number | null
+  rent_zestimate: number | null
+  listed_at: string | null
+  days_on_market: number | null
+  hoa_fee: number | null
+  broker_name: string | null
+  agent_name: string | null
+}
+
+// HOA can arrive as a number or a string like "$250/mo" / "250". Parse the
+// first numeric run; return null if there's nothing usable.
+function parseHoaFee(...vals: Array<number | string | undefined>): number | null {
+  for (const v of vals) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) return v
+    if (typeof v === 'string') {
+      const m = v.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/)
+      if (m) {
+        const n = Number(m[1])
+        if (Number.isFinite(n) && n > 0) return n
+      }
+    }
+  }
+  return null
+}
+
+// Days on market from datePosted (ISO/epoch). Null when unparseable.
+function daysOnMarketFrom(datePosted: string | undefined): {
+  listedAt: string | null
+  days: number | null
+} {
+  if (!datePosted) return { listedAt: null, days: null }
+  const t = Date.parse(datePosted)
+  if (Number.isNaN(t)) return { listedAt: null, days: null }
+  const days = Math.max(0, Math.floor((Date.now() - t) / 86_400_000))
+  return { listedAt: new Date(t).toISOString(), days }
 }
 
 /**
@@ -184,6 +226,17 @@ export function extractPropertyMetadata(
       ? z.description
       : null
 
+  const reso = z.resoFacts
+  const { listedAt, days } = daysOnMarketFrom(z.datePosted)
+  const schools =
+    Array.isArray(z.schools) && z.schools.length > 0 ? z.schools : null
+  const priceHistory =
+    Array.isArray(z.priceHistory) && z.priceHistory.length > 0
+      ? z.priceHistory
+      : null
+  const taxHistory =
+    Array.isArray(z.taxHistory) && z.taxHistory.length > 0 ? z.taxHistory : null
+
   return {
     price: typeof z.price === 'number' ? z.price : null,
     bedrooms: typeof z.bedrooms === 'number' ? z.bedrooms : null,
@@ -199,5 +252,22 @@ export function extractPropertyMetadata(
     city: z.address?.city || z.city || null,
     state: z.address?.state || z.state || null,
     zip_code: z.address?.zipcode || z.zipcode || null,
+    price_history: priceHistory,
+    tax_history: taxHistory,
+    schools,
+    zestimate: typeof z.zestimate === 'number' ? z.zestimate : null,
+    rent_zestimate:
+      typeof z.rentZestimate === 'number' ? z.rentZestimate : null,
+    listed_at: listedAt,
+    days_on_market: days,
+    hoa_fee: parseHoaFee(
+      z.monthlyHoaFee,
+      z.hoaFee,
+      reso?.monthlyHoaFee,
+      reso?.hoaFee,
+      reso?.associationFee
+    ),
+    broker_name: z.attributionInfo?.brokerName?.trim() || null,
+    agent_name: z.attributionInfo?.agentName?.trim() || null,
   }
 }
