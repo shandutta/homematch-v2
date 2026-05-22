@@ -162,7 +162,9 @@ async function main() {
       ) => Promise<{ data: unknown; error: { message: string } | null }>
       const { data, error } = await rpc('backfill_property_neighborhoods', {})
       if (error) {
-        console.warn(`[discover] neighborhood assignment failed: ${error.message}`)
+        console.warn(
+          `[discover] neighborhood assignment failed: ${error.message}`
+        )
       } else {
         neighborhoodsAssigned = typeof data === 'number' ? data : 0
         console.log(

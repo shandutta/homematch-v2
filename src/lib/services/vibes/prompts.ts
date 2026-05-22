@@ -257,7 +257,9 @@ ${desc}`
       if (recent && (recent.event || typeof recent.price === 'number')) {
         const when = recent.date ? ` (${recent.date})` : ''
         const amt =
-          typeof recent.price === 'number' ? ` at ${formatPrice(recent.price)}` : ''
+          typeof recent.price === 'number'
+            ? ` at ${formatPrice(recent.price)}`
+            : ''
         lines.push(
           `Most recent listing event: ${recent.event ?? 'price update'}${amt}${when}`
         )

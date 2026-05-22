@@ -184,7 +184,9 @@ export type ZillowPropertyMetadata = {
 
 // HOA can arrive as a number or a string like "$250/mo" / "250". Parse the
 // first numeric run; return null if there's nothing usable.
-function parseHoaFee(...vals: Array<number | string | undefined>): number | null {
+function parseHoaFee(
+  ...vals: Array<number | string | undefined>
+): number | null {
   for (const v of vals) {
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) return v
     if (typeof v === 'string') {
