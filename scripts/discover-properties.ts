@@ -42,6 +42,7 @@ config()
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { runDiscover } from '@/lib/ingestion/discover'
+import { createStandaloneClient } from '@/lib/supabase/standalone'
 
 type HomeType = 'Houses' | 'Townhomes' | 'Condos' | 'MultiFamily'
 const ALL_HOME_TYPES: HomeType[] = [
@@ -146,11 +147,47 @@ async function main() {
     `\n[discover] TOTAL pages=${totals.pagesFetched} considered=${totals.resultsConsidered} inAllowlist=${totals.inAllowlist} upserted=${totals.upserted} skipped=${totals.skipped} errors=${totals.errors} rapidApiReq=${totals.requestsIssued}`
   )
 
+  // Discovery writes coordinates (from Zillow lat/lng) but not neighborhood_id.
+  // Assign neighborhoods via point-in-polygon (st_covers against the 1,264
+  // neighborhood boundary polygons) so the app's neighborhood/city features
+  // work on the fresh inventory. No-op for the rows that already have one.
+  let neighborhoodsAssigned = 0
+  if (!args.dryRun) {
+    try {
+      const supabase = createStandaloneClient()
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const rpc = supabase.rpc as unknown as (
+        fn: string,
+        params?: Record<string, unknown>
+      ) => Promise<{ data: unknown; error: { message: string } | null }>
+      const { data, error } = await rpc('backfill_property_neighborhoods', {})
+      if (error) {
+        console.warn(`[discover] neighborhood assignment failed: ${error.message}`)
+      } else {
+        neighborhoodsAssigned = typeof data === 'number' ? data : 0
+        console.log(
+          `[discover] neighborhood_id assigned to ${neighborhoodsAssigned} properties (point-in-polygon)`
+        )
+      }
+    } catch (err) {
+      console.warn(
+        `[discover] neighborhood assignment error: ${err instanceof Error ? err.message : String(err)}`
+      )
+    }
+  }
+
   try {
     const reportDir = path.join(process.cwd(), '.logs')
     await fs.mkdir(reportDir, { recursive: true })
     const finishedAt = new Date().toISOString()
-    const report = { finishedAt, envFile, supabaseHost, args, totals }
+    const report = {
+      finishedAt,
+      envFile,
+      supabaseHost,
+      args,
+      totals,
+      neighborhoodsAssigned,
+    }
     await fs.writeFile(
       path.join(reportDir, 'discover-report.json'),
       JSON.stringify(report, null, 2)
