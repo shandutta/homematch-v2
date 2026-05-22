@@ -25,3 +25,26 @@ COMMENT ON COLUMN public.properties.listed_at IS 'RapidAPI /property datePosted 
 COMMENT ON COLUMN public.properties.hoa_fee IS 'RapidAPI /property resoFacts HOA fee (monthly, USD)';
 COMMENT ON COLUMN public.properties.broker_name IS 'RapidAPI /property attributionInfo broker name';
 COMMENT ON COLUMN public.properties.agent_name IS 'RapidAPI /property attributionInfo agent name';
+
+-- ---------------------------------------------------------------------------
+-- Best-effort fix for the `rls_disabled_in_public` advisor (ERROR) on the
+-- PostGIS catalog table public.spatial_ref_sys. That table is owned by
+-- `supabase_admin`, so ENABLE RLS / CREATE POLICY only succeed when this
+-- migration is applied by a role that OWNS it (Supabase support server-side,
+-- or a future owner-level connection). Under the project's `postgres` /
+-- `service_role` credentials it raises 42501 ("must be owner"), which we catch
+-- so the migration still succeeds. spatial_ref_sys is empty SRID reference
+-- data; the permissive SELECT policy preserves read access for PostGIS/clients.
+-- ---------------------------------------------------------------------------
+DO $$
+BEGIN
+  ALTER TABLE public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS spatial_ref_sys_read ON public.spatial_ref_sys;
+  CREATE POLICY spatial_ref_sys_read
+    ON public.spatial_ref_sys
+    FOR SELECT TO anon, authenticated
+    USING (true);
+EXCEPTION
+  WHEN insufficient_privilege THEN
+    RAISE NOTICE 'spatial_ref_sys: RLS not enabled — current role does not own the table; apply via an owner role / Supabase support to clear the advisor';
+END $$;
