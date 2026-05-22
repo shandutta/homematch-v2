@@ -582,60 +582,38 @@ export async function backfillVibes(
         }
       }
 
-      // Batch upsert all collected image updates (one round-trip total,
-      // or one marker-only + per-row images on 42703 fallback)
-      if (imageUpdatePayloads.length > 0) {
-        const allRows = imageUpdatePayloads.map((u) => ({
-          id: u.id,
+      // Persist image refresh via per-row UPDATEs (NOT upsert). These payloads
+      // carry only image columns + id; an upsert evaluates NOT NULL on its
+      // insert-attempt tuple — and `address` is NOT NULL — so it errors 23502
+      // even though the row already exists, silently losing every image. UPDATE
+      // touches only the provided columns, sidestepping that. (42703 = the
+      // refresh-marker columns are absent in this env → retry images-only.)
+      for (const u of imageUpdatePayloads) {
+        const payload: Record<string, unknown> = {
           updated_at: u.nowIso,
           zillow_images_refreshed_at: u.nowIso,
           zillow_images_refreshed_count: u.zillow_images_refreshed_count,
           zillow_images_refresh_status: u.zillow_images_refresh_status,
           ...(u.willUpdateImages ? { images: u.nextImages } : {}),
-        }))
-        const { error: upsertErr } = await deps.supabase
+        }
+        const { error: updErr } = await deps.supabase
           .from('properties')
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          .upsert(allRows as unknown as TablesInsert<'properties'>[])
-
-        if (upsertErr?.code === '42703') {
-          // Migration not applied; fall back to marker-only batch + per-row images
-          const markerRows = imageUpdatePayloads
-            .filter((u) => !u.willUpdateImages)
-            .map((u) => ({
-              id: u.id,
-              updated_at: u.nowIso,
-              zillow_images_refreshed_at: u.nowIso,
-              zillow_images_refreshed_count: u.zillow_images_refreshed_count,
-              zillow_images_refresh_status: u.zillow_images_refresh_status,
-            }))
-          if (markerRows.length > 0) {
-            const { error: markerErr } = await deps.supabase
-              .from('properties')
-              // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-              .upsert(markerRows as unknown as TablesInsert<'properties'>[])
-            if (markerErr) {
-              logger.warn(
-                `[backfill-vibes] [images] Batch marker-only upsert failed: ${markerErr.message}`
-              )
-            }
+          .update(payload as unknown as TablesInsert<'properties'>)
+          .eq('id', u.id)
+        if (updErr?.code === '42703' && u.willUpdateImages) {
+          const { error: imgErr } = await deps.supabase
+            .from('properties')
+            .update({ images: u.nextImages, updated_at: u.nowIso })
+            .eq('id', u.id)
+          if (imgErr) {
+            logger.warn(
+              `[backfill-vibes] [images] Image update failed for property=${u.id}: ${imgErr.message}`
+            )
           }
-          for (const u of imageUpdatePayloads.filter(
-            (u) => u.willUpdateImages
-          )) {
-            const { error: imgErr } = await deps.supabase
-              .from('properties')
-              .update({ images: u.nextImages, updated_at: u.nowIso })
-              .eq('id', u.id)
-            if (imgErr) {
-              logger.warn(
-                `[backfill-vibes] [images] Fallback image update failed for property=${u.id}: ${imgErr.message}`
-              )
-            }
-          }
-        } else if (upsertErr) {
+        } else if (updErr && updErr.code !== '42703') {
           logger.warn(
-            `[backfill-vibes] [images] Batch image upsert failed: ${upsertErr.message}`
+            `[backfill-vibes] [images] Image update failed for property=${u.id}: ${updErr.message}`
           )
         }
       }
