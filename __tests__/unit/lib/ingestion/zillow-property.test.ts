@@ -134,4 +134,25 @@ describe('extractPropertyMetadata', () => {
       extractPropertyMetadata({ resoFacts: { hoaFee: '$425/mo' } }).hoa_fee
     ).toBe(425)
   })
+
+  it('coerces area/bath/year to satisfy the properties column CHECKs', () => {
+    // square_feet/lot_size_sqft are int4 CHECK > 0; Zillow sends 0 and floats
+    // (sqft 8276.4 / acres 0.25) — must round or null, never fail the upsert
+    expect(extractPropertyMetadata({ livingArea: 0 }).square_feet).toBeNull()
+    expect(extractPropertyMetadata({ livingArea: 1234.7 }).square_feet).toBe(
+      1235
+    )
+    expect(
+      extractPropertyMetadata({ lotAreaValue: 0.25 }).lot_size_sqft
+    ).toBeNull()
+    expect(
+      extractPropertyMetadata({ lotAreaValue: 8276.4 }).lot_size_sqft
+    ).toBe(8276)
+    // bathrooms is numeric(2,1): a 10+ bath multifamily would overflow -> null
+    expect(extractPropertyMetadata({ bathrooms: 12 }).bathrooms).toBeNull()
+    expect(extractPropertyMetadata({ bathrooms: 2.5 }).bathrooms).toBe(2.5)
+    // year_built CHECK is 1700..2100
+    expect(extractPropertyMetadata({ yearBuilt: 1600 }).year_built).toBeNull()
+    expect(extractPropertyMetadata({ yearBuilt: 1990 }).year_built).toBe(1990)
+  })
 })

@@ -20,6 +20,12 @@ import {
   type ZillowTaxHistoryEntry,
 } from '@/app/api/admin/generate-vibes-zillow/extract-amenities'
 import { PROPERTY_TYPE_VALUES, type Property } from '@/lib/schemas/property'
+import {
+  toPositiveInt,
+  toBathrooms,
+  toYearBuilt,
+  toNonNegativeIntOrNull,
+} from './coerce'
 
 const DEFAULT_RAPIDAPI_HOST = 'us-housing-market-data1.p.rapidapi.com'
 
@@ -255,11 +261,14 @@ export function extractPropertyMetadata(
 
   return {
     price: typeof z.price === 'number' ? z.price : null,
-    bedrooms: typeof z.bedrooms === 'number' ? z.bedrooms : null,
-    bathrooms: typeof z.bathrooms === 'number' ? z.bathrooms : null,
-    square_feet: typeof z.livingArea === 'number' ? z.livingArea : null,
-    lot_size_sqft: typeof z.lotAreaValue === 'number' ? z.lotAreaValue : null,
-    year_built: typeof z.yearBuilt === 'number' ? z.yearBuilt : null,
+    // Coerce to the properties column types + CHECKs (square_feet/lot_size are
+    // int4 CHECK > 0 but Zillow sends floats/0; bathrooms is numeric(2,1);
+    // year_built is bounded). Uncoerced values fail the meta upsert per-row.
+    bedrooms: toNonNegativeIntOrNull(z.bedrooms),
+    bathrooms: toBathrooms(z.bathrooms),
+    square_feet: toPositiveInt(z.livingArea),
+    lot_size_sqft: toPositiveInt(z.lotAreaValue),
+    year_built: toYearBuilt(z.yearBuilt),
     property_type: normalizePropertyType(z.homeType || z.propertyType),
     listing_status: mapHomeStatusToListingStatus(homeStatus),
     description,
