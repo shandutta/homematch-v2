@@ -254,8 +254,11 @@ export async function runDiscover(
         // nullable; the runtime accepts NULL but the static union still
         // says `number`. Cast through unknown until `supabase gen types`
         // is re-run against prod.
+        // .bind is required: extracting .upsert off the builder loses `this`
+        // (the builder's internal `url`) and throws "reading 'url'" at call.
+        const propsTable = supabase.from('properties')
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const upsertFn = supabase.from('properties').upsert as unknown as (
+        const upsertFn = propsTable.upsert.bind(propsTable) as unknown as (
           row: typeof insert,
           opts: { onConflict: string }
         ) => Promise<{ error: { message: string } | null }>
