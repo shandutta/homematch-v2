@@ -9,6 +9,10 @@ import {
   normalizeHomeType,
   normalizeListingStatus,
   isBayAreaCity,
+  toPositiveInt,
+  toNonNegativeInt,
+  toBathrooms,
+  toYearBuilt,
 } from '@/lib/ingestion/discover'
 
 describe('parseAddress', () => {
@@ -70,5 +74,45 @@ describe('isBayAreaCity', () => {
     expect(isBayAreaCity('san jose')).toBe(true)
     expect(isBayAreaCity('Fresno')).toBe(false)
     expect(isBayAreaCity('')).toBe(false)
+  })
+})
+
+describe('numeric coercion (discover thin-insert column/CHECK safety)', () => {
+  it('toPositiveInt rounds floats and nulls non-positive / out-of-range', () => {
+    expect(toPositiveInt(8276.4)).toBe(8276) // sqft float -> int
+    expect(toPositiveInt(1500)).toBe(1500)
+    expect(toPositiveInt(0.25)).toBeNull() // acres round to 0 -> null
+    expect(toPositiveInt(0)).toBeNull()
+    expect(toPositiveInt(-5)).toBeNull()
+    expect(toPositiveInt(undefined)).toBeNull()
+    expect(toPositiveInt(null)).toBeNull()
+    expect(toPositiveInt(3_000_000_000)).toBeNull() // > int4 max
+  })
+
+  it('toNonNegativeInt coerces null/negative to 0 (bedrooms is NOT NULL)', () => {
+    expect(toNonNegativeInt(3)).toBe(3)
+    expect(toNonNegativeInt(2.9)).toBe(3)
+    expect(toNonNegativeInt(0)).toBe(0)
+    expect(toNonNegativeInt(null)).toBe(0)
+    expect(toNonNegativeInt(undefined)).toBe(0)
+    expect(toNonNegativeInt(-4)).toBe(0)
+  })
+
+  it('toBathrooms keeps 0..9.9 at one decimal, nulls >=10 (numeric(2,1))', () => {
+    expect(toBathrooms(2.5)).toBe(2.5)
+    expect(toBathrooms(0)).toBe(0)
+    expect(toBathrooms(12)).toBeNull() // multifamily overflow
+    expect(toBathrooms(10)).toBeNull()
+    expect(toBathrooms(-1)).toBeNull()
+    expect(toBathrooms(null)).toBeNull()
+  })
+
+  it('toYearBuilt enforces the 1700..2100 CHECK window', () => {
+    expect(toYearBuilt(1990)).toBe(1990)
+    expect(toYearBuilt(1700)).toBe(1700)
+    expect(toYearBuilt(2100)).toBe(2100)
+    expect(toYearBuilt(1600)).toBeNull()
+    expect(toYearBuilt(2200)).toBeNull()
+    expect(toYearBuilt(null)).toBeNull()
   })
 })

@@ -106,6 +106,53 @@ export const normalizeListingStatus = (raw: string | undefined): string => {
   return 'active'
 }
 
+// propertyExtendedSearch returns raw Zillow numerics that do NOT all fit the
+// `properties` column types + CHECKs, so the thin insert must coerce them or
+// Postgres rejects the row. Observed on the fresh re-ingest: areas arrive as
+// floats (sqft like 8276.4 or acres like 0.25) into integer columns; bedrooms
+// can be null (NOT NULL column); bathrooms can be >= 10 (numeric(2,1) overflow).
+// The enrich step (/property) re-derives exact values, so lossy coercion here
+// (round, clamp, or null) is fine — the goal is a CHECK-valid thin row.
+const INT4_MAX = 2147483647
+
+const asNumber = (v: unknown): number | null => {
+  // Number(null) === 0 and Number('') === 0 are footguns; treat both as absent.
+  if (v === null || v === undefined || v === '') return null
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
+/** Nullable positive int4 (price/area columns: CHECK `> 0`, floats rounded). */
+export const toPositiveInt = (v: unknown): number | null => {
+  const n = asNumber(v)
+  if (n === null) return null
+  const r = Math.round(n)
+  return r > 0 && r <= INT4_MAX ? r : null
+}
+
+/** Non-negative int4 for `bedrooms` (NOT NULL, CHECK `>= 0`). */
+export const toNonNegativeInt = (v: unknown): number => {
+  const n = asNumber(v)
+  if (n === null || n < 0) return 0
+  return Math.min(Math.round(n), INT4_MAX)
+}
+
+/** `bathrooms`: numeric(2,1), CHECK `>= 0` → 0..9.9 (1 decimal), else null. */
+export const toBathrooms = (v: unknown): number | null => {
+  const n = asNumber(v)
+  if (n === null || n < 0) return null
+  const r = Math.round(n * 10) / 10
+  return r <= 9.9 ? r : null
+}
+
+/** `year_built`: CHECK null OR 1700..2100. */
+export const toYearBuilt = (v: unknown): number | null => {
+  const n = asNumber(v)
+  if (n === null) return null
+  const r = Math.round(n)
+  return r >= 1700 && r <= 2100 ? r : null
+}
+
 // propertyExtendedSearch returns no separate city/state/zipcode fields — only
 // a full `address` string like "50 Cascade Walk, San Francisco, CA 94116".
 // Parse the city + state + zip out of it (the city allowlist filter and the
@@ -221,6 +268,14 @@ export async function runDiscover(
           continue
         }
 
+        // price is NOT NULL + CHECK (price > 0); a listing with no usable price
+        // can't be inserted, so skip it (rare — nearly all ForSale rows have one).
+        const price = toPositiveInt(result.price)
+        if (price === null) {
+          summary.skipped += 1
+          continue
+        }
+
         const coordinates =
           typeof result.latitude === 'number' &&
           typeof result.longitude === 'number'
@@ -234,15 +289,15 @@ export async function runDiscover(
           city: city as BayAreaCity,
           state: result.state || parsed.state || 'CA',
           zip_code: result.zipcode || parsed.zip || '',
-          price: result.price ?? null,
-          bedrooms: result.bedrooms ?? null,
-          bathrooms: result.bathrooms ?? null,
-          square_feet: result.livingArea ?? null,
-          lot_size_sqft: result.lotAreaValue ?? null,
+          price,
+          bedrooms: toNonNegativeInt(result.bedrooms),
+          bathrooms: toBathrooms(result.bathrooms),
+          square_feet: toPositiveInt(result.livingArea),
+          lot_size_sqft: toPositiveInt(result.lotAreaValue),
           property_type: normalizeHomeType(
             result.propertyType ?? result.homeType
           ),
-          year_built: result.yearBuilt ?? null,
+          year_built: toYearBuilt(result.yearBuilt),
           coordinates,
           images: result.imgSrc ? [result.imgSrc] : [],
           listing_status: normalizeListingStatus(result.listingStatus),
