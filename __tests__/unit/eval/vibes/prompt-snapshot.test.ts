@@ -81,7 +81,7 @@ describe('EVAL-GATE: user prompt snapshot', () => {
     )
 
     expect(prompt).toContain('extract buyer-relevant evidence and fit signals')
-    expect(prompt).toContain('evidence first, implication second')
+    expect(prompt).toContain('Name evidence before any lifestyle implication')
     expect(prompt).toContain(
       'Every reason must cite a feature, room, layout, score, or neighborhood fact'
     )

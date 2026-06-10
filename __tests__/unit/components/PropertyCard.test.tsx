@@ -60,7 +60,7 @@ const getStatValueByLabel = (label: string) => {
   const labelElement = screen.getByText((content, element) => {
     return (
       element?.tagName.toLowerCase() === 'span' &&
-      element?.className.includes('text-hm-stone-500') &&
+      element?.className.includes('text-hm-muted') &&
       content.toLowerCase() === label.toLowerCase()
     )
   })

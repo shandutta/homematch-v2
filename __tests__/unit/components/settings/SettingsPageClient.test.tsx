@@ -266,7 +266,7 @@ describe('SettingsPageClient', () => {
       'gradient-grid-bg',
       'min-h-screen',
       'pb-6',
-      'text-white'
+      'text-hm-ink'
     )
 
     // Check for header styling using testid

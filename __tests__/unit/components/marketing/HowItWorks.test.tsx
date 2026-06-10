@@ -46,7 +46,7 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     // Step titles
-    expect(screen.getByText('1. Tell Us Your Vibe')).toBeInTheDocument()
+    expect(screen.getByText('1. Tell Us Your Taste')).toBeInTheDocument()
     expect(screen.getByText('2. Swipe Together')).toBeInTheDocument()
     expect(screen.getByText('3. Match With Neighborhoods')).toBeInTheDocument()
   })
@@ -85,7 +85,7 @@ describe('HowItWorks', () => {
   test('applies correct grid layout for steps', () => {
     render(<HowItWorks />)
 
-    const stepsGrid = screen.getByText('1. Tell Us Your Vibe').closest('.grid')
+    const stepsGrid = screen.getByText('1. Tell Us Your Taste').closest('.grid')
     expect(stepsGrid).toHaveClass('grid', 'sm:grid-cols-3')
   })
 
@@ -96,7 +96,7 @@ describe('HowItWorks', () => {
     expect(heading).toHaveClass(
       'text-3xl',
       'font-bold',
-      'text-gray-900',
+      'text-hm-ink',
       'sm:text-4xl',
       'md:text-5xl'
     )
@@ -108,21 +108,21 @@ describe('HowItWorks', () => {
     const description = screen.getByText(
       'Three simple steps to go from scrolling to moving in.'
     )
-    expect(description).toHaveClass('text-lg', 'text-gray-600', 'sm:text-xl')
+    expect(description).toHaveClass('text-lg', 'text-hm-muted', 'sm:text-xl')
   })
 
   test('step cards have correct styling', () => {
     render(<HowItWorks />)
 
     const firstCard = screen
-      .getByText('1. Tell Us Your Vibe')
+      .getByText('1. Tell Us Your Taste')
       .closest('.overflow-hidden')
     expect(firstCard).toHaveClass(
       'relative',
       'h-full',
       'overflow-hidden',
-      'border-white/60',
-      'bg-white',
+      'border-hm-border',
+      'bg-hm-surface',
       'p-5',
       'sm:p-6',
       'rounded-xl',
@@ -143,8 +143,8 @@ describe('HowItWorks', () => {
         'inline-flex',
         'rounded-xl',
         'bg-gradient-to-br',
-        'from-[#021A44]',
-        'to-[#063A9E]',
+        'from-[#b7791f]',
+        'to-[#6f4812]',
         'p-3',
         'text-white'
       )
@@ -172,14 +172,14 @@ describe('HowItWorks', () => {
     render(<HowItWorks />)
 
     const stepTitles = [
-      '1. Tell Us Your Vibe',
+      '1. Tell Us Your Taste',
       '2. Swipe Together',
       '3. Match With Neighborhoods',
     ]
 
     stepTitles.forEach((title) => {
       const element = screen.getByText(title)
-      expect(element).toHaveClass('text-xl', 'font-semibold', 'text-gray-900')
+      expect(element).toHaveClass('text-xl', 'font-semibold', 'text-hm-ink')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-heading)' })
     })
   })
@@ -195,7 +195,7 @@ describe('HowItWorks', () => {
 
     descriptions.forEach((desc) => {
       const element = screen.getByText(desc)
-      expect(element).toHaveClass('text-gray-700')
+      expect(element).toHaveClass('text-hm-ink-soft')
       expect(element).toHaveStyle({ fontFamily: 'var(--font-body)' })
     })
   })
@@ -203,7 +203,7 @@ describe('HowItWorks', () => {
   test('renders with correct responsive grid gaps', () => {
     render(<HowItWorks />)
 
-    const grid = screen.getByText('1. Tell Us Your Vibe').closest('.grid')
+    const grid = screen.getByText('1. Tell Us Your Taste').closest('.grid')
     expect(grid).toHaveClass('gap-4', 'mt-6', 'sm:grid-cols-3')
     expect(grid).toHaveClass('sm:gap-5')
   })

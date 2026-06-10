@@ -204,7 +204,6 @@ describe('VibesService', () => {
       expect.arrayContaining([
         'Remote Work Ready',
         'Growing Family',
-        "Chef's Kitchen",
         'Porch Life Central',
       ])
     )
@@ -219,7 +218,6 @@ describe('VibesService', () => {
         'Rooftop Living',
         'City Skyline Perch',
         'Modern Minimalist',
-        "Chef's Kitchen",
       ],
     }
 
@@ -236,7 +234,6 @@ describe('VibesService', () => {
         'Urban Rooftop',
         'City Skyline',
         'Minimalist Living',
-        "Chef's Kitchen",
       ])
     )
   })

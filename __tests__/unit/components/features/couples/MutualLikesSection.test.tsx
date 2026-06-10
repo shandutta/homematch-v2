@@ -339,7 +339,7 @@ describe('MutualLikesSection Component', () => {
           'Properties everyone likes will appear here'
         )
         expect(helperText).toBeInTheDocument()
-        expect(helperText).toHaveClass('text-hm-stone-200')
+        expect(helperText).toHaveClass('text-hm-ink')
       })
     })
 
@@ -349,12 +349,10 @@ describe('MutualLikesSection Component', () => {
       renderWithQueryClient(<MutualLikesSection {...defaultProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Shared Likes')).toHaveClass(
-          'text-hm-stone-100'
-        )
+        expect(screen.getByText('Shared Likes')).toHaveClass('text-hm-ink')
         expect(
           screen.getByRole('heading', { name: 'No mutual likes yet!' })
-        ).toHaveClass('text-hm-stone-100')
+        ).toHaveClass('text-hm-ink')
       })
     })
 
@@ -425,12 +423,12 @@ describe('MutualLikesSection Component', () => {
 
       await waitFor(() => {
         const priceMeta = screen.getByText('$500k').closest('div')
-        expect(priceMeta).toHaveClass('text-hm-stone-200')
+        expect(priceMeta).toHaveClass('text-hm-ink')
         const likedDate = screen
           .getAllByText(/Liked/i)
-          .find((node) => node.classList.contains('text-hm-stone-300'))
+          .find((node) => node.classList.contains('text-hm-ink-soft'))
         expect(likedDate).toBeDefined()
-        expect(likedDate).toHaveClass('text-hm-stone-300')
+        expect(likedDate).toHaveClass('text-hm-ink-soft')
       })
     })
 
@@ -749,7 +747,7 @@ describe('MutualLikesSection Component', () => {
           '[data-testid="mutual-likes-list"]'
         )
         expect(cardElement).toBeInTheDocument()
-        expect(cardElement).toHaveAttribute('style')
+        expect(cardElement).toHaveClass('min-h-[320px]')
       })
     })
   })

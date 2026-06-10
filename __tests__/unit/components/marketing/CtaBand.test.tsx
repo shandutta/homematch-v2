@@ -90,6 +90,6 @@ describe('CtaBand', () => {
     render(<CtaBand />)
 
     const section = screen.getByRole('heading', { level: 2 }).closest('section')
-    expect(section).toHaveClass('bg-hm-ivory-100', 'text-hm-stone-900')
+    expect(section).toHaveClass('bg-hm-surface', 'text-hm-ink')
   })
 })

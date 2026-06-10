@@ -436,12 +436,15 @@ describe('CouplesErrorBoundary', () => {
       // Try Again button should have gradient classes
       expect(tryAgainButton).toHaveClass(
         'bg-gradient-to-r',
-        'from-pink-500',
-        'to-purple-500'
+        'from-couples-primary',
+        'to-couples-secondary'
       )
 
       // Dashboard button should have outline styling
-      expect(dashboardButton).toHaveClass('border-pink-500/30', 'text-pink-400')
+      expect(dashboardButton).toHaveClass(
+        'border-couples-primary/30',
+        'text-couples-primary'
+      )
     })
   })
 

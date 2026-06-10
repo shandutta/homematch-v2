@@ -91,7 +91,7 @@ describe('AvatarPicker Component', () => {
         />
       )
       const foxButton = screen.getByRole('button', { name: /fox/i })
-      expect(foxButton).toHaveClass('ring-2', 'ring-amber-500')
+      expect(foxButton).toHaveClass('ring-2', 'ring-hm-accent')
     })
 
     test('updates selection on preset click', () => {
@@ -105,7 +105,7 @@ describe('AvatarPicker Component', () => {
       const catButton = screen.getByRole('button', { name: /cat/i })
       fireEvent.click(catButton)
       // After clicking, the button should have the selected styles
-      expect(catButton).toHaveClass('ring-2', 'ring-amber-500')
+      expect(catButton).toHaveClass('ring-2', 'ring-hm-accent')
     })
 
     test('calls onSelect with preset data on save', () => {

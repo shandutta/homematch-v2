@@ -26,15 +26,12 @@ describe('global-error page', () => {
     expect(reset).toHaveBeenCalledTimes(1)
   })
 
-  test('renders with dark background', () => {
+  test('renders with warm editorial background', () => {
     render(<GlobalError error={fakeError} reset={() => {}} />)
     const container = document.querySelector('.min-h-screen')
     const classes = container?.className || ''
-    const hasDarkClasses =
-      classes.includes('bg-') &&
-      (classes.includes('[#') ||
-        classes.includes('slate') ||
-        classes.includes('030712'))
-    expect(hasDarkClasses).toBe(true)
+    const hasWarmClasses =
+      classes.includes('bg-hm-canvas') && classes.includes('text-hm-ink')
+    expect(hasWarmClasses).toBe(true)
   })
 })

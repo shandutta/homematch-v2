@@ -36,20 +36,16 @@ describe('not-found page', () => {
     expect(link).toHaveAttribute('href', '/')
   })
 
-  test('renders with dark background styling', () => {
+  test('renders with warm editorial background styling', () => {
     render(<NotFound />)
-    // Verify the page uses dark background and text styling
+    // Verify the page uses warm editorial shell styling
     const container = document.querySelector('.min-h-screen')
     expect(container).toBeInTheDocument()
-    // Should have dark-friendly classes (not just plain white)
+
     const classes = container?.className || ''
-    const hasDarkClasses =
-      classes.includes('bg-') &&
-      (classes.includes('dark') ||
-        classes.includes('[#') ||
-        classes.includes('slate') ||
-        classes.includes('gray-9'))
-    expect(hasDarkClasses).toBe(true)
+    const hasWarmClasses =
+      classes.includes('bg-hm-canvas') && classes.includes('text-hm-ink')
+    expect(hasWarmClasses).toBe(true)
   })
 
   test('renders branded heading text beyond just 404', () => {

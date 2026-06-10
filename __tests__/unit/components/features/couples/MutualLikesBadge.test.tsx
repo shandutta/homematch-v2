@@ -79,7 +79,7 @@ describe('MutualLikesBadge Component', () => {
         'absolute',
         '-top-1',
         '-right-1',
-        'bg-hm-gold-300',
+        'bg-hm-accent/40',
         'text-xs'
       )
     })
@@ -124,8 +124,8 @@ describe('MutualLikesBadge Component', () => {
     test('should apply warm light styling', () => {
       render(<MutualLikesBadge likedByCount={2} />)
       const badge = document.querySelector('[data-slot="badge"]')
-      expect(badge).toHaveClass('bg-hm-gold-50')
-      expect(badge).toHaveClass('border-hm-gold-200')
+      expect(badge).toHaveClass('bg-hm-accent/10')
+      expect(badge).toHaveClass('border-hm-accent/40')
       expect(badge).not.toHaveClass('backdrop-blur-sm')
     })
   })
@@ -145,7 +145,7 @@ describe('MutualLikesBadge Component', () => {
     test('should have appropriate color contrast', () => {
       render(<MutualLikesBadge likedByCount={2} />)
       const text = screen.getByText('Both liked!')
-      expect(text).toHaveClass('text-hm-stone-800')
+      expect(text).toHaveClass('text-hm-ink')
     })
   })
 })

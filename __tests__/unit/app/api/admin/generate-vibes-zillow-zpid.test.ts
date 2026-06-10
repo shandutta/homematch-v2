@@ -106,7 +106,7 @@ describe('POST /api/admin/generate-vibes-zillow — zpid body parsing', () => {
 
     expect(res.status).toBe(400)
     const body: { error?: string } = await res.json()
-    expect(body.error).toMatch(/invalid request body/i)
+    expect(body.error).toMatch(/zillowUrl or zpid must be a string or number/i)
     // The handler never reached the upstream fetch.
     expect(mockFetchWithTimeout).not.toHaveBeenCalled()
   })

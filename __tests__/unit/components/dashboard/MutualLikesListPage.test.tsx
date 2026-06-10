@@ -68,12 +68,12 @@ describe('MutualLikesListPage', () => {
     const heading = screen.getByRole('heading', {
       name: 'No mutual likes yet',
     })
-    expect(heading).toHaveClass('text-hm-stone-900')
+    expect(heading).toHaveClass('text-hm-ink')
 
     const description = screen.getByText(
       /Keep swiping — when your household likes the same home it will appear here\./i
     )
-    expect(description).toHaveClass('text-hm-stone-600')
+    expect(description).toHaveClass('text-hm-faint')
   })
 
   test('does not show toolbar when there are no mutual likes', () => {

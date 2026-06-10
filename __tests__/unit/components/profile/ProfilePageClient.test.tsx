@@ -256,7 +256,7 @@ describe('ProfilePageClient', () => {
       'gradient-grid-bg',
       'min-h-screen',
       'pb-6',
-      'text-white'
+      'text-hm-ink'
     )
 
     const header = screen
@@ -265,14 +265,10 @@ describe('ProfilePageClient', () => {
     if (!(header instanceof HTMLElement)) {
       throw new Error('Expected header section element')
     }
-    expect(header).toHaveClass('border-b', 'border-white/5')
+    expect(header).toHaveClass('border-b', 'border-hm-border')
 
     const tabsList = screen.getByRole('tablist')
-    expect(tabsList).toHaveClass(
-      'border',
-      'border-white/[0.06]',
-      'bg-white/[0.02]'
-    )
+    expect(tabsList).toHaveClass('border', 'border-hm-border', 'bg-hm-canvas')
   })
 
   it('keeps a single tabpanel mounted and avoids AnimatePresence wait warnings', async () => {

@@ -88,16 +88,14 @@ describe('HeroSection', () => {
     expect(heading).toBeInTheDocument()
     // TextReveal adds non-breaking spaces between words
     expect(heading.textContent?.replace(/\u00A0/g, ' ')).toContain(
-      'Find a home that works for everyone.'
+      'Find a home that works for you.'
     )
   })
 
   test('renders description', () => {
     render(<HeroSection />)
     expect(
-      screen.getByText(
-        /Swipe through real listings, save the ones your household likes/i
-      )
+      screen.getByText(/Swipe on homes and match likes with your partner/i)
     ).toBeInTheDocument()
   })
 
